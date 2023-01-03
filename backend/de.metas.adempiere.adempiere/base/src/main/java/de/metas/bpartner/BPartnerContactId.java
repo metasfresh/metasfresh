@@ -1,5 +1,9 @@
 package de.metas.bpartner;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Splitter;
+import de.metas.location.LocationId;
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -7,6 +11,8 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -78,7 +84,7 @@ public class BPartnerContactId implements RepoIdAware
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final Integer contactRepoId)
 	{
-		if(bpartnerId == null)
+		if (bpartnerId == null)
 		{
 			return null;
 		}
@@ -137,6 +143,32 @@ public class BPartnerContactId implements RepoIdAware
 	public static UserId toUserIdOrNull(@Nullable final BPartnerContactId id)
 	{
 		return id != null ? id.getUserId() : null;
+	}
+
+	@JsonCreator
+	public static BPartnerContactId ofJsonString(@NonNull final String idStr)
+	{
+		try
+		{
+			final List<String> parts = Splitter.on("-").splitToList(idStr);
+			return of(
+					BPartnerId.ofRepoId(Integer.parseInt(parts.get(0))),
+					UserId.ofRepoId(Integer.parseInt(parts.get(1))));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid BPartnerContactId string: " + idStr, ex);
+		}
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return bpartnerId.getRepoId() + "-" + userId.getRepoId();
+	}
+	public static boolean equals(@Nullable final BPartnerContactId id1, @Nullable final BPartnerContactId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 
 }

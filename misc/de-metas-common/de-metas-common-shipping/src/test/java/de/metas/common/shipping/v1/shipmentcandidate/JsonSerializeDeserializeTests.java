@@ -41,9 +41,6 @@ import de.metas.common.shipping.v1.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v1.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipping.v1.shipment.JsonCreateShipmentResponse;
 import de.metas.common.shipping.v1.shipment.JsonLocation;
-import de.metas.common.shipping.v1.shipmentcandidate.JsonCustomer;
-import de.metas.common.shipping.v1.shipmentcandidate.JsonResponseShipmentCandidate;
-import de.metas.common.shipping.v1.shipmentcandidate.JsonResponseShipmentCandidates;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,8 +51,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipping.v1.JsonRequestCandidateResult.builder;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class JsonSerializeDeserializeTests
 {
@@ -240,8 +236,8 @@ class JsonSerializeDeserializeTests
 	{
 		final JsonRequestCandidateResults resultListOrig = JsonRequestCandidateResults.builder()
 				.transactionKey("transactionKey")
-				.item(builder().scheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
-				.item(builder().scheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
+				.item(JsonRequestCandidateResult.builder().scheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
+				.item(JsonRequestCandidateResult.builder().scheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
 						.error(JsonError.ofSingleItem(JsonErrorItem.builder().message("errorMessage").stackTrace("stackTrace").build()))
 						.build())
 				.build();

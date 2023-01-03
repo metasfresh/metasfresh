@@ -1,6 +1,8 @@
 package de.metas.handlingunits.pporder.api;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -18,11 +20,7 @@ import java.util.Set;
 
 /**
  * Generates manufacturing receipt candidates ({@link I_PP_Order_Qty}) together with the planning HUs.
- *
  * The generated receipt candidates are not processed.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IPPOrderReceiptHUProducer
 {
@@ -30,13 +28,21 @@ public interface IPPOrderReceiptHUProducer
 	 * Creates planning HUs to be received.
 	 * It also creates draft manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
-	void createDraftReceiptCandidatesAndPlanningHUs();
+	List<I_M_HU> createDraftReceiptCandidatesAndPlanningHUs();
 
 	I_M_HU receiveVHU(Quantity qtyToReceive);
 
-	List<I_M_HU> receiveTUs(@NonNull Quantity qtyToReceive, @NonNull HUPIItemProductId tuPIItemProductId);
+	ReceiveTUsToLUResult receiveTUsToNewLU(
+			@NonNull Quantity qtyToReceive,
+			@NonNull HUPIItemProductId tuPIItemProductId,
+			@NonNull HuPackingInstructionsItemId luPIItemId);
 
-	List<I_M_HU> receiveHUs(@NonNull Quantity qtyToReceive);
+	ReceiveTUsToLUResult receiveTUsToExistingLU(
+			@NonNull Quantity qtyToReceive,
+			@NonNull HUPIItemProductId tuPIItemProductId,
+			@NonNull I_M_HU existingLU);
+
+	I_M_HU receiveSingleTU(@NonNull Quantity qtyToReceive, @NonNull final HuPackingInstructionsId tuPackingInstructionsId);
 
 	/**
 	 * NOTE: by default current system time is considered.

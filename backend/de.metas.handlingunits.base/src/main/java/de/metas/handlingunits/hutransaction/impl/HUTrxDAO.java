@@ -26,9 +26,12 @@ package de.metas.handlingunits.hutransaction.impl;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.handlingunits.HuId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -42,6 +45,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.util.Env;
 
 public class HUTrxDAO implements IHUTrxDAO
 {
@@ -174,8 +178,18 @@ public class HUTrxDAO implements IHUTrxDAO
 
 		return trxLineCounterpart;
 	}
+
+	@Override
+	public List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHuId(@NonNull final HuId huId)
+	{
+		final IHUTrxQuery huTrxQuery = createHUTrxQuery();
+		huTrxQuery.setM_HU_ID(huId.getRepoId());
+
+		return retrieveTrxLines(Env.getCtx(), huTrxQuery, ITrx.TRXNAME_ThreadInherited);
+	}
 	
 	@Override
+	@Deprecated
 	public List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHU(final I_M_HU hu)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);

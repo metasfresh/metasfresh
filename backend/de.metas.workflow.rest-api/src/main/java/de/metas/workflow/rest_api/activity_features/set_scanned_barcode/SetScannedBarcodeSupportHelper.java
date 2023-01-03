@@ -22,6 +22,38 @@
 
 package de.metas.workflow.rest_api.activity_features.set_scanned_barcode;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.workflow.rest_api.model.UIComponent;
+import de.metas.workflow.rest_api.model.UIComponentType;
+import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
+import lombok.Builder;
+import lombok.experimental.UtilityClass;
+import org.adempiere.util.api.Params;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+
+@UtilityClass
 public class SetScannedBarcodeSupportHelper
 {
+	@Builder(builderMethodName = "uiComponent", builderClassName = "$UIComponentBuilder")
+	private static UIComponent createUIComponent(
+			@Nullable final JsonQRCode currentValue,
+			@Nullable final Collection<JsonQRCode> validOptions,
+			@Nullable WFActivityAlwaysAvailableToUser alwaysAvailableToUser)
+	{
+		return UIComponent.builder()
+				.type(UIComponentType.SCAN_BARCODE)
+				.alwaysAvailableToUser(CoalesceUtil.coalesceNotNull(alwaysAvailableToUser, WFActivityAlwaysAvailableToUser.DEFAULT))
+				.properties(Params.builder()
+						.valueObj("currentValue", currentValue)
+						.valueObj("validOptions",
+								validOptions != null && !validOptions.isEmpty()
+										? ImmutableSet.copyOf(validOptions)
+										: null)
+						.build())
+				.build();
+	}
+
 }

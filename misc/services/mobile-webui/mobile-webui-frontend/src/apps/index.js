@@ -1,13 +1,14 @@
-import * as inventoryDisposalApp from './inventoryDisposal/index';
+import * as huManagerApp from './huManager';
 
 const registeredApplications = {};
 
-const registerApplication = ({ applicationId, routes, messages, startApplication }) => {
+const registerApplication = ({ applicationId, routes, messages, startApplication, reduxReducer }) => {
   registeredApplications[applicationId] = {
     applicationId,
     routes,
     messages,
     startApplication,
+    reduxReducer,
   };
 
   console.log(`Registered application ${applicationId}`);
@@ -19,9 +20,20 @@ export const getApplicationStartFunction = (applicationId) => {
 };
 
 export const getApplicationRoutes = () => {
-  return Object.values(registeredApplications).reduce((result, applicationDescriptor) => {
-    return Array.isArray(applicationDescriptor.routes) ? result.concat(applicationDescriptor.routes) : result;
-  }, []);
+  const result = [];
+
+  Object.values(registeredApplications).forEach((applicationDescriptor) => {
+    if (Array.isArray(applicationDescriptor.routes)) {
+      applicationDescriptor.routes.forEach((route) => {
+        result.push({
+          applicationId: applicationDescriptor.applicationId,
+          ...route,
+        });
+      });
+    }
+  });
+
+  return result;
 };
 
 export const getApplicationMessages = () => {
@@ -40,8 +52,17 @@ export const getApplicationMessages = () => {
   }, {});
 };
 
+export const getApplicationReduxReducers = () => {
+  return Object.values(registeredApplications).reduce((result, applicationDescriptor) => {
+    if (applicationDescriptor.reduxReducer) {
+      result['applications/' + applicationDescriptor.applicationId] = applicationDescriptor.reduxReducer;
+    }
+    return result;
+  }, {});
+};
+
 //
 // SETUP
 //
 
-registerApplication(inventoryDisposalApp.applicationDescriptor);
+registerApplication(huManagerApp.applicationDescriptor);

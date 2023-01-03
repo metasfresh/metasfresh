@@ -1,18 +1,15 @@
 package de.metas.product;
 
-import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_M_Product;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_M_Product;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /*
  * #%L
@@ -43,7 +40,8 @@ public enum ProductType implements ReferenceListAwareEnum
 	Resource(X_M_Product.PRODUCTTYPE_Resource), // R
 	ExpenseType(X_M_Product.PRODUCTTYPE_ExpenseType), // E
 	Online(X_M_Product.PRODUCTTYPE_Online), // O
-	FreightCost(X_M_Product.PRODUCTTYPE_FreightCost) // F
+	FreightCost(X_M_Product.PRODUCTTYPE_FreightCost), // F
+	Food(X_M_Product.PRODUCTTYPE_Nahrung)//N
 	;
 
 	@Getter

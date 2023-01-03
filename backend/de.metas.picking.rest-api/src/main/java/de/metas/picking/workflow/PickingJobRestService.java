@@ -27,10 +27,10 @@ import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.picking.api.PickingSlotBarcode;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -49,11 +49,6 @@ public class PickingJobRestService
 			@NonNull final PickingJobService pickingJobService)
 	{
 		this.pickingJobService = pickingJobService;
-	}
-
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
-	{
-		return pickingJobService.getDraftJobsByPickerId(pickerId);
 	}
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
@@ -87,9 +82,9 @@ public class PickingJobRestService
 
 	public PickingJob allocateAndSetPickingSlot(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingSlotBarcode pickingSlotBarcode)
+			@NonNull final PickingSlotQRCode pickingSlotQRCode)
 	{
-		return pickingJobService.allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode);
+		return pickingJobService.allocateAndSetPickingSlot(pickingJob, pickingSlotQRCode);
 	}
 
 	public PickingJob processStepEvents(
@@ -99,10 +94,33 @@ public class PickingJobRestService
 		return pickingJobService.processStepEvents(pickingJob, events);
 	}
 
-	public PickingJob abort(@NonNull final PickingJob pickingJob) {return pickingJobService.abort(pickingJob);}
+	public void abort(@NonNull final PickingJob pickingJob)
+	{
+		pickingJobService.abort(pickingJob);
+	}
 
-	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
+	public void abortAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.abortAllByUserId(userId);
+	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
+	public void unassignAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.unassignAllByUserId(userId);
+	}
 
+	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
+	{
+		return pickingJobService.assignPickingJob(pickingJobId, newResponsibleId);
+	}
+
+	public PickingJob complete(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.complete(pickingJob);
+	}
+
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
 }

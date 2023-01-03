@@ -1,16 +1,7 @@
 package de.metas.material.planning.ddorder;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
@@ -19,6 +10,14 @@ import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -58,7 +57,7 @@ public class DDOrderAdvisedEventCreator
 	}
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
-			final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMutableMRPContext mrpContext)
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))
@@ -89,7 +88,7 @@ public class DDOrderAdvisedEventCreator
 
 				final DDOrderAdvisedEvent distributionAdvisedEvent = DDOrderAdvisedEvent.builder()
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
-						.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
+						.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 						.fromWarehouseId(WarehouseId.ofRepoId(networkLine.getM_WarehouseSource_ID()))
 						.toWarehouseId(WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID()))
 						.ddOrder(ddOrder)

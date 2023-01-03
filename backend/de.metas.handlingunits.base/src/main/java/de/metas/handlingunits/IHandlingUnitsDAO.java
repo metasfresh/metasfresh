@@ -35,6 +35,7 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,7 +46,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
@@ -84,6 +84,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU getByIdOutOfTrx(HuId huId);
 
 	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
+
+	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull HuId huId);
 
@@ -170,7 +174,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	// Handling Unit PI Retrieval
 
-	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnitPI, final BPartnerId bpartnerId);
+	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
@@ -193,6 +197,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final I_M_HU_PI pi);
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
+
+	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
 
 	/**
 	 * @return current PI Version or null

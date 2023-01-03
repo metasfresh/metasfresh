@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.device.accessor.DeviceId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -11,7 +12,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -27,6 +30,10 @@ public class ManufacturingJob
 	@NonNull ZonedDateTime datePromised;
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
+
+	@NonNull WarehouseId warehouseId;
+	@Nullable DeviceId currentScaleDeviceId;
+
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
 
 	@Builder(toBuilder = true)
@@ -37,8 +44,14 @@ public class ManufacturingJob
 			@NonNull final ZonedDateTime datePromised,
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
+			//
+			final @NonNull WarehouseId warehouseId,
+			@Nullable final DeviceId currentScaleDeviceId,
+			//
 			@NonNull final ImmutableList<ManufacturingJobActivity> activities)
 	{
+		this.warehouseId = warehouseId;
+		this.currentScaleDeviceId = currentScaleDeviceId;
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
 		this.ppOrderId = ppOrderId;
@@ -48,6 +61,11 @@ public class ManufacturingJob
 		this.responsibleId = responsibleId;
 		this.allowUserReporting = allowUserReporting;
 		this.activities = activities;
+	}
+
+	public static boolean equals(@Nullable ManufacturingJob job1, @Nullable ManufacturingJob job2)
+	{
+		return Objects.equals(job1, job2);
 	}
 
 	public void assertUserReporting()
@@ -78,6 +96,7 @@ public class ManufacturingJob
 	}
 
 	public ManufacturingJob withChangedRawMaterialsIssueStep(
+			@NonNull final PPOrderRoutingActivityId activityId,
 			@NonNull final PPOrderIssueScheduleId issueScheduleId,
 			@NonNull UnaryOperator<RawMaterialsIssueStep> mapper)
 	{
@@ -86,7 +105,11 @@ public class ManufacturingJob
 			throw new AdempiereException("Cannot find issue step");
 		}
 
-		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper));
+		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(
+				activities,
+				activity -> PPOrderRoutingActivityId.equals(activity.getOrderRoutingActivityId(), activityId)
+						? activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper)
+						: activity);
 		return withActivities(activitiesNew);
 	}
 
@@ -108,5 +131,23 @@ public class ManufacturingJob
 	{
 		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedReceiveLine(id, mapper));
 		return withActivities(activitiesNew);
+	}
+
+	public FinishedGoodsReceiveLine getFinishedGoodsReceiveLineById(@NonNull final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId)
+	{
+		return activities.stream()
+				.map(ManufacturingJobActivity::getFinishedGoodsReceive)
+				.filter(Objects::nonNull)
+				.map(finishedGoodsReceive -> finishedGoodsReceive.getLineByIdOrNull(finishedGoodsReceiveLineId))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No finished goods receive line found for " + finishedGoodsReceiveLineId));
+	}
+
+	public ManufacturingJob withCurrentScaleDevice(@Nullable final DeviceId currentScaleDeviceId)
+	{
+		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
+				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
+				: this;
 	}
 }

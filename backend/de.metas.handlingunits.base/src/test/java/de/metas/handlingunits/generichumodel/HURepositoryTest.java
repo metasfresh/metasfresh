@@ -39,8 +39,7 @@ import java.util.Properties;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -89,6 +88,7 @@ class HURepositoryTest
 
 		// setup HU packing instructions
 		uomRecord = newInstance(I_C_UOM.class);
+		uomRecord.setX12DE355("X12DE355");
 		saveRecord(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);

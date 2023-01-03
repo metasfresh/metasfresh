@@ -24,7 +24,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import java.math.BigDecimal;
@@ -157,7 +156,14 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
+		if (PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		{
+			copyBPartnerAndLocationDetailsFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
+		}
+		else
+		{
+			OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
+		}
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
@@ -165,6 +171,16 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.setValue(purchaseOrderLine, true); // (08091)
 
 		return purchaseOrderLine;
+	}
+
+	private void copyBPartnerAndLocationDetailsFromSalesToPurchaseOrderLine(
+			@NonNull final I_C_OrderLine salesOrderLine,
+			@NonNull final I_C_OrderLine purchaseOrderLine)
+	{
+		purchaseOrderLine.setC_BPartner_ID(salesOrderLine.getC_BPartner_ID());
+		purchaseOrderLine.setC_BPartner_Location_ID(salesOrderLine.getC_BPartner_Location_ID());
+		purchaseOrderLine.setC_BPartner_Location_Value_ID(salesOrderLine.getC_BPartner_Location_Value_ID());
+		purchaseOrderLine.setBPartnerAddress(salesOrderLine.getBPartnerAddress());
 	}
 
 	private void copyUserIdFromSalesToPurchaseOrderLine(

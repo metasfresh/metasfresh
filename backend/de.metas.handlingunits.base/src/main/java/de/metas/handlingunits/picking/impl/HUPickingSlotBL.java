@@ -349,11 +349,7 @@ public class HUPickingSlotBL
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
 
 		// Take it out from it's parent, if any
-		huTrxBL.setParentHU(huContext,
-				null, // parentHUItem
-				hu,
-				true // destroyOldParentIfEmptyStorage
-		);
+		huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
 
 		// If we have an after picking locator, set that to the HU (06902)
 		final I_M_PickingSlot pickingSlotEx = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);

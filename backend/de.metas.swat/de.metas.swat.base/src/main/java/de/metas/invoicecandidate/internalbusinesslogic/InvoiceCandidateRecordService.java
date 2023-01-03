@@ -9,6 +9,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -68,6 +69,7 @@ public class InvoiceCandidateRecordService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
@@ -126,6 +128,7 @@ public class InvoiceCandidateRecordService
 				.loadOrderedQtys();
 
 		final DeliveredData deliveredData = DeliveredDataLoader.builder()
+				.invoiceCandDAO(invoiceCandDAO)
 				.invoiceCandidateId(invoiceCandidateId)
 				.soTrx(soTrx)
 				.productId(productId)
@@ -248,7 +251,14 @@ public class InvoiceCandidateRecordService
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
+		if (icRecord.getQtyWithIssues_Effective().signum() != 0)
+		{
+			icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
+		}
+		else
+		{
+			icRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
+		}
 		icRecord.setQtyToInvoice(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
 
 		icRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQtyNotNull().toBigDecimal());

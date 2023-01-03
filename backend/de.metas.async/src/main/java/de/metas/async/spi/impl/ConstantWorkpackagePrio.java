@@ -22,26 +22,22 @@ package de.metas.async.spi.impl;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.util.Env;
-
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.compiere.util.Env;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO: check if we can do this better (using enum??)
- * 
- * @author ts
  *
  */
+@EqualsAndHashCode
 public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 {
 	private final String prio;
@@ -114,31 +110,6 @@ public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 	public String toString()
 	{
 		return "ConstantWorkpackagePrio[" + prio + "]";
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(prio)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		final ConstantWorkpackagePrio other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-		return new EqualsBuilder()
-				.append(prio, other.prio)
-				.isEqual();
 	}
 
 }

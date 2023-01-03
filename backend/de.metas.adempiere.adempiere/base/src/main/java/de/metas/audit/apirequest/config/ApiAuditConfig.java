@@ -22,6 +22,7 @@
 
 package de.metas.audit.apirequest.config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.rest_api.v2.JsonApiResponse;
@@ -37,10 +38,12 @@ import java.util.Optional;
 
 @Value
 @Builder
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE) // for snapshot testing
 public class ApiAuditConfig
 {
 	@NonNull
 	ApiAuditConfigId apiAuditConfigId;
+	
 	boolean active;
 
 	@NonNull
@@ -48,12 +51,15 @@ public class ApiAuditConfig
 
 	int seqNo;
 
+	boolean isBypassAudit;
+
 	boolean forceProcessedAsync;
 
 	int keepRequestDays;
 	int keepRequestBodyDays;
 	int keepResponseDays;
 	int keepResponseBodyDays;
+	int keepErroredRequestDays;
 
 	@Nullable
 	HttpMethod method;

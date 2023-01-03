@@ -1,12 +1,11 @@
 de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
   "steps" : {
-    "1. After WFProcess started - JsonWFProcess" : {
+    "1. AD_Language" : "de_DE",
+    "2. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -19,20 +18,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -42,11 +43,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -57,7 +59,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -88,7 +93,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -96,7 +101,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       },
       "id" : "picking-1000000"
     },
-    "2. After WFProcess started - PickingJob" : {
+    "3. After WFProcess started - PickingJob" : {
       "docStatus" : "Drafted",
       "header" : {
         "customerName" : "BPartner1",
@@ -119,34 +124,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -164,22 +192,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -203,8 +242,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -212,8 +264,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "pickingSlot" : null,
       "progress" : "NOT_STARTED"
     },
-    "3. After WFProcess started - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+    "4. After WFProcess started - HUs" : {
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -228,7 +280,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -238,13 +290,11 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "23" : "    HU[1000003]: VirtualPI HUStatus=A WH=warehouse [P1 x 225.000 Kg]",
       "24" : "      Item:Material"
     },
-    "4. After ABORT - JsonWFProcess" : {
+    "5. After ABORT - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -257,20 +307,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -280,11 +332,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -295,7 +348,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -326,7 +382,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -334,7 +390,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       },
       "id" : "picking-1000000"
     },
-    "5. After ABORT - PickingJob" : {
+    "6. After ABORT - PickingJob" : {
       "docStatus" : "Voided",
       "header" : {
         "customerName" : "BPartner1",
@@ -357,34 +413,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -402,22 +481,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -441,8 +531,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -450,8 +553,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "pickingSlot" : null,
       "progress" : "NOT_STARTED"
     },
-    "6. After ABORT - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+    "7. After ABORT - HUs" : {
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -466,7 +569,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -485,10 +588,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -501,20 +602,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -524,11 +627,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -539,7 +643,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -570,7 +677,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -601,34 +708,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -646,22 +776,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -685,8 +826,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -695,7 +849,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
       "progress" : "NOT_STARTED"
     },
     "3. After WFProcess started - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -710,7 +864,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -729,10 +883,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -745,20 +897,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -768,11 +922,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -783,7 +938,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -814,7 +972,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -845,34 +1003,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -890,22 +1071,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -929,8 +1121,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -939,7 +1144,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "3. After WFProcess started - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -954,7 +1159,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -967,10 +1172,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "4. After pick - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -983,7 +1186,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
                 "qtyPicked" : 25,
                 "qtyRejected" : 50,
@@ -992,7 +1198,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
                   "qtyPicked" : 25,
                   "qtyRejected" : 25,
@@ -1006,11 +1215,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1021,7 +1231,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -1052,7 +1265,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1083,15 +1296,27 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
@@ -1107,14 +1332,28 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "25 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -1130,6 +1369,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "50 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
@@ -1150,15 +1390,27 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -1172,8 +1424,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -1198,8 +1449,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -1208,7 +1472,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "DONE"
     },
     "6. After pick - HUs" : {
-      "1" : "1/5. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 50.000 Kg]",
+      "1" : "1/5. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 50.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (2 included HUs), HU_Qty=0/10",
       "3" : "    1/2. HU[1000006]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -1219,7 +1483,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "9" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "10" : "          Item:Material",
       "11" : "  Item:Aggregate",
-      "12" : "2/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 200.000 Kg]",
+      "12" : "2/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 200.000 Kg] [QR ...LU2]",
       "13" : "  Item:IncludedHU, HU_Qty=0/10",
       "14" : "  Item:Aggregate, Qty=8 (1 included HUs)",
       "15" : "    HU[1000003]: VirtualPI HUStatus=A WH=warehouse [P1 x 200.000 Kg]",
@@ -1240,10 +1504,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "7. After Complete - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -1256,7 +1518,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
                 "qtyPicked" : 25,
                 "qtyRejected" : 50,
@@ -1265,7 +1530,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
                   "qtyPicked" : 25,
                   "qtyRejected" : 25,
@@ -1279,11 +1547,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1294,7 +1563,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -1325,7 +1597,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1356,15 +1628,27 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
@@ -1380,14 +1664,28 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "25 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -1403,6 +1701,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   } ],
                   "qtyPicked" : "25 Kg",
                   "qtyRejected" : {
+                    "qty" : "50 Kg",
                     "reasonCode" : "damaged"
                   }
                 }
@@ -1423,15 +1722,27 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -1445,8 +1756,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -1471,8 +1781,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -1481,7 +1804,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "DONE"
     },
     "9. After Complete - HUs" : {
-      "1" : "1/5. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 50.000 Kg]",
+      "1" : "1/5. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 50.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (2 included HUs), HU_Qty=0/10",
       "3" : "    1/2. HU[1000006]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -1492,7 +1815,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "9" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "10" : "          Item:Material",
       "11" : "  Item:Aggregate",
-      "12" : "2/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 200.000 Kg]",
+      "12" : "2/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 200.000 Kg] [QR ...LU2]",
       "13" : "  Item:IncludedHU, HU_Qty=0/10",
       "14" : "  Item:Aggregate, Qty=8 (1 included HUs)",
       "15" : "    HU[1000003]: VirtualPI HUStatus=A WH=warehouse [P1 x 200.000 Kg]",
@@ -1519,10 +1842,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -1535,20 +1856,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -1558,11 +1881,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1573,7 +1897,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -1604,7 +1931,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1615,9 +1942,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "10. After pick 2 - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -1631,20 +1961,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -1654,11 +1986,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1669,7 +2002,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -1700,7 +2036,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1731,27 +2067,51 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -1775,8 +2135,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -1795,15 +2154,27 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -1817,8 +2188,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000003,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -1843,8 +2213,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -1856,7 +2239,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "DONE"
     },
     "12. After pick 2 - HUs" : {
-      "1" : "1/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 225.000 Kg]",
+      "1" : "1/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 225.000 Kg] [QR ...LU2]",
       "2" : "  Item:IncludedHU, HU_Qty=0/10",
       "3" : "  Item:Aggregate, Qty=9 (1 included HUs)",
       "4" : "    HU[1000003]: VirtualPI HUStatus=A WH=warehouse [P1 x 225.000 Kg]",
@@ -1881,9 +2264,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "13. After Complete - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -1897,20 +2283,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -1920,11 +2308,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 25,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 25
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -1935,7 +2324,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -1966,7 +2358,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -1997,27 +2389,51 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -2041,8 +2457,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -2061,15 +2476,27 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -2083,8 +2510,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000003,
                     "qtyPicked" : "25 Kg"
                   } ],
-                  "qtyPicked" : "25 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "25 Kg"
                 }
               }
             },
@@ -2109,8 +2535,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -2122,7 +2561,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "DONE"
     },
     "15. After Complete - HUs" : {
-      "1" : "1/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 225.000 Kg]",
+      "1" : "1/5. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 225.000 Kg] [QR ...LU2]",
       "2" : "  Item:IncludedHU, HU_Qty=0/10",
       "3" : "  Item:Aggregate, Qty=9 (1 included HUs)",
       "4" : "    HU[1000003]: VirtualPI HUStatus=A WH=warehouse [P1 x 225.000 Kg]",
@@ -2167,34 +2606,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2212,22 +2674,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2251,8 +2724,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -2261,7 +2747,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "3. After WFProcess started - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -2276,7 +2762,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -2289,9 +2775,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "4. After Scan PickingSlot - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2305,20 +2794,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2328,11 +2819,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2343,7 +2835,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -2374,7 +2869,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -2405,34 +2900,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2450,22 +2968,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2489,8 +3018,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -2502,7 +3044,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "6. After Scan PickingSlot - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -2517,7 +3059,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -2530,9 +3072,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "7. After pick 1 - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2546,20 +3091,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2569,11 +3116,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2584,7 +3132,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -2615,7 +3166,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -2646,27 +3197,51 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -2690,8 +3265,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -2710,22 +3284,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -2749,8 +3334,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -2762,7 +3360,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "IN_PROGRESS"
     },
     "9. After pick 1 - HUs" : {
-      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "2" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "3" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -2793,10 +3391,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -2809,20 +3405,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2832,11 +3430,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2847,7 +3446,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -2878,7 +3480,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -2889,9 +3491,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "10. After unpick - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2905,20 +3510,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -2928,11 +3535,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -2943,7 +3551,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -2974,7 +3585,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3005,34 +3616,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3050,22 +3684,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3089,8 +3734,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -3102,7 +3760,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "12. After unpick - HUs" : {
-      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "2" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "3" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -3127,10 +3785,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "13. After ABORT - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
-        "componentProps" : {
-          "barcodeCaption" : null
-        },
+        "caption" : "Kommissionierplatz scannen",
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -3143,20 +3799,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -3166,11 +3824,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -3181,7 +3840,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -3212,7 +3874,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3243,34 +3905,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3288,22 +3973,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3327,8 +4023,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -3337,7 +4046,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "15. After ABORT - HUs" : {
-      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "2" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "3" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -3382,34 +4091,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3427,22 +4159,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3466,8 +4209,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -3476,7 +4232,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "3. After WFProcess started - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -3491,7 +4247,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -3504,9 +4260,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "4. After Scan PickingSlot - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3520,20 +4279,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -3543,11 +4304,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -3558,7 +4320,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -3589,7 +4354,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3620,34 +4385,57 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3665,22 +4453,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3704,8 +4503,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -3717,7 +4529,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "NOT_STARTED"
     },
     "6. After Scan PickingSlot - HUs" : {
-      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg]",
+      "1" : "1/2. HU[1000000]: Pallet HUStatus=A WH=warehouse [P1 x 75.000 Kg] [QR ...LU1]",
       "2" : "  Item:IncludedHU (3 included HUs), HU_Qty=0/10",
       "3" : "    1/3. HU[1000004]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",
@@ -3732,7 +4544,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "13" : "        HU[1000009]: VirtualPI HUStatus=A WH=warehouse [P1 x 25.000 Kg] [PickingJobStepId(repoId=1000000)]",
       "14" : "          Item:Material",
       "15" : "  Item:Aggregate",
-      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "16" : "2/2. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "17" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "18" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "19" : "      Item:Material (1 included HUs)",
@@ -3745,9 +4557,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     "7. After pick 1 - JsonWFProcess" : {
       "activities" : [ {
         "activityId" : "A1",
-        "caption" : "Scan picking slot",
+        "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
-          "barcodeCaption" : "1"
+          "currentValue" : {
+            "caption" : "1",
+            "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3761,20 +4576,22 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "steps" : [ {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000000",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU1\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU1"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 75.000,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 75.000
               },
               "pickFromAlternatives" : {
                 "1000000" : {
                   "alternativeId" : "1000000",
-                  "huBarcode" : "1000002",
+                  "huQRCode" : {
+                    "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                    "displayable" : "LU2"
+                  },
                   "locatorName" : "wh_loc",
-                  "qtyPicked" : 0,
-                  "qtyRejected" : null,
-                  "qtyRejectedReasonCode" : null
+                  "qtyPicked" : 0
                 }
               },
               "pickingStepId" : "1000000",
@@ -3784,11 +4601,12 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             }, {
               "mainPickFrom" : {
                 "alternativeId" : "MAIN",
-                "huBarcode" : "1000002",
+                "huQRCode" : {
+                  "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+                  "displayable" : "LU2"
+                },
                 "locatorName" : "wh_loc",
-                "qtyPicked" : 0,
-                "qtyRejected" : null,
-                "qtyRejectedReasonCode" : null
+                "qtyPicked" : 0
               },
               "pickFromAlternatives" : { },
               "pickingStepId" : "1000001",
@@ -3799,7 +4617,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "uom" : "Kg"
           } ],
           "pickFromAlternatives" : [ {
-            "huBarcode" : "1000002",
+            "huQRCode" : {
+              "code" : "HU#1#{\"id\":\"QR-LU2\",\"packingInfo\":{\"huUnitType\":\"LU\",\"packingInstructionsId\":1000001,\"caption\":\"Pallet\"},\"product\":{\"id\":1000000,\"code\":\"P1\",\"name\":\"P1\"},\"attributes\":[]}",
+              "displayable" : "LU2"
+            },
             "id" : "1000000",
             "locatorName" : "wh_loc",
             "qtyAvailable" : 225.000,
@@ -3830,7 +4651,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "value" : "BPartner1"
         }, {
           "caption" : "PreparationDate",
-          "value" : "09.11.2021 08:58:52"
+          "value" : "09.11.2021, 08:58:52"
         }, {
           "caption" : "DeliveryToAddress",
           "value" : "deliveryRenderedAddress"
@@ -3861,27 +4682,51 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "steps" : [ {
           "id" : 1000000,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "1000000" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "1000000",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               },
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000000",
-                  "id" : 1000000
+                  "id" : 1000000,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU1",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
@@ -3905,8 +4750,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                     "pickingCandidateId" : 1000002,
                     "qtyPicked" : "25.000 Kg"
                   } ],
-                  "qtyPicked" : "75.000 Kg",
-                  "qtyRejected" : null
+                  "qtyPicked" : "75.000 Kg"
                 }
               }
             },
@@ -3925,22 +4769,33 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         }, {
           "id" : 1000001,
           "packToSpec" : {
-            "genericPackingInstructionsId" : null,
             "tuPackingInstructionsId" : 1000000
           },
           "pickFroms" : {
             "map" : {
               "MAIN" : {
                 "pickFromHU" : {
-                  "barcode" : "1000002",
-                  "id" : 1000002
+                  "id" : 1000002,
+                  "qrCode" : {
+                    "attributes" : [ ],
+                    "id" : "QR-LU2",
+                    "packingInfo" : {
+                      "caption" : "Pallet",
+                      "huUnitType" : "LU",
+                      "packingInstructionsId" : 1000001
+                    },
+                    "product" : {
+                      "code" : "P1",
+                      "id" : 1000000,
+                      "name" : "P1"
+                    }
+                  }
                 },
                 "pickFromKey" : "MAIN",
                 "pickFromLocator" : {
                   "caption" : "wh_loc",
                   "id" : "1000000_1000000"
-                },
-                "pickedTo" : null
+                }
               }
             },
             "progress" : "NOT_STARTED",
@@ -3964,8 +4819,21 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "id" : "1000000_1000000"
         },
         "pickFromHU" : {
-          "barcode" : "1000002",
-          "id" : 1000002
+          "id" : 1000002,
+          "qrCode" : {
+            "attributes" : [ ],
+            "id" : "QR-LU2",
+            "packingInfo" : {
+              "caption" : "Pallet",
+              "huUnitType" : "LU",
+              "packingInstructionsId" : 1000001
+            },
+            "product" : {
+              "code" : "P1",
+              "id" : 1000000,
+              "name" : "P1"
+            }
+          }
         },
         "productId" : 1000000,
         "qtyAvailable" : "225.000 Kg"
@@ -3977,7 +4845,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "progress" : "IN_PROGRESS"
     },
     "9. After pick 1 - HUs" : {
-      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg]",
+      "1" : "1/4. HU[1000002]: Pallet HUStatus=A WH=warehouse [P1 x 250.000 Kg] [QR ...LU2]",
       "2" : "  Item:IncludedHU (1 included HUs), HU_Qty=0/10",
       "3" : "    HU[1000010]: TU1 HUStatus=A WH=warehouse [P1 x 25.000 Kg]",
       "4" : "      Item:Material (1 included HUs)",

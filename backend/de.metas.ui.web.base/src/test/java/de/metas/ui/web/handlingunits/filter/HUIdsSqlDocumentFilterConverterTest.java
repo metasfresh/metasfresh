@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class HUIdsSqlDocumentFilterConverterTest
 {
@@ -75,7 +75,7 @@ public class HUIdsSqlDocumentFilterConverterTest
 		final FilterSql result = converters.getSql(
 				filters,
 				SqlOptions.usingTableAlias("dummyTableAlias"),
-				SqlDocumentFilterConverterContext.EMPTY);
+				SqlDocumentFilterConverterContext.builder().build());
 		System.out.println("Got result " + result);
 
 		return assertThat(result)

@@ -14,6 +14,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
@@ -100,6 +101,20 @@ public final class PPOrderCreatedHandler
 
 		updateMainData(ppOrderEvent);
 
+		final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
+		final ProductionDetail headerProductionDetail = ProductionDetail.cast(headerCandidate.getBusinessCaseDetail());
+
+		PPOrderLineCandidatesCreateCommand.builder()
+				.candidateChangeService(candidateChangeService)
+				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
+				.ppOrder(ppOrderEvent.getPpOrder())
+				.headerDemandDetail(headerDemandDetail)
+				.groupId(headerCandidate.getGroupId())
+				.headerCandidateSeqNo(headerCandidate.getSeqNo())
+				.advised(headerProductionDetail.getAdvised())
+				.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
+				.create();
+
 		return headerCandidate.getGroupId();
 	}
 
@@ -183,8 +198,14 @@ public final class PPOrderCreatedHandler
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.
 				ofShipmentScheduleId(ppOrderData.getShipmentScheduleId());
 
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(ppOrderData.getProductDescriptor().getProductId())
+				.warehouseId(ppOrderData.getWarehouseId())
+				.build();
+
 		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 

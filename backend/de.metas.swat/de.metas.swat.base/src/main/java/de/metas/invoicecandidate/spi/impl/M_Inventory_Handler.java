@@ -1,17 +1,6 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -21,6 +10,16 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -53,15 +52,15 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
@@ -89,7 +88,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}

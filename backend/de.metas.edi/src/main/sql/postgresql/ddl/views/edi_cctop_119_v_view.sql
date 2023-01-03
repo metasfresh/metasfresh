@@ -1,14 +1,13 @@
 -- View: EDI_Cctop_119_v
 
--- DROP VIEW IF EXISTS EDI_Cctop_119_v;
-
+DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID,
        lookup.C_Invoice_ID       AS EDI_Cctop_INVOIC_v_ID,
        lookup.M_InOut_ID,
        pl.C_BPartner_Location_ID,
-       pl.GLN,
+       REGEXP_REPLACE(pl.GLN, '\s+$', '') AS GLN,
        pl.Phone,
        pl.Fax,
        p.Name,
@@ -16,6 +15,7 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        p.Value,
        p.VATaxID,
        lookup.Vendor_ReferenceNo AS ReferenceNo,
+       lookup.SiteName,
        lookup.Setup_Place_No,
        CASE lookup.Type_V
            WHEN 'ship'::TEXT THEN 'DP'::TEXT
@@ -36,7 +36,8 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        l.CreatedBy,
        l.Updated,
        l.UpdatedBy,
-       l.IsActive
+       l.IsActive,
+       CASE lookup.Type_V WHEN 'vend'::text THEN u.Name END AS Contact
 FROM (
          SELECT union_lookup.*
          FROM (
@@ -46,7 +47,9 @@ FROM (
                                   i.C_Invoice_ID,
                                   0::INTEGER   AS M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
-                                  pl_cust.Setup_Place_No
+                                  pl_cust.bpartnername AS SiteName,
+                                  pl_cust.Setup_Place_No,
+                                  i.CreatedBy
                   FROM C_Invoice i
                            LEFT JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
@@ -67,7 +70,9 @@ FROM (
                          i.C_Invoice_ID,
                          0::INTEGER         AS M_InOut_ID,
                          p_cust.ReferenceNo AS Vendor_ReferenceNo,
-                         pl_vend.Setup_Place_No
+                         pl_vend.bpartnername AS SiteName,
+                         pl_vend.Setup_Place_No,
+                         i.CreatedBy
                   FROM C_Invoice i
                            JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
@@ -81,7 +86,9 @@ FROM (
                                   i.C_Invoice_ID,
                                   0::INTEGER   AS M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
-                                  pl_ship.Setup_Place_No
+                                  pl_ship.bpartnername AS SiteName,
+                                  pl_ship.Setup_Place_No,
+                                  i.CreatedBy
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
@@ -114,7 +121,9 @@ FROM (
                          i.C_Invoice_ID,
                          0::INTEGER   AS M_InOut_ID,
                          NULL::TEXT   AS Vendor_ReferenceNo,
-                         pl_bill.Setup_Place_No
+                         pl_bill.bpartnername AS SiteName,
+                         pl_bill.Setup_Place_No,
+                         i.CreatedBy
                   FROM C_Invoice i
                            LEFT JOIN C_BPartner_Location pl_bill ON pl_bill.C_BPartner_Location_ID = i.C_BPartner_Location_ID
                        --
@@ -126,7 +135,9 @@ FROM (
                                   i.C_Invoice_ID,
                                   s.M_InOut_ID,
                                   NULL::TEXT   AS Vendor_ReferenceNo,
-                                  pl_snum.Setup_Place_No
+                                  pl_snum.bpartnername AS SiteName,
+                                  pl_snum.Setup_Place_No,
+                                  i.CreatedBy
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
@@ -154,6 +165,7 @@ FROM (
          LEFT JOIN C_BPartner p ON p.C_BPartner_ID = pl.C_BPartner_ID
          LEFT JOIN C_Location l ON l.C_Location_ID = pl.C_Location_ID
          LEFT JOIN C_Country c ON c.C_Country_ID = l.C_Country_ID
+         LEFT JOIN AD_User u ON u.AD_User_ID = lookup.CreatedBy
 WHERE TRUE
   AND p.VATaxID IS NOT NULL
   AND (l.Address1 IS NOT NULL OR l.Address2 IS NOT NULL)

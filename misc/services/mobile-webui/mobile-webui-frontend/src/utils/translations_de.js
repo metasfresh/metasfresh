@@ -1,20 +1,31 @@
 const translations = {
   appName: 'metasfresh mobile',
+  error: {
+    PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    network: {
+      noResponse: 'Verbindung Fehler',
+    },
+  },
   general: {
     Product: 'Produkt',
     Locator: 'Lagerort',
-    Barcode: 'Barcode',
+    QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
+    QtyToPick_Total: 'Pick Menge (total)',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
+    QtyRejected: 'Menge verworfen',
     DropToLocator: 'Ziel Lagerort',
-    PleaseTryAgain: 'Oops, das sollte nicht passieren',
     cancelText: 'Abbrechen',
+    scanQRCode: 'QR scannen',
+    Back: 'Zurück',
+    Home: 'Home',
   },
   login: {
     submitButton: 'Login',
   },
+  logout: 'Abmelden',
   mobileui: {
     manufacturing: {
       appName: 'Produktion',
@@ -26,17 +37,23 @@ const translations = {
       appName: 'Bereitstellung',
     },
   },
+  components: {
+    BarcodeScannerComponent: {
+      scanTextPlaceholder: 'scan...',
+    },
+  },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
-    abortText: 'Verlassen',
     picking: {
       PickingLine: 'Pick Zeile',
-      scanHUBarcode: 'Scan HU',
+      PickHU: 'HU kommissionieren',
+      scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      invalidQtyPicked: 'Falsche Menge gepickt',
+      qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
+      notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',
       unPickBtn: 'Rückgängig',
@@ -49,12 +66,12 @@ const translations = {
       picked: 'Ist',
       scanHU: 'Scan HU',
       scanLocator: 'Scan Ziel Lagerort',
-      invalidLocatorBarcode: 'Invalid locator barcode',
-      invalidQtyToMove: 'Invalid qty to move',
+      invalidLocatorQRCode: 'Lagerort QR ungültig',
+      invalidQtyToMove: 'Bewegungsmenge ungültig',
     },
     confirmButton: {
       default: {
-        caption: 'Confirm',
+        caption: 'Bestätigen',
         promptQuestion: 'Bist du sicher?',
         yes: 'Ja',
         no: 'Nein',
@@ -66,20 +83,30 @@ const translations = {
       ProductName: 'Produkt',
       target: 'Soll',
       picked: 'Ist',
+      generateHUQRCodes: {
+        packing: 'Verpackung',
+        qtyTUs: 'Anzahl TUs',
+        print: 'Drucken',
+      },
       issues: {
         target: 'Zuf. Soll',
         picked: 'Ist',
-        qtyToIssue: 'Menge Soll',
+        qtyToIssueTarget: 'Menge Soll',
+        qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        step: {
+          name: 'HU einfüllen',
+        },
       },
       receipts: {
-        pickPromptTitle: 'Quantity to receive',
-        receiveTarget: 'Receive target',
-        receiveQty: 'Receive quantity',
-        qtyBtnCaption: 'Received quantity',
-        existingLU: 'Existing HU',
-        newHU: 'New HU',
+        qtyToReceiveTarget: 'Sollmenge',
+        qtyReceived: 'Produziert',
+        qtyToReceive: 'noch offen',
+        btnReceiveTarget: 'Gebinde',
+        btnReceiveProducts: 'Produzieren',
+        existingLU: 'Scan',
+        newHU: 'Neues Gebinde',
         target: 'Empf. Soll',
         picked: 'Ist',
       },

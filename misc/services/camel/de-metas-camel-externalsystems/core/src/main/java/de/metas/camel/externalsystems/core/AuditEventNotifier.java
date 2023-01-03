@@ -46,11 +46,11 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TRACE_ID;
-import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.ERROR_WRITE_TO_ADISSUE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.file;
 
 public class AuditEventNotifier extends EventNotifierSupport

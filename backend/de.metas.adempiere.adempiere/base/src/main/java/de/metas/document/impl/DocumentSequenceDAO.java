@@ -1,34 +1,18 @@
 package de.metas.document.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.JavaClassId;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -49,19 +33,12 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.document.DocTypeSequenceMap;
-import de.metas.document.DocumentSequenceInfo;
-import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.document.sequenceno.CustomSequenceNoProvider;
-import de.metas.javaclasses.IJavaClassBL;
-import de.metas.javaclasses.JavaClassId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class DocumentSequenceDAO implements IDocumentSequenceDAO
 {
@@ -75,7 +52,15 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			+ " WHERE " + I_AD_Sequence.COLUMNNAME_AD_Sequence_ID + "=?";
 	private static final String SQL_AD_Sequence_No_CurrentNext = "SELECT " + I_AD_Sequence_No.COLUMNNAME_CurrentNext
 			+ " FROM " + I_AD_Sequence_No.Table_Name
-			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND " + I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=?";
+			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarMonth + "= '1'";
+
+	private static final String SQL_AD_SEQUENCE_NO_BY_YEAR_MONTH = "SELECT " + I_AD_Sequence_No.COLUMNNAME_CurrentNext
+			+ " FROM " + I_AD_Sequence_No.Table_Name
+			+ " WHERE " + I_AD_Sequence_No.COLUMNNAME_AD_Sequence_ID + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=? AND "
+			+ I_AD_Sequence_No.COLUMNNAME_CalendarMonth + "=?";
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#SequenceName")
@@ -135,6 +120,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.decimalPattern(record.getDecimalPattern())
 				.autoSequence(record.isAutoSequence())
 				.startNewYear(record.isStartNewYear())
+				.startNewMonth(record.isStartNewMonth())
 				.dateColumn(record.getDateColumn())
 				//
 				.customSequenceNoProvider(createCustomSequenceNoProviderOrNull(record))
@@ -190,6 +176,22 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		final String calendarYear = sdf.format(date);
 
 		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_AD_Sequence_No_CurrentNext, AD_Sequence_ID, calendarYear);
+	}
+
+	@Override
+	public String retrieveDocumentNoByYearAndMonth(final int AD_Sequence_ID, java.util.Date date)
+	{
+		if (date == null)
+		{
+			date = new Date();
+		}
+		final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+		final String calendarYear = yearFormat.format(date);
+
+		final SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
+		final String calendarMonth = monthFormat.format(date);
+
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_AD_SEQUENCE_NO_BY_YEAR_MONTH, AD_Sequence_ID, calendarYear, calendarMonth);
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -369,16 +368,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	public I_C_Order assignAsyncBatchId(@NonNull final OrderId orderId, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Order orderRecord = getById(orderId);
-
 		orderRecord.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
 		save(orderRecord);
 
 		return orderRecord;
 	}
 
-	@Nullable
-	private I_C_Order getOrderByDocumentNumberQuery(@NonNull final OrderQuery query)
+	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);

@@ -406,7 +406,7 @@ public interface I_AD_Process
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsApplySecuritySettings.
+	 * Set Apply Security Settings.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -415,7 +415,7 @@ public interface I_AD_Process
 	void setIsApplySecuritySettings (boolean IsApplySecuritySettings);
 
 	/**
-	 * Get IsApplySecuritySettings.
+	 * Get Apply Security Settings.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -586,6 +586,27 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_IsTranslateExcelHeaders = new ModelColumn<>(I_AD_Process.class, "IsTranslateExcelHeaders", null);
 	String COLUMNNAME_IsTranslateExcelHeaders = "IsTranslateExcelHeaders";
+
+	/**
+	 * Set Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateExportDate (boolean IsUpdateExportDate);
+
+	/**
+	 * Get Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateExportDate();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
+	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
 
 	/**
 	 * Set IsUseBPartnerLanguage.

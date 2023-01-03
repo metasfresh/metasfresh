@@ -26,6 +26,7 @@ package de.metas.async.processor.impl;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.async.processor.QueueProcessorId;
 
 /**
  * Null implementation of {@link IQueueProcessorsExecutor}. Mainly, it does nothing.
@@ -43,21 +44,12 @@ public final class NullQueueProcessorsExecutor implements IQueueProcessorsExecut
 	}
 
 	@Override
-	public boolean removeQueueProcessor(int queueProcessorId)
+	public void removeQueueProcessor(final int queueProcessorId)
 	{
-		return true;
 	}
 
 	@Override
-	public boolean removeAllQueueProcessor()
-	{
-		// NOTE: don't throw exception because there are some BLs which are not expecting that.
-		// On the other hand there is no harm done, we got nothing anyways
-		return true; // succes
-	}
-
-	@Override
-	public void addQueueProcessor(I_C_Queue_Processor processorDef)
+	public void addQueueProcessor(final I_C_Queue_Processor processorDef)
 	{
 		// nothing
 	}
@@ -69,7 +61,7 @@ public final class NullQueueProcessorsExecutor implements IQueueProcessorsExecut
 	}
 
 	@Override
-	public IQueueProcessor getQueueProcessor(int queueProcessorId)
+	public IQueueProcessor getQueueProcessor(final QueueProcessorId queueProcessorId)
 	{
 		// nothing
 		return null;

@@ -8,7 +8,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
-import com.google.common.util.concurrent.AtomicDouble;
 import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -221,18 +220,18 @@ public class EventBusFactory implements IEventBusFactory
 			@NonNull final Topic topic,
 			@NonNull final IEventListener listener)
 	{
-		//
-		// Add the listener to our global listeners multimap.
+		// Register the listener to EventBus
+		getEventBus(topic).subscribe(listener);
+
+		// Add the listener to our global listeners-multimap.
+		// Note that getEventBus(topic) creates the bus on the fly if needed **and subscribes all global listeners to it**
+		// Therefore we need to add this listener to the global map *after* having gotten and possibly on-the-fly-created the event bus.
 		if (!globalEventListeners.put(topic, listener))
 		{
 			// listener already exists => do nothing
 			return;
 		}
 		logger.info("Registered global listener to {}: {}", topic, listener);
-
-		//
-		// Also register the listener to EventBus
-		getEventBus(topic).subscribe(listener);
 	}
 
 	@Override

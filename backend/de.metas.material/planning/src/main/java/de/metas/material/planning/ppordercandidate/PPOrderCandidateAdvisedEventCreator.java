@@ -24,6 +24,7 @@ package de.metas.material.planning.ppordercandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
@@ -86,7 +87,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 			final PPOrderCandidateAdvisedEventBuilder eventBuilder = PPOrderCandidateAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
-					.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
+					.eventDescriptor(EventDescriptor.ofEventDescriptor(supplyRequiredDescriptor.getEventDescriptor()))
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
@@ -111,11 +112,11 @@ public class PPOrderCandidateAdvisedEventCreator
 	private Quantity extractMaxQuantityPerOrder(@NonNull final I_PP_Product_Planning productPlanning)
 	{
 		final Quantity maxQtyPerOrder;
-		if (productPlanning.getMaxManufacturedQtyPerOrder().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID() > 0)
+		if (productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID() > 0)
 		{
 			maxQtyPerOrder = Quantitys.create(
-					productPlanning.getMaxManufacturedQtyPerOrder(),
-					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID()));
+					productPlanning.getMaxManufacturedQtyPerOrderDispo(),
+					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID()));
 		}
 		else
 		{

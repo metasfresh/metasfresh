@@ -4,12 +4,22 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -18,9 +28,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
@@ -31,6 +46,8 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.model.X_PP_Product_BOMLine;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -52,6 +69,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final AtomicReference<ProductBOMVersionsDAO> productBOMVersionsDAO = new AtomicReference<>();
 
@@ -272,6 +290,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setC_UOM_ID(request.getUomId().getRepoId());
 		bomRecord.setPP_Product_BOMVersions_ID(bomVersionsId.getRepoId());
 		bomRecord.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
+		bomRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(request.getAttributeSetInstanceId()));
+
+		bomRecord.setDateDoc(TimeUtil.asTimestamp(Instant.now()));
+		bomRecord.setC_DocType_ID(getBOMDocTypeId(orgId).getRepoId());
+		bomRecord.setDocStatus(DocStatus.Drafted.getCode());
+		bomRecord.setDocAction(X_PP_Product_BOM.DOCACTION_Complete);
 
 		if (request.getIsActive() != null)
 		{
@@ -286,6 +310,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 		if (request.getBomType() != null)
 		{
 			bomRecord.setBOMType(request.getBomType().getCode());
+		}
+
+		if (request.getResourceId() != null)
+		{
+			bomRecord.setS_PreferredResource_ID(request.getResourceId().getRepoId());
 		}
 
 		saveRecord(bomRecord);
@@ -317,18 +346,23 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomLineRecord.setPP_Product_BOM_ID(createBOMLineRequest.getBomId().getRepoId());
 		bomLineRecord.setM_Product_ID(line.getProductId().getRepoId());
 		bomLineRecord.setC_UOM_ID(line.getQty().getUomId().getRepoId());
-		bomLineRecord.setQtyBOM(line.getQty().toBigDecimal());
 		bomLineRecord.setComponentType(line.getComponentType().getCode());
 		bomLineRecord.setValidFrom(TimeUtil.asTimestamp(createBOMLineRequest.getValidFrom()));
+		bomLineRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(line.getAttributeSetInstanceId()));
 
 		if (createBOMLineRequest.getIsActive() != null)
 		{
 			bomLineRecord.setIsActive(createBOMLineRequest.getIsActive());
 		}
 
-		if (line.getIsQtyPercentage() != null)
+		if (line.getIsQtyPercentage() != null && Boolean.TRUE.equals(line.getIsQtyPercentage()))
 		{
 			bomLineRecord.setIsQtyPercentage(line.getIsQtyPercentage());
+			bomLineRecord.setQtyBatch(line.getQty().toBigDecimal());
+		}
+		else
+		{
+			bomLineRecord.setQtyBOM(line.getQty().toBigDecimal());
 		}
 
 		if (line.getIssueMethod() != null)
@@ -344,6 +378,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 		if (line.getLine() != null)
 		{
 			bomLineRecord.setLine(line.getLine());
+		}
+
+		if (line.getHelp() != null)
+		{
+			bomLineRecord.setHelp(line.getHelp());
 		}
 
 		saveRecord(bomLineRecord);
@@ -364,6 +403,52 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return getLatestBOMRecordByVersion(bomVersionsId, null)
 				.map(I_PP_Product_BOM::getPP_Product_BOM_ID)
 				.map(ProductBOMId::ofRepoId);
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_PP_Product_BOM> getLatestBOMRecordByVersionId(final @NonNull ProductBOMVersionsId bomVersionsId)
+	{
+		return getLatestBOMRecordByVersion(bomVersionsId, null);
+	}
+
+	/**
+	 * @param docStatus if set, then more recent versions without the given docstatus are skipped, and the returned version - if any - has this docStatus.
+	 */
+	@Override
+	@NonNull
+	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
+	{
+		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = queryBL
+				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID, bomVersion.getPP_Product_BOM_ID())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOMVersions_ID, bomVersion.getPP_Product_BOMVersions_ID())
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, bomVersion.getValidFrom());
+
+		if (docStatus != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, docStatus.getCode());
+		}
+
+		return queryBuilder
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.create()
+				.firstOptional(I_PP_Product_BOM.class);
+	}
+
+	@Override
+	public boolean isComponent(final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Component
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Variant)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
 	}
 
 	@NonNull
@@ -398,6 +483,47 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return Optionals.firstPresentOfSuppliers(
 				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.CurrentActive),
 				() -> getLatestBOMRecordByVersion(bomVersionsId, BOMType.MakeToOrder));
+	}
+
+	@NonNull
+	private DocTypeId getBOMDocTypeId(@NonNull final OrgId orgId)
+	{
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.adOrgId(orgId.getRepoId())
+				.docBaseType(X_C_DocType.DOCBASETYPE_BOMFormula)
+				.adClientId(Env.getAD_Client_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query);
+	}
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		if (!bomLine.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(bomLine.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(bomLine.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(bomLine.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.create(bomLine.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
 	}
 
 	@Value

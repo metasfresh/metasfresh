@@ -494,6 +494,27 @@ public interface I_PP_Order
 	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
 
 	/**
+	 * Set Current Scale DeviceId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrentScaleDeviceId (@Nullable java.lang.String CurrentScaleDeviceId);
+
+	/**
+	 * Get Current Scale DeviceId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrentScaleDeviceId();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CurrentScaleDeviceId = new ModelColumn<>(I_PP_Order.class, "CurrentScaleDeviceId", null);
+	String COLUMNNAME_CurrentScaleDeviceId = "CurrentScaleDeviceId";
+
+	/**
 	 * Set DateConfirm.
 	 *
 	 * <br>Type: DateTime
@@ -1074,6 +1095,27 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_PP_Order.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "M_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
 	 * Set Locator.
@@ -1805,6 +1847,31 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_ScheduleType = new ModelColumn<>(I_PP_Order.class, "ScheduleType", null);
 	String COLUMNNAME_ScheduleType = "ScheduleType";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Serien-Nr..

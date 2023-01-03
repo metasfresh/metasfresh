@@ -10,10 +10,12 @@ import de.metas.costing.IProductCostingBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -41,11 +43,14 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,6 +64,7 @@ public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -529,6 +535,28 @@ public final class ProductBL implements IProductBL
 		}
 
 		return productsRepo.retrieveSupplierApprovalNorms(productId);
+	}
+
+	@Override
+	public boolean isDiscontinuedAt(
+			@NonNull final I_M_Product productRecord,
+			@NonNull final LocalDate targetDate)
+	{
+		if (!productRecord.isDiscontinued())
+		{
+			return false;
+		}
+
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
+
+		return productRecord.getDiscontinuedFrom() == null
+				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
+	{
+		return productsRepo.getIssuingToleranceSpec(productId);
 	}
 
 }

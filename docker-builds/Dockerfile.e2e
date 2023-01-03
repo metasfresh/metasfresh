@@ -1,0 +1,34 @@
+# see https://github.com/cypress-io/cypress-docker-images
+FROM cypress/included:9.7.0
+
+RUN npm install -g @testmo/testmo-cli
+
+WORKDIR /e2e
+COPY e2e/package.json .
+RUN npm install
+
+COPY e2e/ .
+RUN mv cypress/config.js_template_compose cypress/config.js
+
+COPY docker-builds/e2e/compose.yml /compose.yml
+
+ARG REFNAME=local
+ENV REFNAME=$REFNAME
+ENV CYPRESS_baseUrl=http://webui:80
+
+SHELL ["/bin/bash", "-c"]
+
+ENTRYPOINT if [[ -f "/run/secrets/mysecret" ]] ;\
+    then \
+        TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
+        testmo automation:run:submit \
+        --instance https://metasfresh.testmo.net \
+        --project-id 1 \
+        --name "New test run" \
+        --source "cypress-tests-github" \
+        --tags $REFNAME \
+        --results cypress/results/*.xml \
+        -- cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json ;\
+    else \
+        cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json ;\
+    fi

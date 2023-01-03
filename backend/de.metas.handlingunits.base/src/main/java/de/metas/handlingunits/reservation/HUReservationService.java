@@ -3,6 +3,7 @@ package de.metas.handlingunits.reservation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -325,10 +326,16 @@ public class HUReservationService
 		return huReservationRepository.getEntriesByVHUIds(vhuIds);
 	}
 
+	public boolean isAnyOfVHUIdsReserved(@NonNull final Collection<HuId> vhuIds)
+	{
+		return !huReservationRepository.getEntriesByVHUIds(vhuIds).isEmpty();
+	}
+
 	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "AvailableHUQueryBuilder")
 	private IHUQueryBuilder createHUQuery(
 			@NonNull final WarehouseId warehouseId,
 			@NonNull final ProductId productId,
+			@NonNull final BPartnerId bpartnerId,
 			@Nullable final AttributeSetInstanceId asiId,
 			@Nullable final HUReservationDocRef reservedToDocumentOrNotReservedAtAll)
 	{
@@ -344,8 +351,8 @@ public class HUReservationService
 		if (asiId != null)
 		{
 			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
-			// TODO: shall we consider only storage relevant attributes?
-			huQuery.addOnlyWithAttributes(attributeSet);
+
+			huQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());
 		}
 

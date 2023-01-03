@@ -1,22 +1,30 @@
 package org.eevolution.api.impl;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_GL_DistributionLine;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
@@ -58,9 +66,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
 		final IQueryBuilder<I_PP_Order> queryBuilder = toSqlQueryBuilder(ManufacturingOrderQuery.builder()
-				.warehouseId(warehouseId)
-				.onlyCompleted(true)
-				.build());
+																				 .warehouseId(warehouseId)
+																				 .onlyCompleted(true)
+																				 .build());
 
 		return queryBuilder
 				.orderBy(I_PP_Order.COLUMN_DocumentNo)
@@ -80,15 +88,27 @@ public class PPOrderDAO implements IPPOrderDAO
 		return toSqlQueryBuilder(query).create().iterateAndStream();
 	}
 
+	@Override
+	public int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder)
+	{
+		final int lastSeqNo = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order.class, ppOrder)
+				.addEqualsFilter(I_PP_Order.COLUMN_DateOrdered, ppOrder.getDateOrdered(), DateTruncQueryFilterModifier.DAY)
+				.create()
+				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
+
+		return SeqNo.ofInt(lastSeqNo).next().toInt();
+	}
+
 	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)
 	{
 		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
 				.addOnlyActiveRecordsFilter();
 
 		// Plant
-		if (query.getPlantId() != null)
+		if (!query.getOnlyPlantIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getPlantId());
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantIds());
 		}
 
 		// Warehouse
@@ -114,7 +134,14 @@ public class PPOrderDAO implements IPPOrderDAO
 		}
 		if (query.getCanBeExportedFrom() != null)
 		{
-			queryBuilder.addCompareFilter(I_PP_Order.COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+			queryBuilder.addCompareFilter(I_PP_Order.COLUMNNAME_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+		}
+
+		//
+		// DatePromised
+		if (query.getDatePromisedDay() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
 		//
@@ -222,5 +249,28 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addNotEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, X_PP_Order.DOCSTATUS_Closed)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getPPOrderAllocations(@NonNull final PPOrderId ppOrderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId.getRepoId())
+				.create()
+				.listImmutable(I_PP_OrderCandidate_PP_Order.class);
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_Order> getByProductBOMId(@NonNull final ProductBOMId productBOMId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
+				.create()
+				.listImmutable(I_PP_Order.class);
 	}
 }

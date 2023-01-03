@@ -21,9 +21,9 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +65,7 @@ public class InvoiceService
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
-		return getLastArchive(invoiceId).map(archiveBL::getBinaryData);
+		return getLastArchive(invoiceId).map(AdArchive::getArchiveData);
 	}
 
 	public boolean hasArchive(@NonNull final InvoiceId invoiceId)
@@ -73,7 +73,7 @@ public class InvoiceService
 		return getLastArchive(invoiceId).isPresent();
 	}
 
-	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
+	private Optional<AdArchive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
 	}

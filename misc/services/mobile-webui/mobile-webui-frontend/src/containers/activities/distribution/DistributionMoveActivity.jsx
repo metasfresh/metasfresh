@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { forEach } from 'lodash';
 
-import DistributionLineButton from './DistributionLineButton';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
+
+import DistributionLineButton from './DistributionLineButton';
 
 const getLinePickingQuantities = (line) => {
   let picked = 0;
@@ -21,46 +22,41 @@ const getLinePickingQuantities = (line) => {
   return { picked, toMove, uom };
 };
 
-class DistributionMoveActivity extends Component {
-  render() {
-    const {
-      componentProps: { lines },
-      activityState,
-      wfProcessId,
-      activityId,
-    } = this.props;
-    const dataStored = activityState ? activityState.dataStored : {};
-    const { completeStatus, isUserEditable } = dataStored;
+const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
+  const lines = activityState.componentProps.lines;
+  const dataStored = activityState.dataStored;
+  const { completeStatus, isUserEditable } = dataStored;
 
-    return (
-      <div className="pick-products-activity-container mt-5">
-        {activityState && lines.length > 0
-          ? lines.map((lineItem, lineIndex) => {
-              const lineId = '' + lineIndex;
-              const { picked, toMove, uom } = getLinePickingQuantities(dataStored.lines[lineIndex]);
+  return (
+    <div className="mt-5">
+      {activityState && lines.length > 0
+        ? lines.map((lineItem, lineIndex) => {
+            const lineId = '' + lineIndex;
+            const { picked, toMove, uom } = getLinePickingQuantities(dataStored.lines[lineIndex]);
 
-              return (
-                <DistributionLineButton
-                  key={lineId}
-                  wfProcessId={wfProcessId}
-                  activityId={activityId}
-                  lineId={lineId}
-                  caption={lineItem.caption}
-                  isUserEditable={isUserEditable}
-                  completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
-                  qtyToMove={toMove}
-                  qtyPicked={picked}
-                  uom={uom}
-                />
-              );
-            })
-          : null}
-      </div>
-    );
-  }
-}
+            return (
+              <DistributionLineButton
+                key={lineId}
+                applicationId={applicationId}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                lineId={lineId}
+                caption={lineItem.caption}
+                isUserEditable={isUserEditable}
+                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
+                qtyToMove={toMove}
+                qtyPicked={picked}
+                uom={uom}
+              />
+            );
+          })
+        : null}
+    </div>
+  );
+};
 
 DistributionMoveActivity.propTypes = {
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string,
   activityId: PropTypes.string,
   caption: PropTypes.string,

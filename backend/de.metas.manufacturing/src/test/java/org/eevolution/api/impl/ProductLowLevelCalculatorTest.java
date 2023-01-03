@@ -22,18 +22,18 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.product.ProductId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.exceptions.BOMCycleException;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.product.ProductId;
+import java.math.BigDecimal;
 
 public class ProductLowLevelCalculatorTest
 {
@@ -68,20 +68,26 @@ public class ProductLowLevelCalculatorTest
 		final I_M_Product pM = helper.createProduct("M");
 		final I_M_Product pN = helper.createProduct("N");
 
+		final I_PP_Product_BOMVersions bomVersionsA = helper.createBOMVersions(ProductId.ofRepoId(pA.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pA)
+				.bomVersions(bomVersionsA)
 				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
+		final I_PP_Product_BOMVersions bomVersionsB = helper.createBOMVersions(ProductId.ofRepoId(pB.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pB)
+				.bomVersions(bomVersionsB)
 				.newBOMLine().product(pD).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.newBOMLine().product(pE).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
+		final I_PP_Product_BOMVersions bomVersionsM = helper.createBOMVersions(ProductId.ofRepoId(pM.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pM)
+				.bomVersions(bomVersionsM)
 				.newBOMLine().product(pN).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.newBOMLine().product(pE).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
@@ -118,21 +124,28 @@ public class ProductLowLevelCalculatorTest
 		final I_M_Product pE = helper.createProduct("E");
 		final I_M_Product pF = helper.createProduct("F");
 
+		final I_PP_Product_BOMVersions bomVersionsA = helper.createBOMVersions(ProductId.ofRepoId(pA.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pA)
+				.bomVersions(bomVersionsA)
 				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
+		final I_PP_Product_BOMVersions bomVersionsB = helper.createBOMVersions(ProductId.ofRepoId(pB.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pB)
+				.bomVersions(bomVersionsB)
 				.newBOMLine().product(pD).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.newBOMLine().product(pE).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
+		final I_PP_Product_BOMVersions bomVersionsE = helper.createBOMVersions(ProductId.ofRepoId(pE.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pE)
+				.bomVersions(bomVersionsE)
 				.newBOMLine().product(pF).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+				.bomVersions(bomVersionsE)
 				//
 				// NOTE: this line shall throw BOMCycleException ... because model validator is called and it tries to update product's LLC
 				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
@@ -157,14 +170,18 @@ public class ProductLowLevelCalculatorTest
 		final I_M_Product pB = helper.createProduct("B");
 		final I_M_Product pC = helper.createProduct("C");
 
+		final I_PP_Product_BOMVersions bomVersionsA = helper.createBOMVersions(ProductId.ofRepoId(pA.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pA)
+				.bomVersions(bomVersionsA)
 				.newBOMLine().product(pB).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE.negate()).componentType(BOMComponentType.CoProduct).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 
+		final I_PP_Product_BOMVersions bomVersionsB = helper.createBOMVersions(ProductId.ofRepoId(pB.getM_Product_ID()));
 		helper.newProductBOM()
 				.product(pB)
+				.bomVersions(bomVersionsB)
 				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE.negate()).componentType(BOMComponentType.CoProduct).endLine()
 				.newBOMLine().product(pC).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();

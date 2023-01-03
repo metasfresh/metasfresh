@@ -30,7 +30,42 @@
           "productCategoryIdentifier": null,
           "productCategoryIdentifierSet": false,
           "syncAdvise": null,
-          "bpartnerProductItems": null
+          "bpartnerProductItems": [
+            {
+              "bpartnerIdentifier": "100",
+              "bpartnerSet": true,
+              "active": true,
+              "activeSet": true,
+              "seqNo": null,
+              "seqNoSet": false,
+              "productNo": null,
+              "productNoSet": false,
+              "description": null,
+              "descriptionSet": false,
+              "cuEAN": null,
+              "cuEANSet": false,
+              "gtin": null,
+              "gtinSet": false,
+              "customerLabelName": null,
+              "customerLabelNameSet": false,
+              "ingredients": null,
+              "ingredientsSet": false,
+              "currentVendor": null,
+              "currentVendorSet": false,
+              "excludedFromSales": null,
+              "excludedFromSalesSet": false,
+              "exclusionFromSalesReason": null,
+              "exclusionFromSalesReasonSet": false,
+              "excludedFromPurchase": null,
+              "excludedFromPurchaseSet": false,
+              "exclusionFromPurchaseReason": null,
+              "exclusionFromPurchaseReasonSet": false,
+              "dropShip": null,
+              "dropShipSet": false,
+              "usedForVendor": null,
+              "usedForVendorSet": false
+            }
+          ]
         }
       }
     ],

@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for DD_Order
  *  @author metasfresh (generated) 
@@ -907,6 +908,27 @@ public interface I_DD_Order
 
 	ModelColumn<I_DD_Order, Object> COLUMN_IsSelected = new ModelColumn<>(I_DD_Order.class, "IsSelected", null);
 	String COLUMNNAME_IsSelected = "IsSelected";
+
+	/**
+	 * Set Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSimulated (boolean IsSimulated);
+
+	/**
+	 * Get Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSimulated();
+
+	ModelColumn<I_DD_Order, Object> COLUMN_IsSimulated = new ModelColumn<>(I_DD_Order.class, "IsSimulated", null);
+	String COLUMNNAME_IsSimulated = "IsSimulated";
 
 	/**
 	 * Set Sales Transaction.

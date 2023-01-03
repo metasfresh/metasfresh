@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
@@ -10,6 +11,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -40,6 +42,7 @@ public interface IPPOrderDAO extends ISingletonService
 
 	Stream<I_PP_Order> streamManufacturingOrders(@NonNull ManufacturingOrderQuery query);
 
+	int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder);
 	/**
 	 * @return PP_Order_ID or -1 if not found.
 	 */
@@ -58,4 +61,8 @@ public interface IPPOrderDAO extends ISingletonService
 	void exportStatusMassUpdate(@NonNull final Map<PPOrderId, APIExportStatus> exportStatuses);
 
 	IQueryBuilder<I_PP_Order> createQueryForPPOrderSelection(IQueryFilter<I_PP_Order> userSelectionFilter);
+
+	ImmutableList<I_PP_OrderCandidate_PP_Order> getPPOrderAllocations(PPOrderId ppOrderId);
+
+	ImmutableList<I_PP_Order> getByProductBOMId(ProductBOMId productBOMId);
 }

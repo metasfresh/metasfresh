@@ -172,10 +172,11 @@ public class UOMConversionBL implements IUOMConversionBL
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
 
+	@NonNull
 	@Override
 	public Quantity convertToProductUOM(
 			@NonNull final Quantity quantity,
-			final ProductId productId)
+			@NonNull final ProductId productId)
 	{
 		final BigDecimal sourceQty = quantity.toBigDecimal();
 		final I_C_UOM sourceUOM = quantity.getUOM();

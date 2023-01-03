@@ -90,7 +90,7 @@ public class PurchaseCandidatesStatusService
 				.build();
 	}
 
-	private List<JsonPurchaseCandidate> retrieveStatus(final List<PurchaseCandidate> candidates)
+	private List<JsonPurchaseCandidate> retrieveStatus(@NonNull final List<PurchaseCandidate> candidates)
 	{
 		final List<JsonPurchaseCandidate> jsonPurchaseCandidates = new ArrayList<>();
 
@@ -147,7 +147,7 @@ public class PurchaseCandidatesStatusService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JsonPurchaseCandidate.JsonPurchaseCandidateBuilder preparePurchaseCandidateStatus(final PurchaseCandidate candidate)
+	private static JsonPurchaseCandidate.JsonPurchaseCandidateBuilder preparePurchaseCandidateStatus(@NonNull final PurchaseCandidate candidate)
 	{
 		return JsonPurchaseCandidate.builder()
 				.externalHeaderId(JsonExternalId.of(candidate.getExternalHeaderId().getValue()))
@@ -157,7 +157,7 @@ public class PurchaseCandidatesStatusService
 				.processed(candidate.isProcessed());
 	}
 
-	private JsonPurchaseOrder toJsonOrder(final I_C_Order order)
+	private JsonPurchaseOrder toJsonOrder(@NonNull final I_C_Order order)
 	{
 		final boolean hasArchive = hasArchive(order);
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));

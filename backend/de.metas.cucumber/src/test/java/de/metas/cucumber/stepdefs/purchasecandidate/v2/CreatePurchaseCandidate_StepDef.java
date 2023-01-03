@@ -42,6 +42,7 @@ import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -77,9 +78,12 @@ public class CreatePurchaseCandidate_StepDef
 	private JsonPurchaseCandidateCreateItem.JsonPurchaseCandidateCreateItemBuilder jsonPurchaseCandidateCreateItem;
 	private final JsonPurchaseCandidateRequest.JsonPurchaseCandidateRequestBuilder jsonPurchaseCandidateRequest = JsonPurchaseCandidateRequest.builder();
 
-	public CreatePurchaseCandidate_StepDef(final TestContext testContext)
+	private final C_OrderLine_StepDefData orderLineTable;
+
+	public CreatePurchaseCandidate_StepDef(@NonNull final TestContext testContext, @NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.testContext = testContext;
+		this.orderLineTable = orderLineTable;
 		this.purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	}
 
@@ -198,6 +202,7 @@ public class CreatePurchaseCandidate_StepDef
 	{
 		final String externalHeaderId = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalHeaderId");
 		final String externalLineId = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalLineId");
+		final String poReference = DataTableUtil.extractStringForColumnName(dataTableEntries, "POReference");
 		final String orgCode = DataTableUtil.extractStringForColumnName(dataTableEntries, "orgCode");
 		final String warehouse = DataTableUtil.extractStringForColumnName(dataTableEntries, "warehouse");
 		final String product = DataTableUtil.extractStringForColumnName(dataTableEntries, "product");
@@ -228,6 +233,7 @@ public class CreatePurchaseCandidate_StepDef
 				.orgCode(orgCode)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
+				.poReference(poReference)
 				.warehouseIdentifier(warehouse)
 				.productIdentifier(product)
 				.vendor(JsonVendor.builder().bpartnerIdentifier(vendorId).build())

@@ -23,6 +23,7 @@
 package de.metas.banking.remittanceadvice.process;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
@@ -34,9 +35,12 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationServi
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
@@ -60,7 +64,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -82,7 +85,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,7 +98,9 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 	private final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -105,7 +109,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(null);
 		if (processFilter == null)
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -249,14 +253,12 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		final BPartnerBankAccountId bPartnerBankAccountId = remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerBankAccountId()
 				: remittanceAdvice.getDestinationBPartnerBankAccountId();
 
-		final Optional<BigDecimal> serviceFeeAmount = Optional.ofNullable(remittanceAdvice.getServiceFeeAmount());
-
 		return paymentBuilder
 				.adOrgId(remittanceAdvice.getOrgId())
 				.bpartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
-				.payAmt(remittanceAdvice.getRemittedAmountSum().add(serviceFeeAmount.orElse(BigDecimal.ZERO)))
+				.payAmt(remittanceAdvice.getRemittedAmountSum())
 				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
@@ -278,6 +280,10 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx());
+		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
+		final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
+
 		final Amount paymentDiscountAmt = remittanceAdviceLine.getPaymentDiscountAmount() != null
 				? remittanceAdviceLine.getPaymentDiscountAmount()
 				: Amount.zero(moneyService.getCurrencyCodeByCurrencyId(remittanceAdvice.getRemittedAmountCurrencyId()));
@@ -295,19 +301,33 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		final ZoneId timeZone = orgDAO.getTimeZone(remittanceAdvice.getOrgId());
 
 		return PaymentAllocationPayableItem.builder()
+				.amtMultiplier(amtMultiplier)
 				.payAmt(remittanceAdviceLine.getRemittedAmount())
 				.openAmt(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency())
 				.serviceFeeAmt(serviceFeeInREMADVCurrency)
 				.discountAmt(paymentDiscountAmt)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.invoiceIsCreditMemo(invoiceBL.isCreditMemo(invoice))
 				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(remittanceAdvice.getOrgId())
 				.clientId(remittanceAdvice.getClientId())
-				.bPartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
+				.bPartnerId(soTrx.isSales() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.documentNo(invoice.getDocumentNo())
-				.isSOTrx(remittanceAdvice.isSOTrx())
+				.soTrx(soTrx)
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone))
 				.build();
+	}
+
+	@VisibleForTesting
+	public static InvoiceAmtMultiplier toInvoiceAmtMultiplier(@NonNull final SOTrx soTrx, final boolean isCreditMemo)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(soTrx)
+				.isSOTrxAdjusted(false)
+				.isCreditMemo(isCreditMemo)
+				.isCreditMemoAdjusted(false)
+				.build()
+				.intern();
 	}
 
 	@NonNull

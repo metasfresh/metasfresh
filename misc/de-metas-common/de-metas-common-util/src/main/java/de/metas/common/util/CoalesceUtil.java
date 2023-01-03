@@ -28,6 +28,7 @@ import lombok.experimental.UtilityClass;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -59,6 +60,25 @@ public class CoalesceUtil
 	public <T> T coalesce(@Nullable final T value1, @Nullable final Supplier<T> value2)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
+	}
+
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final Supplier<T> value2Supplier)
+	{
+		if(value1 != null)
+		{
+			return value1;
+		}
+		else
+		{
+			final T value2 = value2Supplier.get();
+			if (value2 == null)
+			{
+				throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+			}
+
+			return value2;
+		}
 	}
 
 	/**
@@ -135,6 +155,14 @@ public class CoalesceUtil
 				firstValidValue(Objects::nonNull, values),
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
+
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
+	{
+		return Optional.ofNullable(coalesceSuppliers(values));
+	}
+
 	
 	@SafeVarargs
 	@Nullable

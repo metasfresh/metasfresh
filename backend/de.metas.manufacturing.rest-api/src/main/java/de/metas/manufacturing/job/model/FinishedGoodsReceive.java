@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -30,12 +31,18 @@ public class FinishedGoodsReceive
 
 	public FinishedGoodsReceiveLine getLineById(final FinishedGoodsReceiveLineId lineId)
 	{
-		final FinishedGoodsReceiveLine line = linesById.get(lineId);
+		final FinishedGoodsReceiveLine line = getLineByIdOrNull(lineId);
 		if (line == null)
 		{
 			throw new AdempiereException("Line " + lineId + " was not found in " + this);
 		}
 		return line;
+	}
+
+	@Nullable
+	public FinishedGoodsReceiveLine getLineByIdOrNull(final FinishedGoodsReceiveLineId lineId)
+	{
+		return linesById.get(lineId);
 	}
 
 	public FinishedGoodsReceive withChangedReceiveLine(final FinishedGoodsReceiveLineId id, final UnaryOperator<FinishedGoodsReceiveLine> mapper)

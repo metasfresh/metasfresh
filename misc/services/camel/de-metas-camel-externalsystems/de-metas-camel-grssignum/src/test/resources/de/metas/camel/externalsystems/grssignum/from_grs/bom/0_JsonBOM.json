@@ -7,13 +7,28 @@
   "INAKTIV": 0,
   "VERLUST": 10.5,
   "GTIN": 12345678,
+  "METASFRESHID": "100",
+  "ANHANGDATEI": "bpartnerValue/directory/Attachment.pdf",
   "DETAIL": [
     {
       "ARTNR": "ProductValue1",
       "ARTNRID": "ProductId1",
+      "HERKUNFTSLAND": "countryCode",
       "POS": 1,
       "ANTEIL": 50,
-      "UOM": "KGM"
+      "UOM": "KGM",
+      "INFO": "User Instructions"
+    }
+  ],
+  "Sonstige_Infos": [
+    {
+      "Produktion_Maschinengrößen": [
+        {
+          "Resource_1": null,
+          "Resource_2": 500.00000,
+          "Resource_3": 501.00000
+        }
+      ]
     }
   ]
 }

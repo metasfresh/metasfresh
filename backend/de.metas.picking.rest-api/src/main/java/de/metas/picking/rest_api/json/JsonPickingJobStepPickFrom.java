@@ -1,5 +1,6 @@
 package de.metas.picking.rest_api.json;
 
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
@@ -18,7 +19,7 @@ public class JsonPickingJobStepPickFrom
 {
 	@NonNull String alternativeId;
 	@NonNull String locatorName;
-	@NonNull String huBarcode;
+	@NonNull JsonDisplayableQRCode huQRCode;
 	@NonNull BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
@@ -28,7 +29,7 @@ public class JsonPickingJobStepPickFrom
 		final JsonPickingJobStepPickFromBuilder builder = builder()
 				.alternativeId(pickFrom.getPickFromKey().getAsString())
 				.locatorName(pickFrom.getPickFromLocator().getCaption())
-				.huBarcode(pickFrom.getPickFromHU().getBarcode().getAsString())
+				.huQRCode(pickFrom.getPickFromHU().getQrCode().toRenderedJson())
 				.qtyPicked(BigDecimal.ZERO);
 
 		final PickingJobStepPickedTo pickedTo = pickFrom.getPickedTo();

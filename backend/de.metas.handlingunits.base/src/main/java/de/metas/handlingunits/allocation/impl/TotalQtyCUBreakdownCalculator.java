@@ -22,20 +22,18 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
+import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys.LUQtysBuilder;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.lang.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.ObjectUtils;
-
-import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys.LUQtysBuilder;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 
 /**
  * {@link LUQtys} calculator which starts from a given total CUs quantity and exposes methods from subtracting that quantity by one LU.
@@ -341,7 +339,7 @@ public class TotalQtyCUBreakdownCalculator
 	{
 		public static final LUQtys NULL = new LUQtys();
 
-		public static final LUQtysBuilder builder()
+		public static LUQtysBuilder builder()
 		{
 			return new LUQtysBuilder();
 		}
@@ -352,7 +350,6 @@ public class TotalQtyCUBreakdownCalculator
 
 		public LUQtys(final LUQtysBuilder builder)
 		{
-			super();
 			qtyTUsPerLU = builder.getQtyTUsPerLU();
 			qtyCUsPerTU = builder.getQtyCUsPerTU();
 			qtyCUsPerLU = builder.getQtyCUsPerLU();
@@ -361,7 +358,6 @@ public class TotalQtyCUBreakdownCalculator
 		/** Null constructor */
 		private LUQtys()
 		{
-			super();
 			qtyTUsPerLU = BigDecimal.ZERO;
 			qtyCUsPerTU = BigDecimal.ZERO;
 			qtyCUsPerLU = BigDecimal.ZERO;

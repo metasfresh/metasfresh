@@ -2,6 +2,7 @@ package de.metas.inout;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -68,6 +70,8 @@ public interface IInOutDAO extends ISingletonService
 	 * @return <code>inOut</code>'s lines
 	 */
 	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
+
+	ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(Set<InOutId> inoutIds);
 
 	List<I_M_InOutLine> retrieveLinesForInOuts(Collection<? extends I_M_InOut> inouts);
 
@@ -129,4 +133,6 @@ public interface IInOutDAO extends ISingletonService
 	List<I_M_InOutLine> retrieveShipmentLinesForOrderId(Set<OrderId> orderIds);
 
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
+
+	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
 }

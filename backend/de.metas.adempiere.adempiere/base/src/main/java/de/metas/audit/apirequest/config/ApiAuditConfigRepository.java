@@ -48,6 +48,18 @@ public class ApiAuditConfigRepository
 		return getMap().getActiveConfigsByOrgId(orgId);
 	}
 
+	public ImmutableList<ApiAuditConfig> getAllConfigsByOrgId(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_API_Audit_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_API_Audit_Config.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.list()
+				.stream()
+				.map(ApiAuditConfigRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	@NonNull
 	public ApiAuditConfig getConfigById(@NonNull final ApiAuditConfigId id)
 	{
@@ -77,11 +89,13 @@ public class ApiAuditConfigRepository
 				.active(record.isActive())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.seqNo(record.getSeqNo())
+				.isBypassAudit(record.isBypassAudit())
 				.forceProcessedAsync(record.isForceProcessedAsync())
 				.keepRequestDays(record.getKeepRequestDays())
 				.keepRequestBodyDays(record.getKeepRequestBodyDays())
 				.keepResponseDays(record.getKeepResponseDays())
 				.keepResponseBodyDays(record.getKeepResponseBodyDays())
+				.keepErroredRequestDays(record.getKeepErroredRequestDays())
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))

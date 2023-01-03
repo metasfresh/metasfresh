@@ -1,109 +1,103 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { map } from 'lodash';
 
-import { populateLaunchers } from '../../actions/LauncherActions';
-import { setActiveApplication } from '../../actions/ApplicationsActions';
-import { getLaunchers } from '../../api/launchers';
-import { selectApplicationLaunchersFromState } from '../../reducers/launchers';
+import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
+import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
+import { getApplicationLaunchers } from '../../reducers/launchers';
+
 import WFLauncherButton from './WFLauncherButton';
-import * as ws from '../../utils/websocket';
-import ButtonWithIndicator from '../../components/ButtonWithIndicator';
-import { gotoAppLaunchersBarcodeScanner } from '../../routes/launchers';
+import { getTokenFromState } from '../../reducers/appHandler';
+import { getApplicationInfoById } from '../../reducers/applications';
+import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
+import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
+import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
 
-class WFLaunchersScreen extends Component {
-  componentDidMount() {
-    const { applicationId, applications, setActiveApplication, populateLaunchers } = this.props;
+const WFLaunchersScreen = () => {
+  const {
+    params: { applicationId },
+  } = useRouteMatch();
 
-    if (!applications.activeApplication && Object.keys(applications).length) {
-      setActiveApplication({ id: applicationId, caption: applications[applicationId] });
+  const [showQRCodeScanner, setShowQRCodeScanner] = useState(false);
+
+  const { requiresLaunchersQRCodeFilter } = useSelector((state) => getApplicationInfoById({ state, applicationId }));
+
+  const {
+    filterByQRCode: currentFilterByQRCode,
+    requestTimestamp,
+    list: launchers,
+  } = useSelector((state) => getApplicationLaunchers(state, applicationId));
+
+  const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
+  const isFilterValid = !requiresLaunchersQRCodeFilter || !!filterByQRCode;
+
+  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
+    setShowQRCodeScanner(false);
+    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
+  };
+  //
+  // Load application launchers
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (!isFilterValid) {
+      console.log('Skip fetching because QR Code is required but not yet scanned');
+      return;
     }
 
-    getLaunchers(applicationId).then((applicationLaunchers) => {
-      populateLaunchers({ applicationId, applicationLaunchers });
+    getLaunchers(applicationId, filterByQRCode).then((applicationLaunchers) => {
+      onNewLaunchers({ applicationId, applicationLaunchers });
     });
-  }
+  }, [isFilterValid, applicationId, toQRCodeString(filterByQRCode), requestTimestamp]);
 
-  componentDidUpdate() {
-    if (!this.wsClient) {
-      const { userToken, applicationId } = this.props;
-      this.wsClient = ws.connectAndSubscribe({
-        topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}`,
-        onWebsocketMessage: this.onWebsocketMessage,
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    ws.disconnectClient(this.wsClient);
-    this.wsClient = null;
-  }
-
-  onWebsocketMessage = (message) => {
-    const { populateLaunchers, applicationId } = this.props;
-    const applicationLaunchers = JSON.parse(message.body);
-    populateLaunchers({ applicationId, applicationLaunchers });
-  };
-
-  onScanBarcodeButtonClicked = () => {
-    const { applicationId, gotoAppLaunchersBarcodeScanner } = this.props;
-    gotoAppLaunchersBarcodeScanner(applicationId);
-  };
-
-  render() {
-    const { applicationLaunchers } = this.props;
-
-    return (
-      <div className="container launchers-container">
-        {applicationLaunchers.scanBarcodeToStartJobSupport && (
-          <>
-            <div className="mt-0">
-              <button className="button is-outlined complete-btn" onClick={this.onScanBarcodeButtonClicked}>
-                <ButtonWithIndicator caption="Scan barcode" />
-              </button>
-            </div>
-            <br />
-          </>
-        )}
-
-        {map(applicationLaunchers.list, (launcher, index) => {
-          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
-          return <WFLauncherButton key={key} id={key} {...launcher} />;
-        })}
-      </div>
-    );
-  }
-}
-
-WFLaunchersScreen.propTypes = {
   //
-  // Props
-  userToken: PropTypes.string.isRequired,
-  applicationId: PropTypes.string.isRequired,
-  applications: PropTypes.object,
-  applicationLaunchers: PropTypes.object.isRequired,
-  //
-  // Actions
-  populateLaunchers: PropTypes.func.isRequired,
-  setActiveApplication: PropTypes.func.isRequired,
-  gotoAppLaunchersBarcodeScanner: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state, { match }) => {
-  const { applicationId } = match.params;
-
-  return {
-    userToken: state.appHandler.token,
+  // Connect to WebSocket topic
+  const userToken = useSelector((state) => getTokenFromState(state));
+  useLaunchersWebsocket({
+    enabled: isFilterValid,
+    userToken,
     applicationId,
-    applications: state.applications,
-    applicationLaunchers: selectApplicationLaunchersFromState(state, applicationId),
-  };
+    filterByQRCode,
+    onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
+      onNewLaunchers({ applicationId, applicationLaunchers }),
+  });
+
+  const showQRCodeScannerEffective = showQRCodeScanner || !isFilterValid;
+
+  return (
+    <div className="container launchers-container">
+      {showQRCodeScannerEffective && (
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => {
+            dispatch(populateLaunchersStart({ applicationId, filterByQRCode: toQRCodeObject(scannedBarcode) }));
+          }}
+        />
+      )}
+      {!showQRCodeScannerEffective && requiresLaunchersQRCodeFilter && (
+        <div className="mb-5">
+          <ButtonWithIndicator
+            caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
+            onClick={() => setShowQRCodeScanner(true)}
+          />
+        </div>
+      )}
+      {!showQRCodeScannerEffective &&
+        launchers &&
+        map(launchers, (launcher, index) => {
+          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+          return (
+            <WFLauncherButton
+              key={key}
+              applicationId={launcher.applicationId}
+              caption={launcher.caption}
+              startedWFProcessId={launcher.startedWFProcessId}
+              wfParameters={launcher.wfParameters}
+              showWarningSign={launcher.showWarningSign}
+            />
+          );
+        })}
+    </div>
+  );
 };
 
-export default withRouter(
-  connect(mapStateToProps, { populateLaunchers, setActiveApplication, gotoAppLaunchersBarcodeScanner })(
-    WFLaunchersScreen
-  )
-);
+export default WFLaunchersScreen;

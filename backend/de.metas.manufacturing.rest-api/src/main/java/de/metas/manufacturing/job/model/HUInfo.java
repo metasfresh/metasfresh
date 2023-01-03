@@ -1,7 +1,8 @@
 package de.metas.manufacturing.job.model;
 
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -11,5 +12,6 @@ import lombok.Value;
 public class HUInfo
 {
 	@NonNull HuId id;
-	@NonNull HUBarcode barcode;
+	@NonNull HUQRCode barcode;
+	@NonNull Quantity huCapacity;
 }

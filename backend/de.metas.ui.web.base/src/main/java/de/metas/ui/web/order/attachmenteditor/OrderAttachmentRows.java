@@ -22,8 +22,10 @@
 
 package de.metas.ui.web.order.attachmenteditor;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentLinksRequest;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
@@ -103,7 +105,7 @@ final class OrderAttachmentRows implements IEditableRowsData<OrderAttachmentRow>
 	@NonNull
 	Optional<ImmutableList<AttachmentLinksRequest>> createAttachmentLinksRequestList()
 	{
-		final ImmutableList<AttachmentLinksRequest> userChanges = rowsById.values()
+		final ImmutableList<AttachmentLinksRequest> userChanges = aggregateRowsByAttachmentEntryId()
 				.stream()
 				.map(OrderAttachmentRow::toAttachmentLinksRequest)
 				.filter(Optional::isPresent)
@@ -132,5 +134,38 @@ final class OrderAttachmentRows implements IEditableRowsData<OrderAttachmentRow>
 
 			return mapper.apply(oldRow);
 		});
+	}
+
+	/**
+	 *  Aggregates the view rows by {@link OrderAttachmentRow#getAttachmentEntryId()}.
+	 *  The aggregation logic goes like this:
+	 *    1. if there is at least one row marked by the user for attaching to the purchase order ({@link OrderAttachmentRow#getIsAttachToPurchaseOrder()})
+	 *        then, that row will be taken into account for the attachment entry in cause.
+	 *    2. otherwise, take the first row of the group.
+	 *
+	 * @return an aggregated list of {@link OrderAttachmentRow} by {@link AttachmentEntryId}
+	 */
+	@NonNull
+	private List<OrderAttachmentRow> aggregateRowsByAttachmentEntryId()
+	{
+		final ArrayListMultimap<Integer, OrderAttachmentRow> rowsByAttachmentEntryId = rowsById.values()
+				.stream()
+				.collect(GuavaCollectors.toArrayListMultimapByKey(OrderAttachmentRow::getAttachmentEntryId));
+
+		final ImmutableList.Builder<OrderAttachmentRow> attachmentRowCollector = ImmutableList.builder();
+
+		for (final Integer attachmentEntryId : rowsByAttachmentEntryId.keySet())
+		{
+			final List<OrderAttachmentRow> attachmentRowsForEntryId = rowsByAttachmentEntryId.get(attachmentEntryId);
+
+			final OrderAttachmentRow firstRowAttach = attachmentRowsForEntryId.stream()
+					.filter(OrderAttachmentRow::getIsAttachToPurchaseOrder)
+					.findFirst()
+					.orElseGet(() -> attachmentRowsForEntryId.get(0));
+
+			attachmentRowCollector.add(firstRowAttach);
+		}
+
+		return attachmentRowCollector.build();
 	}
 }

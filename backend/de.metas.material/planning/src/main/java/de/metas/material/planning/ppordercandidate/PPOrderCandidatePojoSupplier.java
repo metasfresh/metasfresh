@@ -23,6 +23,9 @@
 package de.metas.material.planning.ppordercandidate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.IdConstants;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
@@ -32,6 +35,9 @@ import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.order.OrderLine;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -50,8 +56,10 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Service
 public class PPOrderCandidatePojoSupplier
@@ -60,10 +68,14 @@ public class PPOrderCandidatePojoSupplier
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 
 	private final ProductPlanningService productPlanningService;
+	private final OrderLineRepository orderLineRepository;
 
-	public PPOrderCandidatePojoSupplier(@NonNull final ProductPlanningService productPlanningService)
+	public PPOrderCandidatePojoSupplier(
+			@NonNull final ProductPlanningService productPlanningService,
+			@NonNull final OrderLineRepository orderLineRepository)
 	{
 		this.productPlanningService = productPlanningService;
+		this.orderLineRepository = orderLineRepository;
 	}
 
 	@NonNull
@@ -90,7 +102,6 @@ public class PPOrderCandidatePojoSupplier
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final Instant demandDate = request.getDemandDate();
 		final Quantity qtyToSupply = request.getQtyToSupply();
 
 		// BOM
@@ -116,26 +127,44 @@ public class PPOrderCandidatePojoSupplier
 		// Calculate duration & Planning dates
 		final int durationDays = productPlanningService.calculateDurationDays(mrpContext.getProductPlanning(), qtyToSupply.toBigDecimal());
 
-		final Instant dateStartSchedule = demandDate.minus(durationDays, ChronoUnit.DAYS);
+		final Instant earliestDateStartSchedule = SystemTime.asInstant();
+
+		final Instant datePromised;
+		final Instant dateStartSchedule;
+
+		if (request.getDemandDate().minus(durationDays, ChronoUnit.DAYS).isBefore(earliestDateStartSchedule))
+		{
+			dateStartSchedule = earliestDateStartSchedule;
+			datePromised = dateStartSchedule.plus(durationDays, ChronoUnit.DAYS);
+		}
+		else
+		{
+			datePromised = request.getDemandDate();
+			dateStartSchedule = datePromised.minus(durationDays, ChronoUnit.DAYS);
+		}
 
 		final ProductDescriptor productDescriptor = createPPOrderCandidateProductDescriptor(mrpContext);
 
 		final ProductId productId = mrpContext.getProductId();
 		final Quantity ppOrderCandidateQuantity = uomConversionBL.convertToProductUOM(qtyToSupply, productId);
 
+		final int orderLineId = request.getMrpDemandOrderLineSOId();
+
 		return PPOrderCandidate.builder()
+				.simulated(request.isSimulated())
 				.ppOrderData(PPOrderData.builder()
 									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.toRepoId(mrpContext.getClientId()), OrgId.toRepoIdOrAny(mrpContext.getOrgId())))
 									 .plantId(ResourceId.ofRepoId(mrpContext.getPlant_ID()))
 									 .warehouseId(mrpContext.getWarehouseId())
 									 .productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 									 .productDescriptor(productDescriptor)
-									 .datePromised(demandDate)
+									 .datePromised(datePromised)
 									 .dateStartSchedule(dateStartSchedule)
 									 .qtyRequired(ppOrderCandidateQuantity.toBigDecimal())
-									 .orderLineId(request.getMrpDemandOrderLineSOId())
+									 .orderLineId(orderLineId)
 									 .shipmentScheduleId(request.getMrpDemandShipmentScheduleId())
 									 .bpartnerId(BPartnerId.ofRepoIdOrNull(request.getMrpDemandBPartnerId()))
+									 .packingMaterialId(getPackingMaterialId(orderLineId))
 									 .build())
 				.build();
 	}
@@ -157,5 +186,16 @@ public class PPOrderCandidatePojoSupplier
 				ProductId.toRepoId(mrpContext.getProductId()),
 				attributesKey,
 				asiId.getRepoId());
+	}
+
+	@Nullable
+	private HUPIItemProductId getPackingMaterialId(final int demandOrderLineId)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(IdConstants.toRepoId(demandOrderLineId));
+
+		return Optional.ofNullable(orderLineId)
+				.map(orderLineRepository::getById)
+				.map(OrderLine::getHuPIItemProductId)
+				.orElse(null);
 	}
 }

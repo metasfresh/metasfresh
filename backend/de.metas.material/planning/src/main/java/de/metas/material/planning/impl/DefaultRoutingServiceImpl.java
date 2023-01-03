@@ -87,6 +87,8 @@ public class DefaultRoutingServiceImpl implements RoutingService
 
 		Duration durationTotal = Duration.ZERO;
 		final PPRouting routing = Services.get(IPPRoutingRepository.class).getById(routingId);
+		final int intQty = qty.setScale(0, RoundingMode.UP).intValueExact();
+
 		for (final PPRoutingActivity activity : routing.getActivities())
 		{
 			// Qty independent times:
@@ -97,12 +99,11 @@ public class DefaultRoutingServiceImpl implements RoutingService
 					.plus(activity.getMovingTime());
 
 			// Get OverlapUnits - number of units that must be completed before they are moved the next activity
-			int overlapUnits = qty.setScale(0, RoundingMode.UP).intValueExact();
-			if (activity.getOverlapUnits() > 0 && activity.getOverlapUnits() < overlapUnits)
-			{
-				overlapUnits = activity.getOverlapUnits();
-			}
-			final Duration durationBeforeOverlap = activity.getDurationPerOneUnit().multipliedBy(overlapUnits);
+			final int overlapUnits = Integer.max(activity.getOverlapUnits(), 0);
+
+			final int batchUnits = Integer.max(intQty - overlapUnits, 0);
+
+			final Duration durationBeforeOverlap = activity.getDurationPerOneUnit().multipliedBy(batchUnits);
 
 			durationTotal = durationTotal.plus(durationBeforeOverlap);
 		}

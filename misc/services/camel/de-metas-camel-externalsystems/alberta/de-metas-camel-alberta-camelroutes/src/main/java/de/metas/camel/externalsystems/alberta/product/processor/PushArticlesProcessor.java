@@ -23,9 +23,9 @@
 package de.metas.camel.externalsystems.alberta.product.processor;
 
 import de.metas.camel.externalsystems.alberta.product.UpsertArticleRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.v1.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v1.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.model.ArticleMapping;

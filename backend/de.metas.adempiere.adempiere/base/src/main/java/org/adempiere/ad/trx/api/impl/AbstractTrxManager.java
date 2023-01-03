@@ -22,18 +22,14 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -68,15 +64,16 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
@@ -774,10 +771,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 		catch (final Throwable runException)
 		{
 			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
-			loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
-					runException.getClass(), runException.getMessage(),
-					runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
-
+			if(AdempiereException.isThrowableLoggedInTrxManager(runException))
+			{
+				loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
+								runException.getClass(), runException.getMessage(),
+								runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
+			}
+			
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
 			boolean rollback = true;
@@ -1256,10 +1256,8 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public IContextAware createThreadContextAware(final Properties ctx)
+	public IContextAware createThreadContextAware(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		return new IContextAware()
 		{
 			@Override

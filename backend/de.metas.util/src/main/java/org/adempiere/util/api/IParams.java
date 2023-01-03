@@ -22,8 +22,10 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -61,15 +63,21 @@ public interface IParams
 	/** @return boolean value or <code>false</code> if parameter is missing */
 	boolean getParameterAsBool(String parameterName);
 
+	@Nullable
+	Boolean getParameterAsBoolean(String parameterName, @Nullable Boolean defaultValue);
+
 	/** @return timestamp value or <code>null</code> if parameter is missing */
+	@Nullable
 	Timestamp getParameterAsTimestamp(String parameterName);
 
 	/** @return local date value or <code>null</code> if parameter is missing */
+	@Nullable
 	LocalDate getParameterAsLocalDate(String parameterName);
 
-	/** @return local date value or <code>null</code> if parameter is missing */
+	@Nullable
 	ZonedDateTime getParameterAsZonedDateTime(String parameterName);
 
+	@Nullable
 	Instant getParameterAsInstant(String parameterName);
 
 	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */
@@ -81,5 +89,18 @@ public interface IParams
 		return value != null
 				? Optional.of(ReferenceListAwareEnums.ofEnumCode(value, enumType))
 				: Optional.empty();
+	}
+
+	@Nullable
+	default Boolean getParameterAsBoolean(@NonNull final String parameterName)
+	{
+		final Object value = getParameterAsObject(parameterName);
+
+		if (value == null)
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(value);
 	}
 }

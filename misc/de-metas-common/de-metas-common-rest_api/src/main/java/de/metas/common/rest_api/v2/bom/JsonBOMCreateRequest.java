@@ -25,6 +25,7 @@ package de.metas.common.rest_api.v2.bom;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 
@@ -57,7 +59,13 @@ public class JsonBOMCreateRequest
 	@ApiModelProperty(position = 50, value = "Corresponding to `PP_Product_BOM.validFrom")
 	Instant validFrom;
 
-	@ApiModelProperty(position = 60, required = true)
+	@ApiModelProperty(position = 60, value = "Corresponding to `M_AttributeSetInstance`")
+	JsonAttributeSetInstance attributeSetInstance;
+
+	@ApiModelProperty(position = 70, value = "Corresponding to `PP_Product_BOM.S_PreferredResource_ID`")
+	String resourceCode;
+
+	@ApiModelProperty(position = 80, required = true)
 	List<JsonCreateBOMLine> bomLines;
 
 	@Builder
@@ -68,6 +76,8 @@ public class JsonBOMCreateRequest
 			@JsonProperty("name") @NonNull final String name,
 			@JsonProperty("isActive") @NonNull final Boolean isActive,
 			@JsonProperty("validFrom") @NonNull final Instant validFrom,
+			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
+			@JsonProperty("resourceCode") final String resourceCode,
 			@JsonProperty("bomLines") @Singular final List<JsonCreateBOMLine> bomLines)
 	{
 
@@ -76,6 +86,8 @@ public class JsonBOMCreateRequest
 		this.name = name;
 		this.isActive = isActive;
 		this.validFrom = validFrom;
+		this.attributeSetInstance = attributeSetInstance;
+		this.resourceCode = resourceCode;
 		this.bomLines = coalesce(bomLines, ImmutableList.of());
 	}
 }

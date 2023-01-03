@@ -301,6 +301,11 @@ public class DDOrderService
 	public void unassignFromResponsible(final DDOrderId ddOrderId)
 	{
 		final I_DD_Order ddOrder = getById(ddOrderId);
+		unassignFromResponsibleAndSave(ddOrder);
+	}
+
+	private void unassignFromResponsibleAndSave(final I_DD_Order ddOrder)
+	{
 		ddOrder.setAD_User_Responsible_ID(-1);
 		save(ddOrder);
 	}

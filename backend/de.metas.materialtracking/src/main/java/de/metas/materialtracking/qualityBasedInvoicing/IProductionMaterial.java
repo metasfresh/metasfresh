@@ -22,14 +22,13 @@ package de.metas.materialtracking.qualityBasedInvoicing;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import de.metas.materialtracking.IHandlingUnitsInfo;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
 
-import de.metas.materialtracking.IHandlingUnitsInfo;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public interface IProductionMaterial
 {
@@ -39,9 +38,6 @@ public interface IProductionMaterial
 
 	/**
 	 * {@link #getQty()} and converts it to given <code>uomTo</code>.
-	 *
-	 * @param uomTo
-	 * @return
 	 */
 	BigDecimal getQty(I_C_UOM uomTo);
 
@@ -59,9 +55,6 @@ public interface IProductionMaterial
 
 	/**
 	 * {@link #getQM_QtyDeliveredAvg()} and converts it to given <code>uomTo</code>.
-	 *
-	 * @param uomTo
-	 * @return
 	 */
 	BigDecimal getQM_QtyDeliveredAvg(I_C_UOM uomTo);
 
@@ -75,6 +68,7 @@ public interface IProductionMaterial
 	 */
 	I_M_Product getMainComponentProduct();
 
+	@Nullable
 	BOMComponentType getComponentType();
 
 	boolean isByProduct();

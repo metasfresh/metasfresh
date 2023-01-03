@@ -22,6 +22,7 @@ package org.eevolution.util;
  * #L%
  */
 
+import de.metas.document.engine.DocStatus;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -98,6 +99,7 @@ public class ProductBOMBuilder
 		productBOM.setName(product.getName());
 		productBOM.setBOMType(BOMType.CurrentActive.getCode());
 		productBOM.setBOMUse(BOMUse.Manufacturing.getCode());
+		productBOM.setDocStatus(DocStatus.Completed.getCode());
 
 		if (_bomVersions != null)
 		{

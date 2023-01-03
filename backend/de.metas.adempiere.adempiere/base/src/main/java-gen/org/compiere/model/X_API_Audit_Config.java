@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1417591936L;
+	private static final long serialVersionUID = -1905427436L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -77,6 +77,18 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
+	public void setIsBypassAudit (final boolean IsBypassAudit)
+	{
+		set_Value (COLUMNNAME_IsBypassAudit, IsBypassAudit);
+	}
+
+	@Override
+	public boolean isBypassAudit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBypassAudit);
+	}
+
+	@Override
 	public void setIsForceProcessedAsync (final boolean IsForceProcessedAsync)
 	{
 		set_Value (COLUMNNAME_IsForceProcessedAsync, IsForceProcessedAsync);
@@ -110,6 +122,18 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	public boolean isWrapApiResponse() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsWrapApiResponse);
+	}
+
+	@Override
+	public void setKeepErroredRequestDays (final int KeepErroredRequestDays)
+	{
+		set_Value (COLUMNNAME_KeepErroredRequestDays, KeepErroredRequestDays);
+	}
+
+	@Override
+	public int getKeepErroredRequestDays()
+	{
+		return get_ValueAsInt(COLUMNNAME_KeepErroredRequestDays);
 	}
 
 	@Override

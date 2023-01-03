@@ -16,19 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.MAccount;
-import org.compiere.model.POInfo;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -43,6 +30,18 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_GL;
+import org.compiere.model.MAccount;
+import org.compiere.model.POInfo;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Copy Accounts from one Acct Schema to another
@@ -80,7 +79,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		p_TargetAcctSchema_ID = AcctSchemaId.ofRepoId(getRecord_ID());
-	}	// prepare
+	}
 
 	@Override
 	protected String doIt()
@@ -107,20 +106,10 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			throw new AdempiereException("NotFound Target C_AcctSchema_Element");
 		}
 
-		// Accounting Element must be the same
-		final AcctSchemaElement sourceAcctElement = sourceElements.getByElementType(AcctSchemaElementType.Account);
-		if (sourceAcctElement == null)
+		// Chart of Accounts shall be the same
+		if (!ChartOfAccountsId.equals(sourceElements.getChartOfAccountsId(), targetElements.getChartOfAccountsId()))
 		{
-			throw new AdempiereException("NotFound Source AC C_AcctSchema_Element");
-		}
-		final AcctSchemaElement targetAcctElement = targetElements.getByElementType(AcctSchemaElementType.Account);
-		if (targetAcctElement == null)
-		{
-			throw new AdempiereException("NotFound Target AC C_AcctSchema_Element");
-		}
-		if (!ChartOfAccountsId.equals(sourceAcctElement.getChartOfAccountsId(), targetAcctElement.getChartOfAccountsId()))
-		{
-			throw new AdempiereException("@C_Element_ID@ different");
+			throw new AdempiereException("Chart of Accounts is different");
 		}
 
 		if (retrieveAcctSchemaGLOrNull(p_TargetAcctSchema_ID) == null)
@@ -145,13 +134,6 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		return acctSchemasRepo.retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
 	}	// get
 
-	/**
-	 * Copy GL
-	 *
-	 * @param targetAS target
-	 * @param targetElements
-	 * @throws Exception
-	 */
 	private void copyGL(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
 		final I_C_AcctSchema_GL source = retrieveAcctSchemaGLOrNull(p_SourceAcctSchema_ID);
@@ -168,12 +150,6 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		InterfaceWrapperHelper.save(target);
 	}	// copyGL
 
-	/**
-	 * Copy Default
-	 *
-	 * @param targetAS target
-	 * @throws Exception
-	 */
 	private void copyDefault(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
 		final I_C_AcctSchema_Default source = retrieveAcctSchemaDefaultOrNull(p_SourceAcctSchema_ID);
@@ -191,11 +167,6 @@ public class AcctSchemaCopyAcct extends JavaProcess
 	}	// copyDefault
 
 	/**
-	 * Create Account
-	 *
-	 * @param targetAS target AS
-	 * @param targetElements
-	 * @param sourceAcct source account
 	 * @return target account
 	 */
 	private AccountId createAccount(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements, final AccountId sourceAccountId)
@@ -342,7 +313,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		String columnName;
 
 		@Nullable
-		@lombok.experimental.Wither
+		@With
 		AccountId accountId;
 	}
 }	// AcctSchemaCopyAcct

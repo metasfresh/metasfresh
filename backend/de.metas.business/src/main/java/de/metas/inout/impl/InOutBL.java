@@ -1,16 +1,22 @@
 package de.metas.inout.impl;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
@@ -20,6 +26,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -42,6 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -54,6 +62,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -130,7 +139,6 @@ public class InOutBL implements IInOutBL
 		return getLines(inout);
 	}
 
-
 	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
@@ -164,8 +172,8 @@ public class InOutBL implements IInOutBL
 		if (pricingSystem == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-					+ "\n @M_InOut_ID@: " + inOut
-					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+												 + "\n @M_InOut_ID@: " + inOut
+												 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
@@ -176,8 +184,8 @@ public class InOutBL implements IInOutBL
 				bpLocationId,
 				soTrx);
 		Check.errorIf(priceListId == null,
-				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
-				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
+					  "No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
+					  inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
@@ -241,10 +249,33 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+													 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
+	}
+
+	@NonNull
+	public StockQtyAndUOMQty extractInOutLineQty(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		switch (invoicableQtyBasedOn)
+		{
+			case CatchWeight:
+				final StockQtyAndUOMQty stockQtyAndCatchQty = getStockQtyAndCatchQty(inOutLineRecord);
+				if (stockQtyAndCatchQty.getUOMQtyOpt().isPresent())
+				{
+					return stockQtyAndCatchQty;
+				}
+
+				// fallback if the given iol simply doesn't have a catch weight (which is a common case)
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			case NominalWeight:
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			default:
+				throw new AdempiereException("Unsupported invoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
 	}
 
 	/**
@@ -597,6 +628,28 @@ public class InOutBL implements IInOutBL
 		return requestsRepo.createRequest(requestCandidate);
 	}
 
+	@Nullable
+	public String getLocationEmail(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inout = inOutDAO.getById(inOutId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
+		if (contactId == null)
+		{
+			return null;
+		}
+		return bpartnerDAO.getContactLocationEmail(contactId);
+	}
+
 	@Override
 	@NonNull
 	public LocalDate retrieveMovementDate(@NonNull final I_M_InOut inOut)
@@ -605,5 +658,43 @@ public class InOutBL implements IInOutBL
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
+	}
+
+	@Override
+	public void updateDescriptionAndDescriptionBottomFromDocType(@NonNull final I_M_InOut inOut)
+	{
+
+		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+		if (docType == null)
+		{
+			return;
+		}
+
+		if (!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+
+		final I_C_BPartner bPartner = getBPartnerOrNull(inOut);
+
+		final String adLanguage = CoalesceUtil.coalesce(
+				bPartner == null ? null : bPartner.getAD_Language(),
+				Env.getAD_Language());
+
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
+		inOut.setDescription(description.translate(adLanguage));
+		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+	}
+
+	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID());
+
+		return bPartnerId != null
+				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
+				: null;
 	}
 }

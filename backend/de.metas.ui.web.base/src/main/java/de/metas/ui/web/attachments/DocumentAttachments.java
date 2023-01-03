@@ -17,7 +17,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -122,9 +121,8 @@ final class DocumentAttachments
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void addEntry(final MultipartFile file) throws IOException
+	public void addEntry(@NonNull final MultipartFile file) throws IOException
 	{
-		Check.assumeNotNull(file, "Parameter file is not null");
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 

@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -37,6 +38,12 @@ import java.util.List;
 	private InvoiceDocBaseType docBaseType;
 
 	private String poReference;
+
+	private String eMail;
+
+	@Getter
+	@Setter
+	private InputDataSourceId inputDataSourceId;
 
 	private LocalDate dateInvoiced;
 
@@ -83,9 +90,13 @@ import java.util.List;
 
 	private PaymentTermId paymentTermId;
 
+	private String paymentRule;
+
 	private int C_Async_Batch_ID;
 
 	private int C_Incoterms_ID;
+
+	private String incotermLocation;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -137,6 +148,12 @@ import java.util.List;
 	}
 
 	@Override
+	public String getEMail()
+	{
+		return eMail;
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return dateInvoiced;
@@ -173,6 +190,11 @@ import java.util.List;
 	public void setPOReference(final String poReference)
 	{
 		this.poReference = poReference;
+	}
+
+	public void setEMail(final String eMail)
+	{
+		this.eMail = eMail;
 	}
 
 	public void setDateInvoiced(final LocalDate dateInvoiced)
@@ -306,6 +328,17 @@ import java.util.List;
 		return paymentTermId;
 	}
 
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	@Override
+	public String getPaymentRule()
+	{
+		return paymentRule;
+	}
+
 	@Override
 	public String getExternalId()
 	{
@@ -338,5 +371,21 @@ import java.util.List;
 	{
 		this.C_Incoterms_ID = C_Incoterms_ID;
 	}
+
+	@Override
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = incotermLocation;
+	}
+
+	@Override
+	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
+
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
 
 }

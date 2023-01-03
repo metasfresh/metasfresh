@@ -84,7 +84,7 @@ import java.util.function.Function;
 @EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
 {
-	private static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
+	public static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
 
 	public static Builder builder(final WindowId windowId)
 	{
@@ -224,6 +224,11 @@ public final class HUEditorRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = Displayed.FALSE)
 	private final BigDecimal weightGross;
 
+	public static final String FIELDNAME_ClearanceStatus = I_M_HU.COLUMNNAME_ClearanceStatus;
+	@ViewColumn(fieldName = FIELDNAME_ClearanceStatus, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final JSONLookupValue clearanceStatus;
+
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
 	private final List<HUEditorRow> includedRows;
@@ -260,6 +265,8 @@ public final class HUEditorRow implements IViewRow
 		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
 
+		clearanceStatus = builder.clearanceStatus;
+
 		this.locatorId = builder.locatorId;
 		this.locator = locatorId != null
 				? JSONLookupValue.of(locatorId, builder.locatorCaption)
@@ -272,10 +279,10 @@ public final class HUEditorRow implements IViewRow
 		if (attributesProvider != null)
 		{
 			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
-													 .viewRowId(rowId.toDocumentId())
-													 .huId(huId)
-													 .provider(attributesProvider)
-													 .build());
+					.viewRowId(rowId.toDocumentId())
+					.huId(huId)
+					.provider(attributesProvider)
+					.build());
 		}
 		else
 		{
@@ -313,6 +320,11 @@ public final class HUEditorRow implements IViewRow
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
+	}
+
+	public JSONLookupValue getClearanceStatus()
+	{
+		return clearanceStatus;
 	}
 
 	public HUEditorRowId getHURowId()
@@ -660,6 +672,9 @@ public final class HUEditorRow implements IViewRow
 		private String locatorCaption;
 		private BPartnerId bpartnerId;
 
+		@Nullable
+		private JSONLookupValue clearanceStatus;
+
 		private List<HUEditorRow> includedRows = null;
 		@Nullable
 		private OrderLineId orderLineReservation = null;
@@ -871,6 +886,12 @@ public final class HUEditorRow implements IViewRow
 		{
 			orderLineReservation = orderLineId;
 			huReserved = orderLineId != null;
+			return this;
+		}
+
+		public Builder setClearanceStatus(@Nullable final JSONLookupValue clearanceStatusLookupValue)
+		{
+			clearanceStatus = clearanceStatusLookupValue;
 			return this;
 		}
 

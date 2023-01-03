@@ -29,6 +29,7 @@ import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentSc
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -39,6 +40,7 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.order.OrderLineRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -145,7 +147,7 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService),
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, new OrderLineRepository()),
 				new DDOrderDetailRequestHandler(),
 				new MainDataRequestHandler());
 
@@ -169,7 +171,7 @@ public class MaterialEventHandlerRegistryTests
 
 		setupEventLogUserServiceOnlyInvokesHandler();
 
-		materialEventListener = new MaterialEventHandlerRegistry(handlers, eventLogUserService);
+		materialEventListener = new MaterialEventHandlerRegistry(handlers, eventLogUserService, new MaterialEventObserver());
 	}
 
 	/**

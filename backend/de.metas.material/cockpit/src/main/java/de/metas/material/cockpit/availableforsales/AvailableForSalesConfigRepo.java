@@ -1,11 +1,5 @@
 package de.metas.material.cockpit.availableforsales;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
-import org.springframework.stereotype.Repository;
-
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_AvailableForSales_Config;
 import de.metas.organization.OrgId;
@@ -14,6 +8,11 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ClientId;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -57,9 +56,9 @@ public class AvailableForSalesConfigRepo
 		final I_MD_AvailableForSales_Config configRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_AvailableForSales_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_AvailableForSales_Config.COLUMN_AD_Client_ID, query.getClientId())
-				.addInArrayFilter(I_MD_AvailableForSales_Config.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-				.orderByDescending(I_MD_AvailableForSales_Config.COLUMN_AD_Org_ID)
+				.addEqualsFilter(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Client_ID, query.getClientId())
+				.addInArrayFilter(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+				.orderByDescending(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Org_ID)
 				.create()
 				.first();
 

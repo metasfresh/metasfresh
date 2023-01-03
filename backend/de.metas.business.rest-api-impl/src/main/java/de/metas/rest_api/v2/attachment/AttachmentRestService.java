@@ -27,17 +27,22 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.AttachmentTags;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.rest_api.v2.attachment.JsonTag;
+import de.metas.common.util.FileUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -50,6 +55,10 @@ import org.compiere.util.MimeType;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
 
@@ -78,32 +87,47 @@ public class AttachmentRestService
 	}
 
 	@NonNull
-	private JsonAttachmentResponse createAttachmentWithTrx(@NonNull final JsonAttachmentRequest jsonAttachmentRequest)
+	private JsonAttachmentResponse createAttachmentWithTrx(@NonNull final JsonAttachmentRequest jsonAttachmentRequest) throws IOException
 	{
-		final String orgCode = jsonAttachmentRequest.getOrgCode();
-
 		final JsonAttachment attachment = jsonAttachmentRequest.getAttachment();
 
 		final AttachmentTags attachmentTags = extractAttachmentTags(attachment.getTags());
 
-		final byte[] data = Base64.getDecoder().decode(attachment.getData().getBytes());
+		final JsonAttachmentSourceType jsonType = attachment.getType();
+
+		final AttachmentEntryType type = JsonConverters.toAttachmentType(jsonType);
+		byte[] data = null;
+		URI url = null;
+		switch (type)
+		{
+			case Data:
+				data = Base64.getDecoder().decode(attachment.getData().getBytes());
+				break;
+			case URL:
+				url = URI.create(attachment.getData());
+				break;
+			case LocalFileURL:
+				url = URI.create(attachment.getData());
+				validateLocalFileURL(url.toURL());
+				break;
+			default:
+				throw new AdempiereException("Unknown AttachmentEntryType = " + type);
+		}
 
 		final String contentType = attachment.getMimeType() != null
 				? attachment.getMimeType()
 				: MimeType.getMimeType(attachment.getFileName());
 
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
-				.type(AttachmentEntry.Type.Data)
+				.type(type)
 				.filename(attachment.getFileName())
 				.contentType(contentType)
 				.tags(attachmentTags)
 				.data(data)
+				.url(url)
 				.build();
 
-		final List<TableRecordReference> references = jsonAttachmentRequest.getTargets()
-				.stream()
-				.map(target -> extractTableRecordReference(orgCode, target))
-				.collect(ImmutableList.toImmutableList());
+		final List<TableRecordReference> references = extractTableRecordReferences(jsonAttachmentRequest);
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(references, request);
 
@@ -172,5 +196,46 @@ public class AttachmentRestService
 				.collect(ImmutableMap.toImmutableMap(JsonTag::getName, JsonTag::getValue));
 
 		return AttachmentTags.ofMap(tagName2Value);
+	}
+
+	@NonNull
+	private List<TableRecordReference> extractTableRecordReferences(@NonNull final JsonAttachmentRequest request)
+	{
+		final ImmutableList.Builder<TableRecordReference> tableRecordReferenceBuilder = ImmutableList.builder();
+
+		request.getTargets()
+				.stream()
+				.map(target -> extractTableRecordReference(request.getOrgCode(), target))
+				.forEach(tableRecordReferenceBuilder::add);
+
+		request.getReferences()
+				.stream()
+				.map(AttachmentRestService::extractTableRecordReference)
+				.forEach(tableRecordReferenceBuilder::add);
+
+		return tableRecordReferenceBuilder.build();
+	}
+
+	@NonNull
+	private static TableRecordReference extractTableRecordReference(@NonNull final JsonTableRecordReference reference)
+	{
+		return TableRecordReference.of(reference.getTableName(), reference.getRecordId().getValue());
+	}
+
+	private static void validateLocalFileURL(@NonNull final URL url)
+	{
+		if (!url.getProtocol().equals("file"))
+		{
+			throw new AdempiereException("Protocol " + url.getProtocol() + " not supported!");
+		}
+
+		final Path filePath = FileUtil.getFilePath(url);
+
+		if (!filePath.toFile().isFile())
+		{
+			throw new AdempiereException("Provided local file with URL: " + url + " is not accessible!")
+					.appendParametersToMessage()
+					.setParameter("ParsedPath", filePath.toString());
+		}
 	}
 }

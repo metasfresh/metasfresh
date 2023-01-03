@@ -1,11 +1,13 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
@@ -22,20 +24,22 @@ import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Component
 public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("distribution");
+	@VisibleForTesting
+	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("distribution");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(HANDLER_ID)
+			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
 			.build();
 
@@ -51,12 +55,26 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	}
 
 	@Override
-	@NonNull
-	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
+	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public WorkflowLaunchersList provideLaunchers(final @NonNull UserId userId, final @NonNull QueryLimit suggestedLimit, final @NonNull Duration maxStaleAccepted)
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
 	{
+		return APPLICATION_INFO;
+	}
+
+	@Override
+	public WorkflowLaunchersList provideLaunchers(
+			final @NonNull UserId userId,
+			@Nullable final GlobalQRCode filterByQRCode,
+			final @NonNull QueryLimit suggestedLimit,
+			final @NonNull Duration maxStaleAccepted)
+	{
+		if (filterByQRCode != null)
+		{
+			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+		}
+
 		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
 	}
 
@@ -71,11 +89,19 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return toWFProcess(job);
 	}
 
+	@Override
+	public WFProcess continueWorkflow(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final DDOrderId ddOrderId = toDDOrderId(wfProcessId);
+		final DistributionJob job = distributionRestService.assignJob(ddOrderId, callerId);
+		return toWFProcess(job);
+	}
+
 	private static WFProcess toWFProcess(final DistributionJob job)
 	{
 		return WFProcess.builder()
-				.id(WFProcessId.ofIdPart(HANDLER_ID, job.getDdOrderId()))
-				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
+				.id(WFProcessId.ofIdPart(APPLICATION_ID, job.getDdOrderId()))
+				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId()))
 				.document(job)
 				.activities(ImmutableList.of(
@@ -105,15 +131,21 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO impl
+		distributionRestService.abortAll(callerId);
 	}
 
 	@Override
 	public WFProcess getWFProcessById(final WFProcessId wfProcessId)
 	{
-		final DDOrderId ddOrderId = wfProcessId.getRepoId(DDOrderId::ofRepoId);
+		final DDOrderId ddOrderId = toDDOrderId(wfProcessId);
 		final DistributionJob job = distributionRestService.getJobById(ddOrderId);
 		return toWFProcess(job);
+	}
+
+	@NonNull
+	private static DDOrderId toDDOrderId(final WFProcessId wfProcessId)
+	{
+		return wfProcessId.getRepoId(DDOrderId::ofRepoId);
 	}
 
 	@Override
@@ -158,5 +190,11 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 					return wfProcess.<DistributionJob>mapDocument(job -> distributionRestService.processEvent(job, event));
 				});
+	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		abortAll(userId);
 	}
 }

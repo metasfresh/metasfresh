@@ -565,6 +565,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return new ArrayList<>(recordsMap.values());
 	}
 
+	public <T> T getFirstOnly(Class<T> clazz)
+	{
+		return getFirstOnly(clazz, null);
+	}
+
 	public <T> T getFirstOnly(Class<T> clazz, IQueryFilter<T> filter)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
@@ -1133,6 +1138,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		final Set<Integer> selection = selectionId2selection.get(selectionId);
 		return selection != null ? selection : ImmutableSet.of();
+	}
+
+	public void dumpSelections()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("=====================[ SELECTIONS ]============================================================");
+		for (final PInstanceId selectionId : selectionId2selection.keySet())
+		{
+			sb.append("\n\t").append(selectionId).append(": ").append(selectionId2selection.get(selectionId));
+		}
+		sb.append("\n");
+
+		System.out.println(sb.toString());
 	}
 
 	/**

@@ -172,7 +172,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse, scheduleId2QtyToDeliverOverride);
+		final boolean onTheFlyPickToPackingInstructions = getParameters()
+				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
+
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
+				shipmentSchedules,
+				quantityTypeToUse,
+				onTheFlyPickToPackingInstructions,
+				scheduleId2QtyToDeliverOverride);
 	}
 
 	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()

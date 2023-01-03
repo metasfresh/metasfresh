@@ -252,7 +252,7 @@ public interface I_M_Picking_Job
 	 * Set Picking User.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setPicking_User_ID (int Picking_User_ID);
@@ -261,7 +261,7 @@ public interface I_M_Picking_Job
 	 * Get Picking User.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getPicking_User_ID();

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
@@ -12,6 +13,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -21,8 +23,11 @@ public class RawMaterialsIssueLine
 {
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	boolean isWeightable;
 	@NonNull Quantity qtyToIssue;
+	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
+	@Nullable String userInstructions;
 
 	@NonNull Quantity qtyIssued; // computed
 	@NonNull WFActivityStatus status;
@@ -31,13 +36,19 @@ public class RawMaterialsIssueLine
 	private RawMaterialsIssueLine(
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			final boolean isWeightable,
 			@NonNull final Quantity qtyToIssue,
-			@NonNull final ImmutableList<RawMaterialsIssueStep> steps)
+			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
+			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
+			@Nullable final String userInstructions)
 	{
 		this.productId = productId;
 		this.productName = productName;
+		this.isWeightable = isWeightable;
 		this.qtyToIssue = qtyToIssue;
+		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
+		this.userInstructions = userInstructions;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
 		this.status = computeStatus(this.qtyToIssue, this.qtyIssued, this.steps);
@@ -70,6 +81,20 @@ public class RawMaterialsIssueLine
 		{
 			return WFActivityStatus.IN_PROGRESS;
 		}
+	}
+
+	public Optional<Quantity> getQtyToIssueMin()
+	{
+		return issuingToleranceSpec != null
+				? Optional.of(issuingToleranceSpec.subtractFrom(qtyToIssue))
+				: Optional.empty();
+	}
+
+	public Optional<Quantity> getQtyToIssueMax()
+	{
+		return issuingToleranceSpec != null
+				? Optional.of(issuingToleranceSpec.addTo(qtyToIssue))
+				: Optional.empty();
 	}
 
 	public RawMaterialsIssueLine withChangedRawMaterialsIssueStep(

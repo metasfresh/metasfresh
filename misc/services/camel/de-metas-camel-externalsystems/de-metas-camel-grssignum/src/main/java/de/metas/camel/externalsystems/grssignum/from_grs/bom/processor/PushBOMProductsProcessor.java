@@ -26,15 +26,19 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
-import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMLine;
+import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
-import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMAdditionalInfo;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMLine;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import de.metas.common.rest_api.v2.bom.JsonCreateBOMLine;
+import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -45,6 +49,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class PushBOMProductsProcessor implements Processor
 {
@@ -79,6 +85,7 @@ public class PushBOMProductsProcessor implements Processor
 				.name(JsonBOMUtil.getName(jsonBOM))
 				.isActive(jsonBOM.isActive())
 				.validFrom(SystemTime.asInstant())
+				.resourceCode(getPreferredResource(jsonBOM).orElse(null))
 				.bomLines(bomLines)
 				.build();
 
@@ -88,16 +95,29 @@ public class PushBOMProductsProcessor implements Processor
 	@NonNull
 	private static JsonCreateBOMLine getJsonCreateBOMLine(@NonNull final JsonBOMLine jsonBOMLine, @Nullable final BigDecimal scrap)
 	{
-		return JsonCreateBOMLine.builder()
+		final JsonCreateBOMLine.JsonCreateBOMLineBuilder jsonCreateBOMLineBuilder = JsonCreateBOMLine.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOMLine.getProductId()))
 				.line(jsonBOMLine.getLine())
 				.isQtyPercentage(Boolean.TRUE)
+				.help(jsonBOMLine.getAdditionalInfo())
 				.qtyBom(JsonQuantity.builder()
-								.qty(jsonBOMLine.getQtyBOM())
+								//dev-note: convert to percent
+								.qty(jsonBOMLine.getQtyBOM().multiply(new BigDecimal("100")))
 								.uomCode(jsonBOMLine.getUom())
 								.build())
-				.scrap(scrap)
-				.build();
+				.scrap(scrap);
+
+		if (Check.isNotBlank(jsonBOMLine.getCountryCode()))
+		{
+			jsonCreateBOMLineBuilder.attributeSetInstance(JsonAttributeSetInstance.builder()
+																  .attributeInstance(JsonAttributeInstance.builder()
+																							 .attributeCode(GRSSignumConstants.HERKUNFT_ATTRIBUTE_CODE)
+																							 .valueStr(jsonBOMLine.getCountryCode())
+																							 .build())
+																  .build());
+		}
+
+		return jsonCreateBOMLineBuilder.build();
 	}
 
 	@NonNull
@@ -109,5 +129,28 @@ public class PushBOMProductsProcessor implements Processor
 				.jsonBOMCreateRequest(jsonRequest)
 				.orgCode(credentials.getOrgCode())
 				.build();
+	}
+
+	@NonNull
+	private static Optional<String> getPreferredResource(@NonNull final JsonBOM bom)
+	{
+		if (bom.getAdditionalInfos() == null || bom.getAdditionalInfos().size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		final JsonBOMAdditionalInfo additionalInfo = bom.getAdditionalInfos().get(0);
+
+		if (additionalInfo.getPlantConfig() == null || additionalInfo.getPlantConfig().size() != 1)
+		{
+			return Optional.empty();
+		}
+
+		return additionalInfo.getPlantConfig().get(0)
+				.entrySet()
+				.stream()
+				.filter(resource -> resource.getValue() != null && resource.getValue().signum() > 0)
+				.map(Map.Entry::getKey)
+				.findFirst();
 	}
 }

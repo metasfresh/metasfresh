@@ -1,9 +1,9 @@
 package de.metas.material.planning;
 
-import java.time.Instant;
-
 import de.metas.material.planning.event.SupplyRequiredHandler;
 import de.metas.quantity.Quantity;
+
+import java.time.Instant;
 
 /**
  * Instances of this interface specify a material demand. Currently there is no "real" service from which an instance can be obtained.
@@ -40,4 +40,6 @@ public interface IMaterialRequest
 	 * @return sales M_ShipmentSchedule_ID or -1
 	 */
 	int getMrpDemandShipmentScheduleId();
+
+	boolean isSimulated();
 }
