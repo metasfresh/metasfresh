@@ -40,6 +40,6 @@ class SoehenleSendTargetWeightRequestTest
 				.negativeTolerance(new BigDecimal("12"))
 				.build();
 
-		assertThat(request.getCmd()).isEqualTo("<K180K11,00;12,00;9,876>");
+		assertThat(request.getCmd()).isEqualTo("<K180K11,00;12,00;9,88>");
 	}
 }

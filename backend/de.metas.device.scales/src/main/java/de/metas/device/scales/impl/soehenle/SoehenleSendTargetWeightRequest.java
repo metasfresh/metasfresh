@@ -69,9 +69,7 @@ public class SoehenleSendTargetWeightRequest implements IDeviceRequest<NoDeviceR
 	private static String format(@NonNull final BigDecimal value, final int scale)
 	{
 		final BigDecimal absValue = value.abs();
-		final BigDecimal valueToUse = absValue.scale() <= scale
-				? absValue.setScale(scale, RoundingMode.UNNECESSARY)
-				: absValue;
+		final BigDecimal valueToUse = absValue.setScale(scale, RoundingMode.HALF_UP);
 
 		return NumberUtils.toStringWithCustomDecimalSeparator(valueToUse, ',');
 	}
