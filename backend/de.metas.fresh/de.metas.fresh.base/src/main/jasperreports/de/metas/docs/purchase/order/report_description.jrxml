@@ -75,7 +75,7 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="286" splitType="Stretch">
+		<band height="276" splitType="Stretch">
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-10" x="153" y="139" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
@@ -279,6 +279,13 @@
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="37" y="260" width="536" height="13" uuid="3f46d90a-65b9-4c9c-b1ce-e6725b8cd20f"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
