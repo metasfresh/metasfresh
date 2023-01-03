@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
 import static org.assertj.core.api.Assertions.*;
 
 public class OrderCandidateTest
@@ -41,7 +42,7 @@ public class OrderCandidateTest
 	public void givenExistingPath_whenGetCustomField_thenReturnValue() throws IOException
 	{
 		//given
-		final String bPartnerCustomJsonPath = "/orderCustomer/customFields/metasfreshId";
+		final String bPartnerCustomJsonPath = "/customFields/metasfreshId";
 
 		final String customFieldValue = "metasfreshId";
 
@@ -49,7 +50,8 @@ public class OrderCandidateTest
 		final OrderCandidate orderCandidate = objectMapper.readValue(orderCand, OrderCandidate.class);
 
 		//when
-		final String customField = orderCandidate.getCustomField(bPartnerCustomJsonPath);
+		final Customer customer = Customer.of(orderCandidate.getCustomNode(JSON_NODE_ORDER_CUSTOMER), orderCandidate.getJsonOrder().getOrderCustomer());
+		final String customField = customer.getCustomField(bPartnerCustomJsonPath);
 
 		//then
 		assertThat(customField).isNotNull();
@@ -60,13 +62,14 @@ public class OrderCandidateTest
 	public void givenMissingPath_whenGetCustomField_thenReturnValue() throws IOException
 	{
 		//given
-		final String bPartnerCustomJsonPath = "/orderCustomer/customFields/metasfreshId_missing";
+		final String bPartnerCustomJsonPath = "/customFields/metasfreshId_missing";
 
 		final InputStream orderCand = this.getClass().getResourceAsStream(ORDER_CANDIDATE_METASFRESH_ID);
 		final OrderCandidate orderCandidate = objectMapper.readValue(orderCand, OrderCandidate.class);
 
 		//when
-		final String customField = orderCandidate.getCustomField(bPartnerCustomJsonPath);
+		final Customer customer = Customer.of(orderCandidate.getCustomNode(JSON_NODE_ORDER_CUSTOMER), orderCandidate.getJsonOrder().getOrderCustomer());
+		final String customField = customer.getCustomField(bPartnerCustomJsonPath);
 
 		//then
 		assertThat(customField).isNull();

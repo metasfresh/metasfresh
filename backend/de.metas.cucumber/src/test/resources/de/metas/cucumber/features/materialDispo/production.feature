@@ -1,8 +1,9 @@
 @from:cucumber
-Feature: Production dispo scenarios
+Feature: Physical Inventory and disposal - Production dispo scenarios
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
@@ -68,6 +69,7 @@ Feature: Production dispo scenarios
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
+    # note - we expect 2021-04-16 to be converted to 2021-04-15 22:00:00 UTC, because of the time zone (summer - DST) and timezone that we set in the "metasfresh has date and time.."
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-16   |
@@ -189,6 +191,7 @@ Feature: Production dispo scenarios
       | c_l_1_2    | SUPPLY            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 10  | 0                      |
       | c_l_2_1    | DEMAND            | PRODUCTION                    | p_3                     | 2021-04-16T21:00:00Z | -10 | -10                    |
       | c_l_2_2    | SUPPLY            |                               | p_3                     | 2021-04-16T21:00:00Z | 10  | 0                      |
+
   @from:cucumber
   Scenario: One manufacturing candidate is created for the main product, as the stock for component was enough to supply the created demand.
   Partial stock for main product, enough stock for component (S0129.1_130)

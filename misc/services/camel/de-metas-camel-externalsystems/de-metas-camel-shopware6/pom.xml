@@ -173,7 +173,6 @@
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
             <version>10.0.0</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.metas.common.ordercandidates</groupId>
@@ -191,14 +190,6 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>
                 <groupId>org.apache.camel</groupId>
