@@ -49,6 +49,8 @@ const ScanHUAndGetQtyComponent = ({
     scaleTolerance: null,
   });
 
+  const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
+
   useEffect(() => {
     setResolvedBarcodeData({
       userInfo,
@@ -108,8 +110,13 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
+    const qtyMax =
+      isProcessedQtyStillOnScale && !!resolvedBarcodeData.lineQtyToIssue
+        ? resolvedBarcodeData.lineQtyToIssue
+        : resolvedBarcodeData.qtyMax;
+
     // Qty shall be less than or equal to qtyMax
-    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0 && qtyEntered > resolvedBarcodeData.qtyMax) {
+    if (qtyMax && qtyMax > 0 && qtyEntered > qtyMax) {
       return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
         qtyDiff: formatQtyToHumanReadable({ qty: qtyEntered - resolvedBarcodeData.qtyMax, uom }),
       });
