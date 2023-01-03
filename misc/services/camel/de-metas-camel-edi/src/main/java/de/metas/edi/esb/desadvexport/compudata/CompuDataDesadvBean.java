@@ -213,8 +213,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
-		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
-				? xmlDesadv.getDropShipLocationID() : 
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN())
+				? xmlDesadv.getDropShipLocationID() :
 				buyrLocation;
 		return dropShipLocation.getGLN();
 	}
@@ -227,7 +227,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 				buyrLocation;
 		return dropShipLocation.getName();
 	}
-	
+
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
@@ -313,7 +313,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDeliverQTY(formatNumber(
 				packItem.getQtyCUsPerLU(), // OK internal product/CU-UOM.
 				decimalFormat));
-		
+
 		// this is required for the only compudata user that we currently have
 		final String x12DE355 = xmlDesadvLine.getCUOMID().getX12DE355();
 		if(MeasurementUnit.fromMetasfreshUOM(x12DE355).isTuUOM())
