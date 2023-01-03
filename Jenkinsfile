@@ -27,7 +27,7 @@ properties([
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
                 booleanParam(defaultValue: true,
-                        description: 'If true, and the backend is build, then don\'t run the cucumber tests',
+                        description: 'If true, and the backend is build, then don\'t run the cucumber tests.<br/>Note that the cucumber tests are run by the github Actions (docker-based) builds',
                         name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
                 
                 booleanParam(defaultValue: false,

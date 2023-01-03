@@ -42,17 +42,18 @@ public class MultiQueryRequestTest
 	@Test
 	public void test() throws Exception
 	{
-		final Shopware6QueryRequest queryRequest = MultiQueryRequest.builder()
-				.filter(MultiJsonFilter.builder()
-								.operatorType(MultiJsonFilter.OperatorType.OR)
+		final MultiQueryRequest queryRequest = MultiQueryRequest.builder()
+				.filter(JsonQuery.builder()
+								.queryType(QueryType.MULTI)
+								.operatorType(OperatorType.OR)
 								.jsonQuery(JsonQuery.builder()
 												   .field("field_1")
-												   .queryType(JsonQuery.QueryType.EQUALS)
+												   .queryType(QueryType.EQUALS)
 												   .value("value_1")
 												   .build())
 								.jsonQuery(JsonQuery.builder()
 												   .field("field_2")
-												   .queryType(JsonQuery.QueryType.EQUALS)
+												   .queryType(QueryType.EQUALS)
 												   .value("value_2")
 												   .build())
 								.build())
