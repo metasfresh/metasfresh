@@ -47,8 +47,15 @@ public final class POTrlInfo
 	 */
 	private final boolean translated;
 
+	private final boolean translations;
+
 	private final String tableName;
 	private final String keyColumnName;
+	private final String adLanguage;
+
+	@Default
+	@NonNull
+	private final ImmutableList<String> keyColumnNames = ImmutableList.of();
 
 	@Default
 	@NonNull

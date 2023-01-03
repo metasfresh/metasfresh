@@ -176,6 +176,7 @@ $$
     LANGUAGE plpgsql
 ;
 
-COMMENT ON FUNCTION sync_translations_of_tables_without_ad_element_id() IS 'not final'
+COMMENT ON FUNCTION sync_translations_of_tables_without_ad_element_id() IS 'Adds missing Translation to translation tables %_trl for all base and system-languages.
+    In addition updates all base_tables if the current value is not the same as the translation for the current baselanguage'
 ;
 

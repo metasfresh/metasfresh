@@ -588,6 +588,15 @@ public abstract class PO
 		return 0;
 	}   // getID
 
+	public final Object get_ID(int index)
+	{
+		if (m_IDs == null || m_IDs.length == 0 || index >= m_IDs.length)
+		{
+			return -1;
+		}
+		return m_IDs[index];
+	}
+
 	/**
 	 * Return Deleted Single Key Record ID
 	 *
@@ -2969,6 +2978,7 @@ public abstract class PO
 			else
 			{
 				updateTranslations();
+				POTrlRepository.instance.updateBaseTableOnTranslationChange(this);
 			}
 		}
 

@@ -3,15 +3,22 @@ package de.metas.i18n.po;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.reflect.TypeToken;
+import de.metas.cache.CacheMgt;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.Language;
 import de.metas.i18n.impl.ModelTranslation;
 import de.metas.i18n.impl.NullModelTranslation;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,18 +26,29 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Language;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MTable;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
+
+import static org.compiere.model.I_AD_Element.COLUMNNAME_AD_Element_ID;
+import static org.compiere.model.POInfo.getPOInfo;
 
 /*
  * #%L
@@ -65,6 +83,7 @@ public class POTrlRepository
 
 	private static final Logger logger = LogManager.getLogger(POTrlRepository.class);
 	private IClientDAO clientsRepo; // lazy
+	private static final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private static final String TRL_TABLE_SUFFIX = "_Trl";
 	private static final String DYNATTR_TrlUpdateMode_UpdateIdenticalTrls = PO.class.getName() + ".TrlUpdateMode.UpdateIdenticalTrls";
@@ -89,26 +108,51 @@ public class POTrlRepository
 		return tableName + TRL_TABLE_SUFFIX;
 	}
 
-	public final POTrlInfo createPOTrlInfo(final String tableName, @Nullable final String keyColumnName, final List<String> translatedColumnNames)
+	public static String toBaseTableName(final String tableName)
 	{
-		if (keyColumnName == null || Check.isEmpty(keyColumnName))
+		if(!tableName.endsWith(TRL_TABLE_SUFFIX))
+		{
+			return "";
+		}
+		final String baseTableName = StringUtils.replace(tableName, TRL_TABLE_SUFFIX, "");
+		return tableDAO.isExistingTable(baseTableName) ? baseTableName : "";
+	}
+
+	public final POTrlInfo createPOTrlInfo(final String tableName, final ImmutableList<String> keyColumnNames, final List<String> translatedColumnNames)
+	{
+		if (translatedColumnNames.isEmpty() && Objects.equals(toBaseTableName(tableName), ""))
 		{
 			return POTrlInfo.NOT_TRANSLATED;
 		}
 
-		if (translatedColumnNames.isEmpty())
+		if (keyColumnNames.size() == 1)
+		{
+			final String keyColumnName = keyColumnNames.get(0);
+			return POTrlInfo.builder()
+					.translated(!translatedColumnNames.isEmpty())
+					.translations(false)
+					.tableName(tableName)
+					.keyColumnName(keyColumnName)
+					.keyColumnNames(keyColumnNames)
+					.translatedColumnNames(ImmutableList.copyOf(translatedColumnNames))
+					.sqlSelectTrlById(buildSqlSelectTrl(tableName, keyColumnName, translatedColumnNames, false))
+					.sqlSelectTrlByIdAndLanguage(buildSqlSelectTrl(tableName, keyColumnName, translatedColumnNames, true))
+					.build();
+		}
+		else if (tableName.endsWith(TRL_TABLE_SUFFIX) && keyColumnNames.size() == 2)
+		{
+			return POTrlInfo.builder()
+					.translated(!translatedColumnNames.isEmpty())
+					.translations(true)
+					.tableName(tableName)
+					.keyColumnName(null)
+					.keyColumnNames(keyColumnNames)
+					.build();
+		}
+		else
 		{
 			return POTrlInfo.NOT_TRANSLATED;
 		}
-
-		return POTrlInfo.builder()
-				.translated(!translatedColumnNames.isEmpty())
-				.tableName(tableName)
-				.keyColumnName(keyColumnName)
-				.translatedColumnNames(ImmutableList.copyOf(translatedColumnNames))
-				.sqlSelectTrlById(buildSqlSelectTrl(tableName, keyColumnName, translatedColumnNames, false))
-				.sqlSelectTrlByIdAndLanguage(buildSqlSelectTrl(tableName, keyColumnName, translatedColumnNames, true))
-				.build();
 	}
 
 	/**
@@ -255,9 +299,69 @@ public class POTrlRepository
 
 		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} translation records for {}", updatedCount, po);
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.reset(toTrlTableName(tableName), po.get_ID());
 
-		//
 		return updatedCount >= 0;
+	}
+
+	public void updateBaseTableOnTranslationChange(@NonNull final PO po)
+	{
+		final POTrlInfo trlInfo = po.getPOInfo().getTrlInfo();
+		if (!trlInfo.isTranslations())
+		{
+			return;
+		}
+
+		final String trlTableName = po.get_TableName();
+		final String baseTableName = toBaseTableName(trlTableName);
+		if(DB.isDBColumnPresent(baseTableName, COLUMNNAME_AD_Element_ID))
+		{
+			return;
+		}
+
+		final String keyColumnName;
+		final String keyColumnValue;
+		final String languageColumnValue;
+		if(trlInfo.getKeyColumnNames().get(0).equalsIgnoreCase(I_AD_Language.COLUMNNAME_AD_Language))
+		{
+			keyColumnName = trlInfo.getKeyColumnNames().get(1);
+			keyColumnValue = String.valueOf(po.get_ID(1));
+			languageColumnValue = String.valueOf(po.get_ID(0));
+		}
+		else
+		{
+			keyColumnName = trlInfo.getKeyColumnNames().get(0);
+			keyColumnValue = String.valueOf(po.get_ID(0));
+			languageColumnValue = String.valueOf(po.get_ID(1));
+		}
+
+		final String baseLanguage = Language.getBaseLanguage().getAD_Language();
+		if(!Objects.equals(languageColumnValue, baseLanguage))
+		{
+			return;
+		}
+
+		final List<String> translatedColumnNames = getPOInfo(baseTableName).getTranslatedColumnNames();
+		final StringBuilder sqlSet = new StringBuilder();
+
+
+		for (final String columnName : translatedColumnNames)
+		{
+			final String sqlValue = convertValueToSql(po.get_Value(columnName));
+			sqlSet.append(columnName).append("=").append(sqlValue).append(", ");
+		}
+		sqlSet.deleteCharAt(sqlSet.lastIndexOf(","));
+
+		final StringBuilder sql = new StringBuilder()
+				.append("UPDATE ").append(baseTableName).append(" SET ")
+				.append(sqlSet)
+				.append(" WHERE ").append(keyColumnName).append("=").append(keyColumnValue);
+
+		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated {} base records for {}", updatedCount, po);
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.reset(baseTableName);
 	}
 
 	private static String convertValueToSql(@Nullable final Object value)
@@ -302,6 +406,8 @@ public class POTrlRepository
 
 		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} translation records for {}/{}/{}", updatedCount, trlInfo, recordId, adLanguage);
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.reset(toTrlTableName(tableName));
 	}
 
 	/**

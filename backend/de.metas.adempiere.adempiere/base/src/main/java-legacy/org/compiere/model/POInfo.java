@@ -389,7 +389,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		sqlWhereClauseByKeys = buildSqlWhereClauseByKeys();
 		sqlSelectByKeys = buildSqlSelectByKeys();
 
-		trlInfo = POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames);
+		trlInfo = POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnNames, translatedColumnNames);
 	}
 
 	private static POInfoHeader retrievePOInfoHeader(@NonNull final ResultSet rs) throws SQLException
