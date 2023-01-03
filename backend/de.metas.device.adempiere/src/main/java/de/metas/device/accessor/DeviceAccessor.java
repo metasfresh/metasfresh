@@ -99,6 +99,9 @@ public final class DeviceAccessor
 
 	public synchronized void beforeAcquireValue(@NonNull final Map<String, List<String>> parameters)
 	{
-		beforeHooks.forEach(hook -> hook.run(RunParameters.of(parameters), device, request));
+		for (final BeforeAcquireValueHook hook : beforeHooks)
+		{
+			hook.run(RunParameters.of(parameters), device, request);
+		}
 	}
 }

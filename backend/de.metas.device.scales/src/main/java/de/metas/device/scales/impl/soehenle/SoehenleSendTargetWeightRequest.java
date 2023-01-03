@@ -54,21 +54,23 @@ public class SoehenleSendTargetWeightRequest implements IDeviceRequest<NoDeviceR
 	@NonNull
 	public String getCmd()
 	{
+		// two digits after the comma is currently required by the scale as the target weight in KGM;
+		// TODO: figure it out and create something that works in a more generic way
 		return "<K180K"
-				+ format(targetWeight) + ";"
-				+ format(negativeTolerance) + ";"
-				+ format(positiveTolerance) + ">";
+				+ format(targetWeight, 2) + ";"
+				+ format(negativeTolerance, 2) + ";"
+				+ format(positiveTolerance, 2) + ">";
 	}
 
 	/**
 	 * Formats decimal value to fit Soehenle scale specs.
 	 */
 	@NonNull
-	private static String format(@NonNull final BigDecimal value)
+	private static String format(@NonNull final BigDecimal value, final int scale)
 	{
 		final BigDecimal absValue = value.abs();
-		final BigDecimal valueToUse = absValue.scale() == 0
-				? absValue.setScale(1, RoundingMode.UNNECESSARY)
+		final BigDecimal valueToUse = absValue.scale() <= scale
+				? absValue.setScale(scale, RoundingMode.UNNECESSARY)
 				: absValue;
 
 		return NumberUtils.toStringWithCustomDecimalSeparator(valueToUse, ',');
