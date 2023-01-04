@@ -59,6 +59,7 @@ import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
+import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
 
 @Service
 public class OrderService
@@ -69,7 +70,7 @@ public class OrderService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
+	
 	private final AsyncBatchService asyncBatchService;
 
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
@@ -156,19 +157,16 @@ public class OrderService
 
 	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId);
+		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
 
-		asyncBatchService.executeEnqueuedBatch(action, asyncBatchId);
+		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
 	{
 		final ImmutablePair<AsyncBatchId, I_C_Order> batchIdWithOrder = asyncBatchBL.assignPermAsyncBatchToModelIfMissing(order, C_Async_Batch_InternalName_EnqueueScheduleForOrder);
 
-		final Supplier<Void> action = () -> {
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
-			return null;
-		};
+		final Supplier<IEnqueueResult> action = () -> CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
 
 		asyncBatchService.executeBatch(action, batchIdWithOrder.getLeft());
 	}

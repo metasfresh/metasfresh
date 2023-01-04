@@ -22,9 +22,6 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.bpartner.v2.common.JsonDeliveryRule;
-import de.metas.common.bpartner.v2.common.JsonDeliveryViaRule;
-import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -36,10 +33,8 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PAYMENT_TERM_IDENTIFIER_DOC;
 
 @Getter
 @ToString

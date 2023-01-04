@@ -112,6 +112,18 @@ public class C_OLCandToOrderEnqueuer
 	}
 
 	@NonNull
+	public OlCandEnqueueResult enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Queue_WorkPackage result = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
+				.newWorkPackage()
+				.parameter(OLCandProcessor_ID, olCandProcessorId)
+				.setC_Async_Batch_ID(asyncBatchId)
+				.buildAndEnqueue();
+
+		return new OlCandEnqueueResult(ImmutableList.of(QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID())));
+	}
+
+	@NonNull
 	private OlCandEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId selectionId, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		final ILock mainLock = lockSelection(selectionId);
