@@ -37,17 +37,18 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
-    scannedBarcode: null,
-    userInfo: [],
-    qtyCaption: null,
-    qtyTarget: null,
-    qtyMax: null,
-    lineQtyToIssue: null,
-    uom: null,
-    qtyRejectedReasons: null,
-    scaleDevice: null,
-    scaleTolerance: null,
+    userInfo,
+    qtyCaption,
+    qtyTarget,
+    qtyMax,
+    lineQtyToIssue,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
   });
+
+  const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   useEffect(() => {
     setResolvedBarcodeData({
@@ -108,8 +109,13 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
+    const qtyMax =
+      isProcessedQtyStillOnScale && !!resolvedBarcodeData.lineQtyToIssue
+        ? resolvedBarcodeData.lineQtyToIssue
+        : resolvedBarcodeData.qtyMax;
+
     // Qty shall be less than or equal to qtyMax
-    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0 && qtyEntered > resolvedBarcodeData.qtyMax) {
+    if (qtyMax && qtyMax > 0 && qtyEntered > qtyMax) {
       return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
         qtyDiff: formatQtyToHumanReadable({ qty: qtyEntered - resolvedBarcodeData.qtyMax, uom }),
       });

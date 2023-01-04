@@ -27,6 +27,7 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
+  const isProcessedQtyIsStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale') && !!totalQty;
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
@@ -46,8 +47,16 @@ const GetQuantityDialog = ({
 
   const onDialogYes = () => {
     if (allValid) {
+      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+
+      let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
+      if (isProcessedQtyIsStillOnScale && typeof inputQtyEnteredAndValidated === 'number') {
+        const alreadyProcessedQty = totalQty - qtyTarget;
+        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - alreadyProcessedQty, 0);
+      }
+
       onQtyChange({
-        qtyEnteredAndValidated: qtyInfos.toNumberOrString(qtyInfo),
+        qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
       });
