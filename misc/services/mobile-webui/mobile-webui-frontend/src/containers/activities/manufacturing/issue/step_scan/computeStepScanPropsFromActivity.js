@@ -38,6 +38,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     //
     lineQtyToIssueMax,
     lineQtyToIssueRemaining,
+    lineQtyIssued,
     lineQtyToIssue,
     stepQtyToIssue,
   });
@@ -51,6 +52,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     lineQtyToIssue,
     lineQtyToIssueTolerance,
     lineQtyToIssueRemaining,
+    lineQtyIssued,
     isWeightable,
     isIssueWholeHU,
     qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsFromActivity(activity) : null,
