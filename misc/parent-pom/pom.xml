@@ -217,7 +217,9 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.18</version>
+                <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
+                <!-- <version>1.18.18</version> -->
+                <version>1.18.24</version>
             </dependency>
 
             <dependency>

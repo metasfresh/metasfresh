@@ -200,15 +200,15 @@
             <exclusions>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
-                    <artifactId>bcmail-jdk14</artifactId>
+                    <artifactId>bcmail-jdk17</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk14</artifactId>
+                    <artifactId>bcprov-jdk17</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
-                    <artifactId>bctsp-jdk14</artifactId>
+                    <artifactId>bctsp-jdk17</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

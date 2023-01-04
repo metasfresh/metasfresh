@@ -35,7 +35,7 @@
     <artifactId>de-metas-camel-metasfresh</artifactId>
 
     <properties>
-        <java.version>14</java.version>
+        <java.version>17</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <camel.version>3.7.3</camel.version>
         <!--
