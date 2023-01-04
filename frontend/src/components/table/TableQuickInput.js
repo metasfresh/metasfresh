@@ -23,6 +23,7 @@ class TableQuickInput extends PureComponent {
   state = { hasFocus: true, isSubmitPending: false };
 
   componentDidMount() {
+    // noinspection JSIgnoredPromiseFromCall
     this.initQuickInput();
   }
 
@@ -149,8 +150,8 @@ class TableQuickInput extends PureComponent {
 
     return this.patchPromise
       .then(() => completeQuickInput({ windowId, docId, tabId, quickInputId }))
-      .then(() => this.setState({ isSubmitPending: false }))
-      .then(this.initQuickInput);
+      .then(this.initQuickInput)
+      .finally(() => this.setState({ isSubmitPending: false }));
   };
 
   /** Validates form data returning first error */
