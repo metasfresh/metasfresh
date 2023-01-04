@@ -22,7 +22,6 @@
 
 package de.metas.util.web.filter;
 
-import de.metas.cache.CacheMode;
 import de.metas.cache.ThreadLocalCacheController;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -54,8 +53,7 @@ public class CacheControlFilter implements Filter
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
 	{
-
-		try (final IAutoCloseable cacheMode = temporarySetCacheModeIfSpecified((HttpServletRequest)request))
+		try (final IAutoCloseable ignored = temporarySetCacheModeIfSpecified((HttpServletRequest)request))
 		{
 			chain.doFilter(request, response);
 		}
@@ -64,18 +62,16 @@ public class CacheControlFilter implements Filter
 	@Override
 	public void destroy()
 	{
-
 	}
 
 	@NonNull
 	private IAutoCloseable temporarySetCacheModeIfSpecified(@NonNull final HttpServletRequest request)
 	{
 		final String cacheControl = request.getHeader(HttpHeaders.CACHE_CONTROL);
-
 		if (CACHE_CONTROL_NO_CACHE.equals(cacheControl))
 		{
-			logger.debug("Setting CacheMode to " + CacheMode.NO_CACHE.name());
-			return ThreadLocalCacheController.instance.temporarySetCacheMode(CacheMode.NO_CACHE);
+			logger.debug("Temporary disabling cache");
+			return ThreadLocalCacheController.instance.temporaryDisableCache();
 		}
 		else
 		{

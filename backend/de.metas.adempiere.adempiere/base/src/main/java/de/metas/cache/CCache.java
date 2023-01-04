@@ -157,6 +157,8 @@ public class CCache<K, V> implements CacheInterface
 
 	private final CacheAdditionListener<K, V> additionListener;
 
+	private final boolean allowDisablingCacheByThreadLocal;
+
 	/**
 	 * Metasfresh Cache - expires after 2 hours
 	 *
@@ -211,7 +213,7 @@ public class CCache<K, V> implements CacheInterface
 			if (tableName == null)
 			{
 				this.cacheName = "$NoCacheName$" + cacheId;
-				tableNameEffective = "$NoTableName$" + cacheId;
+				tableNameEffective = CacheLabel.NO_TABLENAME_PREFIX + cacheId;
 			}
 			else
 			{
@@ -261,6 +263,8 @@ public class CCache<K, V> implements CacheInterface
 			this.debugAquireStacktrace = null; // N/A
 			this.debugId = null; // N/A
 		}
+
+		this.allowDisablingCacheByThreadLocal = ThreadLocalCacheController.computeAllowDisablingCache(this.cacheName, this.labels);
 
 		//
 		// Register it to CacheMgt
@@ -594,7 +598,7 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			if (mustRecomputeCache())
+			if (isNoCache())
 			{
 				remove(key);
 			}
@@ -675,7 +679,7 @@ public class CCache<K, V> implements CacheInterface
 				return ImmutableList.of();
 			}
 
-			if (mustRecomputeCache())
+			if (isNoCache())
 			{
 				removeAll(keys);
 			}
@@ -846,33 +850,9 @@ public class CCache<K, V> implements CacheInterface
 		return new CCacheStats(cacheId, cacheName, cache.size(), cache.stats());
 	}
 
-	private boolean mustRecomputeCache()
+	private boolean isNoCache()
 	{
-		final boolean isNoCacheMode = ThreadLocalCacheController.instance.getCacheMode() == CacheMode.NO_CACHE;
-
-		if (!isNoCacheMode)
-		{
-			return false;
-		}
-
-		//don't recompute when dictionary tables are involved.
-		return !isDictionaryCache();
-	}
-
-	private boolean isDictionaryCache()
-	{
-		final Set<String> nonDictionaryTableNames = labels.stream()
-				.map(CacheLabel::getName)
-				.filter(label -> !(label.startsWith("AD_") || label.contains("$NoTableName$")))
-				//ignore the label created from this.cacheName as it's not necessary a table name
-				.filter(label -> !label.equals(cacheName))
-				.collect(ImmutableSet.toImmutableSet());
-
-		final boolean anyDictionaryTableNames = labels.stream()
-				.map(CacheLabel::getName)
-				.anyMatch(label -> label.startsWith("AD_"));
-
-		return anyDictionaryTableNames && nonDictionaryTableNames.isEmpty();
+		return allowDisablingCacheByThreadLocal && ThreadLocalCacheController.instance.isNoCache();
 	}
 
 	@SuppressWarnings("serial")

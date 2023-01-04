@@ -22,6 +22,7 @@
 
 package de.metas.cache;
 
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 
@@ -29,26 +30,49 @@ public final class ThreadLocalCacheController
 {
 	public static final ThreadLocalCacheController instance = new ThreadLocalCacheController();
 
+	@NonNull
+	private final ThreadLocal<Boolean> noCacheRef = new ThreadLocal<>();
+
 	private ThreadLocalCacheController()
 	{
 	}
 
-	@NonNull
-	private final ThreadLocal<CacheMode> cacheModeRef = new ThreadLocal<>();
-
-	@NonNull
-	public CacheMode getCacheMode()
+	public static boolean computeAllowDisablingCache(final String cacheName, final ImmutableSet<CacheLabel> labels)
 	{
-		final CacheMode cacheMode = cacheModeRef.get();
-		return cacheMode != null ? cacheMode : CacheMode.DEFAULT;
+		return !isApplicationDictionaryCache(cacheName, labels);
+	}
+
+	private static boolean isApplicationDictionaryCache(final String cacheName, final ImmutableSet<CacheLabel> labels)
+	{
+		final boolean anyApplicationDictionaryTableNames = labels.stream().anyMatch(CacheLabel::isApplicationDictionaryTableName);
+		if (!anyApplicationDictionaryTableNames)
+		{
+			return false;
+		}
+
+		final boolean anyNonApplicationDictionaryTableNames = labels.stream().anyMatch(label -> isNonApplicationDictionaryTableName(label, cacheName));
+		return !anyNonApplicationDictionaryTableNames;
+	}
+
+	private static boolean isNonApplicationDictionaryTableName(final CacheLabel label, final String cacheName)
+	{
+		return label.equalsByName(cacheName) //ignore the label created from this.cacheName as it's not necessary a table name
+				&& !label.isNoTableName() // does not contain the "NoTableName" marker
+				&& !label.isApplicationDictionaryTableName();
+	}
+
+	public boolean isNoCache()
+	{
+		final Boolean noCache = noCacheRef.get();
+		return noCache != null && noCache;
 	}
 
 	@NonNull
-	public IAutoCloseable temporarySetCacheMode(@NonNull final CacheMode cacheMode)
+	public IAutoCloseable temporaryDisableCache()
 	{
-		final CacheMode old = cacheModeRef.get();
+		final Boolean noCachePrev = noCacheRef.get();
 
-		cacheModeRef.set(cacheMode);
+		noCacheRef.set(Boolean.TRUE);
 
 		return new IAutoCloseable()
 		{
@@ -63,8 +87,9 @@ public final class ThreadLocalCacheController
 				}
 				closed = true;
 
-				cacheModeRef.set(old);
+				noCacheRef.set(noCachePrev);
 			}
 		};
 	}
+
 }
