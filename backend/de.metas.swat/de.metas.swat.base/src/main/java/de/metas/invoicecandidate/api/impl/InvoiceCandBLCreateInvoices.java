@@ -3,7 +3,6 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -17,9 +16,12 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.impex.InputDataSourceId;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -42,12 +44,17 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.Tax;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -66,8 +73,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -76,6 +85,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -140,6 +150,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
@@ -184,6 +195,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private IInvoiceHeader header;
 		private Properties ctx;
 
+		@Nullable
 		private I_C_Invoice createdInvoice = null;
 		private final List<I_AD_Note> notifications = new ArrayList<>();
 
@@ -249,9 +261,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
-			//
-			// Complete the invoice and assume it's status is COmpleted.
-			docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			if(getInvoicingParams().isCompleteInvoices())
+			{
+				// Complete the invoice and assume its status is COmpleted.
+				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			}
+			else 
+			{
+				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);	
+			}
 
 			//
 			// Set the created invoice which will be retrieved by the caller.
@@ -330,7 +348,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// => start creating the invoice from Order
 			if (createInvoiceFromOrder && invoiceHeader.getC_Order_ID() > 0)
 			{
-				final I_C_Order order = create(ctx, invoiceHeader.getC_Order_ID(), I_C_Order.class, trxName);
+				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
 				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
 						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
@@ -373,6 +391,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 
+			invoice.setSalesRep_ID(UserId.toRepoId(invoiceHeader.getSalesRepId()));
+
 			setC_DocType(invoice, invoiceHeader);
 
 			final BPartnerInfo billTo = invoiceHeader.getBillTo();
@@ -391,15 +411,38 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
+			if (Check.isBlank(invoice.getEMail()))
+			{
+				invoice.setEMail(invoiceHeader.getEMail());
+			}
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
+			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
+			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
+			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
 
 			if (invoiceHeader.getM_InOut_ID() > 0)
 			{
-				invoice.setM_InOut_ID(invoiceHeader.getM_InOut_ID()); // task 06630
+				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(invoiceHeader.getM_InOut_ID()));
+				invoice.setM_InOut_ID(inout.getM_InOut_ID()); // task 06630
+				if (!Check.isBlank(inout.getEMail()))
+				{
+					invoice.setEMail(inout.getEMail());
+				}
 			}
 
-			//
+			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
+			invoice.setM_SectionCode_ID(SectionCodeId.toRepoId(invoiceHeader.getM_SectionCode_ID()));
+
+			if (invoiceHeader.getProjectId() != null)
+			{
+				invoice.setC_Project_ID(ProjectId.toRepoId(invoiceHeader.getProjectId()));
+			}
+
+			if (invoiceHeader.getActivityId() != null)
+			{
+				invoice.setC_Activity_ID(ActivityId.toRepoId(invoiceHeader.getActivityId()));
+			}
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -493,7 +536,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
 			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 			final boolean invoice_IsCreditMemo = invoiceDocBaseType.isCreditMemo();
-			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
+			if (invoiceHeader_IsCreditMemo != invoice_IsCreditMemo)
 			{
 				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
@@ -629,7 +672,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				invoiceLine.setC_UOM_ID(cand.getC_UOM_ID()); // 06718
 				invoiceLine.setPrice_UOM_ID(cand.getPrice_UOM_ID()); // 06942
+				invoiceLine.setC_Shipping_Location_ID(cand.getC_Shipping_Location_ID());
 
+				invoiceLine.setC_Flatrate_Term_ID(cand.getC_Flatrate_Term_ID());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)
@@ -649,6 +694,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setPriceEntered(ilVO.getPriceEntered().toMoney().toBigDecimal());
 				invoiceLine.setDiscount(ilVO.getDiscount().toBigDecimal());
 				invoiceLine.setPriceActual(ilVO.getPriceActual().toMoney().toBigDecimal());
+				invoiceLine.setC_VAT_Code_ID(ilVO.getC_VAT_Code_ID());
 
 				// set activity, tax and tax category from the invoice candidate (07442)
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
@@ -693,7 +739,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
 						final StockQtyAndUOMQty qtysInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/* note */); // TODO
+
+						final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+								.invoiceCand(candForIlVO)
+								.invoiceLine(invoiceLine)
+								.qtysInvoiced(qtysInvoiced)
+								.note(null)
+								.invoiceLineAllocType(InvoiceLineAllocType.CreatedFromIC)
+								.build();
+						invoiceCandBL.createUpdateIla(request); // TODO
 
 						// #870
 						// Make sure the Qty and Price override are set to null when an invoiceline is created
@@ -1162,7 +1216,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

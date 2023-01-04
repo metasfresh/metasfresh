@@ -23,30 +23,35 @@
 package de.metas.project.service;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.project.ProjectAndLineId;
+import de.metas.project.ProjectCategory;
+import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.listeners.CompositeProjectStatusListener;
 import de.metas.project.service.listeners.ProjectStatusListener;
+import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.X_C_Project;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,35 +59,33 @@ import java.util.Optional;
 public class ProjectService
 {
 	private static final Logger logger = LogManager.getLogger(ProjectService.class);
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+
+	private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+
 	private final ProjectTypeRepository projectTypeRepository;
 	private final ProjectRepository projectRepository;
 	private final ProjectLineRepository projectLineRepository;
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final CompositeProjectStatusListener projectStatusListeners;
 
 	public ProjectService(
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
 			@NonNull final ProjectRepository projectRepository,
 			@NonNull final ProjectLineRepository projectLineRepository,
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final Optional<List<ProjectStatusListener>> projectStatusListeners)
 	{
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.projectTypeRepository = projectTypeRepository;
 		this.projectRepository = projectRepository;
 		this.projectLineRepository = projectLineRepository;
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.projectStatusListeners = CompositeProjectStatusListener.ofList(projectStatusListeners.orElseGet(ImmutableList::of));
 		logger.info("projectClosedListeners: {}", projectStatusListeners);
 	}
 
-	public I_C_Project getById(@NonNull final ProjectId id)
+	public I_C_Project getRecordById(@NonNull final ProjectId id)
 	{
-		return projectRepository.getById(id);
-	}
-
-	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId id)
-	{
-		return projectTypeRepository.getById(id);
+		return projectRepository.getRecordById(id);
 	}
 
 	public List<ProjectLine> getLines(@NonNull final ProjectId projectId)
@@ -100,83 +103,36 @@ public class ProjectService
 		return projectLineRepository.retrieveLinesByOrderId(orderId);
 	}
 
-	public ProjectId createProject(@NonNull final CreateProjectRequest request)
+	public ProjectId createProject(@NonNull final CreateServiceOrRepairProjectRequest request)
 	{
-		final I_C_Project project = InterfaceWrapperHelper.newInstance(I_C_Project.class);
-		project.setAD_Org_ID(request.getOrgId().getRepoId());
-		project.setCommittedAmt(BigDecimal.ZERO);
-		project.setCommittedQty(BigDecimal.ZERO);
-		project.setInvoicedAmt(BigDecimal.ZERO);
-		project.setInvoicedQty(BigDecimal.ZERO);
-		project.setIsSummary(false);
-		project.setPlannedAmt(BigDecimal.ZERO);
-		project.setPlannedMarginAmt(BigDecimal.ZERO);
-		project.setPlannedQty(BigDecimal.ZERO);
-		project.setProcessed(false);
-		project.setProjectBalanceAmt(BigDecimal.ZERO);
-		project.setProjectLineLevel(X_C_Project.PROJECTLINELEVEL_Project);
-		project.setProjInvoiceRule(X_C_Project.PROJINVOICERULE_ProductQuantity);
+		final ProjectData.ProjectDataBuilder projectDataBuilder = ProjectData.builder()
+				.orgId(request.getOrgId())
+				.bPartnerId(request.getBpartnerAndLocationId().getBpartnerId())
+				.bPartnerLocationId(request.getBpartnerAndLocationId())
+				.contactId(request.getContactId())
+				.currencyId(request.getCurrencyId())
+				.priceListVersionId(request.getPriceListVersionId())
+				.warehouseId(request.getWarehouseId());
 
 		//
 		// Project Type (and related)
 		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrg(
 				request.getProjectCategory(),
 				request.getOrgId());
-		project.setC_ProjectType_ID(projectTypeId.getRepoId());
-		updateFromProjectType(project);
 
-		//
-		// BPartner & Location
-		project.setC_BPartner_ID(request.getBpartnerAndLocationId().getBpartnerId().getRepoId());
-		project.setC_BPartner_Location_ID(request.getBpartnerAndLocationId().getRepoId());
-		project.setAD_User_ID(BPartnerContactId.toRepoId(request.getContactId()));
+		projectDataBuilder.projectTypeId(projectTypeId);
+		final RequestStatusCategoryId requestStatusCategoryId = projectTypeRepository.getById(projectTypeId).getRequestStatusCategoryId();
+		projectDataBuilder.requestStatusCategoryId(requestStatusCategoryId);
+		setFromProjectType(projectDataBuilder, projectTypeId);
 
-		//
-		// Pricing Info
-		project.setC_Currency_ID(request.getCurrencyId().getRepoId());
-		project.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
-		project.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		final ProjectId projectId = projectRepository.create(projectDataBuilder.build()).getId();
 
-		projectRepository.save(project);
-		final ProjectId projectId = ProjectId.ofRepoId(project.getC_Project_ID());
-
-		for (final CreateProjectRequest.ProjectLine lineRequest : request.getLines())
+		for (final CreateServiceOrRepairProjectRequest.ProjectLine lineRequest : request.getLines())
 		{
 			projectLineRepository.createProjectLine(lineRequest, projectId, request.getOrgId());
 		}
 
 		return projectId;
-	}
-
-	public void updateFromProjectType(@NonNull final I_C_Project projectRecord)
-	{
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
-		if (projectTypeId == null)
-		{
-			return;
-		}
-
-		final String projectValue = computeNextProjectValue(projectRecord);
-		if (projectValue != null)
-		{
-			projectRecord.setValue(projectValue);
-		}
-		if (Check.isEmpty(projectRecord.getName()))
-		{
-			projectRecord.setName(projectValue != null ? projectValue : ".");
-		}
-
-		final ProjectType projectType = getProjectTypeById(projectTypeId);
-		projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());
-	}
-
-	@Nullable
-	private String computeNextProjectValue(final I_C_Project projectRecord)
-	{
-		return documentNoBuilderFactory
-				.createValueBuilderFor(projectRecord)
-				.setFailOnError(false)
-				.build();
 	}
 
 	public void createProjectLine(@NonNull final CreateProjectLineRequest request)
@@ -209,13 +165,13 @@ public class ProjectService
 
 	public boolean isClosed(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project projectRecord = getById(projectId);
+		final I_C_Project projectRecord = getRecordById(projectId);
 		return projectRecord.isProcessed();
 	}
 
 	public void closeProject(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project projectRecord = getById(projectId);
+		final I_C_Project projectRecord = getRecordById(projectId);
 		if (projectRecord.isProcessed())
 		{
 			throw new AdempiereException("Project already closed: " + projectId);
@@ -233,7 +189,7 @@ public class ProjectService
 
 	public void uncloseProject(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project projectRecord = getById(projectId);
+		final I_C_Project projectRecord = getRecordById(projectId);
 		if (!projectRecord.isProcessed())
 		{
 			throw new AdempiereException("Project not closed: " + projectId);
@@ -249,4 +205,55 @@ public class ProjectService
 		projectStatusListeners.onAfterUnClose(projectRecord);
 	}
 
+	private void setFromProjectType(
+			@NonNull final ProjectData.ProjectDataBuilder projectDataBuilder,
+			@NonNull final ProjectTypeId projectTypeId)
+	{
+		final String projectValue = getNextProjectValue(projectTypeId);
+
+		if (Check.isBlank(projectValue))
+		{
+			throw new AdempiereException("Could not compute C_Project.Value for projectTypeId: " + projectTypeId);
+		}
+
+		projectDataBuilder.value(projectValue);
+		projectDataBuilder.name(projectValue);
+	}
+
+	@Nullable
+	public ProjectCategory getProjectCategoryFromProjectType(@NonNull final ProjectTypeId projectTypeId)
+	{
+		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+		return projectType.getProjectCategory();
+	}
+
+	@Nullable
+	public String getNextProjectValue(@NonNull final ProjectTypeId projectTypeId)
+	{
+		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+		final DocSequenceId docSequenceId = projectType.getDocSequenceId();
+
+		if (docSequenceId == null)
+		{
+			return null;
+		}
+
+		final DocumentSequenceInfo documentSequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
+
+		if (documentSequenceInfo == null)
+		{
+			return null;
+		}
+
+		return documentNoBuilderFactory.createDocumentNoBuilder()
+				.setDocumentSequenceInfo(documentSequenceInfo)
+				.setClientId(projectType.getClientAndOrgId().getClientId())
+				.setFailOnError(false)
+				.build();
+	}
+
+	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId projectTypeId)
+	{
+		return projectTypeRepository.getById(projectTypeId);
+	}
 }

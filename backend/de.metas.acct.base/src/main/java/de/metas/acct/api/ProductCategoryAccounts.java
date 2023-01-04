@@ -1,20 +1,18 @@
 package de.metas.acct.api;
 
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.product.ProductCategoryId;
+import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -38,25 +36,16 @@ import lombok.ToString;
  * #L%
  */
 
-@EqualsAndHashCode
-@ToString
+@Value
 public class ProductCategoryAccounts
 {
-	@Getter
-	@NonNull
-	private final ProductCategoryId productCategoryId;
-	@Getter
-	@NonNull
-	private final AcctSchemaId acctSchemaId;
+	@NonNull ProductCategoryId productCategoryId;
+	@NonNull AcctSchemaId acctSchemaId;
 
-	@Getter
-	@Nullable
-	private CostingLevel costingLevel;
-	@Getter
-	@Nullable
-	private CostingMethod costingMethod;
+	@Nullable CostingLevel costingLevel;
+	@Nullable CostingMethod costingMethod;
 
-	private final ImmutableMap<String, Optional<AccountId>> accountIdsByColumnName;
+	@Getter(AccessLevel.NONE) ImmutableMap<String, Optional<AccountId>> accountIdsByColumnName;
 
 	@Builder
 	private ProductCategoryAccounts(

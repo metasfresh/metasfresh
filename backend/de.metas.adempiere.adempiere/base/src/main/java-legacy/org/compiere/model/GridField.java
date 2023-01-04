@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.swing.SwingUtilities;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -153,14 +154,14 @@ public class GridField
 	}   // dispose
 
 	/** Lookup supplier for this field */
-	private ExtendedMemorizingSupplier<Lookup> lookupSupplier = ExtendedMemorizingSupplier.of(() -> createLookup());
+	private ExtendedMemorizingSupplier<Lookup> lookupSupplier = ExtendedMemorizingSupplier.of(this::createLookup);
 	/** New Row / inserting */
 	private boolean m_inserting = false;
 
 	/** The current value */
 	private Object m_value = null;
 	/** The old to force Property Change */
-	private static Object s_oldValue = new Object();
+	private static final Object s_oldValue = new Object();
 	/** The old/previous value */
 	private Object m_oldValue = s_oldValue;
 	/** Only fire Property Change if old value really changed */
@@ -217,11 +218,10 @@ public class GridField
 			if (displayType == DisplayType.Table
 					&& (columnName.equals("CreatedBy") || columnName.equals("UpdatedBy")))
 			{
-				lookupInfo.setIsCreadedUpdatedBy(true);
+				lookupInfo.setCreatedUpdatedBy(true);
 				lookupInfo.setDisplayType(DisplayType.Search);
 			}
 			//
-			lookupInfo.setIsKey(isKey());
 			return new MLookup(getCtx(), vo.getAD_Column_ID(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
@@ -456,7 +456,6 @@ public class GridField
 
 	public boolean isEditable(final Properties rowCtx, final GridTabLayoutMode tabLayoutMode)
 	{
-		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final boolean checkContext = rowCtx != null;
 
 		//
@@ -470,7 +469,7 @@ public class GridField
 		// Fields always enabled (are usually not updateable and are usually buttons),
 		// even if the parent tab is processed/not active
 		if (m_vo.getColumnName().equals("Posted")
-				|| (columnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
+				|| (IColumnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
 		{
 			return true;
 		}
@@ -822,7 +821,7 @@ public class GridField
 		return null;
 	}	// getDefault
 
-	private final TableAccessLevel getTableAccessLevel(final Properties ctx)
+	private TableAccessLevel getTableAccessLevel(final Properties ctx)
 	{
 		final String accessLevelStr = Env.getContext(ctx, m_vo.WindowNo, m_vo.TabNo, GridTab.CTX_AccessLevel);
 		if (Check.isEmpty(accessLevelStr))
@@ -876,8 +875,6 @@ public class GridField
 	/**
 	 * Method can be used to validate a given value without actually settings it.
 	 *
-	 * @param value
-	 * @return
 	 */
 	private boolean validateValue(final Object value)
 	{
@@ -1038,12 +1035,8 @@ public class GridField
 		return m_vo.getDisplayType();
 	}
 
-	/**
-	 * Get AD_Reference_Value_ID
-	 *
-	 * @return reference value
-	 */
-	public int getAD_Reference_Value_ID()
+	@Nullable
+	public ReferenceId getAD_Reference_Value_ID()
 	{
 		return m_vo.getAD_Reference_Value_ID();
 	}
@@ -1168,7 +1161,6 @@ public class GridField
 	/**
 	 * Set auto-complete on {@link #m_vo}
 	 *
-	 * @param autoComplete
 	 */
 	public void setAutocomplete(final boolean autoComplete)
 	{
@@ -1802,7 +1794,7 @@ public class GridField
 	 *
 	 * @author teo_sarca [ 1699826 ]
 	 */
-	private final void backupValue()
+	private void backupValue()
 	{
 		if (!m_isBackupValue)
 		{
@@ -1920,7 +1912,6 @@ public class GridField
 	}
 
 	/**
-	 * @param gridTab
 	 */
 	public void setGridTab(GridTab gridTab)
 	{
@@ -1969,7 +1960,7 @@ public class GridField
 					+ Arrays.asList(propertyChangeListeners));
 		}
 
-		Services.get(IClientUI.class).invokeLater(getWindowNo(), () -> requestFocusInCurrentThread());
+		Services.get(IClientUI.class).invokeLater(getWindowNo(), this::requestFocusInCurrentThread);
 	}
 
 	/**
@@ -1992,9 +1983,8 @@ public class GridField
 	 * Check if current record is active. If the "IsActive" flag is not defined in current tab, parent tab (if any) is checked. If "IsActive" flag was not found, IsActive on window level is checked.
 	 * If "IsActive" flag was not found, we consider it true.
 	 *
-	 * @param ctx
 	 * @return true if the current record is active
-	 * @task http://dewiki908/mediawiki/index.php/03297:_Cockpit_Tab_%22Weitere_Daten%22_readonly_first_time_opening_%282012091810000052%29
+	 * @implSpec task http://dewiki908/mediawiki/index.php/03297:_Cockpit_Tab_%22Weitere_Daten%22_readonly_first_time_opening_%282012091810000052%29
 	 */
 	private boolean isActive(Properties ctx)
 	{
@@ -2045,7 +2035,7 @@ public class GridField
 		return GridTab.isProcessed(ctx, getWindowNo(), getTabNo());
 	}
 
-	private final boolean isParentTabProcessedOrNotActive(final Properties ctx)
+	private boolean isParentTabProcessedOrNotActive(final Properties ctx)
 	{
 		final GridTab gridTab = getGridTab();
 		if (gridTab == null)
@@ -2064,7 +2054,7 @@ public class GridField
 	}
 
 	/**
-	 * @task metas-2009_0021_AP1_CR051
+	 * @implSpec task metas-2009_0021_AP1_CR051
 	 */
 	public int getIncludedTabHeight()
 	{
@@ -2081,53 +2071,9 @@ public class GridField
 		return m_vo.getColorLogic();
 	}
 
-	public void setValueFromString(final String valueStr, final boolean inserting)
-	{
-		final Object value = createDefault(valueStr);
-		setValue(value, inserting);
-	}
-
-	/**
-	 * Gets AttributeName to be used for storing/loading default values (i.e. from AD_Preference)
-	 *
-	 * @return attribute name
-	 */
-	public String getPreferenceAttributeName()
-	{
-		final String attributeName;
-
-		if (isStandardTabNo())
-		{
-			attributeName = m_vo.getColumnName();
-		}
-		else
-		{
-			// If it's not a standard tab then we need to also concatenate the TabNo because we don't want to disturb the standard functionality
-			attributeName = m_vo.TabNo + "#" + m_vo.getColumnName();
-		}
-
-		return attributeName;
-	}
-
-	/**
-	 *
-	 * @return true if this field is on a standard TabNo (i.e. TabNo <= 50).
-	 */
-	public boolean isStandardTabNo()
-	{
-		// TabNo > 50 ... means not a regular tab (e.g. FindWindow)
-		if (m_vo.TabNo > 50 || m_vo.TabNo < 0)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
 	/**
 	 * Create evaluation context based on given rowCtx (if not null) or current GridField
 	 *
-	 * @param rowCtx
 	 * @return evaluation context to be used in expression evaluation
 	 */
 	public Evaluatee createEvaluationContext(final Properties rowCtx)
@@ -2170,13 +2116,7 @@ public class GridField
 			return false;
 		}
 
-		if (gridTab.isProcessed() && !isAlwaysUpdateable())		// only active records
-		{
-			return false;
-		}
-
-		return true;
-
+		return !gridTab.isProcessed() || isAlwaysUpdateable();
 	}
 
 	// metas: end
@@ -2283,7 +2223,7 @@ public class GridField
 		final GridTab gridTab = getGridTab();
 		if(gridTab == null)
 		{
-			log.warn("Could not fire EEvent on {} because gridTab is not set. The event was: errorLog={}, info={}, isError={}", this, errorLog);
+			log.warn("Could not fire EEvent on {} because gridTab is not set. The event was: errorLog={}", this, errorLog);
 			return;
 		}
 

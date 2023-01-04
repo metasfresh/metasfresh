@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -466560030L;
+	private static final long serialVersionUID = 863199146L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
@@ -354,6 +354,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsSimulated (final boolean IsSimulated)
+	{
+		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
+	}
+
+	@Override
+	public boolean isSimulated()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
+	}
+
+	@Override
 	public void setIsTaxIncluded (final boolean IsTaxIncluded)
 	{
 		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
@@ -477,6 +489,33 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setPOReference (final @Nullable String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public String getPOReference()
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setPrice_UOM_ID (final int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1)
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else
+			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
+	}
+
+	@Override
+	public int getPrice_UOM_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
+	}
+
+	@Override
 	public void setPriceDifference (final @Nullable BigDecimal PriceDifference)
 	{
 		throw new IllegalArgumentException ("PriceDifference is virtual column");	}
@@ -537,6 +576,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
+	{
+		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+	}
+
+	@Override
+	public java.lang.String getProductDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
 
 	@Override

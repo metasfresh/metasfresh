@@ -8,7 +8,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
@@ -31,8 +33,9 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -40,19 +43,24 @@ import de.metas.money.CurrencyId;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
@@ -166,7 +174,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 	private static final DocBaseAndSubType DOCTYPE_SALES_INVOICE = DocBaseAndSubType.of("ARI", "KV");
 
-	private OrderCandidatesRestControllerImpl orderCandidatesRestControllerImpl;
+	private OrderCandidatesRestController orderCandidatesRestControllerImpl;
 
 	private OLCandBL olCandBL;
 
@@ -192,6 +200,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
@@ -228,13 +238,13 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 			testMasterdata.createSalesRep("SalesRep");
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
-					X_C_DocType.DOCSUBTYPE_StandardOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_StandardOrder));
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
-					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder));
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
+
+			SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -242,7 +252,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -257,11 +267,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonServiceFactory,
 				new JsonRequestConsolidateService());
 
-		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
+		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
-				new NoopPerformanceMonitoringService());
+				NoopPerformanceMonitoringService.INSTANCE);
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();
@@ -277,11 +287,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				olCandBL,
 				new DummyOLCandWithUOMForTUsCapacityProvider());
 
-		final OLCandRegistry olCandRegistry = new OLCandRegistry(
+		final OLCandSPIRegistry olCandSPIRegistry = new OLCandSPIRegistry(
 				Optional.empty(),
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
-		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
@@ -292,16 +302,16 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 	{
 		@Override
-		public boolean isProviderNeededForOLCand(final I_C_OLCand olCand)
+		public boolean isProviderNeededForOLCand(@NonNull final I_C_OLCand olCand)
 		{
 			return false;
 		}
 
-		@Nullable
+		@NonNull
 		@Override
-		public Quantity computeQtyItemCapacity(final I_C_OLCand olCand)
+		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return null;
+			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 
@@ -908,7 +918,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand olCand = olCands.get(0);
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1034,7 +1044,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getLastUpdatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1075,7 +1085,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(
@@ -1148,7 +1158,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(

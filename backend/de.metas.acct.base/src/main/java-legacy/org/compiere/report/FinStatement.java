@@ -309,7 +309,7 @@ public class FinStatement extends JavaProcess
 			}
 		}
 		//
-		int no = DB.executeUpdate(sb.toString(), get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString(), get_TrxName());
 		log.debug("#" + no + " (Account_ID=" + p_Account_ID + ")");
 		log.trace(sb.toString());
 	}	//	createBalanceLine
@@ -331,7 +331,7 @@ public class FinStatement extends JavaProcess
 			.append(" AND TRUNC(DateAcct) BETWEEN ").append(DB.TO_DATE(p_DateAcct_From))
 			.append(" AND ").append(DB.TO_DATE(p_DateAcct_To));
 		//
-		int no = DB.executeUpdate(sb.toString(), get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString(), get_TrxName());
 		log.debug("#" + no);
 		log.trace(sb.toString());
 
@@ -346,7 +346,7 @@ public class FinStatement extends JavaProcess
 			.append(sql_select).append(") "
 			+ "WHERE Fact_Acct_ID <> 0 AND AD_PInstance_ID=").append(getPinstanceId().getRepoId());
 		//
-	   no = DB.executeUpdate(DB.convertSqlToNative(sb.toString()), get_TrxName());
+	   no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sb.toString()), get_TrxName());
 	   log.debug("Name #" + no);
 	   log.trace("Name - " + sb);
 

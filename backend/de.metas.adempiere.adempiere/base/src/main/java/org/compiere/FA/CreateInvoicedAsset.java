@@ -35,11 +35,8 @@ package org.compiere.FA;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.MAssetAcct;
 import org.compiere.model.MAssetChange;
 import org.compiere.model.MRefList;
@@ -54,8 +51,10 @@ import org.compiere.model.X_C_InvoiceLine;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *	Create Asset from Invoice Process
@@ -266,8 +265,6 @@ public class CreateInvoicedAsset extends JavaProcess
 								change.setIsDisposed(asset.isDisposed());
 								change.setIsDepreciated(asset.isDepreciated());
 								change.setIsFullyDepreciated(asset.isFullyDepreciated());
-								change.setLot(asset.getLot());
-								change.setSerNo(asset.getSerNo());
 								change.setVersionNo(asset.getVersionNo());
 							    change.setUseLifeMonths(asset.getUseLifeMonths());
 							    change.setUseLifeYears(asset.getUseLifeYears());

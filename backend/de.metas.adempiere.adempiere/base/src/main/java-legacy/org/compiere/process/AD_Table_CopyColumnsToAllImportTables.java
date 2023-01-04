@@ -1,14 +1,5 @@
 package org.compiere.process;
 
-import java.util.List;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
-import org.adempiere.ad.table.api.impl.CopyColumnsResult;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Table;
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -16,6 +7,14 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
+import org.adempiere.ad.table.api.impl.CopyColumnsResult;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
+
+import java.util.List;
 
 /*
  * #%L
@@ -46,7 +45,7 @@ public class AD_Table_CopyColumnsToAllImportTables extends JavaProcess implement
 	private static final String TABLENAME_X_ImportTableTemplate = "X_ImportTableTemplate";
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!context.isSingleSelection())
 		{
@@ -54,7 +53,7 @@ public class AD_Table_CopyColumnsToAllImportTables extends JavaProcess implement
 		}
 
 		final AdTableId adTableId = AdTableId.ofRepoId(context.getSingleSelectedRecordId());
-		String tableName = adTablesRepo.retrieveTableName(adTableId);
+		final String tableName = adTablesRepo.retrieveTableName(adTableId);
 		if (!TABLENAME_X_ImportTableTemplate.equals(tableName))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not the import table template");

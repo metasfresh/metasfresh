@@ -1,0 +1,47 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:OrderCancellation-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "OrderCancellation":{
+ "UBLVersionID":{"_":"2.1"},
+ "CustomizationID":{"_":"urn:www.cenbii.eu:transaction:biicoretrdmXYZ:ver1.0"},
+ "ProfileID":{"_":"urn:www.cenbii.eu:profile:BIIXYZ:ver1.0",
+  "schemeAgencyID":"BII",
+  "schemeID":"Profile"},
+ "ID":{"_":"7"},
+ "IssueDate":{"_":"2010-01-21"},
+ "IssueTime":{"_":"12:30:00Z"},
+ "CancellationNote":[{"_":"With reference to phone call"}],
+ "OrderReference":[{
+  "ID":{"_":"34"}
+ }],
+ "BuyerCustomerParty":{
+  "Party":{
+   "EndpointID":{"_":"7300072311115",
+    "schemeAgencyID":"9",
+    "schemeID":"GLN"},
+   "PartyIdentification":[{
+    "ID":{"_":"7300070011115",
+     "schemeAgencyID":"9",
+     "schemeID":"GLN"}
+   },{
+    "ID":{"_":"PartyID123"}
+   }],
+   "PartyName":[{
+    "Name":{"_":"Johnssons byggvaror"}
+   }]
+  }
+ },
+ "SellerSupplierParty":{
+  "Party":{
+   "EndpointID":{"_":"7302347231111",
+    "schemeAgencyID":"9",
+    "schemeID":"GLN"},
+   "PartyIdentification":[{
+    "ID":{"_":"SellerPartyID123"}
+   }],
+   "PartyName":[{
+    "Name":{"_":"Moderna Produkter AB"}
+   }]
+  }
+ }
+}}

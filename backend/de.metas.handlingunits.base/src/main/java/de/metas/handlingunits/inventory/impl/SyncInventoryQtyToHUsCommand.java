@@ -125,6 +125,13 @@ public class SyncInventoryQtyToHUsCommand
 	{
 		for (final InventoryLineHU inventoryLineHU : inventoryLine.getInventoryLineHUs())
 		{
+			// Skip lines with no Qty difference because those are not relevant for the attribute transfer
+			// and those might not have an HU set neither.
+			if(inventoryLineHU.getQtyCountMinusBooked().signum() == 0)
+			{
+				continue;
+			}
+
 			final HuId huId = Check.assumeNotNull(inventoryLineHU.getHuId(), "Every inventoryLineHU instance needs to have an HuId; inventoryLineHU={}", inventoryLineHU);
 
 			final I_M_HU hu = handlingUnitsDAO.getById(huId);

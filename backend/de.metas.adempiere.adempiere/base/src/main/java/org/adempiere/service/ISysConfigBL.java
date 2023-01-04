@@ -1,5 +1,6 @@
 package org.adempiere.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -23,6 +24,8 @@ public interface ISysConfigBL extends ISingletonService
 	 * Get system configuration property of type boolean
 	 */
 	boolean getBooleanValue(String name, boolean defaultValue);
+
+	String getValue(@NonNull String name, @Nullable String defaultValue, @NonNull ClientAndOrgId clientAndOrgId);
 
 	<T extends ReferenceListAwareEnum> T getReferenceListAware(final String name, final T defaultValue, final Class<T> type);
 
@@ -55,6 +58,8 @@ public interface ISysConfigBL extends ISingletonService
 
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 
+	boolean getBooleanValue(String name, boolean defaultValue, ClientAndOrgId clientAndOrgId);
+
 	void setValue(String name, int value, ClientId clientId, OrgId orgId);
 
 	void setValue(String name, boolean value, ClientId clientId, OrgId orgId);
@@ -76,4 +81,5 @@ public interface ISysConfigBL extends ISingletonService
 	 */
 	Map<String, String> getValuesForPrefix(String prefix, boolean removePrefix, ClientAndOrgId clientAndOrgId);
 
+	<T extends Enum<T>> ImmutableSet<T> getCommaSeparatedEnums(@NonNull String sysconfigName, @NonNull Class<T> enumType);
 }

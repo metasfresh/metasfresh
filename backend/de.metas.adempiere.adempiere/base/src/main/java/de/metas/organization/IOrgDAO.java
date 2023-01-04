@@ -1,5 +1,6 @@
 package de.metas.organization;
 
+import de.metas.user.UserGroupId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -12,6 +13,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IOrgDAO extends ISingletonService
 {
@@ -80,6 +82,10 @@ public interface IOrgDAO extends ISingletonService
 		}
 	}
 
+	List<I_AD_Org> getByIds(Set<OrgId> orgIds);
+
+	List<I_AD_Org> getAllActiveOrgs();
+
 	OrgInfo createOrUpdateOrgInfo(OrgInfoUpdateRequest request);
 
 	OrgInfo getOrgInfoById(OrgId adOrgId);
@@ -113,4 +119,15 @@ public interface IOrgDAO extends ISingletonService
      * @return true if the given org falls under the european One-Stop-Shop (OSS) regulations
      */
 	boolean isEUOneStopShop(@NonNull OrgId orgId);
+
+	UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(OrgId ofRepoId);
+
+	UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(OrgId orgId);
+
+	String getOrgName(@NonNull OrgId orgId);
+
+	boolean isAutoInvoiceFlatrateTerm(OrgId orgId);
+
+	@NonNull
+	String getOrgCode(@NonNull OrgId orgId);
 }

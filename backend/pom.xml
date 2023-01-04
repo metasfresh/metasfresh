@@ -32,12 +32,10 @@
 
         <spring-boot.version>2.4.3</spring-boot.version>
         <lucene.version>8.6.2</lucene.version>
-        
+
         <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
         <!-- For versions info, see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <spring.version>5.3.4</spring.version>
-
-        <guava.version>30.1.1-jre</guava.version>
 
         <!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
         <woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>
@@ -73,21 +71,27 @@
         <module>de.metas.adempiere.libero.liberoHR</module>
 
         <module>de.metas.acct.base</module>
+        <module>de.metas.acct.webui</module>
 
         <module>de.metas.async</module>
 
         <module>de.metas.aggregation</module>
 
+        <module>de.metas.global_qrcode.api</module>
+        <module>de.metas.global_qrcode.services</module>
         <module>de.metas.business</module>
 
         <module>de.metas.business.rest-api</module>
         <module>de.metas.business.rest-api-impl</module>
+
+        <module>de.metas.workflow.rest-api</module>
 
         <module>de.metas.report</module>
 
         <module>de.metas.device.adempiere</module>
         <module>de.metas.device.api</module>
         <module>de.metas.device.scales</module>
+        <module>de.metas.device.webui</module>
 
         <module>de.metas.dimension</module> <!-- task 08681 -->
 
@@ -129,6 +133,7 @@
         <module>de.metas.material</module>
 
         <module>de.metas.handlingunits.base</module>
+        <module>de.metas.handlingunits.webui</module>
 
         <module>de.metas.payment.esr</module>
         <module>de.metas.payment.sepa</module>
@@ -190,8 +195,13 @@
         <module>de.metas.servicerepair.base</module>
         <module>de.metas.servicerepair.webui</module>
 
+        <module>de.metas.picking.rest-api</module>
+        <module>de.metas.distribution.rest-api</module>
+
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
+
+        <module>de-metas-salesorder</module>
     </modules>
 
     <dependencyManagement>
@@ -230,7 +240,7 @@
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.2.9</version>
+                <version>42.3.3</version>
             </dependency>
 
             <dependency>
@@ -314,7 +324,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>${commons-io.version}</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -350,22 +360,7 @@
             <!-- Swagger -->
             <dependency>
                 <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${springfox-swagger.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.reflections</groupId>
-                        <artifactId>reflections</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger-ui</artifactId>
+                <artifactId>springfox-boot-starter</artifactId>
                 <version>${springfox-swagger.version}</version>
             </dependency>
 
@@ -384,12 +379,11 @@
             <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -414,7 +408,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.8</version>
+                    <version>3.3.0</version>
                 </plugin>
 
                 <plugin>
@@ -642,6 +636,15 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Disable the f..ing stupid false positive giver enforcer plugin (teo, tobi) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -672,6 +675,41 @@
                                 <configuration>
                                     <sources>
                                         <source>src/main/java-gen</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- If there is a maven java-xsd sources directory, this profile will
+                activate and add the directory as another sources directory -->
+            <id>add-source-java-xjc</id>
+            <activation>
+                <file>
+                    <exists>src/main/java-xjc</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Adds src/main/java-xsd as additional source folder (if the directory
+                            is present) -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-source-java-xjc</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/main/java-xjc</source>
                                     </sources>
                                 </configuration>
                             </execution>

@@ -25,11 +25,11 @@ package de.metas.rest_api.v2.product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
@@ -45,7 +45,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -56,6 +56,8 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -92,11 +94,16 @@ public class ProductRestService
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final SectionCodeService sectionCodeService;
 
-	public ProductRestService(final ProductRepository productRepository, final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	public ProductRestService(
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final SectionCodeService sectionCodeService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.sectionCodeService = sectionCodeService;
 	}
 
 	@NonNull
@@ -197,7 +204,6 @@ public class ProductRestService
 			final CreateProductRequest createProductRequest = getCreateProductRequest(jsonRequestProduct, org);
 			productId = productRepository.createProduct(createProductRequest).getId();
 
-
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
@@ -207,7 +213,9 @@ public class ProductRestService
 									   jsonRequestProductUpsertItem.getProductIdentifier(),
 									   JsonMetasfreshId.of(productId.getRepoId()),
 									   jsonRequestProductUpsertItem.getExternalVersion(),
-									   jsonRequestProductUpsertItem.getExternalReferenceUrl());
+									   jsonRequestProductUpsertItem.getExternalReferenceUrl(),
+									   jsonRequestProductUpsertItem.getExternalSystemConfigId(),
+									   jsonRequestProductUpsertItem.getIsReadOnlyInMetasfresh());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -221,7 +229,9 @@ public class ProductRestService
 			@NonNull final String identifier,
 			@NonNull final JsonMetasfreshId metasfreshId,
 			@Nullable final String externalVersion,
-			@Nullable final String externalReferenceUrl)
+			@Nullable final String externalReferenceUrl,
+			@Nullable final JsonMetasfreshId externalSystemConfigId,
+			@Nullable final Boolean isReadOnlyInMetasfresh)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
 
@@ -243,6 +253,8 @@ public class ProductRestService
 				.metasfreshId(metasfreshId)
 				.version(externalVersion)
 				.externalReferenceUrl(externalReferenceUrl)
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyMetasfresh(isReadOnlyInMetasfresh)
 				.build();
 
 		final JsonRequestExternalReferenceUpsert externalReferenceCreateRequest = JsonRequestExternalReferenceUpsert.builder()
@@ -361,17 +373,34 @@ public class ProductRestService
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
 				final BPartnerProduct bPartnerProduct = syncBPartnerProductWithJson(jsonRequestBPartnerProductUpsert, existingBPartnerProduct, bPartnerId);
+
+				if (!Boolean.TRUE.equals(existingBPartnerProduct.getCurrentVendor())
+						&& Boolean.TRUE.equals(bPartnerProduct.getCurrentVendor()))
+				{
+					productRepository.resetCurrentVendorFor(productId);
+				}
+
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
+		else if (effectiveSyncAdvise.isFailIfNotExists())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("C_BPartner_Product")
+					.resourceIdentifier("{c_bpartner_identifier:" + jsonRequestBPartnerProductUpsert.getBpartnerIdentifier() + ", m_product_id: " + productId.getRepoId())
+					.build()
+					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
+		}
 		else
 		{
-			validateCreateSyncAdvise(jsonRequestBPartnerProductUpsert, jsonRequestBPartnerProductUpsert.getBpartnerIdentifier(),
-									 effectiveSyncAdvise, "BPartnerProduct");
-
 			final CreateBPartnerProductRequest createBPartnerProductRequest = getCreateBPartnerProductRequest(jsonRequestBPartnerProductUpsert, productId, bPartnerId);
-			productRepository.createBPartnerProduct(createBPartnerProductRequest);
 
+			if (Boolean.TRUE.equals(createBPartnerProductRequest.getCurrentVendor()))
+			{
+				productRepository.resetCurrentVendorFor(productId);
+			}
+
+			productRepository.createBPartnerProduct(createBPartnerProductRequest);
 		}
 	}
 
@@ -489,16 +518,6 @@ public class ProductRestService
 			builder.description(existingBPartnerProduct.getDescription());
 		}
 
-		// exclusionFromSalesReason
-		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
-		{
-			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
-		}
-		else
-		{
-			builder.exclusionFromSalesReason(existingBPartnerProduct.getExclusionFromSalesReason());
-		}
-
 		// ean
 		if (jsonRequestBPartnerProductUpsert.isCuEANSet())
 		{
@@ -573,6 +592,16 @@ public class ProductRestService
 			builder.isExcludedFromSales(existingBPartnerProduct.getIsExcludedFromSales());
 		}
 
+		// exclusionFromSalesReason
+		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
+		{
+			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
+		}
+		else
+		{
+			builder.exclusionFromSalesReason(existingBPartnerProduct.getExclusionFromSalesReason());
+		}
+
 		// isDropShip
 		if (jsonRequestBPartnerProductUpsert.isDropShipSet())
 		{
@@ -588,6 +617,50 @@ public class ProductRestService
 		else
 		{
 			builder.dropShip(existingBPartnerProduct.getDropShip());
+		}
+
+		//isUsedForVendor
+		if (jsonRequestBPartnerProductUpsert.isUsedForVendorSet())
+		{
+			if (jsonRequestBPartnerProductUpsert.getUsedForVendor() == null)
+			{
+				logger.debug("Ignoring boolean property \"usedForVendor\" : null ");
+			}
+			else
+			{
+				builder.usedForVendor(jsonRequestBPartnerProductUpsert.getUsedForVendor());
+			}
+		}
+		else
+		{
+			builder.usedForVendor(existingBPartnerProduct.getUsedForVendor());
+		}
+
+		// isExcludedFromPurchase
+		if (jsonRequestBPartnerProductUpsert.isExcludedFromPurchaseSet())
+		{
+			if (jsonRequestBPartnerProductUpsert.getExcludedFromPurchase() == null)
+			{
+				logger.debug("Ignoring boolean property \"isExcludedFromPurchase\" : null ");
+			}
+			else
+			{
+				builder.isExcludedFromPurchase(jsonRequestBPartnerProductUpsert.getExcludedFromPurchase());
+			}
+		}
+		else
+		{
+			builder.isExcludedFromPurchase(existingBPartnerProduct.getIsExcludedFromPurchase());
+		}
+
+		// exclusionFromPurchaseReason
+		if (jsonRequestBPartnerProductUpsert.isExclusionFromPurchaseReasonSet())
+		{
+			builder.exclusionFromPurchaseReason(jsonRequestBPartnerProductUpsert.getExclusionFromPurchaseReason());
+		}
+		else
+		{
+			builder.exclusionFromPurchaseReason(existingBPartnerProduct.getExclusionFromPurchaseReason());
 		}
 
 		builder.productId(existingBPartnerProduct.getProductId());
@@ -679,18 +752,21 @@ public class ProductRestService
 		// discontinued
 		if (jsonRequestProductUpsertItem.isDiscontinuedSet())
 		{
-			if (jsonRequestProductUpsertItem.getDiscontinued() == null)
-			{
-				logger.debug("Ignoring boolean property \"discontinued\" : null ");
-			}
-			else
-			{
-				builder.discontinued(jsonRequestProductUpsertItem.getDiscontinued());
-			}
+			builder.discontinued(jsonRequestProductUpsertItem.getDiscontinued());
 		}
 		else
 		{
 			builder.discontinued(existingProduct.getDiscontinued());
+		}
+
+		// discontinuedFrom
+		if (jsonRequestProductUpsertItem.isDiscontinuedFromSet())
+		{
+			builder.discontinuedFrom(jsonRequestProductUpsertItem.getDiscontinuedFrom());
+		}
+		else
+		{
+			builder.discontinuedFrom(existingProduct.getDiscontinuedFrom());
 		}
 
 		// active
@@ -727,6 +803,36 @@ public class ProductRestService
 			builder.stocked(existingProduct.isStocked());
 		}
 
+		if (jsonRequestProductUpsertItem.isSectionCodeSet())
+		{
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
+					.orElse(null);
+
+			builder.sectionCodeId(sectionCodeId);
+		}
+		else
+		{
+			builder.sectionCodeId(existingProduct.getSectionCodeId());
+		}
+
+		// purchased
+		if (jsonRequestProductUpsertItem.isPurchasedSet())
+		{
+			if (jsonRequestProductUpsertItem.getPurchased() == null)
+			{
+				logger.debug("Ignoring boolean property \"purchased\" : null ");
+			}
+			else
+			{
+				builder.purchased(jsonRequestProductUpsertItem.getPurchased());
+			}
+		}
+		else
+		{
+			builder.purchased(existingProduct.isPurchased());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -742,15 +848,21 @@ public class ProductRestService
 	private CreateProductRequest getCreateProductRequest(@NonNull final JsonRequestProduct jsonRequestProductUpsertItem, final I_AD_Org org)
 	{
 		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(jsonRequestProductUpsertItem.getUomCode()));
-		final String productType;
-
-		productType = getType(jsonRequestProductUpsertItem);
+		final String productType = getType(jsonRequestProductUpsertItem);
+		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
 				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
+		final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
+				.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
+				.orElse(null);
+
+		final boolean purchased = Optional.ofNullable(jsonRequestProductUpsertItem.getPurchased())
+				.orElse(false);
+
 		return CreateProductRequest.builder()
-				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
+				.orgId(orgId)
 				.productName(jsonRequestProductUpsertItem.getName())
 				.productType(productType)
 				.productCategoryId(productCategoryId)
@@ -758,10 +870,13 @@ public class ProductRestService
 				.stocked(jsonRequestProductUpsertItem.getStocked())
 				.active(jsonRequestProductUpsertItem.getActive())
 				.discontinued(jsonRequestProductUpsertItem.getDiscontinued())
+				.discontinuedFrom(jsonRequestProductUpsertItem.getDiscontinuedFrom())
 				.description(jsonRequestProductUpsertItem.getDescription())
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
+				.sectionCodeId(sectionCodeId)
+				.purchased(purchased)
 				.build();
 	}
 
@@ -785,12 +900,15 @@ public class ProductRestService
 				.isExcludedFromSales(jsonRequestBPartnerProductUpsert.getExcludedFromSales())
 				.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason())
 				.dropShip(jsonRequestBPartnerProductUpsert.getDropShip())
+				.usedForVendor(jsonRequestBPartnerProductUpsert.getUsedForVendor())
 				.productId(productId)
+				.isExcludedFromPurchase(jsonRequestBPartnerProductUpsert.getExcludedFromPurchase())
+				.exclusionFromPurchaseReason(jsonRequestBPartnerProductUpsert.getExclusionFromPurchaseReason())
 				.build();
 	}
 
 	@NonNull
-	private String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
+	private static String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
 	{
 		final String productType;
 		switch (jsonRequestProductUpsertItem.getType())
@@ -801,10 +919,24 @@ public class ProductRestService
 			case ITEM:
 				productType = X_M_Product.PRODUCTTYPE_Item;
 				break;
+			case RESOURCE:
+				productType = X_M_Product.PRODUCTTYPE_Resource;
+				break;
+			case ONLINE:
+				productType = X_M_Product.PRODUCTTYPE_Online;
+				break;
+			case FREIGHT_COST:
+				productType = X_M_Product.PRODUCTTYPE_FreightCost;
+				break;
+			case EXPENSE_TYPE:
+				productType = X_M_Product.PRODUCTTYPE_ExpenseType;
+				break;
+			case NAHRUNG:
+				productType = X_M_Product.PRODUCTTYPE_Nahrung;
+				break;
 			default:
 				throw Check.fail("Unexpected type={}; jsonRequestProductUpsertItem={}", jsonRequestProductUpsertItem.getType(), jsonRequestProductUpsertItem);
 		}
 		return productType;
 	}
-
 }

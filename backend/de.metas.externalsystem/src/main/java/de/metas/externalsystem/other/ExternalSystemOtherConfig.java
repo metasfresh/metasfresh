@@ -33,7 +33,10 @@ import java.util.List;
 @Value
 public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 {
+	public static final String OTHER_EXTERNAL_SYSTEM_CHILD_VALUE = "OtherChildSysValue";
+
 	ExternalSystemOtherConfigId id;
+	ExternalSystemOtherValue value;
 	List<ExternalSystemOtherConfigParameter> parameters;
 
 	@Builder
@@ -43,11 +46,18 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	{
 		this.id = id;
 		this.parameters = parameters;
+		this.value = ExternalSystemOtherValue.of(id.getExternalSystemParentConfigId());
 	}
 
 	@NonNull
 	public static ExternalSystemOtherConfig cast(@NonNull final IExternalSystemChildConfig externalSystemChildConfig)
 	{
 		return (ExternalSystemOtherConfig)externalSystemChildConfig;
+	}
+
+	@Override
+	public String getValue()
+	{
+		return value.getStringValue();
 	}
 }

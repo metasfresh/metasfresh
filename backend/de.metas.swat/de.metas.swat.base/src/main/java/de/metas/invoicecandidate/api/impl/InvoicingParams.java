@@ -22,14 +22,12 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.NonNull;
+import org.adempiere.util.api.IParams;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import org.adempiere.util.api.IParams;
-
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import lombok.NonNull;
 
 /**
  * Invoicing Enqueueing & generating parameters (wrapped from {@link IParams}).
@@ -97,7 +95,6 @@ public class InvoicingParams implements IInvoicingParams
 		return params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice);
 	}
 
-
 	/**
 	 * Always returns {@code false}.
 	 */
@@ -107,6 +104,12 @@ public class InvoicingParams implements IInvoicingParams
 		return false;
 	}
 
+	@Override
+	public boolean isCompleteInvoices()
+	{
+		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
+	}
+	
 	/**
 	 * Always returns {@code false}.
 	 */

@@ -22,6 +22,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -93,7 +94,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -166,7 +167,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
 	{
-		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
+		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
@@ -175,13 +176,16 @@ public class ShipmentScheduleCreatedHandlerTests
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
-				.reservedQuantity(new BigDecimal("20"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(BigDecimal.TEN)
+												.reservedQuantity(new BigDecimal("20"))
+												.reservedQuantityDelta(new BigDecimal("20"))
+												.build())
 				.shipmentScheduleId(shipmentScheduleId)
 				.documentLineDescriptor(OrderLineDescriptor.builder()
 						.orderLineId(orderLineId)
 						.orderId(30)
 						.build())
 				.build();
-		return event;
 	}
 }

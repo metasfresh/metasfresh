@@ -1,11 +1,5 @@
 package de.metas.document.async.spi.impl;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -15,6 +9,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -85,7 +84,7 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+		final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 		for (final Object model : models)
 		{
 			final IDocument document = docActionBL.getDocument(model);

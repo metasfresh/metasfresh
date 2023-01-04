@@ -22,15 +22,15 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.Properties;
-
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 public final class PlainContextAware implements IContextAware
 {
@@ -38,13 +38,13 @@ public final class PlainContextAware implements IContextAware
 	 * @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_None}.<br>
 	 *         Its {@link #isAllowThreadInherited()} will return <code>false</code>.
 	 */
-	public static final PlainContextAware newOutOfTrx(final Properties ctx)
+	public static PlainContextAware newOutOfTrx(final Properties ctx)
 	{
 		final boolean allowThreadInherited = false;
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None, allowThreadInherited);
 	}
 
-	public static final PlainContextAware newOutOfTrx()
+	public static PlainContextAware newOutOfTrx()
 	{
 		final boolean allowThreadInherited = false;
 		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None, allowThreadInherited);
@@ -52,11 +52,8 @@ public final class PlainContextAware implements IContextAware
 
 	/**
 	 * Like {@link #newOutOfTrx(Properties)}, but the returned instance's {@link #isAllowThreadInherited()} will return <code>true</code>.
-	 *
-	 * @param ctx
-	 * @return
 	 */
-	public static final PlainContextAware newOutOfTrxAllowThreadInherited(final Properties ctx)
+	public static PlainContextAware newOutOfTrxAllowThreadInherited(final Properties ctx)
 	{
 		final boolean allowThreadInherited = true;
 		return new PlainContextAware(ctx, ITrx.TRXNAME_None, allowThreadInherited);
@@ -65,7 +62,7 @@ public final class PlainContextAware implements IContextAware
 	/**
 	 * @return a {@link IContextAware} for {@link Env#getCtx()} and {@link ITrx#TRXNAME_None}.
 	 */
-	public static final PlainContextAware createUsingOutOfTransaction()
+	public static PlainContextAware createUsingOutOfTransaction()
 	{
 		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
 	}
@@ -73,12 +70,12 @@ public final class PlainContextAware implements IContextAware
 	/**
 	 * @return a {@link IContextAware} for given <code>ctx</code> and {@link ITrx#TRXNAME_ThreadInherited}.
 	 */
-	public static final PlainContextAware newWithThreadInheritedTrx(final Properties ctx)
+	public static PlainContextAware newWithThreadInheritedTrx(final Properties ctx)
 	{
 		return new PlainContextAware(ctx, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public static final PlainContextAware newWithThreadInheritedTrx()
+	public static PlainContextAware newWithThreadInheritedTrx()
 	{
 		return new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -87,13 +84,13 @@ public final class PlainContextAware implements IContextAware
 	 * @return a {@link IContextAware} for given <code>ctx</code> and <code>trxName</code>.<br>
 	 *         Its {@link #isAllowThreadInherited()} will return <code>false</code>.
 	 */
-	public static final PlainContextAware newWithTrxName(final Properties ctx, final String trxName)
+	public static PlainContextAware newWithTrxName(final Properties ctx, @Nullable final String trxName)
 	{
 		final boolean allowThreadInherited = false;
 		return new PlainContextAware(ctx, trxName, allowThreadInherited);
 	}
 
-	public static final PlainContextAware newCopy(final IContextAware contextProvider)
+	public static PlainContextAware newCopy(final IContextAware contextProvider)
 	{
 		return new PlainContextAware(contextProvider.getCtx(), contextProvider.getTrxName(), contextProvider.isAllowThreadInherited());
 	}
@@ -123,12 +120,12 @@ public final class PlainContextAware implements IContextAware
 	 * @deprecated please use {@link #newWithTrxName(Properties, String)} instead.
 	 */
 	@Deprecated
-	public PlainContextAware(final Properties ctx, final String trxName)
+	public PlainContextAware(final Properties ctx, @Nullable final String trxName)
 	{
 		this(ctx, trxName, true); // allowThreadInherited == true for backward compatibility; also see javadoc of isAllowThreadInherited.
 	}
 
-	private PlainContextAware(@NonNull final Properties ctx, final String trxName, final boolean allowThreadInherited)
+	private PlainContextAware(@NonNull final Properties ctx, @Nullable final String trxName, final boolean allowThreadInherited)
 	{
 		this.ctx = ctx;
 

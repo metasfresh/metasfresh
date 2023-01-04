@@ -1,180 +1,123 @@
 package org.eevolution.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_BOMLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_PP_Order_BOMLine 
 {
 
-    /** TableName=PP_Order_BOMLine */
-    public static final String Table_Name = "PP_Order_BOMLine";
+	String Table_Name = "PP_Order_BOMLine";
 
-    /** AD_Table_ID=53025 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=53025 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_Client>(I_PP_Order_BOMLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_Org>(I_PP_Order_BOMLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_User>(I_PP_Order_BOMLine.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Mengen Probe.
+	 * Set Quantity Assay.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAssay (java.math.BigDecimal Assay);
+	void setAssay (@Nullable BigDecimal Assay);
 
 	/**
-	 * Get Mengen Probe.
+	 * Get Quantity Assay.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getAssay();
+	BigDecimal getAssay();
 
-    /** Column definition for Assay */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Assay = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Assay", null);
-    /** Column name Assay */
-    public static final String COLUMNNAME_Assay = "Assay";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Assay = new ModelColumn<>(I_PP_Order_BOMLine.class, "Assay", null);
+	String COLUMNNAME_Assay = "Assay";
 
 	/**
-	 * Set Retrograde Gruppe.
+	 * Set Backflush Group.
 	 * The Grouping Components to the Backflush
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBackflushGroup (java.lang.String BackflushGroup);
+	void setBackflushGroup (@Nullable java.lang.String BackflushGroup);
 
 	/**
-	 * Get Retrograde Gruppe.
+	 * Get Backflush Group.
 	 * The Grouping Components to the Backflush
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBackflushGroup();
+	@Nullable java.lang.String getBackflushGroup();
 
-    /** Column definition for BackflushGroup */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_BackflushGroup = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "BackflushGroup", null);
-    /** Column name BackflushGroup */
-    public static final String COLUMNNAME_BackflushGroup = "BackflushGroup";
-
-	/**
-	 * Set Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_C_UOM>(I_PP_Order_BOMLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_BackflushGroup = new ModelColumn<>(I_PP_Order_BOMLine.class, "BackflushGroup", null);
+	String COLUMNNAME_BackflushGroup = "BackflushGroup";
 
 	/**
 	 * Set Component Type.
@@ -184,7 +127,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setComponentType (java.lang.String ComponentType);
+	void setComponentType (@Nullable java.lang.String ComponentType);
 
 	/**
 	 * Get Component Type.
@@ -194,42 +137,35 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getComponentType();
+	@Nullable java.lang.String getComponentType();
 
-    /** Column definition for ComponentType */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ComponentType = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "ComponentType", null);
-    /** Column name ComponentType */
-    public static final String COLUMNNAME_ComponentType = "ComponentType";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ComponentType = new ModelColumn<>(I_PP_Order_BOMLine.class, "ComponentType", null);
+	String COLUMNNAME_ComponentType = "ComponentType";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Created = new ModelColumn<>(I_PP_Order_BOMLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_User>(I_PP_Order_BOMLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set CU Label Qty.
@@ -238,7 +174,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCULabelQuanitity (java.lang.String CULabelQuanitity);
+	void setCULabelQuanitity (@Nullable java.lang.String CULabelQuanitity);
 
 	/**
 	 * Get CU Label Qty.
@@ -247,12 +183,74 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCULabelQuanitity();
+	@Nullable java.lang.String getCULabelQuanitity();
 
-    /** Column definition for CULabelQuanitity */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_CULabelQuanitity = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "CULabelQuanitity", null);
-    /** Column name CULabelQuanitity */
-    public static final String COLUMNNAME_CULabelQuanitity = "CULabelQuanitity";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_CULabelQuanitity = new ModelColumn<>(I_PP_Order_BOMLine.class, "CULabelQuanitity", null);
+	String COLUMNNAME_CULabelQuanitity = "CULabelQuanitity";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Current Receiving LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_LU_HU_ID (int Current_Receiving_LU_HU_ID);
+
+	/**
+	 * Get Current Receiving LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_LU_HU_ID();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Current_Receiving_LU_HU_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "Current_Receiving_LU_HU_ID", null);
+	String COLUMNNAME_Current_Receiving_LU_HU_ID = "Current_Receiving_LU_HU_ID";
+
+	/**
+	 * Set Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_TU_PI_Item_Product_ID (int Current_Receiving_TU_PI_Item_Product_ID);
+
+	/**
+	 * Get Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_TU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Current_Receiving_TU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "Current_Receiving_TU_PI_Item_Product_ID", null);
+	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
 
 	/**
 	 * Set Lieferdatum.
@@ -262,7 +260,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDelivered (java.sql.Timestamp DateDelivered);
+	void setDateDelivered (@Nullable java.sql.Timestamp DateDelivered);
 
 	/**
 	 * Get Lieferdatum.
@@ -272,35 +270,31 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateDelivered();
+	@Nullable java.sql.Timestamp getDateDelivered();
 
-    /** Column definition for DateDelivered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_DateDelivered = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "DateDelivered", null);
-    /** Column name DateDelivered */
-    public static final String COLUMNNAME_DateDelivered = "DateDelivered";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_DateDelivered = new ModelColumn<>(I_PP_Order_BOMLine.class, "DateDelivered", null);
+	String COLUMNNAME_DateDelivered = "DateDelivered";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Description = new ModelColumn<>(I_PP_Order_BOMLine.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Feature.
@@ -310,7 +304,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFeature (java.lang.String Feature);
+	void setFeature (@Nullable java.lang.String Feature);
 
 	/**
 	 * Get Feature.
@@ -320,12 +314,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFeature();
+	@Nullable java.lang.String getFeature();
 
-    /** Column definition for Feature */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Feature = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Feature", null);
-    /** Column name Feature */
-    public static final String COLUMNNAME_Feature = "Feature";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Feature = new ModelColumn<>(I_PP_Order_BOMLine.class, "Feature", null);
+	String COLUMNNAME_Feature = "Feature";
 
 	/**
 	 * Set Forecast.
@@ -335,7 +327,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setForecast (java.math.BigDecimal Forecast);
+	void setForecast (@Nullable BigDecimal Forecast);
 
 	/**
 	 * Get Forecast.
@@ -345,62 +337,56 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getForecast();
+	BigDecimal getForecast();
 
-    /** Column definition for Forecast */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Forecast = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Forecast", null);
-    /** Column name Forecast */
-    public static final String COLUMNNAME_Forecast = "Forecast";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Forecast = new ModelColumn<>(I_PP_Order_BOMLine.class, "Forecast", null);
+	String COLUMNNAME_Forecast = "Forecast";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Help = new ModelColumn<>(I_PP_Order_BOMLine.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Is Critical Component.
@@ -410,7 +396,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCritical (boolean IsCritical);
+	void setIsCritical (boolean IsCritical);
 
 	/**
 	 * Get Is Critical Component.
@@ -420,12 +406,52 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCritical();
+	boolean isCritical();
 
-    /** Column definition for IsCritical */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsCritical = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "IsCritical", null);
-    /** Column name IsCritical */
-    public static final String COLUMNNAME_IsCritical = "IsCritical";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsCritical = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsCritical", null);
+	String COLUMNNAME_IsCritical = "IsCritical";
+
+	/**
+	 * Set Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEnforceIssuingTolerance (boolean IsEnforceIssuingTolerance);
+
+	/**
+	 * Get Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEnforceIssuingTolerance();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsEnforceIssuingTolerance = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsEnforceIssuingTolerance", null);
+	String COLUMNNAME_IsEnforceIssuingTolerance = "IsEnforceIssuingTolerance";
+
+	/**
+	 * Set Manual quantity input only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyInput (boolean IsManualQtyInput);
+
+	/**
+	 * Get Manual quantity input only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyInput();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsManualQtyInput = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsManualQtyInput", null);
+	String COLUMNNAME_IsManualQtyInput = "IsManualQtyInput";
 
 	/**
 	 * Set Is Qty Percentage.
@@ -435,7 +461,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsQtyPercentage (boolean IsQtyPercentage);
+	void setIsQtyPercentage (boolean IsQtyPercentage);
 
 	/**
 	 * Get Is Qty Percentage.
@@ -445,37 +471,116 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isQtyPercentage();
+	boolean isQtyPercentage();
 
-    /** Column definition for IsQtyPercentage */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsQtyPercentage = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "IsQtyPercentage", null);
-    /** Column name IsQtyPercentage */
-    public static final String COLUMNNAME_IsQtyPercentage = "IsQtyPercentage";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IsQtyPercentage = new ModelColumn<>(I_PP_Order_BOMLine.class, "IsQtyPercentage", null);
+	String COLUMNNAME_IsQtyPercentage = "IsQtyPercentage";
 
 	/**
-	 * Set Zuteil Methode.
+	 * Set Issue Method.
 	 * There are two methods for issue the components to Manufacturing Order
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIssueMethod (java.lang.String IssueMethod);
+	void setIssueMethod (@Nullable java.lang.String IssueMethod);
 
 	/**
-	 * Get Zuteil Methode.
+	 * Get Issue Method.
 	 * There are two methods for issue the components to Manufacturing Order
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIssueMethod();
+	@Nullable java.lang.String getIssueMethod();
 
-    /** Column definition for IssueMethod */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssueMethod = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "IssueMethod", null);
-    /** Column name IssueMethod */
-    public static final String COLUMNNAME_IssueMethod = "IssueMethod";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssueMethod = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssueMethod", null);
+	String COLUMNNAME_IssueMethod = "IssueMethod";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Perc (@Nullable BigDecimal IssuingTolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Perc();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssuingTolerance_Perc = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssuingTolerance_Perc", null);
+	String COLUMNNAME_IssuingTolerance_Perc = "IssuingTolerance_Perc";
+
+	/**
+	 * Set Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Qty (@Nullable BigDecimal IssuingTolerance_Qty);
+
+	/**
+	 * Get Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Qty();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssuingTolerance_Qty = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssuingTolerance_Qty", null);
+	String COLUMNNAME_IssuingTolerance_Qty = "IssuingTolerance_Qty";
+
+	/**
+	 * Set Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_UOM_ID (int IssuingTolerance_UOM_ID);
+
+	/**
+	 * Get Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIssuingTolerance_UOM_ID();
+
+	String COLUMNNAME_IssuingTolerance_UOM_ID = "IssuingTolerance_UOM_ID";
+
+	/**
+	 * Set Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_ValueType (@Nullable java.lang.String IssuingTolerance_ValueType);
+
+	/**
+	 * Get Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIssuingTolerance_ValueType();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_IssuingTolerance_ValueType = new ModelColumn<>(I_PP_Order_BOMLine.class, "IssuingTolerance_ValueType", null);
+	String COLUMNNAME_IssuingTolerance_ValueType = "IssuingTolerance_ValueType";
 
 	/**
 	 * Set Lead Time Offset.
@@ -485,7 +590,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLeadTimeOffset (int LeadTimeOffset);
+	void setLeadTimeOffset (int LeadTimeOffset);
 
 	/**
 	 * Get Lead Time Offset.
@@ -495,66 +600,58 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getLeadTimeOffset();
+	int getLeadTimeOffset();
 
-    /** Column definition for LeadTimeOffset */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_LeadTimeOffset = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "LeadTimeOffset", null);
-    /** Column name LeadTimeOffset */
-    public static final String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_LeadTimeOffset = new ModelColumn<>(I_PP_Order_BOMLine.class, "LeadTimeOffset", null);
+	String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
 
 	/**
-	 * Set Zeile Nr..
-	 * Unique line for this document
+	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setLine (int Line);
+	void setLine (int Line);
 
 	/**
-	 * Get Zeile Nr..
-	 * Unique line for this document
+	 * Get SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getLine();
+	int getLine();
 
-    /** Column definition for Line */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Line", null);
-    /** Column name Line */
-    public static final String COLUMNNAME_Line = "Line";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Line = new ModelColumn<>(I_PP_Order_BOMLine.class, "Line", null);
+	String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_AttributeSetInstance>(I_PP_Order_BOMLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Änderungsmeldung.
@@ -564,7 +661,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
+	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
 	/**
 	 * Get Änderungsmeldung.
@@ -574,130 +671,105 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ChangeNotice_ID();
+	int getM_ChangeNotice_ID();
 
-	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice();
+	@Nullable org.compiere.model.I_M_ChangeNotice getM_ChangeNotice();
 
-	public void setM_ChangeNotice(org.compiere.model.I_M_ChangeNotice M_ChangeNotice);
+	void setM_ChangeNotice(@Nullable org.compiere.model.I_M_ChangeNotice M_ChangeNotice);
 
-    /** Column definition for M_ChangeNotice_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_ChangeNotice> COLUMN_M_ChangeNotice_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_ChangeNotice>(I_PP_Order_BOMLine.class, "M_ChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
-    /** Column name M_ChangeNotice_ID */
-    public static final String COLUMNNAME_M_ChangeNotice_ID = "M_ChangeNotice_ID";
+	ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_ChangeNotice> COLUMN_M_ChangeNotice_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "M_ChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
+	String COLUMNNAME_M_ChangeNotice_ID = "M_ChangeNotice_ID";
 
 	/**
-	 * Set Lagerort.
+	 * Set Locator.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Locator_ID (int M_Locator_ID);
+	void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
+	 * Get Locator.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Locator_ID();
+	int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_Locator>(I_PP_Order_BOMLine.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_Product>(I_PP_Order_BOMLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Lager.
+	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
+	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_ID();
+	int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_M_Warehouse>(I_PP_Order_BOMLine.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Manufacturing Order BOM.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_BOM_ID (int PP_Order_BOM_ID);
+	void setPP_Order_BOM_ID (int PP_Order_BOM_ID);
 
 	/**
 	 * Get Manufacturing Order BOM.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_BOM_ID();
+	int getPP_Order_BOM_ID();
 
-	public org.eevolution.model.I_PP_Order_BOM getPP_Order_BOM();
+	org.eevolution.model.I_PP_Order_BOM getPP_Order_BOM();
 
-	public void setPP_Order_BOM(org.eevolution.model.I_PP_Order_BOM PP_Order_BOM);
+	void setPP_Order_BOM(org.eevolution.model.I_PP_Order_BOM PP_Order_BOM);
 
-    /** Column definition for PP_Order_BOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order_BOM> COLUMN_PP_Order_BOM_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order_BOM>(I_PP_Order_BOMLine.class, "PP_Order_BOM_ID", org.eevolution.model.I_PP_Order_BOM.class);
-    /** Column name PP_Order_BOM_ID */
-    public static final String COLUMNNAME_PP_Order_BOM_ID = "PP_Order_BOM_ID";
+	ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order_BOM> COLUMN_PP_Order_BOM_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "PP_Order_BOM_ID", org.eevolution.model.I_PP_Order_BOM.class);
+	String COLUMNNAME_PP_Order_BOM_ID = "PP_Order_BOM_ID";
 
 	/**
 	 * Set Manufacturing Order BOM Line.
@@ -706,7 +778,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
+	void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
 
 	/**
 	 * Get Manufacturing Order BOM Line.
@@ -715,39 +787,37 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_BOMLine_ID();
+	int getPP_Order_BOMLine_ID();
 
-    /** Column definition for PP_Order_BOMLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_PP_Order_BOMLine_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "PP_Order_BOMLine_ID", null);
-    /** Column name PP_Order_BOMLine_ID */
-    public static final String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_PP_Order_BOMLine_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "PP_Order_BOMLine_ID", null);
+	String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
 
 	/**
-	 * Set Produktionsauftrag.
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_ID (int PP_Order_ID);
+	void setPP_Order_ID (int PP_Order_ID);
 
 	/**
-	 * Get Produktionsauftrag.
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_ID();
+	int getPP_Order_ID();
 
-	public org.eevolution.model.I_PP_Order getPP_Order();
+	org.eevolution.model.I_PP_Order getPP_Order();
 
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
+	void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
 
-    /** Column definition for PP_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order>(I_PP_Order_BOMLine.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_ID */
-    public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+	ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
 	 * Set BOM Line.
@@ -757,7 +827,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Product_BOMLine_ID (int PP_Product_BOMLine_ID);
+	void setPP_Product_BOMLine_ID (int PP_Product_BOMLine_ID);
 
 	/**
 	 * Get BOM Line.
@@ -767,41 +837,35 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Product_BOMLine_ID();
+	int getPP_Product_BOMLine_ID();
 
-	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine();
+	@Nullable org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine();
 
-	public void setPP_Product_BOMLine(org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine);
+	void setPP_Product_BOMLine(@Nullable org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine);
 
-    /** Column definition for PP_Product_BOMLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_PP_Product_BOMLine_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Product_BOMLine>(I_PP_Order_BOMLine.class, "PP_Product_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
-    /** Column name PP_Product_BOMLine_ID */
-    public static final String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
+	ModelColumn<I_PP_Order_BOMLine, org.eevolution.model.I_PP_Product_BOMLine> COLUMN_PP_Product_BOMLine_ID = new ModelColumn<>(I_PP_Order_BOMLine.class, "PP_Product_BOMLine_ID", org.eevolution.model.I_PP_Product_BOMLine.class);
+	String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Processed = new ModelColumn<>(I_PP_Order_BOMLine.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Quantity in %.
@@ -811,7 +875,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyBatch (java.math.BigDecimal QtyBatch);
+	void setQtyBatch (BigDecimal QtyBatch);
 
 	/**
 	 * Get Quantity in %.
@@ -821,12 +885,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyBatch();
+	BigDecimal getQtyBatch();
 
-    /** Column definition for QtyBatch */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyBatch = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyBatch", null);
-    /** Column name QtyBatch */
-    public static final String COLUMNNAME_QtyBatch = "QtyBatch";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyBatch = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyBatch", null);
+	String COLUMNNAME_QtyBatch = "QtyBatch";
 
 	/**
 	 * Set Qty before close.
@@ -835,7 +897,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyBeforeClose (java.math.BigDecimal QtyBeforeClose);
+	void setQtyBeforeClose (BigDecimal QtyBeforeClose);
 
 	/**
 	 * Get Qty before close.
@@ -844,12 +906,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyBeforeClose();
+	BigDecimal getQtyBeforeClose();
 
-    /** Column definition for QtyBeforeClose */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyBeforeClose = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyBeforeClose", null);
-    /** Column name QtyBeforeClose */
-    public static final String COLUMNNAME_QtyBeforeClose = "QtyBeforeClose";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyBeforeClose = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyBeforeClose", null);
+	String COLUMNNAME_QtyBeforeClose = "QtyBeforeClose";
 
 	/**
 	 * Set Quantity.
@@ -859,7 +919,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyBOM (java.math.BigDecimal QtyBOM);
+	void setQtyBOM (BigDecimal QtyBOM);
 
 	/**
 	 * Get Quantity.
@@ -869,37 +929,31 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyBOM();
+	BigDecimal getQtyBOM();
 
-    /** Column definition for QtyBOM */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyBOM = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyBOM", null);
-    /** Column name QtyBOM */
-    public static final String COLUMNNAME_QtyBOM = "QtyBOM";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyBOM = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyBOM", null);
+	String COLUMNNAME_QtyBOM = "QtyBOM";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
+	void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDelivered();
+	BigDecimal getQtyDelivered();
 
-    /** Column definition for QtyDelivered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyDelivered", null);
-    /** Column name QtyDelivered */
-    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyDelivered = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyDelivered", null);
+	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
 	 * Set Tatsächlich gelieferte Menge.
@@ -909,7 +963,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredActual (java.math.BigDecimal QtyDeliveredActual);
+	void setQtyDeliveredActual (BigDecimal QtyDeliveredActual);
 
 	/**
 	 * Get Tatsächlich gelieferte Menge.
@@ -919,37 +973,31 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredActual();
+	BigDecimal getQtyDeliveredActual();
 
-    /** Column definition for QtyDeliveredActual */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyDeliveredActual = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyDeliveredActual", null);
-    /** Column name QtyDeliveredActual */
-    public static final String COLUMNNAME_QtyDeliveredActual = "QtyDeliveredActual";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyDeliveredActual = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyDeliveredActual", null);
+	String COLUMNNAME_QtyDeliveredActual = "QtyDeliveredActual";
 
 	/**
-	 * Set Menge.
-	 * The Quantity Entered is based on the selected UoM
+	 * Set Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyEntered (java.math.BigDecimal QtyEntered);
+	void setQtyEntered (@Nullable BigDecimal QtyEntered);
 
 	/**
-	 * Get Menge.
-	 * The Quantity Entered is based on the selected UoM
+	 * Get Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyEntered();
+	BigDecimal getQtyEntered();
 
-    /** Column definition for QtyEntered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyEntered", null);
-    /** Column name QtyEntered */
-    public static final String COLUMNNAME_QtyEntered = "QtyEntered";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyEntered = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyEntered", null);
+	String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
 	 * Set Qty Post.
@@ -958,7 +1006,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyPost (java.math.BigDecimal QtyPost);
+	void setQtyPost (BigDecimal QtyPost);
 
 	/**
 	 * Get Qty Post.
@@ -967,12 +1015,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyPost();
+	BigDecimal getQtyPost();
 
-    /** Column definition for QtyPost */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyPost = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyPost", null);
-    /** Column name QtyPost */
-    public static final String COLUMNNAME_QtyPost = "QtyPost";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyPost = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyPost", null);
+	String COLUMNNAME_QtyPost = "QtyPost";
 
 	/**
 	 * Set Qty Reject.
@@ -981,7 +1027,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReject (java.math.BigDecimal QtyReject);
+	void setQtyReject (BigDecimal QtyReject);
 
 	/**
 	 * Get Qty Reject.
@@ -990,60 +1036,54 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReject();
+	BigDecimal getQtyReject();
 
-    /** Column definition for QtyReject */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyReject = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyReject", null);
-    /** Column name QtyReject */
-    public static final String COLUMNNAME_QtyReject = "QtyReject";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyReject = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyReject", null);
+	String COLUMNNAME_QtyReject = "QtyReject";
 
 	/**
-	 * Set Menge angefragt.
+	 * Set Qty Required.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
+	void setQtyRequiered (BigDecimal QtyRequiered);
 
 	/**
-	 * Get Menge angefragt.
+	 * Get Qty Required.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyRequiered();
+	BigDecimal getQtyRequiered();
 
-    /** Column definition for QtyRequiered */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyRequiered = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyRequiered", null);
-    /** Column name QtyRequiered */
-    public static final String COLUMNNAME_QtyRequiered = "QtyRequiered";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyRequiered = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyRequiered", null);
+	String COLUMNNAME_QtyRequiered = "QtyRequiered";
 
 	/**
-	 * Set Offen.
-	 * Offene Menge
+	 * Set Qty Reserved.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReserved (java.math.BigDecimal QtyReserved);
+	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Offen.
-	 * Offene Menge
+	 * Get Qty Reserved.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReserved();
+	BigDecimal getQtyReserved();
 
-    /** Column definition for QtyReserved */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyReserved = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyReserved", null);
-    /** Column name QtyReserved */
-    public static final String COLUMNNAME_QtyReserved = "QtyReserved";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyReserved = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyReserved", null);
+	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
 	 * Set QtyScrap.
@@ -1053,7 +1093,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyScrap (java.math.BigDecimal QtyScrap);
+	void setQtyScrap (BigDecimal QtyScrap);
 
 	/**
 	 * Get QtyScrap.
@@ -1063,12 +1103,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyScrap();
+	BigDecimal getQtyScrap();
 
-    /** Column definition for QtyScrap */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyScrap = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyScrap", null);
-    /** Column name QtyScrap */
-    public static final String COLUMNNAME_QtyScrap = "QtyScrap";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyScrap = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyScrap", null);
+	String COLUMNNAME_QtyScrap = "QtyScrap";
 
 	/**
 	 * Set abweichende menge.
@@ -1077,7 +1115,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyUsageVariance (java.math.BigDecimal QtyUsageVariance);
+	void setQtyUsageVariance (BigDecimal QtyUsageVariance);
 
 	/**
 	 * Get abweichende menge.
@@ -1086,12 +1124,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyUsageVariance();
+	BigDecimal getQtyUsageVariance();
 
-    /** Column definition for QtyUsageVariance */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyUsageVariance = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "QtyUsageVariance", null);
-    /** Column name QtyUsageVariance */
-    public static final String COLUMNNAME_QtyUsageVariance = "QtyUsageVariance";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_QtyUsageVariance = new ModelColumn<>(I_PP_Order_BOMLine.class, "QtyUsageVariance", null);
+	String COLUMNNAME_QtyUsageVariance = "QtyUsageVariance";
 
 	/**
 	 * Set % Scrap.
@@ -1101,7 +1137,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setScrap (java.math.BigDecimal Scrap);
+	void setScrap (@Nullable BigDecimal Scrap);
 
 	/**
 	 * Get % Scrap.
@@ -1111,12 +1147,10 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getScrap();
+	BigDecimal getScrap();
 
-    /** Column definition for Scrap */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Scrap = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Scrap", null);
-    /** Column name Scrap */
-    public static final String COLUMNNAME_Scrap = "Scrap";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Scrap = new ModelColumn<>(I_PP_Order_BOMLine.class, "Scrap", null);
+	String COLUMNNAME_Scrap = "Scrap";
 
 	/**
 	 * Set Show Sub BOM Ingredients.
@@ -1125,7 +1159,7 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setShowSubBOMIngredients (boolean ShowSubBOMIngredients);
+	void setShowSubBOMIngredients (boolean ShowSubBOMIngredients);
 
 	/**
 	 * Get Show Sub BOM Ingredients.
@@ -1134,113 +1168,98 @@ public interface I_PP_Order_BOMLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isShowSubBOMIngredients();
+	boolean isShowSubBOMIngredients();
 
-    /** Column definition for ShowSubBOMIngredients */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "ShowSubBOMIngredients", null);
-    /** Column name ShowSubBOMIngredients */
-    public static final String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new ModelColumn<>(I_PP_Order_BOMLine.class, "ShowSubBOMIngredients", null);
+	String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Updated = new ModelColumn<>(I_PP_Order_BOMLine.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, org.compiere.model.I_AD_User>(I_PP_Order_BOMLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Gültig ab.
-	 * Valid from including this date (first day)
+	 * Set Valid From.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
+	void setValidFrom (java.sql.Timestamp ValidFrom);
 
 	/**
-	 * Get Gültig ab.
-	 * Valid from including this date (first day)
+	 * Get Valid From.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidFrom();
+	java.sql.Timestamp getValidFrom();
 
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ValidFrom = new ModelColumn<>(I_PP_Order_BOMLine.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
-	 * Set Gültig bis.
+	 * Set Valid to.
 	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidTo (java.sql.Timestamp ValidTo);
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
 
 	/**
-	 * Get Gültig bis.
+	 * Get Valid to.
 	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidTo();
+	@Nullable java.sql.Timestamp getValidTo();
 
-    /** Column definition for ValidTo */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "ValidTo", null);
-    /** Column name ValidTo */
-    public static final String COLUMNNAME_ValidTo = "ValidTo";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_ValidTo = new ModelColumn<>(I_PP_Order_BOMLine.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 
 	/**
-	 * Set Varianten Gruppe.
+	 * Set VariantGroup.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setVariantGroup (java.lang.String VariantGroup);
+	void setVariantGroup (@Nullable java.lang.String VariantGroup);
 
 	/**
-	 * Get Varianten Gruppe.
+	 * Get VariantGroup.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getVariantGroup();
+	@Nullable java.lang.String getVariantGroup();
 
-    /** Column definition for VariantGroup */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_VariantGroup = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "VariantGroup", null);
-    /** Column name VariantGroup */
-    public static final String COLUMNNAME_VariantGroup = "VariantGroup";
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_VariantGroup = new ModelColumn<>(I_PP_Order_BOMLine.class, "VariantGroup", null);
+	String COLUMNNAME_VariantGroup = "VariantGroup";
 }

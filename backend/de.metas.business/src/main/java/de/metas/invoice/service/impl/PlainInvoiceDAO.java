@@ -30,18 +30,15 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 
 public class PlainInvoiceDAO extends AbstractInvoiceDAO
 {
@@ -91,12 +88,7 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 				return false;
 			}
 
-			if (pojo.getC_Invoice_ID() != invoice.getC_Invoice_ID())
-			{
-				return false;
-			}
-
-			return true;
+			return pojo.getC_Invoice_ID() == invoice.getC_Invoice_ID();
 		});
 
 	}
@@ -104,8 +96,6 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	private BigDecimal retrieveAllocatedAmt(final org.compiere.model.I_C_Invoice invoice, final TypedAccessor<BigDecimal> amountAccessor)
 	{
 		Adempiere.assertUnitTestMode();
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
@@ -119,7 +109,7 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
+						ah.getDateTrx().toInstant(), // ConvDate
 						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 						ClientId.ofRepoId(line.getAD_Client_ID()),
 						OrgId.ofRepoId(line.getAD_Org_ID()));

@@ -83,7 +83,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalReference (java.lang.String ExternalReference);
+	void setExternalReference (String ExternalReference);
 
 	/**
 	 * Get External reference.
@@ -92,7 +92,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalReference();
+	String getExternalReference();
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalReference = new ModelColumn<>(I_S_ExternalReference.class, "ExternalReference", null);
 	String COLUMNNAME_ExternalReference = "ExternalReference";
@@ -105,7 +105,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalReferenceURL (@Nullable java.lang.String ExternalReferenceURL);
+	void setExternalReferenceURL (@Nullable String ExternalReferenceURL);
 
 	/**
 	 * Get URL in external system.
@@ -115,7 +115,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalReferenceURL();
+	@Nullable String getExternalReferenceURL();
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalReferenceURL = new ModelColumn<>(I_S_ExternalReference.class, "ExternalReferenceURL", null);
 	String COLUMNNAME_ExternalReferenceURL = "ExternalReferenceURL";
@@ -128,7 +128,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem (java.lang.String ExternalSystem);
+	void setExternalSystem (String ExternalSystem);
 
 	/**
 	 * Get External system.
@@ -138,10 +138,31 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalSystem();
+	String getExternalSystem();
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_S_ExternalReference.class, "ExternalSystem", null);
 	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+
+	/**
+	 * Set External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
+
+	/**
+	 * Get External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_S_ExternalReference.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
 	 * Set Active.
@@ -165,6 +186,27 @@ public interface I_S_ExternalReference
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_IsActive = new ModelColumn<>(I_S_ExternalReference.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Read Only In Metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadOnlyInMetasfresh (boolean IsReadOnlyInMetasfresh);
+
+	/**
+	 * Get Read Only In Metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadOnlyInMetasfresh();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_IsReadOnlyInMetasfresh = new ModelColumn<>(I_S_ExternalReference.class, "IsReadOnlyInMetasfresh", null);
+	String COLUMNNAME_IsReadOnlyInMetasfresh = "IsReadOnlyInMetasfresh";
 
 	/**
 	 * Set Record ID.
@@ -259,7 +301,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType (java.lang.String Type);
+	void setType (String Type);
 
 	/**
 	 * Get Type.
@@ -269,7 +311,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getType();
+	String getType();
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_Type = new ModelColumn<>(I_S_ExternalReference.class, "Type", null);
 	String COLUMNNAME_Type = "Type";
@@ -307,7 +349,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setVersion (@Nullable java.lang.String Version);
+	void setVersion (@Nullable String Version);
 
 	/**
 	 * Get Version.
@@ -317,7 +359,7 @@ public interface I_S_ExternalReference
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getVersion();
+	@Nullable String getVersion();
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_Version = new ModelColumn<>(I_S_ExternalReference.class, "Version", null);
 	String COLUMNNAME_Version = "Version";

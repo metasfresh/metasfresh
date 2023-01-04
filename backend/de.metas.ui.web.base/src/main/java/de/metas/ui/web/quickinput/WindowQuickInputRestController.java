@@ -74,19 +74,29 @@ public class WindowQuickInputRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT + "/{windowId}/{documentId}/{tabId}/quickInput";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
 
-	@Autowired
-	private DocumentCollection documentsCollection;
+	private final DocumentCollection documentsCollection;
 
-	@Autowired
-	private QuickInputDescriptorFactoryService quickInputDescriptors;
-	@Autowired
-	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	private final QuickInputDescriptorFactoryService quickInputDescriptors;
 
-	@Autowired
-	private DocumentWebsocketPublisher websocketPublisher;
+	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+
+	private final DocumentWebsocketPublisher websocketPublisher;
+
+	public WindowQuickInputRestController(
+			final UserSession userSession,
+			final DocumentCollection documentsCollection,
+			final QuickInputDescriptorFactoryService quickInputDescriptors,
+			final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
+			final DocumentWebsocketPublisher websocketPublisher)
+	{
+		this.userSession = userSession;
+		this.documentsCollection = documentsCollection;
+		this.quickInputDescriptors = quickInputDescriptors;
+		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
+		this.websocketPublisher = websocketPublisher;
+	}
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 

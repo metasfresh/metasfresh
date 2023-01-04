@@ -22,6 +22,9 @@
 
 package de.metas.common.bpartner.v2.request;
 
+import de.metas.common.bpartner.v2.common.JsonDeliveryRule;
+import de.metas.common.bpartner.v2.common.JsonDeliveryViaRule;
+import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -31,8 +34,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PAYMENT_TERM_IDENTIFIER_DOC;
 
 @Getter
 @ToString
@@ -122,6 +129,13 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean invoiceRuleSet;
 
+	@ApiModelProperty(position = 105, //
+			value = "Optional; if specified, it will be used, e.g. when a purchase order is created for this business partner.")
+	private JsonInvoiceRule poInvoiceRule;
+
+	@ApiModelProperty(hidden = true)
+	private boolean poInvoiceRuleSet;
+
 	@ApiModelProperty(position = 110)
 	private String url;
 
@@ -154,6 +168,12 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean globalIdset;
 
+	@ApiModelProperty(position = 155, //
+			value = "The ID of the price list that the business partner is to use as a customer. If provided, this will be used to lookup `C_BPartner.M_PricingSystem_ID`")
+	private JsonMetasfreshId priceListId;
+
+	private boolean priceListIdSet;
+
 	@ApiModelProperty(position = 160, //
 			value = "Translates to `C_BPartner.VATaxId`")
 	private String vatId;
@@ -167,13 +187,92 @@ public class JsonRequestBPartner
 
 	private boolean memoIsSet;
 
-	@ApiModelProperty(position = 170, // shall be last
+	@ApiModelProperty(position = 170, //
+			value = "Translates to `M_SectionCode.Value` and it's mapped to `C_BPartner.M_SectionCode_ID`")
+	private String sectionCodeValue;
+
+	private boolean sectionCodeValueSet;
+
+	@ApiModelProperty(position = 180, //
+			value = "Translates to `C_BPartner.Description`")
+	private String description;
+
+	private boolean descriptionSet;
+
+	@ApiModelProperty(position = 190, //
+			value = "Translates to `C_BPartner.DeliveryRule`")
+	private JsonDeliveryRule deliveryRule;
+
+	private boolean deliveryRuleSet;
+
+	@ApiModelProperty(position = 200, //
+			value = "Translates to `C_BPartner.DeliveryViaRule`")
+	private JsonDeliveryViaRule deliveryViaRule;
+
+	private boolean deliveryViaRuleSet;
+
+	@ApiModelProperty(position = 210, //
+			value = "Translates to `C_BPartner.IsStorageWarehouse`")
+	private Boolean storageWarehouse;
+
+	private boolean storageWarehouseSet;
+
+	@ApiModelProperty(position = 220, //
+			value = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Customer_ID`")
+	private String incotermsCustomerValue;
+
+	private boolean incotermsCustomerValueSet;
+
+	@ApiModelProperty(position = 230, //
+			value = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Vendor_ID`")
+	private String incotermsVendorValue;
+
+	private boolean incotermsVendorValueSet;
+
+	@ApiModelProperty(position = 240, //
+			value = "Mapped to `C_BPartner.C_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
+	private String customerPaymentTermIdentifier;
+
+	private boolean customerPaymentTermIdentifierSet;
+
+	@ApiModelProperty(position = 250, //
+			value = "Mapped to `C_BPartner.PO_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
+	private String vendorPaymentTermIdentifier;
+
+	private boolean vendorPaymentTermIdentifierSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Mapped to `C_BPartner.BPartner_Parent_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String parentIdentifier;
+
+	private boolean parentIdentifierSet;
+
+	@ApiModelProperty(position = 270, //
+			value = "Translates to `C_BPartner.PaymentRule`")
+	private JsonPaymentRule paymentRule;
+
+	private boolean paymentRuleSet;
+
+	@ApiModelProperty(position = 280, //
+			value = "Translates to `C_BPartner.PaymentRulePO`")
+	private JsonPaymentRule paymentRulePO;
+
+	private boolean paymentRulePOSet;
+
+	@ApiModelProperty(position = 290, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String sectionGroupPartnerIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerIdentifierSet;
 
 	public void setCode(final String code)
 	{
@@ -247,6 +346,12 @@ public class JsonRequestBPartner
 		this.invoiceRuleSet = true;
 	}
 
+	public void setPOInvoiceRule(final JsonInvoiceRule invoiceRule)
+	{
+		this.poInvoiceRule = invoiceRule;
+		this.poInvoiceRuleSet = true;
+	}
+
 	public void setUrl(final String url)
 	{
 		this.url = url;
@@ -293,5 +398,92 @@ public class JsonRequestBPartner
 	{
 		this.memo = memo;
 		this.memoIsSet = true;
+	}
+
+	public void setPriceListId(@Nullable final JsonMetasfreshId priceListId)
+	{
+		if (JsonMetasfreshId.toValue(priceListId) != null)
+		{
+			this.priceListId = priceListId;
+			this.priceListIdSet = true;
+		}
+	}
+
+	public void setSectionCodeValue(final String sectionCodeValue)
+	{
+		this.sectionCodeValue = sectionCodeValue;
+		this.sectionCodeValueSet = true;
+	}
+
+	public void setDescription(final String description)
+	{
+		this.description = description;
+		this.descriptionSet = true;
+	}
+
+	public void setDeliveryRule(final JsonDeliveryRule deliveryRule)
+	{
+		this.deliveryRule = deliveryRule;
+		this.deliveryRuleSet = true;
+	}
+
+	public void setDeliveryViaRule(final JsonDeliveryViaRule deliveryViaRule)
+	{
+		this.deliveryViaRule = deliveryViaRule;
+		this.deliveryViaRuleSet = true;
+	}
+
+	public void setStorageWarehouse(final Boolean storageWarehouse)
+	{
+		this.storageWarehouse = storageWarehouse;
+		this.storageWarehouseSet = true;
+	}
+
+	public void setIncotermsCustomerValue(final String incotermsCustomerValue)
+	{
+		this.incotermsCustomerValue = incotermsCustomerValue;
+		this.incotermsCustomerValueSet = true;
+	}
+
+	public void setIncotermsVendorValue(final String incotermsVendorValue)
+	{
+		this.incotermsVendorValue = incotermsVendorValue;
+		this.incotermsVendorValueSet = true;
+	}
+
+	public void setCustomerPaymentTermIdentifier(final String customerPaymentTermIdentifier)
+	{
+		this.customerPaymentTermIdentifier = customerPaymentTermIdentifier;
+		this.customerPaymentTermIdentifierSet = true;
+	}
+
+	public void setVendorPaymentTermIdentifier(final String vendorPaymentTermIdentifier)
+	{
+		this.vendorPaymentTermIdentifier = vendorPaymentTermIdentifier;
+		this.vendorPaymentTermIdentifierSet = true;
+	}
+
+	public void setParentIdentifier(final String parentIdentifier)
+	{
+		this.parentIdentifier = parentIdentifier;
+		this.parentIdentifierSet = true;
+	}
+
+	public void setPaymentRule(final JsonPaymentRule paymentRule)
+	{
+		this.paymentRule = paymentRule;
+		this.paymentRuleSet = true;
+	}
+
+	public void setPaymentRulePO(final JsonPaymentRule paymentRulePO)
+	{
+		this.paymentRulePO = paymentRulePO;
+		this.paymentRulePOSet = true;
+	}
+
+	public void setSectionGroupPartnerIdentifier(final String sectionGroupPartnerIdentifier)
+	{
+		this.sectionGroupPartnerIdentifier = sectionGroupPartnerIdentifier;
+		this.sectionGroupPartnerIdentifierSet = true;
 	}
 }

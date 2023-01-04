@@ -18,6 +18,7 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +77,7 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -114,6 +115,11 @@ public class ShipmentScheduleDeletedHandlerTests
 				.builder()
 				.eventDescriptor(eventDescriptor)
 				.shipmentScheduleId(shipmentScheduleId)
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(ZERO)
+												.reservedQuantity(ZERO)
+												.reservedQuantityDelta(ZERO)
+												.build())
 				.build();
 
 		shipmentScheduleDeletedHandler.handleEvent(shipmentScheduleDeletedEvent);

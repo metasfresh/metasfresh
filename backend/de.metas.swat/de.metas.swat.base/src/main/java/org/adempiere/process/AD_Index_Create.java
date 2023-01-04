@@ -225,14 +225,14 @@ public class AD_Index_Create extends JavaProcess
 	{
 		if (ignoreError)
 		{
-			if (DB.executeUpdate(sql, trxName) != -1)
+			if (DB.executeUpdateAndSaveErrorOnFail(sql, trxName) != -1)
 			{
 				addLog(sql + ";");
 			}
 		}
 		else
 		{
-			DB.executeUpdateEx(sql, trxName);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 			addLog(sql + ";");
 		}
 	}

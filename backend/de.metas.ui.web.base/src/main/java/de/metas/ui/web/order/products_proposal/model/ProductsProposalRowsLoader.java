@@ -40,14 +40,19 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
@@ -64,11 +69,16 @@ import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -84,13 +94,19 @@ public final class ProductsProposalRowsLoader
 
 	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final OrderProductProposalsService orderProductProposalsService;
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final CampaignPriceProvider campaignPriceProvider;
 	private final LookupDataSource productLookup;
+	private final LookupDataSource incoTermsLookup;
+	private final LookupDataSource uomLookup;
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
 	private final ImmutableSet<PriceListVersionId> priceListVersionIds;
@@ -105,7 +121,9 @@ public final class ProductsProposalRowsLoader
 
 	@Builder
 	private ProductsProposalRowsLoader(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
 			//
 			@NonNull @Singular final ImmutableSet<PriceListVersionId> priceListVersionIds,
@@ -118,8 +136,12 @@ public final class ProductsProposalRowsLoader
 		Check.assumeNotEmpty(priceListVersionIds, "priceListVersionIds is not empty");
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.orderProductProposalsService = orderProductProposalsService;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
-		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
+
+		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
+		incoTermsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Incoterms.Table_Name);
+		uomLookup = lookupDataSourceFactory.searchInTableLookup(I_C_UOM.Table_Name);
 
 		this.priceListVersionIds = priceListVersionIds;
 
@@ -157,11 +179,11 @@ public final class ProductsProposalRowsLoader
 			logger.debug("order!=null; -> add bpartnerName={} to headerProperties", order.getBpartnerName());
 			headerProperties
 					.group(ViewHeaderPropertiesGroup.builder()
-							.entry(ViewHeaderProperty.builder()
-									.caption(msgBL.translatable("C_BPartner_ID"))
-									.value(order.getBpartnerName())
-									.build())
-							.build());
+								   .entry(ViewHeaderProperty.builder()
+												  .caption(msgBL.translatable("C_BPartner_ID"))
+												  .value(order.getBpartnerName())
+												  .build())
+								   .build());
 		}
 
 		return ProductsProposalRowsData.builder()
@@ -183,11 +205,14 @@ public final class ProductsProposalRowsLoader
 
 	private List<ProductsProposalRow> loadRows()
 	{
+		final ZoneId zoneId = orgDAO.getTimeZone(Env.getOrgId());
+		final LocalDate currentDate = LocalDate.now(zoneId);
+
 		return priceListVersionIds.stream()
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
-						.thenComparing(ProductsProposalRow::getProductName))
-				.filter(p -> !Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
+								.thenComparing(ProductsProposalRow::getProductName))
+				.filter(p -> !productBL.isDiscontinuedAt(productsRepo.getById(p.getProductId()), currentDate))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -195,10 +220,11 @@ public final class ProductsProposalRowsLoader
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
-				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
+				.map(this::toProductsProposalRowOrNull)
 				.filter(Objects::nonNull);
 	}
 
+	@Nullable
 	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
@@ -213,17 +239,26 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		return ProductsProposalRow.builder()
+		final ProductProposalPrice currentProductProposalPrice = extractProductProposalPrice(record);
+
+		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.price(extractProductProposalPrice(record))
+				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
-				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
+				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()));
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		orderProductProposalsService.getLastQuotation(clientAndOrgId, bpartnerId, productId)
+				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, rowBuilder, productId, currentProductProposalPrice));
+
+		return rowBuilder
 				.build()
 				//
 				.withExistingOrderLine(order);
@@ -298,5 +333,22 @@ public final class ProductsProposalRowsLoader
 		{
 			return stats.getLastReceiptInDays();
 		}
+	}
+
+	private void setQuotationInfo(
+			@NonNull final Order quotation,
+			@NonNull final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder,
+			@NonNull final ProductId productId,
+			@NonNull final ProductProposalPrice currentProductProposalPrice)
+	{
+		final ProductPrice quotationPrice = orderProductProposalsService.getQuotationPrice(quotation, productId, currentProductProposalPrice.getCurrencyCode());
+
+		final Amount quotationAmount = Amount.of(quotationPrice.toBigDecimal(), currentProductProposalPrice.getCurrencyCode());
+
+		rowBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
+				.lastQuotationPrice(quotationAmount)
+				.lastQuotationUOM(uomLookup.findById(quotationPrice.getUomId()))
+				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
+				.quotationOrdered(quotation.getRefOrderId() != null);
 	}
 }

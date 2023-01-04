@@ -1,7 +1,18 @@
 package de.metas.ui.web.session;
 
-import java.util.Objects;
-
+import com.google.common.base.Strings;
+import de.metas.contracts.ConditionsId;
+import de.metas.letter.BoilerPlateId;
+import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
+import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.AllArgsConstructor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -13,18 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
-
-import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
-import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
-import de.metas.ui.web.websocket.WebsocketTopicNames;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.AllArgsConstructor;
+import java.util.Objects;
 
 /*
  * #%L
@@ -102,11 +102,27 @@ public class UserSessionRepository
 		final String adLanguageToSet = fromUser.getAD_Language();
 		if (!Check.isEmpty(adLanguageToSet))
 		{
-			String adLanguageOld = userSession.setAD_Language(adLanguageToSet);
-			String adLanguageNew = userSession.getAD_Language();
+			final String adLanguageOld = userSession.setAD_Language(adLanguageToSet);
+			final String adLanguageNew = userSession.getAD_Language();
 			if (!Objects.equals(adLanguageNew, adLanguageOld))
 			{
 				changesCollector.language(userSession.getLanguageAsJson());
+			}
+		}
+
+		final BoilerPlateId newDefaultBoilerPlateId = BoilerPlateId.ofRepoIdOrNull(fromUser.getAD_BoilerPlate_Default_ID());
+		final BoilerPlateId oldDefaultBoilerPlateId = userSession.setNewDefaultBoilerPlateIdAndReturnOld(newDefaultBoilerPlateId);
+		if (!BoilerPlateId.equals(oldDefaultBoilerPlateId, newDefaultBoilerPlateId))
+		{
+			changesCollector.defaultBoilerPlateId(newDefaultBoilerPlateId);
+		}
+
+		{
+			final ConditionsId newDefaultFlatrateConditionsId = ConditionsId.ofRepoIdOrNull(fromUser.getC_Flatrate_Conditions_Default_ID());
+			final ConditionsId oldDefaultFlatrateConditionsId = userSession.setNewDefaultFlatrateConditionsIdAndReturnOld(newDefaultFlatrateConditionsId);
+			if (!ConditionsId.equals(oldDefaultFlatrateConditionsId, newDefaultFlatrateConditionsId))
+			{
+				changesCollector.defaultFlatrateConditionsId(newDefaultFlatrateConditionsId);
 			}
 		}
 

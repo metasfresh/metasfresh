@@ -45,6 +45,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+
 @Callout(I_C_Payment.class)
 @Interceptor(I_C_Payment.class)
 @Component
@@ -74,7 +76,7 @@ public class C_Payment
 	 */
 	@CalloutMethod(columnNames = I_C_Payment.COLUMNNAME_C_Order_ID)
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_C_Payment.COLUMNNAME_C_Order_ID)
-	public void updateDiscountAndPaymentAmount(@NonNull final I_C_Payment record)
+	public void updateFromOrder(@NonNull final I_C_Payment record)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(record.getC_Order_ID());
 
@@ -92,9 +94,13 @@ public class C_Payment
 		final BigDecimal priceActual = paymentTermDiscountPercent.subtractFromBase(order.getGrandTotal(), currency.getPrecision().toInt());
 		final BigDecimal discountAmount = paymentTermDiscountPercent.computePercentageOf(order.getGrandTotal(), currency.getPrecision().toInt());
 
+		record.setC_BPartner_ID(firstGreaterThanZero(order.getBill_BPartner_ID(), order.getC_BPartner_ID()));
+		record.setC_Currency_ID(order.getC_Currency_ID());
+
 		record.setC_Invoice(null);
 		record.setC_Charge_ID(0);
 		record.setIsPrepayment(true);
+
 		record.setWriteOffAmt(BigDecimal.ZERO);
 		record.setIsOverUnderPayment(false);
 		record.setOverUnderAmt(BigDecimal.ZERO);

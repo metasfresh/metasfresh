@@ -1,29 +1,26 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.time.Instant;
-import java.time.LocalDate;
-
-import de.metas.common.util.time.SystemTime;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
+import de.metas.contracts.commission.Payer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierachyAlgorithm;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfigId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionFact;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
@@ -32,10 +29,23 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -68,6 +78,17 @@ class HierachyAlgorithmTest
 	private final Beneficiary headOfSales = Beneficiary.of(BPartnerId.ofRepoId(40));
 	private final Beneficiary salesSupervisor = Beneficiary.of(BPartnerId.ofRepoId(30));
 	private final Beneficiary salesRep = Beneficiary.of(BPartnerId.ofRepoId(20));
+	private final BPartnerId payerId = BPartnerId.ofRepoId(1001);
+
+	private I_C_UOM uomRecord;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		uomRecord = BusinessTestHelper.createUOM("uom");
+	}
 
 	@Test
 	void createInstanceShares()
@@ -79,7 +100,7 @@ class HierachyAlgorithmTest
 	void applyTriggerChange()
 	{
 		final InvoiceCandidateId invoiceCandiateId = InvoiceCandidateId.ofRepoId(10);
-		final ImmutableList<SalesCommissionShare> initialShares = createInstanceShares_performTest(invoiceCandiateId);
+		final ImmutableList<CommissionShare> initialShares = createInstanceShares_performTest(invoiceCandiateId);
 
 		final CommissionInstance instance = CommissionInstance.builder()
 				.currentTriggerData(createInitialcommissionTrigger(invoiceCandiateId, salesRep).getCommissionTriggerData())
@@ -89,23 +110,25 @@ class HierachyAlgorithmTest
 		final CommissionTriggerChange change = CommissionTriggerChange.builder()
 				.instanceToUpdate(instance)
 				.newCommissionTriggerData(CommissionTriggerData.builder()
-						.orgId(orgId)
-						.triggerDocumentId(new SalesInvoiceCandidateDocumentId(invoiceCandiateId))
-						.triggerType(CommissionTriggerType.InvoiceCandidate)
-						.triggerDocumentDate(LocalDate.of(2020, 03, 22))
-						.timestamp(Instant.now())
-						.forecastedBasePoints(CommissionPoints.ZERO)
-						.invoiceableBasePoints(CommissionPoints.ZERO)
-						.invoicedBasePoints(CommissionPoints.of("1110.00"))
-						.tradedCommissionPercent(Percent.ZERO)
-						.build())
+												  .orgId(orgId)
+												  .triggerDocumentId(new SalesInvoiceCandidateDocumentId(invoiceCandiateId))
+												  .triggerType(CommissionTriggerType.InvoiceCandidate)
+												  .triggerDocumentDate(LocalDate.of(2020, 03, 22))
+												  .timestamp(Instant.now())
+												  .forecastedBasePoints(CommissionPoints.ZERO)
+												  .invoiceableBasePoints(CommissionPoints.ZERO)
+												  .invoicedBasePoints(CommissionPoints.of("1110.00"))
+												  .productId(commissionProductId)
+												  .totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
+												  .documentCurrencyId(CurrencyId.ofRepoId(1))
+												  .build())
 				.build();
 
 		// invoke the method under test
 		new HierachyAlgorithm().applyTriggerChangeToShares(change);
 
 		assertThat(instance).isNotNull();
-		final ImmutableList<SalesCommissionShare> sharesAfterInvocation = instance.getShares();
+		final ImmutableList<CommissionShare> sharesAfterInvocation = instance.getShares();
 		assertThat(sharesAfterInvocation).hasSize(3);
 
 		assertThat(sharesAfterInvocation.get(0)).satisfies(share -> {
@@ -114,13 +137,13 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("100.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("1.00")),
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("100.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("1.00")),
 
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-100.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-10.00")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("110.00")));
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("-100.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-10.00")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("110.00")));
 		});
 
 		assertThat(sharesAfterInvocation.get(1)).satisfies(share -> {
@@ -129,13 +152,13 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("90.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.90")),
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("90.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("0.90")),
 
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-90.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-9.00")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("99.00")));
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("-90.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-9.00")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("99.00")));
 		});
 		assertThat(sharesAfterInvocation.get(2)).satisfies(share -> {
 			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
@@ -143,17 +166,19 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("81.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.81")),
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("81.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("0.81")),
 
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-81.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-8.10")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("89.10")));
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("-81.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-8.10")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("89.10")));
 		});
 	}
 
-	/** Applies a commission trigger with negative base points. */
+	/**
+	 * Applies a commission trigger with negative base points.
+	 */
 	@Test
 	void applyTriggerChange_negative()
 	{
@@ -166,7 +191,9 @@ class HierachyAlgorithmTest
 				.forecastedBasePoints(CommissionPoints.of("30.00"))
 				.invoiceableBasePoints(CommissionPoints.of("20.00"))
 				.invoicedBasePoints(CommissionPoints.of("10.00"))
-				.tradedCommissionPercent(Percent.ZERO)
+				.productId(commissionProductId)
+				.totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
+				.documentCurrencyId(CurrencyId.ofRepoId(1))
 				.build();
 
 		final HierarchyConfig config = HierarchyConfig.builder()
@@ -181,26 +208,28 @@ class HierachyAlgorithmTest
 
 		final CommissionInstance instance = CommissionInstance.builder()
 				.currentTriggerData(triggerData)
-				.share(SalesCommissionShare.builder()
-						.beneficiary(salesRep)
-						.config(config)
-						.fact(SalesCommissionFact.builder()
-								.points(CommissionPoints.of("30.00"))
-								.state(SalesCommissionState.FORECASTED)
-								.timestamp(de.metas.common.util.time.SystemTime.asInstant())
-								.build())
-						.fact(SalesCommissionFact.builder()
-								.points(CommissionPoints.of("20.00"))
-								.state(SalesCommissionState.INVOICEABLE)
-								.timestamp(de.metas.common.util.time.SystemTime.asInstant())
-								.build())
-						.fact(SalesCommissionFact.builder()
-								.points(CommissionPoints.of("10.00"))
-								.state(SalesCommissionState.INVOICED)
-								.timestamp(SystemTime.asInstant())
-								.build())
-						.level(HierarchyLevel.of(10))
-						.build())
+				.share(CommissionShare.builder()
+							   .beneficiary(salesRep)
+							   .config(config)
+						.soTrx(SOTrx.PURCHASE)
+						.payer(Payer.of(payerId))
+						.fact(CommissionFact.builder()
+											 .points(CommissionPoints.of("30.00"))
+								.state(CommissionState.FORECASTED)
+											 .timestamp(de.metas.common.util.time.SystemTime.asInstant())
+											 .build())
+						.fact(CommissionFact.builder()
+											 .points(CommissionPoints.of("20.00"))
+								.state(CommissionState.INVOICEABLE)
+											 .timestamp(de.metas.common.util.time.SystemTime.asInstant())
+											 .build())
+						.fact(CommissionFact.builder()
+											 .points(CommissionPoints.of("10.00"))
+								.state(CommissionState.INVOICED)
+											 .timestamp(SystemTime.asInstant())
+											 .build())
+							   .level(HierarchyLevel.of(10))
+							   .build())
 				.build();
 
 		// guard
@@ -210,51 +239,54 @@ class HierachyAlgorithmTest
 		final CommissionTriggerChange change = CommissionTriggerChange.builder()
 				.instanceToUpdate(instance)
 				.newCommissionTriggerData(CommissionTriggerData.builder()
-						.orgId(orgId)
-						.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
-						.triggerType(CommissionTriggerType.SalesInvoice)
-						.triggerDocumentDate(LocalDate.of(2020, 03, 21))
-						.timestamp(Instant.now())
-						.forecastedBasePoints(CommissionPoints.ZERO)
-						.invoiceableBasePoints(CommissionPoints.ZERO)
-						.invoicedBasePoints(CommissionPoints.of("-1110.00")) // with our 10% commission form the config, this trls to -111
-						.tradedCommissionPercent(Percent.ZERO)
-						.build())
+												  .orgId(orgId)
+												  .triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
+												  .triggerType(CommissionTriggerType.SalesInvoice)
+												  .triggerDocumentDate(LocalDate.of(2020, 03, 21))
+												  .timestamp(Instant.now())
+												  .forecastedBasePoints(CommissionPoints.ZERO)
+												  .invoiceableBasePoints(CommissionPoints.ZERO)
+												  .invoicedBasePoints(CommissionPoints.of("-1110.00")) // with our 10% commission form the config, this trls to -111
+												  .productId(commissionProductId)
+												  .totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
+												  .documentCurrencyId(CurrencyId.ofRepoId(1))
+												  .build())
 				.build();
 
 		// invoke the method under test
 		new HierachyAlgorithm().applyTriggerChangeToShares(change);
 
 		assertThat(instance).isNotNull();
-		final ImmutableList<SalesCommissionShare> sharesAfterInvocation = instance.getShares();
+		final ImmutableList<CommissionShare> sharesAfterInvocation = instance.getShares();
 		assertThat(sharesAfterInvocation).hasSize(1);
-		final SalesCommissionShare share = sharesAfterInvocation.get(0);
+		final CommissionShare share = sharesAfterInvocation.get(0);
 
 		assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
 				.contains(CommissionPoints.of("0.00"), CommissionPoints.of("0.00"), CommissionPoints.of("-111.00"));
 		assertThat(share.getFacts())
 				.extracting("state", "points")
 				.containsExactly(
-						tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("30.00")),
-						tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("20.00")),
-						tuple(SalesCommissionState.INVOICED, CommissionPoints.of("10.00")),
-						tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-30.00")),
-						tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-20.00")),
-						tuple(SalesCommissionState.INVOICED, CommissionPoints.of("-121.00")));
+						tuple(CommissionState.FORECASTED, CommissionPoints.of("30.00")),
+						tuple(CommissionState.INVOICEABLE, CommissionPoints.of("20.00")),
+						tuple(CommissionState.INVOICED, CommissionPoints.of("10.00")),
+						tuple(CommissionState.FORECASTED, CommissionPoints.of("-30.00")),
+						tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-20.00")),
+						tuple(CommissionState.INVOICED, CommissionPoints.of("-121.00")));
 	}
 
-	private ImmutableList<SalesCommissionShare> createInstanceShares_performTest(@NonNull final InvoiceCandidateId invoiceCandiateId)
+	private ImmutableList<CommissionShare> createInstanceShares_performTest(@NonNull final InvoiceCandidateId invoiceCandiateId)
 	{
 		final HierarchyNode headOfSalesNode = HierarchyNode.of(headOfSales);
 		final HierarchyNode salesSupervisorNode = HierarchyNode.of(salesSupervisor);
 		final HierarchyNode salesrepNode = HierarchyNode.of(salesRep);
 
+		final CommissionTrigger trigger = createInitialcommissionTrigger(invoiceCandiateId, salesRep);
+
 		final Hierarchy hierarchy = Hierarchy.builder()
 				.addChildren(headOfSalesNode, ImmutableList.of(salesSupervisorNode))
 				.addChildren(salesSupervisorNode, ImmutableList.of(salesrepNode))
+				.addChildren(salesrepNode, ImmutableList.of(HierarchyNode.of(Beneficiary.of(trigger.getCustomer().getBPartnerId()))))
 				.build();
-
-		final CommissionTrigger trigger = createInitialcommissionTrigger(invoiceCandiateId, salesRep);
 
 		final HierarchyConfig config = HierarchyConfig.builder()
 				.id(HierarchyConfigId.ofRepoId(5))
@@ -282,7 +314,7 @@ class HierachyAlgorithmTest
 				.build();
 
 		// invoke the method under test
-		final ImmutableList<SalesCommissionShare> shares = new HierachyAlgorithm().createCommissionShares(request);
+		final ImmutableList<CommissionShare> shares = new HierachyAlgorithm().createCommissionShares(request);
 		assertThat(shares).hasSize(3);
 
 		assertThat(shares).allSatisfy(share -> {
@@ -297,9 +329,9 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("100.00")),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("1.00")));
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("100.00")),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("1.00")));
 		});
 
 		assertThat(shares.get(1)).satisfies(share -> {
@@ -310,9 +342,9 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("90.00")/* remaining commission base=900 */),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.90")));
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("90.00")/* remaining commission base=900 */),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("0.90")));
 		});
 
 		assertThat(shares.get(2)).satisfies(share -> {
@@ -323,9 +355,9 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("81.00")/* remaining commission base=810 */),
-							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
-							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.81")));
+							tuple(CommissionState.FORECASTED, CommissionPoints.of("81.00")/* remaining commission base=810 */),
+							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
+							tuple(CommissionState.INVOICED, CommissionPoints.of("0.81")));
 		});
 
 		return shares;
@@ -351,12 +383,15 @@ class HierachyAlgorithmTest
 				// it's uncommon to have a trigger with points beyond "forecasted"..but still should work
 				.invoiceableBasePoints(CommissionPoints.of("100.00"))
 				.invoicedBasePoints(CommissionPoints.of("10.00"))
-				.tradedCommissionPercent(Percent.ZERO)
+				.productId(commissionProductId)
+				.totalQtyInvolved(Quantity.of(BigDecimal.TEN, uomRecord))
+				.documentCurrencyId(CurrencyId.ofRepoId(1))
 				.build();
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
 				.customer(Customer.of(BPartnerId.ofRepoId(10)))
-				.beneficiary(salesRep)
+				.salesRepId(salesRep.getBPartnerId())
+				.orgBPartnerId(BPartnerId.ofRepoId(1001))
 				.commissionTriggerData(triggerData)
 				.build();
 		return trigger;

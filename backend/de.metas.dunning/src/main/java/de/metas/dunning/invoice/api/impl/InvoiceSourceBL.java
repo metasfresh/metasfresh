@@ -90,9 +90,10 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 
 		// NOTE: is very important to fetch candidates out of transaction in order to process each of them in a separate transaction
 		final IDunningContext dunningContext = Services.get(IDunningBL.class).createDunningContext(ctx,
-				null, // dunningLevel
-				null, // dunningDate
-				ITrx.TRXNAME_None // make sure we are fetching everything out of trx
+																								   null, // dunningLevel
+																								   null, // dunningDate
+																								   ITrx.TRXNAME_None, // make sure we are fetching everything out of trx
+																								   null // recomputeDunningCandidatesQuery
 		);
 
 		final Iterator<I_C_DunningDoc_Line_Source> sources = dunningDAO.retrieveDunningDocLineSourcesToWriteOff(dunningContext);

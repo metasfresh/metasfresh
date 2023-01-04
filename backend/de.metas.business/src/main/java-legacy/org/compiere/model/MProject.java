@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -42,46 +41,6 @@ public class MProject extends X_C_Project
 	 *
 	 */
 	private static final long serialVersionUID = -1781787100948563589L;
-
-	/**
-	 * Create new Project by copying
-	 *
-	 * @param ctx          context
-	 * @param C_Project_ID project
-	 * @param dateDoc      date of the document date
-	 * @param trxName      transaction
-	 * @return Project
-	 */
-	public static MProject copyFrom(final Properties ctx, final int C_Project_ID, final Timestamp dateDoc, final String trxName)
-	{
-		final MProject from = new MProject(ctx, C_Project_ID, trxName);
-		if (from.getC_Project_ID() == 0)
-			throw new IllegalArgumentException("From Project not found C_Project_ID=" + C_Project_ID);
-		//
-		final MProject to = new MProject(ctx, 0, trxName);
-		PO.copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
-		to.set_ValueNoCheck("C_Project_ID", I_ZERO);
-		//	Set Value with Time
-		String Value = to.getValue() + " ";
-		final String Time = dateDoc.toString();
-		final int length = Value.length() + Time.length();
-		if (length <= 40)
-			Value += Time;
-		else
-			Value += Time.substring(length - 40);
-		to.setValue(Value);
-		to.setInvoicedAmt(BigDecimal.ZERO);
-		to.setProjectBalanceAmt(BigDecimal.ZERO);
-		to.setProcessed(false);
-		//
-		if (!to.save())
-			throw new IllegalStateException("Could not create Project");
-
-		if (to.copyDetailsFrom(from) == 0)
-			throw new IllegalStateException("Could not create Project Details");
-
-		return to;
-	}    //	copyFrom
 
 	public MProject(final Properties ctx, final int C_Project_ID, final String trxName)
 	{
@@ -197,68 +156,29 @@ public class MProject extends X_C_Project
 		}
 	}
 
-	/**
-	 * Get Project Issues
-	 *
-	 * @return Array of issues
-	 */
-	public MProjectIssue[] getIssues()
-	{
-		ArrayList<MProjectIssue> list = new ArrayList<>();
-		String sql = "SELECT * FROM C_ProjectIssue WHERE C_Project_ID=? ORDER BY Line";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getC_Project_ID());
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MProjectIssue(getCtx(), rs, get_TrxName()));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (SQLException ex)
-		{
-			log.error(sql, ex);
-		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close();
-		}
-		catch (SQLException ex1)
-		{
-		}
-		pstmt = null;
-		//
-		MProjectIssue[] retValue = new MProjectIssue[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}    //	getIssues
 
 	/**
 	 * Get Project Phases
 	 *
 	 * @return Array of phases
 	 */
-	public MProjectPhase[] getPhases()
+	private MProjectPhase[] getPhases()
 	{
-		ArrayList<MProjectPhase> list = new ArrayList<>();
-		String sql = "SELECT * FROM C_ProjectPhase WHERE C_Project_ID=? ORDER BY SeqNo";
+		final ArrayList<MProjectPhase> list = new ArrayList<>();
+		final String sql = "SELECT * FROM C_ProjectPhase WHERE C_Project_ID=? ORDER BY SeqNo";
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			pstmt.setInt(1, getC_Project_ID());
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 				list.add(new MProjectPhase(getCtx(), rs, get_TrxName()));
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			log.error(sql, ex);
 		}
@@ -272,7 +192,7 @@ public class MProject extends X_C_Project
 		}
 		pstmt = null;
 		//
-		MProjectPhase[] retValue = new MProjectPhase[list.size()];
+		final MProjectPhase[] retValue = new MProjectPhase[list.size()];
 		list.toArray(retValue);
 		return retValue;
 	}    //	getPhases
@@ -296,7 +216,7 @@ public class MProject extends X_C_Project
 	 * @param project project
 	 * @return number of lines copied
 	 */
-	public int copyLinesFrom(final MProject project)
+	private int copyLinesFrom(final MProject project)
 	{
 		if (isProcessed() || project == null)
 			return 0;
@@ -327,7 +247,7 @@ public class MProject extends X_C_Project
 	 * @param fromProject project
 	 * @return number of items copied
 	 */
-	public int copyPhasesFrom(final MProject fromProject)
+	private int copyPhasesFrom(final MProject fromProject)
 	{
 		if (isProcessed() || fromProject == null)
 			return 0;
@@ -393,15 +313,8 @@ public class MProject extends X_C_Project
 		}
 
 		return true;
-	}    //	beforeSave
+	}
 
-	/**
-	 * After Save
-	 *
-	 * @param newRecord new
-	 * @param success   success
-	 * @return success
-	 */
 	@Override
 	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
@@ -413,19 +326,16 @@ public class MProject extends X_C_Project
 		//	Value/Name change
 		if (success && !newRecord
 				&& (is_ValueChanged("Value") || is_ValueChanged("Name")))
+		{
 			MAccount.updateValueDescription(getCtx(), "C_Project_ID=" + getC_Project_ID(), get_TrxName());
+		}
 
 		return success;
-	}    //	afterSave
+	}
 
-	/**
-	 * Before Delete
-	 *
-	 * @return true
-	 */
 	@Override
 	protected boolean beforeDelete()
 	{
 		return delete_Accounting("C_Project_Acct");
-	}    //	beforeDelete
+	}
 }

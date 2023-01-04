@@ -1,37 +1,18 @@
 package de.metas.security.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import de.metas.money.CurrencyId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.tree.AdTreeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Role_Included;
-import org.compiere.model.I_AD_User_Roles;
-import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache;
 import de.metas.menu.AdMenuId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
+import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.RoleInclude;
 import de.metas.security.TableAccessLevel;
@@ -48,6 +29,24 @@ import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.AdTreeId;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Role_Included;
+import org.compiere.model.I_AD_User_Roles;
+import org.compiere.model.I_AD_User_Substitute;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class RoleDAO implements IRoleDAO
 {
@@ -80,12 +79,13 @@ public class RoleDAO implements IRoleDAO
 				.collect(GuavaCollectors.toImmutableMapByKey(Role::getId));
 	}
 
-	private static Role toRole(final I_AD_Role record)
+	private static Role toRole(@NonNull final I_AD_Role record)
 	{
 		return Role.builder()
 				.id(RoleId.ofRepoId(record.getAD_Role_ID()))
 				//
 				.name(record.getName())
+				.roleGroup(RoleGroup.ofNullableString(record.getRole_Group()))
 				.description(record.getDescription())
 				//
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
@@ -133,32 +133,17 @@ public class RoleDAO implements IRoleDAO
 		rolePermissions.addPermissionIfCondition(record.isRoleAlwaysUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
 		rolePermissions.addPermissionIfCondition(record.isAttachmentDeletionAllowed(), IUserRolePermissions.PERMISSION_IsAttachmentDeletionAllowed);
 
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Schedule(), IUserRolePermissions.PERMISSION_InfoWindow_Schedule);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_MRP(), IUserRolePermissions.PERMISSION_InfoWindow_MRP);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_CRP(), IUserRolePermissions.PERMISSION_InfoWindow_CRP);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Order(), IUserRolePermissions.PERMISSION_InfoWindow_Order);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Invoice(), IUserRolePermissions.PERMISSION_InfoWindow_Invoice);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_InOut(), IUserRolePermissions.PERMISSION_InfoWindow_InOut);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Payment(), IUserRolePermissions.PERMISSION_InfoWindow_Payment);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_CashJournal(), IUserRolePermissions.PERMISSION_InfoWindow_CashJournal);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Resource(), IUserRolePermissions.PERMISSION_InfoWindow_Resource);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Asset(), IUserRolePermissions.PERMISSION_InfoWindow_Asset);
-
 		//
 		// Accounting module
 		rolePermissions.addPermissionIfCondition(record.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
 
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
 		rolePermissions.addPermissionIfCondition(record.isAllowedTrlBox(), IUserRolePermissions.PERMISSION_TrlBox);
 		rolePermissions.addPermissionIfCondition(record.isAllowedMigrationScripts(), IUserRolePermissions.PERMISSION_MigrationScripts);
 
 		return rolePermissions.build();
 	}
 
-	private static final Constraints extractConstraints(final I_AD_Role record)
+	private static Constraints extractConstraints(final I_AD_Role record)
 	{
 		return Constraints.builder()
 				.addConstraint(UserPreferenceLevelConstraint.forPreferenceType(record.getPreferenceType()))
@@ -170,7 +155,7 @@ public class RoleDAO implements IRoleDAO
 				.build();
 	}
 
-	private static final LoginOrgConstraint extractLoginOrgConstraint(final I_AD_Role record)
+	private static LoginOrgConstraint extractLoginOrgConstraint(final I_AD_Role record)
 	{
 		final OrgId loginOrgId = record.getLogin_Org_ID() > 0
 				? OrgId.ofRepoIdOrNull(record.getLogin_Org_ID())
@@ -358,4 +343,11 @@ public class RoleDAO implements IRoleDAO
 				.anyMatch();
 	}
 
+	public void deleteUserRolesByUserId(final UserId userId)
+	{
+		Services.get(IQueryBL.class).createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
 }

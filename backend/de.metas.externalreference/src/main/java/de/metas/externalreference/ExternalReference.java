@@ -23,11 +23,13 @@
 package de.metas.externalreference;
 
 import de.metas.organization.OrgId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -66,5 +68,21 @@ public class ExternalReference
 	@Nullable
 	String externalReferenceUrl;
 
+	@Nullable
+	Integer externalSystemParentConfigId;
+
+	boolean isReadOnlyInMetasfresh;
+
 	int recordId;
+
+	@Nullable
+	public RepoIdAware getExternalSystemParentConfigId(@NonNull final Function<Integer, RepoIdAware> idMapper)
+	{
+		if (externalSystemParentConfigId == null)
+		{
+			return null;
+		}
+
+		return idMapper.apply(externalSystemParentConfigId);
+	}
 }

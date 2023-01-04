@@ -21,6 +21,7 @@ const Checkbox = (props) => {
     filterWidget,
     isFilterActive,
     updateItems,
+    suppressChange,
   } = props;
   let { value, defaultValue } = widgetData;
   const prevValue = usePrevious(value);
@@ -46,6 +47,11 @@ const Checkbox = (props) => {
     // application (ex modal)
     if (!initialRender && !updateItems) {
       setInitialRender(true);
+    }
+
+    // only valid for checkboxes in tabs
+    if (isChanged && value !== prevValue && initialRender && suppressChange) {
+      setChanged(false);
     }
 
     // if widget's value changed without user triggering it, update the local state as it
@@ -85,8 +91,13 @@ const Checkbox = (props) => {
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
+
     handlePatch(widgetField, newCheckedState, id).then(() => {
-      setChanged(false);
+      // in case of checkboxes in tabs/Attributes we will always get a websocket request, which can break
+      // the current state. So don't change it until next render
+      if (!suppressChange) {
+        setChanged(false);
+      }
     });
   };
 
@@ -144,7 +155,10 @@ const Checkbox = (props) => {
  * @prop {func} [handlePatch]
  * @prop {string} [widgetField]
  * @prop {string|number} [id]
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {func} [updateItems] - function used for updating the filter items before having an active filter
+ * @prop {bool} [suppressChange] - this flag is set for checkboxes in Tabs/Attributes, where we have additional
+ *                           requests which would otherwise break the current flow, overriding the local checked
+ *                           state with default value.
  */
 Checkbox.propTypes = {
   widgetData: PropTypes.object.isRequired,
@@ -156,7 +170,8 @@ Checkbox.propTypes = {
   widgetField: PropTypes.string,
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
+  updateItems: PropTypes.func,
+  suppressChange: PropTypes.bool,
 };
 
 export default Checkbox;

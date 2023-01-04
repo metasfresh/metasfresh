@@ -24,10 +24,12 @@ package de.metas.handlingunits.material.interceptor.transactionevent;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -39,7 +41,6 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,7 +54,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class TransactionEventFactoryForInOutLine
@@ -94,15 +94,32 @@ public class TransactionEventFactoryForInOutLine
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
-		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
-
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
-		final I_M_InOutLine shipmentLine = inoutsRepo.getLineById(transaction.getInoutLineId());
+		final I_M_InOutLine shipmentLine = inoutsRepo.getLineByIdInTrx(transaction.getInoutLineId());
 		final BPartnerId customerId = BPartnerId.ofRepoId(shipmentLine.getM_InOut().getC_BPartner_ID());
-		final InOutAndLineId shipmentLineId = InOutAndLineId.ofRepoId(shipmentLine.getM_InOut_ID(), shipmentLine.getM_InOutLine_ID());
 
-		final List<HUDescriptor> huDescriptors = huDescriptionFactory.createHuDescriptorsForInOutLine(shipmentLineId, deleted);
+		final boolean isReversal = shipmentLine.getReversalLine_ID() > 0;
+
+		final InOutAndLineId shipmentLineId = isReversal
+				? getReversalShipmentLine(shipmentLine)
+				: InOutAndLineId.ofRepoId(shipmentLine.getM_InOut_ID(), shipmentLine.getM_InOutLine_ID());
+
+		final List<HUDescriptor> huDescriptors;
+
+		if (isReversal)
+		{
+			final HUTraceEventQuery huTraceEventQuery = HUTraceEventQuery.builder()
+					.vhuStatus(X_M_HU.HUSTATUS_Shipped)
+					.inOutId(shipmentLineId.getInOutId().getRepoId())
+					.build();
+
+			huDescriptors = huDescriptionFactory.createHuDescriptorsForTrace(huTraceEventQuery);
+		}
+		else
+		{
+			huDescriptors = huDescriptionFactory.createHuDescriptorsForInOutLine(shipmentLineId, deleted);
+		}
 
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
 				materialDescriptors = huDescriptionFactory.newMaterialDescriptors()
@@ -118,14 +135,13 @@ public class TransactionEventFactoryForInOutLine
 			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors = entry.getValue();
 
 			final AbstractTransactionEvent event;
-			if (deleted)
+			if (deleted || isReversal)
 			{
 				event = TransactionDeletedEvent.builder()
 						.eventDescriptor(transaction.getEventDescriptor())
 						.transactionId(transaction.getTransactionId())
 						.materialDescriptor(materialDescriptor)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
-						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
 						.build();
@@ -139,7 +155,6 @@ public class TransactionEventFactoryForInOutLine
 						.transactionId(transaction.getTransactionId())
 						.materialDescriptor(materialDescriptor)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
-						.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
 						.minMaxDescriptor(minMaxDescriptor)
@@ -150,68 +165,13 @@ public class TransactionEventFactoryForInOutLine
 		return events.build();
 	}
 
-	private Map<Integer, BigDecimal> retrieveShipmentScheduleId2Qty(
-			@NonNull final TransactionDescriptor transaction)
-	{
-		final Map<Integer, BigDecimal> shipmentScheduleId2quantity = new TreeMap<>();
-
-		BigDecimal qtyLeftToDistribute = transaction.getMovementQty();
-
-		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtysPicked = shipmentScheduleAllocDAO.retrieveByInOutLineId(
-				transaction.getInoutLineId(),
-				I_M_ShipmentSchedule_QtyPicked.class);
-
-		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
-		{
-			assertSignumsOfQuantitiesMatch(shipmentScheduleQtyPicked, transaction);
-
-			final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
-			final BigDecimal quantityForMaterialDescriptor = MTransactionUtil.isInboundMovementType(transaction.getMovementType())
-					? qtyPicked
-					: qtyPicked.negate();
-
-			shipmentScheduleId2quantity.merge(
-					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
-					quantityForMaterialDescriptor,
-					BigDecimal::add);
-
-			qtyLeftToDistribute = qtyLeftToDistribute.subtract(quantityForMaterialDescriptor);
-		}
-		return shipmentScheduleId2quantity;
-	}
-
-	private static void assertSignumsOfQuantitiesMatch(
-			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
-			@NonNull final TransactionDescriptor transaction)
-	{
-		final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
-		final BigDecimal movementQty = transaction.getMovementQty();
-
-		if (qtyPicked.signum() == 0 || movementQty.signum() == 0)
-		{
-			return; // at least one of them is zero
-		}
-		if (qtyPicked.signum() != movementQty.signum())
-		{
-			return;
-		}
-
-		throw new AdempiereException(
-				"For the given shipmentScheduleQtyPicked and transaction, one needs to be positive and one needs to be negative")
-				.appendParametersToMessage()
-				.setParameter("qtyPicked", qtyPicked)
-				.setParameter("movementQty", movementQty)
-				.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
-				.setParameter("transaction", transaction);
-	}
-
 	private List<MaterialEvent> createEventsForReceipt(
 			@NonNull final TransactionDescriptor transaction,
 			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
-		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(transaction.getInoutLineId());
+		final I_M_InOutLine receiptLine = inoutsRepo.getLineByIdInTrx(transaction.getInoutLineId());
 		final InOutAndLineId receiptLineId = InOutAndLineId.ofRepoId(receiptLine.getM_InOut_ID(), receiptLine.getM_InOutLine_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(receiptLine.getM_InOut().getC_BPartner_ID());
 
@@ -279,5 +239,15 @@ public class TransactionEventFactoryForInOutLine
 
 		final int intValue = sysConfigBL.getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
 		return intValue == warehouseId.getRepoId();
+	}
+
+	@NonNull
+	private InOutAndLineId getReversalShipmentLine(@NonNull final I_M_InOutLine shipmentLine)
+	{
+		return inoutsRepo.getReversalLineForLineId(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()))
+				.map(reversalLine -> InOutAndLineId.ofRepoId(reversalLine.getM_InOut_ID(), reversalLine.getM_InOutLine_ID()))
+				.orElseThrow(() -> new AdempiereException("Missing reversalLine although M_InOutLine.getReversalLine_ID() > 0")
+						.appendParametersToMessage()
+						.setParameter("ReversalLine_ID", shipmentLine.getReversalLine_ID()));
 	}
 }

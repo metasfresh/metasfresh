@@ -1,0 +1,16 @@
+de.metas.contracts.commission.mediated.MediatedCommissionConfigFactoryTest.givenValidRequest_whenCreateForNewCommissionInstances_thenReturnOneCommissionConfig=[
+  [
+    {
+      "commissionPercent" : 10,
+      "commissionProductId" : 103,
+      "pointsPrecision" : 2,
+      "mediatedCommissionContract" : {
+        "@type" : "MediatedCommissionContract",
+        "contractId" : 100004,
+        "contractOwnerBPartnerId" : 1,
+        "simulation" : false
+      },
+      "mediatedCommissionSettingsLineId" : 100002
+    }
+  ]
+]

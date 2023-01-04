@@ -3,13 +3,18 @@ package de.metas.ordercandidate.api;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.quantity.Quantity;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -53,7 +58,11 @@ final class OLCandFactory
 				.isGroupingError(record.isGroupingError())
 				.groupingErrorMessage(record.getGroupingErrorMessage())
 				.discount(Percent.ofNullable(record.getGroupCompensationDiscountPercentage()))
+				.isGroupMainItem(record.isGroupCompensationLine())
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(record.getCompensationGroupOrderBy()))
 				.build();
+
+		final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(record);
 
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
@@ -68,6 +77,15 @@ final class OLCandFactory
 				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.orderLineGroup(orderLineGroup)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(record.getC_Async_Batch_ID()))
+				.qtyItemCapacityEff(qtyItemCapacity)
+				.salesRepInternalId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_Internal_ID()))
+				.assignSalesRepRule(AssignSalesRepRule.ofCode(record.getApplySalesRepFrom()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
+				.bpartnerName(record.getBPartnerName())
+				.email(record.getEMail())
+				.phone(record.getPhone())
+				.adIssueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.build();
 	}
 }

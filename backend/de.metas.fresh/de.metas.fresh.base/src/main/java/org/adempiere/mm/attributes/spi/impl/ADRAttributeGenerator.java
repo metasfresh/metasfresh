@@ -22,10 +22,11 @@
 
 package org.adempiere.mm.attributes.spi.impl;
 
-import java.util.Properties;
-
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
@@ -38,12 +39,11 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.fresh.model.I_C_BPartner;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 {
@@ -89,7 +89,8 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 
 		//
 		// Fetched AD_Ref_List record
-		final ADRefListItem adRefList = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, adrRegionValue);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final ADRefListItem adRefList = adReferenceService.retrieveListItemOrNull(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, adrRegionValue);
 		Check.assumeNotNull(adRefList, "adRefList not null");
 
 		final String adrRegionName = adRefList.getName().getDefaultValue();

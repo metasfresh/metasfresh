@@ -1,0 +1,49 @@
+# docker-compose.yml file
+
+services:
+
+  db:
+    image: metasfresh/metas-db:${refname:-local}-preloaded
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 120
+    deploy:
+      mode: replicated
+      replicas: 1
+      
+  rabbitmq:
+    image: rabbitmq:3.9.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=metasfresh
+      - RABBITMQ_DEFAULT_PASS=metasfresh
+      - RABBITMQ_DEFAULT_VHOST=/
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  cucumber:
+    image: metasfresh/metas-cucumber:${refname:-local}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./cucumber:/reports
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  bouncer:
+    image: busybox
+    command: "/bin/sh -c 'sleep 110m && echo \"Who of you folks wound the clock? It is really time to stop!\" && echo \"timeout: aborting cucumber run after 110 minutes\"'"
+
+volumes: {}
+configs: {}
+secrets: {}

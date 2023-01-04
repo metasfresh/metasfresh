@@ -21,15 +21,8 @@
  */
 package de.metas.project.process.legacy;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.compiere.model.I_C_ProjectLine;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
-
+import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MProject;
@@ -38,7 +31,15 @@ import org.compiere.model.MProjectLine;
 import org.compiere.model.MStorage;
 import org.compiere.model.MTimeExpense;
 import org.compiere.model.MTimeExpenseLine;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 
 /**
  *  Issue to Project.
@@ -345,7 +346,7 @@ public class ProjectIssue extends JavaProcess
 	private boolean projectIssueHasExpense (int S_TimeExpenseLine_ID)
 	{
 		if (m_projectIssues == null)
-			m_projectIssues = m_project.getIssues();
+			m_projectIssues = retrieveProjectIssues(m_project.getC_Project_ID());
 		for (int i = 0; i < m_projectIssues.length; i++)
 		{
 			if (m_projectIssues[i].getS_TimeExpenseLine_ID() == S_TimeExpenseLine_ID)
@@ -362,7 +363,7 @@ public class ProjectIssue extends JavaProcess
 	private boolean projectIssueHasReceipt (int M_InOutLine_ID)
 	{
 		if (m_projectIssues == null)
-			m_projectIssues = m_project.getIssues();
+			m_projectIssues = retrieveProjectIssues(m_project.getC_Project_ID());
 		for (int i = 0; i < m_projectIssues.length; i++)
 		{
 			if (m_projectIssues[i].getM_InOutLine_ID() == M_InOutLine_ID)
@@ -370,5 +371,45 @@ public class ProjectIssue extends JavaProcess
 		}
 		return false;
 	}	//	projectIssueHasReceipt
+
+	/**
+	 * Get Project Issues
+	 *
+	 * @return Array of issues
+	 */
+	private MProjectIssue[] retrieveProjectIssues(final int projectId)
+	{
+		ArrayList<MProjectIssue> list = new ArrayList<>();
+		String sql = "SELECT * FROM C_ProjectIssue WHERE C_Project_ID=? ORDER BY Line";
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			pstmt.setInt(1, projectId);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
+				list.add(new MProjectIssue(getCtx(), rs, get_TrxName()));
+			rs.close();
+			pstmt.close();
+			pstmt = null;
+		}
+		catch (SQLException ex)
+		{
+			log.error(sql, ex);
+		}
+		try
+		{
+			if (pstmt != null)
+				pstmt.close();
+		}
+		catch (SQLException ex1)
+		{
+		}
+		pstmt = null;
+		//
+		MProjectIssue[] retValue = new MProjectIssue[list.size()];
+		list.toArray(retValue);
+		return retValue;
+	}    //	getIssues
 
 }	//	ProjectIssue

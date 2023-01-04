@@ -1,7 +1,9 @@
 package de.metas.inout;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
@@ -16,6 +18,7 @@ import org.compiere.model.I_R_Request;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -181,4 +184,14 @@ public interface IInOutBL extends ISingletonService
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
+
+	LocalDate retrieveMovementDate(I_M_InOut inOut);
+
+	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
+
+	String getLocationEmail(InOutId ofRepoId);
+
+	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	DocStatus getDocStatus(InOutId inOutId);
 }

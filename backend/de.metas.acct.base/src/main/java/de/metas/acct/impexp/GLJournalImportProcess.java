@@ -95,7 +95,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " I_ErrorMsg = ' ',"
 				+ " I_IsImported = 'N' "
 				+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		int no = DB.executeUpdateEx(sql.toString(), trxName);
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.info("Reset=" + no);
 
 		// Set Client from Name
@@ -103,7 +103,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "SET AD_Client_ID=(SELECT c.AD_Client_ID FROM AD_Client c WHERE c.Value=i.ClientValue) "
 				+ "WHERE (AD_Client_ID IS NULL OR AD_Client_ID=0) AND ClientValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'");
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Client from Value=" + no);
 
 		// Set Default Client, Doc Org, AcctSchema, DatAcct
@@ -121,7 +121,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		sql.append(" Updated = COALESCE (Updated, now()) "
 				+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL")
 		.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Client/DocOrg/Default=" + no);
 
 		// Error Doc Org
@@ -131,7 +131,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_OrgDoc_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("o"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Doc Org=" + no);
@@ -144,14 +144,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_AcctSchema_ID IS NULL AND AcctSchemaName IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AcctSchema from Name=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET C_AcctSchema_ID=(SELECT c.C_AcctSchema1_ID FROM AD_ClientInfo c WHERE c.AD_Client_ID=i.AD_Client_ID) "
 				+ "WHERE C_AcctSchema_ID IS NULL AND AcctSchemaName IS NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AcctSchema from Client=" + no);
 		// Error AcctSchema
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -160,7 +160,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " OR NOT EXISTS (SELECT * FROM C_AcctSchema a WHERE i.AD_Client_ID=a.AD_Client_ID))"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid AcctSchema=" + no);
@@ -172,7 +172,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE DateAcct IS NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set DateAcct=" + no);
 
 		// Document Type
@@ -182,7 +182,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set DocType=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocType, '"
@@ -190,7 +190,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " OR NOT EXISTS (SELECT * FROM C_DocType d WHERE i.AD_Client_ID=d.AD_Client_ID AND d.DocBaseType='GLJ'))"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid DocType=" + no);
@@ -203,14 +203,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE GL_Category_ID IS NULL AND CategoryName IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set DocType=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Category, '"
 				+ "WHERE (GL_Category_ID IS NULL OR GL_Category_ID=0)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid GLCategory=" + no);
@@ -223,7 +223,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Currency from ISO=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET C_Currency_ID=(SELECT a.C_Currency_ID FROM C_AcctSchema a"
@@ -231,14 +231,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Default Currency=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Currency, '"
 				+ "WHERE (C_Currency_ID IS NULL OR C_Currency_ID=0)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Currency=" + no);
@@ -250,7 +250,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_ConversionType_ID IS NULL AND ConversionTypeValue IS NULL"
 				+ " AND I_IsImported='N'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set CurrencyType Value to Spot =" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET C_ConversionType_ID=(SELECT c.C_ConversionType_ID FROM C_ConversionType c"
@@ -258,14 +258,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_ConversionType_ID IS NULL AND ConversionTypeValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set CurrencyType from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid CurrencyType, '"
 				+ "WHERE (C_ConversionType_ID IS NULL OR C_ConversionType_ID=0) AND ConversionTypeValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid CurrencyTypeValue=" + no);
@@ -276,7 +276,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE (C_ConversionType_ID IS NULL OR C_ConversionType_ID=0)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("No CourrencyType=" + no);
@@ -289,7 +289,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " WHERE a.C_AcctSchema_ID=i.C_AcctSchema_ID AND a.C_Currency_ID=i.C_Currency_ID)"
 				+ " AND C_Currency_ID IS NOT NULL AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Home CurrencyRate=" + no);
 		// Set Currency Rate
 		sql = new StringBuffer("UPDATE I_GLJournal i "
@@ -303,7 +303,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ ") WHERE CurrencyRate IS NULL OR CurrencyRate=0 AND C_Currency_ID>0"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Org Rate=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET CurrencyRate=(SELECT MAX(r.MultiplyRate) FROM C_Conversion_Rate r, C_AcctSchema s"
@@ -316,14 +316,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ ") WHERE CurrencyRate IS NULL OR CurrencyRate=0 AND C_Currency_ID>0"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Client Rate=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Rate, '"
 				+ "WHERE CurrencyRate IS NULL OR CurrencyRate=0"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("No Rate=" + no);
@@ -340,7 +340,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_Period_ID IS NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Period=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Period, '"
@@ -353,7 +353,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " AND i.DateAcct BETWEEN p.StartDate AND p.EndDate AND p.IsActive='Y' AND p.PeriodType='S')"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Period=" + no);
@@ -364,7 +364,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " (SELECT * FROM C_PeriodControl pc WHERE pc.C_Period_ID=i.C_Period_ID AND DocBaseType='GLJ' AND PeriodStatus='O') "
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Period Closed=" + no);
@@ -375,7 +375,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "SET PostingType='A' "
 				+ "WHERE PostingType IS NULL AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Actual PostingType=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid PostingType, ' "
@@ -383,7 +383,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " (SELECT * FROM AD_Ref_List r WHERE r.AD_Reference_ID=125 AND i.PostingType=r.Value)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid PostingTypee=" + no);
@@ -396,14 +396,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0) AND OrgValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Org from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET AD_Org_ID=AD_OrgDoc_ID "
 				+ "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0) AND OrgValue IS NULL AND AD_OrgDoc_ID IS NOT NULL AND AD_OrgDoc_ID<>0"
 				+ "  AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Org from Doc Org=" + no);
 		// Error Org
 		sql = new StringBuffer("UPDATE I_GLJournal o "
@@ -412,7 +412,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_Org_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("o"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Org=" + no);
@@ -428,14 +428,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE AccountFrom_ID IS NULL AND AccountValueFrom IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AccountFrom from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account, '"
 				+ "WHERE (AccountFrom_ID IS NULL OR AccountFrom_ID=0)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Account=" + no);
@@ -451,14 +451,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE AccountTo_ID IS NULL AND AccountValueTo IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set AccountTo from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account, '"
 				+ "WHERE (AccountTo_ID IS NULL OR AccountTo_ID=0)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Account=" + no);
@@ -471,14 +471,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set BPartner from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid BPartner, '"
 				+ "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid BPartner=" + no);
@@ -492,14 +492,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Product from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, '"
 				+ "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Product=" + no);
@@ -512,14 +512,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set Project from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Project, '"
 				+ "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid Project=" + no);
@@ -532,14 +532,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE AD_OrgTrx_ID IS NULL AND OrgTrxValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set OrgTrx from Value=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid OrgTrx, '"
 				+ "WHERE AD_OrgTrx_ID IS NULL AND OrgTrxValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Invalid OrgTrx=" + no);
@@ -551,21 +551,21 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE AmtSourceDr IS NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set 0 Source Dr=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal "
 				+ "SET AmtSourceCr = 0 "
 				+ "WHERE AmtSourceCr IS NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Set 0 Source Cr=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Zero Source Balance, ' "
 				+ "WHERE (AmtSourceDr-AmtSourceCr)=0"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Zero Source Balance=" + no);
@@ -577,21 +577,21 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				+ "WHERE AmtAcctDr IS NULL OR AmtAcctDr=0"
 				+ " AND I_IsImported='N'")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Calculate Acct Dr=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal "
 				+ "SET AmtAcctCr = ROUND(AmtSourceCr * CurrencyRate, 2) "
 				+ "WHERE AmtAcctCr IS NULL OR AmtAcctCr=0"
 				+ " AND I_IsImported='N'")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		log.debug("Calculate Acct Cr=" + no);
 		sql = new StringBuffer("UPDATE I_GLJournal i "
 				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Zero Acct Balance, ' "
 				+ "WHERE (AmtSourceDr-AmtSourceCr)<>0 AND (AmtAcctDr-AmtAcctCr)=0"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), trxName);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no != 0)
 		{
 			log.warn("Zero Acct Balance=" + no);

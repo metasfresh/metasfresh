@@ -1,32 +1,35 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static de.metas.util.Check.assumeEquals;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util.ArrayKey;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShareId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementState;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
+import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.stereotype.Repository;
+
+import java.util.Set;
+
+import static de.metas.util.Check.assumeEquals;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -68,7 +71,7 @@ public class CommissionSettlementShareRepository
 		final ImmutableList<CommissionSettlementFact> facts = createFacts(factRecords);
 
 		return CommissionSettlementShare.builder()
-				.salesCommissionShareId(SalesCommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
+				.salesCommissionShareId(CommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
 				.facts(facts)
 				.build();
 	}
@@ -105,6 +108,19 @@ public class CommissionSettlementShareRepository
 				settlementShare.getSalesCommissionShareId().getRepoId(),
 				orgId,
 				factRecords);
+	}
+
+	@NonNull
+	public Set<CommissionShareId> retrieveShareIdsForInstanceQuery(@NonNull final IQuery<I_C_Commission_Instance> commissionInstanceIQuery)
+	{
+		return queryBL.createQueryBuilder(I_C_Commission_Share.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_Commission_Share.COLUMNNAME_C_Commission_Instance_ID, I_C_Commission_Instance.COLUMNNAME_C_Commission_Instance_ID, commissionInstanceIQuery)
+				.create()
+				.stream()
+				.map(I_C_Commission_Share::getC_Commission_Share_ID)
+				.map(CommissionShareId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private ImmutableList<I_C_Commission_Fact> retrieveFactRecords(@NonNull final I_C_Commission_Share shareRecord)

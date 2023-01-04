@@ -76,6 +76,8 @@ public interface IUOMDAO extends ISingletonService
 	 */
 	boolean isUOMForTUs(UomId uomId);
 
+	boolean isUOMEach(@NonNull UomId uomId);
+
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
 }

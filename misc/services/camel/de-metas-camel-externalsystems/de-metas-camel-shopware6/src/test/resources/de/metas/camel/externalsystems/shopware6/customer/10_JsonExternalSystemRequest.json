@@ -1,0 +1,17 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "Shopware6",
+  "externalSystemChildConfigValue": "childValue",
+  "command": "getCustomers",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "traceId": "traceId",
+  "parameters": {
+    "ClientSecret": "ClientSecret",
+    "ClientId": "ClientId",
+    "BasePath": "https://someurl.com",
+    "JSONPathConstantMetasfreshID": "/customFields/metasfreshId",
+    "JSONPathConstantShopwareID": "/customFields/someCustomId",
+    "UpdatedAfterOverride": "2020-04-10T00:09:00.000Z"
+  }
+}

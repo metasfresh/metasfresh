@@ -881,7 +881,7 @@ public class Allocation
 				if (open != null && open.signum() == 0)	{
 					sql = "UPDATE C_Invoice SET IsPaid='Y' "
 						+ "WHERE C_Invoice_ID=" + C_Invoice_ID;
-					int no = DB.executeUpdate(sql, trxName);
+					int no = DB.executeUpdateAndSaveErrorOnFail(sql, trxName);
 					log.info("Invoice #" + i + " is paid - updated=" + no);
 				}
 				else

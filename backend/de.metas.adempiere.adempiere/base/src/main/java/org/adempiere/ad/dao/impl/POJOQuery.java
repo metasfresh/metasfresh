@@ -22,24 +22,18 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import de.metas.common.util.time.SystemTime;
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
+import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -56,18 +50,22 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import de.metas.dao.selection.pagination.PageDescriptor;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.money.Money;
-import de.metas.process.PInstanceId;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.UIDStringUtil;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {
@@ -190,6 +188,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		queryNew.options = this.options == null ? null : new HashMap<>(this.options);
 
 		queryNew.unions = unions == null ? null : new ArrayList<>(unions);
+		queryNew.limit = limit;
 
 		return queryNew;
 	}
@@ -253,7 +252,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final List<ET> resultCasted = new ArrayList<>(result.size());
 		for (final T model : result)
 		{
-			if(limit.isLimitHitOrExceeded(resultCasted))
+			if (limit.isLimitHitOrExceeded(resultCasted))
 			{
 				break;
 			}
@@ -327,8 +326,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <ET extends T> ET first() throws DBException
 	{
-		@SuppressWarnings("unchecked")
-		final ET result = (ET)first(modelClass);
+		@SuppressWarnings("unchecked") final ET result = (ET)first(modelClass);
 		return result;
 	}
 
@@ -506,8 +504,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return null;
 		}
 
-		@SuppressWarnings("unchecked")
-		final OT value = (OT)options.get(name);
+		@SuppressWarnings("unchecked") final OT value = (OT)options.get(name);
 
 		return value;
 	}
@@ -576,8 +573,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 	@Override
 	public <AT> AT aggregate(final String columnName,
-			@NonNull final Aggregate aggregateType,
-			final Class<AT> returnType) throws DBException
+							 @NonNull final Aggregate aggregateType,
+							 final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
 		final BiFunction<Object, Object, AT> aggregateOperator;
@@ -586,8 +583,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			aggregateOperator = getSumOperator(returnType);
 
 			// Setup initial result
-			@SuppressWarnings("unchecked")
-			final AT result0 = (AT)BigDecimal.ZERO;
+			@SuppressWarnings("unchecked") final AT result0 = (AT)BigDecimal.ZERO;
 			result = result0;
 		}
 		else if (Aggregate.MAX.equals(aggregateType))
@@ -641,8 +637,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return (result, value) -> {
 				final BigDecimal resultBD = toBigDecimal(result);
 				final BigDecimal valueBD = toBigDecimal(value);
-				@SuppressWarnings("unchecked")
-				final R newResult = (R)(resultBD == null ? valueBD : resultBD.add(valueBD));
+				@SuppressWarnings("unchecked") final R newResult = (R)(resultBD == null ? valueBD : resultBD.add(valueBD));
 				return newResult;
 			};
 		}
@@ -659,8 +654,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return (result, value) -> {
 				final BigDecimal resultBD = toBigDecimal(result);
 				final BigDecimal valueBD = toBigDecimal(value);
-				@SuppressWarnings("unchecked")
-				final R newResult = (R)(resultBD == null ? valueBD : resultBD.max(valueBD));
+				@SuppressWarnings("unchecked") final R newResult = (R)(resultBD == null ? valueBD : resultBD.max(valueBD));
 				return newResult;
 			};
 		}
@@ -669,8 +663,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return (result, value) -> {
 				final Integer resultInt = (Integer)result;
 				final Integer valueInt = (Integer)value;
-				@SuppressWarnings("unchecked")
-				final R newResult = (R)(resultInt == null ? valueInt : (Integer)Math.max(resultInt, valueInt));
+				@SuppressWarnings("unchecked") final R newResult = (R)(resultInt == null ? valueInt : (Integer)Math.max(resultInt, valueInt));
 				return newResult;
 			};
 		}
@@ -681,14 +674,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				final Timestamp valueTS = (Timestamp)value;
 				if (resultTS == null)
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)valueTS;
+					@SuppressWarnings("unchecked") final R newResult = (R)valueTS;
 					return newResult;
 				}
 				else
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)(resultTS.compareTo(valueTS) >= 0 ? resultTS : valueTS);
+					@SuppressWarnings("unchecked") final R newResult = (R)(resultTS.compareTo(valueTS) >= 0 ? resultTS : valueTS);
 					return newResult;
 				}
 			};
@@ -700,14 +691,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				final Comparable valueCmp = (Comparable)value;
 				if (resultCmp == null)
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)valueCmp;
+					@SuppressWarnings("unchecked") final R newResult = (R)valueCmp;
 					return newResult;
 				}
 				else
 				{
-					@SuppressWarnings("unchecked")
-					final R newResult = (R)(resultCmp.compareTo(valueCmp) >= 0 ? resultCmp : valueCmp);
+					@SuppressWarnings("unchecked") final R newResult = (R)(resultCmp.compareTo(valueCmp) >= 0 ? resultCmp : valueCmp);
 					return newResult;
 				}
 			};
@@ -759,25 +748,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		// NOTE: we cannot issue an SQL command, so we need to delete it one by one
 		final boolean failIfProcessed = false; // don't fail because we want to be consistent with the SQL version
 		return delete(failIfProcessed);
-	}
-
-	@Override
-	public int delete(final boolean failIfProcessed)
-	{
-		final List<T> records = list(modelClass);
-		if (records.isEmpty())
-		{
-			return 0;
-		}
-
-		int countDeleted = 0;
-		for (final Object record : records)
-		{
-			InterfaceWrapperHelper.delete(record, failIfProcessed);
-			countDeleted++;
-		}
-
-		return countDeleted;
 	}
 
 	@Override
@@ -874,11 +844,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	public final <AT> ImmutableList<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		final List<T> records = list();
 
-		final List<AT> result = new ArrayList<>();
+		final ArrayList<AT> result = new ArrayList<>();
 
 		for (final T record : records)
 		{
@@ -886,18 +856,14 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 					.getValue(record, columnName)
 					.orElseGet(() -> DB.retrieveDefaultValue(valueType));
 
-			@SuppressWarnings("unchecked")
-			final AT value = (AT)valueObj;
-
-			if (result.contains(value))
+			@SuppressWarnings("unchecked") final AT value = (AT)valueObj;
+			if (value != null && !result.contains(value))
 			{
-				continue;
+				result.add(value);
 			}
-
-			result.add(value);
 		}
 
-		return result;
+		return ImmutableList.copyOf(result);
 	}
 
 	@Override
@@ -913,8 +879,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orElse(null);
 
-		@SuppressWarnings("unchecked")
-		final AT value = (AT)valueObj;
+		@SuppressWarnings("unchecked") final AT value = (AT)valueObj;
 		return value;
 	}
 

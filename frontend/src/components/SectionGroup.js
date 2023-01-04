@@ -13,6 +13,7 @@ import Dropzone from './Dropzone';
 import { INITIALLY_CLOSED } from '../constants/Constants';
 
 const EMPTY_OBJECT = {};
+
 /**
  * @file Class based component.
  * @module SectionGroup
@@ -47,10 +48,6 @@ class SectionGroup extends PureComponent {
     this._setInitialSectionsState();
   }
 
-  /**
-   * @method _setInitialSectionsState
-   * @summary ToDo: Describe the method.
-   */
   _setInitialSectionsState = () => {
     const sections = this._getInitialSectionsState();
 
@@ -59,10 +56,6 @@ class SectionGroup extends PureComponent {
     });
   };
 
-  /**
-   * @method _getInitialSectionsState
-   * @summary ToDo: Describe the method.
-   */
   _getInitialSectionsState = () => {
     const { tabs, activeTab } = this.props.layout;
 
@@ -102,22 +95,12 @@ class SectionGroup extends PureComponent {
     return {};
   };
 
-  /**
-   * @method toggleTableFullScreen
-   * @summary ToDo: Describe the method.
-   */
   toggleTableFullScreen = () => {
     this.setState({
       fullScreen: !this.state.fullScreen,
     });
   };
 
-  /**
-   * @method toggleSectionCollapsed
-   * @summary ToDo: Describe the method.
-   * @param {*} idx
-   * @param {*} tabId
-   */
   toggleSectionCollapsed = (idx, tabId = '') => {
     this.setState({
       ...this.state,
@@ -128,47 +111,29 @@ class SectionGroup extends PureComponent {
     });
   };
 
-  /**
-   * @method sectionCollapsed
-   * @summary ToDo: Describe the method.
-   * @param {*} idx
-   * @param {*} tabId
-   */
   isSectionCollapsed = (idx, tabId = '') => {
     return this.state.collapsedSections[`${tabId}_${idx}`];
   };
 
-  /**
-   * @method hideSectionExpandTooltip
-   * @summary ToDo: Describe the method.
-   * @param {*} key
-   */
   hideSectionExpandTooltip = (key = null) => {
     this.setState({
       isSectionExpandTooltipShow: key,
     });
   };
 
-  /**
-   * @method showSectionExpandTooltip
-   * @summary ToDo: Describe the method.
-   */
   showSectionExpandTooltip = () => {
     this.setState({
       isSectionExpandTooltipShow: keymap.TOGGLE_EXPAND,
     });
   };
 
-  /**
-   * @method getTabs
-   * @summary ToDo: Describe the method.
-   * @param {*} tabs
-   * @param {*} dataId
-   * @param {*} tabsArray
-   * @param {*} tabsByIds
-   * @param {*} parentTab
-   */
-  getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
+  renderTabsRecursively = ({
+    tabLayoutsArray,
+    dataId,
+    tabComponentsCollector,
+    tabLayoutsByIdsCollector,
+    parentTabId = null,
+  }) => {
     const {
       layout: { windowId },
       newRow,
@@ -179,7 +144,7 @@ class SectionGroup extends PureComponent {
     } = this.props;
     const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
-    tabs.forEach((elem) => {
+    tabLayoutsArray.forEach((tabLayout) => {
       const {
         tabId,
         caption,
@@ -187,22 +152,23 @@ class SectionGroup extends PureComponent {
         sections,
         internalName,
         queryOnActivate,
-        supportQuickInput,
+        quickInputSupport,
+        newRecordInputMode,
         defaultOrderBys,
         orderBy,
         singleRowDetailView,
-      } = elem;
-      elem.tabIndex = this.tabIndex.tabs;
-      if (parentTab) {
-        elem.parentTab = parentTab;
+      } = tabLayout;
+      tabLayout.tabIndex = this.tabIndex.tabs;
+      if (parentTabId) {
+        tabLayout.parentTab = parentTabId;
       }
 
-      tabsByIds[elem.tabId] = elem;
+      tabLayoutsByIdsCollector[tabLayout.tabId] = tabLayout;
 
       const isDataEntry = singleRowDetailView || false;
 
       if (isDataEntry) {
-        tabsArray.push(
+        tabComponentsCollector.push(
           <TabSingleEntry
             docId={dataId}
             key={tabId}
@@ -253,7 +219,7 @@ class SectionGroup extends PureComponent {
           </TabSingleEntry>
         );
       } else {
-        tabsArray.push(
+        tabComponentsCollector.push(
           <Table
             {...{
               caption,
@@ -271,39 +237,46 @@ class SectionGroup extends PureComponent {
             docId={dataId}
             tabIndex={this.tabIndex.tabs}
             queryOnActivate={queryOnActivate}
-            supportQuickInput={supportQuickInput}
+            quickInputSupport={quickInputSupport}
+            newRecordInputMode={newRecordInputMode}
             tabInfo={tabsInfo && tabsInfo[tabId]}
             updateDocList={onRefreshTab}
           />
         );
       }
 
-      if (elem.tabs) {
-        this.getTabs(elem.tabs, dataId, tabsArray, tabsByIds, tabId);
+      if (tabLayout.tabs) {
+        this.renderTabsRecursively({
+          tabLayoutsArray: tabLayout.tabs,
+          dataId,
+          tabComponentsCollector,
+          tabLayoutsByIdsCollector,
+          parentTabId: tabId,
+        });
       }
     });
   };
 
-  /**
-   * @method renderTabs
-   * @summary ToDo: Describe the method.
-   * @param {*} tabs
-   */
-  renderTabs = (tabs) => {
+  renderTabs = (tabLayoutsArray) => {
     const {
       layout: { windowId },
       data,
       dataId,
     } = this.props;
     const { fullScreen } = this.state;
-    const tabsArray = [];
-    const tabsByIds = {};
 
     if (!Object.keys(data).length) {
       return;
     }
 
-    this.getTabs(tabs, dataId, tabsArray, tabsByIds, null);
+    const tabComponentsArray = [];
+    const allTabLayoutsById = {};
+    this.renderTabsRecursively({
+      tabLayoutsArray,
+      dataId,
+      tabComponentsCollector: tabComponentsArray,
+      tabLayoutsByIdsCollector: allTabLayoutsById,
+    });
 
     return (
       <Tabs
@@ -311,20 +284,14 @@ class SectionGroup extends PureComponent {
         fullScreen={fullScreen}
         windowId={windowId}
         onChange={this._setInitialSectionsState}
-        {...{ tabs, tabsByIds }}
+        tabs={tabLayoutsArray}
+        tabsByIds={allTabLayoutsById}
       >
-        {tabsArray}
+        {tabComponentsArray}
       </Tabs>
     );
   };
 
-  /**
-   * @method renderSections
-   * @summary ToDo: Describe the method.
-   * @param {*} sections
-   * @param {*} isDataEntry
-   * @param {*} extendedData
-   */
   renderSections = (sections, isDataEntry, extendedData = EMPTY_OBJECT) => {
     const {
       layout: { windowId },
@@ -369,22 +336,12 @@ class SectionGroup extends PureComponent {
     });
   };
 
-  /**
-   * @method addRefToWidgets
-   * @summary ToDo: Describe the method.
-   * @param {*} c
-   */
   addRefToWidgets = (c) => {
     if (c) {
       this.widgets.push(c);
     }
   };
 
-  /**
-   * @method handleBlurWidget
-   * @summary ToDo: Describe the method.
-   * @param {*} fieldName
-   */
   handleBlurWidget(fieldName) {
     let currentWidgetIndex = -1;
 

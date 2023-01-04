@@ -1,12 +1,5 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Map;
-
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -19,8 +12,15 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Map;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-final class SqlValueConverters
+public final class SqlValueConverters
 {
 	public static Object convertToPOValue(
 			final Object value,
@@ -75,12 +75,12 @@ final class SqlValueConverters
 			}
 			else if (String.class.equals(valueClass))
 			{
-				return new BigDecimal((String)value).intValue();
+				final String valueStr = StringUtils.trimBlankToNull((String)value);
+				return valueStr != null ? new BigDecimal(valueStr).intValue() : null;
 			}
 			else if (Map.class.isAssignableFrom(valueClass))
 			{
-				@SuppressWarnings("unchecked")
-				final Map<String, Object> map = (Map<String, Object>)value;
+				@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 				final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsInt();
 			}
@@ -96,6 +96,26 @@ final class SqlValueConverters
 				return repoIdAware.getRepoId();
 			}
 		}
+		else if (BigDecimal.class.equals(targetClass))
+		{
+			if (JSONNullValue.isNull(value))
+			{
+				return null;
+			}
+			else if (value instanceof BigDecimal)
+			{
+				return value;
+			}
+			else if (value instanceof Integer)
+			{
+				return BigDecimal.valueOf((int)value);
+			}
+			else
+			{
+				final String valueStr = StringUtils.trimBlankToNull(value.toString());
+				return valueStr != null ? new BigDecimal(valueStr) : null;
+			}
+		}
 		else if (String.class.equals(targetClass))
 		{
 			if (JSONNullValue.isNull(value))
@@ -108,8 +128,7 @@ final class SqlValueConverters
 			}
 			else if (Map.class.isAssignableFrom(valueClass))
 			{
-				@SuppressWarnings("unchecked")
-				final Map<String, Object> map = (Map<String, Object>)value;
+				@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 				final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 				return lookupValue == null ? null : lookupValue.getIdAsString();
 			}

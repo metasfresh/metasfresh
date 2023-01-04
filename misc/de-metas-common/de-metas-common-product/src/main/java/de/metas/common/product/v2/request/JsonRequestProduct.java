@@ -22,13 +22,19 @@
 
 package de.metas.common.product.v2.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
@@ -39,11 +45,6 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 @EqualsAndHashCode
 public class JsonRequestProduct
 {
-	public enum Type
-	{
-		ITEM, SERVICE
-	}
-
 	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")
 	private String code;
 
@@ -92,29 +93,48 @@ public class JsonRequestProduct
 	@ApiModelProperty(hidden = true)
 	private boolean discontinuedSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.isActive`")
+	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate discontinuedFrom;
+
+	@ApiModelProperty(hidden = true)
+	private boolean discontinuedFromSet;
+
+	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isActive`")
 	private Boolean active;
 
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isStocked`")
+	@ApiModelProperty(position = 120, value = "Corresponding to `M_Product.isStocked`")
 	private Boolean stocked;
 
 	@ApiModelProperty(hidden = true)
 	private boolean stockedSet;
 
-	@ApiModelProperty(position = 120, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
+	@ApiModelProperty(position = 130, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
 	private String productCategoryIdentifier;
 
 	@ApiModelProperty(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
-	@ApiModelProperty(position = 130, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 140, value = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(position = 140)
+	@ApiModelProperty(position = 150)
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
+
+	@ApiModelProperty(position = 160)
+	private String sectionCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionCodeSet;
+
+	@ApiModelProperty(position = 170, value = "Corresponding to `M_Product.IsPurchased`")
+	private Boolean purchased;
+
+	@ApiModelProperty(hidden = true)
+	private boolean purchasedSet;
 
 	public void setCode(final @NonNull String code)
 	{
@@ -164,6 +184,12 @@ public class JsonRequestProduct
 		this.discontinuedSet = true;
 	}
 
+	public void setDiscontinuedFrom(final LocalDate discontinuedFrom)
+	{
+		this.discontinuedFrom = discontinuedFrom;
+		this.discontinuedFromSet = true;
+	}
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -182,6 +208,12 @@ public class JsonRequestProduct
 		this.productCategoryIdentifierSet = true;
 	}
 
+	public void setPurchased(final Boolean purchased)
+	{
+		this.purchased = purchased;
+		this.purchasedSet = true;
+	}
+
 	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
 		this.syncAdvise = syncAdvise;
@@ -192,4 +224,36 @@ public class JsonRequestProduct
 		this.bpartnerProductItems = bpartnerProductItems;
 	}
 
+	public void setSectionCode(final String sectionCode)
+	{
+		this.sectionCode = sectionCode;
+		this.sectionCodeSet = true;
+	}
+
+	@AllArgsConstructor
+	public static enum Type
+	{
+		ITEM("I"),
+		SERVICE("S"),
+		RESOURCE("R"),
+		EXPENSE_TYPE("E"),
+		ONLINE("O"),
+		FREIGHT_COST("F"),
+		NAHRUNG("N");
+
+		@Getter
+		private String code;
+		private static final ImmutableMap<String, Type> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), Type::getCode);
+
+		@NonNull
+		public static Type ofCode(@NonNull final String code)
+		{
+			final Type type = typesByCode.get(code);
+			if (type == null)
+			{
+				throw new RuntimeException("No " + Type.class + " found for code: " + code);
+			}
+			return type;
+		}
+	}
 }

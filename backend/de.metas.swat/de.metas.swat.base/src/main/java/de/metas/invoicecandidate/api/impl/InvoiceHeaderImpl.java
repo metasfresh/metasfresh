@@ -1,16 +1,10 @@
 package de.metas.invoicecandidate.api.impl;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.payment.paymentterm.PaymentTermId;
-import org.compiere.model.I_C_DocType;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -18,15 +12,25 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
+import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
-	/** @return builder */
+	/**
+	 * @return builder
+	 */
 	public static InvoiceHeaderImplBuilder builder()
 	{
 		return new InvoiceHeaderImplBuilder();
@@ -37,6 +41,12 @@ import javax.annotation.Nullable;
 	private InvoiceDocBaseType docBaseType;
 
 	private String poReference;
+
+	private String eMail;
+
+	@Getter
+	@Setter
+	private InputDataSourceId inputDataSourceId;
 
 	private LocalDate dateInvoiced;
 
@@ -58,6 +68,10 @@ import javax.annotation.Nullable;
 	@Setter
 	private BPartnerId salesPartnerId;
 
+	@Getter
+	@Setter
+	private UserId salesRepId;
+
 	// 03805: add attribute C_Currency_ID
 	@Getter
 	@Setter
@@ -75,11 +89,28 @@ import javax.annotation.Nullable;
 	private I_C_DocType docTypeInvoice;
 
 	private boolean taxIncluded;
-	private String  externalId;
+	private String externalId;
 
 	private PaymentTermId paymentTermId;
 
+	private String paymentRule;
+
 	private int C_Async_Batch_ID;
+
+	private int C_Incoterms_ID;
+
+	private String incotermLocation;
+
+	@Setter
+	private SectionCodeId sectionCodeId;
+
+	@Setter
+	@Getter
+	private ProjectId projectId;
+
+	@Setter
+	@Getter
+	private ActivityId activityId;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -131,6 +162,12 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
+	public String getEMail()
+	{
+		return eMail;
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return dateInvoiced;
@@ -167,6 +204,11 @@ import javax.annotation.Nullable;
 	public void setPOReference(final String poReference)
 	{
 		this.poReference = poReference;
+	}
+
+	public void setEMail(final String eMail)
+	{
+		this.eMail = eMail;
 	}
 
 	public void setDateInvoiced(final LocalDate dateInvoiced)
@@ -300,6 +342,17 @@ import javax.annotation.Nullable;
 		return paymentTermId;
 	}
 
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	@Override
+	public String getPaymentRule()
+	{
+		return paymentRule;
+	}
+
 	@Override
 	public String getExternalId()
 	{
@@ -320,5 +373,38 @@ import javax.annotation.Nullable;
 	public String setExternalId(String externalId)
 	{
 		return this.externalId = externalId;
+	}
+
+	@Override
+	public int getC_Incoterms_ID()
+	{
+		return C_Incoterms_ID;
+	}
+
+	public void setC_Incoterms_ID(final int C_Incoterms_ID)
+	{
+		this.C_Incoterms_ID = C_Incoterms_ID;
+	}
+
+	@Override
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = incotermLocation;
+	}
+
+	@Override
+	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
+
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
+
+	@Override
+	public SectionCodeId getM_SectionCode_ID()
+	{
+		return sectionCodeId;
 	}
 }

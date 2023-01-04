@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1373083192L;
+	private static final long serialVersionUID = 667171894L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -99,7 +99,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	/** Expense = Exp */
 	public static final String A_CAPVSEXP_Expense = "Exp";
 	@Override
-	public void setA_CapvsExp (final java.lang.String A_CapvsExp)
+	public void setA_CapvsExp (final @Nullable java.lang.String A_CapvsExp)
 	{
 		set_Value (COLUMNNAME_A_CapvsExp, A_CapvsExp);
 	}
@@ -123,6 +123,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public void setA_Processed (final boolean A_Processed)
+	{
+		set_Value (COLUMNNAME_A_Processed, A_Processed);
+	}
+
+	@Override
+	public boolean isA_Processed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
+	}
+
+	@Override
 	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
@@ -135,18 +147,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getAD_OrgTrx_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
-	}
-
-	@Override
-	public void setA_Processed (final boolean A_Processed)
-	{
-		set_Value (COLUMNNAME_A_Processed, A_Processed);
-	}
-
-	@Override
-	public boolean isA_Processed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
 	}
 
 	@Override
@@ -222,6 +222,21 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -261,6 +276,33 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_InvoiceLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_InvoiceLine_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
 	@Override
@@ -360,18 +402,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	public void setC_Shipping_Location_ID (final int C_Shipping_Location_ID)
 	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		if (C_Shipping_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_Shipping_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+			set_Value (COLUMNNAME_C_Shipping_Location_ID, C_Shipping_Location_ID);
 	}
 
 	@Override
-	public int getC_TaxCategory_ID() 
+	public int getC_Shipping_Location_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
+		return get_ValueAsInt(COLUMNNAME_C_Shipping_Location_ID);
 	}
 
 	@Override
@@ -390,6 +432,36 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+	}
+
+	@Override
+	public int getC_TaxCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
+	}
+
+	@Override
+	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
+	{
+		if (C_UOM_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, C_UOM_BPartner_ID);
+	}
+
+	@Override
+	public int getC_UOM_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_BPartner_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -405,7 +477,22 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
+	{
+		if (C_VAT_Code_ID < 1) 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
+	}
+
+	@Override
+	public int getC_VAT_Code_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -417,7 +504,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setExternalIds (final java.lang.String ExternalIds)
+	public void setExternalIds (final @Nullable java.lang.String ExternalIds)
 	{
 		set_Value (COLUMNNAME_ExternalIds, ExternalIds);
 	}
@@ -486,7 +573,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	/** Doppellieferung = CMD */
 	public static final String LINE_CREDITMEMOREASON_Doppellieferung = "CMD";
 	@Override
-	public void setLine_CreditMemoReason (final java.lang.String Line_CreditMemoReason)
+	public void setLine_CreditMemoReason (final @Nullable java.lang.String Line_CreditMemoReason)
 	{
 		set_Value (COLUMNNAME_Line_CreditMemoReason, Line_CreditMemoReason);
 	}
@@ -511,7 +598,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setLineTotalAmt (final BigDecimal LineTotalAmt)
+	public void setLineTotalAmt (final @Nullable BigDecimal LineTotalAmt)
 	{
 		set_Value (COLUMNNAME_LineTotalAmt, LineTotalAmt);
 	}
@@ -620,6 +707,33 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
 	public void setPriceActual (final BigDecimal PriceActual)
 	{
 		set_Value (COLUMNNAME_PriceActual, PriceActual);
@@ -684,7 +798,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setProductDescription (final java.lang.String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -705,6 +819,19 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public BigDecimal getQtyEntered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyEnteredInBPartnerUOM (final @Nullable BigDecimal QtyEnteredInBPartnerUOM)
+	{
+		set_Value (COLUMNNAME_QtyEnteredInBPartnerUOM, QtyEnteredInBPartnerUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyEnteredInBPartnerUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredInBPartnerUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -737,7 +864,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setRRAmt (final BigDecimal RRAmt)
+	public void setRRAmt (final @Nullable BigDecimal RRAmt)
 	{
 		set_Value (COLUMNNAME_RRAmt, RRAmt);
 	}
@@ -750,7 +877,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setRRStartDate (final java.sql.Timestamp RRStartDate)
+	public void setRRStartDate (final @Nullable java.sql.Timestamp RRStartDate)
 	{
 		set_Value (COLUMNNAME_RRStartDate, RRStartDate);
 	}
@@ -777,7 +904,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setTaxAmt (final BigDecimal TaxAmt)
+	public void setTaxAmt (final @Nullable BigDecimal TaxAmt)
 	{
 		set_Value (COLUMNNAME_TaxAmt, TaxAmt);
 	}
@@ -844,7 +971,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString1 (final java.lang.String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -856,7 +983,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString2 (final java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -868,7 +995,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString3 (final java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -880,7 +1007,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString4 (final java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -892,7 +1019,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString5 (final java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -904,7 +1031,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString6 (final java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -916,7 +1043,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setUserElementString7 (final java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}

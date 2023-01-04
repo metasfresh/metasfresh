@@ -27,7 +27,8 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -114,6 +115,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void closeShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
 
+	void closeShipmentSchedules(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+
 	/**
 	 * Reopen the closed shipment schedule given as parameter
 	 */
@@ -130,9 +133,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Creates a storage query for the given {@code shipmentSchedule}.
 	 *
 	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
+	 * @param excludeAllReserved if {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.   
 	 */
-	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
+	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes, boolean excludeAllReserved);
 
+	@NonNull
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	Optional<Quantity> getCatchQtyOverride(I_M_ShipmentSchedule shipmentScheduleRecord);
@@ -187,4 +192,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
 
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
+
+	DeliveryPlanningCreateRequest createDeliveryPlanningRequest(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 }

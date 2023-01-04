@@ -1,0 +1,135 @@
+{
+  "title": "UBL Unqualified Data Types",
+  "description": "\nThis is a JSON expression of the UBL Extension scaffolding.\n\nCopyright (c) OASIS Open 2017. All Rights Reserved.\n\nVersion: $Date: 2017/01/02 16:45:38 $\n\nOASIS takes no position regarding the validity or scope of any \nintellectual property or other rights that might be claimed to pertain \nto the implementation or use of the technology described in this \ndocument or the extent to which any license under such rights \nmight or might not be available; neither does it represent that it has \nmade any effort to identify any such rights. Information on OASIS's \nprocedures with respect to rights in OASIS specifications can be \nfound at the OASIS website. Copies of claims of rights made \navailable for publication and any assurances of licenses to be made \navailable, or the result of an attempt made to obtain a general \nlicense or permission for the use of such proprietary rights by \nimplementors or users of this specification, can be obtained from \nthe OASIS Executive Director.\n\nOASIS invites any interested party to bring to its attention any \ncopyrights, patents or patent applications, or other proprietary \nrights which may cover technology that may be required to \nimplement this specification. Please address the information to the \nOASIS Executive Director.\n\nThis document and translations of it may be copied and furnished to \nothers, and derivative works that comment on or otherwise explain \nit or assist in its implementation may be prepared, copied, \npublished and distributed, in whole or in part, without restriction of \nany kind, provided that the above copyright notice and this \nparagraph are included on all such copies and derivative works. \nHowever, this document itself may not be modified in any way, \nsuch as by removing the copyright notice or references to OASIS, \nexcept as needed for the purpose of developing OASIS \nspecifications, in which case the procedures for copyrights defined \nin the OASIS Intellectual Property Rights document must be \nfollowed, or as required to translate it into languages other than \nEnglish. \n\nThe limited permissions granted above are perpetual and will not be \nrevoked by OASIS or its successors or assigns. \n\nThis document and the information contained herein is provided on \nan \\\"AS IS\\\" basis and OASIS DISCLAIMS ALL WARRANTIES, \nEXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \nWARRANTY THAT THE USE OF THE INFORMATION HEREIN \nWILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \nWARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \nPARTICULAR PURPOSE.\n",
+  "definitions": {
+    "UBLExtensions": {
+      "description": "A container for all extensions present in the document.",
+      "required": [
+        "UBLExtension"
+        ],
+      "properties": {
+        "UBLExtension": {
+          "description": "A single extension for private use.",
+          "items": {
+            "$ref": "#/definitions/UBLExtension"
+            },
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      },
+    "UBLExtension": {
+      "description": "A single extension for private use.",
+      "required": [
+        "ExtensionContent"
+        ],
+      "properties": {
+        "ID": {
+          "description": "An identifier for the Extension assigned by the creator of the extension.",
+          "items": {
+            "$ref": "UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "Name": {
+          "description": "A name for the Extension assigned by the creator of the extension.",
+          "items": {
+            "$ref": "UBL-CommonBasicComponents-2.3.json#/definitions/Name"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionAgencyID": {
+          "description": "An agency that maintains one or more Extensions.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/IdentifierType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionAgencyName": {
+          "description": "The name of the agency that maintains the Extension.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/TextType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionVersionID": {
+          "description": "The version of the Extension.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/IdentifierType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionAgencyURI": {
+          "description": "A URI for the Agency that maintains the Extension.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/IdentifierType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionURI": {
+          "description": "A URI for the Extension.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/IdentifierType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionReasonCode": {
+          "description": "A code for reason the Extension is being included.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/CodeType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionReason": {
+          "description": "A description of the reason for the Extension.",
+          "items": {
+            "$ref": "BDNDR-UnqualifiedDataTypes-1.1.json#/definitions/TextType"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          },
+        "ExtensionContent": {
+          "description": "The definition of the extension content.",
+          "items": {
+            "$ref": "UBL-ExtensionContentDataType-2.3.json#/definitions/ExtensionContent"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array",
+          "additionalProperties": false
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

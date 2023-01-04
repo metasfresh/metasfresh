@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-app
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-app
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-app
+  ports:
+  - name: app
+    port: {{ .Values.app.port.app }}
+    protocol: TCP
+    targetPort: {{ .Values.app.port.app }}
+  - name: app-debug
+    port: {{ .Values.app.port.debug }}
+    protocol: TCP
+    targetPort: {{ .Values.app.port.debug }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-{{ .Release.Name }}-app
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-app
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-app
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-app
+    spec:
+      containers:
+      - name: metasfresh-{{ .Release.Name }}-app
+        image: {{ .Values.app.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: {{ .Values.app.port.app }}
+          - containerPort: {{ .Values.app.port.debug }}
+        resources: 
+          requests:
+            memory: {{ .Values.app.resources.memory }}
+        env:
+        #app
+        - name: APP_HOST
+          value: metasfresh-{{ .Release.Name }}-app
+        - name: DEBUG_PORT
+          value: '{{ .Values.app.port.debug }}'
+        - name: DEBUG_PRINT_BASH_CMDS
+          value: {{ .Values.app.debug.printBashCmds }}
+        - name: DEBUG_SUSPEND
+          value: {{ .Values.app.debug.suspend }}
+        #db
+        - name: DB_HOST
+          value: metasfresh-{{ .Release.Name }}-db
+        - name: DB_PORT
+          value: '{{ .Values.db.port.db }}'
+        - name: DB_NAME
+          value: {{ .Values.db.name }}
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-db-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-db-secret
+              key: password
+        - name: DB_CONNECTION_POOL_MAX_SIZE
+          value: '{{ .Values.db.dbConnectionPoolMaxSize }}'
+        #search
+        - name: ES_HOST
+          value: metasfresh-{{ .Release.Name }}-search
+        - name: ES_PORT
+          value: '{{ .Values.search.port.search }}'
+        - name: ES_ENABLE
+          value: 'y'
+        # This var is needed to prevent an error at startup; thx to https://stackoverflow.com/questions/69487385/elasticsearch-client-is-defaulting-to-localhost 
+        - name: SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS
+          value: metasfresh-{{ .Release.Name }}-search:{{ .Values.search.port.search }}
+        #rabbitmq
+        - name: RABBITMQ_HOST
+          value: metasfresh-{{ .Release.Name }}-rabbitmq
+        - name: RABBITMQ_PORT
+          value: '{{ .Values.rabbitmq.port.broker }}'
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: username
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: password
+        volumeMounts:
+        - mountPath: /opt/metasfresh/log
+          name: log
+        - mountPath: /opt/metasfresh/heapdump
+          name: heapdump
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      restartPolicy: Always
+      initContainers:
+      - name: init-wait-for-rabbitmq
+        image: busybox
+        command: ['sh', '-c', 'until nc -vz metasfresh-{{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.port.broker }}; do echo waiting for rabbitmq; sleep 2; done;']
+      - name: init-wait-for-search
+        image: busybox
+        command: ['sh', '-c', 'until nc -vz metasfresh-{{ .Release.Name }}-search {{ .Values.search.port.search }}; do echo waiting for search; sleep 2; done;']
+      - name: init-wait-for-db
+        image: busybox
+        command: ['sh', '-c', 'until nc -vz metasfresh-{{ .Release.Name }}-db {{ .Values.db.port.db }}; do echo waiting for db; sleep 2; done;']
+      volumes:
+      - name: log
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/app/log
+          type: DirectoryOrCreate
+      - name: heapdump
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/app/heapdump
+          type: DirectoryOrCreate
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone
+          

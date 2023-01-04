@@ -1,9 +1,11 @@
 package de.metas.event;
 
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.slf4j.Logger;
 
 /**
  * @see IEventBusFactory#getEventBus(Topic)
@@ -12,13 +14,15 @@ import lombok.Value;
 @Value
 public class Topic
 {
+	private static final Logger logger = LogManager.getLogger(Topic.class);
+
 	String name;
 	Type type;
 	String fullName;
 
-	public static Topic remote(final String name)
+	public static Topic distributed(final String name)
 	{
-		return builder().name(name).type(Type.REMOTE).build();
+		return builder().name(name).type(Type.DISTRIBUTED).build();
 	}
 
 	public static Topic local(final String name)
@@ -36,8 +40,17 @@ public class Topic
 			@NonNull final String name,
 			@NonNull final Type type)
 	{
+		if (!EventBusConfig.isEnabled())
+		{
+			logger.warn("trying to create a distributed Topic (topicName={}) but EventBusConfig.isEnabled() == false, fallback to Local topic...", name);
+			this.type = Type.LOCAL;
+		}
+		else
+		{
+			this.type = type;
+		}
+
 		this.name = Check.assumeNotEmpty(name, "name not empty");
-		this.type = type;
 
 		this.fullName = type + "." + name;
 	}

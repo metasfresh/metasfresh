@@ -1,12 +1,10 @@
 package de.metas.ui.web.picking;
 
-import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.springframework.stereotype.Component;
-
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.picking.model.X_M_Picking_Config;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
 import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
@@ -22,7 +20,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -54,10 +54,9 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 
 	private static final String FIELDNAME_OrderOrBPLocation = "OrderOrBPLocation";
 
-	public PickingTerminalByOrderViewCustomizer()
+	public PickingTerminalByOrderViewCustomizer(@NonNull final ADReferenceService adReferenceService)
 	{
-		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
-		final ITranslatableString caption = referenceDAO.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByOrder);
+		final ITranslatableString caption = adReferenceService.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByOrder);
 		PROFILE = ViewProfile.of(PROFILE_ID, caption);
 	}
 
@@ -94,11 +93,11 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 				.groupBy(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, SqlSelectValue.builder()
-						.virtualColumnSql("MIN(DeliveryDate)")
+						.virtualColumnSql(ColumnSql.ofSql("MIN(DeliveryDate)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_DeliveryDate)
 						.build())
 				.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, SqlSelectValue.builder()
-						.virtualColumnSql("IF_MIN(DeliveryDate, PreparationDate)")
+						.virtualColumnSql(ColumnSql.ofSql("IF_MIN(DeliveryDate, PreparationDate)"))
 						.columnNameAlias(I_M_Packageable_V.COLUMNNAME_PreparationDate)
 						.build())
 				.rowIdsConverter(SqlViewRowIdsConverters.TO_INT_EXCLUDING_STRINGS)

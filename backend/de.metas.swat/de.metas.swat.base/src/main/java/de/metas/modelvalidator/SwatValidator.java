@@ -3,74 +3,7 @@
  */
 package de.metas.modelvalidator;
 
-import java.time.Duration;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.modelvalidator.IModelInterceptor;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.tree.IPOTreeSupportFactory;
-import org.adempiere.model.tree.spi.impl.BPartnerTreeSupport;
-import org.adempiere.model.tree.spi.impl.CampainTreeSupport;
-import org.adempiere.model.tree.spi.impl.MElementValueTreeSupport;
-import org.adempiere.model.tree.spi.impl.MenuTreeSupport;
-import org.adempiere.model.tree.spi.impl.OrgTreeSupport;
-import org.adempiere.model.tree.spi.impl.ProductTreeSupport;
-import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
-import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
-import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_Menu;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Campaign;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-
 import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
 import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -101,12 +34,50 @@ import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
-import de.metas.report.ReportStarter;
 import de.metas.report.client.ReportsClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.IModelInterceptor;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.appdict.validation.model.validator.ApplicationDictionary;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.IPOTreeSupportFactory;
+import org.adempiere.model.tree.spi.impl.BPartnerTreeSupport;
+import org.adempiere.model.tree.spi.impl.CampainTreeSupport;
+import org.adempiere.model.tree.spi.impl.MenuTreeSupport;
+import org.adempiere.model.tree.spi.impl.OrgTreeSupport;
+import org.adempiere.model.tree.spi.impl.ProductTreeSupport;
+import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
+import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
+import org.compiere.db.CConnection;
+import org.compiere.model.I_AD_Menu;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Campaign;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.MClient;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import javax.sql.DataSource;
+import java.time.Duration;
+import java.util.Properties;
 
 /**
  * Model Validator for SWAT general features
@@ -210,7 +181,6 @@ public class SwatValidator implements ModelValidator
 			final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
 			treeSupportFactory.register(I_C_BPartner.Table_Name, BPartnerTreeSupport.class);
 			treeSupportFactory.register(I_C_Campaign.Table_Name, CampainTreeSupport.class);
-			treeSupportFactory.register(I_C_ElementValue.Table_Name, MElementValueTreeSupport.class);
 			treeSupportFactory.register(I_AD_Menu.Table_Name, MenuTreeSupport.class);
 			treeSupportFactory.register(I_AD_Org.Table_Name, OrgTreeSupport.class);
 			treeSupportFactory.register(I_M_Product.Table_Name, ProductTreeSupport.class);

@@ -48,11 +48,10 @@ import java.time.LocalDate;
 
 /**
  * Mutable invoice allocation candidate.
- *
+ * <p>
  * Used by {@link PaymentAllocationBuilder} internally.
  *
  * @author tsa
- *
  */
 @EqualsAndHashCode
 @ToString
@@ -77,8 +76,22 @@ public class PayableDocument
 	private final TableRecordReference reference;
 	@Getter
 	private final PayableDocumentType type;
+
+	/**
+	 * Will cause this payable to be wrapped as payment, so it can be allocated against another invoice.
+	 */
 	@Getter
 	private final boolean creditMemo;
+
+	/**
+	 * We need this when allocating the payment of a remittance advice (REMADV) against a credit-memo.
+	 * Because the REMADVS payment is diminished by the credit-memo,
+	 * but there might be a payment-discount (skonto) that was held back when the original invoice was paid and which is now part of the current remittance payment.
+	 * So we do need to allocate the positive-amount payment with the negative-amount credit-memo.
+	 */
+	@Getter
+	private final boolean allowAllocateAgainstDifferentSignumPayment;
+	
 	//
 	@Getter
 	@VisibleForTesting
@@ -110,6 +123,7 @@ public class PayableDocument
 			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
 			final boolean creditMemo,
+			final boolean allowAllocateAgainstDifferentSignumPayment,
 			//
 			@NonNull final Money openAmt,
 			@NonNull final AllocationAmounts amountsToAllocate,
@@ -153,6 +167,7 @@ public class PayableDocument
 		this.documentNo = documentNo;
 		this.soTrx = soTrx;
 		this.creditMemo = creditMemo;
+		this.allowAllocateAgainstDifferentSignumPayment = allowAllocateAgainstDifferentSignumPayment;
 
 		if (!CurrencyId.equals(openAmt.getCurrencyId(), amountsToAllocate.getCurrencyId()))
 		{
@@ -196,9 +211,16 @@ public class PayableDocument
 		return computeOpenAmtRemainingToAllocate().subtract(amountsToAllocate.getTotalAmt());
 	}
 
+	@NonNull
 	private Money computeOpenAmtRemainingToAllocate()
 	{
 		return openAmtInitial.subtract(amountsAllocated.getTotalAmt());
+	}
+
+	@NonNull
+	public Money getTotalAllocatedAmount()
+	{
+		return amountsAllocated.getTotalAmt();
 	}
 
 	public boolean isFullyAllocated()

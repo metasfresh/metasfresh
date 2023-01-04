@@ -34,7 +34,7 @@ import org.adempiere.model.ModelColumn;
 
 import com.google.common.collect.ImmutableList;
 
-class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+public class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	private final String validFromColumnName;
 	private final String validToColumnName;

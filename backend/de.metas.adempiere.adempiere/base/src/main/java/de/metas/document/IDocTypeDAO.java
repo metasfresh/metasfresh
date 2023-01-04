@@ -68,34 +68,30 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
 	 */
-	Optional<String> getDocBaseTypeCounter(String docBaseType);
+	Optional<DocBaseType> getDocBaseTypeCounter(DocBaseType docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
 
 	@Value
 	@Builder
-	public static final class DocTypeCreateRequest
+	class DocTypeCreateRequest
 	{
-		@NonNull
-		final Properties ctx;
-		@Default
-		final int adOrgId = -1;
-		final String entityType;
-		@NonNull
-		final String name;
-		final String printName;
-		@NonNull
-		final String docBaseType;
-		final String docSubType;
-		final Boolean isSOTrx;
-		final int docTypeShipmentId;
-		final int docTypeInvoiceId;
-		final int glCategoryId;
+		@NonNull Properties ctx;
+		@Default int adOrgId = -1;
+		String entityType;
+		@NonNull String name;
+		String printName;
+		@NonNull DocBaseType docBaseType;
+		String docSubType;
+		Boolean isSOTrx;
+		int docTypeShipmentId;
+		int docTypeInvoiceId;
+		int glCategoryId;
 
-		final int docNoSequenceId;
-		final int newDocNoSequenceStartNo;
+		int docNoSequenceId;
+		int newDocNoSequenceStartNo;
 
-		final int documentCopies;
+		int documentCopies;
 	}
 
 	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);

@@ -190,9 +190,91 @@ public class Quantitys
 		return uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUomId);
 	}
 
-	public Quantity create(final int qty, final UomId repoId)
+	public Quantity create(final int qty, @NonNull final UomId repoId)
 	{
 		return create(BigDecimal.valueOf(qty), repoId);
 	}
 
+	@Nullable
+	public static BigDecimal toBigDecimalOrNull(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return null;
+		}
+		return quantity.toBigDecimal();
+	}
+
+	public static class QuantityDeserializer extends StdDeserializer<Quantity>
+	{
+		private static final long serialVersionUID = -5406622853902102217L;
+
+		public QuantityDeserializer()
+		{
+			super(Quantity.class);
+		}
+
+		@Override
+		public Quantity deserialize(final JsonParser p, final DeserializationContext ctx) throws IOException
+		{
+			final JsonNode node = p.getCodec().readTree(p);
+			final String qtyStr = node.get("qty").asText();
+			final int uomRepoId = (Integer)node.get("uomId").numberValue();
+
+			final String sourceQtyStr;
+			final int sourceUomRepoId;
+			if (node.has("sourceQty"))
+			{
+				sourceQtyStr = node.get("sourceQty").asText();
+				sourceUomRepoId = (Integer)node.get("sourceUomId").numberValue();
+			}
+			else
+			{
+				sourceQtyStr = qtyStr;
+				sourceUomRepoId = uomRepoId;
+			}
+			return Quantitys.create(
+					new BigDecimal(qtyStr), UomId.ofRepoId(uomRepoId),
+					new BigDecimal(sourceQtyStr), UomId.ofRepoId(sourceUomRepoId));
+		}
+	}
+
+	public static class QuantitySerializer extends StdSerializer<Quantity>
+	{
+		private static final long serialVersionUID = -8292209848527230256L;
+
+		public QuantitySerializer()
+		{
+			super(Quantity.class);
+		}
+
+		@Override
+		public void serialize(final Quantity value, final JsonGenerator gen, final SerializerProvider provider) throws IOException
+		{
+			gen.writeStartObject();
+
+			final String qtyStr = value.toBigDecimal().toString();
+			final int uomId = value.getUomId().getRepoId();
+
+			gen.writeFieldName("qty");
+			gen.writeString(qtyStr);
+
+			gen.writeFieldName("uomId");
+			gen.writeNumber(uomId);
+
+			final String sourceQtyStr = value.getSourceQty().toString();
+			final int sourceUomId = value.getSourceUomId().getRepoId();
+
+			if (!qtyStr.equals(sourceQtyStr) || uomId != sourceUomId)
+			{
+				gen.writeFieldName("sourceQty");
+				gen.writeString(sourceQtyStr);
+
+				gen.writeFieldName("sourceUomId");
+				gen.writeNumber(sourceUomId);
+			}
+			gen.writeEndObject();
+		}
+
+	}
 }

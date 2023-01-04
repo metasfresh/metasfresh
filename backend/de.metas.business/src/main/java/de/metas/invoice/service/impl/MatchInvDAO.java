@@ -22,20 +22,7 @@ package de.metas.invoice.service.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.MatchInvId;
@@ -47,15 +34,25 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class MatchInvDAO implements IMatchInvDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_M_MatchInv getById(final int matchInvId)
+	public I_M_MatchInv getById(@NonNull final MatchInvId matchInvId)
 	{
-		Check.assumeGreaterThanZero(matchInvId, "matchInvId");
 		return InterfaceWrapperHelper.load(matchInvId, I_M_MatchInv.class);
 	}
 

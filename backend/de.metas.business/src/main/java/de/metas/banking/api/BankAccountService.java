@@ -1,7 +1,5 @@
 package de.metas.banking.api;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
@@ -10,8 +8,12 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.impexp.config.DataImportConfigId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -84,7 +86,7 @@ public class BankAccountService
 		final BankAccount bankAccount = getById(bankAccountId);
 
 		final CurrencyCode currencyCode = currencyRepo.getCurrencyCodeById(bankAccount.getCurrencyId());
-		
+
 		final BankId bankId = bankAccount.getBankId();
 		if (bankId != null)
 		{
@@ -92,5 +94,31 @@ public class BankAccountService
 			return bank.getBankName() + "_" + currencyCode.toThreeLetterCode();
 		}
 		return currencyCode.toThreeLetterCode();
+	}
+
+	public DataImportConfigId getDataImportConfigIdForBankAccount(@NonNull final BankAccountId bankAccountId)
+	{
+		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
+
+		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
+	}
+
+	@NonNull
+	public Optional<BankId> getBankIdBySwiftCode(@NonNull final String swiftCode)
+	{
+		return bankRepo.getBankIdBySwiftCode(swiftCode);
+	}
+	
+	@NonNull
+	public Optional<BankAccountId> getBankAccountId(
+			@NonNull final BankId bankId,
+			@NonNull final String accountNo)
+	{
+		return bankAccountDAO.getBankAccountId(bankId, accountNo);
+	}
+
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
 }

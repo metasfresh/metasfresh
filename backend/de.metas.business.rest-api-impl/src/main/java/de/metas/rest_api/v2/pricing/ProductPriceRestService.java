@@ -22,23 +22,25 @@
 
 package de.metas.rest_api.v2.pricing;
 
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
+import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
@@ -47,6 +49,11 @@ import de.metas.pricing.productprice.ProductPrice;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.pricing.command.SearchProductPricesCommand;
+import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -57,8 +64,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -76,15 +85,24 @@ public class ProductPriceRestService
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductPriceRepository productPriceRepository;
 	private final PriceListRestService priceListRestService;
+	private final ProductRestService productRestService;
+	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
+	private final JsonRetrieverService jsonRetrieverService;
 
 	public ProductPriceRestService(
-			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			final ProductPriceRepository productPriceRepository,
-			final PriceListRestService priceListRestService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final ProductPriceRepository productPriceRepository,
+			@NonNull final PriceListRestService priceListRestService,
+			@NonNull final ProductRestService productRestService,
+			@NonNull final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade,
+			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.productPriceRepository = productPriceRepository;
 		this.priceListRestService = priceListRestService;
+		this.productRestService = productRestService;
+		this.bpartnerPriceListServicesFacade = bpartnerPriceListServicesFacade;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
 
 	@NonNull
@@ -93,6 +111,31 @@ public class ProductPriceRestService
 			@NonNull final JsonRequestProductPriceUpsert request)
 	{
 		return trxManager.callInNewTrx(() -> upsertProductPricesWithinTrx(priceListVersionIdentifier, request));
+	}
+
+	@NonNull
+	public JsonResponseUpsert upsertProductPricesForPriceList(
+			@NonNull final String priceListIdentifier,
+			@NonNull final JsonRequestProductPriceUpsert request)
+	{
+		final PriceListVersionId priceListVersionId = priceListRestService.getNewestVersionId(priceListIdentifier, Env.getOrgId());
+
+		return upsertProductPrices(String.valueOf(priceListVersionId.getRepoId()), request);
+	}
+
+	@NonNull
+	public JsonResponseProductPriceQuery productPriceSearch(@NonNull final JsonRequestProductPriceQuery request, @Nullable final String orgCode)
+	{
+		return SearchProductPricesCommand.builder()
+				.productRestService(productRestService)
+				.bpartnerPriceListServicesFacade(bpartnerPriceListServicesFacade)
+				.jsonRetrieverService(jsonRetrieverService)
+				.bpartnerIdentifier(ExternalIdentifier.of(request.getBpartnerIdentifier()))
+				.productIdentifier(ExternalIdentifier.of(request.getProductIdentifier()))
+				.targetDate(request.getTargetDate())
+				.orgCode(orgCode)
+				.build()
+				.execute();
 	}
 
 	@NonNull
@@ -105,7 +148,7 @@ public class ProductPriceRestService
 		final List<JsonResponseUpsertItem> responseList =
 				request.getRequestItems()
 						.stream()
-						.map(reqItem ->  upsertProductPricesItem(priceListVersionIdentifier, reqItem, syncAdvise))
+						.map(reqItem -> upsertProductPricesItem(priceListVersionIdentifier, reqItem, syncAdvise))
 						.collect(Collectors.toList());
 
 		return JsonResponseUpsert.builder().responseItems(responseList).build();

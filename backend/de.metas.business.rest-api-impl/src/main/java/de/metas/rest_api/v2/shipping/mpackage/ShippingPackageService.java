@@ -34,8 +34,8 @@ import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
 import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.inout.InOutId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.rest_api.v2.shipping.ShipmentService;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.rest_api.v2.shipping.JsonShipmentService;
 import de.metas.rest_api.v2.shipping.ShippedCandidateKey;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -59,11 +59,11 @@ public class ShippingPackageService
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 
-	private final ShipmentService shipmentService;
+	private final JsonShipmentService jsonShipmentService;
 
-	public ShippingPackageService(final ShipmentService shipmentService)
+	public ShippingPackageService(@NonNull final JsonShipmentService jsonShipmentService)
 	{
-		this.shipmentService = shipmentService;
+		this.jsonShipmentService = jsonShipmentService;
 	}
 
 	public void generateShippingPackages(@NonNull final JsonCreateShippingPackagesRequest request)
@@ -88,7 +88,7 @@ public class ShippingPackageService
 				.collect(ImmutableSet.toImmutableSet());
 
 		//2. get shipment Ids by shippedCandidateKeys
-		final ImmutableMultimap<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = shipmentService.retrieveShipmentIdsByCandidateKey(shippedCandidateKeys);
+		final ImmutableMultimap<ShippedCandidateKey, InOutId> candidateKey2ShipmentId = jsonShipmentService.retrieveShipmentIdsByCandidateKey(shippedCandidateKeys);
 
 		//3. load shippers by internal name
 		final ImmutableSet<String> shipperInternalNameSet = request.getPackageInfos().stream()

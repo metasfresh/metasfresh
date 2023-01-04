@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
@@ -15,6 +16,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -27,6 +30,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -76,6 +80,7 @@ import java.util.Set;
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final OrderFactory orderFactory;
 
@@ -89,14 +94,17 @@ import java.util.Set;
 			@Nullable final DocTypeId docType)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
+		final OrgId orgId = orderAggregationKey.getOrgId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
-				.orgId(orderAggregationKey.getOrgId())
+				.orgId(orgId)
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised())
+				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
-				.externalHeaderId(orderAggregationKey.getExternalId());
+				.externalHeaderId(orderAggregationKey.getExternalId())
+				.dateOrdered(SystemTime.asLocalDate(orgDAO.getTimeZone(orgId)));
 
 		if (docType != null)
 		{
@@ -106,14 +114,19 @@ import java.util.Set;
 		this.userNotifications = userNotifications;
 	}
 
-	public void addCandidate(final PurchaseOrderItem purchaseOrderItem)
+	public void addCandidate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
 						purchaseOrderItem.getProductId(),
-						UomId.ofRepoId(purchaseOrderItem.getUomId()))
+						purchaseOrderItem.getAttributeSetInstanceId(),
+						UomId.ofRepoId(purchaseOrderItem.getUomId()) // note that all purchaseOrderItems need to have the same UOM anyways, or the follosing addQty will fail
+				)
 				.orElseGet(orderFactory::newOrderLine)
-				.productId(purchaseOrderItem.getProductId());
+				.productId(purchaseOrderItem.getProductId())
+				.asiId(purchaseOrderItem.getAttributeSetInstanceId())
+				.productDescription(purchaseOrderItem.getProductDescription())
+				.activityId(purchaseOrderItem.getActivityId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
@@ -123,6 +136,7 @@ import java.util.Set;
 			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
+		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
@@ -177,8 +191,8 @@ import java.util.Set;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
 			final ZonedDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
-
-			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised())))
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone)))
 			{
 				deviatingDatePromised = true;
 			}

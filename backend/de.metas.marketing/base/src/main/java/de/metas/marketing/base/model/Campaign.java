@@ -1,10 +1,12 @@
 package de.metas.marketing.base.model;
 
-import javax.annotation.Nullable;
-
+import de.metas.organization.OrgId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -29,22 +31,43 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
 public class Campaign implements DataRecord
 {
-	public static Campaign cast(@Nullable final DataRecord dataRecord)
-	{
-		return (Campaign)dataRecord;
-	}
-
 	String name;
 
-	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
+	/**
+	 * the remote system's ID which we can use to sync with the campaign on the remote marketing tool
+	 */
 	String remoteId;
 
 	@NonNull
 	PlatformId platformId;
 
-	/** might be null, if the campaign wasn't stored yet */
+	/**
+	 * might be null, if the campaign wasn't stored yet
+	 */
 	CampaignId campaignId;
+
+	@NonNull
+	OrgId orgId;
+
+	@Builder(toBuilder = true)
+	public Campaign(
+			@NonNull final String name,
+			@Nullable final String remoteId,
+			@NonNull final PlatformId platformId,
+			@Nullable final CampaignId campaignId,
+			@NonNull final OrgId orgId)
+	{
+		this.name = name;
+		this.remoteId = StringUtils.trimBlankToNull(remoteId);
+		this.platformId = platformId;
+		this.campaignId = campaignId;
+		this.orgId = orgId;
+	}
+
+	public static Campaign cast(@Nullable final DataRecord dataRecord)
+	{
+		return (Campaign)dataRecord;
+	}
 }

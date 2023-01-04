@@ -1,0 +1,11 @@
+-- 2022-08-19T13:32:09.554Z
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (1000000,1000000,556001,TO_TIMESTAMP('2022-08-19 16:32:09','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,1,'Y','N','N','N','WorkOrderJob','N',1000000,TO_TIMESTAMP('2022-08-19 16:32:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-08-19T13:32:13.570Z
+UPDATE AD_Sequence SET IsAutoSequence='Y',Updated=TO_TIMESTAMP('2022-08-19 16:32:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=556001
+;
+
+-- 2022-08-19T13:32:24.697Z
+UPDATE AD_Sequence SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2022-08-19 16:32:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=556001
+;

@@ -26,12 +26,10 @@ import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.impl.PrintArchiveParameters;
 import de.metas.printing.model.I_AD_Archive;
-import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -47,28 +45,12 @@ public class AD_Archive
 		this.printOutputFacade = printOutputFacade;
 	}
 
-	/**
-	 * Check if the archive references a docOutBoundConfig, and if yes, copy its settings (possibly overriding previous settings).
-	 * <p>
-	 * Note: if the config id is changed to <code>null</code>, then do nothing.
-	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/09417_Massendruck_-_Sofort-Druckjob_via_Ausgehende-Belege_konfig_einstellbar_%28101934367465%29
-	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_AD_Archive.COLUMNNAME_C_Doc_Outbound_Config_ID)
 	public void updateArchiveFlags(final I_AD_Archive archive)
 	{
-		if (archive.getC_Doc_Outbound_Config_ID() <= 0)
-		{
-			return; // nothing to do
-		}
-
-		// task 09417: also check if the archive references a docOutBoundConfig, and if yes, use its settings.
-		final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
-																			 I_C_Doc_Outbound_Config.class);
-		archive.setIsDirectEnqueue(config.isDirectEnqueue());
-		archive.setIsDirectProcessQueueItem(config.isDirectProcessQueueItem());
+		printingQueueBL.updateArchiveFlagsFromConfig(archive);
 	}
 
 	/**

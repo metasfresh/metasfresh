@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.process;
 
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -31,12 +32,14 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class InvokeOtherAction extends InvokeExternalSystemProcess
 {
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -56,6 +59,13 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 
 		final Map<String, String> parameters = new HashMap<>();
 		otherConfig.getParameters().forEach(parameter -> parameters.put(parameter.getName(), parameter.getValue()));
+
+		if (getSinceParameterValue() != null)
+		{
+			parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE, String.valueOf(TimeUtil.asInstant(getSinceParameterValue())));
+		}
+
+		getParameters().forEach(param -> parameters.put(param.getParameterName(), param.getParameterAsString()));
 
 		return parameters;
 	}

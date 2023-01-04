@@ -22,20 +22,21 @@ package de.metas.async.process;
  * #L%
  */
 
-
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.processor.IQueueProcessor;
+import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.async.processor.QueueProcessorId;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.processor.IQueueProcessor;
-import de.metas.async.processor.IQueueProcessorExecutorService;
-import de.metas.async.processor.IQueueProcessorsExecutor;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * Start/Stop/Restart an {@link IQueueProcessor}
@@ -92,19 +93,21 @@ public class C_Queue_Processor_Manage extends JavaProcess
 		}
 
 		final I_C_Queue_Processor processorDef = InterfaceWrapperHelper.create(getCtx(), p_C_Queue_Processor_ID, I_C_Queue_Processor.class, ITrx.TRXNAME_None);
+		final QueueProcessorDescriptor queueProcessorDescriptor = QueueProcessorDescriptorRepository.mapToQueueProcessor(processorDef);
+
 		final IQueueProcessorsExecutor executor = Services.get(IQueueProcessorExecutorService.class).getExecutor();
 		if (ACTION_START.equals(action))
 		{
-			executor.addQueueProcessor(processorDef);
+			executor.addQueueProcessor(queueProcessorDescriptor);
 		}
 		else if (ACTION_STOP.equals(action))
 		{
-			executor.removeQueueProcessor(p_C_Queue_Processor_ID);
+			executor.removeQueueProcessor(QueueProcessorId.ofRepoId(p_C_Queue_Processor_ID));
 		}
 		else if (ACTION_RESTART.equals(action))
 		{
-			executor.removeQueueProcessor(p_C_Queue_Processor_ID);
-			executor.addQueueProcessor(processorDef);
+			executor.removeQueueProcessor(QueueProcessorId.ofRepoId(p_C_Queue_Processor_ID));
+			executor.addQueueProcessor(queueProcessorDescriptor);
 		}
 		else
 		{

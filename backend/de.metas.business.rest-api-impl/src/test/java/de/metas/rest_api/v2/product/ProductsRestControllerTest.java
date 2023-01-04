@@ -31,16 +31,21 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
+import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeRepository;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -54,13 +59,17 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -72,6 +81,7 @@ public class ProductsRestControllerTest
 
 	private UomId eachUomId;
 	private UomId kgUomId;
+	private SectionCodeId sectionCodeId;
 
 	@BeforeAll
 	static void initStatic()
@@ -96,9 +106,16 @@ public class ProductsRestControllerTest
 		createMasterData();
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
-		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
+		final SectionCodeRepository sectionCodeRepository = new SectionCodeRepository();
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()), new ExternalSystemExportAuditRepo(), new RuntimeParametersRepository());
+		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade(sectionCodeRepository);
+		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
+
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+																					  new ExternalSystemExportAuditRepo(),
+																					  new RuntimeParametersRepository(),
+																					  externalServices,
+																					  new JsonExternalSystemRetriever());
 		final ProductRepository productRepository = new ProductRepository();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
@@ -109,7 +126,7 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, new SectionCodeService(sectionCodeRepository));
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}
@@ -118,6 +135,7 @@ public class ProductsRestControllerTest
 	{
 		eachUomId = createUOM("Ea");
 		kgUomId = createUOM("Kg");
+		sectionCodeId = createSectionCode("SectionCode");
 	}
 
 	@Test
@@ -132,6 +150,7 @@ public class ProductsRestControllerTest
 				.description("description1")
 				.ean("ean1")
 				.uomId(eachUomId)
+				.sectionCodeId(sectionCodeId)
 				.build();
 		final ProductId productId1 = ProductId.ofRepoId(product1.getM_Product_ID());
 		prepareBPartnerProduct()
@@ -186,6 +205,7 @@ public class ProductsRestControllerTest
 													.description("description1")
 													.ean("ean1")
 													.uom("Ea")
+													.sectionCode("SectionCode")
 													.productCategoryId(JsonMetasfreshId.of(3))
 													.bpartner(JsonProductBPartner.builder()
 																	  .bpartnerId(JsonMetasfreshId.of(1))
@@ -235,6 +255,15 @@ public class ProductsRestControllerTest
 		return UomId.ofRepoId(record.getC_UOM_ID());
 	}
 
+	private SectionCodeId createSectionCode(@NonNull final String sectionCode)
+	{
+		final I_M_SectionCode record = newInstance(I_M_SectionCode.class);
+		record.setName(sectionCode);
+		record.setValue(sectionCode);
+		saveRecord(record);
+		return SectionCodeId.ofRepoId(record.getM_SectionCode_ID());
+	}
+
 	@Builder(builderMethodName = "prepareProduct", builderClassName = "prepareProductBuilder")
 	private I_M_Product createProduct(
 			@NonNull final String value,
@@ -242,7 +271,8 @@ public class ProductsRestControllerTest
 			@NonNull final ProductCategoryId categoryId,
 			final String description,
 			final String ean,
-			@NonNull final UomId uomId)
+			@NonNull final UomId uomId,
+			@Nullable final SectionCodeId sectionCodeId)
 	{
 		final I_M_Product record = newInstance(I_M_Product.class);
 		record.setValue(value);
@@ -251,6 +281,7 @@ public class ProductsRestControllerTest
 		record.setDescription(description);
 		record.setUPC(ean);
 		record.setC_UOM_ID(uomId.getRepoId());
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
 
 		saveRecord(record);
 		return record;

@@ -1,18 +1,7 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.time.ZoneId;
-import java.util.Collection;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
@@ -29,11 +18,22 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
+import de.metas.material.event.receiptschedule.OldReceiptScheduleData;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -77,7 +77,7 @@ public class ReceiptScheduleEventHandler
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractReceiptScheduleEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractReceiptScheduleEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(
 				ReceiptScheduleCreatedEvent.class,
@@ -99,15 +99,15 @@ public class ReceiptScheduleEventHandler
 		
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, timeZone);
-
-		createAndHandleMainDataEvent(event, identifier);
-
+		
+		createAndHandleMainDataEvent(event, identifier, timeZone);
 		createAndHandleDetailRequest(event, identifier);
 	}
-
+	
 	private void createAndHandleMainDataEvent(
 			@NonNull final AbstractReceiptScheduleEvent event,
-			@NonNull final MainDataRecordIdentifier identifier)
+			@NonNull final MainDataRecordIdentifier identifier,
+			@NonNull final ZoneId timeZone)
 	{
 		if (event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
@@ -116,13 +116,22 @@ public class ReceiptScheduleEventHandler
 					"Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
+
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedPurchaseQty(event.getOrderedQuantityDelta())
-				.reservedPurchaseQty(event.getReservedQuantityDelta())
+				.qtySupplyPurchaseOrder(event.getReservedQuantityDelta())
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
+
+		final OldReceiptScheduleData oldReceiptScheduleData = event.getOldReceiptScheduleData();
+		if (oldReceiptScheduleData != null)
+		{
+			final MainDataRecordIdentifier oldIdentifier = MainDataRecordIdentifier.createForMaterial(oldReceiptScheduleData.getOldMaterialDescriptor(), timeZone);
+
+			createAndHandleMainDataRequestForOldValues(oldReceiptScheduleData, oldIdentifier);
+		}
 	}
 
 	private void createAndHandleDetailRequest(
@@ -175,5 +184,28 @@ public class ReceiptScheduleEventHandler
 				.bPartnerId(orderLineDescriptor.getOrderBPartnerId());
 
 		detailRequestHandler.handleInsertDetailRequest(addDetailsRequest.build());
+	}
+
+	private void createAndHandleMainDataRequestForOldValues(
+			@NonNull final OldReceiptScheduleData oldReceiptScheduleData,
+			@NonNull final MainDataRecordIdentifier identifier)
+	{
+		final BigDecimal oldOrderedQuantity = oldReceiptScheduleData.getOldOrderedQuantity();
+		final BigDecimal oldReservedQuantity = oldReceiptScheduleData.getOldReservedQuantity();
+
+		if (oldOrderedQuantity.signum() == 0
+				&& oldReservedQuantity.signum() == 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because it has both oldOrderedQuantityDelta and oldReservedQuantityDelta = zero");
+			return;
+		}
+
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+				.identifier(identifier)
+				.orderedPurchaseQty(oldOrderedQuantity.negate())
+				.qtySupplyPurchaseOrder(oldReservedQuantity.negate())
+				.build();
+
+		dataUpdateRequestHandler.handleDataUpdateRequest(request);
 	}
 }

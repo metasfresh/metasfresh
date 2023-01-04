@@ -92,7 +92,7 @@ public class RevolutExportRepoTest
 				.accountNo("accountNo")
 				.routingNo("routingNo")
 				.IBAN("iban")
-				.BIC("bic")
+				.SwiftCode("SwiftCode")
 				.paymentReference("payReference")
 				.regionName("region")
 				.addressLine1("addr1")

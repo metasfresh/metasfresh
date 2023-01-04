@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.document.DocBaseType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -151,28 +152,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final String docBaseType = getDocumentType();
+		final DocBaseType docBaseType = getDocBaseType();
 
 		//
 		// *** Sales - Shipment
-		if (DOCTYPE_MatShipment.equals(docBaseType) && isSOTrx())
+		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
 		{
 			return createFacts_SalesShipment(as);
 		}
 		//
 		// *** Sales - Return
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (DOCTYPE_MatShipment.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}

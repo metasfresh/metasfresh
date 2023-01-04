@@ -1,0 +1,10 @@
+de.metas.audit.data.DataExportAuditRepositoryTest.save=[
+  {
+      "id" : 100001,
+      "tableRecordReference" : {
+        "tableName" : "C_BPartner",
+        "recordId" : 1
+      },
+      "parentId" : 2
+  }
+]

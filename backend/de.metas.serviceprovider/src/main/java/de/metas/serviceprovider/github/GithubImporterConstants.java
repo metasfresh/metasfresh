@@ -2,7 +2,7 @@
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,7 @@ import de.metas.serviceprovider.issue.Status;
 import de.metas.uom.UomId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
@@ -41,29 +42,28 @@ public interface GithubImporterConstants
 
 	@AllArgsConstructor
 	@Getter
-	enum GitHubConfig
+	enum LabelType
 	{
-		ACCESS_TOKEN("accessToken"),
-		LOOK_FOR_PARENT("lookForParent");
+		BUDGET(Pattern.compile("^bud:(?<bud>[0-9]+(\\.[0-9]+)?)$"), "bud", "bud:"),
+		ESTIMATION(Pattern.compile("^est:(?<est>[0-9]+(\\.[0-9]+)?)$"), "est", "est:"),
+		STATUS(Pattern.compile("^status:(?<status>" + Joiner.on("|").join(Status.listCodes()) + ")$"), "status", "status:"),
+		DELIVERY_PLATFORM(Pattern.compile("^ins:(?<platform>[A-Za-z0-9]+)$"), "platform", "ins:"),
+		PLANNED_UAT(Pattern.compile("^p_uat:(?<uat>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "uat", "p_uat:"),
+		ROUGH_EST(Pattern.compile("^p_est:(?<pest>[0-9]+(\\.[0-9]+)?)$"), "pest", "p_est:"),
+		DELIVERED_DATE(Pattern.compile("^del_date:(?<deldate>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "deldate", "del_date:"),
+		COST_CENTER(Pattern.compile("^cost:(?<cost>[A-Za-z0-9_]+)$"), "cost", "cost:"),
+		CUSTOMER(Pattern.compile("^cus:(?<customer>[A-Za-z0-9]+)$"), "customer", "cus:"),
 
-		private final String name;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	enum LabelType{
-		BUDGET(Pattern.compile("^bud:(?<bud>[0-9]+(\\.[0-9]+)?)$"), "bud"),
-		ESTIMATION(Pattern.compile("^est:(?<est>[0-9]+(\\.[0-9]+)?)$"), "est"),
-		STATUS(Pattern.compile("^status:(?<status>" + Joiner.on("|").join(Status.listCodes()) +")$"), "status"),
-		DELIVERY_PLATFORM(Pattern.compile("^ins:(?<platform>[A-Za-z0-9]+)$"),"platform"),
-		PLANNED_UAT(Pattern.compile("^p_uat:(?<uat>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "uat"),
-		ROUGH_EST(Pattern.compile("^p_est:(?<pest>[0-9]+(\\.[0-9]+)?)$"), "pest"),
-		DELIVERED_DATE(Pattern.compile("^del_date:(?<deldate>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "deldate"),
-
-		UNKNOWN(Pattern.compile(".*"),"");
+		UNKNOWN(Pattern.compile(".*"), "", "");
 
 		private final Pattern pattern;
 		private final String groupName;
+		private final String labelPrefix;
+
+		public String wrapValue(@NonNull final String value)
+		{
+			return getLabelPrefix() + value;
+		}
 
 		public static Stream<LabelType> streamKnownLabelTypes()
 		{

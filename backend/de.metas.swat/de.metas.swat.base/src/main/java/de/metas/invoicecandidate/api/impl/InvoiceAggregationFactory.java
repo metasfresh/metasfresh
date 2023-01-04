@@ -22,12 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
@@ -37,16 +31,24 @@ import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.Properties;
 
 public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 {
 	private final static String INVOICE_AGGREGATION_ID_FOR_PREPAYORDER = "InvoiceAggregationFactory_PrepayOrderAggregationId";
+	private final static String INVOICE_AGGREGATION_ID_FOR_ISSUE = "InvoiceAggregationFactory_IssueAggregationId";
+	private final static String INVOICE_LINE_AGGREGATION_ID_FOR_ISSUE = "InvoiceLineAggregationFactory_IssueAggregationId";
+
+	private final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public IAggregationKeyBuilder<I_C_Invoice_Candidate> getAggregationKeyBuilder(final Properties ctx, final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
 	{
-		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
-
 		final int aggregationId = getInvoice_Aggregation_ID(bpartner, isSOTrx, aggregationUsageLevel);
 
 		final IAggregationKeyBuilder<I_C_Invoice_Candidate> aggregation;
@@ -108,9 +110,7 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 	@Override
 	public IAggregationKeyBuilder<I_C_Invoice_Candidate> getPrepayOrderAggregationKeyBuilder(final Properties ctx)
 	{
-		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
-
-		final int aggregationId = getPrepayOrder_Invoice_Aggregation_ID();
+		final int aggregationId = getCustom_InvoiceCandidate_Aggregation_ID(INVOICE_AGGREGATION_ID_FOR_PREPAYORDER);
 
 		final IAggregationKeyBuilder<I_C_Invoice_Candidate> aggregation;
 		if (aggregationId > 0)
@@ -124,9 +124,24 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 		return aggregation;
 	}
 
-	private int getPrepayOrder_Invoice_Aggregation_ID()
+	@Override
+	public IAggregationKeyBuilder<I_C_Invoice_Candidate> getIssueAggregationKeyBuilder(
+			@NonNull final Properties ctx,
+			@NonNull final String aggregationUsageLevel)
 	{
-		return Services.get(ISysConfigBL.class).getIntValue(INVOICE_AGGREGATION_ID_FOR_PREPAYORDER, -1);
+		final String customAggregationConfig = aggregationUsageLevel.equals(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
+				? INVOICE_AGGREGATION_ID_FOR_ISSUE
+				: INVOICE_LINE_AGGREGATION_ID_FOR_ISSUE;
+
+		final int effortControlAggregationId = getCustom_InvoiceCandidate_Aggregation_ID(customAggregationConfig);
+
+		return effortControlAggregationId > 0
+				? aggregationFactory.getAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, effortControlAggregationId)
+				: aggregationFactory.getDefaultAggregationKeyBuilder(ctx, I_C_Invoice_Candidate.class, true, aggregationUsageLevel);
 	}
 
+	private int getCustom_InvoiceCandidate_Aggregation_ID(@NonNull final String customAggregationConfig)
+	{
+		return sysConfigBL.getIntValue(customAggregationConfig, -1);
+	}
 }

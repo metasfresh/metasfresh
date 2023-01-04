@@ -1,20 +1,18 @@
 package de.metas.ui.web;
 
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.text.MapFormat;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
@@ -78,8 +76,8 @@ public class WebuiURLs
 	@Nullable
 	public String getFrontendURL()
 	{
-		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
-		if (Check.isEmpty(url, true) || "-".equals(url))
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, ""));
+		if (url == null || "-".equals(url))
 		{
 			logger.warn("{} is not configured. Features like CORS, document links in emails etc will not work", SYSCONFIG_FRONTEND_URL);
 			return null;
@@ -97,8 +95,8 @@ public class WebuiURLs
 			return null;
 		}
 
-		final String path = sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName));
-		if (Check.isEmpty(path, true) || "-".equals(path))
+		final String path = StringUtils.trimBlankToNull(sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName)));
+		if (path == null || "-".equals(path))
 		{
 			return null;
 		}
@@ -113,11 +111,13 @@ public class WebuiURLs
 		return url;
 	}
 
+	@Nullable
 	public String getDocumentUrl(@NonNull final AdWindowId windowId, final int documentId)
 	{
 		return getDocumentUrl(String.valueOf(windowId.getRepoId()), String.valueOf(documentId));
 	}
 
+	@Nullable
 	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
 	{
 		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object> builder()
@@ -126,11 +126,13 @@ public class WebuiURLs
 				.build());
 	}
 
+	@Nullable
 	public String getViewUrl(@NonNull final AdWindowId adWindowId, @NonNull final String viewId)
 	{
 		return getViewUrl(String.valueOf(adWindowId.getRepoId()), viewId);
 	}
 
+	@Nullable
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
 	{
 		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object> builder()
@@ -139,6 +141,7 @@ public class WebuiURLs
 				.build());
 	}
 
+	@Nullable
 	public String getResetPasswordUrl(final String token)
 	{
 		Check.assumeNotEmpty(token, "token is not empty");
@@ -150,7 +153,6 @@ public class WebuiURLs
 
 	public boolean isCrossSiteUsageAllowed()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
 }

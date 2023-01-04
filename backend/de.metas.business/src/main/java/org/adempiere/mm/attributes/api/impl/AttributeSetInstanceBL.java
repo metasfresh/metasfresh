@@ -243,6 +243,37 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
+	public void cloneOrCreateASI(@Nullable final Object to, @Nullable final Object from)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
+
+		final IAttributeSetInstanceAware toASIAware = attributeSetInstanceAwareFactoryService.createOrNull(to);
+		if (toASIAware == null)
+		{
+			return;
+		}
+		final IAttributeSetInstanceAware fromASIAware = attributeSetInstanceAwareFactoryService.createOrNull(from);
+
+		// #12728 Create new ASI if none was found in the source
+		if (fromASIAware == null || fromASIAware.getM_AttributeSetInstance_ID() <= 0)
+		{
+			final ProductId productId = ProductId.ofRepoId(toASIAware.getM_Product_ID());
+			I_M_AttributeSetInstance newASI = createASI(productId);
+			toASIAware.setM_AttributeSetInstance_ID(newASI.getM_AttributeSetInstance_ID());
+		}
+
+		//
+		// Clone the ASI if it exists
+		else
+		{
+			final I_M_AttributeSetInstance asi = fromASIAware.getM_AttributeSetInstance();
+			final I_M_AttributeSetInstance asiCopy = attributeDAO.copy(asi);
+			toASIAware.setM_AttributeSetInstance(asiCopy);
+		}
+	}
+
+	@Override
 	public I_M_AttributeSetInstance createASIFromAttributeSet(
 			@NonNull final IAttributeSet attributeSet,
 			@Nullable final Predicate<I_M_Attribute> filter)
@@ -396,13 +427,12 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
 		{
 			setAttributeInstanceValue(
-					asiId, 
+					asiId,
 					AttributeCode.ofString(attributeRecord.getValue()),
 					attributeSet.getValue(attributeRecord));
 		}
 		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}
-
 
 	@NonNull
 	public AttributeSetInstanceId addAttributes(@NonNull final AddAttributesRequest request)
@@ -421,9 +451,29 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 
 		request.getAttributeInstanceBasicInfos().forEach(attributeValue -> {
-			setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue() );
+			setAttributeInstanceValue(asiId, attributeValue.getAttributeCode(), attributeValue.getValue());
 		});
 
 		return asiId;
+	}
+
+	@Override
+	@Nullable
+	public String getAttributeValueOrNull(@NonNull final AttributeCode attributeCode, @NonNull final AttributeSetInstanceId asiId)
+	{
+		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
+		if (attributeId == null)
+		{
+			return null;
+		}
+
+		final I_M_AttributeInstance attributeInstance = attributeDAO.retrieveAttributeInstance(asiId, attributeId);
+
+		if (attributeInstance == null)
+		{
+			return null;
+		}
+
+		return attributeInstance.getValue();
 	}
 }

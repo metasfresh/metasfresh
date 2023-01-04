@@ -1,6 +1,8 @@
 package org.adempiere.service;
 
 import ch.qos.logback.classic.Level;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
@@ -26,11 +28,10 @@ import de.metas.workflow.service.IADWorkflowBL;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Role_PermRequest;
@@ -145,7 +146,8 @@ public class RolePermRevokeAccess
 			final DocTypeId docTypeId = DocTypeId.ofRepoId(request.getC_DocType_ID());
 			final String docAction = request.getDocAction();
 
-			final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final ADRefListItem docActionItem = adReferenceService.retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
 			Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
 			final int docActionRefListId = docActionItem.getRefListId().getRepoId();
 

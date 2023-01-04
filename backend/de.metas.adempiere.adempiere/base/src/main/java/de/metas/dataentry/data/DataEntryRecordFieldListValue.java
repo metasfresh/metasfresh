@@ -1,13 +1,14 @@
 package de.metas.dataentry.data;
 
-import javax.annotation.Nullable;
-
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,7 +41,7 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 
 	public static DataEntryRecordFieldListValue of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final DataEntryListValueId value)
 	{
 		return new DataEntryRecordFieldListValue(dataEntryFieldId, createdUpdatedInfo, value);
@@ -48,7 +49,7 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 
 	private DataEntryRecordFieldListValue(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final DataEntryListValueId listValueId)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

@@ -24,23 +24,23 @@ package de.metas.common.shipping.v2.shipmentcandidate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.shipping.v2.receipt.JsonCreateReceiptInfo;
-import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
-import de.metas.common.shipping.v2.shipment.JsonCreateShipmentInfo;
-import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
-import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
-import de.metas.common.shipping.v2.shipment.JsonLocation;
 import de.metas.common.shipping.v2.ConfiguredJsonMapper;
 import de.metas.common.shipping.v2.JsonProduct;
 import de.metas.common.shipping.v2.JsonRequestCandidateResult;
 import de.metas.common.shipping.v2.JsonRequestCandidateResults;
 import de.metas.common.shipping.v2.Outcome;
+import de.metas.common.shipping.v2.receipt.JsonCreateReceiptInfo;
+import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
+import de.metas.common.shipping.v2.shipment.JsonCreateShipmentInfo;
+import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
+import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+import de.metas.common.shipping.v2.shipment.JsonLocation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +51,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static de.metas.common.shipping.v2.JsonRequestCandidateResult.builder;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class JsonSerializeDeserializeTests
 {
@@ -237,8 +236,8 @@ class JsonSerializeDeserializeTests
 	{
 		final JsonRequestCandidateResults resultListOrig = JsonRequestCandidateResults.builder()
 				.transactionKey("transactionKey")
-				.item(builder().scheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
-				.item(builder().scheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
+				.item(JsonRequestCandidateResult.builder().scheduleId(JsonMetasfreshId.of(10)).outcome(Outcome.OK).build())
+				.item(JsonRequestCandidateResult.builder().scheduleId(JsonMetasfreshId.of(20)).outcome(Outcome.ERROR)
 						.error(JsonError.ofSingleItem(JsonErrorItem.builder().message("errorMessage").stackTrace("stackTrace").build()))
 						.build())
 				.build();

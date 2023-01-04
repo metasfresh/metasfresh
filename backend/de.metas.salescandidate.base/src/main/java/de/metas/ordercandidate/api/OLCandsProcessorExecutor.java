@@ -2,22 +2,20 @@ package de.metas.ordercandidate.api;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.async.AsyncBatchId;
-import de.metas.common.util.time.SystemTime;
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
-import de.metas.ordercandidate.OrderCandidate_Constants;
+import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
+import de.metas.ordercandidate.api.source.GetEligibleOLCandRequest;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,15 +24,14 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /*
@@ -69,39 +66,36 @@ public class OLCandsProcessorExecutor
 
 	private final IOLCandListener olCandListeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
+	private final OLCandProcessingHelper olCandProcessingHelper;
 
 	private final int olCandProcessorId;
 	private final UserId userInChargeId;
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
-	private final InputDataSourceId processorDataDestinationId;
+	private final PInstanceId selectionId;
 	private final AsyncBatchId asyncBatchId;
-	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
-
-	private final OLCandSource candidatesSource;
 
 	@Builder
 	private OLCandsProcessorExecutor(
 			@NonNull final OLCandProcessorDescriptor processorDescriptor,
 			@NonNull final IOLCandListener olCandListeners,
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
-			@NonNull final OLCandSource candidatesSource,
+			@NonNull final OLCandProcessingHelper olCandProcessingHelper,
+			@NonNull final PInstanceId selectionId,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
+		this.olCandProcessingHelper = olCandProcessingHelper;
+
+		this.selectionId = selectionId;
 		this.asyncBatchId = asyncBatchId;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
-
-		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceIdByInternalName(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
-
-		this.candidatesSource = candidatesSource;
 	}
 
 	public void process()
@@ -112,11 +106,8 @@ public class OLCandsProcessorExecutor
 
 		//
 		// Get the ol-candidates to process
-		final List<OLCand> candidates = candidatesSource.streamOLCands()
-				.filter(this::isEligibleOrLog)
-				.map(this::prepareOLCandBeforeProcessing)
-				.sorted(aggregationInfo.getOrderingComparator())
-				.collect(ImmutableList.toImmutableList());
+		final List<OLCand> candidates = getEligibleOLCand();
+
 		loggable.addLog("Processing {} order line candidates", candidates.size());
 		if (candidates.isEmpty())
 		{
@@ -128,17 +119,25 @@ public class OLCandsProcessorExecutor
 		final ListMultimap<ArrayKey, OLCand> grouping = ArrayListMultimap.create();
 		for (final OLCand candidate : candidates)
 		{
-			if (candidate.isProcessed())
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(candidate.unbox()))
 			{
-				continue; // ts: I don't see a need for this check, but let's keep it until we covered this by ait
-			}
+				if (candidate.isProcessed())
+				{
+					continue; // ts: I don't see a need for this check, but let's keep it until we covered this by ait
+				}
 
-			//
-			// Register grouping key
-			final int olCandId = candidate.getId();
-			final ArrayKey groupingKey = mkGroupingKey(candidate);
-			toProcess.put(olCandId, groupingKey);
-			grouping.put(groupingKey, candidate);
+				//
+				// Register grouping key
+				final int olCandId = candidate.getId();
+				final ArrayKey groupingKey = mkGroupingKey(candidate);
+				toProcess.put(olCandId, groupingKey);
+				grouping.put(groupingKey, candidate);
+			}
+			catch (final AdempiereException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getId());
+			}
 		}
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<>();
@@ -149,37 +148,45 @@ public class OLCandsProcessorExecutor
 		OLCand previousCandidate = null;
 		for (final OLCand candidate : candidates)
 		{
-			final int olCandId = candidate.getId();
-			if (processedIds.contains(olCandId) || candidate.isProcessed())
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(candidate.unbox()))
 			{
-				// 'candidate' has already been processed
-				continue;
-			}
-
-			// Each group shall go to a separate order line
-			if (currentOrder != null)
-			{
-				currentOrder.closeCurrentOrderLine();
-			}
-
-			// get the group of the current unprocessed candidate
-			final ArrayKey groupingKey = toProcess.get(olCandId);
-			for (final OLCand candOfGroup : grouping.get(groupingKey))
-			{
-				if (currentOrder != null && isOrderSplit(candOfGroup, previousCandidate))
+				final int olCandId = candidate.getId();
+				if (processedIds.contains(olCandId) || candidate.isProcessed())
 				{
-					currentOrder.completeOrDelete();
-					currentOrder = null;
-				}
-				if (currentOrder == null)
-				{
-					currentOrder = newOrderFactory();
+					// 'candidate' has already been processed
+					continue;
 				}
 
-				currentOrder.addOLCand(candOfGroup);
+				// Each group shall go to a separate order line
+				if (currentOrder != null)
+				{
+					currentOrder.closeCurrentOrderLine();
+				}
 
-				Check.assume(processedIds.add(candOfGroup.getId()), candOfGroup + " of grouping " + grouping + " is not processed twice");
-				previousCandidate = candOfGroup;
+				// get the group of the current unprocessed candidate
+				final ArrayKey groupingKey = toProcess.get(olCandId);
+				for (final OLCand candOfGroup : grouping.get(groupingKey))
+				{
+					if (currentOrder != null && OLCandProcessingHelper.isOrderSplit(candOfGroup, previousCandidate, aggregationInfo))
+					{
+						currentOrder.completeOrDelete();
+						currentOrder = null;
+					}
+					if (currentOrder == null)
+					{
+						currentOrder = newOrderFactory();
+					}
+
+					currentOrder.addOLCand(candOfGroup);
+
+					Check.assume(processedIds.add(candOfGroup.getId()), candOfGroup + " of grouping " + grouping + " is not processed twice");
+					previousCandidate = candOfGroup;
+				}
+			}
+			catch (final AdempiereException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getId());
 			}
 		}
 
@@ -191,16 +198,6 @@ public class OLCandsProcessorExecutor
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");
 	}
 
-	private OLCand prepareOLCandBeforeProcessing(final OLCand candidate)
-	{
-		if (candidate.getDateDoc() == null)
-		{
-			candidate.setDateDoc(defaultDateDoc);
-		}
-
-		return candidate;
-	}
-
 	private OLCandOrderFactory newOrderFactory()
 	{
 		return OLCandOrderFactory.builder()
@@ -209,56 +206,8 @@ public class OLCandsProcessorExecutor
 				.loggable(loggable)
 				.olCandProcessorId(olCandProcessorId)
 				.olCandListeners(olCandListeners)
+				.aggregationInfo(aggregationInfo)
 				.build();
-	}
-
-	/**
-	 * Decides if there needs to be a new order for 'candidate'.
-	 */
-	private boolean isOrderSplit(@NonNull final OLCand candidate, @NonNull final OLCand previousCandidate)
-	{
-		// We keep this block for the time being because as of now we did not make sure that the aggAndOrderList is complete to ensure that all
-		// C_OLCands with different C_Order-"header"-columns will be split into different orders (think of e.g. C_OLCands with different currencies).
-		if (previousCandidate.getAD_Org_ID() != candidate.getAD_Org_ID()
-				|| !Objects.equals(previousCandidate.getPOReference(), candidate.getPOReference())
-				|| !Objects.equals(previousCandidate.getC_Currency_ID(), candidate.getC_Currency_ID())
-				//
-				|| !Objects.equals(previousCandidate.getBPartnerInfo(), candidate.getBPartnerInfo())
-				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
-				//
-				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
-				|| !Objects.equals(previousCandidate.getDateDoc(), candidate.getDateDoc())
-				|| !Objects.equals(previousCandidate.getDatePromised(), candidate.getDatePromised())
-				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
-				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
-				//
-				|| !Objects.equals(previousCandidate.getDeliveryRule(), candidate.getDeliveryRule())
-				|| !Objects.equals(previousCandidate.getDeliveryViaRule(), candidate.getDeliveryViaRule())
-				|| !Objects.equals(previousCandidate.getFreightCostRule(), candidate.getFreightCostRule())
-				|| !Objects.equals(previousCandidate.getInvoiceRule(), candidate.getInvoiceRule())
-				|| !Objects.equals(previousCandidate.getPaymentRule(), candidate.getPaymentRule())
-				|| !Objects.equals(previousCandidate.getPaymentTermId(), candidate.getPaymentTermId())
-				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
-				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
-				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
-				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
-
-		{
-			return true;
-		}
-
-		for (final OLCandAggregationColumn column : aggregationInfo.getSplitOrderDiscriminatorColumns())
-		{
-			final Object value = candidate.getValueByColumn(column);
-			final Object previousValue = previousCandidate.getValueByColumn(column);
-			if (!Objects.equals(value, previousValue))
-			{
-				return true;
-			}
-		}
-
-		// between 'candidate' and 'previousCandidate' there are no differences that require a new order to be created
-		return false;
 	}
 
 	/**
@@ -315,47 +264,16 @@ public class OLCandsProcessorExecutor
 		}
 	}
 
-	private boolean isEligibleOrLog(final OLCand cand)
+	@NonNull
+	private List<OLCand> getEligibleOLCand()
 	{
-		if (cand.isProcessed())
-		{
-			logger.debug("Skipping processed C_OLCand: {}", cand);
-			return false;
-		}
+		final GetEligibleOLCandRequest request = GetEligibleOLCandRequest.builder()
+				.aggregationInfo(aggregationInfo)
+				.orderDefaults(orderDefaults)
+				.selection(selectionId)
+				.asyncBatchId(asyncBatchId)
+				.build();
 
-		if (cand.isError())
-		{
-			logger.debug("Skipping C_OLCand with errors: {}", cand);
-			return false;
-		}
-
-		if (cand.getOrderLineGroup() != null && cand.getOrderLineGroup().isGroupingError())
-		{
-			logger.debug("Skipping C_OLCand with grouping errors: {}", cand);
-			return false;
-		}
-
-		final InputDataSourceId candDataDestinationId = InputDataSourceId.ofRepoIdOrNull(cand.getAD_DataDestination_ID());
-		if (!Objects.equals(candDataDestinationId, processorDataDestinationId))
-		{
-			logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, processorDataDestinationId, cand);
-			return false;
-		}
-
-		if (cand.isImportedWithIssues())
-		{
-			// FIXME: instead of having isImportedWithIssues() implemented here, add support for using a filter that is then registered from e.g. a model validator
-			// this way, we would further decouple our modules
-			logger.debug("Skipping C_OLCand with import issues: {}", cand);
-			return false;
-		}
-
-		if (asyncBatchId != null && !cand.isAssignToBatch(asyncBatchId))
-		{
-			logger.debug("Skipping C_OLCand due to missing batch assignment: targetBatchId: {}, candidate: {}", asyncBatchId, cand);
-			return false;
-		}
-
-		return true;
+		return olCandProcessingHelper.getOLCandsForProcessing(request);
 	}
 }

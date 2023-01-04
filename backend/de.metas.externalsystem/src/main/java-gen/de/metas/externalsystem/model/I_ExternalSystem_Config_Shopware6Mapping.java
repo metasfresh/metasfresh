@@ -1,19 +1,20 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for ExternalSystem_Config_Shopware6Mapping
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Shopware6Mapping
+public interface I_ExternalSystem_Config_Shopware6Mapping 
 {
 
 	String Table_Name = "ExternalSystem_Config_Shopware6Mapping";
 
-	//	/** AD_Table_ID=541621 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541621 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -233,7 +234,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set ExternalSystem_Config_Shopware6.
+	 * Set External system config Shopware6.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -242,7 +243,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	void setExternalSystem_Config_Shopware6_ID (int ExternalSystem_Config_Shopware6_ID);
 
 	/**
-	 * Get ExternalSystem_Config_Shopware6.
+	 * Get External system config Shopware6.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -348,7 +349,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
-	 lowest number comes first
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -359,7 +360,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
-	 lowest number comes first
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

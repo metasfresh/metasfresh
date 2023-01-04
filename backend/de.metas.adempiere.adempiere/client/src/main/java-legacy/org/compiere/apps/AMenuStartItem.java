@@ -16,14 +16,11 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Nullable;
-import javax.swing.SwingWorker;
-
+import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.process.ui.ProcessDialog;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.WorkflowId;
 import lombok.NonNull;
@@ -42,11 +39,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.logging.LogManager;
-import de.metas.process.ui.ProcessDialog;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.swing.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
+import javax.annotation.Nullable;
 
 /**
  * Start application action ( process, workflow, window, form, task etc).
@@ -57,6 +55,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 {
 	/**
 	 * Start menu item action asynchronously
+	 *
 	 */
 	public static void startMenuItem(final MTreeNode node, final AMenu menu)
 	{
@@ -65,7 +64,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 
 	/**
 	 * Start menu item action asynchronously
-	 * 
+	 *
 	 */
 	public static void startMenuItemById(final int adMenuId, final String name, final AMenu menu)
 	{

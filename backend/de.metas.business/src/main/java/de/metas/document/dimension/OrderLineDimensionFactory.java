@@ -22,8 +22,11 @@
 
 package de.metas.document.dimension;
 
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
@@ -45,6 +48,9 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -63,6 +69,8 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

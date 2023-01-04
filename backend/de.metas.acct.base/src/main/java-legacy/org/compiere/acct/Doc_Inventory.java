@@ -19,6 +19,7 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.document.DocBaseType;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.MAccount;
 
@@ -54,7 +55,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
 	public Doc_Inventory(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatInventory);
+		super(ctx, DocBaseType.MaterialPhysicalInventory);
 	}
 
 	@Override

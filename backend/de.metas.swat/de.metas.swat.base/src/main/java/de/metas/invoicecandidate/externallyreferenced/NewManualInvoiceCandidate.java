@@ -8,14 +8,17 @@ import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -43,15 +46,17 @@ import java.util.List;
  * #L%
  */
 
-/** A "manual" IC does not reference another record (e.g. order line or contract). */
+/**
+ * A "manual" IC is not programmatically created but imported into the system.
+ */
 @Value
 @Builder
 public class NewManualInvoiceCandidate
 {
-	private OrgId orgId;
+	OrgId orgId;
 
-	private ExternalId externalHeaderId;
-	private ExternalId externalLineId;
+	ExternalId externalHeaderId;
+	ExternalId externalLineId;
 
 	String poReference;
 
@@ -60,6 +65,8 @@ public class NewManualInvoiceCandidate
 	ProductId productId;
 
 	InvoiceRule invoiceRuleOverride;
+
+	InvoiceRule invoiceRule;
 
 	SOTrx soTrx;
 
@@ -73,7 +80,9 @@ public class NewManualInvoiceCandidate
 
 	UomId invoicingUomId;
 
-	/** If given, then productId and currencyId have to match! */
+	/**
+	 * If given, then productId and currencyId have to match!
+	 */
 	ProductPrice priceEnteredOverride;
 
 	Percent discountOverride;
@@ -82,18 +91,27 @@ public class NewManualInvoiceCandidate
 
 	String lineDescription;
 
+	String descriptionBottom;
+
+	UserId userInChargeId;
+
+	ProjectId projectId;
+
+	TableRecordReference recordReference;
+
 	List<InvoiceDetailItem> invoiceDetailItems;
 
 	private NewManualInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
-			@NonNull final ExternalId externalHeaderId,
-			@NonNull final ExternalId externalLineId,
+			@Nullable final ExternalId externalHeaderId,
+			@Nullable final ExternalId externalLineId,
 
 			@Nullable final String poReference,
 			@NonNull final BPartnerInfo billPartnerInfo,
 			@NonNull final ProductId productId,
 			@Nullable final InvoiceRule invoiceRuleOverride,
+			@Nullable final InvoiceRule invoiceRule,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateOrdered,
 			@Nullable final LocalDate presetDateInvoiced,
@@ -104,6 +122,10 @@ public class NewManualInvoiceCandidate
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@Nullable final String descriptionBottom,
+			@Nullable final UserId userInChargeId,
+			@Nullable final ProjectId projectId,
+			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -125,6 +147,11 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
+		this.descriptionBottom = descriptionBottom;
+		this.userInChargeId = userInChargeId;
+		this.recordReference = recordReference;
+		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;
 
 		if (priceEnteredOverride != null)

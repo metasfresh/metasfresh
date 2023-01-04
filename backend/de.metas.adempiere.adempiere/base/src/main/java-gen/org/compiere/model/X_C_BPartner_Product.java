@@ -9,10 +9,11 @@ import javax.annotation.Nullable;
 /** Generated Model for C_BPartner_Product
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_BPartner_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -105180983L;
+	private static final long serialVersionUID = -1198950092L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (final Properties ctx, final int C_BPartner_Product_ID, @Nullable final String trxName)
@@ -80,7 +81,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setCustomerLabelName (final java.lang.String CustomerLabelName)
+	public void setCustomerLabelName (final @Nullable java.lang.String CustomerLabelName)
 	{
 		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
 	}
@@ -104,7 +105,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -116,7 +117,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setEAN_CU (final java.lang.String EAN_CU)
+	public void setEAN_CU (final @Nullable java.lang.String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
 	}
@@ -128,7 +129,19 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setExclusionFromSaleReason (final java.lang.String ExclusionFromSaleReason)
+	public void setExclusionFromPurchaseReason (final @Nullable java.lang.String ExclusionFromPurchaseReason)
+	{
+		set_Value (COLUMNNAME_ExclusionFromPurchaseReason, ExclusionFromPurchaseReason);
+	}
+
+	@Override
+	public java.lang.String getExclusionFromPurchaseReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExclusionFromPurchaseReason);
+	}
+
+	@Override
+	public void setExclusionFromSaleReason (final @Nullable java.lang.String ExclusionFromSaleReason)
 	{
 		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
 	}
@@ -140,7 +153,19 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setGTIN (final java.lang.String GTIN)
+	public void setFLO_Identifier (final @Nullable java.lang.String FLO_Identifier)
+	{
+		set_Value (COLUMNNAME_FLO_Identifier, FLO_Identifier);
+	}
+
+	@Override
+	public java.lang.String getFLO_Identifier()
+	{
+		return get_ValueAsString(COLUMNNAME_FLO_Identifier);
+	}
+
+	@Override
+	public void setGTIN (final @Nullable java.lang.String GTIN)
 	{
 		set_Value (COLUMNNAME_GTIN, GTIN);
 	}
@@ -152,7 +177,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setIngredients (final java.lang.String Ingredients)
+	public void setIngredients (final @Nullable java.lang.String Ingredients)
 	{
 		set_Value (COLUMNNAME_Ingredients, Ingredients);
 	}
@@ -188,6 +213,18 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
+	public void setIsExcludedFromPurchase (final boolean IsExcludedFromPurchase)
+	{
+		set_Value (COLUMNNAME_IsExcludedFromPurchase, IsExcludedFromPurchase);
+	}
+
+	@Override
+	public boolean isExcludedFromPurchase() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludedFromPurchase);
+	}
+
+	@Override
 	public void setIsExcludedFromSale (final boolean IsExcludedFromSale)
 	{
 		set_Value (COLUMNNAME_IsExcludedFromSale, IsExcludedFromSale);
@@ -200,13 +237,25 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setManufacturer (final java.lang.String Manufacturer)
+	public void setLeadTime (final int LeadTime)
+	{
+		set_Value (COLUMNNAME_LeadTime, LeadTime);
+	}
+
+	@Override
+	public int getLeadTime()
+	{
+		return get_ValueAsInt(COLUMNNAME_LeadTime);
+	}
+
+	@Override
+	public void setManufacturer (final @Nullable java.lang.String Manufacturer)
 	{
 		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
 	}
 
 	@Override
-	public java.lang.String getManufacturer() 
+	public java.lang.String getManufacturer()
 	{
 		return get_ValueAsString(COLUMNNAME_Manufacturer);
 	}
@@ -254,7 +303,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setOrder_Min (final BigDecimal Order_Min)
+	public void setOrder_Min (final @Nullable BigDecimal Order_Min)
 	{
 		set_Value (COLUMNNAME_Order_Min, Order_Min);
 	}
@@ -267,7 +316,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setOrder_Pack (final BigDecimal Order_Pack)
+	public void setOrder_Pack (final @Nullable BigDecimal Order_Pack)
 	{
 		set_Value (COLUMNNAME_Order_Pack, Order_Pack);
 	}
@@ -280,7 +329,31 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setProductCategory (final java.lang.String ProductCategory)
+	public void setPicking_AgeTolerance_AfterMonths (final int Picking_AgeTolerance_AfterMonths)
+	{
+		set_Value (COLUMNNAME_Picking_AgeTolerance_AfterMonths, Picking_AgeTolerance_AfterMonths);
+	}
+
+	@Override
+	public int getPicking_AgeTolerance_AfterMonths()
+	{
+		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_AfterMonths);
+	}
+
+	@Override
+	public void setPicking_AgeTolerance_BeforeMonths (final int Picking_AgeTolerance_BeforeMonths)
+	{
+		set_Value (COLUMNNAME_Picking_AgeTolerance_BeforeMonths, Picking_AgeTolerance_BeforeMonths);
+	}
+
+	@Override
+	public int getPicking_AgeTolerance_BeforeMonths()
+	{
+		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
+	}
+
+	@Override
+	public void setProductCategory (final @Nullable java.lang.String ProductCategory)
 	{
 		set_Value (COLUMNNAME_ProductCategory, ProductCategory);
 	}
@@ -292,7 +365,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setProductDescription (final java.lang.String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -304,7 +377,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setProductName (final java.lang.String ProductName)
+	public void setProductName (final @Nullable java.lang.String ProductName)
 	{
 		set_Value (COLUMNNAME_ProductName, ProductName);
 	}
@@ -316,7 +389,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setProductNo (final java.lang.String ProductNo)
+	public void setProductNo (final @Nullable java.lang.String ProductNo)
 	{
 		set_Value (COLUMNNAME_ProductNo, ProductNo);
 	}
@@ -328,7 +401,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setQualityRating (final BigDecimal QualityRating)
+	public void setQualityRating (final @Nullable BigDecimal QualityRating)
 	{
 		set_Value (COLUMNNAME_QualityRating, QualityRating);
 	}
@@ -377,7 +450,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setUPC (final java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
@@ -413,7 +486,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setVendorCategory (final java.lang.String VendorCategory)
+	public void setVendorCategory (final @Nullable java.lang.String VendorCategory)
 	{
 		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
 	}
@@ -425,7 +498,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setVendorProductNo (final java.lang.String VendorProductNo)
+	public void setVendorProductNo (final @Nullable java.lang.String VendorProductNo)
 	{
 		set_Value (COLUMNNAME_VendorProductNo, VendorProductNo);
 	}

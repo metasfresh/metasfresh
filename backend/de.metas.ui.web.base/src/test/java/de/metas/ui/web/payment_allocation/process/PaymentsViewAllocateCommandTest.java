@@ -24,6 +24,7 @@ package de.metas.ui.web.payment_allocation.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
@@ -40,6 +41,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -52,6 +54,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
@@ -92,7 +95,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
 {
-	private final OrgId orgId = OrgId.ofRepoId(1);
+	private static final boolean INVOICE_AMT_IsSOTrxAdjusted = false;
+	private static final boolean INVOICE_AMT_IsCreditMemoAdjusted = true;
+
+	private final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 	private final LocalDate dateInvoiced = LocalDate.parse("2020-04-01");
 	private final LocalDate paymentDateTrx = LocalDate.parse("2020-04-25");
 
@@ -101,6 +107,7 @@ public class PaymentsViewAllocateCommandTest
 	private IInvoiceDAO invoicesDAO;
 	private IAllocationDAO allocationDAO;
 
+	private OrgId orgId;
 	private CurrencyId euroCurrencyId;
 	private BPartnerId bpartnerId;
 
@@ -122,6 +129,7 @@ public class PaymentsViewAllocateCommandTest
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		bpartnerId = createBPartnerId();
+		orgId = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 
 		SpringContextHolder.registerJUnitBean(moneyService);
 	}
@@ -178,9 +186,10 @@ public class PaymentsViewAllocateCommandTest
 				.documentNo("paymentNo_" + paymentId.getRepoId())
 				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
 				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
+				.paymentDirection(direction)
+				.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(direction).isOutboundAdjusted(false).build())
 				.payAmt(payAmt)
 				.openAmt(payAmt)
-				.paymentDirection(direction)
 				.build();
 	}
 
@@ -192,12 +201,17 @@ public class PaymentsViewAllocateCommandTest
 			@Nullable final String serviceFeeAmt,
 			@Nullable final String dateInvoiced)
 	{
+		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
+				.soTrx(docBaseType.getSoTrx())
+				.isCreditMemo(docBaseType.isCreditMemo())
+				.isSOTrxAdjusted(INVOICE_AMT_IsSOTrxAdjusted)
+				.isCreditMemoAdjusted(INVOICE_AMT_IsCreditMemoAdjusted)
+				.build()
+				.intern();
+
 		final InvoiceId invoiceId;
 		{
-			final Money invoiceGrandTotal = moneyService.toMoney(openAmt)
-					.negateIf(docBaseType.isCreditMemo())
-					// .negateIf(!docBaseType.isSales()) // NOP, it's already adjusted
-					;
+			final Money invoiceGrandTotal = invoiceAmtMultiplier.fromNotAdjustedAmount(moneyService.toMoney(openAmt));
 
 			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
@@ -214,15 +228,28 @@ public class PaymentsViewAllocateCommandTest
 				.dateInvoiced(dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced)
 				.bpartner(IntegerLookupValue.of(bpartnerId.getRepoId(), "BPartner"))
 				.docBaseType(docBaseType)
+				.invoiceAmtMultiplier(invoiceAmtMultiplier)
 				.grandTotal(openAmt)
 				.openAmt(openAmt)
 				.discountAmt(discountAmt != null
-									 ? Amount.of(discountAmt, openAmt.getCurrencyCode())
-									 : Amount.zero(openAmt.getCurrencyCode()))
+						? Amount.of(discountAmt, openAmt.getCurrencyCode())
+						: Amount.zero(openAmt.getCurrencyCode()))
 				.serviceFeeAmt(serviceFeeAmt != null
-									   ? Amount.of(serviceFeeAmt, openAmt.getCurrencyCode())
-									   : Amount.zero(openAmt.getCurrencyCode()))
+						? Amount.of(serviceFeeAmt, openAmt.getCurrencyCode())
+						: Amount.zero(openAmt.getCurrencyCode()))
 				.build();
+	}
+
+	@Test
+	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
+	{
+		final InvoiceAmtMultiplier multiplierInRealLife = PaymentAllocationRepository.toInvoiceAmtMultiplier(InvoiceDocBaseType.CustomerInvoice);
+
+		//noinspection AssertThatBooleanCondition
+		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+
+		//noinspection AssertThatBooleanCondition
+		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
 	}
 
 	@Nested
@@ -238,14 +265,14 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
+			assertThat(payableDocument.isCreditMemo()).isFalse();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
 					.isEqualTo(AllocationAmounts.builder()
-									   .payAmt(Money.of(100 - 20, euroCurrencyId))
-									   .discountAmt(Money.of(20, euroCurrencyId))
-									   .build());
+							.payAmt(Money.of(100 - 20, euroCurrencyId))
+							.discountAmt(Money.of(20, euroCurrencyId))
+							.build());
 		}
 
 		@Test
@@ -255,7 +282,7 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
+			assertThat(payableDocument.isCreditMemo()).isTrue();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
@@ -272,14 +299,14 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
+			assertThat(payableDocument.isCreditMemo()).isFalse();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
 					.isEqualTo(AllocationAmounts.builder()
-									   .payAmt(Money.of(-100 + 20, euroCurrencyId))
-									   .discountAmt(Money.of(-20, euroCurrencyId))
-									   .build());
+							.payAmt(Money.of(-100 + 20, euroCurrencyId))
+							.discountAmt(Money.of(-20, euroCurrencyId))
+							.build());
 		}
 
 		@Test
@@ -289,7 +316,7 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
+			assertThat(payableDocument.isCreditMemo()).isTrue();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
@@ -361,30 +388,30 @@ public class PaymentsViewAllocateCommandTest
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
 						.isEqualTo(PayableDocument.builder()
-										   .invoiceId(invoiceRow.getInvoiceId())
-										   .bpartnerId(bpartnerId)
-										   .documentNo(invoiceRow.getDocumentNo())
-										   .soTrx(SOTrx.SALES)
-										   .creditMemo(false)
-										   .openAmt(Money.of(100, euroCurrencyId))
-										   .amountsToAllocate(AllocationAmounts.builder()
-																	  .payAmt(Money.of(90, euroCurrencyId))
-																	  .invoiceProcessingFee(Money.of(10, euroCurrencyId))
-																	  .build())
-										   .invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
-																					.orgId(orgId)
-																					.evaluationDate(LocalDate.parse(paymentDateStr).atStartOfDay(SystemTime.zoneId()))
-																					.customerId(bpartnerId)
-																					.invoiceId(invoiceRow.getInvoiceId())
-																					.serviceCompanyBPartnerId(feeCompanyId1)
-																					.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
-																					.serviceFeeProductId(serviceFeeProductId)
-																					.feeAmountIncludingTax(Amount.of(10, CurrencyCode.EUR))
-																					.build())
-										   .clientAndOrgId(invoiceRow.getClientAndOrgId())
-										   .date(invoiceRow.getDateInvoiced())
-										   .currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
-										   .build());
+								.invoiceId(invoiceRow.getInvoiceId())
+								.bpartnerId(bpartnerId)
+								.documentNo(invoiceRow.getDocumentNo())
+								.soTrx(SOTrx.SALES)
+								.creditMemo(false)
+								.openAmt(Money.of(100, euroCurrencyId))
+								.amountsToAllocate(AllocationAmounts.builder()
+										.payAmt(Money.of(90, euroCurrencyId))
+										.invoiceProcessingFee(Money.of(10, euroCurrencyId))
+										.build())
+								.invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
+										.orgId(orgId)
+										.evaluationDate(LocalDate.parse(paymentDateStr).atStartOfDay(SystemTime.zoneId()))
+										.customerId(bpartnerId)
+										.invoiceId(invoiceRow.getInvoiceId())
+										.serviceCompanyBPartnerId(feeCompanyId1)
+										.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
+										.serviceFeeProductId(serviceFeeProductId)
+										.feeAmountIncludingTax(Amount.of(10, CurrencyCode.EUR))
+										.build())
+								.clientAndOrgId(invoiceRow.getClientAndOrgId())
+								.date(invoiceRow.getDateInvoiced())
+								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
+								.build());
 			}
 
 			@Test
@@ -410,30 +437,30 @@ public class PaymentsViewAllocateCommandTest
 						.usingRecursiveComparison()
 						.ignoringFields("reference.modelRef.timestamp")
 						.isEqualTo(PayableDocument.builder()
-										   .invoiceId(invoiceRow.getInvoiceId())
-										   .bpartnerId(bpartnerId)
-										   .documentNo(invoiceRow.getDocumentNo())
-										   .soTrx(SOTrx.SALES)
-										   .creditMemo(true)
-										   .openAmt(Money.of(-100, euroCurrencyId))
-										   .amountsToAllocate(AllocationAmounts.builder()
-																	  .payAmt(Money.of(-110, euroCurrencyId))
-																	  .invoiceProcessingFee(Money.of(+10, euroCurrencyId))
-																	  .build())
-										   .invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
-																					.orgId(orgId)
-																					.evaluationDate(now)
-																					.customerId(bpartnerId)
-																					.invoiceId(invoiceRow.getInvoiceId())
-																					.serviceCompanyBPartnerId(feeCompanyId1)
-																					.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
-																					.serviceFeeProductId(serviceFeeProductId)
-																					.feeAmountIncludingTax(Amount.of(+10, CurrencyCode.EUR))
-																					.build())
-										   .clientAndOrgId(invoiceRow.getClientAndOrgId())
-										   .date(invoiceRow.getDateInvoiced())
-										   .currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
-										   .build());
+								.invoiceId(invoiceRow.getInvoiceId())
+								.bpartnerId(bpartnerId)
+								.documentNo(invoiceRow.getDocumentNo())
+								.soTrx(SOTrx.SALES)
+								.creditMemo(true)
+								.openAmt(Money.of(-100, euroCurrencyId))
+								.amountsToAllocate(AllocationAmounts.builder()
+										.payAmt(Money.of(-110, euroCurrencyId))
+										.invoiceProcessingFee(Money.of(+10, euroCurrencyId))
+										.build())
+								.invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
+										.orgId(orgId)
+										.evaluationDate(now)
+										.customerId(bpartnerId)
+										.invoiceId(invoiceRow.getInvoiceId())
+										.serviceCompanyBPartnerId(feeCompanyId1)
+										.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
+										.serviceFeeProductId(serviceFeeProductId)
+										.feeAmountIncludingTax(Amount.of(+10, CurrencyCode.EUR))
+										.build())
+								.clientAndOrgId(invoiceRow.getClientAndOrgId())
+								.date(invoiceRow.getDateInvoiced())
+								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
+								.build());
 			}
 		}
 	}
@@ -490,17 +517,17 @@ public class PaymentsViewAllocateCommandTest
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToPayment)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(paymentRow))
-									   .dateTrx(LocalDate.parse("2020-04-17"))
-									   .dateAcct(LocalDate.parse("2020-04-17"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("100", euroCurrencyId))
-														.build())
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToPayment)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(paymentRow))
+							.dateTrx(LocalDate.parse("2020-04-17"))
+							.dateAcct(LocalDate.parse("2020-04-17"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("100", euroCurrencyId))
+									.build())
+							.build());
 		}
 
 		@Test
@@ -526,18 +553,18 @@ public class PaymentsViewAllocateCommandTest
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(creditMemoRow))
-									   .dateTrx(LocalDate.parse("2020-04-11"))
-									   .dateAcct(LocalDate.parse("2020-04-11"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("20", euroCurrencyId))
-														.build())
-									   .payableOverUnderAmt(Money.of("80", euroCurrencyId))
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(creditMemoRow))
+							.dateTrx(LocalDate.parse("2020-04-11"))
+							.dateAcct(LocalDate.parse("2020-04-11"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("20", euroCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("80", euroCurrencyId))
+							.build());
 		}
 
 		@Test
@@ -566,18 +593,18 @@ public class PaymentsViewAllocateCommandTest
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(creditMemoRow))
-									   .dateTrx(LocalDate.parse("2020-04-24"))
-									   .dateAcct(LocalDate.parse("2020-04-24"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("-20", euroCurrencyId))
-														.build())
-									   .payableOverUnderAmt(Money.of("-80", euroCurrencyId))
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(creditMemoRow))
+							.dateTrx(LocalDate.parse("2020-04-24"))
+							.dateAcct(LocalDate.parse("2020-04-24"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("-20", euroCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("-80", euroCurrencyId))
+							.build());
 
 			assertInvoiceAllocatedAmt(invoiceRow.getInvoiceId(), "-20");
 			assertInvoiceAllocatedAmt(creditMemoRow.getInvoiceId(), "+20");
@@ -608,33 +635,33 @@ public class PaymentsViewAllocateCommandTest
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(creditMemoRow))
-									   .dateTrx(LocalDate.parse("2020-04-11"))
-									   .dateAcct(LocalDate.parse("2020-04-11"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("20", euroCurrencyId))
-														.build())
-									   .payableOverUnderAmt(Money.of("80", euroCurrencyId))
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(creditMemoRow))
+							.dateTrx(LocalDate.parse("2020-04-11"))
+							.dateAcct(LocalDate.parse("2020-04-11"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("20", euroCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("80", euroCurrencyId))
+							.build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToPayment)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(paymentRow))
-									   .dateTrx(LocalDate.parse("2020-04-19"))
-									   .dateAcct(LocalDate.parse("2020-04-19"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("80", euroCurrencyId))
-														.build())
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToPayment)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(paymentRow))
+							.dateTrx(LocalDate.parse("2020-04-19"))
+							.dateAcct(LocalDate.parse("2020-04-19"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("80", euroCurrencyId))
+									.build())
+							.build());
 		}
 
 		@Test
@@ -662,34 +689,34 @@ public class PaymentsViewAllocateCommandTest
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToCreditMemo)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(creditMemoRow))
-									   .dateTrx(LocalDate.parse("2020-04-07"))
-									   .dateAcct(LocalDate.parse("2020-04-07"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("20", euroCurrencyId))
-														.build())
-									   .payableOverUnderAmt(Money.of("80", euroCurrencyId))
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(creditMemoRow))
+							.dateTrx(LocalDate.parse("2020-04-07"))
+							.dateAcct(LocalDate.parse("2020-04-07"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("20", euroCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("80", euroCurrencyId))
+							.build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InvoiceToPayment)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(invoiceRow))
-									   .paymentDocumentRef(toRecordRef(paymentRow))
-									   .dateTrx(LocalDate.parse("2020-04-22"))
-									   .dateAcct(LocalDate.parse("2020-04-22"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("80", euroCurrencyId))
-														.build())
-									   .paymentOverUnderAmt(Money.of("120", euroCurrencyId))
-									   .build());
+							.type(AllocationLineCandidateType.InvoiceToPayment)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(invoiceRow))
+							.paymentDocumentRef(toRecordRef(paymentRow))
+							.dateTrx(LocalDate.parse("2020-04-22"))
+							.dateAcct(LocalDate.parse("2020-04-22"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("80", euroCurrencyId))
+									.build())
+							.paymentOverUnderAmt(Money.of("120", euroCurrencyId))
+							.build());
 		}
 
 		@Test
@@ -715,18 +742,18 @@ public class PaymentsViewAllocateCommandTest
 					.usingRecursiveComparison()
 					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
 					.isEqualTo(AllocationLineCandidate.builder()
-									   .type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
-									   .orgId(orgId)
-									   .bpartnerId(bpartnerId)
-									   .payableDocumentRef(toRecordRef(outboundPaymentRow))
-									   .paymentDocumentRef(toRecordRef(inboundPaymentRow))
-									   .dateTrx(LocalDate.parse("2020-04-22"))
-									   .dateAcct(LocalDate.parse("2020-04-22"))
-									   .amounts(AllocationAmounts.builder()
-														.payAmt(Money.of("-100", euroCurrencyId))
-														.build())
-									   .payableOverUnderAmt(Money.of("0", euroCurrencyId))
-									   .build());
+							.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(outboundPaymentRow))
+							.paymentDocumentRef(toRecordRef(inboundPaymentRow))
+							.dateTrx(LocalDate.parse("2020-04-22"))
+							.dateAcct(LocalDate.parse("2020-04-22"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("-100", euroCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("0", euroCurrencyId))
+							.build());
 		}
 	}
 }

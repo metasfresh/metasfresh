@@ -1,16 +1,13 @@
 package de.metas.material.event;
 
-import java.util.Collection;
-
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.logging.LogManager;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -37,7 +34,6 @@ import lombok.NonNull;
 @Service
 public class PostMaterialEventService
 {
-
 	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
 	private final MetasfreshEventBusService materialEventService;
@@ -48,32 +44,23 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #postEventNow(MaterialEvent)} when the given {@code trxName} is committed.
-	 *
-	 * @param event
-	 * @param trxName
+	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #enqueueEventNow(MaterialEvent)} when the given {@code trxName} is committed.
 	 */
-	public void postEventAfterNextCommit(@NonNull final MaterialEvent event)
+	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(innerTrx -> postEventNow(event));
+				.registerHandlingMethod(innerTrx -> enqueueEventNow(event));
 	}
 
 	/**
-	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thrown.
+	 * Fires the given event using our (distributed) event framework.
 	 */
-	public void postEventNow(final MaterialEvent event)
+	public void enqueueEventNow(final MaterialEvent event)
 	{
-		materialEventService.postEvent(event);
+		materialEventService.enqueueEvent(event);
 		logger.info("Posted MaterialEvent={}", event);
 	}
-	
-	public void postEventsNow(@NonNull final Collection<? extends MaterialEvent> events)
-	{
-		events.forEach(this::postEventNow);
-	}
-
 }

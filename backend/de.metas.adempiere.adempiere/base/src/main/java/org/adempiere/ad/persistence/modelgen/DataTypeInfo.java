@@ -23,7 +23,6 @@
 package org.adempiere.ad.persistence.modelgen;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -154,7 +153,7 @@ public class DataTypeInfo
 		}
 		// Record_ID
 		// TODO: hardcoded
-		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
+		else if (IColumnBL.isRecordIdColumnName(columnName))
 		{
 			return Integer.class;
 		}

@@ -2,8 +2,10 @@ package de.metas.ui.web.menu.datatypes.json;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -32,10 +34,12 @@ public enum JSONMenuNodeType
 	group, //
 	window, newRecord, //
 	process, report, //
-	board //
+	board, //
+	calendar, //
 	;
 
-	public static final JSONMenuNodeType fromNullable(final MenuNodeType type)
+	@Nullable
+	public static JSONMenuNodeType ofNullable(@Nullable final MenuNodeType type)
 	{
 		if (type == null)
 		{
@@ -45,7 +49,7 @@ public enum JSONMenuNodeType
 		final JSONMenuNodeType jsonType = type2json.get(type);
 		if (jsonType == null)
 		{
-			throw new IllegalArgumentException("Cannot convert " + type + " to " + JSONMenuNodeType.class);
+			throw new AdempiereException("Cannot convert " + type + " to " + JSONMenuNodeType.class);
 		}
 		return jsonType;
 	}
@@ -57,6 +61,7 @@ public enum JSONMenuNodeType
 			.put(MenuNodeType.Process, process)
 			.put(MenuNodeType.Report, report)
 			.put(MenuNodeType.Board, board)
+			.put(MenuNodeType.Calendar, calendar)
 			.build();
 
 	public final MenuNodeType toMenuNodeType()
@@ -64,7 +69,7 @@ public enum JSONMenuNodeType
 		final MenuNodeType type = type2json.inverse().get(this);
 		if (type == null)
 		{
-			throw new IllegalArgumentException("Cannot convert " + type + " to " + MenuNodeType.class);
+			throw new AdempiereException("Cannot convert " + type + " to " + MenuNodeType.class);
 		}
 		return type;
 	}

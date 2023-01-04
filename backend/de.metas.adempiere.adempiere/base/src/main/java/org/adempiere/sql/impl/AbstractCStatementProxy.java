@@ -22,18 +22,8 @@ package org.adempiere.sql.impl;
  * #L%
  */
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-
-import javax.annotation.Nullable;
-import javax.sql.RowSet;
-import javax.sql.rowset.CachedRowSet;
-import javax.sql.rowset.RowSetFactory;
-import javax.sql.rowset.RowSetProvider;
-
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -44,71 +34,67 @@ import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 
 /* package */abstract class AbstractCStatementProxy<ST extends Statement> implements CStatement
 {
-	private Connection m_conn = null;
+	@NonNull
+	private final CStatementVO vo;
+
 	private boolean closed = false;
+	@Nullable
+	private Connection ownedConnection;
 
-	/** Used if local */
-	private transient ST p_stmt;
-	/** Value Object, never null */
-	private final CStatementVO p_vo;
+	private final transient ST stmt;
 
-	public AbstractCStatementProxy(final CStatementVO vo)
+	public AbstractCStatementProxy(@NonNull final CStatementVO vo)
 	{
-		if (vo == null)
-		{
-			throw new DBException("CStatementVO shall not be null");
-		}
-		this.p_vo = vo;
+		this.vo = vo;
 
 		try
 		{
-			Connection conn;
-			final Trx trx = getTrx(p_vo);
+			final Connection connectionToUse;
+			final Trx trx = getTrx(vo);
 			if (trx != null)
 			{
-				conn = trx.getConnection();
+				connectionToUse = trx.getConnection();
 			}
 			else
 			{
-				if (vo.getResultSetConcurrency() == ResultSet.CONCUR_UPDATABLE)
-				{
-					m_conn = DB.getConnectionRW();
-				}
-				else
-				{
-					m_conn = DB.getConnectionRO();
-				}
-				conn = m_conn;
+				connectionToUse = this.ownedConnection = vo.getResultSetConcurrency() == ResultSet.CONCUR_UPDATABLE
+						? DB.getConnectionRW()
+						: DB.getConnectionRO();
 			}
-			if (conn == null)
+
+			// shall not happen
+			if (connectionToUse == null)
 			{
 				throw new DBNoConnectionException();
 			}
-			p_stmt = createStatement(conn, vo);
+
+			stmt = createStatement(connectionToUse, vo);
 		}
 		catch (final SQLException e)
 		{
-			// log.error("CStatement", e);
-			final String sql = vo.getSql();
-			throw new DBException(e, sql);
+			throw new DBException(e, vo.getSql());
 		}
 	}
 
 	protected final CStatementVO getVO()
 	{
-		return p_vo;
+		return vo;
 	}
 
 	protected abstract ST createStatement(final Connection conn, final CStatementVO vo) throws SQLException;
 
 	protected final ST getStatementImpl()
 	{
-		return p_stmt;
+		return stmt;
 	}
 
 	@Override
@@ -147,24 +133,26 @@ import de.metas.util.Services;
 
 		try
 		{
-			if (p_stmt != null)
+			if (stmt != null)
 			{
-				p_stmt.close();
+				stmt.close();
 			}
 		}
 		finally
 		{
-			if (m_conn != null)
+			// Close owned connection if any
+			if (this.ownedConnection != null)
 			{
 				try
 				{
-					m_conn.close();
+					this.ownedConnection.close();
 				}
-				catch (Exception ignored)
+				catch (final Exception ignored)
 				{
 				}
 			}
-			m_conn = null;
+			this.ownedConnection = null;
+
 			closed = true;
 		}
 	}
@@ -414,7 +402,7 @@ import de.metas.util.Services;
 	@Override
 	public final void finalize() throws Throwable
 	{
-		if (p_stmt != null && !closed)
+		if (stmt != null && !closed)
 		{
 			close();
 		}
@@ -425,18 +413,13 @@ import de.metas.util.Services;
 	@Override
 	public final String getSql()
 	{
-		final CStatementVO vo = this.p_vo;
-		if (vo != null)
-		{
-			return vo.getSql();
-		}
-		return null;
+		return this.vo.getSql();
 	}
 
 	protected final String convertSqlAndSet(final String sql)
 	{
 		final String sqlConverted = DB.getDatabase().convertStatement(sql);
-		p_vo.setSql(sqlConverted);
+		vo.setSql(sqlConverted);
 
 		MigrationScriptFileLoggerHolder.logMigrationScript(sql);
 
@@ -444,49 +427,17 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public RowSet getRowSet()
-	{
-		Check.assumeNotNull(p_vo, "VO is not null");
-
-		final String sql = p_vo.getSql();
-
-		ResultSet rs = null;
-		try
-		{
-			rs = p_stmt.executeQuery(sql);
-			// thx to https://stackoverflow.com/a/55215738/1012103
-			final RowSetFactory rowSetFactory = RowSetProvider.newFactory();
-			final CachedRowSet cachedRowSet = rowSetFactory.createCachedRowSet();
-			cachedRowSet.populate(rs);
-			return cachedRowSet;
-		}
-		catch (final Exception ex)
-		{
-			throw new DBException(ex, sql);
-		}
-		finally
-		{
-			DB.close(rs);
-		}
-	}
-
-	@Override
 	public final void commit() throws SQLException
 	{
-		if (m_conn != null && !m_conn.getAutoCommit())
+		if (this.ownedConnection != null && !this.ownedConnection.getAutoCommit())
 		{
-			m_conn.commit();
+			this.ownedConnection.commit();
 		}
 	}
 
 	@Nullable
-	private static Trx getTrx(final CStatementVO vo)
+	private static Trx getTrx(@NonNull final CStatementVO vo)
 	{
-		if (vo == null)
-		{
-			return null;
-		}
-
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = vo.getTrxName();
 		if (trxManager.isNull(trxName))
@@ -505,6 +456,6 @@ import de.metas.util.Services;
 	@Override
 	public String toString()
 	{
-		return "AbstractCStatementProxy [m_conn=" + m_conn + ", closed=" + closed + ", p_vo=" + p_vo + "]";
+		return "AbstractCStatementProxy [ownedConnection=" + this.ownedConnection + ", closed=" + closed + ", p_vo=" + vo + "]";
 	}
 }

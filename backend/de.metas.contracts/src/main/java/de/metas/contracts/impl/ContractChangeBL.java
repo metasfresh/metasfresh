@@ -1,50 +1,7 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.order.createFrom.LegacyOrderCopyCommand;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.X_C_DocType;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
@@ -57,6 +14,7 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -70,6 +28,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.createFrom.LegacyOrderCopyCommand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -78,6 +37,23 @@ import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class ContractChangeBL implements IContractChangeBL
 {
@@ -163,8 +139,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 		if (isNotAllowedToTerminateCurrentContract(currentTerm, contractChangeParameters))
 		{
-			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT,
-					new Object[] { currentTerm });
+			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT, currentTerm);
 		}
 
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
@@ -280,20 +255,20 @@ public class ContractChangeBL implements IContractChangeBL
 			invoices.stream()
 					.filter(invoice -> !invoice.isPaid())
 					.forEach(openInvoice -> creditInvoice(InterfaceWrapperHelper.create(openInvoice, de.metas.adempiere.model.I_C_Invoice.class),
-							contractChangeParameters.getTerminationReason()));
+														  contractChangeParameters.getTerminationReason()));
 		}
 	}
 
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
-		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
+		final DocBaseType docbasetype = openInvoice.isSOTrx() ? DocBaseType.ARCreditMemo : DocBaseType.APCreditMemo;
 		final DocTypeId targetDocTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docbasetype)
-				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-				.adClientId(openInvoice.getAD_Client_ID())
-				.adOrgId(openInvoice.getAD_Org_ID())
-				.build());
+									  .docBaseType(docbasetype)
+									  .docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+									  .adClientId(openInvoice.getAD_Client_ID())
+									  .adOrgId(openInvoice.getAD_Org_ID())
+									  .build());
 
 		final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
 				.docTypeId(targetDocTypeId)
@@ -328,7 +303,7 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 	}
 
-	private final I_C_Order createCompesationOrder(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final I_C_Contract_Change changeConditions, final Timestamp changeDate)
+	private I_C_Order createCompesationOrder(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final I_C_Contract_Change changeConditions, final Timestamp changeDate)
 	{
 		final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
 		final I_C_Order currentTermOrder = currentTermOl.getC_Order();

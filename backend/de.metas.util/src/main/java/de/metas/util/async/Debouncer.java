@@ -23,7 +23,6 @@
 package de.metas.util.async;
 
 import com.google.common.base.MoreObjects;
-import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -133,7 +132,8 @@ public final class Debouncer<T>
 		final int delayInMillisEffective = bufferMaxSize > 0 && buffer.size() >= bufferMaxSize
 				? 0 // ASAP
 				: delayInMillis;
-		dueTime = SystemTime.millis() + delayInMillisEffective;
+		// we don't use SystemTime because in our usual tests it's rigged to return a fixed value. Fee free to use it here, too - maybe with an enhanced Timesource - when it makes sense
+		dueTime = System.currentTimeMillis() + delayInMillisEffective;
 		//System.out.println(this + " - new dueTime=" + dueTime);
 
 		if (!taskWasAlreadyScheduled)
@@ -150,7 +150,8 @@ public final class Debouncer<T>
 
 		synchronized (lock)
 		{
-			remaining = dueTime - SystemTime.millis();
+			// we don't use SystemTime because in our usual tests it's rigged to return a fixed value. Fee free to use it here, too - maybe with an enhanced Timesource - when it makes sense
+			remaining = dueTime - System.currentTimeMillis();
 			bufferSize = buffer.size();
 
 			//
@@ -182,6 +183,38 @@ public final class Debouncer<T>
 			consumer.accept(itemsToConsume);
 		}
 
+	}
+
+	public int getCurrentBufferSize()
+	{
+		synchronized (lock)
+		{
+			return buffer.size();
+		}
+	}
+
+	public void processAndClearBufferSync()
+	{
+		synchronized (lock)
+		{
+			if (!buffer.isEmpty())
+			{
+				final ArrayList<T> itemsToConsume = new ArrayList<>(buffer);
+
+				consumer.accept(itemsToConsume);
+
+				buffer.clear();
+
+			}
+		}
+	}
+
+	public void purgeBuffer()
+	{
+		synchronized (lock)
+		{
+			buffer.clear();
+		}
 	}
 
 	/*

@@ -6,32 +6,39 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
+import de.metas.deliveryplanning.DeliveryPlanningType;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.incoterms.IncotermsId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -39,12 +46,14 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -89,8 +98,10 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -177,7 +188,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
@@ -321,16 +334,27 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public void closeShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
+		shipmentSchedules.forEach(this::closeShipmentSchedule);
+	}
+
+	@Override
 	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
 
 		shipmentScheduleRecord.setIsClosed(false);
-
-		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentScheduleRecord);
-		updateQtyOrdered(shipmentScheduleRecord);
-
 		save(shipmentScheduleRecord);
+
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.flagForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 	}
 
 	@Override
@@ -354,7 +378,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public IStorageQuery createStorageQuery(
 			@NonNull final I_M_ShipmentSchedule sched,
-			final boolean considerAttributes)
+			final boolean considerAttributes,
+			final boolean excludeAllReserved)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -384,18 +409,19 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 
-		if (sched.getC_OrderLine_ID() > 0)
+		if (sched.getC_OrderLine_ID() <= 0 || excludeAllReserved)
 		{
-			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
+			storageQuery.setExcludeReserved();
 		}
 		else
 		{
-			storageQuery.setExcludeReserved();
+			storageQuery.setExcludeReservedToOtherThan(OrderLineId.ofRepoId(sched.getC_OrderLine_ID()));
 		}
 		return storageQuery;
 	}
 
 	@Override
+	@NonNull
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		final BigDecimal qtyToDeliverBD = scheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
@@ -432,7 +458,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void updateCatchUoms(@NonNull final ProductId productId, long delayMs)
+	public void updateCatchUoms(@NonNull final ProductId productId, final long delayMs)
 	{
 		if (delayMs < 0)
 		{
@@ -535,7 +561,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
+	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule schedule)
 	{
 		return scheduleEffectiveBL.getPreparationDate(schedule);
 	}
@@ -562,14 +588,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		trxManager.runInThreadInheritedTrx(() -> applyUserChangesInTrx0(userChanges));
 	}
 
-	private void applyUserChangesInTrx0(@NonNull ShipmentScheduleUserChangeRequestsList userChanges)
+	private void applyUserChangesInTrx0(@NonNull final ShipmentScheduleUserChangeRequestsList userChanges)
 	{
 		final Set<ShipmentScheduleId> shipmentScheduleIds = userChanges.getShipmentScheduleIds();
 		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> recordsById = shipmentSchedulePA.getByIds(shipmentScheduleIds);
 
 		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
 		{
-			try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_M_ShipmentSchedule.Table_Name, shipmentScheduleId))
 			{
 
 				final ShipmentScheduleUserChangeRequest userChange = userChanges.getByShipmentScheduleId(shipmentScheduleId);
@@ -627,7 +653,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
 		if (orderLineId <= 0)
@@ -953,5 +978,79 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		shipmentSchedule.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 
 		shipmentSchedulePA.save(shipmentSchedule);
+	}
+
+	@Override
+	public DeliveryPlanningCreateRequest createDeliveryPlanningRequest(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(shipmentScheduleRecord.getC_Order_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentScheduleRecord.getC_OrderLine_ID());
+
+		final I_C_UOM uomOfProduct = getUomOfProduct(shipmentScheduleRecord);
+
+		final Quantity qtyOrdered = Quantity.of(shipmentScheduleRecord.getQtyOrdered(), uomOfProduct);
+		final OrgId orgId = OrgId.ofRepoId(shipmentScheduleRecord.getAD_Org_ID());
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentScheduleRecord.getM_AttributeSetInstance_ID());
+
+		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final CountryId countryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
+
+		final Timestamp deliveryDate_effective = CoalesceUtil.coalesce(shipmentScheduleRecord.getDeliveryDate_Override(), shipmentScheduleRecord.getDeliveryDate());
+
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID(), shipmentScheduleRecord.getC_BPartner_Location_ID());
+
+		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
+				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(shipmentScheduleRecord.getAD_Client_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
+				.deliveryPlanningType(DeliveryPlanningType.Outgoing)
+				.orderId(orderId)
+				.orderLineId(orderLineId)
+				.warehouseId(WarehouseId.ofRepoId(shipmentScheduleRecord.getM_Warehouse_ID()))
+				.productId(ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID()))
+				.partnerId(BPartnerId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID()))
+				.bPartnerLocationId(
+						bPartnerLocationId)
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(shipmentScheduleRecord.getM_SectionCode_ID()))
+				.qtyOrdered(qtyOrdered)
+				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
+				.actualLoadedQty(Quantity.zero(uomOfProduct))
+				.actualDeliveredQty(Quantity.zero(uomOfProduct))
+				.plannedLoadedQty(Quantity.zero(uomOfProduct))
+				.plannedDischargeQty(Quantity.zero(uomOfProduct))
+				.actualDischargeQty(Quantity.zero(uomOfProduct))
+				.uom(uomOfProduct)
+				.plannedDeliveryDate(TimeUtil.asInstant(deliveryDate_effective))
+				.batch(huBatchNo)
+				.originCountryId(countryId);
+
+		if (orderId != null)
+		{
+			final I_C_Order order = orderDAO.getById(orderId);
+
+			requestBuilder.isB2B(order.isDropShip())
+					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
+
+			final BPartnerLocationAndCaptureId bpartnerLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureId();
+			final CountryId destinationCountryId = bPartnerBL.getCountryId(bpartnerLocationId);
+
+			requestBuilder.destinationCountryId(destinationCountryId);
+		}
+
+		if (orderLineId != null)
+		{
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+
+			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
+
+			if (deliveryDate_effective == null)
+			{
+				requestBuilder.plannedDeliveryDate(TimeUtil.asInstant(orderLine.getDatePromised()));
+			}
+		}
+
+		return requestBuilder.build();
 	}
 }

@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_HU_PackingMaterial
  *  @author metasfresh (generated) 
@@ -98,6 +99,31 @@ public interface I_M_HU_PackingMaterial
 	String COLUMNNAME_AllowedPackingWeight = "AllowedPackingWeight";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set UOM for Dimensions.
 	 * Unit of measurement for the dimensions (height, width, length) of the packaging material, and basic unit of measurement for all volume specifications.
 	 *
@@ -138,31 +164,6 @@ public interface I_M_HU_PackingMaterial
 	int getC_UOM_Weight_ID();
 
 	String COLUMNNAME_C_UOM_Weight_ID = "C_UOM_Weight_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -299,7 +300,7 @@ public interface I_M_HU_PackingMaterial
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Geschlossen.
+	 * Set Closed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -308,7 +309,7 @@ public interface I_M_HU_PackingMaterial
 	void setIsClosed (boolean IsClosed);
 
 	/**
-	 * Get Geschlossen.
+	 * Get Closed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -318,6 +319,50 @@ public interface I_M_HU_PackingMaterial
 
 	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_HU_PackingMaterial.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Include in Invoice.
+	 * If checked, when this packing material is used for a shipment it will also be included in the invoice
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceable (boolean IsInvoiceable);
+
+	/**
+	 * Get Include in Invoice.
+	 * If checked, when this packing material is used for a shipment it will also be included in the invoice
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiceable();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsInvoiceable = new ModelColumn<>(I_M_HU_PackingMaterial.class, "IsInvoiceable", null);
+	String COLUMNNAME_IsInvoiceable = "IsInvoiceable";
+
+	/**
+	 * Set Qty LU By Max. Load Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setisQtyLUByMaxLoadWeight (boolean isQtyLUByMaxLoadWeight);
+
+	/**
+	 * Get Qty LU By Max. Load Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQtyLUByMaxLoadWeight();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_isQtyLUByMaxLoadWeight = new ModelColumn<>(I_M_HU_PackingMaterial.class, "isQtyLUByMaxLoadWeight", null);
+	String COLUMNNAME_isQtyLUByMaxLoadWeight = "isQtyLUByMaxLoadWeight";
 
 	/**
 	 * Set Länge.
@@ -339,6 +384,27 @@ public interface I_M_HU_PackingMaterial
 
 	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Length = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Length", null);
 	String COLUMNNAME_Length = "Length";
+
+	/**
+	 * Set Max. Load Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxLoadWeight (@Nullable BigDecimal MaxLoadWeight);
+
+	/**
+	 * Get Max. Load Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMaxLoadWeight();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_MaxLoadWeight = new ModelColumn<>(I_M_HU_PackingMaterial.class, "MaxLoadWeight", null);
+	String COLUMNNAME_MaxLoadWeight = "MaxLoadWeight";
 
 	/**
 	 * Set Packing Material.

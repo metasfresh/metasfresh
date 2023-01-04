@@ -41,7 +41,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
-import de.metas.project.service.CreateProjectRequest;
+import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
 import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
@@ -133,7 +133,7 @@ public class ServiceRepairProjectService
 
 	private Optional<ServiceRepairProjectInfo> getByIdIfRepairProject(@NonNull final ProjectId projectId)
 	{
-		return toServiceRepairProjectInfo(projectService.getById(projectId));
+		return toServiceRepairProjectInfo(projectService.getRecordById(projectId));
 	}
 
 	private static Optional<ServiceRepairProjectInfo> toServiceRepairProjectInfo(@NonNull final I_C_Project record)
@@ -180,7 +180,7 @@ public class ServiceRepairProjectService
 		return getByIdIfRepairProject(projectId).isPresent();
 	}
 
-	public ProjectId createProjectHeader(@NonNull final CreateProjectRequest request)
+	public ProjectId createProjectHeader(@NonNull final CreateServiceOrRepairProjectRequest request)
 	{
 		return projectService.createProject(request);
 	}
@@ -462,7 +462,7 @@ public class ServiceRepairProjectService
 			costCollectorIdsToDelete.add(costCollector.getId());
 		}
 
-		huReservationService.deleteReservations(reservedVHUIds);
+		huReservationService.deleteReservationsByVHUIds(reservedVHUIds);
 		projectCostCollectorRepository.deleteByIds(costCollectorIdsToDelete);
 		addQtyToProjectTaskRequests.forEach(this::addQtyToProjectTask);
 	}

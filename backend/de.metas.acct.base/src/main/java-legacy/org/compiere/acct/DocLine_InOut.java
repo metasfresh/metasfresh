@@ -63,7 +63,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return InOutLineId.ofRepoId(get_ID());
 	}
 
-	private final int getPP_Cost_Collector_ID()
+	private int getPP_Cost_Collector_ID()
 	{
 		if (ppCostCollectorId == null)
 		{
@@ -72,14 +72,14 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return ppCostCollectorId;
 	}
 
-	private final int retrievePPCostCollectorId()
+	private int retrievePPCostCollectorId()
 	{
 		final OrderLineId orderLineId = getOrderLineId();
 		if (orderLineId != null)
 		{
 			final String sql = "SELECT " + I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
 					+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
-			return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, new Object[] { orderLineId });
+			return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId);
 		}
 
 		return 0;
@@ -127,7 +127,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-					.date(getDateAcct())
+					.date(getDateAcctAsInstant())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -143,7 +143,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(getDateAcct())
+							.date(getDateAcctAsInstant())
 							.build())
 					.getTotalAmountToPost(as);
 		}
@@ -157,7 +157,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-					.date(getDateAcct())
+					.date(getDateAcctAsInstant())
 					.build())
 					.getTotalAmountToPost(as)
 					// Negate the amount coming from the costs because it must be negative in the accounting.
@@ -175,7 +175,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-							.date(getDateAcct())
+							.date(getDateAcctAsInstant())
 							.build())
 					.getTotalAmountToPost(as)
 					// The shipment is an outgoing document, so the costing amounts will be negative values.

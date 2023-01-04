@@ -49,9 +49,9 @@ public class AvailableForSaleAdapter
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final AvailableForSalesRepository availableForSalesRepository;
 
-	public AvailableForSaleAdapter(@NonNull final AvailableForSalesRepository stockRepository)
+	public AvailableForSaleAdapter(@NonNull final AvailableForSalesRepository availableForSalesRepository)
 	{
-		this.availableForSalesRepository = stockRepository;
+		this.availableForSalesRepository = availableForSalesRepository;
 	}
 
 	@VisibleForTesting

@@ -32,6 +32,7 @@ import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueService;
+import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.timebooking.Effort;
@@ -67,7 +68,10 @@ public class S_Issue
 	private final IssueService issueService;
 	private final IssueRepository issueRepository;
 
-	public S_Issue(final ExternalReferenceRepository externalReferenceRepository, final IssueService issueService, final IssueRepository issueRepository)
+	public S_Issue(
+			final ExternalReferenceRepository externalReferenceRepository,
+			final IssueService issueService,
+			final IssueRepository issueRepository)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.issueService = issueService;
@@ -98,12 +102,12 @@ public class S_Issue
 				.orElse(null);
 
 		final UomId uomId = UomId.ofRepoId(record.getEffort_UOM_ID());
-		
+
 		final Quantity currentInvoicableEffort = Quantitys.create(record.getInvoiceableChildEffort(), uomId)
 				.add(Quantitys.create(record.getInvoiceableEffort(), uomId));
 		final Quantity oldInvoicableEffort = Quantitys.create(oldRecord.getInvoiceableChildEffort(), uomId)
 				.add(Quantitys.create(oldRecord.getInvoiceableEffort(), uomId));
-		
+
 		final HandleParentChangedRequest handleParentChangedRequest = HandleParentChangedRequest
 				.builder()
 				.currentParentId(IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID()))
@@ -182,6 +186,36 @@ public class S_Issue
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_S_Parent_Issue_ID, I_S_Issue.COLUMNNAME_IssueType })
+	public void setParentIssueInProgress(@NonNull final I_S_Issue record)
+	{
+		if (!record.isEffortIssue())
+		{
+			return;
+		}
+
+		final IssueId parentIssueId = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
+		if (parentIssueId == null)
+		{
+			return;
+		}
+
+		final IssueEntity parentIssue = issueRepository.getById(parentIssueId);
+		if (parentIssue.isEffortIssue())
+		{
+			return;
+		}
+
+		if (!Status.NEW.equals(parentIssue.getStatus()))
+		{
+			return;
+		}
+
+		parentIssue.setStatus(Status.IN_PROGRESS);
+		issueRepository.save(parentIssue);
+	}
+
 	private boolean isParentAlreadyInHierarchy(@NonNull final I_S_Issue record)
 	{
 		final IssueId currentIssueID = IssueId.ofRepoIdOrNull(record.getS_Issue_ID());
@@ -225,5 +259,4 @@ public class S_Issue
 				&& record.getS_Parent_Issue() != null
 				&& record.getS_Parent_Issue().isEffortIssue();
 	}
-
 }

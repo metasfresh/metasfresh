@@ -1,0 +1,15 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+# FIXME: to be removed after dependabots alters are fixed
+version: 2
+updates:
+  - package-ecosystem: "npm" # See documentation for possible values
+    target-branch: "master_dependabot_resolve_vulnerabilities"
+    open-pull-requests-limit: 0
+    directory: "/frontend" # Location of package manifests
+    schedule:
+      interval: "daily"
+    

@@ -42,7 +42,7 @@ import org.mockito.Mockito;
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class MacAddressGeneratorTest
 {
@@ -149,8 +149,8 @@ class MacAddressGeneratorTest
 		@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
 		private ComponentGeneratorContext createContext(
 				@NonNull final Integer qty,
-				@Nullable String alreadySetMAC1,
-				@Nullable String alreadySetMAC2)
+				@Nullable final String alreadySetMAC1,
+				@Nullable final String alreadySetMAC2)
 		{
 			final ImmutableAttributeSet.Builder existingAttributes = ImmutableAttributeSet.builder();
 			if (alreadySetMAC1 != null)

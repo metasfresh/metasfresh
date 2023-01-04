@@ -41,37 +41,6 @@ import lombok.NonNull;
 
 public class ColumnBL implements IColumnBL
 {
-
-	@Override
-	public boolean isRecordIdColumnName(final String columnName)
-	{
-		if (columnName == null)
-		{
-			// should not happen
-			return false;
-		}
-
-		// name must end with "Record_ID"
-		if (!columnName.endsWith(ITableRecordReference.COLUMNNAME_Record_ID))
-		{
-			return false;
-		}
-
-		// classical case
-		if (columnName.equals(ITableRecordReference.COLUMNNAME_Record_ID))
-		{
-			return true;
-		}
-
-		// Column name must end with "_Record_ID"
-		if (!columnName.endsWith("_" + ITableRecordReference.COLUMNNAME_Record_ID))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
 	@Override
 	public int getContextADTableID(final Properties m_ctx, final int m_curWindowNo, final String columnName)
 	{
@@ -81,7 +50,7 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
-		if (!isRecordIdColumnName(columnName))
+		if (!IColumnBL.isRecordIdColumnName(columnName))
 		{
 			return 0;
 		}

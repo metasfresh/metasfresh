@@ -84,6 +84,8 @@ class OLCandOrderFactoryTest
 				Optional.empty()
 		));
 
+		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
+
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(
 				IOLCandBL.class,
@@ -176,14 +178,15 @@ class OLCandOrderFactoryTest
 	}
 
 	@Nested
-	class documentLocationTests
+	class DocumentLocationTests
 	{
 		private OLCand createOLCand(final DocumentLocation location)
 		{
-			I_C_OLCand olCandRecord = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
+			final I_C_OLCand olCandRecord = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
 			OLCandDocumentLocationAdapterFactory.bpartnerLocationAdapter(olCandRecord).setFrom(location);
 			olCandRecord.setM_Product_ID(productId.getRepoId());
 			olCandRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
+			olCandRecord.setApplySalesRepFrom(AssignSalesRepRule.CandidateFirst.getCode());
 			InterfaceWrapperHelper.saveRecord(olCandRecord);
 
 			return new OLCandFactory().toOLCand(olCandRecord);

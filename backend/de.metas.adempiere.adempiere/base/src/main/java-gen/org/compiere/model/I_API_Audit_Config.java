@@ -147,27 +147,117 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Invoker waits.
-	 * If checked the client gets the actual endpoint response as soon as the endpoint is ready. Otherwise, the client directly gets a response with HTTP code 202 and the api audit record's ID.
+	 * Set Bypass Audit.
+	 * Completelly bypass audit system. Useful when dealing with non-json endpoints like images.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsInvokerWaitsForResult (boolean IsInvokerWaitsForResult);
+	void setIsBypassAudit (boolean IsBypassAudit);
 
 	/**
-	 * Get Invoker waits.
-	 * If checked the client gets the actual endpoint response as soon as the endpoint is ready. Otherwise, the client directly gets a response with HTTP code 202 and the api audit record's ID.
+	 * Get Bypass Audit.
+	 * Completelly bypass audit system. Useful when dealing with non-json endpoints like images.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isInvokerWaitsForResult();
+	boolean isBypassAudit();
 
-	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsInvokerWaitsForResult = new ModelColumn<>(I_API_Audit_Config.class, "IsInvokerWaitsForResult", null);
-	String COLUMNNAME_IsInvokerWaitsForResult = "IsInvokerWaitsForResult";
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsBypassAudit = new ModelColumn<>(I_API_Audit_Config.class, "IsBypassAudit", null);
+	String COLUMNNAME_IsBypassAudit = "IsBypassAudit";
+
+	/**
+	 * Set Force async processing.
+	 * If ticked, the HTTP call will be processed asynchronously and the response will consist only of a "requestId".
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsForceProcessedAsync (boolean IsForceProcessedAsync);
+
+	/**
+	 * Get Force async processing.
+	 * If ticked, the HTTP call will be processed asynchronously and the response will consist only of a "requestId".
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isForceProcessedAsync();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsForceProcessedAsync = new ModelColumn<>(I_API_Audit_Config.class, "IsForceProcessedAsync", null);
+	String COLUMNNAME_IsForceProcessedAsync = "IsForceProcessedAsync";
+
+	/**
+	 * Set Synchronous audit.
+	 * If false, then API Request and API Response records are written for the request, but in an asynchronous way, while the actual HTTP request might have already been performed. This implies better performance for the caller, but, no API Audit Log records will be created. Also note, that creating those audit records might fail without the API caller noticing it.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSynchronousAuditLoggingEnabled (boolean IsSynchronousAuditLoggingEnabled);
+
+	/**
+	 * Get Synchronous audit.
+	 * If false, then API Request and API Response records are written for the request, but in an asynchronous way, while the actual HTTP request might have already been performed. This implies better performance for the caller, but, no API Audit Log records will be created. Also note, that creating those audit records might fail without the API caller noticing it.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSynchronousAuditLoggingEnabled();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsSynchronousAuditLoggingEnabled = new ModelColumn<>(I_API_Audit_Config.class, "IsSynchronousAuditLoggingEnabled", null);
+	String COLUMNNAME_IsSynchronousAuditLoggingEnabled = "IsSynchronousAuditLoggingEnabled";
+
+	/**
+	 * Set Wrap response.
+	 * If true, the actual API response will be wrapped into a standard V2 response JSON structure carrying the API Request Audit identifier. If false, the actual API response is returned "as is" and the API Request Audit identifier is reported in the response header XXXX.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWrapApiResponse (boolean IsWrapApiResponse);
+
+	/**
+	 * Get Wrap response.
+	 * If true, the actual API response will be wrapped into a standard V2 response JSON structure carrying the API Request Audit identifier. If false, the actual API response is returned "as is" and the API Request Audit identifier is reported in the response header XXXX.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWrapApiResponse();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsWrapApiResponse = new ModelColumn<>(I_API_Audit_Config.class, "IsWrapApiResponse", null);
+	String COLUMNNAME_IsWrapApiResponse = "IsWrapApiResponse";
+
+	/**
+	 * Set Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKeepErroredRequestDays (int KeepErroredRequestDays);
+
+	/**
+	 * Get Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getKeepErroredRequestDays();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_KeepErroredRequestDays = new ModelColumn<>(I_API_Audit_Config.class, "KeepErroredRequestDays", null);
+	String COLUMNNAME_KeepErroredRequestDays = "KeepErroredRequestDays";
 
 	/**
 	 * Set Days keep request body.
@@ -300,8 +390,8 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_NotifyUserInCharge = "NotifyUserInCharge";
 
 	/**
-	 * Set Path prefix.
-	 * Begin of the URL-path matched by this line. An empty value matches all paths.
+	 * Set Path.
+	 * Pattern of the request URL to be matched by this config. It can be any part of the actual URL, or it can be an Ant-style path pattern, see "spring AntPathMatcher"
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -310,8 +400,8 @@ public interface I_API_Audit_Config
 	void setPathPrefix (@Nullable java.lang.String PathPrefix);
 
 	/**
-	 * Get Path prefix.
-	 * Begin of the URL-path matched by this line. An empty value matches all paths.
+	 * Get Path.
+	 * Pattern of the request URL to be matched by this config. It can be any part of the actual URL, or it can be an Ant-style path pattern, see "spring AntPathMatcher"
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

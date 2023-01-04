@@ -34,8 +34,10 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertI
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseCompositeList;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitDelete;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v2.SyncAdvise.IfNotExists;
@@ -43,6 +45,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
+import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -55,6 +58,7 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -84,15 +88,18 @@ public class BpartnerRestController
 	private final JsonServiceFactory jsonServiceFactory;
 
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
+	private final CreditLimitService creditLimitService;
 
 	public BpartnerRestController(
 			@NonNull final BPartnerEndpointService bpartnerEndpointService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService)
+			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
+			@NonNull final CreditLimitService creditLimitService)
 	{
 		this.bpartnerEndpointService = bpartnerEndpointService;
 		this.jsonServiceFactory = jsonServiceFactory;
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
+		this.creditLimitService = creditLimitService;
 	}
 
 	//
@@ -258,6 +265,46 @@ public class BpartnerRestController
 		}
 	}
 
+	@ApiOperation("The identified bpartner products need to be in the current user's organisation.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner products"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
+	@GetMapping("{bpartnerIdentifier}/products")
+	public ResponseEntity<JsonResponseProductBPartner> retrieveBPartnerProducts(
+
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifierStr)
+	{
+		return retrieveBPartnerProducts(null, bpartnerIdentifierStr);
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner products"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
+	@GetMapping("{orgCode}/{bpartnerIdentifier}/products")
+	public ResponseEntity<JsonResponseProductBPartner> retrieveBPartnerProducts(
+
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@PathVariable("orgCode") //
+			@Nullable final String orgCode, // may be null if called from other metasfresh-code
+
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifierStr)
+	{
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
+
+		final JsonResponseProductBPartner bPartnerProduct = bpartnerEndpointService.retrieveBPartnerProduct(orgCode, bpartnerIdentifier);
+		return ResponseEntity.ok(bPartnerProduct);
+	}
+
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
@@ -283,10 +330,11 @@ public class BpartnerRestController
 		{
 			try (final MDCCloseable ignored = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
 			{
+				JsonRequestConsolidateService.consolidateWithOrg(requestItem, orgCode);
+
 				jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
 
 				final JsonResponseBPartnerCompositeUpsertItem persist = persister.persist(
-						orgCode,
 						requestItem,
 						defaultSyncAdvise);
 				response.responseItem(persist);
@@ -477,6 +525,24 @@ public class BpartnerRestController
 				SyncAdvise.CREATE_OR_MERGE);
 
 		return createdOrNotFound(response);
+	}
+
+	@DeleteMapping("{orgCode}/{bpartnerIdentifier}/credit-limit")
+	public ResponseEntity<JsonResponseCreditLimitDelete> deleteExistingForBPartner(
+			@PathVariable("orgCode") //
+			@Nullable final String orgCode,
+
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifier,
+
+			@ApiParam(value = "If true, processed records will also be deleted, otherwise, they will be ignored.", defaultValue = "false") //
+			@RequestParam("includingProcessed")
+			final boolean includingProcessed)
+	{
+		final JsonResponseCreditLimitDelete responseCreditLimitDelete = creditLimitService.deleteExistingRecordsForBPartnerAndOrg(bpartnerIdentifier, orgCode, includingProcessed);
+
+		return ResponseEntity.ok(responseCreditLimitDelete);
 	}
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)

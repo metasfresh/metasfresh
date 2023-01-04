@@ -1,15 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.ZoneId;
-
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -17,12 +8,14 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -79,8 +72,7 @@ public class ImmutableAttributeSetTest
 
 		final ImmutableAttributeSet attributeSet = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue);
-		assertThat(attributeSet.getAttributes()).contains(attributeStringNull);
+		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue, attributeStringNull);
 
 		assertThat(attributeSet.getValue(attrStringWithValue)).isEqualTo(attributeStringValue.getValue());
 		assertThat(attributeSet.getValue(attributeStringNull)).isNull();
@@ -212,40 +204,6 @@ public class ImmutableAttributeSetTest
 		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
 
 		assertThat(attributeSet1).isEqualTo(attributeSet2);
-	}
-
-	@Test
-	public void testValueAsDate()
-	{
-		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute("date", X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-
-		assertValueAsLocalDate(attribute, null, null);
-		assertValueAsLocalDate(attribute, "", null);
-		assertValueAsLocalDate(attribute, "    ", null);
-
-		final LocalDate localDate = LocalDate.of(2019, Month.FEBRUARY, 3);
-		assertValueAsLocalDate(attribute, localDate, localDate);
-		assertValueAsLocalDate(attribute, localDate.toString(), localDate);
-		assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)), localDate);
-		assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)).atZone(ZoneId.systemDefault()), localDate);
-		// assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)).atZone(ZoneId.systemDefault()).toString(), localDate); // not supported; not sure if is needed
-		assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)).atZone(ZoneId.systemDefault()).format(Env.DATE_FORMAT), localDate);
-
-		assertValueAsLocalDate(attribute, TimeUtil.asDate(localDate), localDate);
-		assertValueAsLocalDate(attribute, TimeUtil.asDate(localDate).getTime(), localDate);
-
-		assertValueAsLocalDate(attribute, TimeUtil.asTimestamp(localDate), localDate);
-		assertValueAsLocalDate(attribute, TimeUtil.asTimestamp(localDate).toString(), localDate); // JDBC format
-	}
-
-	private void assertValueAsLocalDate(final I_M_Attribute attribute, Object inputValue, LocalDate expectedValue)
-	{
-		final String attributeKey = attribute.getValue();
-		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
-				.attributeValue(attribute, inputValue)
-				.build();
-
-		assertThat(attributeSet.getValueAsLocalDate(attributeKey)).isEqualTo(expectedValue);
 	}
 
 	@Test

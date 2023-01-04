@@ -27,10 +27,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @ApiModel(description = "Logs")
 @Value
@@ -39,13 +42,21 @@ import lombok.Value;
 public class JsonPInstanceLog
 {
 	@NonNull
+	@JsonProperty("message")
 	String message;
+
+	@Nullable
+	@JsonProperty("tableRecordRef")
+	JsonTableRecordReference tableRecordReference;
 
 	@JsonCreator
 	@Builder
-	private JsonPInstanceLog(@JsonProperty("message") @NonNull final String message)
+	private JsonPInstanceLog(
+			@JsonProperty("message") @NonNull final String message,
+			@JsonProperty("tableRecordRef") @Nullable final JsonTableRecordReference tableRecordRef)
 	{
 		this.message = message;
+		this.tableRecordReference = tableRecordRef;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

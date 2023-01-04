@@ -58,6 +58,7 @@ public class PaySelectionServiceTest
 	I_C_Location location;
 	I_C_BPartner bPartner;
 	I_C_BP_BankAccount bp_bankAccount;
+	I_C_Bank bank;
 
 	@BeforeEach
 	void beforeEach()
@@ -88,7 +89,7 @@ public class PaySelectionServiceTest
 		assertThat(export.getRecipientType()).isEqualTo(RecipientType.COMPANY);
 
 		assertThat(export.getIBAN()).isEqualTo(bp_bankAccount.getIBAN());
-		assertThat(export.getBIC()).isEqualTo(bp_bankAccount.getRoutingNo());
+		assertThat(export.getSwiftCode()).isEqualTo(bank.getSwiftCode());
 
 		assertThat(export.getAmount()).isEqualTo(Amount.of(BigDecimal.TEN, CurrencyCode.EUR));
 
@@ -126,8 +127,9 @@ public class PaySelectionServiceTest
 		bPartnerLocation.setC_Location_ID(location.getC_Location_ID());
 		save(bPartnerLocation);
 
-		final I_C_Bank bank = newInstance(I_C_Bank.class);
+		bank = newInstance(I_C_Bank.class);
 		bank.setName("bankName");
+		bank.setSwiftCode("swiftCode");
 		save(bank);
 
 		bp_bankAccount = newInstance(I_C_BP_BankAccount.class);

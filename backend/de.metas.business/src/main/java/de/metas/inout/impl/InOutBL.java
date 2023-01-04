@@ -1,25 +1,33 @@
 package de.metas.inout.impl;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -42,6 +50,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -54,13 +63,17 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -100,6 +113,7 @@ public class InOutBL implements IInOutBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -125,7 +139,6 @@ public class InOutBL implements IInOutBL
 		final I_M_InOut inout = getById(inoutId);
 		return getLines(inout);
 	}
-
 
 	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
@@ -243,6 +256,29 @@ public class InOutBL implements IInOutBL
 		return pricingSystem;
 	}
 
+	@NonNull
+	public StockQtyAndUOMQty extractInOutLineQty(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		switch (invoicableQtyBasedOn)
+		{
+			case CatchWeight:
+				final StockQtyAndUOMQty stockQtyAndCatchQty = getStockQtyAndCatchQty(inOutLineRecord);
+				if (stockQtyAndCatchQty.getUOMQtyOpt().isPresent())
+				{
+					return stockQtyAndCatchQty;
+				}
+
+				// fallback if the given iol simply doesn't have a catch weight (which is a common case)
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			case NominalWeight:
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			default:
+				throw new AdempiereException("Unsupported invoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
+	}
+
 	/**
 	 * Find the pricing system based on the soTrx. This method will be used in the rare cases when we are not relying upon the SOTrx of the inout, because we need the pricing system for the opposite
 	 * SOTrx nature.
@@ -329,7 +365,7 @@ public class InOutBL implements IInOutBL
 		line.setM_InOut(inout);
 
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
-		final I_M_Locator locator = warehouseBL.getDefaultLocator(warehouse);
+		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouse);
 		if (locator != null)
 		{
 			line.setM_Locator_ID(locator.getM_Locator_ID());
@@ -591,5 +627,83 @@ public class InOutBL implements IInOutBL
 				.build();
 
 		return requestsRepo.createRequest(requestCandidate);
+	}
+
+	@Nullable
+	public String getLocationEmail(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inout = inOutDAO.getById(inOutId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
+		if (contactId == null)
+		{
+			return null;
+		}
+		return bpartnerDAO.getContactLocationEmail(contactId);
+	}
+
+	@Override
+	@NonNull
+	public LocalDate retrieveMovementDate(@NonNull final I_M_InOut inOut)
+	{
+		final OrgId orgId = OrgId.ofRepoId(inOut.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
+	}
+
+	@Override
+	public void updateDescriptionAndDescriptionBottomFromDocType(@NonNull final I_M_InOut inOut)
+	{
+
+		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+		if (docType == null)
+		{
+			return;
+		}
+
+		if (!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+
+		final I_C_BPartner bPartner = getBPartnerOrNull(inOut);
+
+		final String adLanguage = CoalesceUtil.coalesce(
+				bPartner == null ? null : bPartner.getAD_Language(),
+				Env.getAD_Language());
+
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
+		inOut.setDescription(description.translate(adLanguage));
+		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+	}
+
+	@NonNull
+	public DocStatus getDocStatus(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return DocStatus.ofCode(inOut.getDocStatus());
+	}
+
+	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID());
+
+		return bPartnerId != null
+				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
+				: null;
 	}
 }

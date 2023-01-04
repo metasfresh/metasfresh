@@ -88,8 +88,6 @@ public class CandiateRepositoryRetrievalTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
@@ -97,14 +95,14 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo));
+		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval));
 	}
 
 	@Test

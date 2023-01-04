@@ -22,6 +22,7 @@ package de.metas.order;
  * #L%
  */
 
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -34,6 +35,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -222,4 +224,10 @@ public interface IOrderLineBL extends ISingletonService
 	BigDecimal computeQtyNetPriceFromOrderLine(org.compiere.model.I_C_OrderLine orderLine, Quantity qty);
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
+
+	CurrencyPrecision extractPricePrecision(org.compiere.model.I_C_OrderLine olRecord);
+
+	void setBPLocation(I_C_OrderLine orderLine);
+
+	CurrencyConversionContext extractCurrencyConversionContext(@NonNull org.compiere.model.I_C_OrderLine orderLine);
 }

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1248532788L;
+	private static final long serialVersionUID = 986580396L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -72,7 +72,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public BigDecimal getBase_Commission_Points_Per_Price_UOM() 
+	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -103,6 +103,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getBPartnerAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerAddress);
+	}
+
+	@Override
+	public void setBPartner_QtyItemCapacity (final @Nullable BigDecimal BPartner_QtyItemCapacity)
+	{
+		set_ValueNoCheck (COLUMNNAME_BPartner_QtyItemCapacity, BPartner_QtyItemCapacity);
+	}
+
+	@Override
+	public BigDecimal getBPartner_QtyItemCapacity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BPartner_QtyItemCapacity);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -151,6 +164,48 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
+	{
+		if (C_BPartner_Vendor_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Vendor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
@@ -193,33 +248,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine getC_CompensationGroup_Schema_TemplateLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class);
-	}
-
-	@Override
-	public void setC_CompensationGroup_Schema_TemplateLine(final de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine C_CompensationGroup_Schema_TemplateLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class, C_CompensationGroup_Schema_TemplateLine);
-	}
-
-	@Override
-	public void setC_CompensationGroup_Schema_TemplateLine_ID (final int C_CompensationGroup_Schema_TemplateLine_ID)
-	{
-		if (C_CompensationGroup_Schema_TemplateLine_ID < 1) 
-			set_Value (COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, C_CompensationGroup_Schema_TemplateLine_ID);
-	}
-
-	@Override
-	public int getC_CompensationGroup_Schema_TemplateLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID);
-	}
-
-	@Override
 	public de.metas.order.model.I_C_CompensationGroup_SchemaLine getC_CompensationGroup_SchemaLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_SchemaLine_ID, de.metas.order.model.I_C_CompensationGroup_SchemaLine.class);
@@ -244,6 +272,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_CompensationGroup_SchemaLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_SchemaLine_ID);
+	}
+
+	@Override
+	public de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine getC_CompensationGroup_Schema_TemplateLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema_TemplateLine(final de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine C_CompensationGroup_Schema_TemplateLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class, C_CompensationGroup_Schema_TemplateLine);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema_TemplateLine_ID (final int C_CompensationGroup_Schema_TemplateLine_ID)
+	{
+		if (C_CompensationGroup_Schema_TemplateLine_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID, C_CompensationGroup_Schema_TemplateLine_ID);
+	}
+
+	@Override
+	public int getC_CompensationGroup_Schema_TemplateLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID);
 	}
 
 	@Override
@@ -274,6 +329,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Flatrate_Conditions_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_ID);
+	}
+
+	@Override
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
 
 	@Override
@@ -430,21 +500,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setC_Tax_ID (final int C_Tax_ID)
-	{
-		if (C_Tax_ID < 1) 
-			set_Value (COLUMNNAME_C_Tax_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Tax_ID, C_Tax_ID);
-	}
-
-	@Override
-	public int getC_Tax_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
-	}
-
-	@Override
 	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
 	{
 		if (C_TaxCategory_ID < 1) 
@@ -460,6 +515,36 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setC_Tax_ID (final int C_Tax_ID)
+	{
+		if (C_Tax_ID < 1) 
+			set_Value (COLUMNNAME_C_Tax_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Tax_ID, C_Tax_ID);
+	}
+
+	@Override
+	public int getC_Tax_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
+	}
+
+	@Override
+	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
+	{
+		if (C_UOM_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, C_UOM_BPartner_ID);
+	}
+
+	@Override
+	public int getC_UOM_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_BPartner_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -472,6 +557,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
+	{
+		if (C_VAT_Code_ID < 1) 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
+	}
+
+	@Override
+	public int getC_VAT_Code_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
 	}
 
 	@Override
@@ -584,6 +684,30 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getExplodedFrom_BOMLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExplodedFrom_BOMLine_ID);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setExternalSeqNo (final int ExternalSeqNo)
+	{
+		set_Value (COLUMNNAME_ExternalSeqNo, ExternalSeqNo);
+	}
+
+	@Override
+	public int getExternalSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSeqNo);
 	}
 
 	@Override
@@ -711,6 +835,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getInvoicableQtyBasedOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
 
 	@Override
@@ -907,33 +1043,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getLink_OrderLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setLink_OrderLine(final org.compiere.model.I_C_OrderLine Link_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, Link_OrderLine);
-	}
-
-	@Override
-	public void setLink_OrderLine_ID (final int Link_OrderLine_ID)
-	{
-		if (Link_OrderLine_ID < 1) 
-			set_Value (COLUMNNAME_Link_OrderLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_Link_OrderLine_ID, Link_OrderLine_ID);
-	}
-
-	@Override
-	public int getLink_OrderLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Link_OrderLine_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
@@ -961,33 +1070,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
-	}
-
-	@Override
-	public void setM_DiscountSchema(final org.compiere.model.I_M_DiscountSchema M_DiscountSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
-	}
-
-	@Override
-	public void setM_DiscountSchema_ID (final int M_DiscountSchema_ID)
-	{
-		if (M_DiscountSchema_ID < 1) 
-			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_DiscountSchema_ID, M_DiscountSchema_ID);
-	}
-
-	@Override
-	public int getM_DiscountSchema_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_DiscountSchema_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaBreak_ID, org.compiere.model.I_M_DiscountSchemaBreak.class);
@@ -1012,6 +1094,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getM_DiscountSchemaBreak_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_DiscountSchemaBreak_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
+	}
+
+	@Override
+	public void setM_DiscountSchema(final org.compiere.model.I_M_DiscountSchema M_DiscountSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
+	}
+
+	@Override
+	public void setM_DiscountSchema_ID (final int M_DiscountSchema_ID)
+	{
+		if (M_DiscountSchema_ID < 1) 
+			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_DiscountSchema_ID, M_DiscountSchema_ID);
+	}
+
+	@Override
+	public int getM_DiscountSchema_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_DiscountSchema_ID);
 	}
 
 	@Override
@@ -1081,6 +1190,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getM_Promotion_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Promotion_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@Override
@@ -1156,19 +1292,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setOrder_Min (final @Nullable BigDecimal Order_Min)
-	{
-		set_Value (COLUMNNAME_Order_Min, Order_Min);
-	}
-
-	@Override
-	public BigDecimal getOrder_Min() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setOrderDiscount (final @Nullable BigDecimal OrderDiscount)
 	{
 		set_Value (COLUMNNAME_OrderDiscount, OrderDiscount);
@@ -1178,6 +1301,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public BigDecimal getOrderDiscount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OrderDiscount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setOrder_Min (final @Nullable BigDecimal Order_Min)
+	{
+		set_Value (COLUMNNAME_Order_Min, Order_Min);
+	}
+
+	@Override
+	public BigDecimal getOrder_Min() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1255,21 +1391,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.sql.Timestamp getPresetDateShipped() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PresetDateShipped);
-	}
-
-	@Override
-	public void setPrice_UOM_ID (final int Price_UOM_ID)
-	{
-		if (Price_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
-	}
-
-	@Override
-	public int getPrice_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
 	}
 
 	@Override
@@ -1376,6 +1497,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setPrice_UOM_ID (final int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_ID, Price_UOM_ID);
+	}
+
+	@Override
+	public int getPrice_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Price_UOM_ID);
+	}
+
+	@Override
 	public void setProcessed (final boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Processed);
@@ -1435,6 +1571,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public BigDecimal getQtyEntered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyEnteredInBPartnerUOM (final @Nullable BigDecimal QtyEnteredInBPartnerUOM)
+	{
+		set_Value (COLUMNNAME_QtyEnteredInBPartnerUOM, QtyEnteredInBPartnerUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyEnteredInBPartnerUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredInBPartnerUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1620,21 +1769,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return get_ValueAsInt(COLUMNNAME_RunsMax);
 	}
 
-	@Override
-	public void setS_ResourceAssignment_ID (final int S_ResourceAssignment_ID)
-	{
-		if (S_ResourceAssignment_ID < 1) 
-			set_Value (COLUMNNAME_S_ResourceAssignment_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_ResourceAssignment_ID, S_ResourceAssignment_ID);
-	}
-
-	@Override
-	public int getS_ResourceAssignment_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_ResourceAssignment_ID);
-	}
-
 	/** 
 	 * ShipmentAllocation_BestBefore_Policy AD_Reference_ID=541043
 	 * Reference name: ShipmentAllocation_BestBefore_Policy
@@ -1657,6 +1791,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setS_ResourceAssignment_ID (final int S_ResourceAssignment_ID)
+	{
+		if (S_ResourceAssignment_ID < 1) 
+			set_Value (COLUMNNAME_S_ResourceAssignment_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_ResourceAssignment_ID, S_ResourceAssignment_ID);
+	}
+
+	@Override
+	public int getS_ResourceAssignment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_ResourceAssignment_ID);
+	}
+
+	@Override
 	public void setTaxAmtInfo (final @Nullable BigDecimal TaxAmtInfo)
 	{
 		set_Value (COLUMNNAME_TaxAmtInfo, TaxAmtInfo);
@@ -1676,12 +1825,11 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public BigDecimal getTraded_Commission_Percent() 
+	public BigDecimal getTraded_Commission_Percent()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
-
 	@Override
 	public org.compiere.model.I_C_ElementValue getUser1()
 	{

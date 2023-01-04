@@ -29,11 +29,11 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.model.I_C_BPartner_Export;
 import org.springframework.stereotype.Component;
 
@@ -54,11 +54,10 @@ public class BPartnerExportFilterDescriptionProviderFactory implements DocumentF
 	@Override
 	@NonNull
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId ignored,
-			@Nullable final String tableName,
+			@NonNull final CreateFiltersProviderContext context,
 			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
-		if (!isValidTable(tableName))
+		if (!isValidTable(context.getTableName()))
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
@@ -70,16 +69,16 @@ public class BPartnerExportFilterDescriptionProviderFactory implements DocumentF
 						.setDisplayName(msgBL.translatable("Postal"))
 						//
 						.addParameter(DocumentFilterParamDescriptor.builder()
-											  .setMandatory(true)
-											  .setFieldName(BPartnerExportFilterConverter.PARAM_POSTAL_FROM)
-											  .setDisplayName(msgBL.translatable(BPartnerExportFilterConverter.PARAM_POSTAL_FROM))
-											  .setWidgetType(DocumentFieldWidgetType.Text)
+											  .mandatory(true)
+											  .fieldName(BPartnerExportFilterConverter.PARAM_POSTAL_FROM)
+											  .displayName(msgBL.translatable(BPartnerExportFilterConverter.PARAM_POSTAL_FROM))
+											  .widgetType(DocumentFieldWidgetType.Text)
 						)
 						.addParameter(DocumentFilterParamDescriptor.builder()
-											  .setMandatory(true)
-											  .setFieldName(BPartnerExportFilterConverter.PARAM_POSTAL_TO)
-											  .setDisplayName(msgBL.translatable(BPartnerExportFilterConverter.PARAM_POSTAL_TO))
-											  .setWidgetType(DocumentFieldWidgetType.Text)
+											  .mandatory(true)
+											  .fieldName(BPartnerExportFilterConverter.PARAM_POSTAL_TO)
+											  .displayName(msgBL.translatable(BPartnerExportFilterConverter.PARAM_POSTAL_TO))
+											  .widgetType(DocumentFieldWidgetType.Text)
 						)
 						//
 						.build()

@@ -55,8 +55,8 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				.addInArrayOrAllFilter(I_GL_Distribution.COLUMN_Account_ID, null, elementValueId) // for given element value or without an element value
 				//
 				.orderBy()
-				.addColumn(I_GL_Distribution.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last) // first, return those for our AD_Client_ID
-				.addColumn(I_GL_Distribution.COLUMN_GL_Distribution_ID) // just to have a predictable order
+				.addColumn(I_GL_Distribution.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last) // first, return those for our AD_Client_ID
+				.addColumn(I_GL_Distribution.COLUMNNAME_GL_Distribution_ID) // just to have a predictable order
 				.endOrderBy()
 				//
 				.create()
@@ -118,6 +118,14 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				continue;
 			}
 			if (!glDistribution.isAnyActivity() && glDistribution.getC_Activity_ID() != dimension.getC_Activity_ID())
+			{
+				continue;
+			}
+			if (!glDistribution.isAnyOrder() && glDistribution.getC_Order_ID() != dimension.getC_Order_ID())
+			{
+				continue;
+			}
+			if (!glDistribution.isAnySectionCode() && glDistribution.getM_SectionCode_ID() != dimension.getM_SectionCode_ID())
 			{
 				continue;
 			}

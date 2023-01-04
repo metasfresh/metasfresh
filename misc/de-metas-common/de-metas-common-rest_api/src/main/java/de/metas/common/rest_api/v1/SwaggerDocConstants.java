@@ -26,7 +26,7 @@ public class SwaggerDocConstants
 {
 	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
-			+ "* or something like `ext-<C_Bartner.ExternalId> (This is deprecated and will no longer be available with v2)`\n"
+			+ "* or something like `ext-<C_Bartner.ExternalId>` (This is deprecated and will no longer be available with v2)\n"
 			+ "* or something like `val-<C_Bartner.Value>`\n"
 			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
 
@@ -70,5 +70,4 @@ public class SwaggerDocConstants
 	public static final String CREATE_OR_MERGE_SYNC_ADVISE_DOC = "Defaults to CREATE_OR_MERGE, if not specified";
 
 	public static final String PARENT_SYNC_ADVISE_DOC = "Defaults to the parent resource's sync advise, if not specified";
-
 }

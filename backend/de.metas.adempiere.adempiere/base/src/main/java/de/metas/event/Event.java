@@ -22,6 +22,29 @@ package de.metas.event;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.event.log.EventLogEntryCollector;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
@@ -33,34 +56,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.util.DisplayType;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
-import de.metas.event.log.EventLogEntryCollector;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
-import de.metas.common.util.CoalesceUtil;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /**
  * Event that can be sent/received on {@link IEventBus}.
  *
@@ -70,6 +65,8 @@ import javax.annotation.Nullable;
 @Value
 public class Event
 {
+	private static final String PROP_Body = "body";
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -128,10 +125,6 @@ public class Event
 	@JsonProperty("loggingStatus")
 	@Getter(value = AccessLevel.NONE)
 	LoggingStatus loggingStatus;
-
-	@JsonIgnore
-	@Getter(AccessLevel.NONE)
-	transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 
 	private Event(final Builder builder)
 	{
@@ -200,7 +193,7 @@ public class Event
 
 	/**
 	 * @return true if this event is for all users.<br>
-	 *         If no recipients were specified, consider that this event is for anybody
+	 * If no recipients were specified, consider that this event is for anybody
 	 */
 	public boolean isAllRecipients()
 	{
@@ -285,25 +278,6 @@ public class Event
 		return getProperty(PROPERTY_Record);
 	}
 
-	/**
-	 * @return <ul>
-	 * <li>true if event was successfully marked
-	 * <li>false if event was already received by given event bus ID
-	 * </ul>
-	 */
-	public boolean markReceivedByEventBusId(final String eventBusId)
-	{
-		return receivedByEventBusIds.add(eventBusId);
-	}
-
-	/**
-	 * @return true if this event was received by a even bus with given ID.
-	 */
-	public boolean wasReceivedByEventBusId(final String eventBusId)
-	{
-		return receivedByEventBusIds.contains(eventBusId);
-	}
-
 	public Event withStatusWasLogged()
 	{
 		final Builder builder = toBuilder();
@@ -319,6 +293,11 @@ public class Event
 	public boolean isWasLogged()
 	{
 		return LoggingStatus.WAS_LOGGED.equals(loggingStatus);
+	}
+
+	public String getBody()
+	{
+		return getPropertyAsString(PROP_Body);
 	}
 
 	public Builder toBuilder()
@@ -382,6 +361,12 @@ public class Event
 		public Builder setDetailPlain(final String detailPlain)
 		{
 			this.detailPlain = detailPlain;
+			return this;
+		}
+
+		public Builder withBody(final String body)
+		{
+			properties.put(PROP_Body, body);
 			return this;
 		}
 
@@ -620,7 +605,7 @@ public class Event
 			}
 		}
 
-		public Builder setSuggestedWindowId(int suggestedWindowId)
+		public Builder setSuggestedWindowId(final int suggestedWindowId)
 		{
 			putProperty(PROPERTY_SuggestedWindowId, suggestedWindowId);
 			return this;

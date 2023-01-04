@@ -22,16 +22,19 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-
-import org.junit.Ignore;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
+import org.junit.Ignore;
+
+import java.util.Set;
 
 /**
  * An {@link IQueueProcessor} which actually does nothing. To be used in decoupled unit tests.
@@ -58,7 +61,7 @@ public class MockedQueueProcessor implements IQueueProcessor
 	}
 
 	@Override
-	public void setWorkpackageProcessorFactory(IWorkpackageProcessorFactory workpackageProcessorFactory)
+	public void setWorkpackageProcessorFactory(final IWorkpackageProcessorFactory workpackageProcessorFactory)
 	{
 		this.workpackageProcessorFactory = workpackageProcessorFactory;
 	}
@@ -87,19 +90,13 @@ public class MockedQueueProcessor implements IQueueProcessor
 		return queue;
 	}
 
-	public void setQueue(IWorkPackageQueue queue)
+	public void setQueue(final IWorkPackageQueue queue)
 	{
 		this.queue = queue;
 	}
 
 	@Override
-	public void run()
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void shutdown()
+	public void shutdownExecutor()
 	{
 		// nothing
 	}
@@ -107,5 +104,26 @@ public class MockedQueueProcessor implements IQueueProcessor
 	@Override
 	public void notifyWorkpackageProcessed(final I_C_Queue_WorkPackage workPackage, final IWorkpackageProcessor workPackageProcessor)
 	{
+	}
+
+	@Override
+	public boolean isAvailableToWork()
+	{
+		return false;
+	}
+
+	@Override
+	public Set<QueuePackageProcessorId> getAssignedPackageProcessorIds()
+	{
+		return ImmutableSet.of();
+	}
+
+	@Override
+	public boolean processLockedWorkPackage(final I_C_Queue_WorkPackage workPackage) { return true; }
+
+	@Override
+	public QueueProcessorId getQueueProcessorId()
+	{
+		return null;
 	}
 }

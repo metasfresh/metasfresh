@@ -25,6 +25,7 @@ package de.metas.common.bpartner.v2.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContact;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -47,6 +48,15 @@ public class JsonRequestContactUpsertItem
 	@NonNull
 	String contactIdentifier;
 
+	@ApiModelProperty(position = 30, //
+			value = "ID of the external system config.")
+	@Nullable
+	JsonMetasfreshId externalSystemConfigId;
+
+	@ApiModelProperty(position = 40)
+	@Nullable
+	Boolean isReadOnlyInMetasfresh;
+
 	@ApiModelProperty(allowEmptyValue = false, //
 			position = 20, value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
@@ -60,10 +70,14 @@ public class JsonRequestContactUpsertItem
 	@JsonCreator
 	public JsonRequestContactUpsertItem(
 			final @NonNull @JsonProperty("contactIdentifier") String contactIdentifier,
+			final @Nullable @JsonProperty("externalSystemId") JsonMetasfreshId externalSystemConfigId,
+			final @Nullable @JsonProperty("isReadOnlyInMetasfresh") Boolean isReadOnlyInMetasfresh,
 			final @NonNull @JsonProperty("contact") JsonRequestContact contact,
 			final @Nullable @JsonProperty("jsonAlbertaContact") JsonAlbertaContact jsonAlbertaContact)
 	{
 		this.contactIdentifier = contactIdentifier;
+		this.externalSystemConfigId = externalSystemConfigId;
+		this.isReadOnlyInMetasfresh = isReadOnlyInMetasfresh;
 		this.contact = contact;
 		this.jsonAlbertaContact = jsonAlbertaContact;
 	}

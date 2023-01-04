@@ -2,16 +2,7 @@ import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-
-/**
- * @param attributeType 'pattribute' or 'address'
- */
-export function getAttributesInstance(attributeType, templateId, source) {
-  return post(`${config.API_URL}/${attributeType}`, {
-    templateId: templateId,
-    source: source,
-  });
-}
+import { formatSortingQuery } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
@@ -69,17 +60,6 @@ export function discardNewRequest({ windowId, documentId, tabId, rowId } = {}) {
   );
 }
 
-export function discardNewDocument({ windowType, documentId } = {}) {
-  return post(
-    config.API_URL +
-      '/window/' +
-      windowType +
-      '/' +
-      documentId +
-      '/discardChanges'
-  );
-}
-
 export function getTabRequest(tabId, windowType, docId, orderBy) {
   return getData({
     entity: 'window',
@@ -87,7 +67,7 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
-    orderBy: orderBy,
+    orderBy: formatSortingQuery(orderBy),
   })
     .then(
       (res) =>
@@ -145,64 +125,6 @@ export function formatParentUrl({ windowId, docId, rowId, target }) {
   return parentUrl;
 }
 
-export function startProcess(processType, pinstanceId) {
-  return get(`${config.API_URL}/process/${processType}/${pinstanceId}/start`);
-}
-
-export function getProcessData({
-  processId,
-  viewId,
-  documentType,
-  ids,
-  tabId,
-  rowId,
-  selectedTab,
-  childViewId,
-  childViewSelectedIds,
-  parentViewId,
-  parentViewSelectedIds,
-}) {
-  const payload = {
-    processId: processId,
-  };
-
-  if (viewId) {
-    payload.viewId = viewId;
-    payload.viewDocumentIds = ids;
-
-    if (childViewId) {
-      payload.childViewId = childViewId;
-      payload.childViewSelectedIds = childViewSelectedIds;
-    }
-
-    if (parentViewId) {
-      payload.parentViewId = parentViewId;
-      payload.parentViewSelectedIds =
-        parentViewSelectedIds instanceof Array
-          ? parentViewSelectedIds
-          : [parentViewSelectedIds];
-    }
-  } else {
-    payload.documentId = Array.isArray(ids) ? ids[0] : ids;
-    payload.documentType = documentType;
-    payload.tabId = tabId;
-    payload.rowId = rowId;
-  }
-
-  if (selectedTab) {
-    const { tabId, rowIds } = selectedTab;
-
-    if (tabId && rowIds) {
-      payload.selectedTab = {
-        tabId,
-        rowIds,
-      };
-    }
-  }
-
-  return post(`${config.API_URL}/process/${processId}`, payload);
-}
-
 /**
  * @method getPrintingOptions
  * @summary Get the printing options for a specified entity
@@ -248,9 +170,10 @@ export function initQuickInput(entity, windowId, docId, tabId, subentity) {
  * @method completeRequest
  * @summary Save changes in attributes/quick input
  * @param {string} entity - for example 'window'
- * @param {string} windowId
+ * @param {string} docType windowId
  * @param {string} docId
  * @param {string} tabId
+ * @param {string} rowId
  * @param {string} subentity - for example `quickInput`
  * @param {string} subentityId
  */

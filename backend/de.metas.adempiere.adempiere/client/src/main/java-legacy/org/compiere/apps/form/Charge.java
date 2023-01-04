@@ -13,29 +13,25 @@
  *****************************************************************************/
 package org.compiere.apps.form;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Vector;
-
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
-import org.compiere.model.MElementValue;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.ChartOfAccountsId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Vector;
 
 /**
  *  Create Charge from Accounts
@@ -46,7 +42,7 @@ import de.metas.util.Services;
 public class Charge
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2478440763968206819L;
 
@@ -56,8 +52,7 @@ public class Charge
 //	private FormFrame 	m_frame;
 
 	private AcctSchema acctSchema = null;
-	/** Account Element     */
-	public ChartOfAccountsId chartOfAccountsId = null;
+
 	/** Default Charge Tax Category */
 	private int         m_C_TaxCategory_ID = 0;
 	private int         m_AD_Client_ID = 0;
@@ -83,8 +78,8 @@ public class Charge
 			+ "ORDER BY 2";
 		try
 		{
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, chartOfAccountsId.getRepoId());
+			PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt.setInt(1, acctSchema.getChartOfAccountsId().getRepoId());
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -104,10 +99,10 @@ public class Charge
 		{
 			log.error(sql, e);
 		}
-		
+
 		return data;
 	}
-	
+
 	/**
      * Finds the Element Identifier for the current charge.
      *
@@ -119,13 +114,10 @@ public class Charge
     	{
     		return;
     	}
-    	
+
     	acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-    	
-    	final AcctSchemaElement accountElement = acctSchema.getSchemaElementByType(AcctSchemaElementType.Account);
-    	chartOfAccountsId = accountElement != null ? accountElement.getChartOfAccountsId() : null;
     }
-	
+
 	public Vector<String> getColumnNames()
 	{
 		//  Header Info
@@ -134,10 +126,10 @@ public class Charge
 		columnNames.add(Msg.translate(Env.getCtx(), "Value"));
 		columnNames.add(Msg.translate(Env.getCtx(), "Name"));
 		columnNames.add(Msg.getMsg(Env.getCtx(), "Expense"));
-		
+
 		return columnNames;
 	}
-	
+
 	public void setColumnClass(IMiniTable dataTable)
 	{
 		dataTable.setColumnClass(0, Boolean.class, false);      //  0-Selection
@@ -147,7 +139,7 @@ public class Charge
 		//  Table UI
 		dataTable.autoSize();
 	}
-	
+
 	/**
      * Finds the identifier for the tax category for the client.
      */
@@ -179,7 +171,7 @@ public class Charge
 			log.error(sql, e);
 		}
 	}   //  dynInit
-	
+
 	/**************************************************************************
 	 *  Create ElementValue for primary AcctSchema
 	 *  @param value value
@@ -189,18 +181,19 @@ public class Charge
 	 */
 	protected int createElementValue (String value, String name, boolean isExpenseType)
 	{
-		log.info(name);
-		//
-		MElementValue ev = new MElementValue(Env.getCtx(), value, name, null,
-			isExpenseType ? MElementValue.ACCOUNTTYPE_Expense : MElementValue.ACCOUNTTYPE_Revenue, 
-				MElementValue.ACCOUNTSIGN_Natural,
-				false, false, null);
-		ev.setAD_Org_ID(m_AD_Org_ID);
-		if (!ev.save())
-		{
-			log.warn("C_ElementValue_ID not created");
-		}
-		return ev.getC_ElementValue_ID();
+		throw new UnsupportedOperationException();
+		// log.info(name);
+		// //
+		// MElementValue ev = new MElementValue(Env.getCtx(), value, name, null,
+		// 	isExpenseType ? MElementValue.ACCOUNTTYPE_Expense : MElementValue.ACCOUNTTYPE_Revenue,
+		// 		MElementValue.ACCOUNTSIGN_Natural,
+		// 		false, false, null);
+		// ev.setAD_Org_ID(m_AD_Org_ID);
+		// if (!ev.save())
+		// {
+		// 	log.warn("C_ElementValue_ID not created");
+		// }
+		// return ev.getC_ElementValue_ID();
 	}   //  createElementValue
 
 	/**
@@ -242,7 +235,7 @@ public class Charge
 
         return charge.getC_Charge_ID();
     }   //  createCharge
-    
+
     /**
      * Updates the charge account details.
      * @param charge    the charge
@@ -252,7 +245,7 @@ public class Charge
     {
         StringBuffer sql = createUpdateAccountSql(charge, account);
         //
-        int noAffectedRows = DB.executeUpdate(sql.toString(), null);
+        int noAffectedRows = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
         if (noAffectedRows != 1)
         {
             log.error("Update #" + noAffectedRows + "\n" + sql.toString());
@@ -320,7 +313,9 @@ public class Charge
             defaultAccount.getUser1_ID(),
             defaultAccount.getUser2_ID(),
             defaultAccount.getUserElement1_ID(),
-            defaultAccount.getUserElement2_ID());
+            defaultAccount.getUserElement2_ID(),
+			defaultAccount.getC_Order_ID(),
+			defaultAccount.getM_SectionCode_ID());
 
         return account;
     }

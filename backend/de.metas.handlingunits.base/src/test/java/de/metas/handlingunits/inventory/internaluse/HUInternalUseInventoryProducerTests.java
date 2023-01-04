@@ -36,6 +36,8 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryRepository;
@@ -106,12 +108,20 @@ public class HUInternalUseInventoryProducerTests
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private InventoryService inventoryService;
 
+
+	private HUUniqueAttributesService huUniqueAttributesService;
+
+	private M_HU huCallout;
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(12345);
 	private I_M_Locator locator;
 
 	@BeforeEach
 	public void init()
 	{
+
+		huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
+
+		huCallout = new M_HU(huUniqueAttributesService);
 		data = new LUTUProducerDestinationTestSupport();
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(999));
 
@@ -461,7 +471,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 		createdLU.setM_Locator_ID(locator.getM_Locator_ID());
 
-		M_HU.INSTANCE.updateChildren(createdLU);
+		huCallout.updateChildren(createdLU);
 		handlingUnitsDAO.saveHU(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
@@ -519,7 +529,7 @@ public class HUInternalUseInventoryProducerTests
 		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		createdTU.setM_Locator_ID(locator.getM_Locator_ID());
 
-		M_HU.INSTANCE.updateChildren(createdTU);
+		huCallout.updateChildren(createdTU);
 		handlingUnitsDAO.saveHU(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);

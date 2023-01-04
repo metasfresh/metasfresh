@@ -32,10 +32,10 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -44,6 +44,7 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.ModelValidator;
 
@@ -72,6 +73,9 @@ public class C_Print_Job_Instructions
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_ON_ERROR = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnError";
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_SEND_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnSendTimeoutSeconds";
 	private static final String SYSCONFIG_NOTIFY_PRINT_RECEIVER_PENDING_TIMEOUT_SECONDS = "de.metas.printing.C_Print_Job_Instructions.NotifyPrintReceiverOnPendingTimeoutSeconds";
+
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	/**
 	 * Create Document Outbound only if Status column just changed to Done
@@ -112,7 +116,6 @@ public class C_Print_Job_Instructions
 		}
 
 		// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
-		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.recipientUserId(UserId.ofRepoId(jobInstructions.getAD_User_ToPrint_ID()))
 				.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
@@ -196,9 +199,6 @@ public class C_Print_Job_Instructions
 					// schedule our check to be run after 'printTimeOutSeconds' seconds
 					taskExecutorService.schedule(
 							() -> {
-								final INotificationBL notificationBL = Services.get(INotificationBL.class);
-								final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-
 								final I_C_Print_Job_Instructions printJobInstructionsReloaded = loadOutOfTrx(printJobInstructionsId, I_C_Print_Job_Instructions.class);
 								if (status.equals(printJobInstructionsReloaded.getStatus()))
 								{
@@ -208,7 +208,7 @@ public class C_Print_Job_Instructions
 											.subjectADMessage(MSG_CLIENT_PRINT_TIMEOUT)
 											.contentADMessage(MSG_CLIENT_PRINT_TIMEOUT_DETAILS)
 											.contentADMessageParam(printTimeOutSeconds)
-											.contentADMessageParam(adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status))
+											.contentADMessageParam(adReferenceService.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status))
 											.targetAction(TargetRecordAction.of(I_C_Print_Job_Instructions.Table_Name, printJobInstructionsId))
 											.build());
 								}
