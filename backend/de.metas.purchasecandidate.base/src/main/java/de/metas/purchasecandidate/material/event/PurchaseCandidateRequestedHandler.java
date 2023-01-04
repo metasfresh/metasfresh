@@ -165,8 +165,8 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
-					newPurchaseCandidate.getVendorId(),
-					newPurchaseCandidateId);
+																											newPurchaseCandidate.getVendorId(),
+																											newPurchaseCandidateId);
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 		}
 		finally
