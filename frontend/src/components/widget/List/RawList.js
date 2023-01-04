@@ -147,7 +147,13 @@ export class RawList0 extends PureComponent {
 
     //
     // On focus gained (via props)
-    if (this.props.isFocused && this.props.isFocused !== prevProps.isFocused) {
+    if (this.props.isFocused) {
+      // NOTE: commented out condition: && this.props.isFocused !== prevProps.isFocused
+      // because we want to cover the case when the isFocused was set before but for some reason,
+      // the field was not focused because maybe was not created yet or the focus was somehow lost...
+      //
+      // Test case: GL Journal (SAP), batch entry, first field D/C was not focused after comple of complete entries.
+
       this.focus();
     }
   }

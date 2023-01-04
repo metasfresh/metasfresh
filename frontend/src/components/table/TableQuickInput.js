@@ -18,6 +18,7 @@ class TableQuickInput extends PureComponent {
   patchPromise;
   // widgets refs
   rawWidgets = [];
+  rawWidgetsByFieldName = {};
   // local state
   state = { hasFocus: true };
 
@@ -26,37 +27,30 @@ class TableQuickInput extends PureComponent {
   }
 
   componentDidUpdate() {
-    const { data, layout, inProgress } = this.props;
-
-    // refocus the first widget after update
-    if (data && layout && !inProgress) {
-      const item = layout[0].fields.map((elem) => data[elem.field] || -1);
-
-      if (!item[0].value) {
-        if (this.rawWidgets) {
-          this.focusWidgetField();
-        }
-      }
-    }
+    // --------------
+    // NOTE: don't focus on next mandatory field on each update because,
+    // that will skip packing instructions field after user enters product in sales order for example.
+    // {{{{{{{{{{{{{
+    // const { inProgress } = this.props;
+    // const { hasFocus } = this.state;
+    //
+    // // focus first field with errors
+    // if (hasFocus && !inProgress) {
+    //   this.focusFirstFieldWithErrors();
+    // }
+    // }}}}}}}}}}}}}
   }
 
-  /**
-   * @method focusWidgetField
-   * @summary function to manually focus a widget
-   */
-  focusWidgetField = () => {
-    const { hasFocus } = this.state;
-    let curWidget = this.rawWidgets[0];
-
-    if (
-      hasFocus &&
-      curWidget &&
-      curWidget.rawWidget &&
-      curWidget.rawWidget.current &&
-      curWidget.rawWidget.current.focus
-    ) {
-      curWidget.rawWidget.current.focus();
+  focusFirstFieldWithErrors = () => {
+    const validationResult = this.validateForm();
+    if (validationResult.fieldName) {
+      this.focusField(validationResult.fieldName);
     }
+  };
+
+  focusField = (fieldName) => {
+    const widget = this.rawWidgetsByFieldName[fieldName];
+    widget?.focus?.();
   };
 
   initQuickInput = async () => {
@@ -99,6 +93,8 @@ class TableQuickInput extends PureComponent {
       console.error(error);
       this.closeBatchEntry();
     });
+
+    this.focusFirstFieldWithErrors();
   };
 
   handleChange = (field, value) => {
@@ -125,20 +121,27 @@ class TableQuickInput extends PureComponent {
   };
 
   onSubmit = (e) => {
-    const { addNotification, docType, docId, tabId, data, id } = this.props;
+    if (this.state.submitPending) {
+      return;
+    }
+
+    const { addNotification, docType, docId, tabId, id } = this.props;
 
     e.preventDefault();
 
-    document.activeElement.blur();
+    // blur to make sure the field value is committed, events are fired, etc
+    const activeElement = document.activeElement;
+    activeElement.blur();
 
-    if (!this.validateForm(data)) {
-      return addNotification(
-        'Error',
-        'Mandatory fields are not filled!',
-        5000,
-        'error'
-      );
+    const validationResult = this.validateForm();
+    if (validationResult.error) {
+      // Focus the last active element, to allow user continuing typing.
+      activeElement.focus();
+
+      return addNotification('Error', validationResult.error, 5000, 'error');
     }
+
+    this.setState({ submitPending: true });
 
     return this.patchPromise
       .then(() => {
@@ -152,13 +155,27 @@ class TableQuickInput extends PureComponent {
           id
         );
       })
+      .then(() => this.setState({ submitPending: false }))
       .then(this.initQuickInput);
   };
 
-  validateForm = (data) => {
-    return !Object.keys(data).filter(
-      (key) => data[key].mandatory && !data[key].value
-    ).length;
+  /** Validates form data returning first error */
+  validateForm = () => {
+    const { data } = this.props;
+
+    if (data) {
+      for (const fieldName of Object.keys(data)) {
+        const fieldData = data[fieldName];
+        if (fieldData.mandatory && !fieldData.value) {
+          return {
+            fieldName,
+            error: 'Mandatory fields are not filled!',
+          };
+        }
+      }
+    }
+
+    return {}; // no error
   };
 
   closeBatchEntry() {
@@ -175,35 +192,42 @@ class TableQuickInput extends PureComponent {
    * @summary resets cachedValue for widgets after getting new data
    */
   resetWidgetValues = () => {
-    this.rawWidgets.forEach((widget) => {
-      widget.resetCachedValue();
-    });
+    this.rawWidgets.forEach((widget) => widget.resetCachedValue());
   };
 
   setRef = (refNode) => {
     this.form = refNode;
   };
 
-  setWidgetsRef = (refNode) => {
-    refNode &&
-      refNode.childRef &&
-      refNode.childRef.current &&
-      this.rawWidgets.push(refNode.childRef.current);
+  setWidgetWrapperElement = (widgetWrapperElement, fieldNames) => {
+    const rawWidgetElement = widgetWrapperElement?.getWrappedElement?.();
+    if (!rawWidgetElement) {
+      return;
+    }
+
+    this.rawWidgets.push(rawWidgetElement);
+
+    fieldNames.forEach((fieldName) => {
+      this.rawWidgetsByFieldName[fieldName] = rawWidgetElement;
+    });
   };
 
   renderFields = () => {
     const { tabId, docType, forceHeight, data, layout, id, inProgress, docId } =
       this.props;
+    const { submitPending } = this.state;
 
     if (data && layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map((elem) => data[elem.field] || -1);
+        const fieldNames = item.fields.map((elem) => elem.field);
 
         return (
           <WidgetWrapper
-            ref={this.setWidgetsRef}
+            ref={(node) => this.setWidgetWrapperElement(node, fieldNames)}
             dataSource="quick-input"
             inProgress={inProgress}
+            isEditable={!submitPending}
             entity={'window'}
             subentity="quickInput"
             subentityId={id}
