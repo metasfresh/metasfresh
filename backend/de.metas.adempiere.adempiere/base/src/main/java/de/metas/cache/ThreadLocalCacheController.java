@@ -25,8 +25,6 @@ package de.metas.cache;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 
-import java.util.Optional;
-
 public final class ThreadLocalCacheController
 {
 	public static final ThreadLocalCacheController instance = new ThreadLocalCacheController();
@@ -41,7 +39,8 @@ public final class ThreadLocalCacheController
 	@NonNull
 	public CacheMode getCacheMode()
 	{
-		return Optional.ofNullable(cacheModeRef.get()).orElse(CacheMode.DEFAULT);
+		final CacheMode cacheMode = cacheModeRef.get();
+		return cacheMode != null ? cacheMode : CacheMode.DEFAULT;
 	}
 
 	@NonNull
