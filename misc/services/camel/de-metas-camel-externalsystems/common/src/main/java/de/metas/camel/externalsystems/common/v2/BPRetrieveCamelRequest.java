@@ -52,6 +52,9 @@ public class BPRetrieveCamelRequest
 	@JsonProperty("adPInstanceId")
 	JsonMetasfreshId adPInstanceId;
 
+	/**
+	 * If {@code true}, then make the metasfresh-API-call with that Http header {@code Cache-Control=no-cache}
+	 */
 	@JsonProperty("noCache")
 	boolean noCache;
 }
