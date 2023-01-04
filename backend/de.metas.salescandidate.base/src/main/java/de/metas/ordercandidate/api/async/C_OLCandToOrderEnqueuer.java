@@ -29,6 +29,7 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
