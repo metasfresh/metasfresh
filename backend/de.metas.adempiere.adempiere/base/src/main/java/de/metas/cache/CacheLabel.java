@@ -52,7 +52,7 @@ public class CacheLabel
 		return name.startsWith("AD_");
 	}
 
-	public boolean isNoTableName()
+	public boolean containsNoTableNameMarker()
 	{
 		return name.contains(NO_TABLENAME_PREFIX);
 	}

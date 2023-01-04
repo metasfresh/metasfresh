@@ -57,7 +57,7 @@ public final class ThreadLocalCacheController
 	private static boolean isNonApplicationDictionaryTableName(final CacheLabel label, final String cacheName)
 	{
 		return label.equalsByName(cacheName) //ignore the label created from this.cacheName as it's not necessary a table name
-				&& !label.isNoTableName() // does not contain the "NoTableName" marker
+				&& !label.containsNoTableNameMarker()
 				&& !label.isApplicationDictionaryTableName();
 	}
 
