@@ -2,14 +2,14 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
-import { completeRequest } from '../../api';
 import {
+  completeQuickInput,
+  deleteQuickInput,
   fetchQuickInputData,
   fetchQuickInputLayout,
-  deleteQuickInput,
-  setQuickinputData,
   patchQuickInput,
-} from '../../actions/IndependentWidgetsActions';
+  updateQuickinputData,
+} from '../../actions/TableQuickInputActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
 
@@ -24,6 +24,11 @@ class TableQuickInput extends PureComponent {
 
   componentDidMount() {
     this.initQuickInput();
+  }
+
+  componentWillUnmount() {
+    const { deleteQuickInput } = this.props;
+    deleteQuickInput();
   }
 
   componentDidUpdate() {
@@ -55,16 +60,16 @@ class TableQuickInput extends PureComponent {
 
   initQuickInput = async () => {
     const {
-      addNotification,
-      docType,
+      windowId,
       docId,
       tabId,
+      addNotification,
       fetchQuickInputData,
       fetchQuickInputLayout,
     } = this.props;
 
     await fetchQuickInputData({
-      windowId: docType,
+      windowId,
       docId,
       tabId,
     })
@@ -82,7 +87,7 @@ class TableQuickInput extends PureComponent {
       });
 
     await fetchQuickInputLayout({
-      windowId: docType,
+      windowId,
       docId,
       tabId,
     }).catch(({ response }) => {
@@ -98,25 +103,23 @@ class TableQuickInput extends PureComponent {
   };
 
   handleChange = (field, value) => {
-    const { setQuickinputData } = this.props;
+    const { updateQuickinputData } = this.props;
     const fieldData = {};
     fieldData[field] = { value };
 
-    setQuickinputData(fieldData);
+    updateQuickinputData(fieldData);
   };
 
   handlePatch = (prop, value, callback) => {
-    const { docType, docId, tabId, patchQuickInput } = this.props;
+    const { windowId, docId, tabId, patchQuickInput } = this.props;
 
     this.patchPromise = new Promise((resolve) => {
-      patchQuickInput({ windowId: docType, docId, tabId, prop, value }).then(
-        () => {
-          if (callback) {
-            callback();
-          }
-          resolve();
+      patchQuickInput({ windowId, docId, tabId, prop, value }).then(() => {
+        if (callback) {
+          callback();
         }
-      );
+        resolve();
+      });
     });
   };
 
@@ -125,7 +128,8 @@ class TableQuickInput extends PureComponent {
       return;
     }
 
-    const { addNotification, docType, docId, tabId, id } = this.props;
+    const { windowId, docId, tabId, quickInputId, addNotification } =
+      this.props;
 
     e.preventDefault();
 
@@ -145,15 +149,7 @@ class TableQuickInput extends PureComponent {
 
     return this.patchPromise
       .then(() => {
-        return completeRequest(
-          'window',
-          docType,
-          docId,
-          tabId,
-          null,
-          'quickInput',
-          id
-        );
+        return completeQuickInput({ windowId, docId, tabId, quickInputId });
       })
       .then(() => this.setState({ submitPending: false }))
       .then(this.initQuickInput);
@@ -179,9 +175,9 @@ class TableQuickInput extends PureComponent {
   };
 
   closeBatchEntry() {
-    const { closeBatchEntry, deleteQuickInput, id } = this.props;
+    const { closeBatchEntry, deleteQuickInput, quickInputId } = this.props;
 
-    if (id) {
+    if (quickInputId) {
       deleteQuickInput();
       closeBatchEntry();
     }
@@ -213,8 +209,17 @@ class TableQuickInput extends PureComponent {
   };
 
   renderFields = () => {
-    const { tabId, docType, forceHeight, data, layout, id, inProgress, docId } =
-      this.props;
+    const {
+      windowId,
+      tabId,
+      docId,
+      forceHeight,
+      //
+      data,
+      layout,
+      quickInputId,
+      inProgress,
+    } = this.props;
     const { submitPending } = this.state;
 
     if (data && layout) {
@@ -230,9 +235,9 @@ class TableQuickInput extends PureComponent {
             isEditable={!submitPending}
             entity={'window'}
             subentity="quickInput"
-            subentityId={id}
+            subentityId={quickInputId}
             tabId={tabId}
-            windowType={docType}
+            windowType={windowId}
             widgetType={item.widgetType}
             widgetSize={item.size}
             fields={item.fields}
@@ -257,7 +262,7 @@ class TableQuickInput extends PureComponent {
 
   /**
    * @method handleClickOutside
-   * @summary Whenever we click outside of the Quick Input form we set the flag `hasFocus`
+   * @summary Whenever we click outside the Quick Input form we set the flag `hasFocus`
    *          This is needed as by default the logic introduced in https://github.com/metasfresh/metasfresh/pull/11163/files
    *          is setting by default the focus when the component receives new props (after the item was introduced its focusing on the first field)
    */
@@ -287,13 +292,13 @@ class TableQuickInput extends PureComponent {
   }
 }
 
-const mapStateToProps = ({ widgetHandler }) => {
-  const { layout, data, id, inProgress } = widgetHandler.quickInput;
+const mapStateToProps = ({ tableQuickInputHandler }) => {
+  const { quickInputId, layout, data, inProgress } = tableQuickInputHandler;
 
   return {
     layout,
     data,
-    id,
+    quickInputId,
     inProgress,
   };
 };
@@ -307,26 +312,32 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         ? ownProps.fetchQuickInputLayout(args, dispatch)
         : dispatch(fetchQuickInputLayout({ ...args })),
     deleteQuickInput: () => dispatch(deleteQuickInput()),
-    setQuickinputData: (args) => dispatch(setQuickinputData(args)),
+    updateQuickinputData: (args) => dispatch(updateQuickinputData(args)),
     patchQuickInput: (args) => dispatch(patchQuickInput({ ...args })),
   };
 };
 
 TableQuickInput.propTypes = {
-  addNotification: PropTypes.func.isRequired,
-  closeBatchEntry: PropTypes.func,
+  windowId: PropTypes.any.isRequired,
+  docId: PropTypes.string.isRequired,
+  tabId: PropTypes.string.isRequired,
   forceHeight: PropTypes.number,
-  docType: PropTypes.any,
-  docId: PropTypes.string,
-  tabId: PropTypes.string,
+  closeBatchEntry: PropTypes.func,
+  addNotification: PropTypes.func.isRequired,
+
+  //
+  // mapStateToProps
   layout: PropTypes.array,
   data: PropTypes.object,
-  id: PropTypes.any,
+  quickInputId: PropTypes.any,
   inProgress: PropTypes.bool,
+
+  //
+  // mapDispatchToProps:
   fetchQuickInputData: PropTypes.func.isRequired,
   fetchQuickInputLayout: PropTypes.func.isRequired,
   deleteQuickInput: PropTypes.func.isRequired,
-  setQuickinputData: PropTypes.func.isRequired,
+  updateQuickinputData: PropTypes.func.isRequired,
   patchQuickInput: PropTypes.func.isRequired,
 };
 
@@ -335,4 +346,5 @@ export default connect(
   mapDispatchToProps
 )(onClickOutside(TableQuickInput));
 
+// needed for testing
 export { TableQuickInput };
