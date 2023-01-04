@@ -47,7 +47,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -109,7 +108,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public int update()
+	public void update()
 	{
 		markAsExecuted();
 
@@ -121,15 +120,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// Update the tagged invoice candidates
 		try
 		{
-			final int noOfUpdatedCandidates = updateTagged();
+			updateTagged();
 
 			//
 			// Remove from "invoice candidates to recompute" all those which were tagged with our tag
 			// because now we consider them valid
 			// NOTE: usually, this method shall delete 0 records because the recompute records are deleted after each chunk is processed.
 			icTagger.deleteAllTaggedAndInvalidateCache();
-			
-			return noOfUpdatedCandidates;
 		}
 		catch (final Exception updateException)
 		{
@@ -151,9 +148,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 	/**
 	 * Update all invoice candidates which were tagged
-	 * @return the number of updated invoice candidates
 	 */
-	private int updateTagged()
+	private void updateTagged()
 	{
 		//
 		// Determine if we shall process our invoice candidates in batches and commit after each batch.
@@ -169,7 +165,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		{
 			// no candidates found => nothing to do
 			Loggables.withLogger(logger, Level.DEBUG).addLog("icTagger has no invoice candidates to update; nothing to do; icTagger={}", icTagger);
-			return 0;
+			return;
 		}
 
 		//
@@ -267,7 +263,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Log the result
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
-		return result.getCountOk();
 	}
 
 	private class InvoiceCandidateValidationCollector
@@ -543,7 +538,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 */
-	@Getter
 	private static final class ICUpdateResult
 	{
 		private int countOk = 0;

@@ -43,8 +43,6 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Updates invoice candidates (which were scheduled to be recomputed)
-	 *
-	 * @return the number of updated invoice candidates
 	 * 
 	 * NOTEs:
 	 * <ul>
@@ -53,7 +51,7 @@ public interface IInvoiceCandInvalidUpdater
 	 * {@link InterfaceWrapperHelper#refresh(Object)}). That's because the implementation won't actually work with the instances from the provided iterator
 	 * </ul>
 	 */
-	int update();
+	void update();
 
 	IInvoiceCandInvalidUpdater setContext(final Properties ctx, final String trxName);
 
