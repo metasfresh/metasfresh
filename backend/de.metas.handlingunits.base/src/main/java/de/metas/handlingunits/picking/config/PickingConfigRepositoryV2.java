@@ -49,6 +49,7 @@ public class PickingConfigRepositoryV2
 		return PickingConfigV2.builder()
 				.pickingReviewRequired(record.isPickingReviewRequired())
 				.considerAttributes(record.isConsiderAttributes())
+				.reserveHUsOnJobStart(record.isReserveHUsOnPickingJobStart())
 				.build();
 	}
 
