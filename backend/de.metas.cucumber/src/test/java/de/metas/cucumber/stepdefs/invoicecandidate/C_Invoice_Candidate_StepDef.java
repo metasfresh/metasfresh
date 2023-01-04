@@ -200,6 +200,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	// TODO give it a better name or merge it with "C_Invoice_Candidates are found:" step
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws Throwable
 	{
@@ -673,8 +674,11 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
-										  () -> isInvoiceCandidateUpdated(tableRow));
+			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
+																   + "**tableRow:**\n{}\n"
+																   + "**all candidates:**\n{}",
+														   tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateUpdated(tableRow), logContext);
 		}
 	}
 
@@ -899,13 +903,21 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
+	// TODO give it a better name or merge it with "C_Invoice_Candidates are found:" step
 	@And("^after not more than (.*)s, C_Invoice_Candidates are found:$")
 	public void thereAreInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery));
+			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
+																   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
+																   + "**query result:**\n{}\n"
+																   + "**all candidates:**\n{}",
+														   row, candidatesQuery,
+														   candidatesQuery.list(),
+														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery), logContext);
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
