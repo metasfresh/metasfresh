@@ -1195,7 +1195,7 @@ public class C_Invoice_Candidate_StepDef
 																	(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
 
 		final BigDecimal orderLineQtyDelivered = Optional
-				.of(TableRecordReference.of(Integer.parseInt(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID), Integer.parseInt(I_C_Invoice_Candidate.COLUMNNAME_Record_ID)))
+				.of(TableRecordReference.of(invCandidate.getAD_Table_ID(), invCandidate.getRecord_ID()))
 				.filter(tableRecordReference -> I_C_OrderLine.Table_Name.equals(tableRecordReference.getTableName()))
 				.map(tableRecordReference -> tableRecordReference.getModel(I_C_OrderLine.class))
 				.map(I_C_OrderLine::getQtyDelivered)

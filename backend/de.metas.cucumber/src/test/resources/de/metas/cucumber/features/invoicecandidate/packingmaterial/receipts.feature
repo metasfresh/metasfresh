@@ -3263,7 +3263,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2021-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
