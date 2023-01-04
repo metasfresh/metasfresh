@@ -20,7 +20,7 @@ class TableQuickInput extends PureComponent {
   rawWidgets = [];
   rawWidgetsByFieldName = {};
   // local state
-  state = { hasFocus: true };
+  state = { hasFocus: true, isSubmitPending: false };
 
   componentDidMount() {
     this.initQuickInput();
@@ -124,7 +124,7 @@ class TableQuickInput extends PureComponent {
   };
 
   onSubmit = (e) => {
-    if (this.state.submitPending) {
+    if (this.state.isSubmitPending) {
       return;
     }
 
@@ -145,13 +145,11 @@ class TableQuickInput extends PureComponent {
       return addNotification('Error', validationResult.error, 5000, 'error');
     }
 
-    this.setState({ submitPending: true });
+    this.setState({ isSubmitPending: true });
 
     return this.patchPromise
-      .then(() => {
-        return completeQuickInput({ windowId, docId, tabId, quickInputId });
-      })
-      .then(() => this.setState({ submitPending: false }))
+      .then(() => completeQuickInput({ windowId, docId, tabId, quickInputId }))
+      .then(() => this.setState({ isSubmitPending: false }))
       .then(this.initQuickInput);
   };
 
@@ -220,24 +218,32 @@ class TableQuickInput extends PureComponent {
       quickInputId,
       inProgress,
     } = this.props;
-    const { submitPending } = this.state;
+    const { isSubmitPending } = this.state;
 
     if (data && layout) {
+      const readonly = isSubmitPending;
+
       return layout.map((item, idx) => {
-        const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         const fieldNames = item.fields.map((elem) => elem.field);
+        const widgetData = item.fields.map((elem) => {
+          let fieldData = data[elem.field] || {};
+          if (readonly && !fieldData.readonly) {
+            fieldData = { ...fieldData, readonly: true };
+          }
+          return fieldData;
+        });
 
         return (
           <WidgetWrapper
+            key={idx}
             ref={(node) => this.setWidgetWrapperElement(node, fieldNames)}
             dataSource="quick-input"
-            inProgress={inProgress}
-            isEditable={!submitPending}
             entity={'window'}
+            windowType={windowId}
+            tabId={tabId}
             subentity="quickInput"
             subentityId={quickInputId}
-            tabId={tabId}
-            windowType={windowId}
+            inProgress={inProgress}
             widgetType={item.widgetType}
             widgetSize={item.size}
             fields={item.fields}
@@ -246,7 +252,6 @@ class TableQuickInput extends PureComponent {
             gridAlign={item.gridAlign}
             forceFullWidth={widgetData.length > 1}
             forceHeight={forceHeight}
-            key={idx}
             propagateEnterKeyEvent={true} // make sure Enter key is propagated, so onSubmit is called
             caption={item.caption}
             handlePatch={this.handlePatch}
@@ -258,6 +263,19 @@ class TableQuickInput extends PureComponent {
         );
       });
     }
+  };
+
+  renderSubmitButton = () => {
+    const { isSubmitPending } = this.state;
+
+    return (
+      <>
+        <div className="col-sm-12 col-md-3 col-lg-2 hint">
+          {`(Press 'Enter' to add)`}
+        </div>
+        {!isSubmitPending && <button type="submit" className="hidden-up" />}
+      </>
+    );
   };
 
   /**
@@ -283,10 +301,7 @@ class TableQuickInput extends PureComponent {
         onClick={this.handleOnClick}
       >
         {this.renderFields()}
-        <div className="col-sm-12 col-md-3 col-lg-2 hint">
-          {`(Press 'Enter' to add)`}
-        </div>
-        <button type="submit" className="hidden-up" />
+        {this.renderSubmitButton()}
       </form>
     );
   }

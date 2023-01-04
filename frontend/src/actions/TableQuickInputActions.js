@@ -125,5 +125,5 @@ export const completeQuickInput = ({
   tabId,
   quickInputId,
 }) => {
-  api.completeQuickInput(windowId, docId, tabId, quickInputId);
+  return api.completeQuickInput(windowId, docId, tabId, quickInputId);
 };
