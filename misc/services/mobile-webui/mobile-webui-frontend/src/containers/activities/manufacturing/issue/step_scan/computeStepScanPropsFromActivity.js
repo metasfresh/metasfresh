@@ -19,11 +19,12 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   const stepQtyToIssue = step.qtyToIssue;
   const qtyHUCapacity = step.qtyHUCapacity;
 
-  const qtyToIssueMax = isProcessedQtyStillOnScale
-    ? Math.max(lineQtyToIssueMax, 0)
-    : Math.max(lineQtyToIssueMax - lineQtyIssued, 0);
+  const qtyToIssueMax =
+    isWeightable && isProcessedQtyStillOnScale
+      ? Math.max(lineQtyToIssueMax, 0)
+      : Math.max(lineQtyToIssueMax - lineQtyIssued, 0);
 
-  const qtyAlreadyOnScale = isProcessedQtyStillOnScale ? Math.max(lineQtyIssued, 0) : undefined;
+  const qtyAlreadyOnScale = isWeightable && isProcessedQtyStillOnScale ? Math.max(lineQtyIssued, 0) : undefined;
   //qtyToIssueMax = Math.min(qtyToIssueMax, qtyHUCapacity); // allow exceeding the HU capacity
 
   const lineQtyToIssueRemaining = Math.max(lineQtyToIssue - lineQtyIssued, 0);

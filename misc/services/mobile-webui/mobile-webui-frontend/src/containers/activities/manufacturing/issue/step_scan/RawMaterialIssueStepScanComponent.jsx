@@ -21,6 +21,8 @@ import { useBooleanSetting } from '../../../../../reducers/settings';
 const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, stepId }) => {
   console.log('RawMaterialIssueStepScanComponent', { wfProcessId, activityId, lineId, stepId });
 
+  // if qtyInput.ProcessedQtyIsStillOnScale === true, it means the already issued qty for the selected line is still on the scale,
+  // the process will know to subtract it before issuing again.
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
@@ -83,7 +85,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
     const stepId = resolvedBarcodeData.stepId;
     const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = qty > resolvedBarcodeData.qtyHUCapacity;
+    const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
 
     dispatch(
       updateManufacturingIssue({
