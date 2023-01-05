@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!--
-  ~ #%L
-  ~ de-metas-camel-edi
-  ~ %%
-  ~ Copyright (C) 2021 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
-
 <EDI_Exp_Desadv AD_Client_Value="InterCheese AG" ReplicationMode="1" ReplicationType="M" Version="*" SequenceNo="1017175" TrxName="">
     <C_BPartner_ID>
         <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
@@ -37,47 +15,49 @@
     <EDI_ExportStatus>D</EDI_ExportStatus>
     <MovementDate>2021-01-20+01:00</MovementDate>
     <POReference>6666666666</POReference>
-    <EDI_Exp_DesadvLine>
-        <C_UOM_ID>
-            <Name>Kollo</Name>
-            <UOMSymbol>Kollo</UOMSymbol>
-            <X12DE355>COLI</X12DE355>
-        </C_UOM_ID>
-        <EDI_Exp_DesadvLine_Pack>
-            <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-            <LotNumber>19</LotNumber>
+    <EDI_Exp_Desadv_Pack>
+        <IPA_SSCC18>123456789012345678</IPA_SSCC18>
+        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
+        <EDI_Exp_Desadv_Pack_Item>
             <QtyCU>1</QtyCU>
             <QtyCUsPerLU>1</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
+            <LotNumber>19</LotNumber>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
-            <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
             <M_HU_PackagingCode_TU_Text>COLI</M_HU_PackagingCode_TU_Text>
-            <C_UOM_ID>
-                <Name>Kollo</Name>
-                <UOMSymbol>Kollo</UOMSymbol>
-                <X12DE355>COLI</X12DE355>
-            </C_UOM_ID>
-        </EDI_Exp_DesadvLine_Pack>
-        <Line>100</Line>
-        <M_Product_ID>
-            <Name>ProductName</Name>
-            <Value>123457</Value>
-            <Volume>0</Volume>
-            <Weight>5.00</Weight>
-        </M_Product_ID>
-        <ProductDescription>ProductDescription</ProductDescription>
-        <ProductNo>ProductNo</ProductNo>
-        <QtyEntered>1.00</QtyEntered>
-        <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-        <GTIN>1234567890125</GTIN>
-        <PriceActual>19.900</PriceActual>
-        <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
-        <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
-        <OrderPOReference>6666666666</OrderPOReference>
-        <QtyDeliveredInInvoiceUOM>5.16</QtyDeliveredInInvoiceUOM>
-        <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
-        <OrderLine>100</OrderLine>
-    </EDI_Exp_DesadvLine>
+            <EDI_DesadvLine_ID>
+                <EDI_DesadvLine_ID>1000000</EDI_DesadvLine_ID>
+                <C_UOM_ID>
+                    <!--Maßeinheit-->
+                    <Name>Kollo</Name>
+                    <UOMSymbol>Kollo</UOMSymbol>
+                    <X12DE355>COLI</X12DE355>
+                </C_UOM_ID>
+                <Line>100</Line>
+                <M_Product_ID>
+                    <!--Produkt, Leistung, Artikel-->
+                    <Name>ProductName</Name>
+                    <Value>123457</Value>
+                    <Volume>0</Volume>
+                    <Weight>5.00</Weight>
+                </M_Product_ID>
+                <ProductDescription>ProductDescription</ProductDescription>
+                <ProductNo>ProductNo</ProductNo>
+                <QtyEntered>1.00</QtyEntered>
+                <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
+                <GTIN>1234567890125</GTIN>
+                <PriceActual>19.900</PriceActual>
+                <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
+                <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
+                <OrderPOReference>6666666666</OrderPOReference>
+                <QtyDeliveredInInvoiceUOM>5.16</QtyDeliveredInInvoiceUOM>
+                <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
+                <OrderLine>100</OrderLine>
+            </EDI_DesadvLine_ID>
+            <GTIN_TU_PackingMaterial>BPARTNER_GTIN</GTIN_TU_PackingMaterial>
+        </EDI_Exp_Desadv_Pack_Item>
+    </EDI_Exp_Desadv_Pack>
     <Bill_Location_ID>
         <GLN>1234567890126</GLN>
         <Name>InvoiceTo-Name EDI-GLN</Name>

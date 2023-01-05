@@ -22,17 +22,15 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import java.util.Properties;
 
 /**
  * Updates {@link I_C_Invoice_Candidate}s which are scheduled to be recomputed.
@@ -45,7 +43,7 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Updates invoice candidates (which were scheduled to be recomputed)
-	 *
+	 * 
 	 * NOTEs:
 	 * <ul>
 	 * <li>only those candidates will be updated that were previously invalidated

@@ -200,7 +200,6 @@ import java.util.stream.StreamSupport;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer.OnMissingCandidate.I_VETO;
-import static de.metas.invoicecandidate.api.impl.InvoiceLineAllocType.InvoiceVoided;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -2639,11 +2638,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final org.compiere.model.I_M_InOut inOut = inoutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
 
-		if (docStatus.equals(DocStatus.InProgress) || docStatus.equals(DocStatus.Reversed))
+		Loggables.withLogger(logger, Level.INFO).addLog("DocStatus for M_InOutLine_ID={} is {}", inOutLine.getM_InOutLine_ID(), docStatus.getCode());
+		if (docStatus.equals(DocStatus.Completed) || docStatus.equals(DocStatus.Closed))
 		{
-			return ZERO;
+			return inOutLine.getMovementQty();
 		}
 
-		return inOutLine.getMovementQty();
+		return ZERO;
 	}
 }
