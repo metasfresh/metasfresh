@@ -49,6 +49,10 @@ class WidgetWrapper extends PureComponent {
     this.childRef = React.createRef();
   }
 
+  getWrappedElement = () => {
+    return this.childRef?.current;
+  };
+
   render() {
     //console.log('WidgetWrapper.render', { props: this.props });
     const { renderMaster, widgetType } = this.props;
