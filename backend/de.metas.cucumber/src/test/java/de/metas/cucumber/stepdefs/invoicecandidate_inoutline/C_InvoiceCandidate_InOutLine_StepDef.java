@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -38,8 +39,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
@@ -64,23 +67,20 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 	@And("validate created C_InvoiceCandidate_InOutLine")
 	public void validate_C_InvoiceCandidate_InOutLine(@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		Runnable logContext = () -> {};
-
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String invoiceCandidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(invoiceCandidateIdentifier))
-			{
-				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandidateIdentifier);
-				logContext = () -> logCurrentContext(invoiceCandidate.getC_Invoice_Candidate_ID());
-			}
+			final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLineRecord = StepDefUtil.tryAndWaitForItem(120, 500, () -> getInvoiceCandidateInOutLine(row), this::logCurrentContext);
 
-			StepDefUtil.tryAndWait(120, 500, () -> isValid_C_InvoiceCandidate_InOutLine(row), logContext);
+			final String invoiceCandidateInOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLineRecord);
 		}
 	}
 
-	private boolean isValid_C_InvoiceCandidate_InOutLine(@NonNull final Map<String, String> row)
+	@NonNull
+	private ItemProvider.ProviderResult<I_C_InvoiceCandidate_InOutLine> getInvoiceCandidateInOutLine(@NonNull final Map<String, String> row)
 	{
+		final List<String> queryCollector = new ArrayList<>();
+
 		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class).addOnlyActiveRecordsFilter();
 
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -88,6 +88,7 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 		{
 			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandidateIdentifier);
 			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID());
+			queryCollector.add(MessageFormat.format("C_Invoice_Candidate_ID={0}", invoiceCandidate.getC_Invoice_Candidate_ID()));
 		}
 
 		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -95,39 +96,38 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 		{
 			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier);
 			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID());
+			queryCollector.add(MessageFormat.format("M_InOutLine_ID={0}", shipmentLine.getM_InOutLine_ID()));
 		}
 
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered);
 		if (qtyDelivered != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered, qtyDelivered);
+			queryCollector.add(MessageFormat.format("C_InvoiceCandidate_InOutLine.QtyDelivered={0}", qtyDelivered));
 		}
 
-
-		final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBuilder.create()
-				.firstOnly(I_C_InvoiceCandidate_InOutLine.class);
-
-		if (invoiceCandidateInOutLine == null)
-		{
-			return false;
-		}
-
-		final String invoiceCandidateInOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLine);
-
-		return true;
+		return queryBuilder.create()
+				.firstOnlyOptional(I_C_InvoiceCandidate_InOutLine.class)
+				.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("Couldn't find any C_InvoiceCandidate_InOutLine querying by"
+																					   + String.join(" && ", queryCollector)));
 	}
 
-	private String logCurrentContext(@NonNull final Integer invoiceCandidateId)
+	@NonNull
+	private String logCurrentContext()
 	{
-		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
-				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+		final StringBuilder message = new StringBuilder("C_InvoiceCandidate_InOutLine records:").append("\n");
+
+		queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
 				.create()
-				.stream()
-				.map(inoutLineAllocation -> "[C_InvoiceCandidate_InOutLine_ID - " + inoutLineAllocation.getC_InvoiceCandidate_InOutLine_ID()
-						+ ": C_Invoice_Candidate_ID: " + inoutLineAllocation.getC_Invoice_Candidate_ID()
-						+ " , M_InOut_Line_ID: " + inoutLineAllocation.getM_InOutLine_ID()
-						+ " , QtyDelivered: " + inoutLineAllocation.getQtyDelivered() + "]")
-				.collect(Collectors.joining(","));
+				.stream(I_C_InvoiceCandidate_InOutLine.class)
+				.forEach(invoiceCandidateInOutLineRecord -> message
+						.append(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID).append(" : ").append(invoiceCandidateInOutLineRecord.getC_InvoiceCandidate_InOutLine_ID()).append(" ; ")
+						.append(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID).append(" : ").append(invoiceCandidateInOutLineRecord.getC_Invoice_Candidate_ID()).append(" ; ")
+						.append(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID).append(" : ").append(invoiceCandidateInOutLineRecord.getM_InOutLine_ID()).append(" ; ")
+						.append(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered).append(" : ").append(invoiceCandidateInOutLineRecord.getQtyDelivered()).append(" ; ")
+						.append("\n"));
+
+		return "see current context: \n" + message;
 	}
 }
