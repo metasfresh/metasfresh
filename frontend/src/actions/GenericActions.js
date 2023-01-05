@@ -23,19 +23,19 @@ export function autocompleteRequest({
   tabId,
   viewId,
 }) {
-  console.log('autocompleteRequest', {
-    attribute,
-    docId,
-    docType,
-    entity,
-    propertyName,
-    query,
-    rowId,
-    subentity,
-    subentityId,
-    tabId,
-    viewId,
-  });
+  // console.log('autocompleteRequest', {
+  //   attribute,
+  //   docId,
+  //   docType,
+  //   entity,
+  //   propertyName,
+  //   query,
+  //   rowId,
+  //   subentity,
+  //   subentityId,
+  //   tabId,
+  //   viewId,
+  // });
 
   // NOTE: following cases are already handled elsewhere:
   // * view attributes
