@@ -45,7 +45,6 @@ import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -64,7 +63,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -110,13 +108,12 @@ public class MD_Candidate_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private PostMaterialEventService postMaterialEventService;
-	private MaterialDispoRecordRepository materialDispoRecordRepository;
-	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private CandidateRepositoryWriteService candidateWriteService;
-	private MaterialEventObserver materialEventObserver;
+	private final PostMaterialEventService postMaterialEventService;
+	private final MaterialDispoRecordRepository materialDispoRecordRepository;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final MaterialEventObserver materialEventObserver;
 	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
-	private SimulatedCandidateService simulatedCandidateService;
+	private final SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final C_OrderLine_StepDefData orderLineTable;
@@ -134,15 +131,10 @@ public class MD_Candidate_StepDef
 		this.stockCandidateTable = stockCandidateTable;
 		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
-	}
 
-	@Before
-	public void beforeEach()
-	{
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
-		candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
