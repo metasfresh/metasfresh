@@ -45,5 +45,4 @@ import org.junit.runner.RunWith;
 		})
 public class RunCucumberTest
 {
-	// todo dm: second try, delete me
 }
