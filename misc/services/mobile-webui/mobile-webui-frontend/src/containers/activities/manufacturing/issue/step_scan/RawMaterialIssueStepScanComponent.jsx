@@ -16,9 +16,12 @@ import {
   getStepByQRCodeFromActivity,
 } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
+import { useBooleanSetting } from '../../../../../reducers/settings';
 
 const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, stepId }) => {
   console.log('RawMaterialIssueStepScanComponent', { wfProcessId, activityId, lineId, stepId });
+
+  const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
 
@@ -40,11 +43,12 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       lineQtyToIssueRemaining,
       lineQtyIssued,
       isWeightable,
-      isIssueWholeHU,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
-    } = computeStepScanPropsFromActivity({ activity, lineId, stepId: step.id });
+      qtyHUCapacity,
+      qtyAlreadyOnScale,
+    } = computeStepScanPropsFromActivity({ activity, lineId, stepId: step.id, isProcessedQtyStillOnScale });
 
     return {
       //
@@ -63,11 +67,12 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       scaleTolerance,
       lineQtyToIssue,
       lineQtyIssued,
+      qtyHUCapacity,
+      qtyAlreadyOnScale,
       //
       // Props which are needed by `onResult` function (see below):
       stepId: step.id,
       isWeightable,
-      isIssueWholeHU,
     };
   };
 
@@ -78,7 +83,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
     const stepId = resolvedBarcodeData.stepId;
     const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = !!resolvedBarcodeData.isIssueWholeHU;
+    const isIssueWholeHU = qty > resolvedBarcodeData.qtyHUCapacity;
 
     dispatch(
       updateManufacturingIssue({
