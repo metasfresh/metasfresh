@@ -49,10 +49,16 @@ public class JsonOrderLineGroup
 	@JsonInclude(NON_NULL)
 	BigDecimal discount;
 
+	@ApiModelProperty( //
+			value = "It is taken into consideration when C_OLCand.Line is renumbered. Translates to C_OLCand.CompensationGroupOrderBy")
+	@JsonInclude(NON_NULL)
+	JsonGroupCompensationOrderBy ordering;
+
 	@Builder
 	public JsonOrderLineGroup(@JsonProperty("groupKey") final @Nullable String groupKey,
 			@JsonProperty("groupMainItem") final boolean isGroupMainItem,
-			@JsonProperty("discount") final @Nullable BigDecimal discount)
+			@JsonProperty("discount") final @Nullable BigDecimal discount,
+			@JsonProperty("ordering") final @Nullable JsonGroupCompensationOrderBy ordering)
 	{
 
 		if (!isGroupMainItem && discount != null)
@@ -63,5 +69,6 @@ public class JsonOrderLineGroup
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
 		this.discount = discount;
+		this.ordering = ordering;
 	}
 }

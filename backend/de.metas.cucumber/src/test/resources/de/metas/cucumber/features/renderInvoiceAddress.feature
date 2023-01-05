@@ -52,7 +52,7 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1               | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_12307 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
@@ -91,7 +91,7 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_23407 | true      | CO        | I               | 1000002                    |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
 
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
@@ -143,7 +143,7 @@ Feature: Render invoice address
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
       | order_1               | customer_bp_26_02        | bpLocation_DE                     | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_45607 | true      | CO        | I               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
     # note that we wait for the IC to also have QtyToInvoice=1; that means that it it completely up to date and ready to be processed
     And after not more than 30s, C_Invoice_Candidates are found:
@@ -215,7 +215,7 @@ Feature: Render invoice address
       | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        | Shopware                               |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
