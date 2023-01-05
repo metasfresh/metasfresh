@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.invoicecandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -43,6 +44,8 @@ import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceTy
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
@@ -86,6 +89,7 @@ import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
@@ -112,6 +116,7 @@ public class CreateInvoiceCandidatesService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
@@ -156,13 +161,14 @@ public class CreateInvoiceCandidatesService
 		}
 
 		final JsonCreateInvoiceCandidatesResponseBuilder result = JsonCreateInvoiceCandidatesResponse.builder();
+		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.builder();
 		for (final NewManualInvoiceCandidate candidateToSave : candidatesToSave.build())
 		{
 			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getExternalHeaderId());
 			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getExternalLineId());
 
 			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
-
+			invoiceCandidateIds.add(candidateId);
 			final JsonInvoiceCandidatesResponseItem responseItem = JsonInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
 					.externalLineId(lineId)
@@ -170,6 +176,13 @@ public class CreateInvoiceCandidatesService
 					.build();
 			result.responseItem(responseItem);
 		}
+
+		//ensure NetAmtToInvoice and other related fields are correctly populated.
+		invoiceCandBL.updateInvalid()
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.setTaggedWithAnyTag()
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofIdsSet(invoiceCandidateIds.build()))
+				.update();
 
 		return result.build();
 	}
