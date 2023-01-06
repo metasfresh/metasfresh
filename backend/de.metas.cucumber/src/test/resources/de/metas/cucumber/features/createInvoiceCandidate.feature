@@ -2,7 +2,7 @@
 @topic:InvoiceCandidate
 Feature: create invoice candidate via API
   As a user
-  I create multiple Invoice candidates and when processing, multiple workpackages are enqueued for each order to be generated
+  I create multiple Invoice candidates and when processing, multiple workpackages are enqueued for each invoic to be generated
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
