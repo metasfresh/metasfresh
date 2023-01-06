@@ -67,7 +67,7 @@ public class M_InOutLine
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void removeHUAssignments(final I_M_InOutLine inoutLine)
+	public void onBeforeDelete(final I_M_InOutLine inoutLine)
 	{
 		final I_M_InOut inout = inoutLine.getM_InOut();
 
