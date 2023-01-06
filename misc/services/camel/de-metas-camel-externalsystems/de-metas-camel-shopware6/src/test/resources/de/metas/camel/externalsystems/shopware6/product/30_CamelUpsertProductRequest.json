@@ -6,6 +6,7 @@
         "productIdentifier": "ext-Shopware6-!!productId!!",
         "externalVersion": null,
         "externalReferenceUrl": null,
+        "externalSystemConfigId": 1,
         "requestProduct": {
           "code": "!!productNumber!!",
           "codeSet": true,
