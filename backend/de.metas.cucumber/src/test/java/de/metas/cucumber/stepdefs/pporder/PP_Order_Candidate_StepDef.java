@@ -640,7 +640,7 @@ public class PP_Order_Candidate_StepDef
 				.create()
 				.listImmutable(I_PP_Order_Candidate.class);
 
-		final StrBuilder messageBuilder = new StrBuilder("\n");
+		final StringBuilder messageBuilder = new StringBuilder("\n");
 		candidatesForProductId
 				.forEach(candidate ->
 								 messageBuilder.append(" -> PP_Order_Candidate_ID: ")

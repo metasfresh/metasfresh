@@ -105,7 +105,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 	public void loadPPOrderByCandidateId(final int timeoutSec, @NonNull final String ppOrderCandidateIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
-		assertThat(ppOrderCandidate).isNotNull();
+		assertThat(ppOrderCandidate).as("Missing PP_Order_Candidate for identifier %s", ppOrderCandidateIdentifier).isNotNull();
 
 		final ItemProvider<ImmutableList<I_PP_OrderCandidate_PP_Order>> arePPOrdersCreated = () -> {
 
@@ -123,7 +123,22 @@ public class PP_OrderCandidate_PP_Order_StepDef
 		};
 
 		final Supplier<String> getLogContext = () -> {
-			final StringBuilder context = new StringBuilder();
+			final StringBuilder context = new StringBuilder("Found the following allocations for PP_Order_Candidate_ID: ")
+					.append(ppOrderCandidate.getPP_Order_Candidate_ID())
+					.append(" (Identifier=").append(ppOrderCandidateIdentifier).append(")");
+
+			queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+					.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMN_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+					.create()
+					.stream()
+					.forEach(ppOrderCandAlloc -> {
+						context.append("\n\tPP_Order_ID=").append(ppOrderCandAlloc.getPP_Order_ID());
+						context.append("\n\tQtyOrdered=").append(ppOrderCandAlloc.getQtyEntered());
+					});
+
+			context.append("Found the following PP_Orders for PP_Order_Candidate_ID: ")
+					.append(ppOrderCandidate.getPP_Order_Candidate_ID())
+					.append(" (Identifier=").append(ppOrderCandidateIdentifier).append(")");
 
 			queryBL.createQueryBuilder(I_PP_Order.class)
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, ppOrderCandidate.getM_Product_ID())
@@ -160,7 +175,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 			if (record == null)
 			{
-				throw new RuntimeException("No I_PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
+				throw new RuntimeException("No PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
 			}
 
 			alreadySeenAllocRecordIds.add(record.getPP_OrderCandidate_PP_Order_ID());
