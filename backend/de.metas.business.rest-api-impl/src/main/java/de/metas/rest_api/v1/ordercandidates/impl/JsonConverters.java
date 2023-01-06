@@ -10,6 +10,8 @@ import de.metas.common.ordercandidates.v1.response.JsonOLCand;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v1.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -142,6 +144,16 @@ public class JsonConverters
 		{
 			uomId = productInfo.getUomId();
 		}
+		final JsonDocTypeInfo invoiceDocType = request.getInvoiceDocType();
+		final DocBaseAndSubType docBaseAndSubType;
+		if (invoiceDocType == null)
+		{
+			docBaseAndSubType = null;
+		}
+		else
+		{
+			docBaseAndSubType = DocBaseAndSubType.of(invoiceDocType.getDocBaseType(), invoiceDocType.getDocSubType());
+		}
 
 		return OLCandCreateRequest.builder()
 				//
@@ -162,7 +174,7 @@ public class JsonConverters
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseAndSubType, orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//

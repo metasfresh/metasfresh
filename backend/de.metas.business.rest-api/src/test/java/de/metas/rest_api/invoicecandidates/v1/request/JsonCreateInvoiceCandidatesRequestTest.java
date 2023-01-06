@@ -1,23 +1,8 @@
-package de.metas.rest_api.invoicecandidates.request;
-
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v1.JsonInvoiceRule;
-import de.metas.common.rest_api.v1.JsonPrice;
-import de.metas.common.rest_api.v1.JsonSOTrx;
-import de.metas.util.JSONObjectMapper;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.*;
-
 /*
  * #%L
  * de.metas.business.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +19,21 @@ import static org.assertj.core.api.Assertions.*;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.invoicecandidates.v1.request;
+
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.util.JSONObjectMapper;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonCreateInvoiceCandidatesRequestTest
 {
