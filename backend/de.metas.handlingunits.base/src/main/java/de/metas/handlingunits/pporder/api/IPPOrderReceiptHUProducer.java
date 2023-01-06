@@ -1,6 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -32,7 +33,7 @@ public interface IPPOrderReceiptHUProducer
 
 	I_M_HU receiveVHU(Quantity qtyToReceive);
 
-	ReceiveTUsToLUResult receiveTUsToNewLU(
+	HuId receiveTUsToNewLU(
 			@NonNull Quantity qtyToReceive,
 			@NonNull HUPIItemProductId tuPIItemProductId,
 			@NonNull HuPackingInstructionsItemId luPIItemId);
