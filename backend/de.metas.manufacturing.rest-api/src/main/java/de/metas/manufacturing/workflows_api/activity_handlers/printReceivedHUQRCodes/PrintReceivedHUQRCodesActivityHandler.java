@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUToReport;
@@ -127,6 +129,7 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 
 		return handlingUnitsBL.getByIds(huIds)
 				.stream()
+				.filter(I_M_HU::isActive)
 				.map(HUToReportWrapper::of)
 				.collect(ImmutableList.toImmutableList());
 	}
