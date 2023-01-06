@@ -33,6 +33,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -109,6 +110,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	//
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -460,11 +462,19 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			processCurrentShipment();
 		}
-		//
-		// Process shipment (if is not empty)
 		else
 		{
 			Loggables.addLog("Deleting invalid shipment {0} because: {1}", currentShipment, valid.getReason());
+
+			//
+			// TODO unassign the HUs first, but do it in a way that is not deactivating the M_ShipmentSchedule_QtyPicked records.
+			//
+			// see de.metas.handlingunits.inout.impl.HUShipmentAssignmentBL.removeHUAssignments(de.metas.handlingunits.model.I_M_InOutLine),
+			// the "Unlink shipment line from shipment schedule allocations" part.
+			// That thing shall not be executed in our case because we just want to remove HU assignments and remove the shipment & lines.
+			//
+			// huShipmentAssignmentBL.removeHUAssignments(currentShipment);
+
 			InterfaceWrapperHelper.delete(currentShipment);
 		}
 
