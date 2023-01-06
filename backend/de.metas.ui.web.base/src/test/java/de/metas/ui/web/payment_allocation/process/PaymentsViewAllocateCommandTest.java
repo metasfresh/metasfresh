@@ -252,6 +252,32 @@ public class PaymentsViewAllocateCommandTest
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
 	}
 
+	private DocTypeId serviceInvoiceDocTypeId;
+	private ProductId serviceFeeProductId;
+
+	@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
+	private void createConfig(
+			@NonNull final String feePercentageOfGrandTotal,
+			@NonNull final BPartnerId customerId,
+			@NonNull final ZonedDateTime validFrom,
+			@NonNull final BPartnerId serviceCompanyBPartnerId)
+	{
+		final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
+		configRecord.setIsActive(true);
+		configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+		configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
+		configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
+		configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		saveRecord(configRecord);
+
+		final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
+		assignmentRecord.setIsActive(true);
+		assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
+		assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+		assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
+		saveRecord(assignmentRecord);
+	}
+
 	@Nested
 	public class toPayableDocument
 	{
@@ -326,8 +352,6 @@ public class PaymentsViewAllocateCommandTest
 		@Nested
 		public class WithServiceFee
 		{
-			private DocTypeId serviceInvoiceDocTypeId;
-			private ProductId serviceFeeProductId;
 			private BPartnerId feeCompanyId1;
 
 			@BeforeEach
@@ -343,29 +367,6 @@ public class PaymentsViewAllocateCommandTest
 						.feePercentageOfGrandTotal("1")
 						.serviceCompanyBPartnerId(feeCompanyId1)
 						.build();
-			}
-
-			@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
-			private void createConfig(
-					@NonNull final String feePercentageOfGrandTotal,
-					@NonNull final BPartnerId customerId,
-					@NonNull final ZonedDateTime validFrom,
-					@NonNull final BPartnerId serviceCompanyBPartnerId)
-			{
-				final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
-				configRecord.setIsActive(true);
-				configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
-				configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
-				configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
-				configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
-				saveRecord(configRecord);
-
-				final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
-				assignmentRecord.setIsActive(true);
-				assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
-				assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
-				assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
-				saveRecord(assignmentRecord);
 			}
 
 			@ParameterizedTest

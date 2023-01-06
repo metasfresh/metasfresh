@@ -60,7 +60,7 @@ public class AttributesKeyPatternTest
 	}
 
 	@Nested
-	public static class getSqlLikeString
+	public class getSqlLikeString
 	{
 		@Test
 		public void attributeValueId()
@@ -97,7 +97,7 @@ public class AttributesKeyPatternTest
 	}
 
 	@Nested
-	public static class matches
+	public class matches
 	{
 		@Test
 		public void all()

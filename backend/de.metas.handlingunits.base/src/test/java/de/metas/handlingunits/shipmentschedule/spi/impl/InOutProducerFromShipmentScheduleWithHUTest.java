@@ -321,14 +321,50 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		}
 	}
 
+	private IHUContext huContext;
+	private BPartnerLocationId bpartnerAndLocationId;
+	private WarehouseId warehouseId;
+
+	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
+	private ShipmentScheduleWithHU createShipmentSchedule(
+			@NonNull final ProductId productId,
+			@NonNull final String qtyOrdered,
+			@NonNull final String qtyToDeliver,
+			@NonNull final DeliveryRule deliveryRule,
+			final OrderId orderId)
+	{
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		saveRecord(orderLine);
+
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		shipmentSchedule.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		shipmentSchedule.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
+		shipmentSchedule.setM_Product_ID(productId.getRepoId());
+		// shipmentSchedule.setQtyOrdered(new BigDecimal(qtyOrdered)); // not needed
+		shipmentSchedule.setQtyOrdered_Calculated(new BigDecimal(qtyOrdered));
+		shipmentSchedule.setQtyToDeliver(new BigDecimal(qtyToDeliver));
+
+		shipmentSchedule.setDeliveryRule(deliveryRule.getCode());
+
+		shipmentSchedule.setC_Order_ID(OrderId.toRepoId(orderId));
+		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		shipmentSchedule.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
+		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+
+		saveRecord(shipmentSchedule);
+
+		return ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
+				huContext,
+				shipmentSchedule,
+				StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(qtyToDeliver), productId),
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+	}
+
 	@Nested
 	public class createShipments
 	{
 		private ITrxItemProcessorExecutorService trxItemProcessorExecutorService;
-
-		private IHUContext huContext;
-		private BPartnerLocationId bpartnerAndLocationId;
-		private WarehouseId warehouseId;
 
 		@BeforeEach
 		public void beforeEach()
@@ -437,42 +473,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			saveRecord(order);
 
 			return OrderId.ofRepoId(order.getC_Order_ID());
-		}
-
-		@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
-		private ShipmentScheduleWithHU createShipmentSchedule(
-				@NonNull final ProductId productId,
-				@NonNull final String qtyOrdered,
-				@NonNull final String qtyToDeliver,
-				@NonNull final DeliveryRule deliveryRule,
-				final OrderId orderId)
-		{
-			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-			saveRecord(orderLine);
-
-			final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-			shipmentSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
-			shipmentSchedule.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
-			shipmentSchedule.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
-			shipmentSchedule.setM_Product_ID(productId.getRepoId());
-			// shipmentSchedule.setQtyOrdered(new BigDecimal(qtyOrdered)); // not needed
-			shipmentSchedule.setQtyOrdered_Calculated(new BigDecimal(qtyOrdered));
-			shipmentSchedule.setQtyToDeliver(new BigDecimal(qtyToDeliver));
-
-			shipmentSchedule.setDeliveryRule(deliveryRule.getCode());
-
-			shipmentSchedule.setC_Order_ID(OrderId.toRepoId(orderId));
-			shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-			shipmentSchedule.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
-			shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
-
-			saveRecord(shipmentSchedule);
-
-			return ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-					huContext,
-					shipmentSchedule,
-					StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(qtyToDeliver), productId),
-					M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 		}
 
 		private InOutGenerateResult process(final List<ShipmentScheduleWithHU> candidates)
