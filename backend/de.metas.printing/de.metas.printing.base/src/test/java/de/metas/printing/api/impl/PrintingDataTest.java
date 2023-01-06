@@ -39,6 +39,7 @@ import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -53,6 +54,7 @@ class PrintingDataTest
 	@BeforeEach
 	void beforeEach(TestInfo testInfo)
 	{
+		AdempiereTestHelper.get().init();
 		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
 						new HardwarePrinterRepository(),
