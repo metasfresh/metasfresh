@@ -299,7 +299,7 @@
     <build>
         <plugins>
             <!-- This plugin sometimes causes trouble in eclipse. we could move it to the "jenkins-BUILD_NUMBER-set" profile below,
-            but then when running locally against logstash, we we would need to have some special configs which we don't have in prod
+            but then when running locally against logstash, we would need to have some special configs which we don't have in prod
              -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>
@@ -374,7 +374,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.6</version>
+                <version>0.8.8</version>
             </plugin>
 
         </plugins>
@@ -555,7 +555,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.7</version>
+                    <version>0.8.8</version>
                 </plugin>
 
                 <!--This plugin's configuration is used to store Eclipse m2e settings
