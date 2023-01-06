@@ -45,7 +45,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
@@ -89,7 +88,6 @@ import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
@@ -176,13 +174,6 @@ public class CreateInvoiceCandidatesService
 					.build();
 			result.responseItem(responseItem);
 		}
-
-		//ensure NetAmtToInvoice and other related fields are correctly populated.
-		invoiceCandBL.updateInvalid()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setTaggedWithAnyTag()
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofIdsSet(invoiceCandidateIds.build()))
-				.update();
 
 		return result.build();
 	}
