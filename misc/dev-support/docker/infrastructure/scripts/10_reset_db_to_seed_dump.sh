@@ -6,8 +6,8 @@ set -u # this will fail this script if no branch name is given as parameter
 # We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
 BRANCH_NAME=$1
 
-COMPOSE_FILE=../../../misc/dev-support/docker/infrastructure/docker-compose.yml
-ENV_FILE=../../../misc/dev-support/docker/infrastructure/env-files/${BRANCH_NAME}.env
+COMPOSE_FILE=../docker-compose.yml
+ENV_FILE=../env-files/${BRANCH_NAME}.env
 
 # reset the database
 docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure down
