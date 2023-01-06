@@ -152,12 +152,13 @@ public class BPRelationsService
 			@Nullable final ExternalIdentifier contactIdentifier,
 			@NonNull final BPartnerComposite bPartnerComposite)
 	{
-		return bPartnerComposite.extractContact(partnerContact -> contactMatchesIdentifier(partnerContact, contactIdentifier));
+		return bPartnerComposite.extractContact(partnerContact -> contactMatchesIdentifier(partnerContact, contactIdentifier, bPartnerComposite.getOrgId()));
 	}
 
 	private boolean contactMatchesIdentifier(
 			@NonNull final BPartnerContact bpartnerContact,
-			@Nullable final ExternalIdentifier contactIdentifier)
+			@Nullable final ExternalIdentifier contactIdentifier,
+			@Nullable final OrgId orgId)
 	{
 		if (contactIdentifier == null)
 		{
@@ -172,7 +173,7 @@ public class BPRelationsService
 		{
 			case EXTERNAL_REFERENCE:
 				final Optional<MetasfreshId> metasfreshId =
-						jsonServiceFactory.createRetriever().resolveExternalReference(null, contactIdentifier, ExternalUserReferenceType.USER_ID);
+						jsonServiceFactory.createRetriever().resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID);
 				return metasfreshId.filter(id -> Objects.equals(bpartnerContactId.getRepoId(), id.getValue())).isPresent();
 			case METASFRESH_ID:
 				return MetasfreshId.equals(contactIdentifier.asMetasfreshId(), MetasfreshId.of(bpartnerContactId));
@@ -191,12 +192,13 @@ public class BPRelationsService
 				? bpartnerIdentifier
 				: locationIdentifier;
 
-		return bPartnerComposite.extractLocation(bPartnerLocation -> locationMatchesIdentifier(bPartnerLocation, lookupLocationIdentifier));
+		return bPartnerComposite.extractLocation(bPartnerLocation -> locationMatchesIdentifier(bPartnerLocation, lookupLocationIdentifier, bPartnerComposite.getOrgId()));
 	}
 
 	private boolean locationMatchesIdentifier(
 			@NonNull final BPartnerLocation bPartnerLocation,
-			@Nullable final ExternalIdentifier locationIdentifier)
+			@Nullable final ExternalIdentifier locationIdentifier,
+			@Nullable final OrgId orgId)
 	{
 		if (locationIdentifier == null)
 		{
@@ -206,7 +208,7 @@ public class BPRelationsService
 		{
 			case EXTERNAL_REFERENCE:
 				final Optional<MetasfreshId> metasfreshId =
-						jsonServiceFactory.createRetriever().resolveExternalReference(null, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
+						jsonServiceFactory.createRetriever().resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
 
 				return metasfreshId.filter(id -> Objects.equals(bPartnerLocation.getId().getRepoId(), id.getValue())).isPresent();
 			case GLN:
