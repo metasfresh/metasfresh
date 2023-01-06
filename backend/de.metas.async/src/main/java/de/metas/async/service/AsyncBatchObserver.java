@@ -101,8 +101,6 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
-		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
-
 		//dev-note: make sure to wait for any work already enqueued with this async batch to finalize
 		Optional.ofNullable(asyncBatch2Completion.get(id))
 				.ifPresent(batchProgress -> {
