@@ -1,35 +1,8 @@
-package de.metas.rest_api.invoicecandidates.request;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v1.JsonInvoiceRule;
-import de.metas.common.rest_api.v1.JsonPrice;
-import de.metas.common.rest_api.v1.JsonSOTrx;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
-
 /*
  * #%L
  * de.metas.business.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,6 +19,32 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.invoicecandidates.v2.request;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
+import de.metas.common.rest_api.v2.JsonInvoiceRule;
+import de.metas.common.rest_api.v2.JsonPrice;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @Value
 public class JsonCreateInvoiceCandidatesRequestItem
@@ -130,14 +129,10 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	BigDecimal discountOverride;
 
 	@ApiModelProperty(position = 180, required = false, //
-			value = "Optional invoice line description")
+			value = "optional invoice line description")
 	String lineDescription;
 
 	@ApiModelProperty(position = 190, required = false, //
-			value = "Optional invoice line C_Project_ID")
-	JsonMetasfreshId projectId;
-
-	@ApiModelProperty(position = 200, required = false, //
 			value = "Optional invoice detail items. Will be persisted as `C_Invoice_Detail` records together with the new invoice candidate.")
 	List<JSONInvoiceDetailItem> invoiceDetailItems;
 
@@ -163,7 +158,6 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("priceEnteredOverride") @Nullable final JsonPrice priceEnteredOverride,
 			@JsonProperty("discountOverride") @Nullable final BigDecimal discountOverride,
 			@JsonProperty("lineDescription") @Nullable final String lineDescription,
-			@JsonProperty("projectId") @Nullable final JsonMetasfreshId projectId,
 			@JsonProperty("invoiceDetailItems") @Nullable @Singular final List<JSONInvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgCode = orgCode;
@@ -185,7 +179,6 @@ public class JsonCreateInvoiceCandidatesRequestItem
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
 		this.lineDescription = lineDescription;
-		this.projectId = projectId;
 		this.invoiceDetailItems = invoiceDetailItems;
 	}
 }

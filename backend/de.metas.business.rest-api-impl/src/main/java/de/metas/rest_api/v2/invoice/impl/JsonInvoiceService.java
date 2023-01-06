@@ -141,14 +141,14 @@ public class JsonInvoiceService
 			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
-									.lineNumber(line.getLine())
-									.productName(productName)
-									.qtyInvoiced(line.getQtyEntered())
-									.price(line.getPriceEntered())
-									.taxRate(taxRate)
-									.lineNetAmt(line.getLineNetAmt())
-									.currency(currency)
-									.build());
+					.lineNumber(line.getLine())
+					.productName(productName)
+					.qtyInvoiced(line.getQtyEntered())
+					.price(line.getPriceEntered())
+					.taxRate(taxRate)
+					.lineNetAmt(line.getLineNetAmt())
+					.currency(currency)
+					.build());
 		}
 
 		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));

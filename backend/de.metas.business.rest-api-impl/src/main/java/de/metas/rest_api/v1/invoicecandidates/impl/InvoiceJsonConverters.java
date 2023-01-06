@@ -1,25 +1,8 @@
-package de.metas.rest_api.invoicecandidates.impl;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.compiere.util.Env;
-
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
-import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.rest_api.utils.JsonExternalIds;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +19,23 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v1.invoicecandidates.impl;
+
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonInvoiceCandidateReference;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.compiere.util.Env;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @UtilityClass
 final class InvoiceJsonConverters
 {

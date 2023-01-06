@@ -1,23 +1,50 @@
-package de.metas.rest_api.invoicecandidates.impl;
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.rest_api.v2.invoicecandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
-import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
-import de.metas.common.rest_api.v1.JsonInvoiceRule;
-import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
+import de.metas.common.rest_api.v2.JsonInvoiceRule;
+import de.metas.common.rest_api.v2.JsonPrice;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
@@ -32,28 +59,25 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.IProductDAO.ProductQuery;
-import de.metas.product.IProductDAO.ProductQuery.ProductQueryBuilder;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse.JsonCreateInvoiceCandidatesResponseBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
-import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
-import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.invoicecandidates.v2.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.v2.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.bpartner.relation.BPRelationsService;
+import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -74,64 +98,46 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
 
-/*
- * #%L
- * de.metas.business.rest-api-impl
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
 public class CreateInvoiceCandidatesService
 {
-	private final BPartnerQueryService bPartnerQueryService;
-	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final DocTypeService docTypeService;
 	private final CurrencyService currencyService;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
+	private final ProductRestService productRestService;
+	private final BPRelationsService bpRelationsService;
+	private final JsonRetrieverService jsonRetrieverService;
 
 	public CreateInvoiceCandidatesService(
-			@NonNull final BPartnerQueryService bPartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final DocTypeService docTypeService,
 			@NonNull final CurrencyService currencyService,
 			@NonNull final ManualCandidateService manualCandidateService,
-			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
+			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository,
+			@NonNull final ProductRestService productRestService,
+			@NonNull final BPRelationsService bpRelationsService,
+			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
-		this.bPartnerQueryService = bPartnerQueryService;
-		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
 		this.manualCandidateService = manualCandidateService;
 		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
+		this.productRestService = productRestService;
+		this.bpRelationsService = bpRelationsService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
 
 	public JsonCreateInvoiceCandidatesResponse createInvoiceCandidates(@NonNull final JsonCreateInvoiceCandidatesRequest request)
@@ -140,7 +146,7 @@ public class CreateInvoiceCandidatesService
 
 		// candidates
 		final ImmutableList<ExternallyReferencedCandidate> //
-		exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
+				exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
 		failIfNotEmpty(exitingCandidates);
 
 		final ImmutableList.Builder<NewManualInvoiceCandidate> candidatesToSave = ImmutableList.builder();
@@ -153,13 +159,14 @@ public class CreateInvoiceCandidatesService
 		}
 
 		final JsonCreateInvoiceCandidatesResponseBuilder result = JsonCreateInvoiceCandidatesResponse.builder();
+		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateIds = ImmutableSet.builder();
 		for (final NewManualInvoiceCandidate candidateToSave : candidatesToSave.build())
 		{
 			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getExternalHeaderId());
 			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getExternalLineId());
 
 			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
-
+			invoiceCandidateIds.add(candidateId);
 			final JsonInvoiceCandidatesResponseItem responseItem = JsonInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
 					.externalLineId(lineId)
@@ -266,8 +273,6 @@ public class CreateInvoiceCandidatesService
 			candidate.lineDescription(item.getLineDescription().trim());
 		}
 
-		candidate.projectId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(item.getProjectId())));
-
 		// invoice detail items
 		if (CollectionUtils.isNotEmpty(item.getInvoiceDetailItems()))
 		{
@@ -293,40 +298,23 @@ public class CreateInvoiceCandidatesService
 				.build();
 	}
 
+	@Nullable
 	private ProductId syncProductToCandidate(
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		final IdentifierString productIdentifier = IdentifierString.ofOrNull(item.getProductIdentifier());
+		final ExternalIdentifier productIdentifier = ExternalIdentifier.ofOrNull(item.getProductIdentifier());
 		if (productIdentifier == null)
 		{
-			throw new MissingPropertyException("productIdentifier", item);
+			return null;
 		}
 
-		final ProductQueryBuilder productQuery = ProductQuery.builder()
-				.orgId(orgId)
-				.includeAnyOrg(true)
-				.outOfTrx(true);
-		final ProductId productId;
-		switch (productIdentifier.getType())
-		{
-			case EXTERNAL_ID:
-				productId = productDAO.retrieveProductIdBy(productQuery.externalId(productIdentifier.asExternalId()).build());
-				break;
-			case METASFRESH_ID:
-				productId = ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue());
-				break;
-			case VALUE:
-				productId = productDAO.retrieveProductIdBy(productQuery.value(productIdentifier.asValue()).build());
-				break;
-			default:
-				throw new AdempiereException("Unexpected type=" + productIdentifier.getType());
-		}
-		if (productId == null)
-		{
-			throw MissingResourceException.builder().resourceName("product").resourceIdentifier(productIdentifier.toJson()).parentResource(item).build();
-		}
+		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, orgId).orElseThrow(() -> MissingResourceException.builder()
+				.resourceName("billPartner")
+				.resourceIdentifier(productIdentifier.toString())
+				.parentResource(item)
+				.build());
 
 		candidate.productId(productId);
 		return productId;
@@ -352,7 +340,12 @@ public class CreateInvoiceCandidatesService
 			}
 			catch (final OrgIdNotFoundException e)
 			{
-				throw MissingResourceException.builder().resourceName("organisation").resourceIdentifier(item.getOrgCode()).parentResource(item).cause(e).build();
+				throw MissingResourceException.builder()
+						.resourceName("organisation")
+						.resourceIdentifier(item.getOrgCode())
+						.parentResource(item)
+						.cause(e)
+						.build();
 			}
 		}
 		else
@@ -378,8 +371,9 @@ public class CreateInvoiceCandidatesService
 		{
 			return;
 		}
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 
-		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docType, orgId));
+		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docBaseAndSubType, orgId));
 	}
 
 	private void syncBPartnerToCandidate(
@@ -387,52 +381,45 @@ public class CreateInvoiceCandidatesService
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		final boolean noBPartnerIdentifier = isEmpty(item.getBillPartnerIdentifier(), true);
-
 		final BPartnerInfoBuilder bpartnerInfo = BPartnerInfo.builder();
 
-		if (noBPartnerIdentifier)
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.ofOrNull(item.getBillPartnerIdentifier());
+		if (bpartnerIdentifier == null)
 		{
 			throw new MissingPropertyException("billPartnerIdentifier", item);
 		}
-
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(item.getBillPartnerIdentifier());
-		final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
-		final BPartnerQuery query = bPartnerQueryService.createQueryFailIfNotExists(bpartnerIdLookupKey, orgId);
-		final BPartnerComposite bpartnerComposite;
-		try
-		{
-			bpartnerComposite = bpartnerCompositeRepository.getSingleByQuery(query).get();
-		}
-		catch (final AdempiereException e)
-		{
-			throw MissingResourceException.builder()
-					.resourceName("billPartner")
-					.resourceIdentifier(bpartnerIdentifier.toJson())
-					.parentResource(item)
-					.cause(e)
-					.build();
-		}
+		final BPartnerComposite bpartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier).orElseThrow(() -> MissingResourceException.builder()
+				.resourceName("billPartner")
+				.resourceIdentifier(bpartnerIdentifier.toString())
+				.parentResource(item)
+				.build());
 
 		bpartnerInfo.bpartnerId(bpartnerComposite.getBpartner().getId());
 
-		final IdentifierString billLocationIdentifier = IdentifierString.ofOrNull(item.getBillLocationIdentifier());
+		final ExternalIdentifier billLocationIdentifier = ExternalIdentifier.ofOrNull(item.getBillLocationIdentifier());
 		if (billLocationIdentifier == null)
 		{
 			final BPartnerLocation location = bpartnerComposite
 					.extractBillToLocation()
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").parentResource(item).build());
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("billLocation")
+							.parentResource(item)
+							.build());
 			bpartnerInfo.bpartnerLocationId(location.getId());
 		}
 		else
 		{
-			final BPartnerLocation location = bpartnerComposite
-					.extractLocation(BPartnerCompositeRestUtils.createLocationFilterFor(billLocationIdentifier))
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier(billLocationIdentifier.toJson()).parentResource(item).build());
-			bpartnerInfo.bpartnerLocationId(location.getId());
+			final BPartnerLocationId billLocationId = bpRelationsService.getBpartnerLocation(bpartnerIdentifier, billLocationIdentifier, bpartnerComposite)
+					.map(BPartnerLocation::getId)
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("billLocation")
+							.resourceIdentifier(billLocationIdentifier.toString())
+							.parentResource(item)
+							.build());
+			bpartnerInfo.bpartnerLocationId(billLocationId);
 		}
 
-		final IdentifierString billContactIdentifier = IdentifierString.ofOrNull(item.getBillContactIdentifier());
+		final ExternalIdentifier billContactIdentifier = ExternalIdentifier.ofOrNull(item.getBillContactIdentifier());
 		if (billContactIdentifier == null)
 		{
 			bpartnerInfo.contactId(null); // that's OK, because the contact is not mandatory in C_Invoice_Candidate
@@ -440,11 +427,15 @@ public class CreateInvoiceCandidatesService
 		else
 		{
 			// extract the composite's location that has the given billContactIdentifier
-			final BPartnerContact contact = bpartnerComposite
-					.extractContact(BPartnerCompositeRestUtils.createContactFilterFor(billContactIdentifier))
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier(billContactIdentifier.toJson()).parentResource(item).build());
+			final BPartnerContactId billContactId = bpRelationsService.getBpartnerContact(billContactIdentifier, bpartnerComposite)
+					.map(BPartnerContact::getId)
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("billContact")
+							.resourceIdentifier(billContactIdentifier.toString())
+							.parentResource(item)
+							.build());
 
-			bpartnerInfo.contactId(contact.getId());
+			bpartnerInfo.contactId(billContactId);
 		}
 
 		candidate.billPartnerInfo(bpartnerInfo.build());
@@ -475,6 +466,29 @@ public class CreateInvoiceCandidatesService
 		candidate.priceEnteredOverride(price);
 		return;
 
+	}
+
+	private boolean isBPartnerLocationMatches(
+			@NonNull final OrgId orgId,
+			@NonNull final BPartnerLocation jsonBPartnerLocation,
+			@NonNull final ExternalIdentifier locationIdentifier)
+	{
+		@Nullable final BPartnerLocationId bPartnerLocationId = jsonBPartnerLocation.getId();
+		switch (locationIdentifier.getType())
+		{
+			case EXTERNAL_REFERENCE:
+				final Optional<MetasfreshId> metasfreshId =
+						jsonRetrieverService.resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
+
+				return metasfreshId.isPresent() && bPartnerLocationId != null &&
+						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(bPartnerLocationId.getRepoId()));
+			case GLN:
+				return GLN.equals(jsonBPartnerLocation.getGln(), locationIdentifier.asGLN());
+			case METASFRESH_ID:
+				return bPartnerLocationId != null && MetasfreshId.equals(locationIdentifier.asMetasfreshId(), MetasfreshId.of(bPartnerLocationId.getRepoId()));
+			default:
+				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
+		}
 	}
 
 	private ProductPrice createProductPriceOrNull(
