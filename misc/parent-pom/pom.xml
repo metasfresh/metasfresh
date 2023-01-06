@@ -68,7 +68,7 @@
         <objenesis.version>3.3</objenesis.version>
 
         <!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
-        <junit-jupiter.version>5.7.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.1</junit-jupiter.version>
 
         <commons-io.version>2.11.0</commons-io.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -207,7 +207,7 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.6.2</version>
+            <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
         
