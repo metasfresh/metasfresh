@@ -225,10 +225,9 @@ Feature: create multiple production candidates
       | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.SeqNo |
       | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
 
-    # dev-note: make sure ppOrderCandidate_3_2 is processed second by setting SeqNo to 20 
     And update PP_Order_Candidates
-      | PP_Order_Candidate_ID.Identifier | OPT.QtyToProcess | OPT.SeqNo |
-      | ppOrderCandidate_3_2             | 4                | 20        |
+      | PP_Order_Candidate_ID.Identifier | OPT.QtyToProcess |
+      | ppOrderCandidate_3_2             | 4                |
 
     When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=true
       | PP_Order_Candidate_ID.Identifier |
