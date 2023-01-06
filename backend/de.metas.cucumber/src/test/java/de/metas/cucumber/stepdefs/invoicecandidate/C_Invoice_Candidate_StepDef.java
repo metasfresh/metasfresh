@@ -1241,7 +1241,7 @@ public class C_Invoice_Candidate_StepDef
 		return detailsBuilder.toString();
 	}
 
-	private void manuallyRecomputeInvoiceCandidate(
+	public void manuallyRecomputeInvoiceCandidate(
 			@NonNull final Throwable throwable,
 			@NonNull final Map<String, String> row,
 			final int timeoutSec) throws Throwable
