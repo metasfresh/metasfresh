@@ -48,6 +48,7 @@ import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
