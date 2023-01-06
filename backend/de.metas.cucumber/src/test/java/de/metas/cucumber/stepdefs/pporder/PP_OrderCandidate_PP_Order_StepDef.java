@@ -119,7 +119,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 			final StringBuilder allocationsLog = new StringBuilder("PP_OrderCandidate_PP_Order records:").append("\n"); 
 			
 			allocations.forEach(allocation -> allocationsLog.append("PP_OrderCandidate_PP_Order.QtyEntered=").append(allocation.getQtyEntered())
-					.append(" PP_OrderCandidate_PP_Order.PP_Order_ID=").append(allocation.getPP_Order_ID())
+					.append("; PP_OrderCandidate_PP_Order.PP_Order_ID=").append(allocation.getPP_Order_ID())
 					.append("\n"));
 			
 			return allOrdersArePresent
