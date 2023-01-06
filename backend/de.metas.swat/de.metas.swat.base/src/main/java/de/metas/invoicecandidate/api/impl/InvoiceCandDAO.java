@@ -722,7 +722,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	 * Adds a record to {@link I_C_Invoice_Candidate_Recompute} to mark the given invoice candidate as invalid. This insertion doesn't interfere with other transactions. It's no problem if two of more
 	 * concurrent transactions insert a record for the same invoice candidate.
 	 * 
-	 * @return 1 if candidate has been invalidated, 0 if it hasn't
+	 * @return number of invalidated candidates
 	 */
 	@Override
 	public final int invalidateCand(final I_C_Invoice_Candidate ic)

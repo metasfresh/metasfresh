@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -69,7 +70,9 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLineRecord = StepDefUtil.tryAndWaitForItem(120, 500, () -> getInvoiceCandidateInOutLine(row), this::logCurrentContext);
+			final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLineRecord = StepDefUtil
+					.tryAndWaitForItem(120, 500,
+									   () -> getInvoiceCandidateInOutLine(row), () -> logCurrentContext(row));
 
 			final String invoiceCandidateInOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLineRecord);
@@ -114,11 +117,42 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 	}
 
 	@NonNull
-	private String logCurrentContext()
+	private String logCurrentContext(@NonNull final Map<String, String> row)
 	{
+		Integer invoiceCandidateId = null;
+		final String invoiceCandidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(invoiceCandidateIdentifier))
+		{
+			invoiceCandidateId = invoiceCandTable.get(invoiceCandidateIdentifier).getC_Invoice_Candidate_ID();
+		}
+
+		Integer inoutLineId = null;
+		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipmentLineIdentifier))
+		{
+			inoutLineId = shipmentLineTable.get(shipmentLineIdentifier).getM_InOutLine_ID();
+		}
+
+		if (CoalesceUtil.coalesce(inoutLineId, invoiceCandidateId) == null)
+		{
+			return "cannot provide context as both " + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID
+					+ " & " + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID + " are null!";
+		}
+
 		final StringBuilder message = new StringBuilder("C_InvoiceCandidate_InOutLine records:").append("\n");
 
-		queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class);
+
+		if (invoiceCandidateId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId);
+		}
+		if (inoutLineId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, inoutLineId);
+		}
+
+		queryBuilder
 				.create()
 				.stream(I_C_InvoiceCandidate_InOutLine.class)
 				.forEach(invoiceCandidateInOutLineRecord -> message
