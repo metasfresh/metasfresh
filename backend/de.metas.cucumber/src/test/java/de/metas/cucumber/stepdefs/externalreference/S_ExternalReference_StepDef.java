@@ -32,6 +32,8 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
@@ -45,6 +47,7 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
@@ -64,6 +67,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
@@ -78,7 +82,7 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartn
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_ProductCategory;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
@@ -90,6 +94,8 @@ public class S_ExternalReference_StepDef
 	private final S_ExternalReference_StepDefData externalRefTable;
 	private final M_Shipper_StepDefData shipperTable;
 	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpLocationTable;
 	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -104,6 +110,8 @@ public class S_ExternalReference_StepDef
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpLocationTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final TestContext testContext)
 	{
@@ -111,6 +119,8 @@ public class S_ExternalReference_StepDef
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
 		this.productTable = productTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpLocationTable = bpLocationTable;
 		this.orgTable = orgTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
@@ -231,9 +241,9 @@ public class S_ExternalReference_StepDef
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceItem item = Check.singleElement(referenceItems
-																			   .stream()
-																			   .filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
-																			   .collect(ImmutableList.toImmutableList()));
+					.stream()
+					.filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
+					.collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -352,6 +362,21 @@ public class S_ExternalReference_StepDef
 		{
 			final I_M_Product product = productTable.get(recordIdentifier);
 			recordId = product.getM_Product_ID();
+		}
+		else if (externalReferenceType.equals(ExternalUserReferenceType.USER_ID))
+		{
+			final I_AD_User user = userTable.get(recordIdentifier);
+			recordId = user.getAD_User_ID();
+		}
+		else if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
+		{
+			final I_C_BPartner bpartner = bpartnerTable.get(recordIdentifier);
+			recordId = bpartner.getC_BPartner_ID();
+		}
+		else if (externalReferenceType.equals(BPLocationExternalReferenceType.BPARTNER_LOCATION))
+		{
+			final I_C_BPartner_Location bpLocation = bpLocationTable.get(recordIdentifier);
+			recordId = bpLocation.getC_BPartner_Location_ID();
 		}
 		else
 		{

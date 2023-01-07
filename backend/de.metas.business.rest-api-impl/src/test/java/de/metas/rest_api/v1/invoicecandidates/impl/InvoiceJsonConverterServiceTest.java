@@ -1,23 +1,8 @@
-package de.metas.rest_api.invoicecandidates.impl;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
-import de.metas.rest_api.utils.JsonExternalIds;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +19,19 @@ import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v1.invoicecandidates.impl;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonInvoiceCandidateReference;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InvoiceJsonConverterServiceTest
 {

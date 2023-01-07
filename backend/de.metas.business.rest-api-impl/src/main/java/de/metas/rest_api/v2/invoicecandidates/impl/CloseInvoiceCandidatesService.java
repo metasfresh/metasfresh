@@ -1,35 +1,8 @@
-package de.metas.rest_api.invoicecandidates.impl;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-import de.metas.i18n.TranslatableStrings;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.util.web.exception.InvalidEntityException;
-import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
-import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem;
-import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem.JsonCloseInvoiceCandidatesResponseItemBuilder;
-import de.metas.rest_api.utils.JsonErrors;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,6 +19,33 @@ import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v2.invoicecandidates.impl;
+
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem;
+import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem.JsonCloseInvoiceCandidatesResponseItemBuilder;
+import de.metas.rest_api.invoicecandidates.v2.request.JsonCloseInvoiceCandidatesRequest;
+import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.web.exception.InvalidEntityException;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class CloseInvoiceCandidatesService
 {

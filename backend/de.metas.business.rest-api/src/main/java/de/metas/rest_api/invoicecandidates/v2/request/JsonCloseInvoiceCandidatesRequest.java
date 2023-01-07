@@ -1,20 +1,8 @@
-package de.metas.rest_api.invoicecandidates.request;
-
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModelProperty;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.business.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,15 +19,27 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.invoicecandidates.v2.request;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
+import java.util.List;
+
 @Value
-public class JsonCheckInvoiceCandidatesStatusRequest
+public class JsonCloseInvoiceCandidatesRequest
 {
 	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the invoice candidates to return the invoicing status of.")
+			value = "Specifies the invoice candidates to close.")
 	List<JsonInvoiceCandidateReference> invoiceCandidates;
 
 	@JsonCreator
-	public JsonCheckInvoiceCandidatesStatusRequest(
+	public JsonCloseInvoiceCandidatesRequest(
 			@JsonProperty("invoiceCandidates") @Singular @NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
 	{
 		this.invoiceCandidates = invoiceCandidates;
