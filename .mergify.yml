@@ -8,9 +8,14 @@ pull_request_rules:
   - name: Automatic merge into `inner_silence_uat` on approval using the merge queue
     conditions:
       - base=inner_silence_uat
-      - "#approved-reviews-by>=1"
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
+      - or:
+        - "#approved-reviews-by>=1"
+        - label=ops:without_review_approval
     actions:
       queue:
         name: default
+      label:
+        add: 
+         - banch:inner_silence_uat
