@@ -1,0 +1,16 @@
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+
+pull_request_rules:
+  - name: Automatic merge into `inner_silence_uat` on approval using the merge queue
+    conditions:
+      - base=inner_silence_uat
+      - "#approved-reviews-by>=1"
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+    actions:
+      queue:
+        name: default
