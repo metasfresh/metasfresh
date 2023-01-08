@@ -5,11 +5,23 @@ queue_rules:
       - check-success=continuous-integration/jenkins/branch
 
 pull_request_rules:
-  - name: Automatic merge into `inner_silence_uat` on approval using the merge queue
+  - name: Automatic merge ⬇️ into base-branch using the merge queue
     conditions:
-      - base=inner_silence_uat
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
+      - or:
+        - base=adorable_badger_uat
+        - base=big_coconut_uat
+        - base=inner_silence_uat
+        - base=intensive_care_uat
+        - base=mad_orange_uat
+        - base=master
+        - base=neon_underwear_uat
+        - base=release
+        - base=tasty_ham_uat
+        - base=tenacious_d_uat
+        - base=week_end_uat
+        - base=yoyo_uat
       - or:
         - "#approved-reviews-by>=1"
         - label=ops:without_review_approval
@@ -18,4 +30,4 @@ pull_request_rules:
         name: default
       label:
         add: 
-         - banch:inner_silence_uat
+         - branch:${{base}}
