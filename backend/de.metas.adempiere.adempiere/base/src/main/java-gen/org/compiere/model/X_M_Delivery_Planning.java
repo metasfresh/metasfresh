@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1806718051L;
+	private static final long serialVersionUID = -738953425L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -532,21 +532,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
-	}
-
-	@Override
-	public void setM_ShipperTransportation_ID (final int M_ShipperTransportation_ID)
-	{
-		if (M_ShipperTransportation_ID < 1) 
-			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ShipperTransportation_ID, M_ShipperTransportation_ID);
-	}
-
-	@Override
-	public int getM_ShipperTransportation_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_ShipperTransportation_ID);
 	}
 
 	@Override

@@ -42,7 +42,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -137,7 +136,6 @@ public class DeliveryPlanningService
 				.productId(productId)
 				.partnerId(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID()))
-				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ShipperTransportation_ID()))
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(deliveryPlanningRecord.getM_SectionCode_ID()))

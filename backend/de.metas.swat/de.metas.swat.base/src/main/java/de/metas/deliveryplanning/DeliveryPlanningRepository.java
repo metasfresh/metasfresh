@@ -33,7 +33,6 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -71,7 +70,6 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 		deliveryPlanningRecord.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 		deliveryPlanningRecord.setM_Warehouse_ID(WarehouseId.toRepoId(request.getWarehouseId()));
-		deliveryPlanningRecord.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		deliveryPlanningRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getPartnerId()));
 		deliveryPlanningRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
 		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
@@ -207,6 +205,15 @@ public class DeliveryPlanningRepository
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
+				.create()
+				.anyMatch();
+	}
+
+	public boolean isExistNoForwarderDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Forwarder_ID, null)
 				.create()
 				.anyMatch();
 	}

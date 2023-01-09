@@ -753,27 +753,6 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Transportation Order.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
-
-	/**
-	 * Get Transportation Order.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_ShipperTransportation_ID();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_ShipperTransportation_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_ShipperTransportation_ID", null);
-	String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
-
-	/**
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
