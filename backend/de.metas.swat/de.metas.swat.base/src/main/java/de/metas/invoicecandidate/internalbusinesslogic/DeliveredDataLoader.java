@@ -327,7 +327,8 @@ public class DeliveredDataLoader
 
 		if (hasInOutLineAllocations)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("getDeliveredQtyWhenNoValidICIOL returns StockQtyAndUOMQty with 0 qty! Invoice_Candidate_ID={}", invoiceCandidateId);
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns StockQtyAndUOMQty with 0 qty! Invoice_Candidate_ID={}", invoiceCandidateId);
 
 			return StockQtyAndUOMQty.builder()
 					.productId(productId)
@@ -337,7 +338,9 @@ public class DeliveredDataLoader
 		}
 		else
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("getDeliveredQtyWhenNoValidICIOL returns default StockQtyAndUOMQty={}! Invoice_Candidate_ID={}", defaultQtyDelivered, invoiceCandidateId);
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns default StockQtyAndUOMQty={}! Invoice_Candidate_ID={}",
+							defaultQtyDelivered, invoiceCandidateId);
 			
 			return defaultQtyDelivered;
 		}
