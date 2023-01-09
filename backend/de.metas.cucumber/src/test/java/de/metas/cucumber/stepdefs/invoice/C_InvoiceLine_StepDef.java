@@ -129,7 +129,18 @@ public class C_InvoiceLine_StepDef
 
 		final List<Map<String, String>> dataTable = table.asMaps();
 
-		assertThat(invoiceLines.size()).isEqualTo(dataTable.size());
+		final StringBuilder invoiceLinesErrorMessage = new StringBuilder("Found the following invoice lines: \n");
+		invoiceLines.forEach(invoiceLine -> {
+			invoiceLinesErrorMessage.append("C_InvoiceLine.QtyInvoiced: ").append(invoiceLine.getQtyInvoiced()).append("; ");
+			invoiceLinesErrorMessage.append("C_InvoiceLine.Processed: ").append(invoiceLine.isProcessed()).append("; ");
+			invoiceLinesErrorMessage.append("C_InvoiceLine.PriceEntered: ").append(invoiceLine.getPriceEntered()).append("; ");
+			invoiceLinesErrorMessage.append("C_InvoiceLine.PriceActual: ").append(invoiceLine.getPriceActual()).append("; ");
+			invoiceLinesErrorMessage.append("C_InvoiceLine.LineNetAmt: ").append(invoiceLine.getLineNetAmt()).append("; ");
+			invoiceLinesErrorMessage.append("C_InvoiceLine.Discount: ").append(invoiceLine.getDiscount()).append("; ");
+			invoiceLinesErrorMessage.append("\n");
+		});
+
+		assertThat(invoiceLines.size()).as(invoiceLinesErrorMessage.toString()).isEqualTo(dataTable.size());
 
 		for (final Map<String, String> row : dataTable)
 		{
