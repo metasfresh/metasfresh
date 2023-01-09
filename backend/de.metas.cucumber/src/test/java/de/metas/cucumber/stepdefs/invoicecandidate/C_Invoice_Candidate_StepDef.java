@@ -63,6 +63,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
@@ -117,6 +118,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.ZoneId;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1496,6 +1498,25 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final I_C_Invoice_Candidate invCandidate,
 			@NonNull final String invoiceCandidateIdentifier)
 	{
+		final BigDecimal orderLineQtyDelivered = Optional
+				.of(TableRecordReference.of(invCandidate.getAD_Table_ID(), invCandidate.getRecord_ID()))
+				.filter(tableRecordReference -> I_C_OrderLine.Table_Name.equals(tableRecordReference.getTableName()))
+				.map(tableRecordReference -> tableRecordReference.getModel(I_C_OrderLine.class))
+				.map(I_C_OrderLine::getQtyDelivered)
+				.orElse(null);
+
+		final StringBuilder invoiceCandidateInOutLineBindings = new StringBuilder("The following C_InvoiceCandidate_InOutLine records exist for c_invoice_candidate_id=")
+				.append(invCandidate.getC_Invoice_Candidate_ID())
+				.append("\n");
+
+		queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invCandidate.getC_Invoice_Candidate_ID())
+				.create()
+				.stream()
+				.forEach(record -> invoiceCandidateInOutLineBindings
+						.append("QtyDelivered=").append(record.getQtyDelivered()).append(";")
+						.append("M_InOutLine_ID=").append(record.getM_InOutLine_ID()).append("\n"));
+
 		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
@@ -1507,7 +1528,9 @@ public class C_Invoice_Candidate_StepDef
 
 		throw AdempiereException.wrapIfNeeded(e)
 				.appendParametersToMessage()
-				.setParameter("InvoiceCandidateDetails", invCandDetails);
+				.setParameter("InvoiceCandidateDetails", invCandDetails)
+				.setParameter("OrderLineQtyDelivered", orderLineQtyDelivered)
+				.setParameter("C_InvoiceCandidate_InOutLines", invoiceCandidateInOutLineBindings.toString());
 	}
 
 	@NonNull
@@ -1728,9 +1751,9 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID());
 		}
 	}
-
+	
 	@Deprecated
-	private void manuallyRecomputeInvoiceCandidate_outDated(
+	public void manuallyRecomputeInvoiceCandidate(
 			@NonNull final Throwable throwable,
 			@NonNull final Map<String, String> row,
 			final int timeoutSec) throws Throwable
@@ -1750,16 +1773,21 @@ public class C_Invoice_Candidate_StepDef
 			throw throwable;
 		}
 
-		invoiceCandDAO.invalidateCand(invoiceCandidate.get());
+		final int noOfInvalidatedCandidates = invoiceCandDAO.invalidateCand(invoiceCandidate.get());
 
-		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
-				ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidate.get().getC_Invoice_Candidate_ID())));
+		if (noOfInvalidatedCandidates != 1)
+		{
+			throw new AdempiereException("Invoice candidate has not been invalidated !")
+					.appendParametersToMessage()
+					.setParameter("InvoiceCandidateId", invoiceCandidate.get().getC_Invoice_Candidate_ID());
+		}
 
-		invoiceCandBL.updateInvalid()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
-				.setTaggedWithAnyTag()
-				.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
-				.update();
+		final Supplier<Boolean> isInvoiceCandidateValidated = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
+				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.get().getC_Invoice_Candidate_ID())
+				.create()
+				.count() == 0;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
 	}
 
 	@NonNull
