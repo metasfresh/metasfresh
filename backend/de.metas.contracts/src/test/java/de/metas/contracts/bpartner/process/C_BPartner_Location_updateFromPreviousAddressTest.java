@@ -51,12 +51,14 @@ public class C_BPartner_Location_updateFromPreviousAddressTest
 	@BeforeAll
 	public static void init()
 	{
-		AdempiereTestHelper.get().init();
+		AdempiereTestHelper.get().staticInit();
 	}
 
 	@BeforeEach
 	public void createTestData()
 	{
+		AdempiereTestHelper.get().init();
+		
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		final Timestamp now = SystemTime.asTimestamp();
