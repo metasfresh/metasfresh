@@ -39,12 +39,12 @@ import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.util.Services;
-import org.compiere.Adempiere;
+import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.groups.Tuple.tuple;
 
 class PrintingDataTest
@@ -54,7 +54,7 @@ class PrintingDataTest
 	@BeforeEach
 	void beforeEach(TestInfo testInfo)
 	{
-		Adempiere.enableUnitTestMode();
+		AdempiereTestHelper.get().init();
 		
 		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
