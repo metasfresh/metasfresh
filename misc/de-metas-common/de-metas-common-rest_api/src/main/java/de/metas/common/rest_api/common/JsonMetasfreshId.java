@@ -67,7 +67,7 @@ public class JsonMetasfreshId
 	{
 		return Optional.ofNullable(value)
 				.map(Integer::parseInt)
-				.map(JsonMetasfreshId::of)
+				.map(JsonMetasfreshId::ofOrNull)
 				.orElse(null);
 	}
 
