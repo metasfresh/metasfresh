@@ -425,7 +425,7 @@ public class C_Invoice_Candidate_StepDef
 				}
 
 				final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
-				if(Check.isNotBlank(internalName))
+				if (Check.isNotBlank(internalName))
 				{
 					final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 					assertThat(updatedInvoiceCandidate.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
@@ -575,7 +575,6 @@ public class C_Invoice_Candidate_StepDef
 					final I_M_Product product = productTable.get(productIdentifier);
 					assertThat(updatedInvoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 				}
-
 
 				final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
 				assertThat(updatedInvoiceCandidate.isProcessed()).isEqualTo(processed);
