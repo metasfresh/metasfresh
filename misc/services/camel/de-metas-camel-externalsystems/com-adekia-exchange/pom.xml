@@ -21,7 +21,7 @@
         <lombok-version>1.18.24</lombok-version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <spring-boot.version>2.7.7</spring-boot.version>
         <camel.version>3.7.3</camel.version>
     </properties>
 
