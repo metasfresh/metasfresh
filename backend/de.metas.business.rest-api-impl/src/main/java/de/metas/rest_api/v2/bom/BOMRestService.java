@@ -28,13 +28,13 @@ import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateResponse;
 import de.metas.common.rest_api.v2.bom.JsonCreateBOMLine;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.uom.IUOMDAO;
@@ -63,20 +63,22 @@ public class BOMRestService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	private final ProductBOMService bomService;
 	private final ProductRestService productRestService;
 	private final JsonAttributeService jsonAttributeService;
+	private final ResourceService resourceService;
 
 	public BOMRestService(
 			@NonNull final ProductRestService productRestService,
 			@NonNull final ProductBOMService bomService,
-			@NonNull final JsonAttributeService jsonAttributeService)
+			@NonNull final JsonAttributeService jsonAttributeService,
+			@NonNull final ResourceService resourceService)
 	{
 		this.productRestService = productRestService;
 		this.bomService = bomService;
 		this.jsonAttributeService = jsonAttributeService;
+		this.resourceService = resourceService;
 	}
 
 	@NonNull
@@ -106,7 +108,7 @@ public class BOMRestService
 
 		final ResourceId resourceId = request.getResourceCode() == null
 				? null
-				: resourceDAO.getResourceIdByValue(request.getResourceCode(), orgId)
+				: resourceService.getResourceIdByValue(request.getResourceCode(), orgId)
 				.orElseThrow(() -> new AdempiereException("No S_Resource found for org & value!")
 						.appendParametersToMessage()
 						.setParameter("OrgId", orgId.getRepoId())
