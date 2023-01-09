@@ -52,10 +52,11 @@ class PrintingDataTest
 	private Helper helper;
 
 	@BeforeEach
-	void beforeEach(TestInfo testInfo)
+	final void beforeEach(TestInfo testInfo)
 	{
-		AdempiereTestHelper.get().init();
-		final PrintPackageBL printPackageBL = new PrintPackageBL(
+		AdempiereTestHelper.get().init(); // this also sets Adempiere.isUnitTestMode() to true, which we need when setting up the BLs below
+
+    final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
 						new HardwarePrinterRepository(),
 		 				new ArchiveFileNameService()));

@@ -751,11 +751,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	/**
 	 * Adds a record to {@link I_C_Invoice_Candidate_Recompute} to mark the given invoice candidate as invalid. This insertion doesn't interfere with other transactions. It's no problem if two of more
 	 * concurrent transactions insert a record for the same invoice candidate.
+	 *
+	 * @return number of invalidated candidates
 	 */
 	@Override
-	public final void invalidateCand(final I_C_Invoice_Candidate ic)
+	public final int invalidateCand(final I_C_Invoice_Candidate ic)
 	{
-		invalidateCands(ImmutableList.of(ic));
+		return invalidateCands(ImmutableList.of(ic));
 	}
 
 	@Override
@@ -786,10 +788,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsFor(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
+	public final int invalidateCandsFor(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
 	{
 		final IQuery<I_C_Invoice_Candidate> icQuery = icQueryBuilder.create();
-		invalidateCandsFor(icQuery);
+		return invalidateCandsFor(icQuery);
 	}
 
 	@Override
@@ -809,7 +811,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsFor(@NonNull final IQuery<I_C_Invoice_Candidate> icQuery)
+	public final int invalidateCandsFor(@NonNull final IQuery<I_C_Invoice_Candidate> icQuery)
 	{
 		// insert all C_Invoice_Candidate_Recompute records with a ChunkUUID so we know later what was added now.
 		final String chunkUUID = UUID.randomUUID().toString();
@@ -844,6 +846,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 					.map(asyncBatchId -> InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName(), AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId)))
 					.forEach(invoiceCandScheduler::scheduleForUpdate);
 		}
+		
+		return count;
 	}
 
 	@Override
@@ -1642,12 +1646,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCands(@Nullable final List<I_C_Invoice_Candidate> ics)
+	public final int invalidateCands(@Nullable final List<I_C_Invoice_Candidate> ics)
 	{
 		// Extract C_Invoice_Candidate_IDs
 		if (ics == null || ics.isEmpty())
 		{
-			return; // nothing to do for us
+			return 0; // nothing to do for us
 		}
 
 		final ImmutableSet<InvoiceCandidateId> icIds = ics.stream()
@@ -1658,7 +1662,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.collect(ImmutableSet.toImmutableSet());
 		if (icIds.isEmpty())
 		{
-			return;
+			return 0;
 		}
 
 		// note: invalidate, no matter if Processed or not
@@ -1666,7 +1670,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
-		invalidateCandsFor(icQueryBuilder);
+		return invalidateCandsFor(icQueryBuilder);
 	}
 
 	@Override
