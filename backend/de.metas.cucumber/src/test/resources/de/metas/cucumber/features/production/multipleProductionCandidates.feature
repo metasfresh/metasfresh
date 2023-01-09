@@ -212,8 +212,8 @@ Feature: create multiple production candidates
     When the order identified by o_3 is completed
 
     Then after not more than 60s, PP_Order_Candidates are found
-      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.SeqNo |
+      | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
 
     And the order identified by o_3 is reactivated
     And update C_OrderLine:
@@ -221,8 +221,8 @@ Feature: create multiple production candidates
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
     And after not more than 60s, PP_Order_Candidates are found
-      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.SeqNo |
+      | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
 
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | OPT.QtyToProcess |
@@ -238,7 +238,7 @@ Feature: create multiple production candidates
     # so all (3) of ppOrderCandidate_3_1 end up in the first PP_Order, i.e. ppOrder_3_1.
     # Then of ppOrderCandidate_3_2's 4PCE, 2 end up on the same PP_Order ppOrder_3_1 which then is (full) with 5 items,
     # Therefore the remaining 2PCE of ppOrderCandidate_3_2 end up in a new PP_Order, i.e. ppOrder_3_2.
-    Then after not more than 90s, load PP_Order by candidate id: ppOrderCandidate_3_2
+    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID.Identifier | QtyEntered |
       | ppOrder_3_1            | 2          |
       | ppOrder_3_2            | 2          |

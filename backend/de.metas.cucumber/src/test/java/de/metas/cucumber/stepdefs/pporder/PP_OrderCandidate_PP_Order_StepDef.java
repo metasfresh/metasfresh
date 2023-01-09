@@ -115,10 +115,17 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 			final boolean allOrdersArePresent = allocations.size() == dataTable.asMaps().size();
 
+			final StringBuilder allocationsLog = new StringBuilder("PP_OrderCandidate_PP_Order records:").append("\n"); 
+			
+			allocations.forEach(allocation -> allocationsLog.append("PP_OrderCandidate_PP_Order.QtyEntered=").append(allocation.getQtyEntered())
+					.append("; PP_OrderCandidate_PP_Order.PP_Order_ID=").append(allocation.getPP_Order_ID())
+					.append("\n"));
+			
 			return allOrdersArePresent
 					? ItemProvider.ProviderResult.resultWasFound(ImmutableList.copyOf(allocations))
 					: ItemProvider.ProviderResult.resultWasNotFound(
-							"Only " + allocations.size() + " orders found! Expecting " + dataTable.asMaps().size());
+					"Only " + allocations.size() + " orders found! Expecting " + dataTable.asMaps().size() + "\n" + allocationsLog
+							+ "PP_OrderCandidate.SeqNo=" + ppOrderCandidate.getSeqNo());
 		};
 
 		final Supplier<String> getLogContext = () -> {
