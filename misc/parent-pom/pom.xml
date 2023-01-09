@@ -540,7 +540,7 @@
                         ...although I set the version in both pluginManagement and build/plugins
                         Example: org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
 
-                        Note that "3.0.0" is the version that I specified in pluginManagenemt -->
+                        Note that "3.0.0" is the version that I specified in pluginManagement -->
                     <version>3.0.0-M1</version>
                     <!--<dependencies>
                         &lt;!&ndash; needed for banDuplicateClasses &ndash;&gt;
