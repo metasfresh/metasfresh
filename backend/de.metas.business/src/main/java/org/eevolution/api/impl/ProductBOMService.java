@@ -34,6 +34,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.BOMVersionsCreateRequest;
+import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -47,6 +48,7 @@ public class ProductBOMService
 {
 	private final IProductBOMDAO bomRepo = Services.get(IProductBOMDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 
 	public ProductBOMService(@NonNull final ProductBOMVersionsDAO bomVersionsDAO)
@@ -91,5 +93,10 @@ public class ProductBOMService
 		{
 			throw new AdempiereException(AdMessageKey.of(PP_PRODUCT_PLANNING_BOM_ATTR_ERROR));
 		}
+	}
+
+	public void verifyDefaultBOMFor(@NonNull final ProductId productId)
+	{
+		productBOMBL.verifyDefaultBOMProduct(productId);
 	}
 }
