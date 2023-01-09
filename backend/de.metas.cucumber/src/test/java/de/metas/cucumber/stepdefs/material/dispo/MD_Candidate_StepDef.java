@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -61,7 +61,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -76,7 +75,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
@@ -126,15 +124,10 @@ public class MD_Candidate_StepDef
 		this.stockCandidateTable = stockCandidateTable;
 		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
-	}
 
-	@Before
-	public void beforeEach()
-	{
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
-		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
 	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
@@ -513,19 +506,21 @@ public class MD_Candidate_StepDef
 			return ProviderResult.resultWasNotFound(sb.toString());
 		};
 
-		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
-															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-															   + "**query result candidates:**\n{}\n"
-															   + "**all product related candidates:**\n{}",
-													   tableRow,
-													   candidatesQuery,
-													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+		final Supplier<String> contextSupplier = () -> {
+
+			final StringBuilder context = new StringBuilder("MD_Candidate not found\n");
+			context.append("**tableRow:** \n").append(tableRow).append("\n");
+			context.append("**candidatesQuery:** \n").append(candidatesQuery).append("\n");
+			context.append("**query result candidates:** \n").append(materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery)).append("\n");
+			context.append("**all product related candidates:** \n").append(materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+
+			return context.toString();
+		};
 
 		return StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
-								   logContext);
+								   contextSupplier);
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

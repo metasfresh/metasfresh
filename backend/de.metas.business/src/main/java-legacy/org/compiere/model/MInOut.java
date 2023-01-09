@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -41,6 +42,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
+import de.metas.logging.LogManager;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
@@ -59,6 +61,7 @@ import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -76,6 +79,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -106,6 +110,8 @@ import java.util.Properties;
 public class MInOut extends X_M_InOut implements IDocument
 {
 	private static final long serialVersionUID = 132321718005732306L;
+
+	private static final Logger logger = LogManager.getLogger(MInOut.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -2382,6 +2388,12 @@ public class MInOut extends X_M_InOut implements IDocument
 				// task 09358: get rid of this; instead, update qtyReserved at one central place
 				// orderLine.setQtyReserved(orderLine.getQtyReserved().add(movementQty));
 				orderLine.setQtyDelivered(orderLine.getQtyDelivered().subtract(movementQty));
+
+				Loggables.withLogger(logger, Level.INFO).addLog("The following qtyDelivered-movementQty is set on orderLine.qtyDelivered, orderLineId={}, qtyDelivered={}, movementQty={}",
+																orderLine.getC_OrderLine_ID(),
+																orderLine.getQtyDelivered(),
+																movementQty);
+
 				// NOTE: we cannot just set the DateDelivered to null because maybe this is not the only shipment/receipt for that orderline
 				// orderLine.setDateDelivered(null);
 				InterfaceWrapperHelper.save(orderLine);
