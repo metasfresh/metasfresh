@@ -232,6 +232,7 @@ public class PickingJobTestHelper
 	{
 		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
 		pickingConfigV2.setIsConsiderAttributes(considerAttributes);
+		pickingConfigV2.setIsReserveHUsOnPickingJobStart(true);
 		save(pickingConfigV2);
 	}
 

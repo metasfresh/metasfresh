@@ -1679,6 +1679,13 @@ public class TimeUtil
 	}
 
 	@Deprecated
+	@NonNull
+	public static LocalDate asLocalDateNonNull(@NonNull final Timestamp ts)
+	{
+		return ts.toLocalDateTime().toLocalDate();
+	}
+
+	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
 	{

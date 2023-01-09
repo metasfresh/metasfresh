@@ -146,10 +146,10 @@ public class ReceiveGoodsCommand
 	private ReceivingTarget receiveToNewLU(@NonNull final JsonNewLUTarget newLUTarget)
 	{
 		final HUPIItemProductId tuPackingInstructionsId = newLUTarget.getTuPIItemProductId();
-		final ReceiveTUsToLUResult receiveResult = newHUProducer().receiveTUsToNewLU(getQtyToReceive(), tuPackingInstructionsId, newLUTarget.getLuPIItemId());
+		final HuId luId = newHUProducer().receiveTUsToNewLU(getQtyToReceive(), tuPackingInstructionsId, newLUTarget.getLuPIItemId());
 
 		return ReceivingTarget.builder()
-				.luId(receiveResult.getLuId())
+				.luId(luId)
 				.tuPIItemProductId(tuPackingInstructionsId)
 				.build();
 	}

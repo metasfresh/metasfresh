@@ -389,6 +389,7 @@ public class AdempiereTestHelper
 	private void staticInit0()
 	{
 		Adempiere.enableUnitTestMode();
+		Language.setUseJUnitFixedFormats(false);
 		POJOLookupMap.resetToDefaultNextIdSupplier();
 
 		Check.setDefaultExClass(AdempiereException.class);
