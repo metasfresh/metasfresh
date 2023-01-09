@@ -83,7 +83,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
-	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarMonth = new SimpleDateFormatThreadLocal("MM");
+	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarMonth = new SimpleDateFormatThreadLocal("M");
 
 	private ClientId _adClientId;
 	private Boolean _isAdempiereSys;
