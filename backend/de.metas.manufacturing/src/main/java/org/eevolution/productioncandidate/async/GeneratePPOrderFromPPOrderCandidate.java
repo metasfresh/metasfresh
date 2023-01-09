@@ -101,6 +101,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 
 		candidateStream
 				.filter(orderCandidate -> !orderCandidate.isProcessed())
+				.sorted(Comparator.comparingInt(I_PP_Order_Candidate::getPP_Order_Candidate_ID))
 				.map(PPOrderCandidateToAllocate::of)
 				.forEach(cand -> addPPOrderCandidateToGroup(headerAgg2PPOrderCandGroup, cand));
 

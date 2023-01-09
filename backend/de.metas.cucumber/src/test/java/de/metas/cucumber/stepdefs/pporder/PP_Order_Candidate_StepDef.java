@@ -349,6 +349,12 @@ public class PP_Order_Candidate_StepDef
 			ppOrderCandidateRecord.setQtyToProcess(openQty);
 		}
 
+		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_SeqNo);
+		if (seqNo != null)
+		{
+			ppOrderCandidateRecord.setSeqNo(seqNo);
+		}
+		
 		saveRecord(ppOrderCandidateRecord);
 	}
 
