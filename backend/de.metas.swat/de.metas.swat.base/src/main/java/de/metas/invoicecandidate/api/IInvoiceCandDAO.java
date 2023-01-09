@@ -164,7 +164,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
 	 * 
-	 * @return 1 if the candidate has been invalidated, 0 instead
+	 * @return the number of invalidated candidates
 	 */
 	int invalidateCand(I_C_Invoice_Candidate ic);
 
