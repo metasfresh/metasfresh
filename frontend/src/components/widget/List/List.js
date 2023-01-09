@@ -114,12 +114,12 @@ class ListWidget extends Component {
       dropdownValuesSupplier,
     } = this.props;
 
-    console.trace('requestListData', {
-      forceSelection,
-      ignoreFocus,
-      state: this.state,
-      props: this.props,
-    });
+    // console.trace('requestListData', {
+    //   forceSelection,
+    //   ignoreFocus,
+    //   state: this.state,
+    //   props: this.props,
+    // });
 
     this.setState(
       {

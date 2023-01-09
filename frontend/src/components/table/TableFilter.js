@@ -327,11 +327,11 @@ class TableFilter extends PureComponent {
             (isBatchEntry || fullScreen) &&
             allowCreateNew && (
               <TableQuickInput
-                closeBatchEntry={handleBatchEntryToggle}
-                docType={docType}
+                windowId={docType}
                 docId={docId}
                 tabId={tabId}
                 forceHeight={wrapperHeight ? wrapperHeight : null}
+                closeBatchEntry={handleBatchEntryToggle}
                 addNotification={addNotification}
               />
             )}

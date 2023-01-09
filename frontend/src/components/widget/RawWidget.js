@@ -47,13 +47,8 @@ export class RawWidget extends PureComponent {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget.current && autoFocus) {
-      try {
-        rawWidget.current.focus();
-        this.setState({ isFocused: true });
-      } catch (e) {
-        console.error(`Custom widget doesn't have 'focus' function defined`);
-      }
+    if (autoFocus) {
+      this.focus();
     }
 
     if (textSelected) {
@@ -66,6 +61,19 @@ export class RawWidget extends PureComponent {
   componentWillUnmount() {
     this.mounted = false;
   }
+
+  focus = () => {
+    const { rawWidget } = this;
+
+    if (rawWidget.current) {
+      try {
+        rawWidget.current.focus();
+        this.setState({ isFocused: true });
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
+    }
+  };
 
   /**
    * @method getCachedValue
