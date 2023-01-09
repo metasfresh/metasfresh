@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -76,12 +77,7 @@ public class MD_Candidate_StepDef
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 
-	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
-
-	public MD_Candidate_StepDef(@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData)
-	{
-		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
-	}
+	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
 
 	@Before
 	public void beforeEach()

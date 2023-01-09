@@ -40,20 +40,10 @@ import java.util.List;
 public class ComponentGeneratorContext
 {
 	int qty;
-
-	@NonNull
-	ImmutableAttributeSet existingAttributes;
-
-	@Builder.Default
-	@NonNull
-	ImmutableAttributeSet bomLineAttributes = ImmutableAttributeSet.EMPTY;
-
-	@NonNull
-	ComponentGeneratorParams parameters;
-
-	@NonNull
-	ClientId clientId;
-
+	@NonNull ImmutableAttributeSet existingAttributes;
+	@NonNull ImmutableAttributeSet bomLineAttributes;
+	@NonNull ComponentGeneratorParams parameters;
+	@NonNull ClientId clientId;
 	boolean overrideExistingValues;
 
 	@NonNull

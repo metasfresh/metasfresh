@@ -1,28 +1,5 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import de.metas.inout.model.I_M_InOut;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.product.ProductId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.UomId;
-import de.metas.uom.impl.UOMTestHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_InOut;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.CURRENCY_ID;
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.IC_UOM_ID;
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.PRODUCT_ID;
@@ -35,7 +12,32 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+
+import java.math.BigDecimal;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.metas.inout.model.I_M_InOut;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.uom.impl.UOMTestHelper;
 
 /*
  * #%L
@@ -189,7 +191,7 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(orderedData.getQty().toBigDecimal()).isEqualByComparingTo(EIGHTY);
 
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
-		assertThat(shippedData.getDeliveredQtyItems()).isNotEmpty();
+		assertThat(shippedData.isEmpty()).isFalse();
 
 		assertThat(shippedData.getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
@@ -309,7 +311,7 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(orderedData.getQty().toBigDecimal()).isEqualByComparingTo(EIGHTY);
 
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
-		assertThat(shippedData.getDeliveredQtyItems()).isNotEmpty();
+		assertThat(shippedData.isEmpty()).isFalse();
 
 		assertThat(shippedData.getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")

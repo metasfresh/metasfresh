@@ -1,8 +1,0 @@
-**/.git
-**/.mvn
-**/target
-
-**/node_modules
-**/npm-debug.log
-**/ansible
-**/buildfile.groovy

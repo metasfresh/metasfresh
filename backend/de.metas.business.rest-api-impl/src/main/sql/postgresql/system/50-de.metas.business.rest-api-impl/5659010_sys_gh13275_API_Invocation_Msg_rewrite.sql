@@ -1,3 +1,0 @@
-UPDATE public.ad_message SET ad_client_id = 0, ad_org_id = 0, isactive = 'Y', created = now(), createdby = 99, updated = now(), updatedby = 99, value = 'de.metas.util.web.audit.invocation_failed', msgtext = 'Failed API invocation {0}', msgtip = null, msgtype = 'E', entitytype = 'D' WHERE ad_message_id = 545034;
-
-UPDATE public.ad_message SET ad_client_id = 0, ad_org_id = 0, isactive = 'Y', created = now(), createdby = 99, updated = now(), updatedby = 99, value = 'de.metas.util.web.audit.successful_invocation', msgtext = 'Successful API invocation {0}', msgtip = null, msgtype = 'I', entitytype = 'D' WHERE ad_message_id = 545033;

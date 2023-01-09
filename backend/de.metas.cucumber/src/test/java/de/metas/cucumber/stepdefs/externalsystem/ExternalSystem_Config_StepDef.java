@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.externalsystem;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
@@ -60,12 +61,12 @@ public class ExternalSystem_Config_StepDef
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
-	private final ExternalSystem_Config_StepDefData configTable;
+	private final StepDefData<I_ExternalSystem_Config> configTable;
 
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
-			@NonNull final ExternalSystem_Config_StepDefData configTable,
+			@NonNull final StepDefData<I_ExternalSystem_Config> configTable,
 			final TestContext testContext)
 	{
 		this.configTable = configTable;
