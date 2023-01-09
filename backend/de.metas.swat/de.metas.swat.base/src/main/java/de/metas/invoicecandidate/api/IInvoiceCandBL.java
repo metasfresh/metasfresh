@@ -27,6 +27,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
@@ -407,4 +408,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
 
 	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
+
+	void computeIsInEffect(DocStatus status, I_C_Invoice_Candidate invoiceCandidate);
 }

@@ -2,6 +2,7 @@ package de.metas.util.collections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -11,6 +12,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -418,5 +420,25 @@ public final class CollectionUtils
 	{
 		list1.addAll(list2);
 		return list1;
+	}
+
+	@NonNull
+	public <K, V> Map<K, List<V>> groupMultiValueByKey(
+			@NonNull final Collection<V> values,
+			@NonNull final Function<V, K> mappingFunction)
+	{
+
+		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
+
+		values.forEach(value -> {
+			final K currentKey = mappingFunction.apply(value);
+
+			final ArrayList<V> currentValues = new ArrayList<>();
+			currentValues.add(value);
+
+			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);
+		});
+
+		return ImmutableMap.copyOf(key2Values);
 	}
 }

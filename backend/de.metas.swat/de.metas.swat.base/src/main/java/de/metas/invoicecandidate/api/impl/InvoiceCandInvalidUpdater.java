@@ -298,6 +298,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update qtyOrdered. we need to be up to date for that factor
 		invoiceCandidateHandlerBL.setOrderedData(icRecord);
 
+		//update isInEffect flag
+		invoiceCandidateHandlerBL.setIsInEffect(icRecord);
+
 		// i.e. QtyOrdered's signum. Used at different places throughout this method
 		final BigDecimal factor;
 		if (icRecord.getQtyOrdered().signum() < 0)

@@ -1,38 +1,6 @@
 package de.metas.invoicecandidate.spi;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -47,6 +15,13 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
@@ -257,6 +232,11 @@ public interface IInvoiceCandidateHandler
 	 * of the given invoice candidate.
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
+
+	default void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		ic.setIsInEffect(true);
+	}
 
 	default void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{

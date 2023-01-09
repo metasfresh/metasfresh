@@ -35,12 +35,12 @@ import java.util.Map;
 
 public class C_BPartner_Location_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 
 	public C_BPartner_Location_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -71,7 +71,9 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		bPartnerLocationRecord.setGLN(gln);
 		bPartnerLocationRecord.setIsBillToDefault(true);
+		bPartnerLocationRecord.setIsBillTo(true);
 		bPartnerLocationRecord.setIsShipTo(true);
+		bPartnerLocationRecord.setIsShipToDefault(true);
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
 		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);

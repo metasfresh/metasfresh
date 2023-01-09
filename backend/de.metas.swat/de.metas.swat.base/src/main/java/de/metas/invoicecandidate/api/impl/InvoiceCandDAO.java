@@ -74,6 +74,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
@@ -1727,6 +1728,29 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	public @NonNull List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(final TableRecordReferenceSet singleTableReferences)
+	{
+		if (singleTableReferences.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Set<Integer> recordIds = singleTableReferences.streamByTableName(singleTableReferences.getSingleTableName())
+				.map(TableRecordReference::getRecord_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return  queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, singleTableReferences.getSingleTableId())
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, recordIds)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing, true)
+				.create()
+				.list(I_C_Invoice_Candidate.class);
+	}
+
+	@Override
 	public List<I_C_Invoice_Candidate> getByQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)
 	{
 		return convertToIQuery(multiQuery)
@@ -1738,6 +1762,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return convertToIQuery(multiQuery)
 				.createSelection(pInstanceId);
+	}
+
+	@Override
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
+				.create()
+				.list(I_C_InvoiceCandidate_InOutLine.class);
 	}
 
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)
