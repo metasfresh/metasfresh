@@ -137,8 +137,10 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+	int invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
 
 	/**
 	 * Invalidates the invoice candidates identified by given invoice candidate ids.
@@ -154,19 +156,25 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
+	int invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
 	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCand(I_C_Invoice_Candidate ic);
+	int invalidateCand(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Invalidates the given collection of invoice candidates.<br>
 	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
+	 * 
+	 * @return the number of invalidated candidates
 	 */
-	void invalidateCands(List<I_C_Invoice_Candidate> ics);
+	int invalidateCands(List<I_C_Invoice_Candidate> ics);
 	
 	void invalidateAllCands(Properties ctx, String trxName);
 
