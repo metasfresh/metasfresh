@@ -6,7 +6,8 @@ Feature: material-dispo updates on shipment-schedule events
   So that the ATP is always correct
 
   Background: Initial Data
-    Given metasfresh initially has no MD_Candidate data
+    Given infrastructure and metasfresh are running
+    And metasfresh initially has no MD_Candidate data
     And metasfresh contains M_Products:
       | Identifier | Name            |
       | p_1        | salesProduct_12 |

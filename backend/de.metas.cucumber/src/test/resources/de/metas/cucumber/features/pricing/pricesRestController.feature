@@ -2,7 +2,8 @@
 Feature: Prices rest controller
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-09T13:30:13+01:00[Europe/Berlin]
 
   Scenario: Search product prices available for BPartnerIdentifier&ProductIdentifier at given date
