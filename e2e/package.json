@@ -65,7 +65,7 @@
     "cypress-skip-and-only-ui": "^1.2.12",
     "immutable": "^4.0.0",
     "js-base64": "3.7.2",
-    "luxon": "2.0.2",
+    "luxon": "2.5.2",
     "moment": "2.29.4",
     "numeral": "^2.0.6",
     "react": "17.0.2",
