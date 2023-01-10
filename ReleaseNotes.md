@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14223](https://github.com/metasfresh/metasfresh/issues/14223) Enhance import BOM Formula from GRS
+  * [#14217](https://github.com/metasfresh/metasfresh/issues/14217) Show weight Diff on scale by sending target weight (Soehnle)
   * [#14155](https://github.com/metasfresh/metasfresh/issues/14155) Fixing de_DE and de_CH Translations
   * [#14199](https://github.com/metasfresh/metasfresh/issues/14199) Product API bpartnerProductItems update fails 
   * [#14156](https://github.com/metasfresh/metasfresh/issues/14156) Create Interface to upload contacts to Active Campaign 
