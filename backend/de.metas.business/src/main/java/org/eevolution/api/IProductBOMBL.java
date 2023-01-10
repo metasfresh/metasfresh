@@ -28,6 +28,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -96,4 +97,8 @@ public interface IProductBOMBL extends ISingletonService
 			@NonNull I_PP_Product_BOM bom);
 
 	Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull I_PP_Product_BOMLine bomLine);
+
+	void verifyDefaultBOMProduct(@NonNull ProductId productId);
+
+	void verifyDefaultBOMProduct(@NonNull I_M_Product product);
 }
