@@ -71,12 +71,11 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 	}
 
 	@Override
-	public void assertHUsEligible()
+	public ProcessPreconditionsResolution checkHUsEligible()
 	{
-		if (isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL)))
-		{
-			throw new AdempiereException(MSG_WEBUI_HUs_IN_Quarantine);
-		}
+		return isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL)) ?
+		ProcessPreconditionsResolution.reject(MSG_WEBUI_HUs_IN_Quarantine)
+				: ProcessPreconditionsResolution.accept();
 	}
 
 	private boolean isQuarantineHUs(final Stream<I_M_HU> streamSelectedHUs)

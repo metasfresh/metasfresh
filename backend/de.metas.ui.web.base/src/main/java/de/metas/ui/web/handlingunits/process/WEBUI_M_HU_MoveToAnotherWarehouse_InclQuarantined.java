@@ -22,15 +22,12 @@ package de.metas.ui.web.handlingunits.process;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-
-import java.util.List;
 
 /**
  * #2144
@@ -57,7 +54,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_InclQuarantined extends WEBUI_M_H
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkHUsEligible(final List<I_M_HU> hus)
+	public ProcessPreconditionsResolution checkHUsEligible()
 	{
 		// Nothing to do. This process includes also quarantine HUs
 		return ProcessPreconditionsResolution.accept();

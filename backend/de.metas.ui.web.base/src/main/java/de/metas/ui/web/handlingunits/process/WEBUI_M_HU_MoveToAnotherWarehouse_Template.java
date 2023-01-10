@@ -69,18 +69,18 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final LookupDataSource locatorLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name);
+	private final LookupDataSource locatorLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_M_Locator.Table_Name);
 
 	private HUMovementGeneratorResult movementResult = null;
 
 	@Param(parameterName = I_M_Locator.COLUMNNAME_M_Warehouse_ID, mandatory = true)
-	private WarehouseId moveToWarehouseId;
+	private WarehouseId warehouseId;
 
 	@Param(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID, mandatory = true)
 	private int moveToLocatorRepoId;
 
 	@Override
-	protected final ProcessPreconditionsResolution checkPreconditionsApplicable()
+	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (!isHUEditorView())
 		{
@@ -99,7 +99,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no physical (e.g. active) hus selected");
 		}
 
-		final ProcessPreconditionsResolution eligible = checkHUsEligible(selectedHUs);
+		final ProcessPreconditionsResolution eligible = checkHUsEligible();
 		if (eligible.isRejected())
 		{
 			return eligible;
@@ -126,7 +126,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 	@OverridingMethodsMustInvokeSuper
 	protected LookupValuesList getAvailableLocators(final LookupDataSourceContext evalCtx)
 	{
-		final WarehouseId selectedWarehouseId = this.moveToWarehouseId;
+		final WarehouseId selectedWarehouseId = warehouseId;
 		if (selectedWarehouseId == null)
 		{
 			return LookupValuesList.EMPTY;
@@ -160,7 +160,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 
 	private LocatorId getMoveToLocatorId()
 	{
-		if (moveToWarehouseId == null)
+		if (warehouseId == null)
 		{
 			throw new FillMandatoryException(I_M_Locator.COLUMNNAME_M_Warehouse_ID);
 		}
@@ -169,7 +169,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 			throw new FillMandatoryException(I_M_Locator.COLUMNNAME_M_Locator_ID);
 		}
 
-		return LocatorId.ofRepoId(moveToWarehouseId, moveToLocatorRepoId);
+		return LocatorId.ofRepoId(warehouseId, moveToLocatorRepoId);
 	}
 
 	protected final ImmutableList<I_M_HU> getSelectedHUs()
@@ -187,7 +187,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
-		checkHUsEligible(hus).throwExceptionIfRejected();
+		checkHUsEligible().throwExceptionIfRejected();
 
 		movementResult = huMovementBL.moveHUsToLocator(hus, locatorId);
 
@@ -203,5 +203,5 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 		}
 	}
 
-	public abstract ProcessPreconditionsResolution checkHUsEligible(final List<I_M_HU> hus);
+	public abstract ProcessPreconditionsResolution checkHUsEligible();
 }
