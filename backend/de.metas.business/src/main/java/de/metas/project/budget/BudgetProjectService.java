@@ -25,11 +25,14 @@ package de.metas.project.budget;
 import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.resource.ResourceGroupAndResourceId;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.util.InSetPredicate;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,15 +46,18 @@ public class BudgetProjectService
 	private final ResourceService resourceService;
 	private final BudgetProjectRepository projectRepository;
 	private final BudgetProjectResourceRepository resourceBudgetRepository;
+	private final WOProjectRepository woProjectRepository;
 
 	public BudgetProjectService(
 			final ResourceService resourceService,
 			final BudgetProjectRepository projectRepository,
-			final BudgetProjectResourceRepository resourceBudgetRepository)
+			final BudgetProjectResourceRepository resourceBudgetRepository,
+			final WOProjectRepository woProjectRepository)
 	{
 		this.resourceService = resourceService;
 		this.projectRepository = projectRepository;
 		this.resourceBudgetRepository = resourceBudgetRepository;
+		this.woProjectRepository = woProjectRepository;
 	}
 
 	public List<BudgetProject> queryAllActiveProjects(
@@ -96,5 +102,29 @@ public class BudgetProjectService
 			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
 	{
 		resourceBudgetRepository.updateProjectResourcesByIds(ids, mapper);
+	}
+
+	public void updateWOChildProjects(@NonNull final ProjectId projectId)
+	{
+		final BudgetProject budgetProject = projectRepository.getOptionalById(projectId)
+				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + projectId.getRepoId()));
+
+		woProjectRepository.getByParentProjectId(projectId)
+				.forEach(woProject -> syncWithParentAndUpdate(woProject, budgetProject));
+	}
+
+	private void syncWithParentAndUpdate(
+			@NonNull final WOProject woProject,
+			@NonNull final BudgetProject parentProject)
+	{
+		final WOProject projectToUpdate = woProject.toBuilder()
+				.bpartnerDepartment(parentProject.getBpartnerDepartment())
+				.salesRepId(parentProject.getSalesRepId())
+				.specialistConsultantID(parentProject.getSpecialistConsultantID())
+				.projectReferenceExt(parentProject.getProjectReferenceExt())
+				.internalPriority(parentProject.getInternalPriority())
+				.build();
+
+		woProjectRepository.update(projectToUpdate);
 	}
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +20,16 @@
  * #L%
  */
 
-package de.metas.project.workorder.interceptor;
+package de.metas.externalsystem.other.export.project.interceptor;
 
+import de.metas.externalsystem.other.export.project.budget.ExportBudgetProjectToOtherService;
 import de.metas.project.ProjectCategory;
-import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.ProjectId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -35,28 +38,26 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Project
 {
-	private final WOProjectService woProjectService;
-	public C_Project( @NonNull final WOProjectService woProjectService)
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private final ExportBudgetProjectToOtherService exportBudgetProjectToOtherService;
+
+	public C_Project(@NonNull final ExportBudgetProjectToOtherService exportBudgetProjectToOtherService)
 	{
-		this.woProjectService = woProjectService;
+		this.exportBudgetProjectToOtherService = exportBudgetProjectToOtherService;
 	}
 
-	/**
-	 * If the given work order project has no values for certain columns, then take them from the parent-project
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Project.COLUMNNAME_C_Project_Parent_ID, I_C_Project.COLUMNNAME_ProjectCategory })
-	public void updateFromParent(@NonNull final I_C_Project project)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void triggerSyncBudgetProjectWithExternalSystem(@NonNull final I_C_Project project)
 	{
-		if (!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder())
+		if (!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isBudget())
 		{
-			return; // not our business
-		}
-		if (project.getC_Project_Parent_ID() <= 0)
-		{
-			return; // nothing for us to do
+			return;
 		}
 
-		woProjectService.updateWOProjectFromParent(project);
+		final ProjectId projectId = ProjectId.ofRepoId(project.getC_Project_ID());
+
+		trxManager.runAfterCommit(() -> exportBudgetProjectToOtherService.enqueueProjectSync(projectId));
 	}
+
 }

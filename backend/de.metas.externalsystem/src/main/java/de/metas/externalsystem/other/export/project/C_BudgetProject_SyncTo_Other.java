@@ -1,12 +1,8 @@
-package de.metas.document.sequenceno;
-
-import org.compiere.util.Evaluatee;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,16 +20,19 @@ import org.compiere.util.Evaluatee;
  * #L%
  */
 
-public interface CustomSequenceNoProvider
+package de.metas.externalsystem.other.export.project;
+
+import de.metas.externalsystem.export.ExportToExternalSystemService;
+import de.metas.externalsystem.other.export.project.budget.ExportBudgetProjectToOtherService;
+import org.compiere.SpringContextHolder;
+
+public class C_BudgetProject_SyncTo_Other extends C_Project_SyncTo_Other
 {
-	boolean isApplicable(Evaluatee context);
+	private final ExportBudgetProjectToOtherService exportBudgetProjectToOtherService = SpringContextHolder.instance.getBean(ExportBudgetProjectToOtherService.class);
 
-	String provideSequenceNo(Evaluatee context);
-
-	/**
-	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
-	 */
-	boolean isUseIncrementSeqNoAsSuffix();
-
-	String appendIncrementSeqNoAsSuffix(String customSequenceNumber, String actualSequenceNumber, String decimalPattern);
+	@Override
+	protected ExportToExternalSystemService getExportProjectToExternalSystem()
+	{
+		return exportBudgetProjectToOtherService;
+	}
 }

@@ -7,11 +7,15 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.security.TableAccessLevel;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -199,6 +204,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
 				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
 				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn			  // 31
+				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID			  // 32
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -406,6 +412,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 
 		final POInfoColumn col = new POInfoColumn(
 				AD_Column_ID, m_TableName, ColumnName, ColumnSQL, AD_Reference_ID,
@@ -424,7 +431,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn);
+				isRestAPICustomColumn,
+				adSequenceID);
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -1339,12 +1347,58 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final int columnIndex = getColumnIndex(columnName);
 		return isRestAPICustomColumn(columnIndex);
 	}
-
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{
 		return m_columns.stream()
 				.filter(poInfoColumnPredicate);
+	}
+
+	public int getColumnSequenceId(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return getColumnSequenceId(columnIndex);
+	}
+	private int getColumnSequenceId(final int columnIndex)
+	{
+		if (columnIndex < 0 || columnIndex >= m_columns.size())
+		{
+			return -1;
+		}
+		return m_columns.get(columnIndex).getAD_Sequence_ID();
+	}
+
+	@NonNull
+	public Optional<String> computeColumnValueBasedOnSequenceIdIfProvided(@NonNull final String columnName, final int clientId)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		final POInfoColumn poInfoColumn = getColumn(columnIndex);
+		Check.assumeNotNull(poInfoColumn, "POInfoColumn cannot be missing for an existing ColumnName!");
+
+		if (poInfoColumn.isString(getTableName(), columnName))
+		{
+			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(getColumnSequenceId(columnName));
+			if (sequenceId == null)
+			{
+				return Optional.empty();
+			}
+
+			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+			final String computedSeqNo = documentNoFactory.forSequenceId(sequenceId)
+					.setClientId(ClientId.ofRepoId(clientId))
+					.build();
+
+			if (computedSeqNo == null)
+			{
+				throw new AdempiereException("Failed to compute sequenceId")
+						.appendParametersToMessage()
+						.setParameter("sequenceId", sequenceId);
+			}
+
+			return Optional.of(computedSeqNo);
+		}
+
+		return Optional.empty();
 	}
 
 	@Value

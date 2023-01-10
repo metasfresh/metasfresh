@@ -272,7 +272,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext);
 			logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 
-			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
+			if (customSequenceNoProvider.isUseIncrementSeqNoAsSuffix())
 			{
 				logger.debug("getSequenceNoToUse - The customSequenceNoProvider.isUseIncrementSeqNoAsPrefix()=true; -> going to prepend an incremental sequence number to it");
 				if (!docSeqInfo.isAutoSequence())
@@ -286,15 +286,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 				final String actualSequenceNumber = retrieveAndIncrementSeqNo(docSeqInfo);
 				final String decimalPattern = docSeqInfo.getDecimalPattern();
 
-				if (!Check.isEmpty(decimalPattern) && actualSequenceNumber.matches("\\d+"))
-				{
-					final int seqNoAsInt = Integer.parseInt(actualSequenceNumber);
-					result = customSequenceNumber + "-" + new DecimalFormat(decimalPattern).format(seqNoAsInt);
-				}
-				else
-				{
-					result = customSequenceNumber + "-" + actualSequenceNumber;
-				}
+				return customSequenceNoProvider.appendIncrementSeqNoAsSuffix(customSequenceNumber, actualSequenceNumber, decimalPattern);
 			}
 			else
 			{

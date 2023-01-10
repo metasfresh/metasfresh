@@ -10,7 +10,6 @@ c_trl.ad_language
 , f.ad_field_id
 , tbl.ad_table_id
 , c.ad_column_id
-, c.ad_sequence_id AS Column_AD_Sequence_ID
 , COALESCE(f.name, c.name) AS name_BaseLang
 , COALESCE(f_trl.name, f.name, c_trl.name, c.name) AS name
 , COALESCE(f.description, c.description) AS description_BaseLang
@@ -25,7 +24,7 @@ c_trl.ad_language
 , f.seqno
 , f.seqnogrid
 , f.sortno
-, f.ad_sequence_id AS Field_AD_Sequence_ID
+, f.ad_sequence_id AS AD_Sequence_ID
 , COALESCE(f.issameline, 'N'::bpchar) AS issameline
 , COALESCE(f.isheading, 'N'::bpchar) AS isheading
 , COALESCE(f.isfieldonly, 'N'::bpchar) AS isfieldonly

@@ -1,11 +1,12 @@
 package de.metas.document.sequenceno;
 
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -71,8 +72,21 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	/** @return true */
 	@Override
-	public boolean isUseIncrementSeqNoAsPrefix()
+	public boolean isUseIncrementSeqNoAsSuffix()
 	{
 		return true;
+	}
+
+	/**
+	 * POReferenceAsSequenceNoProvider does not use {@code AD_Sequence}'s decimal pattern for incrementSeqNo format.
+	 */
+	@Override
+	@NonNull
+	public String appendIncrementSeqNoAsSuffix(
+			@NonNull final String customSequenceNumber,
+			@NonNull final String incrementSeqNo,
+			@Nullable final String decimalPattern)
+	{
+		return customSequenceNumber + "-" + incrementSeqNo;
 	}
 }

@@ -407,13 +407,9 @@ public class GridFieldVO implements Serializable
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
 				}
-				else if (columnName.equalsIgnoreCase("Column" + I_AD_Column.COLUMNNAME_AD_Sequence_ID))
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_AD_Sequence_ID))
 				{
-					vo.column_AD_Sequence_ID = rs.getInt(i);
-				}
-				else if (columnName.equalsIgnoreCase("Field" + I_AD_Column.COLUMNNAME_AD_Sequence_ID))
-				{
-					vo.field_AD_Sequence_ID = rs.getInt(i);
+					vo.AD_Sequence_ID = rs.getInt(i);
 				}
 			}
 
@@ -535,8 +531,7 @@ public class GridFieldVO implements Serializable
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
 
-			vo.column_AD_Sequence_ID = rs.getInt("Column" + I_AD_Column.COLUMNNAME_AD_Sequence_ID);
-			vo.field_AD_Sequence_ID = rs.getInt("Field" + I_AD_Column.COLUMNNAME_AD_Sequence_ID);
+			vo.AD_Sequence_ID = rs.getInt(I_AD_Field.COLUMNNAME_AD_Sequence_ID);
 		}
 		catch (SQLException e)
 		{
@@ -592,8 +587,7 @@ public class GridFieldVO implements Serializable
 		voTo.fieldEntityType = vo.fieldEntityType;
 		voTo.useDocSequence = vo.useDocSequence;
 		voTo.isHiddenFromUI = vo.isHiddenFromUI;
-		voTo.column_AD_Sequence_ID = vo.column_AD_Sequence_ID;
-		voTo.field_AD_Sequence_ID = vo.field_AD_Sequence_ID;
+		voTo.AD_Sequence_ID = vo.AD_Sequence_ID;
 
 		voTo.initFinish();
 		return voTo;
@@ -815,9 +809,7 @@ public class GridFieldVO implements Serializable
 
 	private final boolean applyRolePermissions;
 
-	private int column_AD_Sequence_ID = 0;
-
-	private int field_AD_Sequence_ID = 0;
+	private int AD_Sequence_ID = 0;
 
 	/**
 	 * Set Context including contained elements
@@ -1025,8 +1017,7 @@ public class GridFieldVO implements Serializable
 		clone.useDocSequence = useDocSequence;
 		clone.isHiddenFromUI = isHiddenFromUI;
 
-		clone.column_AD_Sequence_ID = column_AD_Sequence_ID;
-		clone.field_AD_Sequence_ID = field_AD_Sequence_ID;
+		clone.AD_Sequence_ID = AD_Sequence_ID;
 
 		return clone;
 	}	// clone
@@ -1566,6 +1557,6 @@ public class GridFieldVO implements Serializable
 
 	public int getAD_Sequence_ID()
 	{
-		return CoalesceUtil.firstGreaterThanZero(field_AD_Sequence_ID, column_AD_Sequence_ID);
+		return AD_Sequence_ID;
 	}
 }

@@ -47,9 +47,3 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710061
 UPDATE AD_Field SET SeqNo=325,Updated=TO_TIMESTAMP('2022-12-22 16:08:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710061
 ;
 
--- Field: Kundenprojekt -> Projekt -> Externe Projektreferenz
--- Column: C_Project.C_Project_Reference_Ext
--- 2022-12-22T14:25:21.307Z
-UPDATE AD_Field SET AD_Sequence_ID=556127,Updated=TO_TIMESTAMP('2022-12-22 16:25:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=705582
-;
-

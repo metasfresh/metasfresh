@@ -29,6 +29,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
@@ -109,6 +110,10 @@ public class WOProjectRepository
 		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(woProject.getBpartnerTargetDate()));
 		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(woProject.getWoProjectCreatedDate()));
 		projectRecord.setC_ProjectType_ID(woProject.getProjectTypeId().getRepoId());
+		projectRecord.setSpecialist_Consultant_ID(woProject.getSpecialistConsultantID() != null
+														  ? woProject.getSpecialistConsultantID().getRepoId()
+														  : null);
+		projectRecord.setInternalPriority(woProject.getInternalPriority().getCode());
 
 		saveRecord(projectRecord);
 
@@ -191,6 +196,17 @@ public class WOProjectRepository
 				.stream()
 				.map(WOProject::getProjectId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ImmutableList<WOProject> getByParentProjectId(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Parent_ID, projectId)
+				.create()
+				.stream()
+				.map(WOProjectRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Nullable
@@ -293,6 +309,8 @@ public class WOProjectRepository
 				.woOwner(projectRecord.getWOOwner())
 
 				.isActive(projectRecord.isActive())
+				.specialistConsultantID(UserId.ofRepoIdOrNull(projectRecord.getSpecialist_Consultant_ID()))
+				.internalPriority(InternalPriority.ofNullableCode(projectRecord.getInternalPriority()))
 				.build();
 	}
 }

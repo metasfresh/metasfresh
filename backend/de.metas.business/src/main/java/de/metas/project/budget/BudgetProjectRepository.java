@@ -28,6 +28,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
@@ -121,6 +122,9 @@ public class BudgetProjectRepository
 				.salesRepId(UserId.ofIntegerOrNull(record.getSalesRep_ID()))
 				.dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
 				.dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
+				.bpartnerDepartment(record.getBPartnerDepartment())
+				.specialistConsultantID(UserId.ofRepoIdOrNull(record.getSpecialist_Consultant_ID()))
+				.internalPriority(InternalPriority.ofNullableCode(record.getInternalPriority()))
 				.build();
 	}
 
@@ -176,6 +180,11 @@ public class BudgetProjectRepository
 		projectRecord.setDateContract(TimeUtil.asTimestamp(budgetProject.getDateContract()));
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProject.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(budgetProject.getProjectReferenceExt());
+		projectRecord.setBPartnerDepartment(budgetProject.getBpartnerDepartment());
+		projectRecord.setSpecialist_Consultant_ID(budgetProject.getSpecialistConsultantID() != null
+														  ? budgetProject.getSpecialistConsultantID().getRepoId()
+														  : null);
+		projectRecord.setInternalPriority(budgetProject.getInternalPriority().getCode());
 
 		InterfaceWrapperHelper.saveRecord(projectRecord);
 

@@ -23,30 +23,52 @@
 package de.metas.document.sequenceno;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.text.DecimalFormat;
 
 public class ExternalProjectRefSequenceNoProvider implements CustomSequenceNoProvider
 {
-	private static final String CUSTOM_PREFIX = "I2PS";
-
 	@Override
 	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
 		return true;
 	}
 
-	//todo av:
 	@Override
 	public String provideSequenceNo(@NonNull final Evaluatee context)
 	{
-		return CUSTOM_PREFIX + String.valueOf(SystemTime.asLocalDate().getYear()).substring(2);
+		return String.valueOf(SystemTime.asLocalDate().getYear()).substring(2);
 	}
 
 	/** @return true */
 	@Override
-	public boolean isUseIncrementSeqNoAsPrefix()
+	public boolean isUseIncrementSeqNoAsSuffix()
 	{
 		return true;
+	}
+
+	/**
+	 * ExternalProjectRefSequenceNoProvider requires {@code AD_Sequence}'s decimal pattern for incrementSeqNo format.
+	 */
+	@Override
+	@NonNull
+	public String appendIncrementSeqNoAsSuffix(
+			@NonNull final String customSequenceNumber,
+			@NonNull final String incrementalSequenceNumber,
+			@Nullable final String decimalPattern)
+	{
+		if (Check.isBlank(decimalPattern))
+		{
+			throw new AdempiereException("ExternalProjectRefSequenceNoProvider requires that DecimalPattern be defined for incrementalSequenceNumber to be properly formatted!");
+		}
+
+		final int seqNoAsInt = Integer.parseInt(incrementalSequenceNumber);
+
+		return customSequenceNumber + "-" + new DecimalFormat(decimalPattern).format(seqNoAsInt);
 	}
 }
