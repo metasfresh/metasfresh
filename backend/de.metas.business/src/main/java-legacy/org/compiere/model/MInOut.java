@@ -2389,7 +2389,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				// orderLine.setQtyReserved(orderLine.getQtyReserved().add(movementQty));
 				orderLine.setQtyDelivered(orderLine.getQtyDelivered().subtract(movementQty));
 
-				Loggables.withLogger(logger, Level.INFO).addLog("The following qtyDelivered-movementQty is set on orderLine.qtyDelivered, orderLineId={}, qtyDelivered={}, movementQty={}",
+				Loggables.withLogger(logger, Level.DEBUG).addLog("The following qtyDelivered-movementQty is set on orderLine.qtyDelivered, orderLineId={}, qtyDelivered={}, movementQty={}",
 																orderLine.getC_OrderLine_ID(),
 																orderLine.getQtyDelivered(),
 																movementQty);
