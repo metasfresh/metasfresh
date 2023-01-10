@@ -94,9 +94,9 @@ Feature: Handling unit export from manufacturing order
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
-      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
-      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceNote |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
+      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

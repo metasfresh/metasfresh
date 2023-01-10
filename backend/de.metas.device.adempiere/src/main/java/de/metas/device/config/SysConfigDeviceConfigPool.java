@@ -22,10 +22,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_SysConfig;
 import org.slf4j.Logger;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -67,6 +69,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 	private static final String DEVICE_PARAM_DeviceClass = "DeviceClass";
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
+	private static final String DEVICE_PARAM_BeforeAcquireValueHook = "BeforeAcquireValueHook";
 
 	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 
@@ -171,6 +174,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.setParameterValueSupplier(this::getDeviceParamValue)
 				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames)
 				.setAssignedWarehouseIds(getDeviceWarehouseIds(deviceName))
+				.setBeforeHooksClassname(getBeforeHooksClassname(deviceName))
 				.build();
 	}
 
@@ -236,6 +240,17 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 		}
 	}
 
+	@NonNull
+	private ImmutableList<String> getBeforeHooksClassname(@NonNull final String deviceName)
+	{
+		final String sysconfigName = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_BeforeAcquireValueHook;
+		return Optional.ofNullable(sysConfigBL.getValue(sysconfigName, clientAndOrgId))
+				.map(value -> value.split(","))
+				.map(Arrays::asList)
+				.map(ImmutableList::copyOf)
+				.orElseGet(ImmutableList::of);
+	}
+	
 	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
 	{
 		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;

@@ -1,5 +1,6 @@
 package de.metas.device.config;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.warehouse.WarehouseId;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -51,6 +53,10 @@ public final class DeviceConfig
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
+	
+	@Getter
+	@NonNull
+	private final ImmutableList<String> beforeHooksClassname;
 
 	/**
 	 * warehouse IDs where this device is available; empty means that it's available to any warehouse
@@ -66,6 +72,7 @@ public final class DeviceConfig
 		parameterValueSupplier = builder.getParameterValueSupplier();
 		requestClassnamesSupplier = builder.getRequestClassnamesSupplier();
 		assignedWarehouseIds = builder.getAssignedWarehouseIds();
+		beforeHooksClassname = builder.getBeforeHooksClassname();
 	}
 
 	public String getParameterValue(final String parameterName, final String defaultValue)
@@ -86,6 +93,7 @@ public final class DeviceConfig
 		private IDeviceParameterValueSupplier parameterValueSupplier;
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
 		private Set<WarehouseId> assignedWareouseIds = null;
+		private ImmutableList<String> beforeHooksClassname;
 
 		private Builder(@NonNull final String deviceName)
 		{
@@ -160,6 +168,19 @@ public final class DeviceConfig
 		private ImmutableSet<WarehouseId> getAssignedWarehouseIds()
 		{
 			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
+		}
+
+		@NonNull
+		public DeviceConfig.Builder setBeforeHooksClassname(@NonNull final ImmutableList<String> beforeHooksClassname)
+		{
+			this.beforeHooksClassname = beforeHooksClassname;
+			return this;
+		}
+		
+		@NonNull
+		private ImmutableList<String> getBeforeHooksClassname()
+		{
+			return Optional.ofNullable(beforeHooksClassname).orElseGet(ImmutableList::of);
 		}
 	}
 

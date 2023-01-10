@@ -72,7 +72,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
@@ -137,7 +136,6 @@ public class MD_Candidate_StepDef
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
-		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 	
 	@When("metasfresh initially has this MD_Candidate data")

@@ -135,6 +135,11 @@ public class HUQRCodesService
 		}
 	}
 
+	public Optional<HUQRCode> getSingleQRCodeByHuIdOrEmpty(@NonNull final HuId huId)
+	{
+		return huQRCodesRepository.getSingleQRCodeByHuIdOrEmpty(huId);
+	}
+
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)
 	{
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);

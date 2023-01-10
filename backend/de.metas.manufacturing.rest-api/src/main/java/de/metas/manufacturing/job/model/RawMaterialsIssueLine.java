@@ -27,6 +27,7 @@ public class RawMaterialsIssueLine
 	@NonNull Quantity qtyToIssue;
 	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
+	@Nullable String userInstructions;
 
 	@NonNull Quantity qtyIssued; // computed
 	@NonNull WFActivityStatus status;
@@ -38,7 +39,8 @@ public class RawMaterialsIssueLine
 			final boolean isWeightable,
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
-			@NonNull final ImmutableList<RawMaterialsIssueStep> steps)
+			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
+			@Nullable final String userInstructions)
 	{
 		this.productId = productId;
 		this.productName = productName;
@@ -46,6 +48,7 @@ public class RawMaterialsIssueLine
 		this.qtyToIssue = qtyToIssue;
 		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
+		this.userInstructions = userInstructions;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
 		this.status = computeStatus(this.qtyToIssue, this.qtyIssued, this.steps);
