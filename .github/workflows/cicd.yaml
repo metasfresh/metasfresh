@@ -1,5 +1,9 @@
 name: cicd
-on: [push]
+on: 
+  push:
+
+  # see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch for custom input parameters  
+  workflow_dispatch:
 jobs:
 
   init:
