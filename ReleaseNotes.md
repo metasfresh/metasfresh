@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14155](https://github.com/metasfresh/metasfresh/issues/14155) Fixing de_DE and de_CH Translations
   * [#14199](https://github.com/metasfresh/metasfresh/issues/14199) Product API bpartnerProductItems update fails 
   * [#14156](https://github.com/metasfresh/metasfresh/issues/14156) Create Interface to upload contacts to Active Campaign 
   * [#14165](https://github.com/metasfresh/metasfresh/issues/14165) Gantt: New Prüfaufträge shall always be simulation initially 
