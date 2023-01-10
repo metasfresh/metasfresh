@@ -22,16 +22,17 @@
 
 package de.metas.edi.esb.desadvexport.stepcom;
 
-import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
-
-import java.util.List;
-
+import de.metas.edi.esb.desadvexport.helper.DesadvLines;
+import de.metas.edi.esb.desadvexport.helper.DesadvParser;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import java.util.List;
+
+import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 public class StepComDesadvValidation
 {
@@ -55,14 +56,15 @@ public class StepComDesadvValidation
 		validateString(xmlDesadv.getCBPartnerLocationID().getGLN(), "@FillMandatory@ @C_BPartner_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
 		validateObject(xmlDesadv.getBillLocationID().getGLN(), "@FillMandatory@ @Bill_Location_ID@ @EDI_DESADV_ID@=" + xmlDesadv.getDocumentNo() + " @GLN@");
 
-		// Evaluate EDI_DesadvLines
-		final List<EDIExpDesadvLineType> ediExpDesadvLines = xmlDesadv.getEDIExpDesadvLine();
-		if (ediExpDesadvLines.isEmpty())
+		final DesadvLines desadvLines = DesadvParser.getDesadvLinesEnforcingSinglePacks(xmlDesadv);
+		if (desadvLines.isEmpty())
 		{
 			throw new RuntimeCamelException("@EDI.DESADV.ContainsDesadvLines@");
 		}
 
-		for (final EDIExpDesadvLineType xmlDesadvLine : ediExpDesadvLines)
+		final List<EDIExpDesadvLineType> lines = desadvLines.getAllLines();
+
+		for (final EDIExpDesadvLineType xmlDesadvLine : lines)
 		{
 			// validate mandatory types (not null)
 			validateObject(xmlDesadvLine.getLine(), "@FillMandatory@  @EDI_DesadvLine_ID@ @Line@");
