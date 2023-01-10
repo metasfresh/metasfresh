@@ -8,7 +8,6 @@ Feature: material-dispo updates on shipment-schedule events
   Background: Initial Data
     Given infrastructure and metasfresh are running
     And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
-    And metasfresh initially has no MD_Candidate data
     And metasfresh contains M_Products:
       | Identifier | Name            |
       | p_1        | salesProduct_12 |
