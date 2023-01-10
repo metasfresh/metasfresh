@@ -31,7 +31,6 @@ import de.metas.camel.externalsystems.shopware6.api.model.stock.JsonStock;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonAvailableForSales;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.camel.externalsystems.shopware6.stock.ExportStockRouteContext;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;

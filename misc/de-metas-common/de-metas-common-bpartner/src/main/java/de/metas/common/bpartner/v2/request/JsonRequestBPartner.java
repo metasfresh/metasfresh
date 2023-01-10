@@ -259,20 +259,20 @@ public class JsonRequestBPartner
 
 	private boolean paymentRulePOSet;
 
-	@ApiModelProperty(position = 290, // shall be last
+	@ApiModelProperty(position = 290, //
+			value = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String sectionGroupPartnerIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerIdentifierSet;
+	
+	@ApiModelProperty(position = 300, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
-
-	@ApiModelProperty(position = 260, //
-			value = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
-	private String sectionGroupPartnerIdentifier;
-
-	@ApiModelProperty(hidden = true)
-	private boolean sectionGroupPartnerIdentifierSet;
 
 	public void setCode(final String code)
 	{
