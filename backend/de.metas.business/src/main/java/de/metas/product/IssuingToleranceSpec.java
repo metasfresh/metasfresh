@@ -3,6 +3,7 @@ package de.metas.product;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.function.UnaryOperator;
 
 @EqualsAndHashCode(doNotUseGetters = true)
@@ -154,5 +156,17 @@ public final class IssuingToleranceSpec
 		{
 			return this;
 		}
+	}
+
+	@NonNull
+	public Quantity computePercentage(@NonNull final Quantity baseQty)
+	{
+		assertValueType(IssuingToleranceValueType.PERCENTAGE);
+		Check.assumeNotNull(percent, "Percent is always set when valueType = IssuingToleranceValueType.PERCENTAGE");
+
+		final BigDecimal tolerance = percent
+				.computePercentageOf(baseQty.toBigDecimal(), baseQty.getUOM().getStdPrecision());
+
+		return Quantitys.create(tolerance, baseQty.getUomId());
 	}
 }

@@ -24,6 +24,7 @@ package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
@@ -196,6 +197,12 @@ public class ResourceService
 	public void onResourceChanged(@NonNull final I_S_Resource resourceRecord)
 	{
 		createOrUpdateProductFromResource(ResourceRepository.toResource(resourceRecord));
+	}
+
+	@NonNull
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return resourceRepository.getResourceIdByValue(value, orgId);
 	}
 
 	private void createOrUpdateProductFromResource(final @NonNull Resource resource)
