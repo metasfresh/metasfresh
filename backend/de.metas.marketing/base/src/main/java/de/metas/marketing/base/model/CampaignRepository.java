@@ -19,11 +19,11 @@ import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -241,23 +241,20 @@ public class CampaignRepository
 	}
 
 	@NonNull
-	public Iterator<I_MKTG_Campaign> iterateCampaignsWithRemoteId(@NonNull final PlatformId platformId)
+	public Stream<Campaign> streamCampaignsWithRemoteId(@NonNull final PlatformId platformId)
 	{
-		final IQueryFilter<I_MKTG_Campaign> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_Campaign.class)
-				.addStringNotLikeFilter(I_MKTG_Campaign.COLUMN_LastSyncStatus, RemoteToLocalSyncResult.RemoteToLocalStatus.DELETED_ON_REMOTE_PLATFORM.name(), true);
-
 		return queryBL.createQueryBuilder(I_MKTG_Campaign.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign.COLUMNNAME_MKTG_Platform_ID, platformId.getRepoId())
 				.setOption(IQuery.OPTION_IteratorBufferSize, CampaignConstants.ITERATOR_BUFFER_SIZE)
 				.addNotNull(I_MKTG_Campaign.COLUMNNAME_RemoteRecordId)
-				.filter(deletedOnRemoteFilter)
 				.create()
-				.iterate(I_MKTG_Campaign.class);
+				.iterateAndStream()
+				.map(CampaignRepository::fromRecord);
 	}
 
 	@NonNull
-	public Iterator<I_MKTG_Campaign> iterateCampaigns(@NonNull final PlatformId platformId)
+	public Stream<Campaign> streamCampaigns(@NonNull final PlatformId platformId)
 	{
 		//dev-note: exclude campaigns which were deleted on remote platform
 		final IQueryFilter<I_MKTG_Campaign> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_Campaign.class)
@@ -274,7 +271,8 @@ public class CampaignRepository
 				.setOption(IQuery.OPTION_IteratorBufferSize, CampaignConstants.ITERATOR_BUFFER_SIZE)
 				.filter(statusFilter)
 				.create()
-				.iterate(I_MKTG_Campaign.class);
+				.iterateAndStream()
+				.map(CampaignRepository::fromRecord);
 	}
 
 	@NonNull

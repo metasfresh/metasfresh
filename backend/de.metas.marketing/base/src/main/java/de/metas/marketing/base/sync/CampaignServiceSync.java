@@ -23,20 +23,15 @@
 package de.metas.marketing.base.sync;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.PlatformClientService;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
-import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.CampaignToUpsertPage;
 import de.metas.marketing.base.model.DataRecord;
-import de.metas.marketing.base.model.I_MKTG_Campaign;
-import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.PageDescriptor;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
@@ -46,14 +41,15 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.slf4j.MDC;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 @Service
 public class CampaignServiceSync
@@ -75,8 +71,8 @@ public class CampaignServiceSync
 	{
 		final PlatformClient platformClient = platformClientService.createPlatformClient(platformId);
 
-		handleCampaignsNoLongerAvailableOnRemote(platformClient);
-		processCampaignToUpsertPage(platformClient);
+		final Set<String> processedRemoteIds = processCampaignToUpsertPage(platformClient);
+		handleCampaignsNoLongerAvailableOnRemote(platformId, processedRemoteIds);
 
 	}
 
@@ -84,24 +80,11 @@ public class CampaignServiceSync
 	{
 		final PlatformClient platformClient = platformClientService.createPlatformClient(platformId);
 
-		final Iterator<I_MKTG_Campaign> campaignIterator = campaignService.iterateCampaigns(platformClient.getCampaignConfig().getPlatformId());
-
-		while (campaignIterator.hasNext())
-		{
-			final Campaign campaign = CampaignRepository.fromRecord(campaignIterator.next());
-
-			try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_MKTG_Campaign.Table_Name, campaign.getCampaignId()))
-			{
-				final LocalToRemoteSyncResult syncResult = platformClient.upsertCampaign(campaign);
-
-				if (syncResult.getLocalToRemoteStatus().equals(LocalToRemoteSyncResult.LocalToRemoteStatus.SKIPPED))
-				{
-					continue;
-				}
-
-				campaignService.saveSyncResult(syncResult);
-			}
-		}
+		campaignService.streamCampaigns(platformId)
+				.map(platformClient::upsertCampaign)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.forEach(campaignService::saveSyncResult);
 	}
 
 	@NonNull
@@ -112,41 +95,37 @@ public class CampaignServiceSync
 		if (campaign.getRemoteId() == null)
 		{
 			final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
-			final LocalToRemoteSyncResult syncResult = platformClient.upsertCampaign(campaign);
-			return campaignService.saveSyncResult(syncResult);
+
+			return platformClient.upsertCampaign(campaign)
+					.map(campaignService::saveSyncResult)
+					.orElseThrow(() -> new AdempiereException("Could not obtain remoteId for campaign.")
+							.appendParametersToMessage()
+							.setParameter("CampaignId", campaign.getCampaignId()));
 		}
 
 		return campaign;
 	}
 
-	private void handleCampaignsNoLongerAvailableOnRemote(@NonNull final PlatformClient platformClient)
+	private void handleCampaignsNoLongerAvailableOnRemote(@NonNull final PlatformId platformId, @NonNull final Set<String> remoteIds)
 	{
-		final Iterator<I_MKTG_Campaign> campaignIterator = campaignService.iterateCampaignsWithRemoteId(platformClient.getCampaignConfig().getPlatformId());
-
-		while (campaignIterator.hasNext())
-		{
-			final Campaign campaign = CampaignRepository.fromRecord(campaignIterator.next());
-
-			if (Check.isBlank(campaign.getRemoteId()))
-			{
-				continue;
-			}
-
-			final Optional<CampaignRemoteUpdate> remoteCampaign = platformClient.getCampaignById(campaign.getRemoteId());
-
-			if (!remoteCampaign.isPresent())
-			{
-				final RemoteToLocalSyncResult syncResult = RemoteToLocalSyncResult.deletedOnRemotePlatform(campaign.toBuilder().remoteId(null).build());
-				campaignService.saveSyncResult(syncResult);
-			}
-		}
+		campaignService.streamSyncedWithRemoteId(platformId)
+				.filter(campaign -> Check.isNotBlank(campaign.getRemoteId()))
+				.filter(campaignWithRemoteId -> !remoteIds.contains(campaignWithRemoteId.getRemoteId()))
+				.map(campaignDeletedOnRemote -> campaignDeletedOnRemote.toBuilder().remoteId(null).build())
+				.map(RemoteToLocalSyncResult::deletedOnRemotePlatform)
+				.forEach(campaignService::saveSyncResult);
 	}
 
-	private void processCampaignToUpsertPage(@NonNull final PlatformClient platformClient)
+	@NonNull
+	private Set<String> processCampaignToUpsertPage(@NonNull final PlatformClient platformClient)
 	{
-		PageDescriptor currentPageDescriptor = platformClient.getCampaignPageDescriptor();
+		final ImmutableSet.Builder<String> remoteIds = ImmutableSet.builder();
 
-		while (true)
+		PageDescriptor currentPageDescriptor = null;
+
+		boolean moreCampaigns = true;
+
+		while (moreCampaigns)
 		{
 			final CampaignToUpsertPage campaignToUpsertPage = platformClient.getCampaignToUpsertPage(currentPageDescriptor);
 
@@ -160,13 +139,16 @@ public class CampaignServiceSync
 
 			campaignService.saveSyncResults(syncResults);
 
-			if (campaignToUpsertPage.getNext() == null)
-			{
-				break;
-			}
+			campaignToUpsertPage.getRemoteCampaigns()
+					.stream()
+					.map(CampaignRemoteUpdate::getRemoteId)
+					.forEach(remoteIds::add);
 
 			currentPageDescriptor = campaignToUpsertPage.getNext();
+			moreCampaigns = currentPageDescriptor != null;
 		}
+
+		return remoteIds.build();
 	}
 
 	@NonNull
@@ -179,31 +161,28 @@ public class CampaignServiceSync
 				.map(CampaignRemoteUpdate::getRemoteId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final List<Campaign> existingCampaigns = campaignService.retrieveByPlatformAndRemoteIds(request.getPlatformId(), remoteIds);
-
-		final ImmutableListMultimap<String, Campaign> remoteId2campaigns = Multimaps.index(existingCampaigns, Campaign::getRemoteId);
+		final Map<String, Campaign> remoteId2ExistingCampaigns = campaignService.retrieveByPlatformAndRemoteIds(request.getPlatformId(), remoteIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(Campaign::getRemoteId, Function.identity()));
 
 		for (final CampaignRemoteUpdate campaignUpdate : request.getRemoteCampaigns())
 		{
-			final ImmutableList<Campaign> campaignsToUpdate = remoteId2campaigns.get(campaignUpdate.getRemoteId());
-			if (campaignsToUpdate.isEmpty())
+			final Campaign campaignToUpdate = remoteId2ExistingCampaigns.get(campaignUpdate.getRemoteId());
+			if (campaignToUpdate == null)
 			{
 				final DataRecord newCampaign = campaignUpdate.toCampaign(request.getPlatformId(), request.getOrgId());
 				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(newCampaign));
 			}
 			else
 			{
-				for (final Campaign campaignToUpdate : campaignsToUpdate)
+				final Campaign updatedCampaign = campaignUpdate.update(campaignToUpdate);
+				if (Objects.equals(updatedCampaign, campaignToUpdate))
 				{
-					final Campaign updatedCampaign = campaignUpdate.update(campaignToUpdate);
-					if (Objects.equals(updatedCampaign, campaignToUpdate))
-					{
-						syncResults.add(RemoteToLocalSyncResult.noChanges(updatedCampaign));
-					}
-					else
-					{
-						syncResults.add(RemoteToLocalSyncResult.obtainedOtherRemoteData(updatedCampaign));
-					}
+					syncResults.add(RemoteToLocalSyncResult.noChanges(updatedCampaign));
+				}
+				else
+				{
+					syncResults.add(RemoteToLocalSyncResult.obtainedOtherRemoteData(updatedCampaign));
 				}
 			}
 		}

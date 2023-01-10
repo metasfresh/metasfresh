@@ -6,7 +6,6 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.EmailAddress;
-import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -17,10 +16,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -164,23 +163,28 @@ public class ContactPersonService
 		final ArrayList<ContactPerson> savedContactPersons = new ArrayList<>(syncResults.size());
 		for (final SyncResult syncResult : syncResults)
 		{
-			final ContactPerson savedContactPerson = contactPersonRepo.saveSyncResult(syncResult);
-			savedContactPersons.add(savedContactPerson);
+			savedContactPersons.add(saveSyncResult(syncResult));
 		}
 
 		return savedContactPersons;
 	}
 
 	@NonNull
-	public Iterator<I_MKTG_ContactPerson> iterateContactsWithRemoteId(@NonNull final CampaignId campaignId)
+	public ContactPerson saveSyncResult(@NonNull final SyncResult syncResult)
 	{
-		return contactPersonRepo.iterateContactsWithRemoteId(campaignId);
+		return contactPersonRepo.saveSyncResult(syncResult);
 	}
 
 	@NonNull
-	public Iterator<I_MKTG_ContactPerson> iterateContacts(@NonNull final CampaignId campaignId)
+	public Stream<ContactPerson> streamContactsWithRemoteId(@NonNull final CampaignId campaignId)
 	{
-		return contactPersonRepo.iterateContacts(campaignId);
+		return contactPersonRepo.streamContactsWithRemoteId(campaignId);
+	}
+
+	@NonNull
+	public Stream<ContactPerson> streamContacts(@NonNull final CampaignId campaignId)
+	{
+		return contactPersonRepo.streamContacts(campaignId);
 	}
 
 	@NonNull

@@ -11,7 +11,6 @@ import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonId;
 import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.Platform;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.PlatformRepository;
@@ -24,7 +23,6 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -205,15 +203,15 @@ public class CampaignService
 	}
 
 	@NonNull
-	public Iterator<I_MKTG_Campaign> iterateCampaignsWithRemoteId(@NonNull final PlatformId platformId)
+	public Stream<Campaign> streamSyncedWithRemoteId(@NonNull final PlatformId platformId)
 	{
-		return campaignRepository.iterateCampaignsWithRemoteId(platformId);
+		return campaignRepository.streamCampaignsWithRemoteId(platformId);
 	}
 
 	@NonNull
-	public Iterator<I_MKTG_Campaign> iterateCampaigns(@NonNull final PlatformId platformId)
+	public Stream<Campaign> streamCampaigns(@NonNull final PlatformId platformId)
 	{
-		return campaignRepository.iterateCampaigns(platformId);
+		return campaignRepository.streamCampaigns(platformId);
 	}
 
 	@NonNull

@@ -21,10 +21,8 @@ import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.email.EmailValidator;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -104,18 +102,6 @@ public class CleverReachClient implements PlatformClient
 				url);
 	}
 
-	public LocalToRemoteSyncResult deleteCampaign(@NonNull final Campaign campaign)
-	{
-		final String remoteId = Check.assumeNotEmpty(
-				campaign.getRemoteId(),
-				"The given campaign to be deleted has a remoteId; campaign={}", campaign);
-
-		final String url = String.format("/groups.json/%s", remoteId);
-		getLowLevelClient().delete(url);
-
-		return LocalToRemoteSyncResult.deleted(campaign);
-	}
-
 	public CampaignRemoteUpdate retrieveCampaign(@NonNull final String groupId)
 	{
 		final String url = String.format("/groups.json/%s", groupId);
@@ -140,10 +126,10 @@ public class CleverReachClient implements PlatformClient
 
 	private List<Receiver> retrieveReceivers(@NonNull final String remoteGroupId, @NonNull final CleverReachPageDescriptor pageDescriptor)
 	{
-		final String urlPathAndParams = "/groups.json/{group_id}/receivers?pagesize={pagesize}&page={page}";
+		final String urlPathAndParams = String.format("/groups.json/%s/receivers?pagesize=%d&page=%d", remoteGroupId, pageDescriptor.getPageSize(), pageDescriptor.getPage());
 
 		return getLowLevelClient()
-				.get(LIST_OF_RECEIVERS_TYPE, urlPathAndParams, remoteGroupId, pageDescriptor.getPageSize(), pageDescriptor.getPage());
+				.get(LIST_OF_RECEIVERS_TYPE, urlPathAndParams);
 	}
 
 	public ContactPersonRemoteUpdate retrieveReceiver(@NonNull final String groupId, @NonNull final String receiverId)
@@ -158,39 +144,6 @@ public class CleverReachClient implements PlatformClient
 	public CampaignConfig getCampaignConfig()
 	{
 		return cleverReachConfig;
-	}
-
-	@Nullable
-	@Override
-	public PageDescriptor getCampaignPageDescriptor()
-	{
-		return null;
-	}
-
-	@Override
-	public PageDescriptor getContactPersonPageDescriptor()
-	{
-		return CleverReachPageDescriptor.createNew(CLEVER_REACH_API_PAGE_SIZE);
-	}
-
-	@Override
-	public Optional<CampaignRemoteUpdate> getCampaignById(@NonNull final String remoteId)
-	{
-		try
-		{
-			return Optional.of(retrieveCampaign(remoteId));
-		}
-		catch (final Exception ex)
-		{
-			if (ex.getMessage().contains(String.valueOf(HttpStatus.NOT_FOUND.value())))
-			{
-				return Optional.empty();
-			}
-			else
-			{
-				throw AdempiereException.wrapIfNeeded(ex);
-			}
-		}
 	}
 
 	@NonNull
@@ -208,54 +161,33 @@ public class CleverReachClient implements PlatformClient
 	}
 
 	@Override
-	public Optional<ContactPersonRemoteUpdate> getContactById(@NonNull final Campaign campaign, @NonNull final String remoteId)
+	public ContactPersonToUpsertPage getContactPersonToUpsertPage(@NonNull final Campaign campaign, @Nullable final PageDescriptor pageDescriptor)
 	{
-		try
-		{
-			return Optional.of(retrieveReceiver(campaign.getRemoteId(), remoteId));
-		}
-		catch (final Exception ex)
-		{
-			if (ex.getMessage().contains(String.valueOf(HttpStatus.NOT_FOUND.value())))
-			{
-				return Optional.empty();
-			}
-			else
-			{
-				throw AdempiereException.wrapIfNeeded(ex);
-			}
-		}
-	}
-
-	@Override
-	public ContactPersonToUpsertPage getContactPersonToUpsertPage(@NonNull final Campaign campaign, @NonNull final PageDescriptor pageDescriptor)
-	{
-		final CleverReachPageDescriptor cleverReachPageDescriptor = CleverReachPageDescriptor.cast(pageDescriptor);
+		final CleverReachPageDescriptor cleverReachPageDescriptor = Optional.ofNullable(pageDescriptor)
+				.map(CleverReachPageDescriptor::cast)
+				.orElseGet(() -> CleverReachPageDescriptor.createNew(CLEVER_REACH_API_PAGE_SIZE));
 
 		final List<ContactPersonRemoteUpdate> remoteContacts = retrieveReceivers(campaign.getRemoteId(), cleverReachPageDescriptor)
 				.stream()
 				.map(Receiver::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
-		if (remoteContacts.isEmpty())
-		{
-			return ContactPersonToUpsertPage.builder()
-					.remoteContacts(remoteContacts)
-					.build();
-		}
+		final CleverReachPageDescriptor nextPage = remoteContacts.isEmpty()
+				? null
+				: cleverReachPageDescriptor.createNext();
 
 		return ContactPersonToUpsertPage.builder()
 				.remoteContacts(remoteContacts)
-				.next(cleverReachPageDescriptor.createNext())
+				.next(nextPage)
 				.build();
 	}
 
 	@Override
-	public LocalToRemoteSyncResult upsertContact(@NonNull final Campaign campaign, @NonNull final ContactPerson contactPerson)
+	public Optional<LocalToRemoteSyncResult> upsertContact(@NonNull final Campaign campaign, @NonNull final ContactPerson contactPerson)
 	{
 		if (!EmailValidator.isValid(contactPerson.getEmailAddressStringOrNull()))
 		{
-			return LocalToRemoteSyncResult.error(contactPerson, "Contact person has no (valid) email address");
+			return Optional.of(LocalToRemoteSyncResult.error(contactPerson, "Contact person has no (valid) email address"));
 		}
 
 		final ReceiverUpsert receiverUpsert = ReceiverUpsert.of(contactPerson);
@@ -274,19 +206,19 @@ public class CleverReachClient implements PlatformClient
 					.remoteId(remoteContactUpsert.getRemoteId())
 					.build();
 
-			return LocalToRemoteSyncResult.upserted(updatedPerson);
+			return Optional.of(LocalToRemoteSyncResult.upserted(updatedPerson));
 		}
 		catch (final Exception ex)
 		{
-			return LocalToRemoteSyncResult.error(contactPerson, "Unexpected result='" + ex.getMessage() + "'");
+			return Optional.of(LocalToRemoteSyncResult.error(contactPerson, "Unexpected result='" + ex.getMessage() + "'"));
 		}
 	}
 
 	@NonNull
 	@Override
-	public LocalToRemoteSyncResult upsertCampaign(final Campaign campaign)
+	public Optional<LocalToRemoteSyncResult> upsertCampaign(final Campaign campaign)
 	{
-		return createOrUpdateGroup(campaign);
+		return Optional.of(createOrUpdateGroup(campaign));
 	}
 
 	private LocalToRemoteSyncResult createOrUpdateGroup(@NonNull final Campaign campaign)
@@ -314,10 +246,10 @@ public class CleverReachClient implements PlatformClient
 		final SendEmailActivationFormRequest body = SendEmailActivationFormRequest.builder()
 				.email(email)
 				.doidata(SendEmailActivationFormRequest.DoubleOptInData.builder()
-						.user_ip("1.2.3.4")
-						.referer("metasfresh")
-						.user_agent("metasfresh")
-						.build())
+								 .user_ip("1.2.3.4")
+								 .referer("metasfresh")
+								 .user_agent("metasfresh")
+								 .build())
 				.build();
 
 		getLowLevelClient().post(body, SINGLE_HETEROGENOUS_TYPE, url);

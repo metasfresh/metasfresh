@@ -55,8 +55,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,44 +90,12 @@ public class ActiveCampaignClient implements PlatformClient
 		return activeCampaignConfig;
 	}
 
-	@NonNull
 	@Override
-	public PageDescriptor getCampaignPageDescriptor()
+	public CampaignToUpsertPage getCampaignToUpsertPage(@Nullable final PageDescriptor pageDescriptor)
 	{
-		return ActiveCampaignPageDescriptor.createNew(ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT);
-	}
-
-	@NonNull
-	@Override
-	public PageDescriptor getContactPersonPageDescriptor()
-	{
-		return ActiveCampaignPageDescriptor.createNew(ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT);
-	}
-
-	@Override
-	@NonNull
-	public Optional<CampaignRemoteUpdate> getCampaignById(@NonNull final String remoteId)
-	{
-		try
-		{
-			return Optional.of(retrieveCampaignListFromRemote(remoteId))
-					.map(CampaignWrapper::getList)
-					.map(ActiveCampaignClient::toCampaignUpdate);
-		}
-		catch (final HttpClientErrorException.NotFound notFoundEx)
-		{
-			return Optional.empty();
-		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-	}
-
-	@Override
-	public CampaignToUpsertPage getCampaignToUpsertPage(@NonNull final PageDescriptor pageDescriptor)
-	{
-		final ActiveCampaignPageDescriptor activeCampaignPageDescriptor = ActiveCampaignPageDescriptor.cast(pageDescriptor);
+		final ActiveCampaignPageDescriptor activeCampaignPageDescriptor = Optional.ofNullable(pageDescriptor)
+				.map(ActiveCampaignPageDescriptor::cast)
+				.orElseGet(() -> ActiveCampaignPageDescriptor.createNew(ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT));
 
 		final List<CampaignRemoteUpdate> remoteCampaignsToUpdate = retrieveCampaignListsFromRemote(activeCampaignPageDescriptor)
 				.stream()
@@ -136,57 +104,36 @@ public class ActiveCampaignClient implements PlatformClient
 
 		final int pageSize = remoteCampaignsToUpdate.size();
 
-		if (pageSize < activeCampaignPageDescriptor.getLimit())
-		{
-			return CampaignToUpsertPage.builder()
-					.remoteCampaigns(remoteCampaignsToUpdate)
-					.build();
-		}
+		final ActiveCampaignPageDescriptor nextPage = pageSize >= activeCampaignPageDescriptor.getLimit()
+				? activeCampaignPageDescriptor.createNext(pageSize)
+				: null;
 
 		return CampaignToUpsertPage.builder()
 				.remoteCampaigns(remoteCampaignsToUpdate)
-				.next(activeCampaignPageDescriptor.createNext(pageSize))
+				.next(nextPage)
 				.build();
 	}
 
 	@NonNull
 	@Override
-	public LocalToRemoteSyncResult upsertCampaign(@NonNull final Campaign campaign)
+	public Optional<LocalToRemoteSyncResult> upsertCampaign(@NonNull final Campaign campaign)
 	{
 		//dev-note: keep only campaigns without remoteId, to avoid duplicating campaigns on remote. the api doesn't support update only create
 		if (Check.isNotBlank(campaign.getRemoteId()))
 		{
-			return LocalToRemoteSyncResult.skipped(campaign);
-		}
-
-		return createCampaignList(campaign);
-	}
-
-	@NonNull
-	@Override
-	public Optional<ContactPersonRemoteUpdate> getContactById(@NonNull final Campaign campaign_NOT_USED, @NonNull final String remoteId)
-	{
-		try
-		{
-			return Optional.of(retrieveContactFromRemote(remoteId))
-					.map(ContactWrapper::getContact)
-					.map(ActiveCampaignClient::toContactPersonUpdate);
-		}
-		catch (final HttpClientErrorException.NotFound notFoundEx)
-		{
 			return Optional.empty();
 		}
-		catch (final Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+
+		return Optional.of(createCampaignList(campaign));
 	}
 
 	@NonNull
 	@Override
-	public ContactPersonToUpsertPage getContactPersonToUpsertPage(@NonNull final Campaign campaign, @NonNull final PageDescriptor pageDescriptor)
+	public ContactPersonToUpsertPage getContactPersonToUpsertPage(@NonNull final Campaign campaign, @Nullable final PageDescriptor pageDescriptor)
 	{
-		final ActiveCampaignPageDescriptor activeCampaignPageDescriptor = ActiveCampaignPageDescriptor.cast(pageDescriptor);
+		final ActiveCampaignPageDescriptor activeCampaignPageDescriptor = Optional.ofNullable(pageDescriptor)
+				.map(ActiveCampaignPageDescriptor::cast)
+				.orElseGet(() -> ActiveCampaignPageDescriptor.createNew(ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT));
 
 		final List<ContactPersonRemoteUpdate> remoteContacts = retrieveContactsFromRemote(campaign.getRemoteId(), activeCampaignPageDescriptor)
 				.getContacts()
@@ -194,34 +141,23 @@ public class ActiveCampaignClient implements PlatformClient
 				.map(ActiveCampaignClient::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
-		if (remoteContacts.size() < activeCampaignPageDescriptor.getLimit())
-		{
-			return ContactPersonToUpsertPage.builder()
-					.remoteContacts(remoteContacts)
-					.build();
-		}
-
 		final int pageSize = remoteContacts.size();
-		final boolean hasMoreContacts = pageSize <= activeCampaignPageDescriptor.getLimit();
 
-		if (!hasMoreContacts)
-		{
-			return ContactPersonToUpsertPage.builder()
-					.remoteContacts(remoteContacts)
-					.build();
-		}
+		final ActiveCampaignPageDescriptor nextPage = pageSize >= activeCampaignPageDescriptor.getLimit()
+				? activeCampaignPageDescriptor.createNext(pageSize)
+				: null;
 
 		return ContactPersonToUpsertPage.builder()
 				.remoteContacts(remoteContacts)
-				.next(activeCampaignPageDescriptor.createNext(pageSize))
+				.next(nextPage)
 				.build();
 	}
 
 	@NonNull
 	@Override
-	public LocalToRemoteSyncResult upsertContact(@NonNull final Campaign campaign, @NonNull final ContactPerson contactPerson)
+	public Optional<LocalToRemoteSyncResult> upsertContact(@NonNull final Campaign campaign, @NonNull final ContactPerson contactPerson)
 	{
-		return createCampaignContactAndAddToList(campaign, contactPerson);
+		return Optional.of(createCampaignContactAndAddToList(campaign, contactPerson));
 	}
 
 	@NonNull
@@ -358,21 +294,6 @@ public class ActiveCampaignClient implements PlatformClient
 	}
 
 	@NonNull
-	private CampaignWrapper retrieveCampaignListFromRemote(@NonNull final String remoteId)
-	{
-		final ApiRequest request = ApiRequest.builder()
-				.baseURL(activeCampaignConfig.getBaseUrl())
-				.apiKey(activeCampaignConfig.getApiKey())
-				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-												ACTIVE_CAMPAIGN_API_VERSION,
-												ResourcePath.LISTS.getValue(),
-												remoteId))
-				.build();
-
-		return restService.performGet(request, CampaignWrapper.class).getBody();
-	}
-
-	@NonNull
 	private ContactList retrieveContactsFromRemote(
 			@NonNull final String campaignListRemoteId,
 			@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
@@ -393,21 +314,6 @@ public class ActiveCampaignClient implements PlatformClient
 				.build();
 
 		return restService.performGet(request, ContactList.class).getBody();
-	}
-
-	@NonNull
-	private ContactWrapper retrieveContactFromRemote(@NonNull final String contactRemoteId)
-	{
-		final ApiRequest request = ApiRequest.builder()
-				.baseURL(activeCampaignConfig.getBaseUrl())
-				.apiKey(activeCampaignConfig.getApiKey())
-				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-												ACTIVE_CAMPAIGN_API_VERSION,
-												ResourcePath.CONTACTS.getValue(),
-												contactRemoteId))
-				.build();
-
-		return restService.performGet(request, ContactWrapper.class).getBody();
 	}
 
 	@NonNull

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "2",
+    "email": "test20@updated.com",
+    "active": true
+  },
+  {
+    "id": "3",
+    "email": "test30@newemail.com",
+    "active": true
+  },
+  {
+    "id": "4",
+    "email": "test40@newemail.com",
+    "active": false
+  },
+  {
+    "id": "5",
+    "email": "test50@newemail.com",
+    "active": true
+  }
+]
