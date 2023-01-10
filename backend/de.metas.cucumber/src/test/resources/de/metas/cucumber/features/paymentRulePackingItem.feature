@@ -32,7 +32,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | s_s_1      | ol_1                      | N             |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-03-23  | 2001343                 | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
 
     And update shipment schedules

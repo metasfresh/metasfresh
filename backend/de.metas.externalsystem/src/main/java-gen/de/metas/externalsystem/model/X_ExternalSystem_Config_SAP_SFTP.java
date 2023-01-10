@@ -35,6 +35,21 @@ public class X_ExternalSystem_Config_SAP_SFTP extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setApprovedBy_ID (final int ApprovedBy_ID)
+	{
+		if (ApprovedBy_ID < 1) 
+			set_Value (COLUMNNAME_ApprovedBy_ID, null);
+		else 
+			set_Value (COLUMNNAME_ApprovedBy_ID, ApprovedBy_ID);
+	}
+
+	@Override
+	public int getApprovedBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ApprovedBy_ID);
+	}
+
+	@Override
 	public void setErroredDirectory (final java.lang.String ErroredDirectory)
 	{
 		set_Value (COLUMNNAME_ErroredDirectory, ErroredDirectory);

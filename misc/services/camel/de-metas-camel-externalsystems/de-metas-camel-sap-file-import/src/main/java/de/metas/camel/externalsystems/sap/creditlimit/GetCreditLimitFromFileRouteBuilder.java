@@ -63,19 +63,24 @@ public class GetCreditLimitFromFileRouteBuilder extends IdAwareRouteBuilder
 	@NonNull
 	private final ProcessLogger processLogger;
 
+	@NonNull
+	private final CreditLimitContext creditLimitContext;
+
 	@Builder
 	private GetCreditLimitFromFileRouteBuilder(
 			@NonNull final CreditLimitFileEndpointConfig fileEndpointConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
 			@NonNull final JsonExternalSystemRequest enabledByExternalSystemRequest,
-			@NonNull final ProcessLogger processLogger)
+			@NonNull final ProcessLogger processLogger,
+			@NonNull final CreditLimitContext creditLimitContext)
 	{
 		super(camelContext);
 		this.fileEndpointConfig = fileEndpointConfig;
 		this.routeId = routeId;
 		this.enabledByExternalSystemRequest = enabledByExternalSystemRequest;
 		this.processLogger = processLogger;
+		this.creditLimitContext = creditLimitContext;
 	}
 
 	@Override
@@ -86,7 +91,7 @@ public class GetCreditLimitFromFileRouteBuilder extends IdAwareRouteBuilder
 				.routeId(routeId)
 				.log("CreditLimit Sync Route Started")
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
-				.process(this::prepareCreditLimitContext)
+				.process(this::attachContext)
 				.split(body().tokenize("\n")).streaming()
 				  .unmarshal(new BindyCsvDataFormat(CreditLimitRow.class))
 				  .process(new CreditLimitUpsertProcessor(enabledByExternalSystemRequest, processLogger, ACCEPTED_CREDIT_TYPES)).id(PROCESS_CREDIT_LIMIT_ROW_PROCESSOR_ID)
@@ -109,12 +114,8 @@ public class GetCreditLimitFromFileRouteBuilder extends IdAwareRouteBuilder
 		// @formatter:on
 	}
 
-	private void prepareCreditLimitContext(@NonNull final Exchange exchange)
+	private void attachContext(@NonNull final Exchange exchange)
 	{
-		final CreditLimitContext context = CreditLimitContext.builder()
-				.orgCode(enabledByExternalSystemRequest.getOrgCode())
-				.build();
-
-		exchange.setProperty(ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, context);
+		exchange.setProperty(ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, creditLimitContext);
 	}
 }

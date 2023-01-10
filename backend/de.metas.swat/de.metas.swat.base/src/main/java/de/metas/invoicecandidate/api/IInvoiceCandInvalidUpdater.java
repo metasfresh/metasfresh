@@ -43,7 +43,7 @@ public interface IInvoiceCandInvalidUpdater
 
 	/**
 	 * Updates invoice candidates (which were scheduled to be recomputed)
-	 *
+	 * 
 	 * NOTEs:
 	 * <ul>
 	 * <li>only those candidates will be updated that were previously invalidated

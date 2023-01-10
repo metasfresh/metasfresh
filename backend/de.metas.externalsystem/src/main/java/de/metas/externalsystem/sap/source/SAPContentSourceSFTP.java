@@ -29,6 +29,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -81,6 +82,9 @@ public class SAPContentSourceSFTP
 	@Nullable
 	String fileNamePatternCreditLimit;
 
+	@Nullable
+	UserId approvedBy;
+
 	@Builder
 	public SAPContentSourceSFTP(
 			@NonNull final String hostName,
@@ -95,7 +99,8 @@ public class SAPContentSourceSFTP
 			@Nullable final String targetDirectoryBPartner,
 			@Nullable final String fileNamePatternBPartner,
 			@Nullable final String targetDirectoryCreditLimit,
-			@Nullable final String fileNamePatternCreditLimit)
+			@Nullable final String fileNamePatternCreditLimit,
+			@Nullable final UserId approvedBy)
 	{
 		this.hostName = hostName;
 		this.port = port;
@@ -110,6 +115,7 @@ public class SAPContentSourceSFTP
 		this.fileNamePatternBPartner = fileNamePatternBPartner;
 		this.targetDirectoryCreditLimit = targetDirectoryCreditLimit;
 		this.fileNamePatternCreditLimit = fileNamePatternCreditLimit;
+		this.approvedBy = approvedBy;
 	}
 
 	@NonNull

@@ -268,6 +268,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	// TODO give it a better name or merge it with "C_Invoice_Candidates are found:" step
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws Throwable
 	{
@@ -438,8 +439,6 @@ public class C_Invoice_Candidate_StepDef
 				{
 					updatedInvoiceCandidate = StepDefUtil.tryAndWaitForItem(5, 1000, () -> isInvoiceCandidateUpdated(row));
 				}
-
-				InterfaceWrapperHelper.refresh(updatedInvoiceCandidate);
 
 				final String billBPIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if (Check.isNotBlank(billBPIdentifier))
@@ -1090,6 +1089,7 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
+	// TODO give it a better name or merge it with "C_Invoice_Candidates are found:" step
 	@And("^after not more than (.*)s, C_Invoice_Candidates are found:$")
 	public void thereAreInvoiceCandidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{

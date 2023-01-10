@@ -1,16 +1,17 @@
 package de.metas.bpartner.model.interceptor;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -38,15 +39,16 @@ import lombok.NonNull;
 @Component
 public class C_BPartner_CreditLimit
 {
+	private final IBPartnerStatsBL statsBL = Services.get(IBPartnerStatsBL.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		Services.get(IBPartnerStatisticsUpdater.class)
 				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(bpCreditLimit.getC_BPartner_ID())
-						.build());
+												  .bpartnerId(bpCreditLimit.getC_BPartner_ID())
+												  .build());
 	}
-
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setApproved(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
@@ -60,5 +62,17 @@ public class C_BPartner_CreditLimit
 				bpCreditLimit.setProcessed(true);
 			}
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID)
+	public void enableCreditLimitCheck(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
+	{
+		if (bpCreditLimit.getApprovedBy_ID() <= 0 || bpCreditLimit.getC_BPartner_ID() <= 0)
+		{
+			return;
+		}
+
+		statsBL.enableCreditLimitCheck(BPartnerId.ofRepoId(bpCreditLimit.getC_BPartner_ID()));
 	}
 }
