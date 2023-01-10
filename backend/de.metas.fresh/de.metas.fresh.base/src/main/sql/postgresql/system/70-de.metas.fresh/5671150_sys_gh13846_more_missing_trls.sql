@@ -55,7 +55,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-01-10 14:3
 ;
 
 -- 2023-01-10T13:42:35.994Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Update des Benutzerdatenzugriffs aus der Bpartner-Hierachie', PrintName='Update des Benutzerdatenzugriffs aus der Bpartner-Hierachie',Updated=TO_TIMESTAMP('2023-01-10 14:42:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577449 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Update des Benutzerdatenzugriffs aus der Bpartner-Hierarchie', PrintName='Update des Benutzerdatenzugriffs aus der Bpartner-Hierarchie',Updated=TO_TIMESTAMP('2023-01-10 14:42:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577449 AND AD_Language='de_DE'
 ;
 
 -- 2023-01-10T13:42:35.995Z
@@ -67,7 +67,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Update des Benutzerdatenzugrif
 ;
 
 -- 2023-01-10T13:42:45.077Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Update des Benutzerdatenzugriffs aus der Bpartner-Hierachie', PrintName='Update des Benutzerdatenzugriffs aus der Bpartner-Hierachie',Updated=TO_TIMESTAMP('2023-01-10 14:42:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577449 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Update des Benutzerdatenzugriffs aus der Bpartner-Hierarchie', PrintName='Update des Benutzerdatenzugriffs aus der Bpartner-Hierarchie',Updated=TO_TIMESTAMP('2023-01-10 14:42:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577449 AND AD_Language='de_CH'
 ;
 
 -- 2023-01-10T13:42:45.078Z
