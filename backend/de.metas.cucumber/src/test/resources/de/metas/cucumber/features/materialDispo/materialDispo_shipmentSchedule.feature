@@ -6,7 +6,12 @@ Feature: material-dispo updates on shipment-schedule events
   So that the ATP is always correct
 
   Background: Initial Data
+    Given infrastructure and metasfresh are running
     And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
+    And metasfresh initially has no MD_Candidate data
+    And metasfresh contains M_Products:
+      | Identifier | Name            |
+      | p_1        | salesProduct_12 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                       | Value                       | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | value_md_ss_290922 | pricing_system_description | true         |
