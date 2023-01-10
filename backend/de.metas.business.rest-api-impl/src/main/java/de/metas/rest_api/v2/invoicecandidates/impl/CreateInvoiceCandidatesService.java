@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -40,11 +39,9 @@ import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.v2.JsonPrice;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
@@ -98,7 +95,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -114,7 +110,6 @@ public class CreateInvoiceCandidatesService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
@@ -311,7 +306,7 @@ public class CreateInvoiceCandidatesService
 		}
 
 		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, orgId).orElseThrow(() -> MissingResourceException.builder()
-				.resourceName("billPartner")
+				.resourceName("product")
 				.resourceIdentifier(productIdentifier.toString())
 				.parentResource(item)
 				.build());
@@ -468,29 +463,7 @@ public class CreateInvoiceCandidatesService
 
 	}
 
-	private boolean isBPartnerLocationMatches(
-			@NonNull final OrgId orgId,
-			@NonNull final BPartnerLocation jsonBPartnerLocation,
-			@NonNull final ExternalIdentifier locationIdentifier)
-	{
-		@Nullable final BPartnerLocationId bPartnerLocationId = jsonBPartnerLocation.getId();
-		switch (locationIdentifier.getType())
-		{
-			case EXTERNAL_REFERENCE:
-				final Optional<MetasfreshId> metasfreshId =
-						jsonRetrieverService.resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
-
-				return metasfreshId.isPresent() && bPartnerLocationId != null &&
-						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(bPartnerLocationId.getRepoId()));
-			case GLN:
-				return GLN.equals(jsonBPartnerLocation.getGln(), locationIdentifier.asGLN());
-			case METASFRESH_ID:
-				return bPartnerLocationId != null && MetasfreshId.equals(locationIdentifier.asMetasfreshId(), MetasfreshId.of(bPartnerLocationId.getRepoId()));
-			default:
-				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
-		}
-	}
-
+	@Nullable
 	private ProductPrice createProductPriceOrNull(
 			@Nullable final JsonPrice jsonPrice,
 			@NonNull final ProductId productId,
@@ -541,7 +514,7 @@ public class CreateInvoiceCandidatesService
 		{
 			priceUomId = uomDAO.getUomIdByX12DE355(uomCode);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
 			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier("priceUomCode").parentResource(item).cause(e).build();
 		}
