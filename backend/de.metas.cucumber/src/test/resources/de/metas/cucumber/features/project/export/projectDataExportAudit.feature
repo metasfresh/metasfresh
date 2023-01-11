@@ -6,7 +6,6 @@ Feature: Project data export audit
     And all the export audit data is reset
     And metasfresh has date and time 2023-01-10T13:30:13+01:00[Europe/Berlin]
 
-  @runThisOne
   Scenario:Project data export audit with external system config and pinstance is created
     Given add Other external system config with identifier: otherConfig
       | Name    | Value   |
@@ -17,9 +16,12 @@ Feature: Project data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | otherConfig                         | pInstance                  |
 
-#    And metasfresh contains C_Project
-#      | OPT.C_Project_ID.Identifier | Name             | C_Currency_ID.ISO_Code |
-#      | projectToExportAudit        | ProjectNameAudit | EUR                    |
+    And load M_Product_Category:
+      | M_Product_Category_ID.Identifier | Name     | Value    |
+      | standard_category                | Standard | Standard |
+    And metasfresh contains S_Resource_Group with the following id:
+      | S_Resource_Group_ID | M_Product_Category_ID.Identifier | Name     | DurationUnit |
+      | 3000000             | standard_category                | testName | h            |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 
@@ -33,11 +35,32 @@ Feature: Project data export audit
     "projectTypeId" : 540005,
     "currencyCode" : "EUR",
     "description" : "descriptionTest",
-    "dateContract" : "2022-01-10",
-    "dateFinish" : "2022-01-11",
+    "dateContract" : "2023-01-10",
+    "dateFinish" : "2023-01-11",
     "bpartnerId" : 2156423,
     "projectReferenceExt" : "projectReferenceExtTest",
     "active" : true,
+     "resources" : [
+        {
+            "resourceIdentifier" : 540006,
+            "externalId" : "testExternalId",
+            "uomTimeId" : 101,
+            "dateStartPlan" : "2023-01-10",
+            "dateFinishPlan" : "2023-01-11",
+            "description" : "resourceTestDescription",
+            "resourceGroupId" : 3000000,
+            "plannedAmt" : {
+                "amount" : 100,
+                "currencyCode" : "CHF"
+            },
+            "plannedDuration" : 2,
+            "pricePerTimeUOM" : {
+                "amount" : 100,
+                "currencyCode" : "CHF"
+            },
+            "active" : true
+        }
+    ],
     "syncAdvise":{
       "ifNotExists":"CREATE",
       "ifExists":"UPDATE_MERGE"
@@ -45,8 +68,8 @@ Feature: Project data export audit
 }
 """
     And process budget project upsert response
-      | C_Project_ID.Identifier |
-      | projectToExportAudit    |
+      | C_Project_ID.Identifier | OPT.C_Project_Resource_Budget_ID.Identifier |
+      | projectToExportAudit    | projectBudgetResourceAudit                  |
 
     And build 'GET' budget project endpoint path with the following id:
       | C_Project_ID.Identifier |
@@ -62,26 +85,44 @@ Feature: Project data export audit
         "projectId": 1,
         "orgCode": "001",
         "currencyCode": "EUR",
-        "name": "testName",
-        "value": "testValue",
+        "name": "nameTestAudit",
+        "value": "valueTestAudit",
         "isActive": true,
         "priceListVersionId": 2002141,
-        "description": "testDescription",
-        "projectParentId": 2000000,
+        "description": "descriptionTest",
         "projectTypeId": 540005,
-        "projectReferenceExt": "testReferenceExt",
-        "externalId": "testExternalId1",
+        "projectReferenceExt": "projectReferenceExtTest",
         "bpartnerId": 2156423,
-        "salesRepId": 100,
-        "dateContract": "2021-05-13",
-        "dateFinish": "2021-05-14"
+        "dateContract": "2023-01-10",
+        "dateFinish": "2023-01-11",
+        "extendedProps": {},
+        "projectResources": [
+            {
+                "budgetProjectResourceId": 1,
+                "projectId": 1,
+                "uomTimeId": 101,
+                "dateStartPlan": "2023-01-10",
+                "dateFinishPlan": "2023-01-11",
+                "description": "resourceTestDescription",
+                "plannedAmt": 100,
+                "currencyCode": "CHF",
+                "plannedDuration": 2,
+                "pricePerTimeUOM": 100,
+                "resourceGroupId": 3000000,
+                "resourceId": 540006,
+                "externalId": "testExternalId",
+                "isActive": true
+            }
+        ]
     }
 }
   """
 
     And after not more than 30s, there are added records in Data_Export_Audit
-      | Data_Export_Audit_ID.Identifier | TableName | Record_ID.Identifier | Data_Export_Audit_Parent_ID.Identifier |
-      | dataExport_BudgetProject        | C_Project | projectToExportAudit |                                        |
+      | Data_Export_Audit_ID.Identifier  | TableName                 | Record_ID.Identifier       | Data_Export_Audit_Parent_ID.Identifier |
+      | dataExport_BudgetProject         | C_Project                 | projectToExportAudit       |                                        |
+      | dataExport_BudgetProjectResource | C_Project_Resource_Budget | projectBudgetResourceAudit |                                        |
     And there are added records in Data_Export_Audit_Log
-      | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
-      | dataExport_BudgetProject        | Exported-Standalone | otherConfig                         | pInstance                  |
+      | Data_Export_Audit_ID.Identifier  | Data_Export_Action       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
+      | dataExport_BudgetProject         | Exported-Standalone      | otherConfig                         | pInstance                  |
+      | dataExport_BudgetProjectResource | Exported-AlongWithParent | otherConfig                         | pInstance                  |

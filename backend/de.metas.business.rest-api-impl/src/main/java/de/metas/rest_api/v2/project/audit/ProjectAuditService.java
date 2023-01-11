@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.project.audit;
 import de.metas.audit.data.Action;
 import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.audit.data.IMasterDataExportAuditService;
+import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.service.DataExportAuditRequest;
 import de.metas.audit.data.service.DataExportAuditService;
 import de.metas.audit.data.service.GenericDataExportAuditRequest;
@@ -72,7 +73,7 @@ public abstract class ProjectAuditService implements IMasterDataExportAuditServi
 
 	public abstract void processExportedObject(Object exportedObject, final ExternalSystemParentConfigId externalSystemParentConfigId, final PInstanceId pInstanceId);
 
-	public void auditProject(
+	public DataExportAuditId auditProject(
 			@NonNull final ProjectId projectId,
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Nullable final PInstanceId pInstanceId)
@@ -84,6 +85,6 @@ public abstract class ProjectAuditService implements IMasterDataExportAuditServi
 				.adPInstanceId(pInstanceId)
 				.build();
 
-		dataExportAuditService.createExportAudit(budgetProjectDataExportAuditRequest);
+		return dataExportAuditService.createExportAudit(budgetProjectDataExportAuditRequest);
 	}
 }

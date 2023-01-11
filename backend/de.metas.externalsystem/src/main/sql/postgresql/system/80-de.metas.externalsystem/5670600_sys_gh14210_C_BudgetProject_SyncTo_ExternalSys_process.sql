@@ -47,3 +47,17 @@ UPDATE AD_Process SET EntityType='D',Updated=TO_TIMESTAMP('2023-01-06 10:42:15',
 UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2023-01-10 11:50:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542436
 ;
 
+-- Name: Parent Project
+-- 2023-01-11T08:29:03.737Z
+UPDATE AD_Val_Rule SET Code='C_Project.C_Project_ID NOT IN (SELECT DISTINCT pp.C_Project_ID FROM c_project pp WHERE pp.C_Project_Parent_ID = @C_Project_ID@) AND C_Project.C_Project_ID != @C_Project_ID@ AND (''@ProjectCategory@'' <> ''W'' OR C_Project.ProjectCategory = ''B'')',Updated=TO_TIMESTAMP('2023-01-11 10:29:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540581
+;
+
+-- 2023-01-11T13:41:34.057Z
+UPDATE AD_Process SET Name='Kundenprojekt an Other senden',Updated=TO_TIMESTAMP('2023-01-11 15:41:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585175
+;
+
+-- 2023-01-11T13:42:25.072Z
+UPDATE AD_Table_Process SET AD_Window_ID=541606,Updated=TO_TIMESTAMP('2023-01-11 15:42:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541326
+;
+
+

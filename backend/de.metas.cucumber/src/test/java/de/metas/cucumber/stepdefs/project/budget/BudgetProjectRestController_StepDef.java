@@ -32,22 +32,25 @@ import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResourceResponse;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResponse;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertResponse;
+import de.metas.common.rest_api.v2.project.budget.JsonResponseBudgetProjectResourceUpsertItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
 import de.metas.project.ProjectId;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_Project_Resource_Budget;
 
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class BudgetProjectRestController_StepDef
@@ -57,6 +60,7 @@ public class BudgetProjectRestController_StepDef
 	private final TestContext testContext;
 	private final ProjectId_StepDefData projectIdTable;
 	private final C_Project_StepDefData projectTable;
+	private final C_Project_Resource_Budget_StepDefData budgetProjectResourceTable;
 
 	private final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
@@ -67,11 +71,13 @@ public class BudgetProjectRestController_StepDef
 	public BudgetProjectRestController_StepDef(
 			@NonNull final TestContext testContext,
 			@NonNull final ProjectId_StepDefData projectIdTable,
-			@NonNull final C_Project_StepDefData projectTable)
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Project_Resource_Budget_StepDefData budgetProjectResourceTable)
 	{
 		this.testContext = testContext;
 		this.projectIdTable = projectIdTable;
 		this.projectTable = projectTable;
+		this.budgetProjectResourceTable = budgetProjectResourceTable;
 	}
 
 	@Then("validate budget project 'GET' response")
@@ -95,7 +101,7 @@ public class BudgetProjectRestController_StepDef
 
 		final Map<String, String> row = table.asMaps().get(0);
 
-		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValue(budgetProjectUpsertResponse.getProjectId()));
 		assertThat(projectId).isNotNull();
@@ -104,13 +110,25 @@ public class BudgetProjectRestController_StepDef
 		assertThat(project).isNotNull();
 
 		projectTable.putOrReplace(projectIdentifier, project);
+
+		final String budgetResourceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Project_Resource_Budget.COLUMNNAME_C_Project_Resource_Budget_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(budgetResourceIdentifier))
+		{
+			final List<JsonResponseBudgetProjectResourceUpsertItem> budgetResources = budgetProjectUpsertResponse.getBudgetResources();
+
+			assertThat(budgetResources).hasSize(1);
+
+			final I_C_Project_Resource_Budget projectResourceBudget = InterfaceWrapperHelper.load(budgetResources.get(0).getMetasfreshId().getValue(), I_C_Project_Resource_Budget.class);
+
+			budgetProjectResourceTable.putOrReplace(budgetResourceIdentifier, projectResourceBudget);
+		}
 	}
 
 	@And("build 'GET' budget project endpoint path with the following id:")
 	public void build_get_bugdget_project_endpoint_path(@NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
-		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_C_Project project = projectTable.get(projectIdentifier);
 

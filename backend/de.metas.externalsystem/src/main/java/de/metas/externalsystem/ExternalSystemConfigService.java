@@ -25,11 +25,13 @@ package de.metas.externalsystem;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigParameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_BUDGET_PROJECT;
@@ -61,7 +63,9 @@ public class ExternalSystemConfigService
 	{
 		return externalSystemOtherConfig.getParameters().stream()
 				.filter(param -> param.getName().equals(PARAM_EXPORT_BUDGET_PROJECT))
-				.filter(param -> param.getValue() != null)
-				.anyMatch(param -> param.getValue().equals(Boolean.TRUE.toString()));
+				.map(ExternalSystemOtherConfigParameter::getValue)
+				.filter(Objects::nonNull)
+				.map(Boolean::parseBoolean)
+				.anyMatch(value -> value.equals(Boolean.TRUE));
 	}
 }

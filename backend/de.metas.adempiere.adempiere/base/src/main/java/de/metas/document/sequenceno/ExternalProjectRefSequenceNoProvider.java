@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Project;
 import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
@@ -36,7 +37,7 @@ public class ExternalProjectRefSequenceNoProvider implements CustomSequenceNoPro
 	@Override
 	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
-		return true;
+		return Check.isNotBlank(context.get_ValueAsString(I_C_Project.COLUMNNAME_C_Project_Reference_Ext));
 	}
 
 	@Override

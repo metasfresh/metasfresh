@@ -66,20 +66,7 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
-	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
+	public abstract ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context);
 
 	@Override
 	protected String doIt() throws Exception

@@ -27,7 +27,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
-import de.metas.project.budget.BudgetProjectService;
+import de.metas.project.workorder.project.WOProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -44,14 +44,14 @@ import java.util.Optional;
 public class C_Project
 {
 	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
-	private final BudgetProjectService budgetProjectService;
+	private final WOProjectService woProjectService;
 
 	public C_Project(
 			@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository,
-			@NonNull final BudgetProjectService budgetProjectService)
+			@NonNull final WOProjectService woProjectService)
 	{
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
-		this.budgetProjectService = budgetProjectService;
+		this.woProjectService = woProjectService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -84,6 +84,6 @@ public class C_Project
 			return;
 		}
 
-		budgetProjectService.updateWOChildProjects(ProjectId.ofRepoId(record.getC_Project_ID()));
+		woProjectService.updateWOChildProjectsFromParent(ProjectId.ofRepoId(record.getC_Project_ID()));
 	}
 }

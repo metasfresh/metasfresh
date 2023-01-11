@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.externalreference.S_ExternalReference_StepDefD
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
@@ -57,6 +58,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_Data_Export_Audit;
 import org.compiere.model.I_Data_Export_Audit_Log;
 import org.compiere.util.DB;
@@ -77,6 +79,7 @@ public class DataExportAudit_StepDef
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	private final AD_PInstance_StepDefData pinstanceTable;
 	private final M_HU_StepDefData huTable;
+	private final C_Project_StepDefData projectTable;
 
 	private final S_ExternalReference_StepDefData externalReferenceTable;
 
@@ -92,6 +95,7 @@ public class DataExportAudit_StepDef
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final AD_PInstance_StepDefData pinstanceTable,
 			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final S_ExternalReference_StepDefData externalReferenceTable,
 			@NonNull final TestContext testContext)
 	{
@@ -101,6 +105,7 @@ public class DataExportAudit_StepDef
 		this.dataExportAuditTable = dataExportAuditTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.pinstanceTable = pinstanceTable;
+		this.projectTable = projectTable;
 		this.externalReferenceTable = externalReferenceTable;
 		this.huTable = huTable;
 		this.testContext = testContext;
@@ -218,6 +223,10 @@ public class DataExportAudit_StepDef
 			case I_S_ExternalReference.Table_Name:
 				final I_S_ExternalReference externalReference = externalReferenceTable.get(recordIdentifier);
 				tableRecordReference = TableRecordReference.of(externalReference);
+				break;
+			case I_C_Project.Table_Name:
+				final I_C_Project project = projectTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(project);
 				break;
 			default:
 				throw new AdempiereException("Table not supported! TableName:" + tableName);

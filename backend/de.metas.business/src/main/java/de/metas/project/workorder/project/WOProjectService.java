@@ -27,7 +27,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.service.ProjectRepository;
+import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.resource.WOProjectResource;
@@ -43,6 +44,7 @@ import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
@@ -58,18 +60,18 @@ public class WOProjectService
 	private final WOProjectRepository woProjectRepository;
 	private final WOProjectResourceRepository woProjectResourceRepository;
 	private final WOProjectStepRepository woProjectStepRepository;
-	private final ProjectRepository projectRepository;
+	private final BudgetProjectRepository budgetProjectRepository;
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
 			final WOProjectResourceRepository woProjectResourceRepository,
 			final WOProjectStepRepository woProjectStepRepository,
-			final ProjectRepository projectRepository)
+			final BudgetProjectRepository budgetProjectRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
 		this.woProjectStepRepository = woProjectStepRepository;
-		this.projectRepository = projectRepository;
+		this.budgetProjectRepository = budgetProjectRepository;
 	}
 
 	@NonNull
@@ -162,55 +164,60 @@ public class WOProjectService
 		woProjectResourceRepository.updateProjectResourcesByIds(projectResourceIds, mapper);
 	}
 
-	public void updateWOProjectFromParent(@NonNull final I_C_Project project)
+	public void updateWOChildProjectsFromParent(@NonNull final ProjectId budgetProjectId)
 	{
-		if (project.getC_Project_Parent_ID() <= 0)
+		final BudgetProject budgetProject = budgetProjectRepository.getOptionalById(budgetProjectId)
+				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + budgetProjectId.getRepoId()));
+
+		woProjectRepository.getByParentProjectId(budgetProjectId)
+				.forEach(woProject -> syncWithParentAndUpdate(woProject, budgetProject));
+	}
+
+	public void updateWOProjectFromParent(@NonNull final I_C_Project woProjectToBeUpdated)
+	{
+		if (woProjectToBeUpdated.getC_Project_Parent_ID() <= 0)
 		{
 			return;
 		}
 
-		final I_C_Project parentProjectRecord = projectRepository.getRecordById(ProjectId.ofRepoId(project.getC_Project_Parent_ID()));
-		Check.assumeNotNull(parentProjectRecord, "Parent record cannot be missing if an ID is provided!");
+		final BudgetProject parentProject = budgetProjectRepository.getOptionalById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_Parent_ID()))
+				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + woProjectToBeUpdated.getC_Project_Parent_ID()));
 
-		final String logMessage = propagateValuesFromParent(project, parentProjectRecord).toString();
+		final WOProject woProject = woProjectRepository.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_ID()));
+
+		final String logMessage = syncWithParentAndUpdate(woProject, parentProject);
 
 		if (Check.isNotBlank(logMessage)) // log this, particularly in case the change is done via API
 		{
-			Loggables.get().addLog("Set the following columns from C_Project_Parent_ID={}: {}", project.getC_Project_Parent_ID(), logMessage);
+			Loggables.get().addLog("Set the following columns from C_Project_Parent_ID={}: {}", woProjectToBeUpdated.getC_Project_Parent_ID(), logMessage);
 		}
 	}
 
 	@NonNull
-	private StringBuilder propagateValuesFromParent(@NonNull final I_C_Project project, @NonNull final I_C_Project parentProjectRecord)
+	public String syncWithParentAndUpdate(@NonNull final WOProject woProject, @NonNull final BudgetProject parentProject)
 	{
-		final StringBuilder message = new StringBuilder();
-		if (project.getSalesRep_ID() <= 0)
-		{
-			project.setSalesRep_ID(parentProjectRecord.getSalesRep_ID());
-			message.append(I_C_Project.COLUMNNAME_SalesRep_ID);
-		}
+		final WOProject.WOProjectBuilder projectToUpdateBuilder = woProject.toBuilder()
+				.bpartnerDepartment(parentProject.getBpartnerDepartment())
+				.salesRepId(parentProject.getSalesRepId())
+				.specialistConsultantID(parentProject.getSpecialistConsultantID())
+				.projectReferenceExt(parentProject.getProjectReferenceExt())
+				.internalPriority(parentProject.getInternalPriority());
 
-		if (project.getSpecialist_Consultant_ID() <= 0)
-		{
-			project.setSpecialist_Consultant_ID(parentProjectRecord.getSpecialist_Consultant_ID());
-			message.append(I_C_Project.COLUMNNAME_Specialist_Consultant_ID);
-		}
+		final StringBuilder message = new StringBuilder()
+				.append(I_C_Project.COLUMNNAME_SalesRep_ID)
+				.append(I_C_Project.COLUMNNAME_Specialist_Consultant_ID)
+				.append(I_C_Project.COLUMNNAME_C_Project_Reference_Ext)
+				.append(I_C_Project.COLUMNNAME_InternalPriority)
+				.append(I_C_Project.COLUMNNAME_BPartnerDepartment);
 
-		if (project.getC_BPartner_ID() <= 0)
+		if (woProject.getBPartnerId() == null)
 		{
-			project.setC_BPartner_ID(parentProjectRecord.getC_BPartner_ID());
+			projectToUpdateBuilder.bPartnerId(parentProject.getBPartnerId());
 			message.append(I_C_Project.COLUMNNAME_C_BPartner_ID);
 		}
 
-		project.setC_Project_Reference_Ext(parentProjectRecord.getC_Project_Reference_Ext());
-		message.append(I_C_Project.COLUMNNAME_C_Project_Reference_Ext);
+		woProjectRepository.update(projectToUpdateBuilder.build());
 
-		project.setInternalPriority(parentProjectRecord.getInternalPriority());
-		message.append(I_C_Project.COLUMNNAME_InternalPriority);
-
-		project.setBPartnerDepartment(parentProjectRecord.getBPartnerDepartment());
-		message.append(I_C_Project.COLUMNNAME_BPartnerDepartment);
-
-		return message;
+		return message.toString();
 	}
 }

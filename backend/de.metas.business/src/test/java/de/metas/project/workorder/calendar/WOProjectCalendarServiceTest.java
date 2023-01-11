@@ -15,7 +15,6 @@ import de.metas.project.budget.BudgetProjectSimulationRepository;
 import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.project.service.PlainProjectRepository;
-import de.metas.project.service.ProjectRepository;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.conflicts.WOProjectResourceConflictRepository;
 import de.metas.project.workorder.project.CreateWOProjectRequest;
@@ -57,10 +56,9 @@ class WOProjectCalendarServiceTest
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
 		this.budgetProjectRepository = new BudgetProjectRepository();
 		this.woProjectRepository = new WOProjectRepository();
-		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository(), woProjectRepository);
 		final WOProjectResourceRepository woProjectResourceRepository = new WOProjectResourceRepository();
-		final ProjectRepository projectRepository = new ProjectRepository();
-		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), projectRepository);
+		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), budgetProjectRepository);
+		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository());
 		final WOProjectSimulationRepository woProjectSimulationRepository = new WOProjectSimulationRepository();
 		final SimulationPlanRepository simulationPlanRepository = new SimulationPlanRepository();
 		final WOProjectConflictService woProjectConflictService = new WOProjectConflictService(

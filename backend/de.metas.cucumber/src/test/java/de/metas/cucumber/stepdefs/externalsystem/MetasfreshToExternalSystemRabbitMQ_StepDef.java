@@ -474,7 +474,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			final I_C_Project project = projectTable.get(projectIdentifier);
 			final String projectIdAsString = externalSystemRequest.getParameters().get(PARAM_PROJECT_ID);
 
-			return Check.isNotBlank(projectIdAsString) && Integer.parseInt(projectIdAsString) == project.getC_BPartner_ID();
+			return Check.isNotBlank(projectIdAsString) && Integer.parseInt(projectIdAsString) == project.getC_Project_ID();
 		}
 		return false;
 	}

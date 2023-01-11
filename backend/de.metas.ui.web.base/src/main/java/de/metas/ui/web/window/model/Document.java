@@ -57,6 +57,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -741,8 +742,11 @@ public final class Document
 			if (fieldDescriptor.getDocSequenceId() != null)
 			{
 				return Optional.ofNullable(documentNoBuilder.forSequenceId(fieldDescriptor.getDocSequenceId())
-																	 .setClientId(Env.getClientId(Env.getCtx()))
-																	 .build())
+												   .setClientId(Env.getClientId(Env.getCtx()))
+												   .setEvaluationContext(Evaluatees.mapBuilder()
+																				 .put(fieldDescriptor.getFieldName(), true)
+																				 .build())
+												   .build())
 						.orElseThrow(() -> new AdempiereException("Failed to compute sequenceId")
 								.appendParametersToMessage()
 								.setParameter("adSequenceId", fieldDescriptor.getDocSequenceId()));

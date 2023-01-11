@@ -23,14 +23,21 @@
 package de.metas.rest_api.v2.project.budget.audit;
 
 import de.metas.JsonMapperUtil;
+import de.metas.audit.data.Action;
 import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.audit.data.model.DataExportAuditId;
+import de.metas.audit.data.service.DataExportAuditRequest;
 import de.metas.audit.data.service.DataExportAuditService;
 import de.metas.audit.data.service.GenericDataExportAuditRequest;
+import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResourceResponse;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResponse;
 import de.metas.process.PInstanceId;
 import de.metas.project.ProjectId;
+import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.rest_api.v2.project.audit.ProjectAuditService;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 
@@ -43,9 +50,12 @@ public class BudgetProjectAuditService extends ProjectAuditService
 	//dev-note: meant to capture any rest calls made against `BUDGET_PROJECT_RESOURCE`
 	private final static String BUDGET_PROJECT_RESOURCE = PROJECT_RESOURCE + "/budget/**";
 
-	protected BudgetProjectAuditService(final @NonNull DataExportAuditService dataExportAuditService)
+	private final DataExportAuditService dataExportAuditService;
+
+	protected BudgetProjectAuditService(@NonNull final DataExportAuditService dataExportAuditService)
 	{
 		super(dataExportAuditService);
+		this.dataExportAuditService = dataExportAuditService;
 	}
 
 	@Override
@@ -66,7 +76,34 @@ public class BudgetProjectAuditService extends ProjectAuditService
 		jsonBudgetProject.ifPresent(jsonBudgetProjectResponse ->
 									{
 										final ProjectId projectId = ProjectId.ofRepoId(jsonBudgetProjectResponse.getProjectId().getValue());
-										auditProject(projectId, externalSystemParentConfigId, pInstanceId);
+										final DataExportAuditId budgetProjectDataExportAuditId = auditProject(projectId, externalSystemParentConfigId, pInstanceId);
+
+										jsonBudgetProjectResponse
+												.getProjectResources()
+												.forEach(jsonProjectResource -> auditBudgetProjectResource(jsonProjectResource, budgetProjectDataExportAuditId, externalSystemParentConfigId, pInstanceId));
 									});
+	}
+
+	private void auditBudgetProjectResource(
+			@NonNull final JsonBudgetProjectResourceResponse jsonBudgetProjectResourceResponse,
+			@Nullable final DataExportAuditId dataExportParentId,
+			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
+			@Nullable final PInstanceId pInstanceId
+	)
+	{
+		final Action exportAction = dataExportParentId != null ? Action.AlongWithParent : Action.Standalone;
+
+		final BudgetProjectResourceId budgetProjectResourceId = BudgetProjectResourceId.ofRepoId(jsonBudgetProjectResourceResponse.getProjectId().getValue(),
+																								 jsonBudgetProjectResourceResponse.getBudgetProjectResourceId().getValue());
+
+		final DataExportAuditRequest budgetResourceRequest = DataExportAuditRequest.builder()
+				.tableRecordReference(TableRecordReference.of(I_C_Project_Resource_Budget.Table_Name, budgetProjectResourceId.getRepoId()))
+				.action(exportAction)
+				.externalSystemConfigId(externalSystemParentConfigId)
+				.adPInstanceId(pInstanceId)
+				.parentExportAuditId(dataExportParentId)
+				.build();
+
+		dataExportAuditService.createExportAudit(budgetResourceRequest);
 	}
 }
