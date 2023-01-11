@@ -451,7 +451,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			iciol.setQtyDeliveredInUOM_Nominal(icRecord.getQtyEntered().multiply(qtyMultiplier));
 
 			saveRecord(iciol);
-			Loggables.withLogger(logger, Level.INFO).addLog("Setting qtyDelivered={} on icIol_ID={}", icRecord.getQtyOrdered().multiply(qtyMultiplier), iciol.getC_InvoiceCandidate_InOutLine_ID());
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("Setting qtyDelivered={} on icIol_ID={}",
+							icRecord.getQtyOrdered().multiply(qtyMultiplier), iciol.getC_InvoiceCandidate_InOutLine_ID());
 		}
 		else
 		{
