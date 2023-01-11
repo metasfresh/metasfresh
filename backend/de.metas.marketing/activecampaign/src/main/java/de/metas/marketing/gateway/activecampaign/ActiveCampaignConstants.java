@@ -33,7 +33,9 @@ public interface ActiveCampaignConstants
 	{
 		LISTS("lists"),
 		CONTACTS("contacts"),
+		CONTACT("contact"),
 		CONTACT_LISTS("contactLists"),
+		SYNC("sync"),
 		;
 
 		private final String value;

@@ -23,6 +23,7 @@
 package de.metas.marketing.gateway.activecampaign;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.TableRecordMDC;
@@ -53,6 +54,7 @@ import de.metas.marketing.gateway.activecampaign.restapi.request.ApiRequest;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.email.EmailValidator;
 import org.slf4j.MDC;
 import org.springframework.util.LinkedMultiValueMap;
 
@@ -66,7 +68,6 @@ import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.QueryParam.LIMIT;
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.QueryParam.LIST_ID;
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.QueryParam.OFFSET;
-import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ResourcePath;
 
 public class ActiveCampaignClient implements PlatformClient
 {
@@ -180,66 +181,31 @@ public class ActiveCampaignClient implements PlatformClient
 	@NonNull
 	private LocalToRemoteSyncResult createCampaignContactAndAddToList(
 			@NonNull final Campaign campaign,
-			@NonNull final ContactPerson contactToCreate)
+			@NonNull final ContactPerson contactToUpsert)
 	{
+		if (!EmailValidator.isValid(contactToUpsert.getEmailAddressStringOrNull()))
+		{
+			return LocalToRemoteSyncResult.error(contactToUpsert, "Contact person has no (valid) email address");
+		}
+
 		try
 		{
-			final Contact contactWithRemoteId = upsertContactOnRemote(contactToCreate).getContact();
+			final Contact contactWithRemoteId = upsertContactOnRemote(contactToUpsert).getContact();
+
+			final ContactPerson contactUpserted = contactToUpsert.toBuilder().remoteId(contactWithRemoteId.getId()).build();
 
 			addContactToList(campaign.getRemoteId(), contactWithRemoteId.getId());
 
-			if (Check.isBlank(contactToCreate.getRemoteId()))
+			if (Check.isBlank(contactToUpsert.getRemoteId()))
 			{
-				return LocalToRemoteSyncResult.inserted(contactToCreate.toBuilder()
-																.remoteId(contactWithRemoteId.getId())
-																.build());
+				return LocalToRemoteSyncResult.upserted(contactUpserted);
 			}
 
-			return LocalToRemoteSyncResult.updated(contactToCreate);
+			return LocalToRemoteSyncResult.updated(contactUpserted);
 		}
 		catch (final Exception e)
 		{
-			return LocalToRemoteSyncResult.error(contactToCreate, e.getMessage());
-		}
-	}
-
-	@NonNull
-	private ContactWrapper upsertContactOnRemote(@NonNull final ContactPerson contactPerson)
-	{
-		if (Check.isBlank(contactPerson.getRemoteId()))
-		{
-			return createCampaignContactOnRemote(contactPerson);
-		}
-
-		return updateCampaignContactOnRemote(contactPerson);
-	}
-
-	@NonNull
-	private ContactWrapper createCampaignContactOnRemote(@NonNull final ContactPerson contactPerson)
-	{
-		try
-		{
-			final ContactWrapper createContactRequest = ContactWrapper.builder()
-					.contact(ActiveCampaignClient.toContact(contactPerson))
-					.build();
-
-			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
-					.writeValueAsString(createContactRequest);
-
-			final ApiRequest request = ApiRequest.builder()
-					.baseURL(activeCampaignConfig.getBaseUrl())
-					.apiKey(activeCampaignConfig.getApiKey())
-					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-													ACTIVE_CAMPAIGN_API_VERSION,
-													ResourcePath.CONTACTS.getValue()))
-					.requestBody(requestBody)
-					.build();
-
-			return restService.performPost(request, ContactWrapper.class).getBody();
-		}
-		catch (final JsonProcessingException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
+			return LocalToRemoteSyncResult.error(contactToUpsert, e.getMessage());
 		}
 	}
 
@@ -248,25 +214,7 @@ public class ActiveCampaignClient implements PlatformClient
 	{
 		try
 		{
-			Check.assumeNotNull(contactPerson.getRemoteId(), "RemoteId cannot be null at this stage for contactId: {}", contactPerson.getContactPersonId());
-
-			final ContactWrapper createContactRequest = ContactWrapper.builder()
-					.contact(ActiveCampaignClient.toContact(contactPerson))
-					.build();
-
-			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
-					.writeValueAsString(createContactRequest);
-
-			final ApiRequest request = ApiRequest.builder()
-					.baseURL(activeCampaignConfig.getBaseUrl())
-					.apiKey(activeCampaignConfig.getApiKey())
-					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-													ACTIVE_CAMPAIGN_API_VERSION,
-													ResourcePath.CONTACTS.getValue(),
-													contactPerson.getRemoteId()))
-					.requestBody(requestBody)
-					.build();
-
+			final ApiRequest request = ApiRequestProvider.updateCampaignContactOnRemoteRequest(contactPerson, activeCampaignConfig);
 			return restService.performPut(request, ContactWrapper.class).getBody();
 		}
 		catch (final JsonProcessingException e)
@@ -276,88 +224,62 @@ public class ActiveCampaignClient implements PlatformClient
 	}
 
 	@NonNull
-	private ContactList addContactToList(@NonNull final String campaignRemoteId, @NonNull final String contactRemoteId) throws JsonProcessingException
+	private ContactWrapper syncCampaignContactOnRemote(@NonNull final ContactPerson contactPerson)
 	{
-		final AddContactToList addContactToList = AddContactToList.builder()
-				.list(campaignRemoteId)
-				.contact(contactRemoteId)
-				.status(Subscription.Subscribed.getCode())
-				.build();
+		try
+		{
+			final ApiRequest request = ApiRequestProvider.syncCampaignContactOnRemoteRequest(contactPerson, activeCampaignConfig);
+			return restService.performPost(request, ContactWrapper.class).getBody();
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
 
-		final AddContactToListWrapper addContactToListWrapper = AddContactToListWrapper.builder()
-				.contactList(addContactToList)
-				.build();
+	@VisibleForTesting
+	@NonNull
+	public ContactWrapper upsertContactOnRemote(@NonNull final ContactPerson contactPerson)
+	{
+		if (Check.isBlank(contactPerson.getRemoteId()))
+		{
+			return syncCampaignContactOnRemote(contactPerson);
+		}
 
-		final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
-				.writeValueAsString(addContactToListWrapper);
+		return updateCampaignContactOnRemote(contactPerson);
+	}
 
-		final ApiRequest request = ApiRequest.builder()
-				.baseURL(activeCampaignConfig.getBaseUrl())
-				.apiKey(activeCampaignConfig.getApiKey())
-				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-												ACTIVE_CAMPAIGN_API_VERSION,
-												ResourcePath.CONTACT_LISTS.getValue()))
-				.requestBody(requestBody)
-				.build();
-
+	@VisibleForTesting
+	@NonNull
+	public ContactList addContactToList(@NonNull final String campaignRemoteId, @NonNull final String contactRemoteId) throws JsonProcessingException
+	{
+		final ApiRequest request = ApiRequestProvider.addContactToListRequest(campaignRemoteId, contactRemoteId, activeCampaignConfig);
 		return restService.performPost(request, ContactList.class).getBody();
 	}
 
+	@VisibleForTesting
 	@NonNull
-	private CampaignWrapper createCampaignOnRemote(@NonNull final Campaign campaign) throws JsonProcessingException
+	public CampaignWrapper createCampaignOnRemote(@NonNull final Campaign campaign) throws JsonProcessingException
 	{
-		final CampaignWrapper createCampaignListRequest = CampaignWrapper.builder()
-				.list(ActiveCampaignClient.toCampaignItem(campaign, activeCampaignConfig))
-				.build();
-
-		final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
-				.writeValueAsString(createCampaignListRequest);
-
-		final ApiRequest request = ApiRequest.builder()
-				.baseURL(activeCampaignConfig.getBaseUrl())
-				.apiKey(activeCampaignConfig.getApiKey())
-				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-												ACTIVE_CAMPAIGN_API_VERSION,
-												ResourcePath.LISTS.getValue()))
-				.requestBody(requestBody)
-				.build();
-
+		final ApiRequest request = ApiRequestProvider.createCampaignOnRemoteRequest(campaign, activeCampaignConfig);
 		return restService.performPost(request, CampaignWrapper.class).getBody();
 	}
 
+	@VisibleForTesting
 	@NonNull
-	private List<CampaignList> retrieveCampaignListsFromRemote(@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
+	public List<CampaignList> retrieveCampaignListsFromRemote(@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
 	{
-		final ApiRequest request = ApiRequest.builder()
-				.baseURL(activeCampaignConfig.getBaseUrl())
-				.apiKey(activeCampaignConfig.getApiKey())
-				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-												ACTIVE_CAMPAIGN_API_VERSION,
-												ResourcePath.LISTS.getValue()))
-				.queryParameters(initQueryParams(pageDescriptor))
-				.build();
-
+		final ApiRequest request = ApiRequestProvider.retrieveCampaignListsFromRemoteRequest(activeCampaignConfig, pageDescriptor);
 		return restService.performGet(request, CampaignLists.class).getBody().getLists();
 	}
 
+	@VisibleForTesting
 	@NonNull
-	private ContactList retrieveContactsFromRemote(
+	public ContactList retrieveContactsFromRemote(
 			@NonNull final String campaignListRemoteId,
 			@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
 	{
-		final LinkedMultiValueMap<String, String> queryParams = ActiveCampaignClient.initQueryParams(pageDescriptor);
-
-		queryParams.add(LIST_ID.getValue(), campaignListRemoteId);
-
-		final ApiRequest request = ApiRequest.builder()
-				.baseURL(activeCampaignConfig.getBaseUrl())
-				.apiKey(activeCampaignConfig.getApiKey())
-				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
-												ACTIVE_CAMPAIGN_API_VERSION,
-												ResourcePath.CONTACTS.getValue()))
-				.queryParameters(queryParams)
-				.build();
-
+		final ApiRequest request = ApiRequestProvider.retrieveContactsFromRemoteRequest(activeCampaignConfig, pageDescriptor, campaignListRemoteId);
 		return restService.performGet(request, ContactList.class).getBody();
 	}
 
@@ -371,17 +293,6 @@ public class ActiveCampaignClient implements PlatformClient
 	}
 
 	@NonNull
-	public static CampaignList toCampaignItem(@NonNull final Campaign campaign, @NonNull final ActiveCampaignConfig config)
-	{
-		return CampaignList.builder()
-				.name(campaign.getName())
-				.stringid(campaign.getName())
-				.sender_url(config.getBaseUrl())
-				.sender_reminder("Synced from metasfresh.")
-				.build();
-	}
-
-	@NonNull
 	private static ContactPersonRemoteUpdate toContactPersonUpdate(@NonNull final Contact contact)
 	{
 		return ContactPersonRemoteUpdate.builder()
@@ -391,29 +302,174 @@ public class ActiveCampaignClient implements PlatformClient
 				.build();
 	}
 
-	@NonNull
-	private static Contact toContact(@NonNull final ContactPerson contactPerson)
+	private static class ApiRequestProvider
 	{
-		return Contact.builder()
-				.email(contactPerson.getEmailAddressStringOrNull())
-				.build();
-	}
-
-	@NonNull
-	private static LinkedMultiValueMap<String, String> initQueryParams(@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
-	{
-		final LinkedMultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-
-		if (pageDescriptor.getLimit() > 0)
+		@NonNull
+		private static ApiRequest createCampaignOnRemoteRequest(@NonNull final Campaign campaign, @NonNull final ActiveCampaignConfig config) throws JsonProcessingException
 		{
-			queryParams.add(LIMIT.getValue(), String.valueOf(pageDescriptor.getLimit()));
+			final CampaignWrapper createCampaignListRequest = CampaignWrapper.builder()
+					.list(ApiRequestProvider.toCampaignItem(campaign, config))
+					.build();
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(createCampaignListRequest);
+
+			return ApiRequest.builder()
+					.baseURL(config.getBaseUrl())
+					.apiKey(config.getApiKey())
+					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
+													ACTIVE_CAMPAIGN_API_VERSION,
+													ActiveCampaignConstants.ResourcePath.LISTS.getValue()))
+					.requestBody(requestBody)
+					.build();
 		}
 
-		if (pageDescriptor.getOffset() > 0)
+		@NonNull
+		private static ApiRequest retrieveCampaignListsFromRemoteRequest(
+				@NonNull final ActiveCampaignConfig config,
+				@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
 		{
-			queryParams.add(OFFSET.getValue(), String.valueOf(pageDescriptor.getOffset()));
+			return ApiRequest.builder()
+					.baseURL(config.getBaseUrl())
+					.apiKey(config.getApiKey())
+					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
+													ACTIVE_CAMPAIGN_API_VERSION,
+													ActiveCampaignConstants.ResourcePath.LISTS.getValue()))
+					.queryParameters(initQueryParams(pageDescriptor))
+					.build();
 		}
 
-		return queryParams;
+		@NonNull
+		private static ApiRequest updateCampaignContactOnRemoteRequest(
+				@NonNull final ContactPerson contactPerson,
+				@NonNull final ActiveCampaignConfig config) throws JsonProcessingException
+		{
+			Check.assumeNotNull(contactPerson.getRemoteId(), "RemoteId cannot be null at this stage for contactId: {}", contactPerson.getContactPersonId());
+
+			final ContactWrapper createContactRequest = ContactWrapper.builder()
+					.contact(ApiRequestProvider.toContact(contactPerson))
+					.build();
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(createContactRequest);
+
+			return ApiRequest.builder()
+					.baseURL(config.getBaseUrl())
+					.apiKey(config.getApiKey())
+					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
+													ACTIVE_CAMPAIGN_API_VERSION,
+													ActiveCampaignConstants.ResourcePath.CONTACTS.getValue(),
+													contactPerson.getRemoteId()))
+					.requestBody(requestBody)
+					.build();
+		}
+
+		@NonNull
+		private static ApiRequest syncCampaignContactOnRemoteRequest(
+				@NonNull final ContactPerson contactPerson,
+				@NonNull final ActiveCampaignConfig config) throws JsonProcessingException
+		{
+			final ContactWrapper createContactRequest = ContactWrapper.builder()
+					.contact(ApiRequestProvider.toContact(contactPerson))
+					.build();
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(createContactRequest);
+
+			return ApiRequest.builder()
+					.baseURL(config.getBaseUrl())
+					.apiKey(config.getApiKey())
+					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
+													ACTIVE_CAMPAIGN_API_VERSION,
+													ActiveCampaignConstants.ResourcePath.CONTACT.getValue(),
+													ActiveCampaignConstants.ResourcePath.SYNC.getValue()))
+					.requestBody(requestBody)
+					.build();
+		}
+
+		@NonNull
+		private static ApiRequest addContactToListRequest(
+				@NonNull final String campaignRemoteId,
+				@NonNull final String contactRemoteId,
+				@NonNull final ActiveCampaignConfig config) throws JsonProcessingException
+		{
+			final AddContactToList addContactToList = AddContactToList.builder()
+					.list(campaignRemoteId)
+					.contact(contactRemoteId)
+					.status(Subscription.Subscribed.getCode())
+					.build();
+
+			final AddContactToListWrapper addContactToListWrapper = AddContactToListWrapper.builder()
+					.contactList(addContactToList)
+					.build();
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(addContactToListWrapper);
+
+			return ApiRequest.builder()
+					.baseURL(config.getBaseUrl())
+					.apiKey(config.getApiKey())
+					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
+													ACTIVE_CAMPAIGN_API_VERSION,
+													ActiveCampaignConstants.ResourcePath.CONTACT_LISTS.getValue()))
+					.requestBody(requestBody)
+					.build();
+		}
+
+		@NonNull
+		private static ApiRequest retrieveContactsFromRemoteRequest(
+				@NonNull final ActiveCampaignConfig config,
+				@NonNull final ActiveCampaignPageDescriptor pageDescriptor,
+				@NonNull final String campaignListRemoteId)
+		{
+			final LinkedMultiValueMap<String, String> queryParams = ApiRequestProvider.initQueryParams(pageDescriptor);
+			queryParams.add(LIST_ID.getValue(), campaignListRemoteId);
+
+			return ApiRequest.builder()
+					.baseURL(config.getBaseUrl())
+					.apiKey(config.getApiKey())
+					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
+													ACTIVE_CAMPAIGN_API_VERSION,
+													ActiveCampaignConstants.ResourcePath.CONTACTS.getValue()))
+					.queryParameters(queryParams)
+					.build();
+
+		}
+
+		@NonNull
+		private static Contact toContact(@NonNull final ContactPerson contactPerson)
+		{
+			return Contact.builder()
+					.email(contactPerson.getEmailAddressStringOrNull())
+					.build();
+		}
+
+		@NonNull
+		private static CampaignList toCampaignItem(@NonNull final Campaign campaign, @NonNull final ActiveCampaignConfig config)
+		{
+			return CampaignList.builder()
+					.name(campaign.getName())
+					.stringid(campaign.getName())
+					.sender_url(config.getBaseUrl())
+					.sender_reminder("Synced from metasfresh.")
+					.build();
+		}
+
+		@NonNull
+		private static LinkedMultiValueMap<String, String> initQueryParams(@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
+		{
+			final LinkedMultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+
+			if (pageDescriptor.getLimit() > 0)
+			{
+				queryParams.add(LIMIT.getValue(), String.valueOf(pageDescriptor.getLimit()));
+			}
+
+			if (pageDescriptor.getOffset() > 0)
+			{
+				queryParams.add(OFFSET.getValue(), String.valueOf(pageDescriptor.getOffset()));
+			}
+
+			return queryParams;
+		}
 	}
 }
