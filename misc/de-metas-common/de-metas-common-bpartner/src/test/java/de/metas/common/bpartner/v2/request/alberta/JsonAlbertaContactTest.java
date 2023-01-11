@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.extension.ExtendWith;
-import au.com.origin.snapshots.annotations.SnapshotName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
