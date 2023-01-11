@@ -101,6 +101,6 @@ public class JsonCompositeAlbertaBPartnerTest
 		final JsonCompositeAlbertaBPartner result = mapper.readValue(string, JsonCompositeAlbertaBPartner.class);
 
 		assertThat(result).isEqualTo(compositeAlbertaBPartner);
-		expect.toMatchSnapshot(result);
+		expect.serializer("json").toMatchSnapshot(result);
 	}
 }

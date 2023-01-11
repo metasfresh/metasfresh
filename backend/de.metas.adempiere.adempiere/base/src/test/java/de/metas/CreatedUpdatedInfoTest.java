@@ -55,7 +55,7 @@ class CreatedUpdatedInfoTest
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
-		expect.toMatchSnapshot(createdUpdatedInfo);
+		expect.serializer("json").toMatchSnapshot(createdUpdatedInfo);
 	}
 
 	@Test

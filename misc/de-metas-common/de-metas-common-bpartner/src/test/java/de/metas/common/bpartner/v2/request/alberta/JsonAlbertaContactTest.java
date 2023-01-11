@@ -61,6 +61,6 @@ public class JsonAlbertaContactTest
 		final JsonAlbertaContact result = mapper.readValue(string, JsonAlbertaContact.class);
 
 		assertThat(result).isEqualTo(contact);
-		expect.toMatchSnapshot(result);
+		expect.serializer("json").toMatchSnapshot(result);
 	}
 }

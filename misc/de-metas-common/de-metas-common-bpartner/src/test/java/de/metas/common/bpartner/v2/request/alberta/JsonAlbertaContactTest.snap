@@ -1,3 +1,10 @@
 de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContactTest.serializeDeserialize=[
-JsonAlbertaContact(gender=gender, genderSet=true, title=title, titleSet=true, timestamp=2019-11-22T00:00:00Z, timestampSet=true)
+  {
+    "gender": "gender",
+    "genderSet": true,
+    "title": "title",
+    "titleSet": true,
+    "timestamp": "2019-11-22T00:00:00Z",
+    "timestampSet": true
+  }
 ]

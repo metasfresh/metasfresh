@@ -1,3 +1,8 @@
 de.metas.CreatedUpdatedInfoTest.createNew_updated=[
-CreatedUpdatedInfo(createdBy=UserId(repoId=10), created=2019-03-08T13:20:42.000000002+01:00, updatedBy=UserId(repoId=20), updated=2019-03-08T14:20:42.000000002+01:00)
+  {
+    "createdBy": 10,
+    "created": "2019-03-08T13:20:42.000000002+01:00",
+    "updatedBy": 20,
+    "updated": "2019-03-08T14:20:42.000000002+01:00"
+  }
 ]
