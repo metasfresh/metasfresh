@@ -508,6 +508,7 @@ public class InOutProducer implements IInOutProducer
 			}
 
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+			receiptHeader.setPOReference(order.getPOReference());
 		}
 		if (order != null && order.isDropShip())
 		{
