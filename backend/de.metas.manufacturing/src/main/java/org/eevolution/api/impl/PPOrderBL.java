@@ -87,6 +87,8 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -637,6 +639,26 @@ public class PPOrderBL implements IPPOrderBL
 	public Set<ProductId> getProductIdsToIssue(@NonNull final PPOrderId ppOrderId)
 	{
 		return orderBOMService.getProductIdsToIssue(ppOrderId);
+	}
+
+	@Override
+	public void updateDraftedOrdersMatchingBOM(@NonNull final ProductBOMVersionsId bomVersionsId, @NonNull final ProductBOMId newVersionId)
+	{
+		ppOrdersRepo.streamDraftedPPOrdersFor(bomVersionsId)
+				.filter(draftedOrder -> !isSomethingProcessed(draftedOrder))
+				.forEach(draftedOrder -> {
+					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
+					try
+					{
+						ppOrdersRepo.save(draftedOrder);
+					}
+					catch (final Exception e)
+					{
+						Loggables.withLogger(logger, Level.ERROR)
+								.addLog("Failed updating PP_Order (PP_Order_ID = {}) with the latest PP_Product_BOM version (PP_Product_BOM = {})",
+										draftedOrder.getPP_Order_ID(), newVersionId, e);
+					}
+				});
 	}
 
 }

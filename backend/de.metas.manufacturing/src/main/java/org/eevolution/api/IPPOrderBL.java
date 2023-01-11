@@ -110,4 +110,6 @@ public interface IPPOrderBL extends ISingletonService
 	void completeDocument(@NonNull I_PP_Order ppOrder);
 
 	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
+
+	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
 }
