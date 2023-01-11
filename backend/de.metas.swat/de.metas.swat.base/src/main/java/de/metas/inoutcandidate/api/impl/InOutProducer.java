@@ -524,6 +524,7 @@ public class InOutProducer implements IInOutProducer
 		{
 			receiptHeader.setEMail(order.getEMail());
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+			receiptHeader.setPOReference(order.getPOReference());
 		}
 		if (order != null && order.isDropShip())
 		{
