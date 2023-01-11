@@ -645,6 +645,7 @@ public class PPOrderBL implements IPPOrderBL
 	public void updateDraftedOrdersMatchingBOM(@NonNull final ProductBOMVersionsId bomVersionsId, @NonNull final ProductBOMId newVersionId)
 	{
 		ppOrdersRepo.streamDraftedPPOrdersFor(bomVersionsId)
+				.filter(draftedOrder -> !isSomethingProcessed(draftedOrder))
 				.forEach(draftedOrder -> {
 					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
 					try
