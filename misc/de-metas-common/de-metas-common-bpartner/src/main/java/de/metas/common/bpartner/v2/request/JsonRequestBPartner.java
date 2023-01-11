@@ -34,6 +34,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
@@ -168,6 +170,12 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean globalIdset;
 
+	@ApiModelProperty(position = 155, //
+			value = "The ID of the price list that the business partner is to use as a customer. If provided, this will be used to lookup `C_BPartner.M_PricingSystem_ID`")
+	private JsonMetasfreshId priceListId;
+
+	private boolean priceListIdSet;
+
 	@ApiModelProperty(position = 160, //
 			value = "Translates to `C_BPartner.VATaxId`")
 	private String vatId;
@@ -260,6 +268,13 @@ public class JsonRequestBPartner
 
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String sectionGroupPartnerIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerIdentifierSet;
 
 	public void setCode(final String code)
 	{
@@ -387,6 +402,15 @@ public class JsonRequestBPartner
 		this.memoIsSet = true;
 	}
 
+	public void setPriceListId(@Nullable final JsonMetasfreshId priceListId)
+	{
+		if (JsonMetasfreshId.toValue(priceListId) != null)
+		{
+			this.priceListId = priceListId;
+			this.priceListIdSet = true;
+		}
+	}
+
 	public void setSectionCodeValue(final String sectionCodeValue)
 	{
 		this.sectionCodeValue = sectionCodeValue;
@@ -457,5 +481,11 @@ public class JsonRequestBPartner
 	{
 		this.paymentRulePO = paymentRulePO;
 		this.paymentRulePOSet = true;
+	}
+
+	public void setSectionGroupPartnerIdentifier(final String sectionGroupPartnerIdentifier)
+	{
+		this.sectionGroupPartnerIdentifier = sectionGroupPartnerIdentifier;
+		this.sectionGroupPartnerIdentifierSet = true;
 	}
 }

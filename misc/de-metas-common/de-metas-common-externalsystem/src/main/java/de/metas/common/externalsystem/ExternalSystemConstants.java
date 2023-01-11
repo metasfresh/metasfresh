@@ -88,6 +88,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
 	public static final String PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN = "SFTPCreditLimitFileNamePattern";
 
+	public static final String PARAM_SFTP_APPROVED_BY = "SFTP_ApprovedBy";
+
 	// Local File Config
 	public static final String PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY = "LocalFile_Product_Target_Directory";
 	public static final String PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN = "LocalFileProductFileNamePattern";
@@ -102,6 +104,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";
 	public static final String PARAM_LOCAL_FILE_ERRORED_DIRECTORY = "LocalFileErroredDirectory";
 	public static final String PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS = "LocalFilePollingFrequencyInMs";
+
+	public static final String PARAM_LOCAL_FILE_APPROVED_BY = "LocalFile_ApprovedBy";
 	//
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
@@ -122,6 +126,16 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
+
+	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
+
+	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
+
+	public static final String PARAM_JSON_AVAILABLE_STOCK = "JsonAvailableStock";
+
+	public static final String PARAM_FEEDBACK_RESOURCE_URL = "FeedbackResourceURL";
+	public static final String PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN = "FeedbackResourceAuthToken";
 
 	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
 	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";

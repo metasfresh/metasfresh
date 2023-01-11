@@ -4,7 +4,8 @@ Feature: create or update BPartner v2
   I want create or update a BPartner record
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
   Scenario: create a BPartner record
@@ -27,6 +28,13 @@ Feature: create or update BPartner v2
       | C_PaymentTerm_ID.Identifier | Value       | Name        |
       | PaymentTerm_101122          | 10 Tage 1 % | 10 Tage 1 % |
       | PaymentTerm_PO_101122       | 10 Tage 4%  | 10 Tage 4%  |
+    And metasfresh contains C_BPartners:
+      | Identifier          | Name                          |
+      | sectionGroupPartner | sectionGroupPartnerIdentifier |
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference | ExternalReferenceType.Code | RecordId.Identifier |
+      | ALBERTA             | bp2212            | BPartner                   | sectionGroupPartner |
+
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -57,7 +65,8 @@ Feature: create or update BPartner v2
                "incotermsCustomerValue":"DAF",
                "incotermsVendorValue":"DDU",
                "paymentRule":"OnCredit",
-               "paymentRulePO":"Cash"
+               "paymentRulePO":"Cash",
+               "sectionGroupPartnerIdentifier":"ext-ALBERTA-bp2212"
             },
             "locations":{
                "requestItems":[
@@ -138,7 +147,8 @@ Feature: create or update BPartner v2
                     "currencyCode": "EUR"
                   },
                   "active": true,
-                  "processed": false
+                  "processed": false,
+                  "approvedBy": 100
                 },
                 {
                   "type": "Insurance",
@@ -168,8 +178,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code  | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier |
-      | created_bpartner         | ext-ALBERTA-001    | test_code | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code  | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier | OPT.Section_Group_Partner_ID.Identifier |
+      | created_bpartner         | ext-ALBERTA-001    | test_code | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            | sectionGroupPartner                     |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.IsHandOverLocation | OPT.IsRemitTo | OPT.IsReplicationLookupDefault | OPT.VATaxId        |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | true                   | false         | false                          | null               |
@@ -179,15 +189,18 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
     And verify that credit limit was created for bpartner: created_bpartner
-      | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom | Processed |
-      | 23.17  | true     | Insurance               | 2022-10-31   | false     |
-      | 10     | false    | Insurance               | 2022-10-30   | true      |
+      | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom | Processed | OPT.ApprovedBy_ID |
+      | 23.17  | true     | Insurance               | 2022-10-31   | false     | 100               |
+      | 10     | false    | Insurance               | 2022-10-30   | true      | null              |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | false                      |
       | ALBERTA        | BPartnerLocation | l22               |                              | 540000                       | true                       |
       | ALBERTA        | UserID           | c11               |                              | 540000                       | true                       |
       | ALBERTA        | UserID           | c22               |                              | 540000                       | true                       |
+    And validate C_BPartner_Stats
+      | C_BPartner_ID.Identifier | OPT.SOCreditStatus | OPT.SO_CreditUsed |
+      | created_bpartner         | W                  | 0                 |
 
     And build BPartner Endpoint Path and store it in context
       | C_BPartner_ID.Identifier |

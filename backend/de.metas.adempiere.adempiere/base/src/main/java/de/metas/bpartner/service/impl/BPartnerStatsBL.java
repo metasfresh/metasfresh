@@ -1,10 +1,11 @@
 package de.metas.bpartner.service.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,6 +46,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
+	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+
 	@Override
 	public String calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
 	{
@@ -129,7 +132,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	@Override
 	public void resetCreditStatusFromBPGroup(@NonNull final I_C_BPartner bpartner)
 	{
-		final BPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
+		final BPartnerStats bpartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bpartner);
 		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
 		final String creditStatus = bpGroup.getSOCreditStatus();
 
@@ -143,4 +146,15 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		save(stats);
 	}
 
+	public void enableCreditLimitCheck(@NonNull final BPartnerId bPartnerId)
+	{
+		final BPartnerStats bPartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bPartnerId);
+
+		if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(bPartnerStats.getSOCreditStatus()))
+		{
+			return;
+		}
+
+		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch);
+	}
 }

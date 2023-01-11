@@ -108,6 +108,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_IsStorageWarehouse, BPartner.STORAGE_WAREHOUSE)
 			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID, BPartner.INCOTERMS_CUSTOMER_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID, BPartner.INCOTERMS_VENDOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, BPartner.SECTION_GROUP_PARTNER_ID)
 			.build();
 
 	@VisibleForTesting

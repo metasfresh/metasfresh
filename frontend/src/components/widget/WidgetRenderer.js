@@ -696,7 +696,6 @@ WidgetRenderer.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
-  lastFormField: PropTypes.bool,
 
   //
   // from RawWidget

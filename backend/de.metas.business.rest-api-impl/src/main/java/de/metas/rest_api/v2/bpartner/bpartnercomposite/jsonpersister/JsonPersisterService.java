@@ -1151,6 +1151,17 @@ public class JsonPersisterService
 											  .orElse(null));
 		}
 
+		if (jsonBPartner.isSectionGroupPartnerIdentifierSet())
+		{
+			final BPartnerId sectionGroupPartnerId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getSectionGroupPartnerIdentifier()))
+					.filter(Check::isNotBlank)
+					.map(ExternalIdentifier::of)
+					.flatMap(sectionGroupPartnerIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(sectionGroupPartnerIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setSectionGroupPartnerId(sectionGroupPartnerId);
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
@@ -2268,6 +2279,14 @@ public class JsonPersisterService
 			{
 				creditLimitBuilder.processed(jsonBPartnerCreditLimit.getProcessed());
 			}
+		}
+
+		// approvedBy
+		if (jsonBPartnerCreditLimit.isApprovedBySet())
+		{
+			final UserId approvedById = UserId.ofRepoIdOrNullIfSystem(JsonMetasfreshId.toValueInt(jsonBPartnerCreditLimit.getApprovedBy()));
+
+			creditLimitBuilder.approvedBy(approvedById);
 		}
 	}
 

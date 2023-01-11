@@ -80,6 +80,7 @@ public class JsonResponseBPartner
 	public static final String INCOTERMS_VENDOR_ID = "incotermsVendorId";
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
+	public static final String SECTION_GROUP_PARTNER_ID = "sectionGroupPartnerId";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -264,6 +265,13 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId vendorPaymentTermId;
 
+	@ApiModelProperty( //
+			position = 260, //
+			value = "This translates to `C_BPartner.Section_Group_Partner_ID`")
+	@JsonProperty(SECTION_GROUP_PARTNER_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId sectionGroupPartnerId;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -308,6 +316,7 @@ public class JsonResponseBPartner
 			@JsonProperty(INCOTERMS_VENDOR_ID) @Nullable final JsonMetasfreshId incotermsVendorId,
 			@JsonProperty(CUSTOMER_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId customerPaymentTermId,
 			@JsonProperty(VENDOR_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId vendorPaymentTermId,
+			@JsonProperty(SECTION_GROUP_PARTNER_ID) @Nullable final JsonMetasfreshId sectionGroupPartnerId,
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 			//
 	{
@@ -357,6 +366,7 @@ public class JsonResponseBPartner
 		this.incotermsVendorId = incotermsVendorId;
 		this.customerPaymentTermId = customerPaymentTermId;
 		this.vendorPaymentTermId = vendorPaymentTermId;
+		this.sectionGroupPartnerId = sectionGroupPartnerId;
 
 		this.changeInfo = changeInfo;
 	}

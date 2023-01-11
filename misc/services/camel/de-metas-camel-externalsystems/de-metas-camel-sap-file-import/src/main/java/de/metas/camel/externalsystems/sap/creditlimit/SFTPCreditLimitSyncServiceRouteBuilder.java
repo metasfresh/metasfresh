@@ -26,8 +26,10 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -117,6 +119,19 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
 				.routeId(getCreditLimitFromSFTPRouteId(request))
+				.creditLimitContext(getCreditLimitContext(request))
+				.build();
+	}
+
+	@NonNull
+	private CreditLimitContext getCreditLimitContext(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		final JsonMetasfreshId creditLimitApprovedById = JsonMetasfreshId
+				.ofOrNull(externalSystemRequest.getParameter(ExternalSystemConstants.PARAM_SFTP_APPROVED_BY));
+
+		return CreditLimitContext.builder()
+				.orgCode(externalSystemRequest.getOrgCode())
+				.creditLimitResponsibleUser(creditLimitApprovedById)
 				.build();
 	}
 

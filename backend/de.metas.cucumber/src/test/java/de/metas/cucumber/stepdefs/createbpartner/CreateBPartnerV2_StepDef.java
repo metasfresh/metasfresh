@@ -65,7 +65,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsStorageWarehouse;
 
@@ -232,6 +232,13 @@ public class CreateBPartnerV2_StepDef
 				softly.assertThat(bPartnerRecord.getPO_PaymentTerm_ID()).isEqualTo(vendorPaymentTerm.getC_PaymentTerm_ID());
 			}
 
+			final String sectionGroupPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(sectionGroupPartnerIdentifier))
+			{
+				final I_C_BPartner sectionGroupPartner = bPartnerTable.get(sectionGroupPartnerIdentifier);
+				softly.assertThat(bPartnerRecord.getSection_Group_Partner_ID()).isEqualTo(sectionGroupPartner.getC_BPartner_ID());
+			}
+
 			softly.assertAll();
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -338,6 +345,7 @@ public class CreateBPartnerV2_StepDef
 			final Boolean isActive = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_IsActive);
 			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom);
 			final Boolean processed = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Processed);
+			final String approvedById = DataTableUtil.extractNullableStringForColumnName(dataTableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID);
 
 			final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
@@ -359,6 +367,19 @@ public class CreateBPartnerV2_StepDef
 			softly.assertThat(creditLimit.get().getC_CreditLimit_Type_ID()).isEqualTo(creditLimit_type.getC_CreditLimit_Type_ID());
 			softly.assertThat(creditLimit.get().isActive()).isEqualTo(isActive);
 			softly.assertThat(creditLimit.get().isProcessed()).isEqualTo(processed);
+
+			if (Check.isNotBlank(approvedById))
+			{
+				final String approvedByAsString = DataTableUtil.nullToken2Null(approvedById);
+				if (approvedByAsString != null)
+				{
+					softly.assertThat(creditLimit.get().getApprovedBy_ID()).isEqualTo(Integer.parseInt(approvedByAsString));
+				}
+				else
+				{
+					assertThat(creditLimit.get().getApprovedBy_ID()).isEqualTo(0);
+				}
+			}
 
 			softly.assertAll();
 		}

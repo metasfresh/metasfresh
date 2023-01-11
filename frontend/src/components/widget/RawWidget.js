@@ -47,13 +47,8 @@ export class RawWidget extends PureComponent {
     const { autoFocus, textSelected } = this.props;
     const { rawWidget } = this;
 
-    if (rawWidget.current && autoFocus) {
-      try {
-        rawWidget.current.focus();
-        this.setState({ isFocused: true });
-      } catch (e) {
-        console.error(`Custom widget doesn't have 'focus' function defined`);
-      }
+    if (autoFocus) {
+      this.focus();
     }
 
     if (textSelected) {
@@ -66,6 +61,19 @@ export class RawWidget extends PureComponent {
   componentWillUnmount() {
     this.mounted = false;
   }
+
+  focus = () => {
+    const { rawWidget } = this;
+
+    if (rawWidget.current) {
+      try {
+        rawWidget.current.focus();
+        this.setState({ isFocused: true });
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
+    }
+  };
 
   /**
    * @method getCachedValue
@@ -250,8 +258,13 @@ export class RawWidget extends PureComponent {
    * @param {*} e - DOM event
    */
   handleKeyDown = (e) => {
-    const { lastFormField, widgetType, filterWidget, fields, closeTableField } =
-      this.props;
+    const {
+      propagateEnterKeyEvent,
+      widgetType,
+      filterWidget,
+      fields,
+      closeTableField,
+    } = this.props;
     const value = e.target.value;
     const { key } = e;
     const widgetField = getWidgetField({ filterWidget, fields });
@@ -277,7 +290,7 @@ export class RawWidget extends PureComponent {
     }
 
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
-      if (key === 'Enter' && !lastFormField) {
+      if (key === 'Enter' && !propagateEnterKeyEvent) {
         e.preventDefault();
       }
 
@@ -718,7 +731,7 @@ RawWidget.propTypes = {
   isOpenDatePicker: PropTypes.bool,
   forceHeight: PropTypes.number,
   dataEntry: PropTypes.bool,
-  lastFormField: PropTypes.bool,
+  propagateEnterKeyEvent: PropTypes.bool,
   maxLength: PropTypes.number,
   isFilterActive: PropTypes.bool,
   isEdited: PropTypes.bool,

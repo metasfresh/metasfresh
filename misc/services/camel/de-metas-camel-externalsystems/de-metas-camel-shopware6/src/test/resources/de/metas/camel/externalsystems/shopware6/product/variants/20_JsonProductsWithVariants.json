@@ -1,0 +1,563 @@
+{
+  "total": 2,
+  "data": [
+    {
+      "parentId": null,
+      "childCount": 5,
+      "autoIncrement": 69,
+      "taxId": "7421c419118241669a026729384fa339",
+      "manufacturerId": "ade51904fb164d409278bab9b280aa85",
+      "unitId": null,
+      "active": true,
+      "displayGroup": null,
+      "price": [
+        {
+          "currencyId": "currencyId",
+          "net": 2.65,
+          "gross": 3.15,
+          "linked": true,
+          "listPrice": null,
+          "percentage": null,
+          "regulationPrice": null,
+          "extensions": [],
+          "apiAlias": "price"
+        }
+      ],
+      "manufacturerNumber": null,
+      "ean": "!!parentEan!!",
+      "sales": 0,
+      "productNumber": "!!productParentNumber!!",
+      "stock": 1000,
+      "availableStock": 1000,
+      "available": true,
+      "deliveryTimeId": "f131398ac2c54416af521695da52d010",
+      "deliveryTime": null,
+      "restockTime": 3,
+      "isCloseout": true,
+      "purchaseSteps": 1,
+      "maxPurchase": null,
+      "minPurchase": 1,
+      "purchaseUnit": null,
+      "referenceUnit": null,
+      "shippingFree": false,
+      "purchasePrices": [
+        {
+          "currencyId": "currencyId",
+          "net": 0,
+          "gross": 0,
+          "linked": true,
+          "listPrice": null,
+          "percentage": null,
+          "regulationPrice": null,
+          "extensions": [],
+          "apiAlias": "price"
+        }
+      ],
+      "markAsTopseller": null,
+      "weight": null,
+      "width": null,
+      "height": null,
+      "length": null,
+      "releaseDate": null,
+      "categoryTree": [
+        "e672bf45661041faba060e92a94f5f15",
+        "43cbba8631b94fc6938c1fb7d79151b6",
+        "683e9e4e25cc403ab0e1e31220b05d02"
+      ],
+      "streamIds": [ ],
+      "optionIds": null,
+      "propertyIds": [
+        "0d2b862e4cd547ca85ab081f1bf4964a",
+        "0d788fc898494134bbb6f65d9f31def3",
+        "138317676d674afb90faf9b11d07adb0",
+        "17abe0aee90543459d4063531ec9b790",
+        "1e09dc2df14e457682754b59fe149927",
+        "2edb03005aa64f0bb426149d510d333c",
+        "2fe0ea2c8e244fb3bf3fc741984cc1d9",
+        "300a28159b0a43848f5d3660d85c0ef9",
+        "361cb70d62774ffc84d2613b721d35d4",
+        "36301da2efb8483f81165c87d594ad5f",
+        "37c90598e71c4d7dacc9b6091e03f773",
+        "3e639b97a06349fe9807eacc7e711aa8",
+        "467e43c9687244a2b8de65cb20d28f28",
+        "4688510f8b3e4cf3a3aea6df195eabff",
+        "4decc0ccff824e04a21738179f18970d",
+        "5b931afb2e0045028b12c0707e5cb200",
+        "6eb53fb310e641cfa3b56435a72d5c5d",
+        "6fb32e400c2c41d1b72d08299437641a",
+        "75e0c56a46e84a1682657323b7eef641",
+        "76879070c574408382011d766d822f81",
+        "78a4f564df914b8ebc85b0de21de6161",
+        "8747dfd67deb41bf8f737c3f2ba675f8",
+        "92f187270f504ef3a0a3f7d007116f20",
+        "9e00bdfbf72f4d4fbcfd2c5ac0c2e493",
+        "a0bdb1ccc66c4042a3ed31573bd9419a",
+        "a0ffd2b5d66e4a53bede87153719c005",
+        "a73dcc2270af4ed39d62ae80a6a60e2c",
+        "a90b40ba378c42cca130b56d3134b5d8",
+        "bc842eed22794992bf0d38256686120a",
+        "bdbbada3050e4ceca3d71be4243bed67",
+        "d239051a621b40449e9892d4e703559a",
+        "e5886439d5e7470da88f697b19d1b252",
+        "eaf3629deac648fa8501b41892552c97",
+        "eb21e25155bd408ebbbca6d89377e727",
+        "f2764ba6baa94584878455630368483b",
+        "f84782b69d7a4c6780bf1427781fec6e",
+        "febac3f5a98249f0a9fdbd2ad658d0d4"
+      ],
+      "name": "!!parentName!!",
+      "keywords": null,
+      "description": "!!parentDesc!!",
+      "metaDescription": null,
+      "metaTitle": null,
+      "packUnit": null,
+      "packUnitPlural": null,
+      "variantRestrictions": null,
+      "configuratorGroupConfig": [
+        {
+          "id": "6c7677eb65164a09ab56d8b1ac1ee99a",
+          "expressionForListings": false,
+          "representation": "box"
+        }
+      ],
+      "mainVariantId": "044f0b9896d9415fbf8cebeafb1286f7",
+      "variation": [],
+      "tax": {
+        "taxRate": 19,
+        "name": "Standard rate",
+        "position": 1,
+        "products": null,
+        "rules": null,
+        "shippingMethods": null,
+        "_uniqueIdentifier": "7421c419118241669a026729384fa339",
+        "versionId": null,
+        "translated": [],
+        "createdAt": "2020-11-27T10:33:19.683+00:00",
+        "updatedAt": null,
+        "extensions": {
+          "foreignKeys": {
+            "apiAlias": null,
+            "extensions": []
+          },
+          "internal_mapping_storage": {
+            "apiAlias": null,
+            "extensions": []
+          }
+        },
+        "id": "7421c419118241669a026729384fa339",
+        "customFields": null,
+        "apiAlias": "tax"
+      },
+      "manufacturer": null,
+      "unit": null,
+      "prices": [],
+      "cheapestPrice": {
+        "hasRange": false,
+        "variantId": "0168f7e09cf845779968bff9622b7c29",
+        "parentId": "!!productParentId!!",
+        "ruleId": null,
+        "purchase": null,
+        "reference": null,
+        "unitId": null,
+        "price": [
+          {
+            "currencyId": "currencyId",
+            "net": 2.65,
+            "gross": 3.15,
+            "linked": true,
+            "listPrice": null,
+            "percentage": null,
+            "regulationPrice": null,
+            "extensions": [],
+            "apiAlias": "price"
+          }
+        ],
+        "extensions": [],
+        "apiAlias": "shopware_core_content_product_data_abstraction_layer_cheapest_price_cheapest_price"
+      },
+      "cover": null,
+      "parent": null,
+      "children": null,
+      "media": null,
+      "cmsPageId": null,
+      "cmsPage": null,
+      "slotConfig": null,
+      "searchKeywords": null,
+      "translations": null,
+      "categories": null,
+      "customFieldSets": null,
+      "tags": null,
+      "properties": null,
+      "options": null,
+      "configuratorSettings": null,
+      "categoriesRo": null,
+      "coverId": "df297d73eacc4083af4e37a075a7c182",
+      "blacklistIds": null,
+      "whitelistIds": null,
+      "visibilities": null,
+      "tagIds": null,
+      "categoryIds": [
+        "43cbba8631b94fc6938c1fb7d79151b6",
+        "683e9e4e25cc403ab0e1e31220b05d02"
+      ],
+      "productReviews": null,
+      "ratingAverage": null,
+      "mainCategories": null,
+      "seoUrls": null,
+      "orderLineItems": null,
+      "crossSellings": null,
+      "crossSellingAssignedProducts": null,
+      "featureSetId": null,
+      "featureSet": null,
+      "customFieldSetSelectionActive": null,
+      "customSearchKeywords": null,
+      "wishlists": null,
+      "canonicalProductId": null,
+      "canonicalProduct": null,
+      "cheapestPriceContainer": {
+        "value": {
+          "0168f7e09cf845779968bff9622b7c29": {
+            "3dca09544d794d6fb46dd35765f7c148": {
+              "parent_id": "!!productParentId!!",
+              "variant_id": "0168f7e09cf845779968bff9622b7c29",
+              "rule_id": "3dca09544d794d6fb46dd35765f7c148",
+              "unit_id": null,
+              "purchase_unit": null,
+              "reference_unit": null,
+              "min_purchase": "1",
+              "price": {
+                "ccurrencyId": {
+                  "currencyId": "currencyId",
+                  "gross": 0.98,
+                  "linked": true,
+                  "net": 0.82
+                }
+              },
+              "is_ranged": "1"
+            },
+            "default": null
+          },
+          "044f0b9896d9415fbf8cebeafb1286f7": {
+            "3dca09544d794d6fb46dd35765f7c148": {
+              "parent_id": "!!productParentId!!",
+              "variant_id": "044f0b9896d9415fbf8cebeafb1286f7",
+              "rule_id": "3dca09544d794d6fb46dd35765f7c148",
+              "unit_id": null,
+              "purchase_unit": null,
+              "reference_unit": null,
+              "min_purchase": "1",
+              "price": {
+                "ccurrencyId": {
+                  "currencyId": "currencyId",
+                  "gross": 0.98,
+                  "linked": true,
+                  "net": 0.82
+                }
+              },
+              "is_ranged": "1"
+            },
+            "default": null
+          },
+          "12a20bf1b8664d0eaa603453dfc702a6": {
+            "3dca09544d794d6fb46dd35765f7c148": {
+              "parent_id": "!!productParentId!!",
+              "variant_id": "12a20bf1b8664d0eaa603453dfc702a6",
+              "rule_id": "3dca09544d794d6fb46dd35765f7c148",
+              "unit_id": null,
+              "purchase_unit": null,
+              "reference_unit": null,
+              "min_purchase": "1",
+              "price": {
+                "ccurrencyId": {
+                  "currencyId": "currencyId",
+                  "gross": 0.98,
+                  "linked": true,
+                  "net": 0.82
+                }
+              },
+              "is_ranged": "1"
+            },
+            "default": null
+          },
+          "!!productVariantId!!": {
+            "3dca09544d794d6fb46dd35765f7c148": {
+              "parent_id": "!!productParentId!!",
+              "variant_id": "!!productVariantId!!",
+              "rule_id": "3dca09544d794d6fb46dd35765f7c148",
+              "unit_id": null,
+              "purchase_unit": null,
+              "reference_unit": null,
+              "min_purchase": "1",
+              "price": {
+                "ccurrencyId": {
+                  "currencyId": "currencyId",
+                  "gross": 0.98,
+                  "linked": true,
+                  "net": 0.82
+                }
+              },
+              "is_ranged": "1"
+            },
+            "default": null
+          },
+          "d890d2f87c9641fabdbd5483225f66c2": {
+            "3dca09544d794d6fb46dd35765f7c148": {
+              "parent_id": "!!productParentId!!",
+              "variant_id": "d890d2f87c9641fabdbd5483225f66c2",
+              "rule_id": "3dca09544d794d6fb46dd35765f7c148",
+              "unit_id": null,
+              "purchase_unit": null,
+              "reference_unit": null,
+              "min_purchase": "1",
+              "price": {
+                "ccurrencyId": {
+                  "currencyId": "currencyId",
+                  "gross": 0.98,
+                  "linked": true,
+                  "net": 0.82
+                }
+              },
+              "is_ranged": "1"
+            },
+            "default": null
+          }
+        },
+        "default": {
+          "parent_id": "!!productParentId!!",
+          "variant_id": "!!productParentId!!",
+          "rule_id": null,
+          "is_ranged": "0",
+          "price": {
+            "ccurrencyId": {
+              "currencyId": "currencyId",
+              "net": 2.65,
+              "linked": true,
+              "gross": 3.15
+            }
+          },
+          "min_purchase": "1",
+          "unit_id": null,
+          "purchase_unit": null,
+          "reference_unit": null,
+          "child_count": "5"
+        },
+        "extensions": [],
+        "apiAlias": "cheapest_price_container"
+      },
+      "streams": null,
+      "_uniqueIdentifier": "!!productParentId!!",
+      "versionId": "0fa91ce3e96a4bc2be4bd9ce752c3425",
+      "translated": {
+        "metaDescription": null,
+        "name": "!!parentName!!",
+        "keywords": null,
+        "description":  "!!parentDesc!!",
+        "metaTitle": null,
+        "packUnit": null,
+        "packUnitPlural": null,
+        "customFields": {
+        },
+        "slotConfig": null,
+        "customSearchKeywords": null
+      },
+      "createdAt": "2021-01-25T11:51:11.518+00:00",
+      "updatedAt": "2022-06-14T13:12:08.074+00:00",
+      "extensions": {
+        "foreignKeys": {
+          "apiAlias": null,
+          "extensions": [],
+          "swagCustomizedProductsTemplateId": null,
+          "swagCustomizedProductsTemplateVersionId": "0fa91ce3e96a4bc2be4bd9ce752c3425"
+        },
+        "swagCustomizedProductsTemplate": null
+      },
+      "id": "!!productParentId!!",
+      "customFields": {
+      },
+      "apiAlias": "product"
+    },
+    {
+      "parentId": "!!productParentId!!",
+      "childCount": null,
+      "autoIncrement": 70,
+      "taxId": null,
+      "manufacturerId": null,
+      "unitId": null,
+      "active": null,
+      "displayGroup": "1935986e80f518b345f4e8931d2331b0",
+      "price": null,
+      "manufacturerNumber": null,
+      "ean": "!!variantEan!!",
+      "sales": 76,
+      "productNumber": "!!productVariantNumber!!",
+      "stock": 612,
+      "availableStock": 612,
+      "available": true,
+      "deliveryTimeId": null,
+      "deliveryTime": null,
+      "restockTime": null,
+      "isCloseout": null,
+      "purchaseSteps": null,
+      "maxPurchase": null,
+      "minPurchase": null,
+      "purchaseUnit": null,
+      "referenceUnit": null,
+      "shippingFree": null,
+      "purchasePrices": [
+        {
+          "currencyId": "currencyId",
+          "net": 0,
+          "gross": 0,
+          "linked": true,
+          "listPrice": null,
+          "percentage": null,
+          "regulationPrice": null,
+          "extensions": [],
+          "apiAlias": "price"
+        }
+      ],
+      "markAsTopseller": null,
+      "weight": null,
+      "width": null,
+      "height": null,
+      "length": null,
+      "releaseDate": null,
+      "categoryTree": [
+        "e672bf45661041faba060e92a94f5f15",
+        "43cbba8631b94fc6938c1fb7d79151b6",
+        "683e9e4e25cc403ab0e1e31220b05d02"
+      ],
+      "streamIds": null,
+      "optionIds": [
+        "6fb32e400c2c41d1b72d08299437641a"
+      ],
+      "propertyIds": [
+        "0d2b862e4cd547ca85ab081f1bf4964a",
+        "0d788fc898494134bbb6f65d9f31def3",
+        "138317676d674afb90faf9b11d07adb0",
+        "17abe0aee90543459d4063531ec9b790",
+        "1e09dc2df14e457682754b59fe149927",
+        "2edb03005aa64f0bb426149d510d333c",
+        "2fe0ea2c8e244fb3bf3fc741984cc1d9",
+        "300a28159b0a43848f5d3660d85c0ef9",
+        "361cb70d62774ffc84d2613b721d35d4",
+        "36301da2efb8483f81165c87d594ad5f",
+        "37c90598e71c4d7dacc9b6091e03f773",
+        "3e639b97a06349fe9807eacc7e711aa8",
+        "467e43c9687244a2b8de65cb20d28f28",
+        "4688510f8b3e4cf3a3aea6df195eabff",
+        "4decc0ccff824e04a21738179f18970d",
+        "5b931afb2e0045028b12c0707e5cb200",
+        "6eb53fb310e641cfa3b56435a72d5c5d",
+        "6fb32e400c2c41d1b72d08299437641a",
+        "75e0c56a46e84a1682657323b7eef641",
+        "76879070c574408382011d766d822f81",
+        "78a4f564df914b8ebc85b0de21de6161",
+        "8747dfd67deb41bf8f737c3f2ba675f8",
+        "92f187270f504ef3a0a3f7d007116f20",
+        "9e00bdfbf72f4d4fbcfd2c5ac0c2e493",
+        "a0bdb1ccc66c4042a3ed31573bd9419a",
+        "a0ffd2b5d66e4a53bede87153719c005",
+        "a73dcc2270af4ed39d62ae80a6a60e2c",
+        "a90b40ba378c42cca130b56d3134b5d8",
+        "bc842eed22794992bf0d38256686120a",
+        "bdbbada3050e4ceca3d71be4243bed67",
+        "d239051a621b40449e9892d4e703559a",
+        "e5886439d5e7470da88f697b19d1b252",
+        "eaf3629deac648fa8501b41892552c97",
+        "eb21e25155bd408ebbbca6d89377e727",
+        "f2764ba6baa94584878455630368483b",
+        "f84782b69d7a4c6780bf1427781fec6e",
+        "febac3f5a98249f0a9fdbd2ad658d0d4"
+      ],
+      "name": "!!variantName!!",
+      "keywords": null,
+      "description":  "!!variantDesc!!",
+      "metaDescription": null,
+      "metaTitle": null,
+      "packUnit": null,
+      "packUnitPlural": null,
+      "variantRestrictions": null,
+      "configuratorGroupConfig": null,
+      "mainVariantId": null,
+      "variation": [],
+      "tax": null,
+      "manufacturer": null,
+      "unit": null,
+      "prices": [],
+      "cheapestPrice": null,
+      "cover": null,
+      "parent": null,
+      "children": null,
+      "media": null,
+      "cmsPageId": null,
+      "cmsPage": null,
+      "slotConfig": null,
+      "searchKeywords": null,
+      "translations": null,
+      "categories": null,
+      "customFieldSets": null,
+      "tags": null,
+      "properties": null,
+      "options": null,
+      "configuratorSettings": null,
+      "categoriesRo": null,
+      "coverId": "2573478af14044c288af6bf11f4c24b7",
+      "blacklistIds": null,
+      "whitelistIds": null,
+      "visibilities": null,
+      "tagIds": null,
+      "categoryIds": [
+        "43cbba8631b94fc6938c1fb7d79151b6",
+        "683e9e4e25cc403ab0e1e31220b05d02"
+      ],
+      "productReviews": null,
+      "ratingAverage": null,
+      "mainCategories": null,
+      "seoUrls": null,
+      "orderLineItems": null,
+      "crossSellings": null,
+      "crossSellingAssignedProducts": null,
+      "featureSetId": null,
+      "featureSet": null,
+      "customFieldSetSelectionActive": null,
+      "customSearchKeywords": null,
+      "wishlists": null,
+      "canonicalProductId": null,
+      "canonicalProduct": null,
+      "cheapestPriceContainer": null,
+      "streams": null,
+      "_uniqueIdentifier": "!!productVariantId!!",
+      "versionId": "0fa91ce3e96a4bc2be4bd9ce752c3425",
+      "translated": {
+        "metaDescription": null,
+        "name": "!!variantName!!",
+        "keywords": null,
+        "description":  "!!variantDesc!!",
+        "metaTitle": null,
+        "packUnit": null,
+        "packUnitPlural": null,
+        "customFields": {
+        },
+        "slotConfig": null,
+        "customSearchKeywords": null
+      },
+      "createdAt": "2021-01-25T12:09:43.634+00:00",
+      "updatedAt": "2022-06-14T13:01:43.171+00:00",
+      "extensions": {
+        "foreignKeys": {
+          "apiAlias": null,
+          "extensions": [],
+          "swagCustomizedProductsTemplateId": null,
+          "swagCustomizedProductsTemplateVersionId": "0fa91ce3e96a4bc2be4bd9ce752c3425"
+        },
+        "swagCustomizedProductsTemplate": null
+      },
+      "id": "!!productVariantId!!",
+      "customFields": {
+      },
+      "apiAlias": "product"
+    }
+  ],
+  "aggregations": []
+}

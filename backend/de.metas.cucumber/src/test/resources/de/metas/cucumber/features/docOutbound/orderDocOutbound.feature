@@ -4,7 +4,8 @@ Feature: Validate order doc outbound log creation
   Especially tracing "C_Doc_Outbound_Log.CurrentEMailAddress"
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-02-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
@@ -56,7 +57,7 @@ Feature: Validate order doc outbound log creation
 
     And after not more than 30s validate C_Doc_Outbound_Log:
       | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.CurrentEMailAddress | OPT.C_BPartner_ID.Identifier | OPT.DocBaseType | OPT.DocStatus |
-      | orderOutboundLog                 | order_1              | C_Order       | user@email.com      | sale_bpartner                | SOO             | CO            |
+      | orderOutboundLog                 | order_1              | C_Order       | user@email.com          | sale_bpartner                | SOO             | CO            |
 
     And validate C_Doc_Outbound_Log_Line:
       | C_Doc_Outbound_Log_Line_ID.Identifier | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name | OPT.DocBaseType | OPT.DocStatus |
