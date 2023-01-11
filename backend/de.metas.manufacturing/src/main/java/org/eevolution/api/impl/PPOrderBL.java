@@ -652,7 +652,7 @@ public class PPOrderBL implements IPPOrderBL
 					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
 					try
 					{
-						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));;
+						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));
 					}
 					catch (final Exception e)
 					{
