@@ -69,7 +69,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final LookupDataSource locatorLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name);
+	private final LookupDataSource locatorLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_M_Locator.Table_Name);
 
 	private HUMovementGeneratorResult movementResult = null;
 
