@@ -269,4 +269,7 @@ ALTER TABLE M_ShipperTransportation ADD CONSTRAINT MForwarder_MShipperTransporta
 ;
 
 
+-- Make sure the M_Shipper_ID is marked as Mandatory in all the existing, displayed fields. After introducing M_Forwarder_ID, they will not be both mandatory at the same time!
 
+UPDATE AD_Field SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-09 19:14:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=550685 and isdisplayed = 'Y'
+;
