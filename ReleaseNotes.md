@@ -199,6 +199,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14346](https://github.com/metasfresh/metasfresh/issues/14346) Propagate `POReference` from PO to MR
   * [#14187](https://github.com/metasfresh/metasfresh/issues/14187) update infrastructure db dockerfile to work with new images
   * [#13546](https://github.com/metasfresh/metasfresh/issues/13546) DATEV Export Performance Problem 
   * [#14095](https://github.com/metasfresh/metasfresh/pull/14095#pullrequestreview-1215114428) Sum amounts per vatcode
