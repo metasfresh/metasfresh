@@ -89,6 +89,10 @@ public interface IWarehouseDAO extends ISingletonService
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
 
+	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
+
+	List<I_M_Locator> getLocatorByIds(Collection<LocatorId> locatorIds);
+
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
 	@Nullable
@@ -123,6 +127,8 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
 
 	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
+
+	Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull OrgId orgId);
 
 	List<I_M_Warehouse> getAllWarehouses();
 
