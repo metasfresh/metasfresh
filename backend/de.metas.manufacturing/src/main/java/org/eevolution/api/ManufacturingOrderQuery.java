@@ -49,6 +49,8 @@ public class ManufacturingOrderQuery
 
 	@Nullable APIExportStatus exportStatus;
 	@Nullable Instant canBeExportedFrom;
+	@Nullable ProductBOMVersionsId bomVersionsId;
+	boolean onlyDrafted;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 }
