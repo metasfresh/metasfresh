@@ -33,6 +33,8 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -216,5 +218,29 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Forwarder_ID, null)
 				.create()
 				.anyMatch();
+	}
+
+	public void generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request)
+	{
+		final I_M_ShipperTransportation deliveryInstructionRecord = newInstance(I_M_ShipperTransportation.class);
+
+		deliveryInstructionRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+
+		deliveryInstructionRecord.setShipper_BPartner_ID(request.getShipperBPartnerId().getRepoId());
+		deliveryInstructionRecord.setShipper_Location_ID(request.getShipperLocationId().getRepoId());
+
+		deliveryInstructionRecord.setProcessed(request.isProcessed());
+
+		deliveryInstructionRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
+		deliveryInstructionRecord.setIncotermLocation(request.getIncotermLocation());
+
+		deliveryInstructionRecord.setLoadingTime(request.getLoadingTime());
+		deliveryInstructionRecord.setDeliveryTime(request.getDeliveryTime());
+
+		deliveryInstructionRecord.setM_Forwarder_ID(ForwarderId.toRepoId(request.getForwarderId()));
+
+		deliveryInstructionRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
+
+		save(deliveryInstructionRecord);
 	}
 }
