@@ -64,6 +64,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -124,6 +125,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -650,7 +652,7 @@ public class PPOrderBL implements IPPOrderBL
 					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
 					try
 					{
-						ppOrdersRepo.save(draftedOrder);
+						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));;
 					}
 					catch (final Exception e)
 					{
