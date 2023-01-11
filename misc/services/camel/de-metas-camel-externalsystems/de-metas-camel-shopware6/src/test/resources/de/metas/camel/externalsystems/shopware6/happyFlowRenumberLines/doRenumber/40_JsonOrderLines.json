@@ -4,7 +4,7 @@
       "id": "externalLineId",
       "productId": "productId",
       "quantity": 1,
-      "parentId": "parentId",
+      "parentId": null,
       "unitPrice": 14.8,
       "description": "lineDescription",
       "position": 1,
@@ -28,6 +28,66 @@
       "payload": {
         "isBundle": true,
         "productNumber": "productNumber2"
+      }
+    },
+    {
+      "id": "externalLineId3",
+      "productId": "productId3",
+      "quantity": 20,
+      "parentId": null,
+      "unitPrice": 100,
+      "description": "lineDescription3",
+      "position": 3,
+      "createdAt": "2021-02-25T15:27:34.518+00:00",
+      "updatedAt": "2021-02-27T15:27:34.518+00:00",
+      "payload": {
+        "isBundle": false,
+        "productNumber": "productNumber3"
+      }
+    },
+    {
+      "id": "externalLineId4",
+      "productId": "productId4",
+      "quantity": 30,
+      "parentId": null,
+      "unitPrice": 100,
+      "description": "lineDescription4",
+      "position": null,
+      "createdAt": "2021-02-25T15:27:34.518+00:00",
+      "updatedAt": "2021-02-27T15:27:34.518+00:00",
+      "payload": {
+        "isBundle": false,
+        "productNumber": "productNumber4"
+      }
+    },
+    {
+      "id": "externalLineId5",
+      "productId": "productId5",
+      "quantity": 40,
+      "parentId": "externalLineId2",
+      "unitPrice": 100,
+      "description": "lineDescription5",
+      "position": 1,
+      "createdAt": "2021-02-25T15:27:34.518+00:00",
+      "updatedAt": "2021-02-27T15:27:34.518+00:00",
+      "payload": {
+        "isBundle": false,
+        "productNumber": "productNumber5"
+      }
+    },
+    {
+      "id": "externalLineId6",
+      "productId": "productId6",
+      "quantity": 50,
+      "parentId": "externalLineId2",
+      "unitPrice": 100,
+      "description": "lineDescription6",
+      "position": 2,
+      "createdAt": "2021-02-25T15:27:34.518+00:00",
+      "updatedAt": "2021-02-27T15:27:34.518+00:00",
+      "payload": {
+        "isBundle": false,
+        "productNumber": "productNumber6"
       }
     }
   ]

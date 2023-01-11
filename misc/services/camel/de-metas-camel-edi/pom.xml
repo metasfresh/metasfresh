@@ -84,6 +84,19 @@
             <groupId>de.metas.common.rest_api</groupId>
             <artifactId>de-metas-common-rest_api</artifactId>
             <version>${metasfresh-common.version}</version>
+            <!-- Avoid startup failure
+             org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
+            -->
+            <exclusions>
+                <exclusion>
+                    <artifactId>springfox-boot-starter</artifactId>
+                    <groupId>io.springfox</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>springfox-enum-plugin</artifactId>
+                    <groupId>de.pentabyte</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -98,7 +111,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
@@ -354,7 +367,7 @@
                             <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
                             <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
                             <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
-                            
+
                             because it will end with "Two declarations cause a collision in the ObjectFactory class."
                             -->
                             <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
