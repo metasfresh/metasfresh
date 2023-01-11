@@ -395,6 +395,13 @@ public final class CollectionUtils
 		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
 	}
 
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final Function<V, W> mappingFunction)
+	{
+		return mapValues(map, (k, v) -> mappingFunction.apply(v));
+	}
+
 	/**
 	 * Removes first element from {@link Set} and returns it.
 	 * <p>

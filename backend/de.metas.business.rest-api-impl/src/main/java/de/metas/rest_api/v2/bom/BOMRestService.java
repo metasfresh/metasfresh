@@ -158,4 +158,15 @@ public class BOMRestService
 				.help(lineRequest.getHelp())
 				.build();
 	}
+
+	public void verifyDefaultBOM(@NonNull final String productExternalIdentifier, @NonNull final String orgCode)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(productExternalIdentifier);
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+
+		final ProductId productId = productRestService.resolveProductExternalIdentifier(externalIdentifier, orgId)
+				.orElseThrow(() -> new InvalidIdentifierException(productExternalIdentifier));
+
+		bomService.verifyDefaultBOMFor(productId);
+	}
 }
