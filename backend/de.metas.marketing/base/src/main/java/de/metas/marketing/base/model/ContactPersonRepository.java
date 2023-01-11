@@ -19,11 +19,13 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -283,7 +285,7 @@ public class ContactPersonRepository
 		}
 
 		return builder
-				.userId(UserId.ofRepoId(contactPersonRecord.getAD_User_ID()))
+				.userId(UserId.ofRepoIdOrNull(contactPersonRecord.getAD_User_ID()))
 				.bPartnerId(bpartnerId)
 				.name(contactPersonRecord.getName())
 				.platformId(PlatformId.ofRepoId(contactPersonRecord.getMKTG_Platform_ID()))
@@ -371,26 +373,7 @@ public class ContactPersonRepository
 	}
 
 	@NonNull
-	public Stream<ContactPerson> streamContactsWithRemoteId(@NonNull final CampaignId campaignId)
-	{
-		//dev-note: exclude contacts which were deleted on remote platform
-		final IQueryFilter<I_MKTG_ContactPerson> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
-				.addStringNotLikeFilter(I_MKTG_ContactPerson.COLUMN_LastSyncStatus, RemoteToLocalSyncResult.RemoteToLocalStatus.DELETED_ON_REMOTE_PLATFORM.name(), true);
-
-		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())
-				.andCollect(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_ContactPerson_ID, I_MKTG_ContactPerson.class)
-				.addNotNull(I_MKTG_ContactPerson.COLUMNNAME_RemoteRecordId)
-				.filter(deletedOnRemoteFilter)
-				.setOption(IQuery.OPTION_IteratorBufferSize, CampaignConstants.ITERATOR_BUFFER_SIZE)
-				.create()
-				.iterateAndStream()
-				.map(ContactPersonRepository::toContactPerson);
-	}
-
-	@NonNull
-	public Stream<ContactPerson> streamContacts(@NonNull final CampaignId campaignId)
+	public Stream<ContactPerson> streamActiveContacts(@NonNull final CampaignId campaignId, final boolean onlyWithRemoteId)
 	{
 		//dev-note: exclude contacts which were deleted on remote platform
 		final IQueryFilter<I_MKTG_ContactPerson> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class)
@@ -401,13 +384,18 @@ public class ContactPersonRepository
 				.addFilter(deletedOnRemoteFilter)
 				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_LastSyncStatus, null);
 
-		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+		final IQueryBuilder<I_MKTG_ContactPerson> queryBuilder = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())
 				.andCollect(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_ContactPerson_ID, I_MKTG_ContactPerson.class)
-				.filter(statusFilter)
-				.setOption(IQuery.OPTION_IteratorBufferSize, CampaignConstants.ITERATOR_BUFFER_SIZE)
-				.create()
+				.filter(statusFilter);
+
+		if(onlyWithRemoteId)
+		{
+			queryBuilder.addNotNull(I_MKTG_ContactPerson.COLUMNNAME_RemoteRecordId);
+		}
+
+		return queryBuilder.create()
 				.iterateAndStream()
 				.map(ContactPersonRepository::toContactPerson);
 	}
@@ -427,16 +415,13 @@ public class ContactPersonRepository
 	}
 
 	@NonNull
-	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final List<String> emails)
+	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final Collection<String> emails)
 	{
-		final ICompositeQueryFilter<I_MKTG_ContactPerson> emailFilter = queryBL.createCompositeQueryFilter(I_MKTG_ContactPerson.class);
-		emails.forEach(personEmail -> emailFilter.addStringLikeFilter(I_MKTG_ContactPerson.COLUMNNAME_EMail, personEmail, false));
-
 		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_MKTG_ContactPerson.COLUMNNAME_EMail, emails)
 				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_Campaign_ID, campaignId.getRepoId())
 				.andCollect(I_MKTG_Campaign_ContactPerson.COLUMNNAME_MKTG_ContactPerson_ID, I_MKTG_ContactPerson.class)
-				.filter(emailFilter)
 				.create()
 				.stream()
 				.map(ContactPersonRepository::toContactPerson)

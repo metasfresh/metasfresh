@@ -102,22 +102,6 @@ public class CleverReachClient implements PlatformClient
 				url);
 	}
 
-	public CampaignRemoteUpdate retrieveCampaign(@NonNull final String groupId)
-	{
-		final String url = String.format("/groups.json/%s", groupId);
-		final Group group = getLowLevelClient().get(SINGLE_GROUP_TYPE, url);
-		return group.toCampaignUpdate();
-	}
-
-	public List<Campaign> retrieveAllCampaigns()
-	{
-		final List<Group> groups = retrieveAllGroups();
-
-		return groups.stream()
-				.map(Group::toCampaign)
-				.collect(ImmutableList.toImmutableList());
-	}
-
 	private List<Group> retrieveAllGroups()
 	{
 		final String url = "/groups.json";
@@ -132,13 +116,6 @@ public class CleverReachClient implements PlatformClient
 				.get(LIST_OF_RECEIVERS_TYPE, urlPathAndParams);
 	}
 
-	public ContactPersonRemoteUpdate retrieveReceiver(@NonNull final String groupId, @NonNull final String receiverId)
-	{
-		final String url = String.format("/groups.json/%s/receivers/%s", groupId, receiverId);
-		final Receiver receiver = getLowLevelClient().get(SINGLE_RECEIVER_TYPE, url);
-		return receiver.toContactPersonUpdate();
-	}
-
 	@NonNull
 	@Override
 	public CampaignConfig getCampaignConfig()
@@ -148,7 +125,7 @@ public class CleverReachClient implements PlatformClient
 
 	@NonNull
 	@Override
-	public CampaignToUpsertPage getCampaignToUpsertPage(@Nullable final PageDescriptor pageDescriptor)
+	public CampaignToUpsertPage getCampaignToUpsertPage(@Nullable final PageDescriptor ignored)
 	{
 		final List<CampaignRemoteUpdate> remoteCampaignsToUpdate = retrieveAllGroups()
 				.stream()
@@ -165,16 +142,16 @@ public class CleverReachClient implements PlatformClient
 	{
 		final CleverReachPageDescriptor cleverReachPageDescriptor = Optional.ofNullable(pageDescriptor)
 				.map(CleverReachPageDescriptor::cast)
-				.orElseGet(() -> CleverReachPageDescriptor.createNew(CLEVER_REACH_API_PAGE_SIZE));
+				.orElseGet(() -> CleverReachPageDescriptor.ofPageSize(CLEVER_REACH_API_PAGE_SIZE));
 
 		final List<ContactPersonRemoteUpdate> remoteContacts = retrieveReceivers(campaign.getRemoteId(), cleverReachPageDescriptor)
 				.stream()
 				.map(Receiver::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
-		final CleverReachPageDescriptor nextPage = remoteContacts.isEmpty()
-				? null
-				: cleverReachPageDescriptor.createNext();
+		final CleverReachPageDescriptor nextPage = remoteContacts.size() >= cleverReachPageDescriptor.getPageSize()
+				? cleverReachPageDescriptor.createNext()
+				: null;
 
 		return ContactPersonToUpsertPage.builder()
 				.remoteContacts(remoteContacts)

@@ -41,7 +41,7 @@ public class CleverReachPageDescriptor implements PageDescriptor
 	}
 
 	@NonNull
-	public static CleverReachPageDescriptor createNew(final int pageSize)
+	public static CleverReachPageDescriptor ofPageSize(final int pageSize)
 	{
 		return CleverReachPageDescriptor.builder()
 				.pageSize(pageSize)

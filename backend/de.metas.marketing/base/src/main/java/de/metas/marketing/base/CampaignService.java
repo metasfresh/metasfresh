@@ -203,15 +203,17 @@ public class CampaignService
 	}
 
 	@NonNull
-	public Stream<Campaign> streamSyncedWithRemoteId(@NonNull final PlatformId platformId)
+	public Stream<Campaign> streamActivelySyncedWithRemoteId(@NonNull final PlatformId platformId)
 	{
-		return campaignRepository.streamCampaignsWithRemoteId(platformId);
+		final boolean onlyWithRemoteIds = true;
+		return campaignRepository.streamActiveCampaigns(platformId, onlyWithRemoteIds);
 	}
 
 	@NonNull
 	public Stream<Campaign> streamCampaigns(@NonNull final PlatformId platformId)
 	{
-		return campaignRepository.streamCampaigns(platformId);
+		final boolean onlyWithRemoteIds = false;
+		return campaignRepository.streamActiveCampaigns(platformId, onlyWithRemoteIds);
 	}
 
 	@NonNull

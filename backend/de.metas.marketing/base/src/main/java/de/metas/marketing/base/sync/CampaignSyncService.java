@@ -52,14 +52,14 @@ import java.util.Set;
 import java.util.function.Function;
 
 @Service
-public class CampaignServiceSync
+public class CampaignSyncService
 {
 	@NonNull
 	private final CampaignService campaignService;
 	@NonNull
 	private final PlatformClientService platformClientService;
 
-	public CampaignServiceSync(
+	public CampaignSyncService(
 			@NonNull final CampaignService campaignService,
 			@NonNull final PlatformClientService platformClientService)
 	{
@@ -71,9 +71,8 @@ public class CampaignServiceSync
 	{
 		final PlatformClient platformClient = platformClientService.createPlatformClient(platformId);
 
-		final Set<String> processedRemoteIds = processCampaignToUpsertPage(platformClient);
+		final Set<String> processedRemoteIds = upsertCampaigns(platformClient);
 		handleCampaignsNoLongerAvailableOnRemote(platformId, processedRemoteIds);
-
 	}
 
 	public void syncLocalToRemote(@NonNull final PlatformId platformId)
@@ -92,37 +91,36 @@ public class CampaignServiceSync
 	{
 		final Campaign campaign = campaignService.getById(campaignId);
 
-		if (campaign.getRemoteId() == null)
+		if (campaign.getRemoteId() != null)
 		{
-			final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
-
-			return platformClient.upsertCampaign(campaign)
-					.map(campaignService::saveSyncResult)
-					.orElseThrow(() -> new AdempiereException("Could not obtain remoteId for campaign.")
-							.appendParametersToMessage()
-							.setParameter("CampaignId", campaign.getCampaignId()));
+			return campaign;
 		}
 
-		return campaign;
+		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
+
+		return platformClient.upsertCampaign(campaign)
+				.map(campaignService::saveSyncResult)
+				.orElseThrow(() -> new AdempiereException("Could not obtain remoteId for campaign.")
+						.appendParametersToMessage()
+						.setParameter("CampaignId", campaign.getCampaignId()));
 	}
 
-	private void handleCampaignsNoLongerAvailableOnRemote(@NonNull final PlatformId platformId, @NonNull final Set<String> remoteIds)
+	private void handleCampaignsNoLongerAvailableOnRemote(@NonNull final PlatformId platformId, @NonNull final Set<String> allActiveCampaignRemoteIds)
 	{
-		campaignService.streamSyncedWithRemoteId(platformId)
+		campaignService.streamActivelySyncedWithRemoteId(platformId)
 				.filter(campaign -> Check.isNotBlank(campaign.getRemoteId()))
-				.filter(campaignWithRemoteId -> !remoteIds.contains(campaignWithRemoteId.getRemoteId()))
+				.filter(campaignWithRemoteId -> !allActiveCampaignRemoteIds.contains(campaignWithRemoteId.getRemoteId()))
 				.map(campaignDeletedOnRemote -> campaignDeletedOnRemote.toBuilder().remoteId(null).build())
 				.map(RemoteToLocalSyncResult::deletedOnRemotePlatform)
 				.forEach(campaignService::saveSyncResult);
 	}
 
 	@NonNull
-	private Set<String> processCampaignToUpsertPage(@NonNull final PlatformClient platformClient)
+	private Set<String> upsertCampaigns(@NonNull final PlatformClient platformClient)
 	{
 		final ImmutableSet.Builder<String> remoteIds = ImmutableSet.builder();
 
 		PageDescriptor currentPageDescriptor = null;
-
 		boolean moreCampaigns = true;
 
 		while (moreCampaigns)

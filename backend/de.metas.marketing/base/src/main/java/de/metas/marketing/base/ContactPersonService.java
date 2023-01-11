@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -176,15 +177,17 @@ public class ContactPersonService
 	}
 
 	@NonNull
-	public Stream<ContactPerson> streamContactsWithRemoteId(@NonNull final CampaignId campaignId)
+	public Stream<ContactPerson> streamActivelySyncedWithRemoteId(@NonNull final CampaignId campaignId)
 	{
-		return contactPersonRepo.streamContactsWithRemoteId(campaignId);
+		final boolean onlyWithRemoteIds = true;
+		return contactPersonRepo.streamActiveContacts(campaignId, onlyWithRemoteIds);
 	}
 
 	@NonNull
 	public Stream<ContactPerson> streamContacts(@NonNull final CampaignId campaignId)
 	{
-		return contactPersonRepo.streamContacts(campaignId);
+		final boolean onlyWithRemoteIds = false;
+		return contactPersonRepo.streamActiveContacts(campaignId, onlyWithRemoteIds);
 	}
 
 	@NonNull
@@ -194,7 +197,7 @@ public class ContactPersonService
 	}
 
 	@NonNull
-	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final List<String> emails)
+	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final Collection<String> emails)
 	{
 		return contactPersonRepo.retrieveByEmails(campaignId, emails);
 	}

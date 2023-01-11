@@ -12,11 +12,6 @@
   {
     "id": "4",
     "email": "test40@newemail.com",
-    "active": false
-  },
-  {
-    "id": "5",
-    "email": "test50@newemail.com",
     "active": true
   }
 ]

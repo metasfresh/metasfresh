@@ -41,7 +41,7 @@ public class ActiveCampaignPageDescriptor implements PageDescriptor
 	}
 
 	@NonNull
-	public static ActiveCampaignPageDescriptor createNew(final int limit)
+	public static ActiveCampaignPageDescriptor ofLimit(final int limit)
 	{
 		return ActiveCampaignPageDescriptor.builder()
 				.limit(limit)
@@ -49,11 +49,11 @@ public class ActiveCampaignPageDescriptor implements PageDescriptor
 	}
 
 	@NonNull
-	public ActiveCampaignPageDescriptor createNext(final int pageSize)
+	public ActiveCampaignPageDescriptor createNext()
 	{
 		return ActiveCampaignPageDescriptor.builder()
 				.limit(limit)
-				.offset(offset + pageSize)
+				.offset(offset + limit)
 				.build();
 	}
 }

@@ -33,9 +33,7 @@ public interface ActiveCampaignConstants
 	{
 		LISTS("lists"),
 		CONTACTS("contacts"),
-		CONTACT("contact"),
 		CONTACT_LISTS("contactLists"),
-		SYNC("sync"),
 		;
 
 		private final String value;
@@ -59,6 +57,6 @@ public interface ActiveCampaignConstants
 
 	String ACTIVE_CAMPAIGN_API_RATE_LIMIT_RETRY_HEADER = "Retry-After";
 
-	int MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET = 3600;
+	String MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET = "de.metas.marketing.gateway.activecampaign.rest.maxSecondsToWaitForLimitReset";
 	int ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT = 100;
 }

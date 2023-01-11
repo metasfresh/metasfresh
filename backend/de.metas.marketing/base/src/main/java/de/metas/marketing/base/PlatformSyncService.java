@@ -22,28 +22,28 @@
 
 package de.metas.marketing.base;
 
-import de.metas.marketing.base.sync.CampaignServiceSync;
-import de.metas.marketing.base.sync.ContactPersonServiceSync;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.SyncDirection;
+import de.metas.marketing.base.sync.CampaignSyncService;
+import de.metas.marketing.base.sync.ContactPersonSyncService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CampaignSyncService
+public class PlatformSyncService
 {
-	private final CampaignServiceSync campaignServiceSync;
-	private final ContactPersonServiceSync contactPersonServiceSync;
+	private final CampaignSyncService campaignSyncService;
+	private final ContactPersonSyncService contactPersonSyncService;
 
-	public CampaignSyncService(
-			@NonNull final CampaignServiceSync campaignServiceSync,
-			@NonNull final ContactPersonServiceSync contactPersonServiceSync)
+	public PlatformSyncService(
+			@NonNull final CampaignSyncService campaignSyncService,
+			@NonNull final ContactPersonSyncService contactPersonSyncService)
 	{
-		this.campaignServiceSync = campaignServiceSync;
-		this.contactPersonServiceSync = contactPersonServiceSync;
+		this.campaignSyncService = campaignSyncService;
+		this.contactPersonSyncService = contactPersonSyncService;
 	}
 
 	public void syncCampaigns(
@@ -52,11 +52,11 @@ public class CampaignSyncService
 	{
 		if (SyncDirection.LOCAL_TO_REMOTE.equals(syncDirection))
 		{
-			campaignServiceSync.syncLocalToRemote(platformId);
+			campaignSyncService.syncLocalToRemote(platformId);
 		}
 		else if (SyncDirection.REMOTE_TO_LOCAL.equals(syncDirection))
 		{
-			campaignServiceSync.syncRemoteToLocal(platformId);
+			campaignSyncService.syncRemoteToLocal(platformId);
 		}
 		else
 		{
@@ -68,15 +68,15 @@ public class CampaignSyncService
 			@NonNull final CampaignId campaignId,
 			@NonNull final SyncDirection syncDirection)
 	{
-		final Campaign campaign = campaignServiceSync.syncCampaignLocalToRemoteIfRemoteIdMissing(campaignId);
+		final Campaign campaign = campaignSyncService.syncCampaignLocalToRemoteIfRemoteIdMissing(campaignId);
 
 		if (SyncDirection.LOCAL_TO_REMOTE.equals(syncDirection))
 		{
-			contactPersonServiceSync.syncLocalToRemote(campaign);
+			contactPersonSyncService.syncLocalToRemote(campaign);
 		}
 		else if (SyncDirection.REMOTE_TO_LOCAL.equals(syncDirection))
 		{
-			contactPersonServiceSync.syncRemoteToLocal(campaign);
+			contactPersonSyncService.syncRemoteToLocal(campaign);
 		}
 		else
 		{

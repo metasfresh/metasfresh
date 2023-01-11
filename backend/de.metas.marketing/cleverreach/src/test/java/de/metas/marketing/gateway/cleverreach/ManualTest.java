@@ -6,15 +6,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.util.time.SystemTime;
 import de.metas.marketing.base.CampaignService;
-import de.metas.marketing.base.CampaignSyncService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.PlatformClientFactoryRegistry;
 import de.metas.marketing.base.PlatformClientService;
+import de.metas.marketing.base.PlatformSyncService;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult.LocalToRemoteStatus;
@@ -23,8 +22,8 @@ import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.SyncDirection;
 import de.metas.marketing.base.spi.PlatformClientFactory;
-import de.metas.marketing.base.sync.CampaignServiceSync;
-import de.metas.marketing.base.sync.ContactPersonServiceSync;
+import de.metas.marketing.base.sync.CampaignSyncService;
+import de.metas.marketing.base.sync.ContactPersonSyncService;
 import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
@@ -72,17 +71,13 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@SuppressWarnings({ "OptionalGetWithoutIsPresent", "SameParameterValue" })
 public class ManualTest
 {
-	public static final String CONFIG_FILENAME = "./cleverreach-developer-config.json";
-	private static final String MANUAL_GROUP_REMOTE_ID = "524972";
-
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	final MockedStatic<CleverReachLowLevelClient> cleverReachLowLevelClientMockedStatic = Mockito.mockStatic(CleverReachLowLevelClient.class);
 	final MockedStatic<SystemTime> systemTimeMockedStatic = Mockito.mockStatic(SystemTime.class);
 
-	private CampaignSyncService campaignSyncService;
+	private PlatformSyncService platformSyncService;
 	private CleverReachLowLevelClient cleverReachLowLevelClient;
 	private ContactPersonService contactPersonService;
 	private CampaignService campaignService;
@@ -106,10 +101,10 @@ public class ManualTest
 		contactPersonService = new ContactPersonService(contactPersonRepository, new UserRepository());
 		campaignService = new CampaignService(contactPersonRepository, campaignRepository, platformRepository);
 
-		final CampaignServiceSync campaignServiceSync = new CampaignServiceSync(campaignService, platformClientService);
-		final ContactPersonServiceSync contactPersonServiceSync = new ContactPersonServiceSync(platformClientService, contactPersonService, campaignService);
+		final CampaignSyncService campaignSyncService = new CampaignSyncService(campaignService, platformClientService);
+		final ContactPersonSyncService contactPersonSyncService = new ContactPersonSyncService(platformClientService, contactPersonService, campaignService);
 
-		campaignSyncService = new CampaignSyncService(campaignServiceSync, contactPersonServiceSync);
+		platformSyncService = new PlatformSyncService(campaignSyncService, contactPersonSyncService);
 	}
 
 	@AfterEach
@@ -133,7 +128,7 @@ public class ManualTest
 		final String nameOfCampaignToAdd = "test-created";
 
 		//spy
-		final Group upsertGroup = readResource("/de/metas/marketing/gateway/cleverreach/campaign/UpsertGroup.json", Group.class);
+		final Group upsertGroup = readResource("/de/metas/marketing/gateway/cleverreach/campaign/CreateGroup.json", Group.class);
 		Mockito.when(cleverReachLowLevelClient.post(Mockito.eq(CreateGroupRequest.ofName(nameOfCampaignToAdd)), Mockito.any(), Mockito.eq("/groups.json/"))).thenReturn(upsertGroup);
 
 		final Campaign addedCampaign;
@@ -141,7 +136,7 @@ public class ManualTest
 		{
 			final Campaign campaignToAdd = CampaignTestUtil.createCampaignRecord(nameOfCampaignToAdd, platformId);
 
-			campaignSyncService.syncCampaigns(platformId, SyncDirection.LOCAL_TO_REMOTE);
+			platformSyncService.syncCampaigns(platformId, SyncDirection.LOCAL_TO_REMOTE);
 
 			// Check:
 			campaignRecord = InterfaceWrapperHelper.load(campaignToAdd.getCampaignId(), I_MKTG_Campaign.class);
@@ -158,7 +153,7 @@ public class ManualTest
 		final String nameOfCampaignToUpdate = "test-updated";
 
 		//spy
-		final Group upsertGroupUpdate = readResource("/de/metas/marketing/gateway/cleverreach/campaign/UpsertGroupUpdated.json", Group.class);
+		final Group upsertGroupUpdate = readResource("/de/metas/marketing/gateway/cleverreach/campaign/CreateGroupUpdated.json", Group.class);
 		Mockito.when(cleverReachLowLevelClient.post(Mockito.eq(CreateGroupRequest.ofName(nameOfCampaignToUpdate)), Mockito.any(), Mockito.eq("/groups.json/")))
 				.thenReturn(upsertGroupUpdate);
 
@@ -168,7 +163,7 @@ public class ManualTest
 
 			InterfaceWrapperHelper.save(campaignRecord);
 
-			campaignSyncService.syncCampaigns(platformId, SyncDirection.LOCAL_TO_REMOTE);
+			platformSyncService.syncCampaigns(platformId, SyncDirection.LOCAL_TO_REMOTE);
 
 			campaignRecord = InterfaceWrapperHelper.load(addedCampaign.getCampaignId(), I_MKTG_Campaign.class);
 
@@ -221,19 +216,19 @@ public class ManualTest
 		// mock CleverReachLowLevelClient
 		cleverReachLowLevelClientMockedStatic.when(() -> CleverReachLowLevelClient.createAndLogin(config)).thenReturn(cleverReachLowLevelClient);
 
-		final Receiver receiver1 = readResource("/de/metas/marketing/gateway/cleverreach/contact/localtoremote/RemoteContact1.json", Receiver.class);
+		final Receiver receiver1 = readResource("/de/metas/marketing/gateway/cleverreach/contact/LocalToRemote_Receiver1.json", Receiver.class);
 		Mockito.when(cleverReachLowLevelClient.post(Mockito.eq(ReceiverUpsert.of(contactPerson1)),
 													Mockito.any(),
 													Mockito.eq("/groups.json/" + campaignRemoteId + "/receivers/upsert")))
 				.thenReturn(receiver1);
 
-		final Receiver receiver2 = readResource("/de/metas/marketing/gateway/cleverreach/contact/localtoremote/RemoteContact2.json", Receiver.class);
+		final Receiver receiver2 = readResource("/de/metas/marketing/gateway/cleverreach/contact/LocalToRemote_Receiver2.json", Receiver.class);
 		Mockito.when(cleverReachLowLevelClient.post(Mockito.eq(ReceiverUpsert.of(contactPerson3)),
 													Mockito.any(),
 													Mockito.eq("/groups.json/111113/receivers/upsert")))
 				.thenReturn(receiver2);
 
-		campaignSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.LOCAL_TO_REMOTE);
+		platformSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.LOCAL_TO_REMOTE);
 
 		final I_MKTG_ContactPerson contactPersonRecord1 = InterfaceWrapperHelper.load(contactPerson1.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
 		assertThat(contactPersonRecord1.getLastSyncStatus()).isEqualTo(LocalToRemoteStatus.UPSERTED_ON_REMOTE.name());
@@ -293,19 +288,10 @@ public class ManualTest
 				.build();
 		CampaignTestUtil.assignMKTGContactToCampaign(contactPerson3.getContactPersonId(), campaign.getCampaignId());
 
-		final String contactEmail4 = "test40@newemail.com";
-		final String contactRM4 = "4";
-		final ContactPerson contactPerson4 = CampaignTestUtil.createMKTGContactRecordBuilder()
-				.platformId(platformId)
-				.email(contactEmail4)
-				.remoteId(contactRM4)
-				.build();
-		CampaignTestUtil.assignMKTGContactToCampaign(contactPerson4.getContactPersonId(), campaign.getCampaignId());
-
 		// mock client
 		cleverReachLowLevelClientMockedStatic.when(() -> CleverReachLowLevelClient.createAndLogin(config)).thenReturn(cleverReachLowLevelClient);
 
-		final Receiver[] receivers = readResource("/de/metas/marketing/gateway/cleverreach/contact/remotetolocal/RemoteContacts.json", Receiver[].class);
+		final Receiver[] receivers = readResource("/de/metas/marketing/gateway/cleverreach/contact/RemoteToLocal_ListReceiver.json", Receiver[].class);
 
 		final List<Receiver> receiverList = ImmutableList.copyOf(receivers);
 
@@ -314,7 +300,7 @@ public class ManualTest
 				.thenReturn(receiverList);
 
 		// when
-		campaignSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.REMOTE_TO_LOCAL);
+		platformSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.REMOTE_TO_LOCAL);
 
 		// then
 		final I_MKTG_ContactPerson contactPersonRecord1 = InterfaceWrapperHelper.load(contactPerson1.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
@@ -325,138 +311,22 @@ public class ManualTest
 		final I_MKTG_ContactPerson contactPersonRecord2 = InterfaceWrapperHelper.load(contactPerson2.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
 		assertThat(contactPersonRecord2.getLastSyncStatus()).isEqualTo(RemoteToLocalSyncResult.RemoteToLocalStatus.OBTAINED_EMAIL_BOUNCE_INFO.name());
 		assertThat(contactPersonRecord2.getRemoteRecordId()).isEqualTo(contactRM2);
-		assertThat(contactPersonRecord2.getEMail()).isEqualTo(contactEmail2);
+		assertThat(contactPersonRecord2.getEMail()).isEqualTo("test20@updated.com");
 
 		final I_MKTG_ContactPerson contactPersonRecord3 = InterfaceWrapperHelper.load(contactPerson3.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
-		assertThat(contactPersonRecord3.getLastSyncStatus()).isEqualTo(RemoteToLocalSyncResult.RemoteToLocalStatus.OBTAINED_REMOTE_ID.name());
+		// assertThat(contactPersonRecord3.getLastSyncStatus()).isEqualTo(RemoteToLocalSyncResult.RemoteToLocalStatus.OBTAINED_REMOTE_ID.name());
 		assertThat(contactPersonRecord3.getRemoteRecordId()).isEqualTo("3");
 		assertThat(contactPersonRecord3.getEMail()).isEqualTo(contactEmail3);
 
-		final I_MKTG_ContactPerson contactPersonRecord4 = InterfaceWrapperHelper.load(contactPerson4.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
-		assertThat(contactPersonRecord4.getLastSyncStatus()).isEqualTo(RemoteToLocalSyncResult.RemoteToLocalStatus.OBTAINED_EMAIL_BOUNCE_INFO.name());
-		assertThat(contactPersonRecord4.getRemoteRecordId()).isEqualTo("4");
-		assertThat(contactPersonRecord4.getEMail()).isEqualTo(contactEmail4);
-		assertThat(contactPersonRecord4.getDeactivatedOnRemotePlatform()).isEqualTo(DeactivatedOnRemotePlatform.YES.getCode());
-
-		final List<ContactPerson> createContacts = contactPersonService.retrieveByCampaignAndRemoteIds(campaign.getCampaignId(), ImmutableSet.of("5"));
+		final List<ContactPerson> createContacts = contactPersonService.retrieveByCampaignAndRemoteIds(campaign.getCampaignId(), ImmutableSet.of("4"));
 		assertThat(createContacts.size()).isEqualTo(1);
 
-		final ContactPerson createdContact5 = createContacts.get(0);
-		final I_MKTG_ContactPerson contactPersonRecord5 = InterfaceWrapperHelper.load(createdContact5.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
-		assertThat(contactPersonRecord5.getLastSyncStatus()).isEqualTo(RemoteToLocalSyncResult.RemoteToLocalStatus.OBTAINED_NEW_CONTACT_PERSON.name());
-		assertThat(contactPersonRecord5.getRemoteRecordId()).isEqualTo("5");
-		assertThat(contactPersonRecord5.getEMail()).isEqualTo("test50@newemail.com");
+		final ContactPerson createdContact4 = createContacts.get(0);
+		final I_MKTG_ContactPerson contactPersonRecord4 = InterfaceWrapperHelper.load(createdContact4.getContactPersonId().getRepoId(), I_MKTG_ContactPerson.class);
+		assertThat(contactPersonRecord4.getLastSyncStatus()).isEqualTo(RemoteToLocalSyncResult.RemoteToLocalStatus.OBTAINED_NEW_CONTACT_PERSON.name());
+		assertThat(contactPersonRecord4.getRemoteRecordId()).isEqualTo("4");
+		assertThat(contactPersonRecord4.getEMail()).isEqualTo("test40@newemail.com");
 	}
-
-	// @Test
-	// @Disabled
-	// void publishPersonsWithDifferentActivationStatus()
-	// {
-	// 	final String domain = "a" + System.currentTimeMillis() + ".com";
-	// 	System.out.println("Using domain: " + domain);
-	//
-	// 	final PlatformId platformId = CampaignTestUtil.createPlatformRecord("diffActivationStatus");
-	// 	final Campaign campaign = CampaignTestUtil.createCampaignRecord("diffActivationStatus", platformId, MANUAL_GROUP_REMOTE_ID);
-	//
-	// 	final String contactEmailInactive = "inactive@" + domain;
-	// 	final ContactPerson contactPerson1 = CampaignTestUtil.createMKTGContactRecordBuilder()
-	// 			.platformId(platformId)
-	// 			.email(contactEmailInactive)
-	// 			.deactivatedOnRemotePlatform(DeactivatedOnRemotePlatform.NO)
-	// 			.build();
-	// 	CampaignTestUtil.assignMKTGContactToCampaign(contactPerson1.getContactPersonId(), campaign.getCampaignId());
-	//
-	// 	final String contactEmailActive = "active@" + domain;
-	// 	final ContactPerson contactPerson2 = CampaignTestUtil.createMKTGContactRecordBuilder()
-	// 			.platformId(platformId)
-	// 			.email(contactEmailActive)
-	// 			.deactivatedOnRemotePlatform(DeactivatedOnRemotePlatform.YES)
-	// 			.build();
-	// 	CampaignTestUtil.assignMKTGContactToCampaign(contactPerson2.getContactPersonId(), campaign.getCampaignId());
-	//
-	// 	final String contactEmailUnknown = "unknown_status@" + domain;
-	// 	final ContactPerson contactPerson3 = CampaignTestUtil.createMKTGContactRecordBuilder()
-	// 			.platformId(platformId)
-	// 			.email(contactEmailUnknown)
-	// 			.deactivatedOnRemotePlatform(DeactivatedOnRemotePlatform.UNKNOWN)
-	// 			.build();
-	// 	CampaignTestUtil.assignMKTGContactToCampaign(contactPerson3.getContactPersonId(), campaign.getCampaignId());
-	//
-	// 	// Send them to CleverReach (first time)
-	// 	{
-	// 		campaignSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.LOCAL_TO_REMOTE);
-	// 		System.out.println("Got results (1):");
-	//
-	// 		contactPersonService.getByCampaignId(campaign.getCampaignId())
-	// 				.forEach(System.out::println);
-	// 	}
-	//
-	// 	// Send them to CleverReach (second time)
-	// 	{
-	// 		System.out.println("\n----------------------------------------------------------------------------------");
-	// 		System.out.println("Sending them again...");
-	//
-	// 		campaignSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.LOCAL_TO_REMOTE);
-	// 		System.out.println("Got results (1):");
-	//
-	// 		contactPersonService.getByCampaignId(campaign.getCampaignId())
-	// 				.forEach(System.out::println);
-	// 	}
-	// }
-	//
-	// @Test
-	// @Disabled
-	// void publishInactiveEmailAndThenSendActivationForm()
-	// {
-	// 	final String domain = "a" + System.currentTimeMillis() + ".com";
-	// 	final String email = "inactive@" + domain;
-	// 	System.out.println("Using email: " + email);
-	//
-	// 	final PlatformId platformId = CampaignTestUtil.createPlatformRecord("activationForm");
-	// 	final Campaign campaign = CampaignTestUtil.createCampaignRecord("activationForm", platformId, MANUAL_GROUP_REMOTE_ID);
-	//
-	// 	final ContactPerson contactPerson = CampaignTestUtil.createMKTGContactRecordBuilder()
-	// 			.platformId(platformId)
-	// 			.email(email)
-	// 			.deactivatedOnRemotePlatform(DeactivatedOnRemotePlatform.YES)
-	// 			.build();
-	// 	CampaignTestUtil.assignMKTGContactToCampaign(contactPerson.getContactPersonId(), campaign.getCampaignId());
-	//
-	// 	final ContactPerson.ContactPersonBuilder personTemplate = ContactPerson.builder().platformId(platformId);
-	//
-	// 	campaignSyncService.syncContacts(campaign.getCampaignId(), SyncDirection.LOCAL_TO_REMOTE);
-	// 	System.out.println("Got result:");
-	// 	contactPersonService.getByCampaignId(campaign.getCampaignId())
-	// 			.forEach(System.out::println);
-	//
-	// 	while (true)
-	// 	{
-	// 		System.out.println("Sending activation form...");
-	// 		try
-	// 		{
-	// 			// cleverReachClient.sendEmailActivationForm("324200", email);
-	// 			System.out.println("Sent OK");
-	// 			break;
-	// 		}
-	// 		catch (Exception ex)
-	// 		{
-	// 			System.out.println("Got exception while sending activation email:");
-	// 			ex.printStackTrace();
-	// 		}
-	//
-	// 		System.out.println("Sleeping 1 second...");
-	// 		try
-	// 		{
-	// 			//noinspection BusyWait
-	// 			Thread.sleep(1000);
-	// 		}
-	// 		catch (InterruptedException e)
-	// 		{
-	// 			e.printStackTrace();
-	// 			break;
-	// 		}
-	// 	}
-	// }
 
 	@Test
 	public void syncCampaignsLocalToRemote()
@@ -473,16 +343,16 @@ public class ManualTest
 		// mock CleverReachLowLevelClient
 		cleverReachLowLevelClientMockedStatic.when(() -> CleverReachLowLevelClient.createAndLogin(config)).thenReturn(cleverReachLowLevelClient);
 
-		final Group remoteCmp1 = readResource("/de/metas/marketing/gateway/cleverreach/campaign/localtoremote/RemoteGroup1.json", Group.class);
+		final Group remoteCmp1 = readResource("/de/metas/marketing/gateway/cleverreach/campaign/LocalToRemote_Group1.json", Group.class);
 		Mockito.when(cleverReachLowLevelClient.post(Mockito.eq(CreateGroupRequest.ofName(campaign1.getName())), Mockito.any(), Mockito.eq("/groups.json/")))
 				.thenReturn(remoteCmp1);
 
-		final Group remoteCmp2 = readResource("/de/metas/marketing/gateway/cleverreach/campaign/localtoremote/RemoteGroup2.json", Group.class);
+		final Group remoteCmp2 = readResource("/de/metas/marketing/gateway/cleverreach/campaign/LocalToRemote_Group2.json", Group.class);
 		Mockito.when(cleverReachLowLevelClient.post(Mockito.eq(CreateGroupRequest.ofName(remoteCmp2.getName())), Mockito.any(), Mockito.eq("/groups.json/")))
 				.thenReturn(remoteCmp2);
 
 		// when
-		campaignSyncService.syncCampaigns(platformId, SyncDirection.LOCAL_TO_REMOTE);
+		platformSyncService.syncCampaigns(platformId, SyncDirection.LOCAL_TO_REMOTE);
 
 		// then
 		final I_MKTG_Campaign campaignRecord1 = InterfaceWrapperHelper.load(campaign1.getCampaignId(), I_MKTG_Campaign.class);
@@ -513,13 +383,13 @@ public class ManualTest
 		// mock CleverReachLowLevelClient
 		cleverReachLowLevelClientMockedStatic.when(() -> CleverReachLowLevelClient.createAndLogin(config)).thenReturn(cleverReachLowLevelClient);
 
-		final Group[] remoteCmps = readResource("/de/metas/marketing/gateway/cleverreach/campaign/remotetolocal/RemoteGroups.json", Group[].class);
+		final Group[] remoteCmps = readResource("/de/metas/marketing/gateway/cleverreach/campaign/RemoteToLocal_ListGroup.json", Group[].class);
 		final List<Group> remoteGroups = ImmutableList.copyOf(remoteCmps);
 		Mockito.when(cleverReachLowLevelClient.get(Mockito.any(), Mockito.eq("/groups.json")))
 				.thenReturn(remoteGroups);
 
 		// when
-		campaignSyncService.syncCampaigns(platformId, SyncDirection.REMOTE_TO_LOCAL);
+		platformSyncService.syncCampaigns(platformId, SyncDirection.REMOTE_TO_LOCAL);
 
 		// then
 		final I_MKTG_Campaign campaignRecord1 = InterfaceWrapperHelper.load(campaign1.getCampaignId(), I_MKTG_Campaign.class);

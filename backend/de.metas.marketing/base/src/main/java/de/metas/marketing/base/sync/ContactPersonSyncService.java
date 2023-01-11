@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 @Service
-public class ContactPersonServiceSync
+public class ContactPersonSyncService
 {
 	@NonNull
 	final PlatformClientService platformClientService;
@@ -63,7 +63,7 @@ public class ContactPersonServiceSync
 	@NonNull
 	final CampaignService campaignService;
 
-	public ContactPersonServiceSync(
+	public ContactPersonSyncService(
 			final @NonNull PlatformClientService platformClientService,
 			final @NonNull ContactPersonService contactPersonService,
 			final @NonNull CampaignService campaignService)
@@ -92,12 +92,12 @@ public class ContactPersonServiceSync
 		handleContactsNoLongerAvailableOnRemote(campaign.getCampaignId(), processedContactRemoteIds);
 	}
 
-	private void handleContactsNoLongerAvailableOnRemote(@NonNull final CampaignId campaignId, @NonNull final Set<String> remoteContactIds)
+	private void handleContactsNoLongerAvailableOnRemote(@NonNull final CampaignId campaignId, @NonNull final Set<String> allActiveRemoteContactIds)
 	{
-		contactPersonService.streamContactsWithRemoteId(campaignId)
+		contactPersonService.streamActivelySyncedWithRemoteId(campaignId)
 				.filter(contact -> Check.isNotBlank(contact.getRemoteId()))
-				.filter(contactWithRemoteId -> !remoteContactIds.contains(contactWithRemoteId.getRemoteId()))
-				.map(contactRemotedFromRemote -> contactRemotedFromRemote.toBuilder().remoteId(null).build())
+				.filter(contactWithRemoteId -> !allActiveRemoteContactIds.contains(contactWithRemoteId.getRemoteId()))
+				.map(contactRemovedFromRemote -> contactRemovedFromRemote.toBuilder().remoteId(null).build())
 				.map(RemoteToLocalSyncResult::deletedOnRemotePlatform)
 				.forEach(contactPersonService::saveSyncResult);
 	}
@@ -108,7 +108,6 @@ public class ContactPersonServiceSync
 		final ImmutableSet.Builder<String> contactRemoteIds = ImmutableSet.builder();
 
 		PageDescriptor currentPageDescriptor = null;
-
 		boolean moreContacts = true;
 
 		while (moreContacts)
@@ -144,26 +143,8 @@ public class ContactPersonServiceSync
 	{
 		final ImmutableList.Builder<RemoteToLocalSyncResult> syncResults = ImmutableList.builder();
 
-		final Set<String> remoteIds = request.getRemoteContactPersons()
-				.stream()
-				.map(ContactPersonRemoteUpdate::getRemoteId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final Map<String, ContactPerson> remoteId2ContactPerson = contactPersonService.retrieveByCampaignAndRemoteIds(request.getCampaignId(), remoteIds)
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(ContactPerson::getRemoteId, Function.identity()));
-
-		final List<String> remoteEmails = request.getRemoteContactPersons()
-				.stream()
-				.map(ContactPersonRemoteUpdate::getAddress)
-				.map(EmailAddress::getEmailAddressStringOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
-		final Map<String, ContactPerson> email2ContactPersons = contactPersonService.retrieveByEmails(request.getCampaignId(), remoteEmails)
-				.stream()
-				.filter(contactPerson -> contactPerson.getEmailAddressStringOrNull() != null)
-				.collect(ImmutableMap.toImmutableMap(ContactPerson::getEmailAddressStringOrNull, Function.identity()));
+		final Map<String, ContactPerson> remoteId2ContactPerson = getContactPersonByRemoteId(request);
+		final Map<String, ContactPerson> email2ContactPersons = getContactPersonByEmail(request);
 
 		for (final ContactPersonRemoteUpdate contactPersonUpdate : request.getRemoteContactPersons())
 		{
@@ -171,11 +152,11 @@ public class ContactPersonServiceSync
 					EmailAddress.getEmailAddressStringOrNull(contactPersonUpdate.getAddress()),
 					"A contactPersonUpdate received from the remote API has an email address; contactPersonUpdate={}", contactPersonUpdate);
 
-			final ContactPerson contactPersonByEmail = email2ContactPersons.get(receivedEmailAddress);
-			if (contactPersonByEmail != null)
+			final ContactPerson existingByEmail = email2ContactPersons.get(receivedEmailAddress);
+			if (existingByEmail != null)
 			{
-				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(contactPersonByEmail);
-				if (Check.isEmpty(contactPersonByEmail.getRemoteId()))
+				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(existingByEmail);
+				if (Check.isEmpty(existingByEmail.getRemoteId()))
 				{
 					syncResults.add(RemoteToLocalSyncResult.obtainedRemoteId(updatedContactPerson));
 				}
@@ -183,15 +164,15 @@ public class ContactPersonServiceSync
 				continue;
 			}
 
-			final ContactPerson contactPersonByRemoteId = remoteId2ContactPerson.get(contactPersonUpdate.getRemoteId());
+			final ContactPerson existingByRemoteId = remoteId2ContactPerson.get(contactPersonUpdate.getRemoteId());
 
-			if (contactPersonByRemoteId != null)
+			if (existingByRemoteId != null)
 			{
-				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(contactPersonByRemoteId);
+				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(existingByRemoteId);
 
-				final boolean existingContactHasDifferentEmail = !Objects.equals(
-						contactPersonByRemoteId.getEmailAddressStringOrNull(),
-						receivedEmailAddress);
+				final boolean existingContactHasDifferentEmail = !Objects
+						.equals(existingByRemoteId.getEmailAddressStringOrNull(), receivedEmailAddress);
+
 				if (existingContactHasDifferentEmail)
 				{
 					syncResults.add(RemoteToLocalSyncResult.obtainedRemoteEmail(updatedContactPerson));
@@ -199,9 +180,9 @@ public class ContactPersonServiceSync
 
 				final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform = EmailAddress.getDeactivatedOnRemotePlatform(contactPersonUpdate.getAddress());
 
-				final boolean existingContactHasDifferentActiveStatus = !DeactivatedOnRemotePlatform.equals(
-						contactPersonByRemoteId.getDeactivatedOnRemotePlatform(),
-						deactivatedOnRemotePlatform);
+				final boolean existingContactHasDifferentActiveStatus = !DeactivatedOnRemotePlatform
+						.equals(existingByRemoteId.getDeactivatedOnRemotePlatform(), deactivatedOnRemotePlatform);
+
 				if (existingContactHasDifferentActiveStatus)
 				{
 					syncResults.add(RemoteToLocalSyncResult.obtainedEmailBounceInfo(updatedContactPerson));
@@ -215,6 +196,34 @@ public class ContactPersonServiceSync
 		}
 
 		return syncResults.build();
+	}
+
+	@NonNull
+	private Map<String, ContactPerson> getContactPersonByEmail(@NonNull final Request request)
+	{
+		final Set<String> remoteEmails = request.getRemoteContactPersons()
+				.stream()
+				.map(ContactPersonRemoteUpdate::getAddress)
+				.map(EmailAddress::getEmailAddressStringOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return contactPersonService.retrieveByEmails(request.getCampaignId(), remoteEmails)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(ContactPerson::getEmailAddressStringOrNull, Function.identity()));
+	}
+
+	@NonNull
+	private Map<String, ContactPerson> getContactPersonByRemoteId(@NonNull final Request request)
+	{
+		final Set<String> remoteIds = request.getRemoteContactPersons()
+				.stream()
+				.map(ContactPersonRemoteUpdate::getRemoteId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return contactPersonService.retrieveByCampaignAndRemoteIds(request.getCampaignId(), remoteIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(ContactPerson::getRemoteId, Function.identity()));
 	}
 
 	@Value

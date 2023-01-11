@@ -12,10 +12,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -241,20 +241,7 @@ public class CampaignRepository
 	}
 
 	@NonNull
-	public Stream<Campaign> streamCampaignsWithRemoteId(@NonNull final PlatformId platformId)
-	{
-		return queryBL.createQueryBuilder(I_MKTG_Campaign.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_Campaign.COLUMNNAME_MKTG_Platform_ID, platformId.getRepoId())
-				.setOption(IQuery.OPTION_IteratorBufferSize, CampaignConstants.ITERATOR_BUFFER_SIZE)
-				.addNotNull(I_MKTG_Campaign.COLUMNNAME_RemoteRecordId)
-				.create()
-				.iterateAndStream()
-				.map(CampaignRepository::fromRecord);
-	}
-
-	@NonNull
-	public Stream<Campaign> streamCampaigns(@NonNull final PlatformId platformId)
+	public Stream<Campaign> streamActiveCampaigns(@NonNull final PlatformId platformId, final boolean onlyWithRemoteId)
 	{
 		//dev-note: exclude campaigns which were deleted on remote platform
 		final IQueryFilter<I_MKTG_Campaign> deletedOnRemoteFilter = queryBL.createCompositeQueryFilter(I_MKTG_Campaign.class)
@@ -265,11 +252,16 @@ public class CampaignRepository
 				.addFilter(deletedOnRemoteFilter)
 				.addEqualsFilter(I_MKTG_Campaign.COLUMN_LastSyncStatus, null);
 
-		return queryBL.createQueryBuilder(I_MKTG_Campaign.class)
+		final IQueryBuilder<I_MKTG_Campaign> queryBuilder = queryBL.createQueryBuilder(I_MKTG_Campaign.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MKTG_Campaign.COLUMNNAME_MKTG_Platform_ID, platformId.getRepoId())
-				.setOption(IQuery.OPTION_IteratorBufferSize, CampaignConstants.ITERATOR_BUFFER_SIZE)
-				.filter(statusFilter)
+				.filter(statusFilter);
+
+		if (onlyWithRemoteId)
+		{
+			queryBuilder.addNotNull(I_MKTG_Campaign.COLUMNNAME_RemoteRecordId);
+		}
+		return queryBuilder
 				.create()
 				.iterateAndStream()
 				.map(CampaignRepository::fromRecord);

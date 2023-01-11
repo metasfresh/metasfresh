@@ -48,7 +48,6 @@ import javax.annotation.Nullable;
 @UtilityClass
 public class CampaignTestUtil
 {
-
 	@NonNull
 	public CleverReachConfig createLocalConfig(@NonNull final PlatformId platformId)
 	{
