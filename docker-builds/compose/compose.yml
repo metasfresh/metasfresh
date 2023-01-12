@@ -30,7 +30,7 @@ services:
       replicas: 1
 
   search:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    image: elasticsearch:7.17.8
     ports:
       - "9200:9200"
       - "9300:9300"
