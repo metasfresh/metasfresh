@@ -78,13 +78,13 @@ public abstract class ProjectAuditService implements IMasterDataExportAuditServi
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		final DataExportAuditRequest budgetProjectDataExportAuditRequest = DataExportAuditRequest.builder()
+		final DataExportAuditRequest projectDataExportAuditRequest = DataExportAuditRequest.builder()
 				.tableRecordReference(TableRecordReference.of(I_C_Project.Table_Name, projectId))
 				.action(Action.Standalone)
 				.externalSystemConfigId(externalSystemParentConfigId)
 				.adPInstanceId(pInstanceId)
 				.build();
 
-		return dataExportAuditService.createExportAudit(budgetProjectDataExportAuditRequest);
+		return dataExportAuditService.createExportAudit(projectDataExportAuditRequest);
 	}
 }

@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_BUDGET_PROJECT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_WO_STEP_PROJECT;
 
 @Service
 public class ExternalSystemConfigService
@@ -63,6 +64,17 @@ public class ExternalSystemConfigService
 	{
 		return externalSystemOtherConfig.getParameters().stream()
 				.filter(param -> param.getName().equals(PARAM_EXPORT_BUDGET_PROJECT))
+				.map(ExternalSystemOtherConfigParameter::getValue)
+				.filter(Objects::nonNull)
+				.map(Boolean::parseBoolean)
+				.anyMatch(value -> value.equals(Boolean.TRUE));
+	}
+
+
+	public boolean isExportWOStepRequired(@NonNull final ExternalSystemOtherConfig externalSystemOtherConfig)
+	{
+		return externalSystemOtherConfig.getParameters().stream()
+				.filter(param -> param.getName().equals(PARAM_EXPORT_WO_STEP_PROJECT))
 				.map(ExternalSystemOtherConfigParameter::getValue)
 				.filter(Objects::nonNull)
 				.map(Boolean::parseBoolean)

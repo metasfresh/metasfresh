@@ -26,21 +26,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectsUnderTestResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponses;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
-import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -50,6 +51,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.I_C_Project_WO_ObjectUnderTest;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.I_C_Project_WO_Step;
 
@@ -64,18 +66,28 @@ public class WorkOrderProjectRestController_StepDef
 	private static final String NEXT_DOC_SEQ_NO_PLACEHOLDER = "nextDocNo";
 
 	private final ProjectId_StepDefData projectIdTable;
+	private final C_Project_StepDefData projectTable;
 	private final C_Project_WO_Step_StepDefData projectWOStepTable;
+	private final C_Project_WO_Resource_StepDefData woResourceTable;
+	private final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable;
+
 	private final TestContext testContext;
 
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	public WorkOrderProjectRestController_StepDef(
 			@NonNull final ProjectId_StepDefData projectIdTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Project_WO_Step_StepDefData projectWOStepTable,
+			@NonNull final C_Project_WO_Resource_StepDefData woResourceTable,
+			@NonNull final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable,
 			@NonNull final TestContext testContext)
 	{
 		this.projectIdTable = projectIdTable;
+		this.projectTable = projectTable;
 		this.projectWOStepTable = projectWOStepTable;
+		this.woResourceTable = woResourceTable;
+		this.woObjectUnderTestTable = woObjectUnderTestTable;
 		this.testContext = testContext;
 	}
 
@@ -88,25 +100,56 @@ public class WorkOrderProjectRestController_StepDef
 
 		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValue(workOrderProjectUpsertResponse.getMetasfreshId()));
-		assertThat(projectId).isNotNull();
+		final I_C_Project woProject = InterfaceWrapperHelper.load(workOrderProjectUpsertResponse.getMetasfreshId().getValue(), I_C_Project.class);
+		assertThat(woProject).isNotNull();
 
-		projectIdTable.putOrReplace(projectIdentifier, projectId);
+		projectTable.putOrReplace(projectIdentifier, woProject);
 
 		final String stepIdentifiers = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Step_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(stepIdentifiers))
 		{
 			final ImmutableList<String> stepIdentifiersList = StepDefUtil.extractIdentifiers(stepIdentifiers);
 			assertThat(workOrderProjectUpsertResponse.getSteps()).isNotNull();
-			final List<JsonWorkOrderStepUpsertResponse> steps = workOrderProjectUpsertResponse.getSteps(); 
+			final List<JsonWorkOrderStepUpsertResponse> steps = workOrderProjectUpsertResponse.getSteps();
 			assertThat(steps).isNotNull();
 			assertThat(stepIdentifiersList.size()).isEqualTo(steps.size());
 
 			for (int index = 0; index < stepIdentifiersList.size(); index++)
 			{
 				final I_C_Project_WO_Step stepRecord = InterfaceWrapperHelper.load(steps.get(index).getMetasfreshId().getValue(), I_C_Project_WO_Step.class);
-				
+
 				projectWOStepTable.putOrReplace(stepIdentifiersList.get(index), stepRecord);
+			}
+		}
+
+		final String woResourceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(woResourceIdentifier))
+		{
+			final List<JsonWorkOrderResourceUpsertResponse> woResourcesResponse = workOrderProjectUpsertResponse.getSteps().get(0).getResources();
+
+			assertThat(woResourcesResponse).hasSize(1);
+
+			final I_C_Project_WO_Resource woResource = InterfaceWrapperHelper.load(woResourcesResponse.get(0).getMetasfreshId().getValue(), I_C_Project_WO_Resource.class);
+
+			woResourceTable.putOrReplace(woResourceIdentifier, woResource);
+		}
+
+		final String woObjUnderTestIdentifiers = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Project_WO_ObjectUnderTest.COLUMNNAME_C_Project_WO_ObjectUnderTest_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(woObjUnderTestIdentifiers))
+		{
+			final ImmutableList<String> woObjUnderTestIdentifierList = StepDefUtil.extractIdentifiers(woObjUnderTestIdentifiers);
+			assertThat(workOrderProjectUpsertResponse.getObjectsUnderTest()).isNotNull();
+
+			final List<JsonWorkOrderObjectUnderTestUpsertResponse> objUnderTestList = workOrderProjectUpsertResponse.getObjectsUnderTest();
+			assertThat(objUnderTestList).isNotNull();
+			assertThat(woObjUnderTestIdentifierList.size()).isEqualTo(objUnderTestList.size());
+
+			for (int index = 0; index < woObjUnderTestIdentifierList.size(); index++)
+			{
+				final I_C_Project_WO_ObjectUnderTest stepRecord = InterfaceWrapperHelper.load(objUnderTestList.get(index).getMetasfreshId().getValue(), I_C_Project_WO_ObjectUnderTest.class);
+
+				woObjectUnderTestTable.putOrReplace(woObjUnderTestIdentifierList.get(index), stepRecord);
 			}
 		}
 	}
@@ -129,9 +172,10 @@ public class WorkOrderProjectRestController_StepDef
 		final Map<String, String> row = dataTable.asMaps().get(0);
 		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		final ProjectId projectId = projectIdTable.get(projectIdentifier);
+		final I_C_Project project = projectTable.get(projectIdentifier);
+		assertThat(project).isNotNull();
 
-		testContext.setEndpointPath(ENDPOINT_API_V2_WORK_ORDER + "/" + projectId.getRepoId());
+		testContext.setEndpointPath(ENDPOINT_API_V2_WORK_ORDER + "/" + project.getC_Project_ID());
 	}
 
 	@And("validate work order project 'GET' response")
@@ -225,7 +269,7 @@ public class WorkOrderProjectRestController_StepDef
 
 		if (projectStepResources == null)
 		{
-			assertThat(expectedStepResources).isNull();	
+			assertThat(expectedStepResources).isNull();
 		}
 		else
 		{

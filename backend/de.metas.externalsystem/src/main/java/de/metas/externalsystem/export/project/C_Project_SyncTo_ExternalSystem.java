@@ -77,7 +77,6 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 
 		final Iterator<I_C_Project> projectIterator = getSelectedProjectRecords();
 
-
 		while (projectIterator.hasNext())
 		{
 			final TableRecordReference projectRecordRef = TableRecordReference.of(projectIterator.next());

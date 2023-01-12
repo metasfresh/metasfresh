@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.other.export.project.interceptor;
+package de.metas.externalsystem.other.export.project.budget.interceptor;
 
 import de.metas.externalsystem.other.export.project.budget.ExportBudgetProjectToOtherService;
 import de.metas.project.ProjectCategory;

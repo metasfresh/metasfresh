@@ -209,6 +209,18 @@ public class WOProjectRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public boolean isWorkOrderProject(@NonNull final ProjectId projectId)
+	{
+		final I_C_Project project = getRecordById(projectId);
+
+		if (project == null)
+		{
+			return false;
+		}
+
+		return ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder();
+	}
+
 	@Nullable
 	private I_C_Project getRecordById(@NonNull final ProjectId id)
 	{
