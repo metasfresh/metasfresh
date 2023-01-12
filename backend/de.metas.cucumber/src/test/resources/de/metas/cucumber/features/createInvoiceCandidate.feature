@@ -11,6 +11,7 @@ Feature: create invoice candidate via API
 
   @from:cucumber
   @topic:InvoiceCandidate
+  @Id:S0239_10
   Scenario: Process IC using externalsystem references
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | OPT.IsActive |
