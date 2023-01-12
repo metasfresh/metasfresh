@@ -68,10 +68,11 @@ public class DeliveryPlanningService
 	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
-
+	public static final AdMessageKey  MSG_M_Delivery_Planning_AllHaveReleaseNo  = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
+
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -265,5 +266,15 @@ public class DeliveryPlanningService
 	public boolean isExistsNoForwarderDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return deliveryPlanningRepository.isExistNoForwarderDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	}
+
+	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+
+	}
+
+	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return deliveryPlanningRepository.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
 	}
 }

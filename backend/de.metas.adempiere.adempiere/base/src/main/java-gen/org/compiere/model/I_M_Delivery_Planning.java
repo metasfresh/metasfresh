@@ -1128,31 +1128,6 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ShipToLocation_Name = "ShipToLocation_Name";
 
 	/**
-	 * Set Transport Order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setTransportationOrderNo (@Nullable java.lang.String TransportationOrderNo);
-
-	/**
-	 * Get Transport Order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getTransportationOrderNo();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_TransportationOrderNo = new ModelColumn<>(I_M_Delivery_Planning.class, "TransportationOrderNo", null);
-	String COLUMNNAME_TransportationOrderNo = "TransportationOrderNo";
-
-	/**
 	 * Set Transport Details.
 	 *
 	 * <br>Type: String

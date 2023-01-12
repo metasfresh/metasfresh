@@ -24,6 +24,7 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -34,13 +35,16 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -220,6 +224,16 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
+
+	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
+				.create()
+				.anyMatch();
+	}
+
 	public void generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request)
 	{
 		final I_M_ShipperTransportation deliveryInstructionRecord = newInstance(I_M_ShipperTransportation.class);
@@ -241,6 +255,17 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 
+
+		deliveryInstructionRecord.setDeliveryDate(TimeUtil.asTimestamp(request.getDeliveryDate()));
+		deliveryInstructionRecord.setDateDoc(TimeUtil.asTimestamp(request.getDateDoc()));
+		deliveryInstructionRecord.setC_DocType_ID(request.getDocTypeId().getRepoId());
+
+		deliveryInstructionRecord.setLoadingDate(TimeUtil.asTimestamp(request.getLoadingDate()));
+
+		// deliveryInstructionRecord.setDocAction(X_M_ShipperTransportation.DOCSTATUS_Drafted); todo: not sure if needed !
+
 		save(deliveryInstructionRecord);
+
 	}
+
 }

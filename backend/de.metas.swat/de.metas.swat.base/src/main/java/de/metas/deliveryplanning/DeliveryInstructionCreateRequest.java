@@ -24,6 +24,7 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
@@ -31,6 +32,7 @@ import lombok.Data;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -48,17 +50,30 @@ public class DeliveryInstructionCreateRequest
 	@Nullable String incotermLocation;
 
 	@Nullable
+	Instant loadingDate;
+
+	@Nullable
 	String loadingTime;
+
+	@Nullable
+	Instant deliveryDate;
 
 	@Nullable
 	String deliveryTime;
 
+	@NonNull
+	Instant dateDoc;
+
 	@Nullable
 	ForwarderId forwarderId;
 
+	@NonNull DocTypeId docTypeId;
 
 	@Nullable
 	MeansOfTransportationId meansOfTransportationId;
 
 	boolean processed;
+
+	boolean isToBeFetched;
+
 }

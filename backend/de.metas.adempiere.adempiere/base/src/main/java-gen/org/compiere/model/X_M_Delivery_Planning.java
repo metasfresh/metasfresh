@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -738953425L;
+	private static final long serialVersionUID = -1275904705L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -736,17 +736,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getShipToLocation_Name() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShipToLocation_Name);
-	}
-
-	@Override
-	public void setTransportationOrderNo (final @Nullable java.lang.String TransportationOrderNo)
-	{
-		throw new IllegalArgumentException ("TransportationOrderNo is virtual column");	}
-
-	@Override
-	public java.lang.String getTransportationOrderNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_TransportationOrderNo);
 	}
 
 	@Override

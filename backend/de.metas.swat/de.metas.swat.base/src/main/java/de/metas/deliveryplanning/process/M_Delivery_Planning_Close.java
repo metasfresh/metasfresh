@@ -56,6 +56,13 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
 		}
 
+		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
+
+		if (!isExistDeliveryPlanningsWithoutReleaseNo)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllHaveReleaseNo));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

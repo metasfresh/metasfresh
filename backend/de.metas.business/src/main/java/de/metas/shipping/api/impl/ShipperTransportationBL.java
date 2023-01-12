@@ -1,5 +1,7 @@
 package de.metas.shipping.api.impl;
 
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 
@@ -13,6 +15,8 @@ import lombok.NonNull;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
+	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	@Override
 	public I_M_ShippingPackage createShippingPackage(final I_M_ShipperTransportation shipperTransportation, final I_M_Package mpackage)
 	{
@@ -50,7 +54,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
 
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
@@ -61,4 +64,13 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
 	}
+
+	@Override
+	public boolean isDeliveryInstruction(@NonNull final  I_M_ShipperTransportation shipperTransportation)
+	{
+		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(DocTypeId.ofRepoId(shipperTransportation.getC_DocType_ID()));
+
+		return true;
+	}
+
 }
