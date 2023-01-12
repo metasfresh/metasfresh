@@ -237,6 +237,15 @@ public class BudgetProjectRepository
 		return mapProject.apply(projectRecord);
 	}
 
+	public boolean isBudgetProject(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget.getCode())
+				.create()
+				.anyMatch();
+	}
+
 	@NonNull
 	private I_C_Project getRecordByIdNotNull(final @NonNull ProjectId projectId)
 	{

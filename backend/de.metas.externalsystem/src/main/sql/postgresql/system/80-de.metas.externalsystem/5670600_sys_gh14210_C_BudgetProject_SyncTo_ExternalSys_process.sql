@@ -56,8 +56,4 @@ UPDATE AD_Val_Rule SET Code='C_Project.C_Project_ID NOT IN (SELECT DISTINCT pp.C
 UPDATE AD_Process SET Name='Kundenprojekt an Other senden',Updated=TO_TIMESTAMP('2023-01-11 15:41:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585175
 ;
 
--- 2023-01-11T13:42:25.072Z
-UPDATE AD_Table_Process SET AD_Window_ID=541606,Updated=TO_TIMESTAMP('2023-01-11 15:42:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541326
-;
-
 

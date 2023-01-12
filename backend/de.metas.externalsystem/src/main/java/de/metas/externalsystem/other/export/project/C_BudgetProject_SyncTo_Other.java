@@ -27,14 +27,18 @@ import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.other.export.project.budget.ExportBudgetProjectToOtherService;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.project.ProjectId;
+import de.metas.project.budget.BudgetProjectRepository;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 public class C_BudgetProject_SyncTo_Other extends C_Project_SyncTo_Other
 {
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final BudgetProjectRepository budgetProjectRepository = SpringContextHolder.instance.getBean(BudgetProjectRepository.class);
+
 	@Override
-	public  ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
@@ -42,6 +46,12 @@ public class C_BudgetProject_SyncTo_Other extends C_Project_SyncTo_Other
 		}
 
 		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		final ProjectId projectId = ProjectId.ofRepoId(context.getSingleSelectedRecordId());
+		if (!budgetProjectRepository.isBudgetProject(projectId))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
