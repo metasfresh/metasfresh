@@ -41,6 +41,7 @@ import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefDa
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.project.budget.C_Project_Resource_Budget_StepDefData;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
@@ -59,6 +60,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_Project_Resource_Budget;
 import org.compiere.model.I_Data_Export_Audit;
 import org.compiere.model.I_Data_Export_Audit_Log;
 import org.compiere.util.DB;
@@ -80,6 +82,7 @@ public class DataExportAudit_StepDef
 	private final AD_PInstance_StepDefData pinstanceTable;
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
+	private final C_Project_Resource_Budget_StepDefData projectResourceBudgetTable;
 
 	private final S_ExternalReference_StepDefData externalReferenceTable;
 
@@ -96,6 +99,7 @@ public class DataExportAudit_StepDef
 			@NonNull final AD_PInstance_StepDefData pinstanceTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Project_Resource_Budget_StepDefData projectResourceBudgetTable,
 			@NonNull final S_ExternalReference_StepDefData externalReferenceTable,
 			@NonNull final TestContext testContext)
 	{
@@ -106,6 +110,7 @@ public class DataExportAudit_StepDef
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.pinstanceTable = pinstanceTable;
 		this.projectTable = projectTable;
+		this.projectResourceBudgetTable = projectResourceBudgetTable;
 		this.externalReferenceTable = externalReferenceTable;
 		this.huTable = huTable;
 		this.testContext = testContext;
@@ -227,6 +232,10 @@ public class DataExportAudit_StepDef
 			case I_C_Project.Table_Name:
 				final I_C_Project project = projectTable.get(recordIdentifier);
 				tableRecordReference = TableRecordReference.of(project);
+				break;
+			case I_C_Project_Resource_Budget.Table_Name:
+				final I_C_Project_Resource_Budget projectResourceBudget = projectResourceBudgetTable.get(recordIdentifier);
+				tableRecordReference = TableRecordReference.of(projectResourceBudget);
 				break;
 			default:
 				throw new AdempiereException("Table not supported! TableName:" + tableName);

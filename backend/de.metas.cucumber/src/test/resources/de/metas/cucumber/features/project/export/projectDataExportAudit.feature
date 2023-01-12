@@ -51,12 +51,12 @@ Feature: Project data export audit
             "resourceGroupId" : 3000000,
             "plannedAmt" : {
                 "amount" : 100,
-                "currencyCode" : "CHF"
+                "currencyCode" : "EUR"
             },
             "plannedDuration" : 2,
             "pricePerTimeUOM" : {
                 "amount" : 100,
-                "currencyCode" : "CHF"
+                "currencyCode" : "EUR"
             },
             "active" : true
         }
@@ -105,7 +105,7 @@ Feature: Project data export audit
                 "dateFinishPlan": "2023-01-11",
                 "description": "resourceTestDescription",
                 "plannedAmt": 100,
-                "currencyCode": "CHF",
+                "currencyCode": "EUR",
                 "plannedDuration": 2,
                 "pricePerTimeUOM": 100,
                 "resourceGroupId": 3000000,
@@ -121,7 +121,7 @@ Feature: Project data export audit
     And after not more than 30s, there are added records in Data_Export_Audit
       | Data_Export_Audit_ID.Identifier  | TableName                 | Record_ID.Identifier       | Data_Export_Audit_Parent_ID.Identifier |
       | dataExport_BudgetProject         | C_Project                 | projectToExportAudit       |                                        |
-      | dataExport_BudgetProjectResource | C_Project_Resource_Budget | projectBudgetResourceAudit |                                        |
+      | dataExport_BudgetProjectResource | C_Project_Resource_Budget | projectBudgetResourceAudit | dataExport_BudgetProject               |
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier  | Data_Export_Action       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | dataExport_BudgetProject         | Exported-Standalone      | otherConfig                         | pInstance                  |
