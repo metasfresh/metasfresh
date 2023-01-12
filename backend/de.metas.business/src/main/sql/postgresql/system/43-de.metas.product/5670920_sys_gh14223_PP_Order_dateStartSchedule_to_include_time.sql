@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,16 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+-- Column: PP_Order.DateStartSchedule
+-- Column: PP_Order.DateStartSchedule
+-- 2023-01-09T15:54:44.240Z
+UPDATE AD_Column SET DefaultValue='@SQL=select now()',Updated=TO_TIMESTAMP('2023-01-09 17:54:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=53643
+;
 
-import lombok.Builder;
-import lombok.Value;
-
-@Builder
-@Value
-public class PickingConfigV2
-{
-	boolean pickingReviewRequired;
-	boolean considerAttributes;
-	boolean reserveHUsOnJobStart;
-}

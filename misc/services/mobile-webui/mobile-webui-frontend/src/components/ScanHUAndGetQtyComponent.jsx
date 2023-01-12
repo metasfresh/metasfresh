@@ -25,6 +25,9 @@ const ScanHUAndGetQtyComponent = ({
   qtyTarget,
   qtyMax,
   lineQtyToIssue,
+  lineQtyIssued,
+  qtyHUCapacity,
+  qtyAlreadyOnScale,
   uom,
   qtyRejectedReasons,
   scaleDevice,
@@ -42,13 +45,14 @@ const ScanHUAndGetQtyComponent = ({
     qtyTarget,
     qtyMax,
     lineQtyToIssue,
+    lineQtyIssued,
+    qtyHUCapacity,
+    qtyAlreadyOnScale,
     uom,
     qtyRejectedReasons,
     scaleDevice,
     scaleTolerance,
   });
-
-  const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   useEffect(() => {
     setResolvedBarcodeData({
@@ -57,12 +61,28 @@ const ScanHUAndGetQtyComponent = ({
       qtyTarget,
       qtyMax,
       lineQtyToIssue,
+      lineQtyIssued,
+      qtyHUCapacity,
+      qtyAlreadyOnScale,
       uom,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
     });
-  }, [userInfo, qtyCaption, qtyTarget, qtyMax, lineQtyToIssue, uom, qtyRejectedReasons, scaleDevice, scaleTolerance]);
+  }, [
+    userInfo,
+    qtyCaption,
+    qtyTarget,
+    qtyMax,
+    lineQtyToIssue,
+    lineQtyIssued,
+    qtyHUCapacity,
+    qtyAlreadyOnScale,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
+  ]);
 
   const handleResolveScannedBarcode = ({ scannedBarcode }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
@@ -109,13 +129,8 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
-    const qtyMax =
-      isProcessedQtyStillOnScale && !!resolvedBarcodeData.lineQtyToIssue
-        ? resolvedBarcodeData.lineQtyToIssue
-        : resolvedBarcodeData.qtyMax;
-
     // Qty shall be less than or equal to qtyMax
-    if (qtyMax && qtyMax > 0 && qtyEntered > qtyMax) {
+    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0 && qtyEntered > resolvedBarcodeData.qtyMax) {
       return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
         qtyDiff: formatQtyToHumanReadable({ qty: qtyEntered - resolvedBarcodeData.qtyMax, uom }),
       });
@@ -165,6 +180,7 @@ const ScanHUAndGetQtyComponent = ({
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
+          qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
           uom={resolvedBarcodeData.uom}
           qtyRejectedReasons={resolvedBarcodeData.qtyRejectedReasons}
           scaleDevice={resolvedBarcodeData.scaleDevice}
@@ -194,6 +210,9 @@ ScanHUAndGetQtyComponent.propTypes = {
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
   lineQtyToIssue: PropTypes.number,
+  lineQtyIssued: PropTypes.number,
+  qtyHUCapacity: PropTypes.number,
+  qtyAlreadyOnScale: PropTypes.number,
   uom: PropTypes.string,
   qtyRejectedReasons: PropTypes.array,
   scaleDevice: PropTypes.object,

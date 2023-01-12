@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de-metas-camel-externalsystems-common
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,16 +20,24 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+package de.metas.camel.externalsystems.common.v2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@Builder
 @Value
-public class PickingConfigV2
+@Builder
+@Jacksonized
+public class VerifyBOMCamelRequest
 {
-	boolean pickingReviewRequired;
-	boolean considerAttributes;
-	boolean reserveHUsOnJobStart;
+	@NonNull
+	@JsonProperty("orgCode")
+	String orgCode;
+
+	@NonNull
+	@JsonProperty("productIdentifier")
+	String productIdentifier;
 }

@@ -53,6 +53,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -89,6 +90,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	//FIXME: just a quick way of allowing qtyIssued to be more than planned; such configs should be available on the proper records (pp_product_planning, pp_order_bomLine..)
+	private final static String SYS_CONFIG_DO_NOT_RESTRICT_QTY_ISSUED = "de.metas.material.planning.pporder.impl.DO_NOT_RESTRICT_QTY_ISSUED";
 
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
@@ -525,6 +530,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.qtyUsageVariance(Quantity.of(orderBOMLine.getQtyUsageVariance(), uom))
 				.qtyPost(Quantity.of(orderBOMLine.getQtyPost(), uom))
 				.qtyReserved(Quantity.of(orderBOMLine.getQtyReserved(), uom))
+				.doNotRestrictQtyIssued(sysConfigBL.getBooleanValue(SYS_CONFIG_DO_NOT_RESTRICT_QTY_ISSUED, false))
 				.build();
 	}
 

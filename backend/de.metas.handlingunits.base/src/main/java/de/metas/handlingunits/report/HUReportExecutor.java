@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.Language;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
@@ -19,6 +20,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -165,6 +167,10 @@ public class HUReportExecutor
 		final Properties ctx = request.getCtx();
 
 		final ImmutableSet<HuId> huIdsToProcess = request.getHuIdsToProcess();
+
+		//
+		// Make sure the HU QR codes are generated
+		SpringContextHolder.instance.getBean(HUQRCodesService.class).generateForExistingHUs(huIdsToProcess);
 
 		final ProcessInfo.ProcessInfoBuilder builder = ProcessInfo.builder()
 				.setCtx(ctx)
