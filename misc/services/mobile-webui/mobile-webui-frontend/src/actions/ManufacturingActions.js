@@ -61,7 +61,7 @@ export const updateManufacturingIssue = ({
             activityId,
             lineId,
             stepId,
-            qtyPicked: qtyIssued,
+            qtyPicked: step.qtyIssued ? step.qtyIssued + qtyIssued : qtyIssued,
             qtyRejectedReasonCode,
           })
         )

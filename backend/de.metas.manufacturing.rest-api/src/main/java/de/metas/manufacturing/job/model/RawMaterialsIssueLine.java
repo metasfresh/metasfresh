@@ -72,8 +72,7 @@ public class RawMaterialsIssueLine
 		{
 			return WFActivityStatus.NOT_STARTED;
 		}
-		else if (qtyToIssue.compareTo(qtyIssued) <= 0
-				|| steps.stream().allMatch(RawMaterialsIssueStep::isIssued))
+		else if (qtyToIssue.compareTo(qtyIssued) <= 0)
 		{
 			return WFActivityStatus.COMPLETED;
 		}

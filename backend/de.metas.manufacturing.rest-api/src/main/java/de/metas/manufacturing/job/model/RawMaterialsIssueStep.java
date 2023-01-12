@@ -40,7 +40,7 @@ public class RawMaterialsIssueStep
 
 	public boolean isIssued()
 	{
-		return issued != null;
+		return issued != null && qtyToIssue.compareTo(issued.getQtyIssued()) <= 0;
 	}
 
 	public void assertNotIssued()

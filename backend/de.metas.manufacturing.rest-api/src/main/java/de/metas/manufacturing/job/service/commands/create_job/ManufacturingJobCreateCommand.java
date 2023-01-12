@@ -134,14 +134,14 @@ public class ManufacturingJobCreateCommand
 
 			for(final PPOrderIssueSchedule existingSchedule : bomLineExistingSchedules)
 			{
-				if(existingSchedule.isIssued())
+				if(existingSchedule.isNoProgressRegistered())
 				{
-					final PPOrderIssueSchedule existingScheduleChanged = ppOrderIssueScheduleService.changeSeqNo(existingSchedule, seqNoProvider.getAndIncrement());
-					schedules.add(existingScheduleChanged);
+					ppOrderIssueScheduleService.delete(existingSchedule);
 				}
 				else
 				{
-					ppOrderIssueScheduleService.delete(existingSchedule);
+					final PPOrderIssueSchedule existingScheduleChanged = ppOrderIssueScheduleService.changeSeqNo(existingSchedule, seqNoProvider.getAndIncrement());
+					schedules.add(existingScheduleChanged);
 				}
 			}
 

@@ -54,8 +54,18 @@ const updateStep = ({ draftStep }) => {
 
 // @VisibleForTesting
 export const computeStepStatus = ({ draftStep }) => {
-  const isStepCompleted = !!draftStep.qtyIssued || !!draftStep.qtyRejectedReasonCode;
-  return isStepCompleted ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+  const isStepCompleted = !!draftStep.qtyIssued && draftStep.qtyIssued >= draftStep.qtyToIssue;
+
+  if (isStepCompleted) {
+    return CompleteStatus.COMPLETED;
+  }
+
+  const isStepInProgress = !isStepCompleted && (!!draftStep.qtyIssued || !!draftStep.qtyRejectedReasonCode);
+  if (isStepInProgress) {
+    return CompleteStatus.IN_PROGRESS;
+  }
+
+  return CompleteStatus.NOT_STARTED;
 };
 
 const updateLineFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {

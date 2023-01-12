@@ -28,10 +28,32 @@ public class QtyRejectedWithReason
 		this.reasonCode = reasonCode;
 	}
 
-	public Quantity toQuantity() {return qty;}
+	public Quantity toQuantity()
+	{
+		return qty;
+	}
 
-	public BigDecimal toBigDecimal() {return qty.toBigDecimal();}
+	public BigDecimal toBigDecimal()
+	{
+		return qty.toBigDecimal();
+	}
 
 	public @NonNull QtyRejectedReasonCode getReasonCode()
-	{return this.reasonCode;}
+	{
+		return this.reasonCode;
+	}
+
+	@NonNull
+	public QtyRejectedWithReason add(@NonNull final QtyRejectedWithReason toAdd)
+	{
+		if (!reasonCode.getCode().equals(toAdd.getReasonCode().getCode()))
+		{
+			throw new AdempiereException("RejectReason doesn't match!")
+					.appendParametersToMessage()
+					.setParameter("this", this)
+					.setParameter("qtyRejectedWithReason", toAdd);
+		}
+
+		return QtyRejectedWithReason.of(qty.add(toAdd.toQuantity()), reasonCode);
+	}
 }

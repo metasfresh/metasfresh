@@ -20,7 +20,7 @@ const RawMaterialIssueStepScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected } = useSelector((state) =>
+  const { locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected, completeStatus } = useSelector((state) =>
     getStepById(state, wfProcessId, activityId, lineId, stepId)
   );
 
@@ -48,17 +48,17 @@ const RawMaterialIssueStepScreen = () => {
     history.push(manufacturingStepScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
-  const isIssued = qtyIssued > 0 || qtyRejected > 0;
-  const scanButtonCaption = isIssued ? toQRCodeDisplayable(huQRCode) : trl('activities.picking.scanQRCode');
+  const isIssueStarted = qtyIssued > 0 || qtyRejected > 0;
+  const scanButtonCaption = isIssueStarted ? toQRCodeDisplayable(huQRCode) : trl('activities.picking.scanQRCode');
 
-  const scanButtonStatus = isIssued ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
+  const scanButtonStatus = completeStatus ? completeStatus : CompleteStatus.NOT_STARTED;
 
   return (
     <div className="section pt-3">
       <ButtonWithIndicator
         caption={scanButtonCaption}
         completeStatus={scanButtonStatus}
-        disabled={isIssued}
+        disabled={completeStatus === CompleteStatus.COMPLETED}
         onClick={onScanButtonClick}
       />
       {/* Unpick button */}

@@ -63,7 +63,7 @@ public class PPOrderIssueScheduleService
 	{
 		final PPOrderIssueScheduleId issueScheduleId = request.getIssueScheduleId();
 		PPOrderIssueSchedule issueSchedule = issueScheduleRepository.getById(issueScheduleId);
-		if (issueSchedule.getIssued() != null)
+		if (issueSchedule.isIssuedCompletely())
 		{
 			throw new AdempiereException(MSG_AlreadyIssued)
 					.markAsUserValidationError()
@@ -108,7 +108,7 @@ public class PPOrderIssueScheduleService
 
 		//
 		// Update the issue schedule
-		issueSchedule = issueSchedule.withIssued(PPOrderIssueSchedule.Issued.builder()
+		issueSchedule = issueSchedule.addIssuedQty(PPOrderIssueSchedule.Issued.builder()
 				.qtyIssued(qtyIssued)
 				.qtyRejected(qtyRejected)
 				.build());
@@ -173,7 +173,7 @@ public class PPOrderIssueScheduleService
 
 	public void delete(@NonNull final PPOrderIssueSchedule issueSchedule)
 	{
-		if (issueSchedule.isIssued())
+		if (!issueSchedule.isNoProgressRegistered())
 		{
 			throw new AdempiereException("Deleting issued schedules is not allowed");
 		}
