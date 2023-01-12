@@ -12,6 +12,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.X_C_DocType;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
@@ -69,6 +70,21 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	public boolean isDeliveryInstruction(@NonNull final  I_M_ShipperTransportation shipperTransportation)
 	{
 		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(DocTypeId.ofRepoId(shipperTransportation.getC_DocType_ID()));
+
+		final String docBaseType = docBaseAndSubTypeById.getDocBaseType();
+		final String docSubType = docBaseAndSubTypeById.getDocSubType();
+
+
+		if(!X_C_DocType.DOCBASETYPE_SpeditionsauftragLadeliste.equals(docBaseType))
+		{
+			// this is not a transportation order doc type
+			return false;
+		}
+
+		if(!X_C_DocType.DOCSUBTYPE_DeliveryInstruction.equals(docSubType))
+		{
+			return false;
+		}
 
 		return true;
 	}

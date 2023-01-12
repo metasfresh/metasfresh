@@ -339,8 +339,8 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return IDocument.STATUS_Invalid;
 
 		final List<I_M_ShippingPackage> lines = getLines(true);
-		Services.get(IShipperTransportationBL.class).isDeliveryInstruction(this);
-		if (lines.isEmpty())
+		final boolean isdeliveryInstruction = Services.get(IShipperTransportationBL.class).isDeliveryInstruction(this);
+		if (lines.isEmpty() && !isdeliveryInstruction)
 		{
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
