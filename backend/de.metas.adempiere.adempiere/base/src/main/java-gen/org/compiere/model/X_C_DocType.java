@@ -271,8 +271,9 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
-	/** BOM & Formula = BOM */
-	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Bill Of Material Version = BOM */
+	public static final String DOCBASETYPE_BillOfMaterialVersion = "BOM";
+
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -411,8 +412,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_CostEstimate = "CE";
 	/** Kreditoren Nachbelastung = NBK */
 	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
-	/** LS = LS */
-	public static final String DOCSUBTYPE_LS = "LS";
 	/** Payment service provider invoice = SI */
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
