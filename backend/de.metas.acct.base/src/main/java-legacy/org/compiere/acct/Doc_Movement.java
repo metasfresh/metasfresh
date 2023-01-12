@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.costing.MoveCostsResult;
@@ -119,7 +119,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		final CostAmount outboundCosts = costs.getOutboundAmountToPost(as);
 		fact.createLine()
 				.setDocLine(line)
-				.setAccount(line.getAccount(ProductAcctType.Asset, as))
+				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
 				.setCurrencyId(outboundCosts.getCurrencyId())
 				.setAmtSourceDrOrCr(outboundCosts.getValue()) // from (-) CR
 				.setQty(line.getQty().negate()) // outgoing
@@ -132,7 +132,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		final CostAmount inboundCosts = costs.getInboundAmountToPost(as);
 		fact.createLine()
 				.setDocLine(line)
-				.setAccount(line.getAccount(ProductAcctType.Asset, as))
+				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
 				.setCurrencyId(inboundCosts.getCurrencyId())
 				.setAmtSourceDrOrCr(inboundCosts.getValue()) // to (+) DR
 				.setQty(line.getQty()) // incoming

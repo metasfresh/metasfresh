@@ -1,6 +1,5 @@
 package de.metas.order.invoicecandidate;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -45,6 +44,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -258,7 +258,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
 		if (orderLineDimension.getActivityId() == null)
 		{
-			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+			final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
 					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 					ProductId.ofRepoId(orderLine.getM_Product_ID()));

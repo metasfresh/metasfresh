@@ -16,24 +16,12 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MInOut;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyPrecision;
@@ -43,6 +31,17 @@ import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MInOut;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /**
  * Post Shipment/Receipt Documents.
@@ -204,7 +203,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// CoGS DR
 		final FactLine dr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Cogs, as),
+				line.getAccount(ProductAcctType.P_COGS_Acct, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -220,7 +219,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// Inventory CR
 		final FactLine cr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Asset, as),
+				line.getAccount(ProductAcctType.P_Asset_Acct, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		if (cr == null)
@@ -254,7 +253,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// Inventory DR
 		final FactLine dr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Asset, as),
+				line.getAccount(ProductAcctType.P_Asset_Acct, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -268,7 +267,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// CoGS CR
 		final FactLine cr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Cogs, as),
+				line.getAccount(ProductAcctType.P_COGS_Acct, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		if (cr == null)
@@ -318,7 +317,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// NotInvoicedReceipt CR
 		final FactLine cr = fact.createLine(line,
-				getAccount(AccountType.NotInvoicedReceipts, as),
+				getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		//
@@ -353,7 +352,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt DR
-		final FactLine dr = fact.createLine(line, getAccount(AccountType.NotInvoicedReceipts, as),
+		final FactLine dr = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -402,7 +401,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		postDependingMatchInvsIfNeeded();
 	}
 
-	private final void postDependingMatchInvsIfNeeded()
+	private void postDependingMatchInvsIfNeeded()
 	{
 		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{

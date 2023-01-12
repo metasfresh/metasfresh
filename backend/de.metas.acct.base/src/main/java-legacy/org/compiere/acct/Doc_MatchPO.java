@@ -16,48 +16,53 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchPO;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchPO;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Post MatchPO Documents.
- * 
+ *
  * <pre>
  *  Table:              C_MatchPO (473)
  *  Document Types:     MXP
  * </pre>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: Doc_MatchPO.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 {
-	/** Shall we create accounting facts (08555) */
+	/**
+	 * Shall we create accounting facts (08555)
+	 */
 	private static final String SYSCONFIG_NoFactRecords = "org.compiere.acct.Doc_MatchPO.NoFactAccts";
 	private static final boolean DEFAULT_NoFactRecords = true;
 
-	/** pseudo line */
+	/**
+	 * pseudo line
+	 */
 	private DocLine_MatchPO docLine;
 
-	/** Shall we create accounting facts? (08555) */
+	/**
+	 * Shall we create accounting facts? (08555)
+	 */
 	private boolean noFactRecords = false;
 
 	public Doc_MatchPO(final AcctDocContext ctx)
@@ -85,12 +90,12 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	/**
 	 * Create Facts (the accounting logic) for
 	 * MXP.
-	 * 
+	 *
 	 * <pre>
 	 *      Product PPV     <difference>
 	 *      PPV_Offset                  <difference>
 	 * </pre>
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @return Fact
 	 */
@@ -158,7 +163,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		//
 		// Product PPV
 		final FactLine cr = fact.createLine(null,
-				docLine.getAccount(ProductAcctType.PPV, as),
+				docLine.getAccount(ProductAcctType.P_PurchasePriceVariance_Acct, as),
 				difference.getCurrencyId(),
 				difference.negateIf(isReturnTrx).getValue());
 		if (cr != null)
@@ -170,7 +175,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		//
 		// PPV Offset
 		final FactLine dr = fact.createLine(null,
-				getAccount(AccountType.PPVOffset, as),
+				getGLAccount(GLAccountType.PPVOffset, as),
 				difference.getCurrencyId(),
 				difference.negateIfNot(isReturnTrx).getValue());
 		if (dr != null)
@@ -208,7 +213,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 	/**
 	 * Verify if the posting involves two or more organizations
-	 * 
+	 *
 	 * @return true if there are more than one org involved on the posting
 	 */
 	private boolean isInterOrg(final AcctSchema as)

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
+import de.metas.acct.accounts.ProductAccountsRepository;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Activity;
@@ -68,7 +69,7 @@ public class ProductAcctProviderTest
 
 		//
 		// Service under test
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, new ProductActivityProvider(new ProductAccountsRepository()));
 		productActivityProvider = Services.get(IProductActivityProvider.class);
 	}
 
@@ -91,7 +92,7 @@ public class ProductAcctProviderTest
 
 	private ActivityId getProductActivityId(final ProductId productId)
 	{
-		return productActivityProvider.retrieveActivityForAcct(clientId, orgId, productId);
+		return productActivityProvider.getActivityForAcct(clientId, orgId, productId);
 	}
 
 	private ProductId createProduct(final ActivityId activityId)

@@ -17,6 +17,9 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.accounts.BPartnerCustomerAccountType;
+import de.metas.acct.accounts.BPartnerGroupAccountType;
+import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
@@ -461,7 +464,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		if (payment.isReceipt())
 		{
 			final MAccount discountAcct = line.getPaymentWriteOffAccount(as.getId())
-					.orElseGet(() -> getAccount(AccountType.DiscountExp, as));
+					.orElseGet(() -> getBPGroupAccount(BPartnerGroupAccountType.DiscountExp, as));
 			final BigDecimal paymentWriteOffAmt = line.getPaymentWriteOffAmt();
 
 			fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), paymentWriteOffAmt, null);
@@ -475,7 +478,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		else
 		{
 			final MAccount discountAcct = line.getPaymentWriteOffAccount(as.getId())
-					.orElseGet(() -> getAccount(AccountType.DiscountRev, as));
+					.orElseGet(() -> getBPGroupAccount(BPartnerGroupAccountType.DiscountRev, as));
 			final BigDecimal paymentWriteOffAmt = line.getPaymentWriteOffAmt().negate();
 
 			fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), null, paymentWriteOffAmt);
@@ -590,12 +593,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final FactLine fl;
 			if (isDiscountExpense)
 			{
-				fl = fact.createLine(line, getAccount(AccountType.DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted.toBigDecimal(), null);
+				fl = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted.toBigDecimal(), null);
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceDr()).addAmtAcct(fl.getAmtAcctDr());
 			}
 			else
 			{
-				fl = fact.createLine(line, getAccount(AccountType.DiscountRev, as), getCurrencyId(), null, discountAmt_CMAdjusted.negate().toBigDecimal());
+				fl = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.DiscountRev, as), getCurrencyId(), null, discountAmt_CMAdjusted.negate().toBigDecimal());
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceCr()).addAmtAcct(fl.getAmtAcctCr());
 			}
 			if (payment != null)
@@ -643,7 +646,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (account == null)
 				{
 					// no taxDiscountAcct found, use standard account...
-					account = getAccount(isDiscountExpense ? AccountType.DiscountExp : AccountType.DiscountRev, as);
+					account = getBPGroupAccount(isDiscountExpense ? BPartnerGroupAccountType.DiscountExp : BPartnerGroupAccountType.DiscountRev, as);
 				}
 
 				//
@@ -764,7 +767,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		final AcctSchema as = fact.getAcctSchema();
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(AccountType.WriteOff, as))
+				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as))
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
 				.bpartnerId(line.getPaymentBPartnerId())
@@ -842,7 +845,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		if (line.isSOTrxInvoice())
 		{
-			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
+			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 
 			// ARC
 			if (line.isCreditMemoInvoice())
@@ -857,7 +860,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else
 		{
-			factLineBuilder.setAccount(getAccount(AccountType.V_Liability, as));
+			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 
 			// APC
 			if (line.isCreditMemoInvoice())
@@ -942,12 +945,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.alsoAddZeroLine();
 		if (counterLine.isSOTrxInvoice())
 		{
-			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
+			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			factLineBuilder.setAmtSource(null, compensationAmtSource.negate());
 		}
 		else
 		{
-			factLineBuilder.setAccount(getAccount(AccountType.V_Liability, as));
+			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 			factLineBuilder.setAmtSource(compensationAmtSource, null);
 		}
 		final FactLine factLine = factLineBuilder.buildAndAdd();
@@ -1102,8 +1105,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			isDiscountExpense = !isDiscountExpense;
 		}
 
-		final MAccount discountAccount = getAccount(isDiscountExpense ? AccountType.DiscountExp : AccountType.DiscountRev, as);
-		final MAccount writeOffAccount = getAccount(AccountType.WriteOff, as);
+		final MAccount discountAccount = getBPGroupAccount(isDiscountExpense ? BPartnerGroupAccountType.DiscountExp : BPartnerGroupAccountType.DiscountRev, as);
+		final MAccount writeOffAccount = getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as);
 		final Doc_AllocationTax taxCorrection = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
 
 		// FIXME: metas-tsa: fix how we retrieve the tax bookings of the invoice, i.e.
@@ -1149,9 +1152,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * Allocation Tax Adjustment
 	 */
 	public Doc_AllocationTax(final Doc_AllocationHdr doc,
-			final MAccount DiscountAccount, final BigDecimal DiscountAmt,
-			final MAccount WriteOffAccount, final BigDecimal WriteOffAmt,
-			final boolean isDiscountExpense)
+							 final MAccount DiscountAccount, final BigDecimal DiscountAmt,
+							 final MAccount WriteOffAccount, final BigDecimal WriteOffAmt,
+							 final boolean isDiscountExpense)
 	{
 		super();
 		this.doc = doc;
@@ -1176,7 +1179,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	private I_Fact_Acct _invoiceGrandTotalFact;
 	private final List<I_Fact_Acct> _invoiceTaxFacts = new ArrayList<>();
 
-	private final PostingException newPostingException()
+	private PostingException newPostingException()
 	{
 		return doc.newPostingException();
 	}

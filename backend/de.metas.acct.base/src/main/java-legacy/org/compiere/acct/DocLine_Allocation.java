@@ -16,6 +16,11 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import de.metas.acct.accounts.BPartnerCustomerAccountType;
+import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.banking.accounting.BankAccountAcctType;
+import de.metas.acct.accounts.CashAccountType;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
@@ -48,6 +53,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -146,17 +152,15 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("DocLine_Allocation[");
-		sb.append(get_ID())
-				.append(",Amt=").append(getAllocatedAmt())
-				.append(",Discount=").append(getDiscountAmt())
-				.append(",WriteOff=").append(getWriteOffAmt())
-				.append(",OverUnderAmt=").append(getOverUnderAmt())
-				.append(" - C_Payment_ID=").append(_payment)
-				.append(",C_CashLine_ID=").append(cashLine)
-				.append(",C_Invoice_ID=").append(invoice)
-				.append("]");
-		return sb.toString();
+		return "DocLine_Allocation[" + get_ID()
+				+ ",Amt=" + getAllocatedAmt()
+				+ ",Discount=" + getDiscountAmt()
+				+ ",WriteOff=" + getWriteOffAmt()
+				+ ",OverUnderAmt=" + getOverUnderAmt()
+				+ " - C_Payment_ID=" + _payment
+				+ ",C_CashLine_ID=" + cashLine
+				+ ",C_Invoice_ID=" + invoice
+				+ "]";
 	}    // toString
 
 	/**
@@ -431,9 +435,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		doc.setBPBankAccountId(null);
-		// AccountType.UnallocatedCash (AR) or C_Prepayment
-		// or AccountType.PaymentSelect (AP) or V_Prepayment
-		AccountType accountType = AccountType.UnallocatedCash;
 		//
 		final String sql = "SELECT p.C_BP_BankAccount_ID, d.DocBaseType, p.IsReceipt, p.IsPrepayment "
 				+ "FROM C_Payment p INNER JOIN C_DocType d ON (p.C_DocType_ID=d.C_DocType_ID) "
@@ -452,7 +453,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				final String docBaseType = rs.getString(2);
 				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
 				{
-					accountType = AccountType.PaymentSelect;
+					return doc.getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
 				}
 
 				// Prepayment
@@ -462,37 +463,30 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					final boolean isReceipt = StringUtils.toBoolean(rs.getString(3));
 					if (isReceipt)
 					{
-						accountType = AccountType.C_Prepayment;
+						return doc.getCustomerAccount(BPartnerCustomerAccountType.C_Prepayment, as);
 					}
 					else
 					{
-						accountType = AccountType.V_Prepayment;
+						return doc.getVendorAccount(BPartnerVendorAccountType.V_Prepayment, as);
 					}
 				}
 			}
+
+			//
+			throw doc.newPostingException()
+					.setDocLine(this)
+					.setAcctSchema(as)
+					.setDetailMessage("No payment account found for " + paymentId);
 		}
-		catch (final Exception e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
-
-		//
-		if (doc.getBPBankAccountId() == null)
-		{
-			// log.error("NONE for C_Payment_ID=" + C_Payment_ID);
-			throw doc.newPostingException()
-					.setDocLine(this)
-					.setAcctSchema(as)
-					.setDetailMessage("No payment account found for " + paymentId);
-		}
-		return doc.getAccount(accountType, as);
-	}    // getPaymentAcct
+	}
 
 	/**
 	 * Get Cash (Transfer) Acct of CashBook
@@ -503,15 +497,19 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		final String sql = "SELECT c.C_CashBook_ID "
 				+ "FROM C_Cash c, C_CashLine cl "
 				+ "WHERE c.C_Cash_ID=cl.C_Cash_ID AND cl.C_CashLine_ID=?";
-		doc.setC_CashBook_ID(DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID));
-		if (doc.getC_CashBook_ID() <= 0)
+		final int cashBookId = DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID);
+		if (cashBookId <= 0)
 		{
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setAcctSchema(as)
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
-		return doc.getAccount(AccountType.CashTransfer, as);
+
+		doc.setC_CashBook_ID(cashBookId);
+
+		final AccountId accountId = doc.getAccountProvider().getCashAccountId(as.getId(), cashBookId, CashAccountType.CashTransfer);
+		return services.getAccountById(accountId);
 	}    // getCashAcct
 
 	public Optional<MAccount> getPaymentWriteOffAccount(final AcctSchemaId acctSchemaId)
@@ -528,8 +526,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return Optional.empty();
 		}
 
-		return services.getBankAccountAcct(bankAccountId, acctSchemaId)
-				.getPaymentWriteOffAcct()
+		return getAccountProvider().getBankAccountAccountIdIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct)
 				.map(services::getAccountById);
 	}
 

@@ -1,19 +1,15 @@
 package de.metas.acct.doc;
 
+import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.tax.ITaxAcctBL;
-import de.metas.acct.tax.TaxAcctType;
 import de.metas.banking.BankAccount;
-import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -44,9 +40,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -105,22 +99,23 @@ public class AcctDocRequiredServicesFacade
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final BankAccountService bankAccountService;
+	private final AccountProviderFactory accountProviderFactory;
 
 	//
 	// Needed for DocLine:
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
 
 	private final ICostingService costingService;
 
 	public AcctDocRequiredServicesFacade(
 			@NonNull final BankAccountService bankAccountService,
-			@NonNull final ICostingService costingService)
+			@NonNull final ICostingService costingService,
+			final AccountProviderFactory accountProviderFactory)
 	{
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
+		this.accountProviderFactory = accountProviderFactory;
 	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
@@ -147,9 +142,9 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
-	public int deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
+	public void deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
 	{
-		return factAcctDAO.deleteForDocumentModel(documentPO);
+		factAcctDAO.deleteForDocumentModel(documentPO);
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -168,6 +163,11 @@ public class AcctDocRequiredServicesFacade
 	public ITranslatableString translate(@NonNull final AdMessageKey adMessage)
 	{
 		return msgBL.getTranslatableMsgText(adMessage);
+	}
+
+	public AccountProvider.AccountProviderBuilder newAccountProvider()
+	{
+		return accountProviderFactory.newAccountProvider();
 	}
 
 	@NonNull
@@ -201,13 +201,6 @@ public class AcctDocRequiredServicesFacade
 	public BankAccount getBankAccountById(final BankAccountId bpBankAccountId)
 	{
 		return bankAccountService.getById(bpBankAccountId);
-	}
-
-	public BankAccountAcct getBankAccountAcct(
-			final BankAccountId bankAccountId,
-			final AcctSchemaId acctSchemaId)
-	{
-		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(
@@ -248,32 +241,6 @@ public class AcctDocRequiredServicesFacade
 	public UomId getProductStockingUOMId(final ProductId productId)
 	{
 		return productBL.getStockUOMId(productId);
-	}
-
-	public Optional<AccountId> getProductAcct(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final ProductId productId,
-			@NonNull final ProductAcctType acctType)
-	{
-		return productAcctDAO.getProductAccount(acctSchemaId, productId, acctType);
-	}
-
-	public Optional<AccountId> getProductDefaultAcct(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final ProductAcctType acctType)
-	{
-		final ProductCategoryId defaultProductCategoryId = productBL.getDefaultProductCategoryId();
-		return productAcctDAO.getProductCategoryAccount(acctSchemaId, defaultProductCategoryId, acctType);
-	}
-
-	public Optional<MAccount> getTaxAccount(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@Nullable final TaxId taxId,
-			@NonNull final TaxAcctType taxAcctType)
-	{
-		return taxId != null
-				? taxAcctBL.getAccountIfExists(taxId, acctSchemaId, taxAcctType)
-				: Optional.empty();
 	}
 
 	public CostingMethod getCostingMethod(
