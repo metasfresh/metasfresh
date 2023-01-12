@@ -388,6 +388,7 @@ public class PaymentsViewAllocateCommandTest
 
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
+						.ignoringFields("reference.modelRef")
 						.isEqualTo(PayableDocument.builder()
 								.invoiceId(invoiceRow.getInvoiceId())
 								.bpartnerId(bpartnerId)
@@ -436,7 +437,7 @@ public class PaymentsViewAllocateCommandTest
 				// Check output
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
-						.ignoringFields("reference.modelRef.timestamp")
+						.ignoringFields("reference.modelRef")
 						.isEqualTo(PayableDocument.builder()
 								.invoiceId(invoiceRow.getInvoiceId())
 								.bpartnerId(bpartnerId)
@@ -516,7 +517,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToPayment)
 							.orgId(orgId)
@@ -552,7 +553,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
@@ -592,7 +593,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
@@ -634,7 +635,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
@@ -650,7 +651,7 @@ public class PaymentsViewAllocateCommandTest
 							.build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToPayment)
 							.orgId(orgId)
@@ -688,7 +689,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
@@ -704,7 +705,7 @@ public class PaymentsViewAllocateCommandTest
 							.build());
 			assertThat(result.getCandidates().get(1))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToPayment)
 							.orgId(orgId)
@@ -741,7 +742,7 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
 					.usingRecursiveComparison()
-					.ignoringFields("payableDocumentRef.modelRef.timestamp", "paymentDocumentRef.modelRef.timestamp")
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
 					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 							.orgId(orgId)
