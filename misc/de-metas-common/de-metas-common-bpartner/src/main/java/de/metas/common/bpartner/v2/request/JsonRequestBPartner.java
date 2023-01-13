@@ -276,6 +276,12 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean sectionGroupPartnerIdentifierSet;
 
+	@ApiModelProperty(position = 270, //
+			value = "Translates to `C_BPartner.IsProspect`")
+	private Boolean prospect;
+
+	private boolean prospectSet;
+
 	public void setCode(final String code)
 	{
 		this.code = code;
@@ -487,5 +493,11 @@ public class JsonRequestBPartner
 	{
 		this.sectionGroupPartnerIdentifier = sectionGroupPartnerIdentifier;
 		this.sectionGroupPartnerIdentifierSet = true;
+	}
+
+	public void setProspect(final Boolean prospect)
+	{
+		this.prospect = prospect;
+		this.prospectSet = true;
 	}
 }

@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -43,6 +44,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORG_CODE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -107,11 +109,16 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 					{
 						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, retrieveCamelRequest.getAdPInstanceId().getValue());
 					}
+
+					if (Check.isNotBlank(retrieveCamelRequest.getOrgCode()))
+					{
+						exchange.getIn().setHeader(PARAM_ORG_CODE, retrieveCamelRequest.getOrgCode());
+					}
 				}).id(RETRIEVE_BPARTNER_PROCESSOR_ID)
 
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
-				.toD("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
+				.toD("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + PARAM_ORG_CODE + "}/${header." + HEADER_BPARTNER_IDENTIFIER + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 

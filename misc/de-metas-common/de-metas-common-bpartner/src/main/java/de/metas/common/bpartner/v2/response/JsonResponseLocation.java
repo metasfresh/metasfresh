@@ -72,6 +72,8 @@ public class JsonResponseLocation
 
 	public static final String EPHEMERAL = "ephemeral";
 
+	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
+
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
@@ -152,6 +154,9 @@ public class JsonResponseLocation
 	@ApiModelProperty
 	String vatId;
 
+	@ApiModelProperty
+	String sapPaymentMethod;
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
@@ -189,6 +194,7 @@ public class JsonResponseLocation
 			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
 
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
+			@JsonProperty(SAP_PAYMENT_METHOD) @Nullable final String sapPaymentMethod,
 
 			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
@@ -229,7 +235,8 @@ public class JsonResponseLocation
 		this.vatId = vatId;
 
 		this.ephemeral = ephemeral;
-		
+		this.sapPaymentMethod = sapPaymentMethod;
+
 		this.changeInfo = changeInfo;
 	}
 }

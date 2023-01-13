@@ -164,6 +164,7 @@ public class JsonRetrieverService
 			.put(BPartner.CUSTOMER_PAYMENTTERM_ID, JsonResponseBPartner.CUSTOMER_PAYMENTTERM_ID)
 			.put(BPartner.VENDOR_PAYMENTTERM_ID, JsonResponseBPartner.VENDOR_PAYMENTTERM_ID)
 			.put(BPartner.SECTION_GROUP_PARTNER_ID, JsonResponseBPartner.SECTION_GROUP_PARTNER_ID)
+			.put(BPartner.PROSPECT, JsonResponseBPartner.PROSPECT)
 			.build();
 
 	/**
@@ -239,6 +240,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.REMIT_TO, JsonResponseLocation.REMIT_TO)
 			.put(BPartnerLocation.REPLICATION_LOOKUP_DEFAULT, JsonResponseLocation.REPLICATION_LOOKUP_DEFAULT)
 			.put(BPartnerLocation.VAT_TAX_ID, JsonResponseLocation.VAT_ID)
+			.put(BPartnerLocation.SAP_PAYMENT_METHOD, JsonResponseLocation.SAP_PAYMENT_METHOD)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -393,6 +395,7 @@ public class JsonRetrieverService
 				.customerPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getCustomerPaymentTermId())))
 				.vendorPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getVendorPaymentTermId())))
 				.sectionGroupPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId())))
+				.prospect(bpartner.getProspect())
 				.build();
 	}
 
@@ -575,6 +578,7 @@ public class JsonRetrieverService
 					.phone(location.getPhone())
 					.email(location.getEmail())
 					.vatId(location.getVatTaxId())
+					.sapPaymentMethod(location.getSapPaymentMethod())
 					.build();
 		}
 		catch (final RuntimeException rte)

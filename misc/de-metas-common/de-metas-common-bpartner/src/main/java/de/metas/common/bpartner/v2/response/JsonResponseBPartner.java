@@ -81,6 +81,7 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 	public static final String SECTION_GROUP_PARTNER_ID = "sectionGroupPartnerId";
+	public static final String PROSPECT = "isProspect";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -272,6 +273,13 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId sectionGroupPartnerId;
 
+	@ApiModelProperty( //
+			position = 270, //
+			value = "This translates to `C_BPartner.IsProspect`")
+	@JsonProperty(PROSPECT)
+	@JsonInclude(Include.NON_NULL)
+	Boolean prospect;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -317,6 +325,7 @@ public class JsonResponseBPartner
 			@JsonProperty(CUSTOMER_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId customerPaymentTermId,
 			@JsonProperty(VENDOR_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId vendorPaymentTermId,
 			@JsonProperty(SECTION_GROUP_PARTNER_ID) @Nullable final JsonMetasfreshId sectionGroupPartnerId,
+			@JsonProperty(PROSPECT) final Boolean prospect,
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 			//
 	{
@@ -367,6 +376,7 @@ public class JsonResponseBPartner
 		this.customerPaymentTermId = customerPaymentTermId;
 		this.vendorPaymentTermId = vendorPaymentTermId;
 		this.sectionGroupPartnerId = sectionGroupPartnerId;
+		this.prospect = prospect;
 
 		this.changeInfo = changeInfo;
 	}

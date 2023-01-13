@@ -268,6 +268,10 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
+		if(bpartner.getProspect() != null)
+		{
+			bpartnerRecord.setIsProspect(bpartner.getProspect());
+		}
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -385,6 +389,7 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
 
 			bpartnerLocationRecord.setVATaxID(partnerLocation.getVatTaxId());
+			bpartnerLocationRecord.setSAP_PaymentMethod(partnerLocation.getSapPaymentMethod());
 
 			saveRecord(bpartnerLocationRecord);
 

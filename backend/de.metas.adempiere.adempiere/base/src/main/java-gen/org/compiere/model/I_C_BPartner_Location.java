@@ -814,6 +814,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_Previous_ID = "Previous_ID";
 
 	/**
+	 * Set SAP Payment method.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_PaymentMethod (@Nullable java.lang.String SAP_PaymentMethod);
+
+	/**
+	 * Get SAP Payment method.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_PaymentMethod();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_SAP_PaymentMethod = new ModelColumn<>(I_C_BPartner_Location.class, "SAP_PaymentMethod", null);
+	String COLUMNNAME_SAP_PaymentMethod = "SAP_PaymentMethod";
+
+	/**
 	 * Set Setup Place No..
 	 *
 	 * <br>Type: String

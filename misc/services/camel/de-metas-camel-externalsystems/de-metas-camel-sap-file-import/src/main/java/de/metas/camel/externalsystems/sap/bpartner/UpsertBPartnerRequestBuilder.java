@@ -102,6 +102,12 @@ public class UpsertBPartnerRequestBuilder
 		return ExternalIdentifierFormat.formatExternalId(partnerCode + "_" + sectionCode);
 	}
 
+	@NonNull
+	public static String getBPartnerExternalIdentifier(@NonNull final BPartnerRow bPartnerRow)
+	{
+		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getPartnerCode(), bPartnerRow.getSection());
+	}
+
 	public boolean add(@NonNull final BPartnerRow row)
 	{
 		if (!row.getPartnerCode().matchesGroup(parentPartnerCode))
@@ -185,22 +191,18 @@ public class UpsertBPartnerRequestBuilder
 				.map(purchasePaymentTerm -> VAL_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
 				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
 
-		final String bpartnerValue = bPartnerRow.getPartnerCode().getPartnerCode() + "_" + bPartnerRow.getSection();
+		final String bpartnerValue = bPartnerRow.getPartnerCode().getPartnerCode() + " (" + bPartnerRow.getSection() + ")";
 
 		jsonRequestBPartner.setCode(bpartnerValue);
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
-		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
 
 		jsonRequestBPartner.setSectionCodeValue(bPartnerRow.getSection());
 		jsonRequestBPartner.setDeliveryRule(JsonDeliveryRule.Availability);
 		jsonRequestBPartner.setDeliveryViaRule(JsonDeliveryViaRule.Shipper);
 		jsonRequestBPartner.setPaymentRule(JsonPaymentRule.OnCredit);
 		jsonRequestBPartner.setPaymentRulePO(JsonPaymentRule.OnCredit);
-
-		jsonRequestBPartner.setIncotermsCustomerValue(bPartnerRow.getSalesIncoterms());
-		jsonRequestBPartner.setIncotermsVendorValue(bPartnerRow.getPurchaseIncoterms());
 
 		if (PartnerCategory.STORAGE_LOCATION == PartnerCategory.ofCodeOrNull(bPartnerRow.getPartnerCategory()))
 		{
@@ -217,6 +219,7 @@ public class UpsertBPartnerRequestBuilder
 
 		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
 		jsonRequestBPartner.setSectionGroupPartnerIdentifier(getParentExternalIdentifier());
+		jsonRequestBPartner.setProspect(false);
 
 		return jsonRequestBPartner;
 	}
@@ -247,6 +250,8 @@ public class UpsertBPartnerRequestBuilder
 		jsonRequestLocation.setReplicationLookupDefault(false);
 
 		jsonRequestLocation.setVatId(bPartnerRow.getVatRegNo());
+		jsonRequestLocation.setSapPaymentMethod(bPartnerRow.getPaymentMethod());
+
 
 		return JsonRequestLocationUpsertItem.builder()
 				.location(jsonRequestLocation)
@@ -263,12 +268,6 @@ public class UpsertBPartnerRequestBuilder
 	}
 
 	@NonNull
-	private String getBPartnerExternalIdentifier(@NonNull final BPartnerRow bPartnerRow)
-	{
-		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getPartnerCode(), bPartnerRow.getSection());
-	}
-
-	@NonNull
 	private String getLocationExternalIdentifier(@NonNull final BPartnerRow bPartnerRow)
 	{
 		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getRawPartnerCode(), bPartnerRow.getSection());
@@ -278,8 +277,7 @@ public class UpsertBPartnerRequestBuilder
 	private static JsonRequestBPartnerUpsertItem buildSectionGroupJsonRequestBPartnerUpsertItem(
 			@NonNull final BPartnerRow bPartnerRow,
 			@NonNull final String orgCode,
-			@NonNull final JsonMetasfreshId externalSystemConfigId
-	)
+			@NonNull final JsonMetasfreshId externalSystemConfigId)
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
@@ -287,8 +285,8 @@ public class UpsertBPartnerRequestBuilder
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
-		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
 		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
+		jsonRequestBPartner.setProspect(false);
 
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)

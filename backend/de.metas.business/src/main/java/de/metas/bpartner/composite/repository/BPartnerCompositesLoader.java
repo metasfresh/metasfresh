@@ -369,6 +369,7 @@ final class BPartnerCompositesLoader
 				.storageWarehouse(bpartnerRecord.isStorageWarehouse())
 				//
 				.sectionGroupPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getSection_Group_Partner_ID()))
+				.prospect(bpartnerRecord.isProspect())
 				.build();
 	}
 
@@ -410,6 +411,7 @@ final class BPartnerCompositesLoader
 				.remitTo(bPartnerLocationRecord.isRemitTo())
 				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
 				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
+				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
