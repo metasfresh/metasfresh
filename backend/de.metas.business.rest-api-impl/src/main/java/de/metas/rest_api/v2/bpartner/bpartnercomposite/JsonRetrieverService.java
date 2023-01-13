@@ -395,7 +395,7 @@ public class JsonRetrieverService
 				.customerPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getCustomerPaymentTermId())))
 				.vendorPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getVendorPaymentTermId())))
 				.sectionGroupPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId())))
-				.prospect(bpartner.getProspect())
+				.prospect(bpartner.isProspect())
 				.build();
 	}
 

@@ -212,8 +212,7 @@ public class BPartner
 	@Nullable
 	private BPartnerId sectionGroupPartnerId;
 
-	@Nullable
-	private Boolean prospect;
+	private boolean prospect;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -333,7 +332,7 @@ public class BPartner
 		this.incotermsCustomerId = incotermsCustomerId;
 		this.incotermsVendorId = incotermsVendorId;
 		this.sectionGroupPartnerId = sectionGroupPartnerId;
-		this.prospect = prospect;
+		this.prospect = coalesce(prospect, false);
 	}
 
 	/**

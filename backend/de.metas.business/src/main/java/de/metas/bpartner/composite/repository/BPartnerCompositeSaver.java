@@ -268,10 +268,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
-		if(bpartner.getProspect() != null)
-		{
-			bpartnerRecord.setIsProspect(bpartner.getProspect());
-		}
+
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -285,6 +282,7 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
 		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
 		bpartnerRecord.setSection_Group_Partner_ID(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId()));
+		bpartnerRecord.setIsProspect(bpartner.isProspect());
 
 		saveRecord(bpartnerRecord);
 
