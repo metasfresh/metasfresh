@@ -30,6 +30,7 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -40,9 +41,16 @@ public class DeliveryInstructionCreateRequest
 {
 	@NonNull OrgId orgId;
 
+	@NonNull ClientId clientId;
+
 	@NonNull BPartnerId shipperBPartnerId;
 
 	@NonNull BPartnerLocationId shipperLocationId;
+
+	@NonNull BPartnerLocationId loadingPartnerLocationId;
+
+
+	@NonNull BPartnerLocationId deliveryPartnerLocationId;
 
 	@Nullable
 	IncotermsId incotermsId;

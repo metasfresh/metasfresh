@@ -24,7 +24,6 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -35,16 +34,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -234,7 +229,7 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
-	public void generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request)
+	public I_M_ShipperTransportation generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request)
 	{
 		final I_M_ShipperTransportation deliveryInstructionRecord = newInstance(I_M_ShipperTransportation.class);
 
@@ -266,6 +261,22 @@ public class DeliveryPlanningRepository
 
 		save(deliveryInstructionRecord);
 
+
+		return deliveryInstructionRecord;
 	}
 
+	public void updateDeliveryPlanningReleaseNo(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final String documentNo)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
+		deliveryPlanningRecord.setReleaseNo(documentNo);
+		save(deliveryPlanningRecord);
+	}
+
+	public Iterator<I_M_Delivery_Planning> extractDeliveryPlanningIdsFromSelection(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+	}
 }

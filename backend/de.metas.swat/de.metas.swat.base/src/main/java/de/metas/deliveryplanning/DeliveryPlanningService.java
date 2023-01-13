@@ -24,6 +24,8 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
@@ -42,6 +44,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -52,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -59,6 +63,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Iterator;
 
 @Service
 public class DeliveryPlanningService
@@ -68,17 +73,21 @@ public class DeliveryPlanningService
 	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
-	public static final AdMessageKey  MSG_M_Delivery_Planning_AllHaveReleaseNo  = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
+	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
-
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
+	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
@@ -270,11 +279,65 @@ public class DeliveryPlanningService
 
 	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
 
+		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
+
+		deliveryPlanningRepository.updateDeliveryPlanningReleaseNo(deliveryPlanningId, deliveryInstruction.getDocumentNo());
+
+		docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		DeliveryInstructionUserNotificationsProducer.newInstance()
+				.notifyGenerated(deliveryInstruction);
 	}
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return deliveryPlanningRepository.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
+	}
+
+	private DeliveryInstructionCreateRequest createDeliveryInstructionRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
+		final BPartnerLocationId warehouseBPLocationId = warehouseBL.getBPartnerLocationId(warehouseId);
+		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningType.ofCode(deliveryPlanningRecord.getM_Delivery_Planning_Type());
+
+		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
+		return DeliveryInstructionCreateRequest.builder()
+				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
+
+				.shipperBPartnerId(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()))
+				.shipperLocationId(deliveryPlanningLocationId)
+				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
+				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
+				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
+				.loadingPartnerLocationId(deliveryPlanningType.isIncoming()
+												  ? warehouseBPLocationId
+												  : deliveryPlanningLocationId)
+				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
+				.loadingTime(deliveryPlanningRecord.getLoadingTime())
+				.deliveryPartnerLocationId(deliveryPlanningType.isIncoming()
+												   ? deliveryPlanningLocationId
+												   : warehouseBPLocationId)
+				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
+				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+
+				.forwarderId(ForwarderId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Forwarder_ID()))
+
+				.build();
+	}
+
+	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningIdsFromSelection(selectedDeliveryPlanningsFilter);
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			M_Delivery_Planning_Create_M_Delivery_Instruction_WorkpackageProcessor.scheduleOnTrxCommit(deliveryPlanningRecord);
+		}
 	}
 }

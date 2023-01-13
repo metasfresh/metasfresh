@@ -28,6 +28,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -58,7 +59,11 @@ public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		// todo
-		return null;
+		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
+		deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter);
+
+		return MSG_OK;
+
 	}
 }
