@@ -69,7 +69,7 @@ public class SwaggerConfig
 						"metasfresh REST API"/* description */));
 	}
 
-	// thx to https://github.com/springfox/springfox/issues/3462#issuecomment-983144080
+	// thx to https://github.com/springfox/springfox/issues/3462#issuecomment-1010721223
 	@Bean
 	public WebMvcEndpointHandlerMapping webEndpointServletHandlerMapping(WebEndpointsSupplier webEndpointsSupplier, ServletEndpointsSupplier servletEndpointsSupplier, ControllerEndpointsSupplier controllerEndpointsSupplier, EndpointMediaTypes endpointMediaTypes, CorsEndpointProperties corsProperties, WebEndpointProperties webEndpointProperties, Environment environment) {
 		List<ExposableEndpoint<?>> allEndpoints = new ArrayList();
