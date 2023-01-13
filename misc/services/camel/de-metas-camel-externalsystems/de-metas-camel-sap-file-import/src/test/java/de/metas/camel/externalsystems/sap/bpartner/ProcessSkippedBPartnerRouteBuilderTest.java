@@ -48,7 +48,7 @@ public class ProcessSkippedBPartnerRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_BPARTNER_RETRIEVE_ENDPOINT = "mock:bPartnerRetrieveEndpoint";
 
-	private static final String JSON_PROCESS_SKIPPED_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/sap/bpartner/processskippedbpartner/10_ProcessSkippedBPartner.json";
+	private static final String JSON_PROCESS_SKIPPED_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/sap/bpartner/processskippedbpartner/10_ProcessSkippedBPartnerRequest.json";
 	private static final String JSON_RETRIEVE_BPARTNER_CAMEL_REQUEST = "/de/metas/camel/externalsystems/sap/bpartner/processskippedbpartner/20_BPRetrieveCamelRequest.json";
 	private static final String JSON_RETRIEVE_ACTIVE_BPARTNER_RESPONSE = "/de/metas/camel/externalsystems/sap/bpartner/processskippedbpartner/30_JsonResponseCompositeActiveBPartner.json";
 	private static final String JSON_RETRIEVE_DISABLED_BPARTNER_RESPONSE = "/de/metas/camel/externalsystems/sap/bpartner/processskippedbpartner/31_JsonResponseCompositeDisabledBPartner.json";
@@ -71,7 +71,7 @@ public class ProcessSkippedBPartnerRouteBuilderTest extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(GetBPartnerFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(ProcessSkippedBPartnerRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -81,7 +81,7 @@ public class ProcessSkippedBPartnerRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	public void happyFlow_retrieveSkippedBPartnerActiveInMetasfresh() throws Exception
+	public void givenSkippedBPartner_whenRetrieveBPartnerFromMF_andBPartnerActive_thenWriteToAdIssueIsCalled() throws Exception
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
@@ -108,7 +108,7 @@ public class ProcessSkippedBPartnerRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	public void happyFlow_retrieveSkippedBPartnerDisabledInMetasfresh() throws Exception
+	public void givenSkippedBPartner_whenRetrieveBPartnerFromMF_andBPartnerDisabled_thenWriteToAdIssueIsNotCalled() throws Exception
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 

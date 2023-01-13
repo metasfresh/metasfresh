@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -61,13 +62,13 @@ public class ProcessSkippedBPartnerRouteBuilder extends RouteBuilder
 				.process(this::buildRouteContext)
 				.process(this::buildBPRetrieveCamelRequest)
 				.doTry()
-				  .to("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
-				  .unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
-				  .process(this::processRetrieveBPartnerResponse)
+					.to("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
+					.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
+					.process(this::processRetrieveBPartnerResponse)
 				.doCatch(LoggableException.class)
 					.to(direct(ERROR_WRITE_TO_ADISSUE))
 				.doCatch(Throwable.class)
-				  .process(this::handleGenericException)
+					.log(LoggingLevel.WARN,"${exception.message}")
 				.endDoTry()
 				.end();
 		//@formatter:on
@@ -129,18 +130,6 @@ public class ProcessSkippedBPartnerRouteBuilder extends RouteBuilder
 		}
 
 		throw new LoggableException(bpartnerErrorMessage);
-	}
-
-	private void handleGenericException(@NonNull final Exchange exchange)
-	{
-		final Throwable exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
-
-		if (exception == null)
-		{
-			return;
-		}
-
-		log.warn(exception.getMessage(), exception);
 	}
 
 	@Value

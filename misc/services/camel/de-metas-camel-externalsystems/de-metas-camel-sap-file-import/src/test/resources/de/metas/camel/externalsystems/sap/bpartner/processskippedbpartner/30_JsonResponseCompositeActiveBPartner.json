@@ -46,8 +46,7 @@
       "remitTo": false,
       "replicationLookupDefault": false,
       "vatId": null,
-      "sapPaymentMethod": "",
-      "externalId": null
+      "sapPaymentMethod": ""
     }
   ]
 }
