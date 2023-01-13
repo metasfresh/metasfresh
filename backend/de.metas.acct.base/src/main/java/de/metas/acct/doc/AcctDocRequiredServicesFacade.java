@@ -1,5 +1,7 @@
 package de.metas.acct.doc;
 
+import de.metas.acct.GLCategoryId;
+import de.metas.acct.GLCategoryRepository;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
@@ -31,6 +33,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -52,6 +56,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -102,6 +107,8 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
 	private final InvoiceAcctRepository invoiceAcctRepository;
@@ -114,11 +121,13 @@ public class AcctDocRequiredServicesFacade
 	private final ICostingService costingService;
 
 	public AcctDocRequiredServicesFacade(
+			@NonNull final GLCategoryRepository glCategoryRepository,
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final ICostingService costingService,
 			@NonNull final AccountProviderFactory accountProviderFactory,
 			@NonNull final InvoiceAcctRepository invoiceAcctRepository)
 	{
+		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
 		this.accountProviderFactory = accountProviderFactory;
@@ -297,4 +306,14 @@ public class AcctDocRequiredServicesFacade
 	}
 
 	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId) {return invoiceAcctRepository.getById(invoiceId);}
+
+	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypeBL.getById(docTypeId);
+	}
+
+	public Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
+	{
+		return glCategoryRepository.getDefaultId(clientId);
+	}
 }

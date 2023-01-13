@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IContractsDAO;
@@ -63,7 +64,8 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 				new C_Flatrate_Term(
 						new ContractOrderService(),
 						documentLocationBL,
-						ADReferenceService.newMocked()));
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);

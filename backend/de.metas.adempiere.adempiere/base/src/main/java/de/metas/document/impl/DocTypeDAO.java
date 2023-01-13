@@ -20,11 +20,9 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_Category;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
@@ -60,11 +58,11 @@ public class DocTypeDAO implements IDocTypeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
+	private final CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
-	private CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap>builder()
+	private final CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap>builder()
 			.tableName(I_C_DocBaseType_Counter.Table_Name)
 			.build();
 
@@ -91,7 +89,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	private Optional<DocTypeId> retrieveDocTypeIdByQuery(@NonNull final DocTypeQuery query)
 	{
 		return Optional.ofNullable(
-				createDocTypeByBaseTypeQuery(query)
+				toSqlQuery(query)
 						.create()
 						.firstId(DocTypeId::ofRepoIdOrNull));
 	}
@@ -112,7 +110,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	public Optional<I_C_DocType> retrieveDocType(@NonNull final DocTypeQuery docTypeQuery)
 	{
 		return Optional.ofNullable(
-				createDocTypeByBaseTypeQuery(docTypeQuery)
+				toSqlQuery(docTypeQuery)
 						.create()
 						.first(I_C_DocType.class));
 
@@ -123,14 +121,14 @@ public class DocTypeDAO implements IDocTypeDAO
 			@NonNull final DocTypeQuery docTypeQuery,
 			final int docTypeId)
 	{
-		final boolean queryMatchesDocTypeId = createDocTypeByBaseTypeQuery(docTypeQuery)
+		final boolean queryMatchesDocTypeId = toSqlQuery(docTypeQuery)
 				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTypeId)
 				.create()
 				.anyMatch();
 		return queryMatchesDocTypeId;
 	}
 
-	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(@NonNull final DocTypeQuery query)
+	private IQueryBuilder<I_C_DocType> toSqlQuery(@NonNull final DocTypeQuery query)
 	{
 		final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_DocType.class);
 
@@ -176,7 +174,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public List<I_C_DocType> retrieveDocTypesByBaseType(final DocTypeQuery query)
 	{
-		return createDocTypeByBaseTypeQuery(query)
+		return toSqlQuery(query)
 				.create()
 				.list(I_C_DocType.class);
 	}
@@ -237,7 +235,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		dt.setDocBaseType(request.getDocBaseType());
 		dt.setName(name);
 		dt.setPrintName(name);
-		dt.setGL_Category_ID(retrieveDefaultGL_Category_ID());
+		dt.setGL_Category_ID(request.getGlCategoryId().getRepoId());
 
 		//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
@@ -260,10 +258,6 @@ public class DocTypeDAO implements IDocTypeDAO
 		if (request.getDocTypeInvoiceId() > 0)
 		{
 			dt.setC_DocTypeInvoice_ID(request.getDocTypeInvoiceId());
-		}
-		if (request.getGlCategoryId() > 0)
-		{
-			dt.setGL_Category_ID(request.getGlCategoryId());
 		}
 
 		if (docNoSequenceId <= 0)
@@ -296,21 +290,6 @@ public class DocTypeDAO implements IDocTypeDAO
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
 
-	/**
-	 * Set Default GL Category
-	 */
-	private int retrieveDefaultGL_Category_ID()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_GL_Category.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_GL_Category.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId())
-				.orderByDescending(I_GL_Category.COLUMNNAME_IsDefault)
-				.orderBy(I_GL_Category.COLUMNNAME_GL_Category_ID)
-				.create()
-				.firstId();
-	}
-
 	@Override
 	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
 	{
@@ -331,7 +310,7 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		private static final DocBaseTypeCountersMap EMPTY = new DocBaseTypeCountersMap(ImmutableMap.of());
 
-		private ImmutableMap<String, String> counterDocBaseTypeByDocBaseType;
+		private final ImmutableMap<String, String> counterDocBaseTypeByDocBaseType;
 
 		private DocBaseTypeCountersMap(@NonNull final ImmutableMap<String, String> map)
 		{

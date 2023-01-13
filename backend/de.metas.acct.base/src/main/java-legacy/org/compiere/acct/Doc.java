@@ -14,6 +14,7 @@ import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.GLCategoryId;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -24,6 +25,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.AdMessageKey;
@@ -54,6 +56,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
@@ -69,9 +72,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -306,7 +306,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * GL Category
 	 */
-	private int m_GL_Category_ID = 0;
+	private GLCategoryId m_GL_Category_ID;
 	/**
 	 * GL Period
 	 */
@@ -853,94 +853,26 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		// No Document Type defined
-		if (m_DocumentType == null && getC_DocType_ID() > 0)
+		final DocTypeId docTypeId = getC_DocType_ID();
+		if (m_DocumentType == null && docTypeId != null)
 		{
-			final String sql = "SELECT DocBaseType, GL_Category_ID FROM C_DocType WHERE C_DocType_ID=?";
-			PreparedStatement pstmt = null;
-			ResultSet rsDT = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getC_DocType_ID());
-				rsDT = pstmt.executeQuery();
-				if (rsDT.next())
-				{
-					m_DocumentType = rsDT.getString(1);
-					m_GL_Category_ID = rsDT.getInt(2);
-				}
-			}
-			catch (final SQLException e)
-			{
-				log.error(sql, e);
-			}
-			finally
-			{
-				DB.close(rsDT, pstmt);
-			}
+			final I_C_DocType docType = services.getDocTypeById(docTypeId);
+			m_DocumentType = docType.getDocBaseType();
+			m_GL_Category_ID = GLCategoryId.ofRepoId(docType.getGL_Category_ID());
 		}
 		if (m_DocumentType == null)
 		{
-			log.error("No DocBaseType for C_DocType_ID=" + getC_DocType_ID() + ", DocumentNo=" + getDocumentNo());
-		}
-
-		// We have a document Type, but no GL info - search for DocType
-		if (m_GL_Category_ID <= 0)
-		{
-			final String sql = "SELECT GL_Category_ID FROM C_DocType WHERE AD_Client_ID=? AND DocBaseType=?";
-			PreparedStatement pstmt = null;
-			ResultSet rsDT = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getClientId().getRepoId());
-				pstmt.setString(2, m_DocumentType);
-				rsDT = pstmt.executeQuery();
-				if (rsDT.next())
-				{
-					m_GL_Category_ID = rsDT.getInt(1);
-				}
-			}
-			catch (final SQLException e)
-			{
-				log.error(sql, e);
-			}
-			finally
-			{
-				DB.close(rsDT, pstmt);
-			}
+			log.error("No DocBaseType for C_DocType_ID={}, DocumentNo={}", docTypeId, getDocumentNo());
 		}
 
 		// Still no GL_Category - get Default GL Category
-		if (m_GL_Category_ID <= 0)
+		if (m_GL_Category_ID == null)
 		{
-			final String sql = "SELECT GL_Category_ID FROM GL_Category "
-					+ "WHERE AD_Client_ID=? "
-					+ "ORDER BY IsDefault DESC";
-			PreparedStatement pstmt = null;
-			ResultSet rsDT = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getClientId().getRepoId());
-				rsDT = pstmt.executeQuery();
-				if (rsDT.next())
-				{
-					m_GL_Category_ID = rsDT.getInt(1);
-				}
-				rsDT.close();
-				pstmt.close();
-			}
-			catch (final SQLException e)
-			{
-				log.error(sql, e);
-			}
-			finally
-			{
-				DB.close(rsDT, pstmt);
-			}
+			m_GL_Category_ID = services.getDefaultGLCategoryId(getClientId()).orElse(null);
 		}
+
 		//
-		if (m_GL_Category_ID <= 0)
+		if (m_GL_Category_ID == null)
 		{
 			log.warn("No default GL_Category - {}", this);
 		}
@@ -1354,7 +1286,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return _currencyPrecision.toInt();
 	}
 
-	protected final int getGL_Category_ID()
+	protected final GLCategoryId getGL_Category_ID()
 	{
 		return m_GL_Category_ID;
 	}
@@ -1423,16 +1355,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				SOTrx.PURCHASE::toBoolean);
 	}
 
-	protected final int getC_DocType_ID()
+	@Nullable
+	protected final DocTypeId getC_DocType_ID()
 	{
-		final int docTypeId = getValueAsIntOrZero("C_DocType_ID");
-		if (docTypeId > 0)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_DocType_ID"));
+		if (docTypeId != null)
 		{
 			return docTypeId;
 		}
 
 		// fallback
-		return getValueAsIntOrZero("C_DocTypeTarget_ID");
+		return DocTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_DocTypeTarget_ID"));
 	}
 
 	protected final Optional<ChargeId> getC_Charge_ID()

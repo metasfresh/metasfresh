@@ -20,11 +20,10 @@
  * #L%
  */
 
-package de.metas.acct.gljournal;
+package de.metas.acct;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.product.ProductCategoryId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;

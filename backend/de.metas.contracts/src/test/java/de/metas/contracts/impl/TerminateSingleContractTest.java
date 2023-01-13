@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.C_Aggregation_Builder;
@@ -78,7 +79,8 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				new C_Flatrate_Term(
 						new ContractOrderService(),
 						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-						ADReferenceService.newMocked()));
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);

@@ -9,6 +9,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.GLCategoryId;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -18,6 +19,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
@@ -1028,8 +1030,8 @@ public final class FactLine extends X_Fact_Acct
 		final boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
 		log.debug(deltaAmount.toString()
-						  + "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
-						  + "; Negative=" + negative + "; AdjustDr=" + adjustDr);
+				+ "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
+				+ "; Negative=" + negative + "; AdjustDr=" + adjustDr);
 
 		if (adjustDr)
 		{
@@ -1529,13 +1531,13 @@ public final class FactLine extends X_Fact_Acct
 			// end Bayu Sistematika
 			//
 			log.debug(new StringBuilder("(Table=").append(AD_Table_ID)
-							  .append(",Record_ID=").append(Record_ID)
-							  .append(",Line=").append(Record_ID)
-							  .append(", Account=").append(m_acct)
-							  .append(",dr=").append(dr).append(",cr=").append(cr)
-							  .append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
-							  .append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
-							  .toString());
+					.append(",Record_ID=").append(Record_ID)
+					.append(",Line=").append(Record_ID)
+					.append(", Account=").append(m_acct)
+					.append(",dr=").append(dr).append(",cr=").append(cr)
+					.append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
+					.append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
+					.toString());
 			// Dimensions
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
@@ -1569,11 +1571,11 @@ public final class FactLine extends X_Fact_Acct
 			if (log.isInfoEnabled())
 			{
 				log.info(new StringBuilder("Not Found (try later) ")
-								 .append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
-								 .append(", AD_Table_ID=").append(AD_Table_ID)
-								 .append(",Record_ID=").append(Record_ID)
-								 .append(",Line_ID=").append(Line_ID)
-								 .append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
+						.append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
+						.append(", AD_Table_ID=").append(AD_Table_ID)
+						.append(",Record_ID=").append(Record_ID)
+						.append(",Line_ID=").append(Line_ID)
+						.append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
 			}
 
 			return false; // not updated
@@ -1604,11 +1606,11 @@ public final class FactLine extends X_Fact_Acct
 
 		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
-															   .setC_AcctSchema_ID(getC_AcctSchema_ID())
-															   .setC_Tax_ID(taxId)
-															   .setIsSOTrx(isSOTrx)
-															   .setDate(getDateAcct())
-															   .build());
+				.setC_AcctSchema_ID(getC_AcctSchema_ID())
+				.setC_Tax_ID(taxId)
+				.setIsSOTrx(isSOTrx)
+				.setDate(getDateAcct())
+				.build());
 
 		setVATCode(vatCode.getCode());
 	}
@@ -1678,6 +1680,13 @@ public final class FactLine extends X_Fact_Acct
 	{
 		super.setC_Order_ID(OrderId.toRepoId(orderId));
 	}
+
+	public void setC_DocType_ID(@Nullable DocTypeId docTypeId)
+	{
+		setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
+	}
+
+	public void setGL_Category_ID(@Nullable GLCategoryId glCategoryId) {setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));}
 
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{

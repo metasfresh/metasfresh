@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking.husToPick.process;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -146,6 +147,7 @@ public class WeightHUCommandTest
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
 				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.name("inventory")
+				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());
 
 		//
