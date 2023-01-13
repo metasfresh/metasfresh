@@ -1259,9 +1259,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_MultiCurrency;
 	}
 
-	protected final void setIsMultiCurrency(final boolean mc)
+	protected final void setIsMultiCurrency()
 	{
-		m_MultiCurrency = mc;
+		m_MultiCurrency = true;
 	}
 
 	protected final CurrencyConversionTypeId getCurrencyConversionTypeId()
