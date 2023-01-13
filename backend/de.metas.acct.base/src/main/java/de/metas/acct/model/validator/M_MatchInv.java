@@ -39,7 +39,7 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.doc.DocLine_Invoice;
+import org.compiere.acct.DocLine_Invoice;
 import de.metas.user.UserId;
 import lombok.NonNull;
 

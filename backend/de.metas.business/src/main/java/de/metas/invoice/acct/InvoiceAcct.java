@@ -16,6 +16,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.Optional;
 
 @EqualsAndHashCode
 @ToString
@@ -41,6 +42,17 @@ public final class InvoiceAcct
 				.sorted(Comparator.comparing(InvoiceAcctRule::getMatcher, InvoiceAcctRuleMatcher.ORDER_FROM_SPECIFIC_TO_GENERIC))
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public Optional<ElementValueId> getElementValueId(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull AccountTypeName accountTypeName,
+			@Nullable InvoiceLineId invoiceLineId)
+	{
+		return this.rulesOrdered.stream()
+				.filter(rule -> rule.matches(acctSchemaId, accountTypeName, invoiceLineId))
+				.findFirst()
+				.map(InvoiceAcctRule::getElementValueId);
+	}
 }
 
 @Value
@@ -62,6 +74,17 @@ class InvoiceAcctRuleMatcher
 			invoiceLineId.assertInvoiceId(expectedInvoiceId);
 		}
 	}
+
+	boolean matches(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final AccountTypeName accountTypeName,
+			@Nullable final InvoiceLineId invoiceLineId)
+	{
+		return AcctSchemaId.equals(this.acctSchemaId, acctSchemaId)
+				&& (this.accountTypeName == null || AccountTypeName.equals(this.accountTypeName, accountTypeName))
+				&& (this.invoiceLineId == null || InvoiceLineId.equals(this.invoiceLineId, invoiceLineId));
+	}
+
 }
 
 @Value
@@ -75,5 +98,13 @@ class InvoiceAcctRule
 	void assertInvoiceId(@NonNull InvoiceId expectedInvoiceId)
 	{
 		matcher.assertInvoiceId(expectedInvoiceId);
+	}
+
+	boolean matches(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final AccountTypeName accountTypeName,
+			@Nullable final InvoiceLineId invoiceLineId)
+	{
+		return matcher.matches(acctSchemaId, accountTypeName, invoiceLineId);
 	}
 }

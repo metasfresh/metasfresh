@@ -30,20 +30,21 @@ import java.util.Optional;
 
 public class AccountProvider
 {
-	private final IAccountDAO accountDAO;
-	private final IBPartnerDAO bpartnerDAO;
-	private final BPartnerAccountsRepository bpartnerAccountsRepository;
-	private final BPartnerGroupAccountsRepository bpartnerGroupAccountsRepository;
-	private final BankAccountAcctRepository bankAccountAcctRepository;
-	private final IProductBL productBL;
-	private final ProductAccountsRepository productAccountsRepository;
-	private final ProductCategoryAccountsRepository productCategoryAccountsRepository;
-	private final TaxAccountsRepository taxAccountsRepository;
-	private final ChargeAccountsRepository chargeAccountsRepository;
-	private final WarehouseAccountsRepository warehouseAccountsRepository;
-	private final ProjectAccountsRepository projectAccountsRepository;
+	@NonNull private final IAccountDAO accountDAO;
+	@NonNull private final IBPartnerDAO bpartnerDAO;
+	@NonNull private final BPartnerAccountsRepository bpartnerAccountsRepository;
+	@NonNull private final BPartnerGroupAccountsRepository bpartnerGroupAccountsRepository;
+	@NonNull private final BankAccountAcctRepository bankAccountAcctRepository;
+	@NonNull private final IProductBL productBL;
+	@NonNull private final ProductAccountsRepository productAccountsRepository;
+	@NonNull private final ProductCategoryAccountsRepository productCategoryAccountsRepository;
+	@NonNull private final TaxAccountsRepository taxAccountsRepository;
+	@NonNull private final ChargeAccountsRepository chargeAccountsRepository;
+	@NonNull private final WarehouseAccountsRepository warehouseAccountsRepository;
+	@NonNull private final ProjectAccountsRepository projectAccountsRepository;
+	@Nullable private final AccountProviderExtension extension;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public AccountProvider(
 			@NonNull final IAccountDAO accountDAO,
 			@NonNull final IBPartnerDAO bpartnerDAO,
@@ -56,7 +57,9 @@ public class AccountProvider
 			@NonNull final TaxAccountsRepository taxAccountsRepository,
 			@NonNull final ChargeAccountsRepository chargeAccountsRepository,
 			@NonNull final WarehouseAccountsRepository warehouseAccountsRepository,
-			@NonNull final ProjectAccountsRepository projectAccountsRepository)
+			@NonNull final ProjectAccountsRepository projectAccountsRepository,
+			//
+			@Nullable final AccountProviderExtension extension)
 	{
 		this.accountDAO = accountDAO;
 		this.bpartnerDAO = bpartnerDAO;
@@ -70,6 +73,7 @@ public class AccountProvider
 		this.chargeAccountsRepository = chargeAccountsRepository;
 		this.warehouseAccountsRepository = warehouseAccountsRepository;
 		this.projectAccountsRepository = projectAccountsRepository;
+		this.extension = extension;
 	}
 
 	private PostingException newPostingException()
@@ -92,6 +96,15 @@ public class AccountProvider
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerVendorAccountType acctType)
 	{
+		if (extension != null)
+		{
+			final AccountId accountId = extension.getBPartnerVendorAccountId(acctSchemaId, bpartnerId, acctType).orElse(null);
+			if (accountId != null)
+			{
+				return accountId;
+			}
+		}
+
 		return bpartnerAccountsRepository.getVendorAccounts(bpartnerId, acctSchemaId).getAccountId(acctType);
 	}
 
@@ -110,6 +123,15 @@ public class AccountProvider
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerCustomerAccountType acctType)
 	{
+		if (extension != null)
+		{
+			final AccountId accountId = extension.getBPartnerCustomerAccountId(acctSchemaId, bpartnerId, acctType).orElse(null);
+			if (accountId != null)
+			{
+				return accountId;
+			}
+		}
+
 		return bpartnerAccountsRepository.getCustomerAccounts(bpartnerId, acctSchemaId).getAccountId(acctType);
 	}
 
@@ -129,6 +151,16 @@ public class AccountProvider
 			@NonNull final BPartnerGroupAccountType acctType)
 	{
 		final BPGroupId bpGroupId = bpartnerDAO.getBPGroupIdByBPartnerId(bpartnerId);
+
+		if (extension != null)
+		{
+			final AccountId accountId = extension.getBPGroupAccountId(acctSchemaId, bpGroupId, acctType).orElse(null);
+			if (accountId != null)
+			{
+				return accountId;
+			}
+		}
+
 		return bpartnerGroupAccountsRepository.getAccounts(bpGroupId, acctSchemaId).getAccountId(acctType);
 	}
 
@@ -234,6 +266,15 @@ public class AccountProvider
 			final @NonNull ProductCategoryId productCategoryId,
 			final @NonNull ProductAcctType acctType)
 	{
+		if (extension != null)
+		{
+			final Optional<MAccount> account = extension.getProductCategoryAccount(acctSchemaId, productCategoryId, acctType);
+			if (account.isPresent())
+			{
+				return account;
+			}
+		}
+
 		return productCategoryAccountsRepository.getAccounts(productCategoryId, acctSchemaId)
 				.map(accounts -> accounts.getAccountId(acctType))
 				.map(accountDAO::getById);
@@ -256,6 +297,15 @@ public class AccountProvider
 			@Nullable final TaxId taxId,
 			@NonNull final ProductAcctType acctType)
 	{
+		if (extension != null)
+		{
+			final MAccount account = extension.getProductAccount(acctSchemaId, productId, acctType).orElse(null);
+			if (account != null)
+			{
+				return account;
+			}
+		}
+
 		//
 		// Product Revenue: check/use the override defined on tax level
 		if (acctType == ProductAcctType.P_Revenue_Acct && taxId != null)

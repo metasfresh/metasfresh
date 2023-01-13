@@ -19,18 +19,19 @@ package org.compiere.acct;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.accounts.InvoiceAccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
-import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.costing.ChargeId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.MatchInvId;
+import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.tax.api.TaxId;
@@ -48,6 +49,7 @@ import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,6 +57,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -68,10 +71,10 @@ import java.util.Set;
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF: 2797257 Landed Cost Detail is not using allocation qty
- *
+ * <li>BF: 2797257 Landed Cost Detail is not using allocation qty
  * @version $Id: Doc_Invoice.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
@@ -79,16 +82,53 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	/** Contained Optional Tax Lines */
+	/**
+	 * Contained Optional Tax Lines
+	 */
 	private List<DocTax> _taxes = null;
-	/** All lines are Service */
+	/**
+	 * All lines are Service
+	 */
 	private boolean m_allLinesService = true;
-	/** All lines are product item */
+	/**
+	 * All lines are product item
+	 */
 	private boolean m_allLinesItem = true;
+	private Optional<InvoiceAcct> _invoiceAccounts = null; // lazy
 
 	public Doc_Invoice(final AcctDocContext ctx)
 	{
 		super(ctx);
+	}
+
+	Optional<InvoiceAcct> getInvoiceAccounts()
+	{
+		Optional<InvoiceAcct> invoiceAccounts = this._invoiceAccounts;
+		if (invoiceAccounts == null)
+		{
+			invoiceAccounts = this._invoiceAccounts = services.getInvoiceAcct(getInvoiceId());
+		}
+		return invoiceAccounts;
+	}
+
+	@Nullable
+	@Override
+	protected InvoiceAccountProviderExtension createAccountProviderExtension()
+	{
+		return createInvoiceAccountProviderExtension(null);
+	}
+
+	InvoiceAccountProviderExtension createInvoiceAccountProviderExtension(@Nullable final InvoiceLineId invoiceLineId)
+	{
+		return getInvoiceAccounts()
+				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
+						.accountDAO(services.getAccountDAO())
+						.invoiceAccounts(invoiceAccounts)
+						.clientId(getClientId())
+						.invoiceLineId(invoiceLineId)
+						.build())
+				.orElse(null);
+
 	}
 
 	@Override
@@ -158,7 +198,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			rs = null;
 			pstmt = null;
 		}
-	}	// loadTaxes
+	}    // loadTaxes
 
 	private List<DocLine_Invoice> loadLines(final I_C_Invoice invoice)
 	{
@@ -220,13 +260,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 						docLine.setLineNetAmtDifference(diff);
 						break;
 					}
-				} 	// for all lines
-			} 	// tax difference
-		} 	// for all taxes
+				}    // for all lines
+			}    // tax difference
+		}    // for all taxes
 
 		//
 		return docLines;
-	}	// loadLines
+	}    // loadLines
 
 	public InvoiceId getInvoiceId()
 	{

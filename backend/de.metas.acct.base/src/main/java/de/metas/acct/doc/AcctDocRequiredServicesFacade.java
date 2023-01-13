@@ -36,6 +36,9 @@ import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.acct.InvoiceAcct;
+import de.metas.invoice.acct.InvoiceAcctRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -43,6 +46,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
@@ -94,12 +98,13 @@ public class AcctDocRequiredServicesFacade
 	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@Getter private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
+	private final InvoiceAcctRepository invoiceAcctRepository;
 
 	//
 	// Needed for DocLine:
@@ -111,11 +116,13 @@ public class AcctDocRequiredServicesFacade
 	public AcctDocRequiredServicesFacade(
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final ICostingService costingService,
-			final AccountProviderFactory accountProviderFactory)
+			@NonNull final AccountProviderFactory accountProviderFactory,
+			@NonNull final InvoiceAcctRepository invoiceAcctRepository)
 	{
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
 		this.accountProviderFactory = accountProviderFactory;
+		this.invoiceAcctRepository = invoiceAcctRepository;
 	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
@@ -289,4 +296,5 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
+	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId) {return invoiceAcctRepository.getById(invoiceId);}
 }

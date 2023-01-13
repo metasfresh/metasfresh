@@ -1,4 +1,4 @@
-package de.metas.acct.doc;
+package org.compiere.acct;
 
 /*
  * #%L
@@ -22,8 +22,9 @@ package de.metas.acct.doc;
  * #L%
  */
 
-import de.metas.acct.api.AcctSchema;
+import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -47,8 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.acct.DocLine;
-import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
@@ -116,6 +115,14 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		setAmount(lineNetAmt, priceList, qtyInvoiced.toBigDecimal());    // qty for discount calc
 	}
 
+	@Nullable
+	@Override
+	protected InvoiceAccountProviderExtension createAccountProviderExtension()
+	{
+		final InvoiceLineId invoiceLineId = getInvoiceLineId();
+		return getDoc().createInvoiceAccountProviderExtension(invoiceLineId);
+	}
+
 	public InvoiceLineId getInvoiceLineId()
 	{
 		final InvoiceId invoiceId = getDoc().getInvoiceId();
@@ -144,7 +151,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	 * <li>if {@link #isSOTrx()}, negate the quantity
 	 * </ul>
 	 *
-	 * @param qty
 	 * @return quantity (absolute value)
 	 */
 	private BigDecimal adjustQtySignByCreditMemoAndSOTrx(final BigDecimal qty)
@@ -230,7 +236,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	/**
 	 * Calculate the net amount of quantity received using <code>lineNetAmt</code> as total amount.
 	 *
-	 * @param lineNetAmt
 	 * @return quantity received invoiced amount
 	 */
 	public BigDecimal calculateAmtOfQtyReceived(final BigDecimal lineNetAmt)
@@ -270,7 +275,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	/**
 	 * Checks if invoice reposting is needed when given <code>matchInv</code> was created.
 	 *
-	 * @param matchInv
 	 * @return true if invoice reposting is needed
 	 */
 	public static boolean isInvoiceRepostingRequired(final I_M_MatchInv matchInv)

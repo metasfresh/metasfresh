@@ -18,6 +18,7 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
+import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -32,6 +33,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -71,14 +73,14 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
  *  Table:              M_MatchInv (472)
  *  Document Types:     MXI
  * </pre>
- *
+ * <p>
  * Update Costing Records
  *
  * @author Jorg Janke
  * @version $Id: Doc_MatchInv.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- *
- *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
- *          2789949 ] Multicurrency in matching posting
+ * <p>
+ * FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
+ * 2789949 ] Multicurrency in matching posting
  */
 public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 {
@@ -90,22 +92,43 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
-	/** pseudo line */
+	/**
+	 * pseudo line
+	 */
 	private DocLine_MatchInv docLine = null;
 
 	private I_C_InvoiceLine _invoiceLine = null;
 	private CurrencyId invoiceCurrencyId;
-	/** Invoice line net amount, excluding taxes, in invoice's currency */
+	/**
+	 * Invoice line net amount, excluding taxes, in invoice's currency
+	 */
 	private BigDecimal invoiceLineNetAmt = null;
 	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private boolean isCreditMemoInvoice;
 
-	/** Material Receipt */
+	/**
+	 * Material Receipt
+	 */
 	private I_M_InOutLine _receiptLine = null;
 
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
 		super(ctx, DOCTYPE_MatMatchInv);
+	}
+
+	@Nullable
+	@Override
+	protected InvoiceAccountProviderExtension createAccountProviderExtension()
+	{
+		final InvoiceLineId invoiceLineId = getInvoiceLineId();
+		return services.getInvoiceAcct(invoiceLineId.getInvoiceId())
+				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
+						.accountDAO(services.getAccountDAO())
+						.invoiceAccounts(invoiceAccounts)
+						.clientId(getClientId())
+						.invoiceLineId(invoiceLineId)
+						.build())
+				.orElse(null);
 	}
 
 	@Override
@@ -142,7 +165,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 					logger.debug("LineNetAmt={} - LineTaxAmt={}", invoiceLineNetAmt, lineTaxAmt);
 					invoiceLineNetAmt = invoiceLineNetAmt.subtract(lineTaxAmt);
 				}
-			}	// correct included Tax
+			}    // correct included Tax
 
 		}
 
@@ -160,7 +183,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return docLine.getQty();
 	}
 
-	/** @return zero (always balanced) */
+	/**
+	 * @return zero (always balanced)
+	 */
 	@Override
 	public BigDecimal getBalance()
 	{
@@ -208,7 +233,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Zero quantity
 		if (getQty().signum() == 0
-				|| getQtyReceived().signum() == 0	// Qty = 0
+				|| getQtyReceived().signum() == 0    // Qty = 0
 				|| getQtyInvoiced().signum() == 0) // 08643 avoid division by zero further down; note that we don't really know if and what to book in this case.
 		{
 			return ImmutableList.of();
@@ -271,12 +296,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	/**
 	 * Create the InvoicePriceVariance fact line
-	 *
-	 * @param fact
-	 * @param dr_NotInvoicedReceipts
-	 * @param cr_InventoryClearing
 	 */
-	private final void createFacts_InvoicePriceVariance(
+	private void createFacts_InvoicePriceVariance(
 			@NonNull final Fact fact,
 			@Nullable final FactLine dr_NotInvoicedReceipts,
 			@Nullable final FactLine cr_InventoryClearing)
@@ -365,28 +386,36 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getInvoice_Org_ID() != getReceipt_Org_ID();
 	}
 
+	private InvoiceLineId getInvoiceLineId()
+	{
+		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
+		return InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+	}
+
 	private I_C_InvoiceLine getInvoiceLine()
 	{
 		return _invoiceLine;
 	}
 
-	private final int getInvoice_Org_ID()
+	private int getInvoice_Org_ID()
 	{
 		return getInvoiceLine().getAD_Org_ID();
 	}
 
-	private final CurrencyId getInvoiceCurrencyId()
+	private CurrencyId getInvoiceCurrencyId()
 	{
 		return this.invoiceCurrencyId;
 	}
 
-	/** @return total invoice line net amount, excluding taxes, in invoice's currency */
-	private final BigDecimal getInvoiceLineNetAmt()
+	/**
+	 * @return total invoice line net amount, excluding taxes, in invoice's currency
+	 */
+	private BigDecimal getInvoiceLineNetAmt()
 	{
 		return this.invoiceLineNetAmt;
 	}
 
-	private final BigDecimal getInvoiceLineMatchedAmt()
+	private BigDecimal getInvoiceLineMatchedAmt()
 	{
 		BigDecimal lineNetAmt = getInvoiceLineNetAmt();
 		final BigDecimal qtyInvoicedMultiplier = getQtyInvoicedMultiplier();
@@ -417,24 +446,28 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 	}
 
-	/** @return total qty that was invoiced by linked invoice line */
-	private final BigDecimal getQtyInvoiced()
+	/**
+	 * @return total qty that was invoiced by linked invoice line
+	 */
+	private BigDecimal getQtyInvoiced()
 	{
 		return getInvoiceLine().getQtyInvoiced();
 	}
 
-	private final I_M_InOutLine getReceiptLine()
+	private I_M_InOutLine getReceiptLine()
 	{
 		return _receiptLine;
 	}
 
-	private final int getReceipt_Org_ID()
+	private int getReceipt_Org_ID()
 	{
 		return getReceiptLine().getAD_Org_ID();
 	}
 
-	/** @return total qty that was received by linked receipt line */
-	private final BigDecimal getQtyReceived()
+	/**
+	 * @return total qty that was received by linked receipt line
+	 */
+	private BigDecimal getQtyReceived()
 	{
 		return getReceiptLine().getMovementQty();
 	}
@@ -455,13 +488,15 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return invoiceCurrencyConversionCtx;
 	}
 
-	private final boolean isCreditMemoInvoice()
+	private boolean isCreditMemoInvoice()
 	{
 		return isCreditMemoInvoice;
 	}
 
-	/** Updates dimensions and UOM of given FactLine from invoice line */
-	private final void updateFromInvoiceLine(@Nullable final FactLine fl)
+	/**
+	 * Updates dimensions and UOM of given FactLine from invoice line
+	 */
+	private void updateFromInvoiceLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)
 		{
@@ -479,7 +514,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
 
-	private final void updateFromReceiptLine(@Nullable FactLine fl)
+	private void updateFromReceiptLine(@Nullable FactLine fl)
 	{
 		if (fl == null)
 		{

@@ -2,10 +2,10 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
-import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.acct.accounts.DefaultAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AccountId;
@@ -16,6 +16,7 @@ import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
@@ -345,6 +346,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * Contained Doc Lines
 	 */
 	private List<DocLineType> docLines;
+
+	private AccountProvider _accountProvider; // lazy
 
 	public final String get_TableName()
 	{
@@ -1221,7 +1224,20 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final AccountProvider getAccountProvider()
 	{
-		return services.newAccountProvider().build();
+		AccountProvider accountProvider = this._accountProvider;
+		if (accountProvider == null)
+		{
+			accountProvider = this._accountProvider = services.newAccountProvider()
+					.extension(createAccountProviderExtension())
+					.build();
+		}
+		return accountProvider;
+	}
+
+	@Nullable
+	protected AccountProviderExtension createAccountProviderExtension()
+	{
+		return null;
 	}
 
 	protected final MAccount getRealizedGainAcct(final AcctSchema as)

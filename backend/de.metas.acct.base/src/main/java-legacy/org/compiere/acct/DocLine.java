@@ -18,8 +18,9 @@ package org.compiere.acct;
 
 import com.google.common.base.MoreObjects;
 import de.metas.acct.accounts.AccountProvider;
-import de.metas.acct.api.AcctSchema;
+import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.bpartner.BPartnerId;
@@ -136,6 +137,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private boolean _taxIncluded = false;
 
 	private int m_ReversalLine_ID = 0;
+
+	private AccountProvider _accountProvider; // lazy
 
 	public DocLine(
 			@NonNull final PO linePO,
@@ -353,7 +356,31 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final AccountProvider getAccountProvider()
 	{
-		return services.newAccountProvider().build();
+		AccountProvider accountProvider = this._accountProvider;
+		if (accountProvider == null)
+		{
+			accountProvider = this._accountProvider = createAccountProvider();
+		}
+		return accountProvider;
+	}
+
+	protected final AccountProvider createAccountProvider()
+	{
+		AccountProvider accountProvider = getDoc().getAccountProvider();
+
+		AccountProviderExtension extension = createAccountProviderExtension();
+		if (extension != null)
+		{
+			accountProvider = accountProvider.toBuilder().extension(extension).build();
+		}
+
+		return accountProvider;
+	}
+
+	@Nullable
+	protected AccountProviderExtension createAccountProviderExtension()
+	{
+		return null;
 	}
 
 	/**
@@ -876,7 +903,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Set ReversalLine_ID
 	 * store original (voided/reversed) document line
-	 *
 	 */
 	public final void setReversalLine_ID(final int ReversalLine_ID)
 	{
