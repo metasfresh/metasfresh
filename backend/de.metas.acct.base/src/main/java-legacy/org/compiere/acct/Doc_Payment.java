@@ -3,14 +3,15 @@ package org.compiere.acct;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
-import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
@@ -115,8 +116,8 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			return ImmutableList.of(fact);
 		}
 
-		final String documentType = getDocumentType();
-		if (DOCTYPE_ARReceipt.equals(documentType))
+		final DocBaseType docBaseType = getDocBaseType();
+		if (DocBaseType.ARReceipt.equals(docBaseType))
 		{
 			// Asset (DR)
 			final FactLine fl_DR = fact.createLine()
@@ -155,7 +156,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 		}
 		// APP
-		else if (DOCTYPE_APPayment.equals(documentType))
+		else if (DocBaseType.APPayment.equals(docBaseType))
 		{
 			// Prepayment/PaymentSelect (DR)
 			final MAccount acct;
@@ -199,7 +200,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 					.setAcctSchema(as)
 					.setFact(fact)
 					.setPostingStatus(PostingStatus.Error)
-					.setDetailMessage("DocumentType unknown: " + documentType);
+					.setDetailMessage("DocBaseType unknown: " + docBaseType);
 
 		}
 

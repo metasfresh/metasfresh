@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
@@ -14,7 +15,6 @@ import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.acct.GLCategoryId;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
@@ -25,8 +25,9 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -62,7 +63,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -134,14 +134,9 @@ import java.util.function.IntFunction;
  * Project Issue		PJI
  * 	C_ProjectIssue	623 - DocType fixed
  *
- * </pre>
- * <p>
- * Also see <a href="http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962">...</a>
- *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution <a href="http://www.e-evolution.com">...</a>
  * <li>FR [ 2520591 ] Support multiples calendar for Org
- * @version $Id: Doc.java,v 1.6 2006/07/30 00:53:33 jjanke Exp $
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public abstract class Doc<DocLineType extends DocLine<?>>
@@ -151,92 +146,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@Getter(AccessLevel.PROTECTED)
 	protected final AcctDocRequiredServicesFacade services;
 
-	/**
-	 * AR Invoices - ARI
-	 */
-	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
-	/**
-	 * AR Credit Memo
-	 */
-	public static final String DOCTYPE_ARCredit = "ARC";
-	/**
-	 * AR Receipt
-	 */
-	public static final String DOCTYPE_ARReceipt = "ARR";
-	/**
-	 * AR ProForma
-	 */
-	public static final String DOCTYPE_ARProForma = "ARF";
-	/**
-	 * AP Invoices
-	 */
-	public static final String DOCTYPE_APInvoice = "API";
-	/**
-	 * AP Credit Memo
-	 */
-	public static final String DOCTYPE_APCredit = "APC";
-	/**
-	 * AP Payment
-	 */
-	public static final String DOCTYPE_APPayment = "APP";
-	/**
-	 * CashManagement Bank Statement
-	 */
-	public static final String DOCTYPE_BankStatement = "CMB";
-	/**
-	 * CashManagement Cash Journals
-	 */
-	public static final String DOCTYPE_CashJournal = "CMC";
-	/**
-	 * CashManagement Allocations
-	 */
-	public static final String DOCTYPE_Allocation = "CMA";
-	/**
-	 * Material Shipment
-	 */
-	public static final String DOCTYPE_MatShipment = "MMS";
-	/**
-	 * Material Receipt
-	 */
-	public static final String DOCTYPE_MatReceipt = "MMR";
-	/**
-	 * Material Inventory
-	 */
-	public static final String DOCTYPE_MatInventory = "MMI";
-	/**
-	 * Material Movement
-	 */
-	public static final String DOCTYPE_MatMovement = "MMM";
-	// /** Material Production */
-	// public static final String DOCTYPE_MatProduction = "MMP";
-	/**
-	 * Match Invoice
-	 */
-	public static final String DOCTYPE_MatMatchInv = "MXI";
-	/**
-	 * Match PO
-	 */
-	public static final String DOCTYPE_MatMatchPO = "MXP";
-	/**
-	 * GL Journal
-	 */
-	public static final String DOCTYPE_GLJournal = "GLJ";
-	// /** Purchase Order */
-	// public static final String DOCTYPE_POrder = "POO";
-	// /** Sales Order */
-	// public static final String DOCTYPE_SOrder = "SOO";
-	/**
-	 * Project Issue
-	 */
-	public static final String DOCTYPE_ProjectIssue = "PJI";
-	/**
-	 * Purchase Requisition
-	 */
-	public static final String DOCTYPE_PurchaseRequisition = "POR";
 
-	/**
-	 * Log per Document
-	 */
 	private static final Logger log = LogManager.getLogger(Doc.class);
 
 	protected Doc(final AcctDocContext ctx)
@@ -248,7 +158,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param ctx                construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
-	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final String defaultDocBaseType)
+	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final DocBaseType defaultDocBaseType)
 	{
 		services = ctx.getServices();
 		acctSchemas = ctx.getAcctSchemas();
@@ -262,22 +172,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// IMPORTANT: to make sure events like FactAcctListenersService.fireAfterUnpost will use the thread inherited trx
 		p_po.set_TrxName(ITrx.TRXNAME_ThreadInherited);
 
-		// DocStatus
-		{
-			final int index = p_po.get_ColumnIndex("DocStatus");
-			if (index >= 0)
-			{
-				m_DocStatus = (String)p_po.get_Value(index);
-			}
-			else
-			{
-				m_DocStatus = null; // no DocStatus (e.g. M_MatchInv etc)
-			}
-		}
+		_docStatus = extractDocStatus(p_po);
 
 		// Document Type
-		setDocumentType(defaultDocBaseType);
+		setDocBaseType(defaultDocBaseType);
 	}   // Doc
+
+	private static DocStatus extractDocStatus(@NonNull final PO po)
+	{
+		final int index = po.get_ColumnIndex("DocStatus");
+		if (index >= 0)
+		{
+			return DocStatus.ofNullableCodeOrUnknown((String)po.get_Value(index));
+		}
+		else
+		{
+			return null; // no DocStatus (e.g. M_MatchInv etc)
+		}
+	}
 
 	/**
 	 * Accounting Schemas
@@ -290,11 +202,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Document Type
 	 */
-	private String m_DocumentType = null;
+	private DocBaseType _docBaseType = null;
 	/**
 	 * Document Status
 	 */
-	private final String m_DocStatus;
+	private final DocStatus _docStatus;
 	/**
 	 * Document No
 	 */
@@ -421,7 +333,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			@Override
 			public void run(final String localTrxName_NOTUSED)
 			{
-				post0(force, repost);
+				post0(repost);
 			}
 
 			@Override
@@ -450,38 +362,33 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		});
 	}
 
-	private void post0(final boolean force, final boolean repost)
+	private static boolean isDocStatusValidForPosting(@Nullable final DocStatus docStatus)
+	{
+		return docStatus == null // This is a valid case (e.g. M_MatchInv, M_MatchPO)
+				|| docStatus.isCompletedOrClosedReversedOrVoided();
+
+	}
+
+	private void post0(final boolean repost)
 	{
 		//
 		// Validate document's DocStatus
-		if (m_DocStatus == null)
+		final DocStatus docStatus = getDocStatus();
+		if (!isDocStatusValidForPosting(docStatus))
 		{
-			// This is a valid case (e.g. M_MatchInv, M_MatchPO)
-		}
-		else if (m_DocStatus.equals(IDocument.STATUS_Completed)
-				|| m_DocStatus.equals(IDocument.STATUS_Closed)
-				|| m_DocStatus.equals(IDocument.STATUS_Voided)
-				|| m_DocStatus.equals(IDocument.STATUS_Reversed))
-		{
-			// This is THE valid case
-		}
-		else
-		{
-			final String errmsg = "Invalid DocStatus='" + m_DocStatus + "' for DocumentNo=" + getDocumentNo();
 			throw newPostingException()
 					.setPreserveDocumentPostedStatus()
-					.setDetailMessage(errmsg);
+					.setDetailMessage("Invalid DocStatus='" + docStatus + "' for DocumentNo=" + getDocumentNo());
 		}
 
 		//
 		// Validate document's AD_Client_ID
 		if (!getClientId().equals(acctSchemas.get(0).getClientId()))
 		{
-			final String errmsg = "AD_Client_ID Conflict - Document=" + getClientId()
-					+ ", AcctSchema=" + acctSchemas.get(0).getClientId();
 			throw newPostingException()
 					.setPreserveDocumentPostedStatus()
-					.setDetailMessage(errmsg);
+					.setDetailMessage("AD_Client_ID Conflict - Document=" + getClientId()
+							+ ", AcctSchema=" + acctSchemas.get(0).getClientId());
 		}
 
 		//
@@ -831,13 +738,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return document type (i.e. DocBaseType)
 	 */
-	protected final String getDocumentType()
+	protected final DocBaseType getDocBaseType()
 	{
-		if (m_DocumentType == null)
+		if (_docBaseType == null)
 		{
-			setDocumentType(null);
+			setDocBaseType(null);
 		}
-		return m_DocumentType;
+		return _docBaseType;
 	}   // getDocumentType
 
 	/**
@@ -845,22 +752,22 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @param docBaseType optional document base type to be used.
 	 */
-	private void setDocumentType(@Nullable final String docBaseType)
+	private void setDocBaseType(@Nullable final DocBaseType docBaseType)
 	{
 		if (docBaseType != null)
 		{
-			m_DocumentType = docBaseType;
+			_docBaseType = docBaseType;
 		}
 
 		// No Document Type defined
 		final DocTypeId docTypeId = getC_DocType_ID();
-		if (m_DocumentType == null && docTypeId != null)
+		if (_docBaseType == null && docTypeId != null)
 		{
 			final I_C_DocType docType = services.getDocTypeById(docTypeId);
-			m_DocumentType = docType.getDocBaseType();
+			_docBaseType = DocBaseType.ofCode(docType.getDocBaseType());
 			m_GL_Category_ID = GLCategoryId.ofRepoId(docType.getGL_Category_ID());
 		}
-		if (m_DocumentType == null)
+		if (_docBaseType == null)
 		{
 			log.error("No DocBaseType for C_DocType_ID={}, DocumentNo={}", docTypeId, getDocumentNo());
 		}
@@ -877,11 +784,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			log.warn("No default GL_Category - {}", this);
 		}
 
-		if (m_DocumentType == null)
+		if (_docBaseType == null)
 		{
 			throw new IllegalStateException("Document Type not found");
 		}
-	}    // setDocumentType
+	}
 
 	/**************************************************************************
 	 * Is the Source Document Balanced
@@ -992,7 +899,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		// Is Period Open?
 		if (m_period != null
-				&& m_period.isOpen(getDocumentType(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId()))
+				&& m_period.isOpen(getDocBaseType(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId()))
 		{
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
@@ -1214,9 +1121,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_DocumentNo;
 	}
 
-	protected final String getDocStatus()
+	protected final DocStatus getDocStatus()
 	{
-		return m_DocStatus;
+		return _docStatus;
 	}
 
 	protected final String getDescription()
@@ -1727,7 +1634,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final boolean loaded = getDocLines() != null;
 			if (loaded)
 			{
-				text.append(" (").append(getDocumentType())
+				text.append(" (").append(getDocBaseType())
 						.append(" - DocumentNo=").append(getDocumentNo())
 						.append(", DateAcct=").append(getDateAcct())
 						.append(", Amount=").append(getAmount())

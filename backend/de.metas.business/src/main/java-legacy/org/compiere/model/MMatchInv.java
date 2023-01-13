@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -151,7 +152,7 @@ public class MMatchInv extends X_M_MatchInv
 	{
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.MatchInvoice, getAD_Org_ID());
 
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);

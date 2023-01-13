@@ -27,6 +27,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
@@ -161,7 +162,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				+ ",C_CashLine_ID=" + cashLine
 				+ ",C_Invoice_ID=" + invoice
 				+ "]";
-	}    // toString
+	}
 
 	/**
 	 * @return allocated amount
@@ -450,8 +451,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 
-				final String docBaseType = rs.getString(2);
-				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
+				final DocBaseType docBaseType = DocBaseType.ofCode(rs.getString(2));
+				if (DocBaseType.APPayment.equals(docBaseType))
 				{
 					return doc.getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
 				}

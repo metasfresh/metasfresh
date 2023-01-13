@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.spi.impl;
 
 import com.google.common.base.MoreObjects;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -36,7 +37,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
@@ -282,9 +282,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	/**
 	 * Create LotNumberDate Attribute instance and set it in the receipt shcedule's ASI
-	 *
-	 * @param receiptSchedule
-	 * @param order
 	 */
 	private void createLotNumberDateAI(final I_M_ReceiptSchedule receiptSchedule, final I_C_Order order)
 	{
@@ -409,9 +406,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	 * <li>order's C_DocType.C_DocType_Shipment_ID if set
 	 * <li>standard Material Receipt document type
 	 * </ul>
-	 *
-	 * @param orderLine
-	 * @return
 	 */
 	private int retrieveReceiptDocTypeId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -442,7 +436,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		//
 		// Fallback: get standard Material Receipt document type
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(orderLine.getAD_Client_ID())
 				.adOrgId(orderLine.getAD_Org_ID())

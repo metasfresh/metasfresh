@@ -19,12 +19,13 @@ package org.compiere.acct;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.MatchInvId;
@@ -50,10 +51,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *  Table:              M_InOut (319)
  *  Document Types:     MMS, MMR
  * </pre>
- *
- * metas:
- * <li>copied from // metas: from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_InOut.java, Rev 10177
- * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
@@ -150,28 +147,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final String docBaseType = getDocumentType();
+		final DocBaseType docBaseType = getDocBaseType();
 
 		//
 		// *** Sales - Shipment
-		if (DOCTYPE_MatShipment.equals(docBaseType) && isSOTrx())
+		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
 		{
 			return createFacts_SalesShipment(as);
 		}
 		//
 		// *** Sales - Return
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (DOCTYPE_MatShipment.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}

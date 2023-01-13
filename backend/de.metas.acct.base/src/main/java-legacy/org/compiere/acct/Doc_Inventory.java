@@ -17,13 +17,14 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.WarehouseAccountType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
+import de.metas.document.DocBaseType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
@@ -41,9 +42,6 @@ import java.util.List;
  *  Document Types:     MMI
  * </pre>
  * <p>
- * metas:
- * <li>copied from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_Inventory.java, Rev 14597
- * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
@@ -54,7 +52,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
 	public Doc_Inventory(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatInventory);
+		super(ctx, DocBaseType.MaterialPhysicalInventory);
 	}
 
 	@Override

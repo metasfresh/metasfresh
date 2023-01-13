@@ -23,14 +23,15 @@ package de.metas.manufacturing.acct;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,7 +39,6 @@ import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
 import org.compiere.model.MAccount;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
@@ -70,7 +70,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 	public Doc_PPCostCollector(final AcctDocContext ctx)
 	{
-		super(ctx, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
+		super(ctx, DocBaseType.ManufacturingCostCollector);
 	}
 
 	@Override

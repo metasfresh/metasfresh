@@ -18,14 +18,15 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.GLAccountType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
+import de.metas.document.DocBaseType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
@@ -67,7 +68,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 	public Doc_MatchPO(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatMatchPO);
+		super(ctx, DocBaseType.MatchPO);
 	}
 
 	@Override

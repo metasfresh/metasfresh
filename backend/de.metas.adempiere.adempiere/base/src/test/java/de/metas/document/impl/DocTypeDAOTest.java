@@ -23,6 +23,7 @@
 package de.metas.document.impl;
 
 import de.metas.acct.GLCategoryId;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.OrgId;
@@ -30,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,7 @@ class DocTypeDAOTest
 		final DocTypeId docTypeId = new DocTypeDAO().createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
 				.ctx(ctx)
 				.name("Inventory DocType for " + org2Id)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(null)
 				.adOrgId(org2Id.getRepoId())
 				.glCategoryId(GLCategoryId.ofRepoId(123))
@@ -75,6 +75,6 @@ class DocTypeDAOTest
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
 		assertThat(docTypeRecord.getAD_Client_ID()).isEqualTo(ClientId.METASFRESH.getRepoId());
 		assertThat(docTypeRecord.getAD_Org_ID()).isEqualTo(org2Id.getRepoId());
-		assertThat(docTypeRecord.getDocBaseType()).isEqualTo(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
+		assertThat(docTypeRecord.getDocBaseType()).isEqualTo(DocBaseType.MaterialPhysicalInventory.getCode());
 	}
 }

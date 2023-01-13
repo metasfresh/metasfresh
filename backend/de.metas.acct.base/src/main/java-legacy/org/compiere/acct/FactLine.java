@@ -19,8 +19,10 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
+import de.metas.document.engine.DocStatus;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -473,7 +475,7 @@ public final class FactLine extends X_Fact_Acct
 	 * @param doc     document
 	 * @param docLine doc line
 	 */
-	protected void setDocumentInfo(final Doc<?> doc, final DocLine<?> docLine)
+	void setDocumentInfo(final Doc<?> doc, final DocLine<?> docLine)
 	{
 		m_doc = doc;
 		m_docLine = docLine;
@@ -521,8 +523,10 @@ public final class FactLine extends X_Fact_Acct
 		// Document infos
 		setDocumentNo(m_doc.getDocumentNo());
 		setC_DocType_ID(m_doc.getC_DocType_ID());
-		setDocBaseType(m_doc.getDocumentType());
-		setDocStatus(m_doc.getDocStatus());
+		setDocBaseType(m_doc.getDocBaseType().getCode());
+
+		final DocStatus docStatus = m_doc.getDocStatus();
+		setDocStatus(docStatus != null ? docStatus.getCode() : null);
 
 		// Description
 		final StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
@@ -1029,10 +1033,6 @@ public final class FactLine extends X_Fact_Acct
 		final boolean negative = deltaAmount.compareTo(BigDecimal.ZERO) < 0;
 		final boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
-		log.debug(deltaAmount.toString()
-				+ "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
-				+ "; Negative=" + negative + "; AdjustDr=" + adjustDr);
-
 		if (adjustDr)
 		{
 			if (negative)
@@ -1052,8 +1052,6 @@ public final class FactLine extends X_Fact_Acct
 		{
 			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
 		}
-
-		log.debug("New-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr());
 	}    // currencyCorrect
 
 	/**
@@ -1151,13 +1149,19 @@ public final class FactLine extends X_Fact_Acct
 	@Override
 	public String toString()
 	{
-		return "FactLine=[" + getAD_Table_ID() + ":" + getRecord_ID()
+		String sb = "FactLine=[" + getAD_Table_ID() + ":" + getRecord_ID()
 				+ "," + m_acct
 				+ ",Cur=" + getC_Currency_ID()
 				+ ", DR=" + getAmtSourceDr() + "|" + getAmtAcctDr()
 				+ ", CR=" + getAmtSourceCr() + "|" + getAmtAcctCr()
-				+ ", Record/Line=" + getRecord_ID() + (getLine_ID() > 0 ? "/" + getLine_ID() : "")
-				+ "]";
+				+ ", Record/Line=" + getRecord_ID() + (getLine_ID() > 0 ? "/" + getLine_ID() : "");
+		final BigDecimal currencyRate = getCurrencyRate();
+		if (currencyRate != null && currencyRate.signum() != 0 && currencyRate.compareTo(BigDecimal.ONE) != 0)
+		{
+			sb = sb + ", currencyRate=" + currencyRate;
+		}
+		sb = sb + "]";
+		return sb;
 	}
 
 	/**
@@ -1194,7 +1198,7 @@ public final class FactLine extends X_Fact_Acct
 		// Prio 3 - get from doc - if not GL
 		if (m_doc != null && super.getAD_Org_ID() <= 0)
 		{
-			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
+			if (DocBaseType.GLJournal.equals(m_doc.getDocBaseType()))
 			{
 				setAD_Org_ID(m_acct.getAD_Org_ID()); // inter-company GL
 			}
@@ -1206,7 +1210,7 @@ public final class FactLine extends X_Fact_Acct
 		// Prio 4 - get from account - if not GL
 		if (m_doc != null && super.getAD_Org_ID() == 0)
 		{
-			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
+			if (DocBaseType.GLJournal.equals(m_doc.getDocBaseType()))
 			{
 				setAD_Org_ID(m_doc.getOrgId());
 			}
@@ -1361,7 +1365,7 @@ public final class FactLine extends X_Fact_Acct
 
 			//
 			// Revenue Recognition for AR Invoices
-			if (m_doc.getDocumentType().equals(Doc.DOCTYPE_ARInvoice)
+			if (DocBaseType.ARInvoice.equals(m_doc.getDocBaseType())
 					&& m_docLine != null
 					&& m_docLine.getC_RevenueRecognition_ID() > 0)
 			{

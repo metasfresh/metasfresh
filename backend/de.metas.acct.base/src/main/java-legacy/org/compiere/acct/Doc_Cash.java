@@ -16,13 +16,14 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.acct.accounts.CashAccountType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcctType;
+import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Cash;
@@ -51,7 +52,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 {
 	public Doc_Cash(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_CashJournal);
+		super(ctx, DocBaseType.CashJournal);
 	}    // Doc_Cash
 
 	@Override

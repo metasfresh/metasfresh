@@ -46,8 +46,6 @@ public interface IDocTypeBL extends ISingletonService
 	 */
 	boolean isSalesProposalOrQuotation(I_C_DocType dt);
 
-	boolean isSOTrx(String docBaseType);
-
 	boolean isPrepay(DocTypeId docTypeId);
 
 	boolean isPrepay(I_C_DocType dt);

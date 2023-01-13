@@ -22,20 +22,19 @@ package de.metas.document;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
 import de.metas.acct.GLCategoryId;
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.compiere.model.I_C_DocType;
-
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.compiere.model.I_C_DocType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IDocTypeDAO extends ISingletonService
 {
@@ -68,7 +67,7 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
 	 */
-	Optional<String> getDocBaseTypeCounter(String docBaseType);
+	Optional<DocBaseType> getDocBaseTypeCounter(DocBaseType docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
 
@@ -81,7 +80,7 @@ public interface IDocTypeDAO extends ISingletonService
 		String entityType;
 		@NonNull String name;
 		String printName;
-		@NonNull String docBaseType;
+		@NonNull DocBaseType docBaseType;
 		String docSubType;
 		Boolean isSOTrx;
 		int docTypeShipmentId;

@@ -31,6 +31,7 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceLineId;
@@ -73,14 +74,13 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
  *  Table:              M_MatchInv (472)
  *  Document Types:     MXI
  * </pre>
- * <p>
+ *
  * Update Costing Records
  *
  * @author Jorg Janke
- * @version $Id: Doc_MatchInv.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  * <p>
- * FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
- * 2789949 ] Multicurrency in matching posting
+ *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
+ *          2789949 ] Multicurrency in matching posting
  */
 public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 {
@@ -113,7 +113,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatMatchInv);
+		super(ctx, DocBaseType.MatchInvoice);
 	}
 
 	@Nullable
@@ -514,7 +514,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
 
-	private void updateFromReceiptLine(@Nullable FactLine fl)
+	private void updateFromReceiptLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)
 		{
