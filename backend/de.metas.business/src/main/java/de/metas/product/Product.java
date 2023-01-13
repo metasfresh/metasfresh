@@ -102,4 +102,7 @@ public class Product
 	SectionCodeId sectionCodeId;
 
 	boolean purchased;
+
+	@Nullable
+	String SAPProductHierarchy;
 }

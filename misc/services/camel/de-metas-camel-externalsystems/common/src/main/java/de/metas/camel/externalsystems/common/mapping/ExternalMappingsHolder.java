@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.InvokeExternalSystemParametersUtil;
 import de.metas.common.externalsystem.JsonExternalMapping;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,6 +36,8 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_CATEGORY_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_TYPE_MAPPINGS;
@@ -76,6 +79,37 @@ public class ExternalMappingsHolder
 	{
 		return Optional.ofNullable(externalValue)
 				.map(externalRef2ProductCategory::get)
+				.map(JsonExternalMapping::getMetasfreshId);
+	}
+
+	@NonNull
+	public Optional<JsonMetasfreshId> resolveProductCategoryIdByMatchingValue(@Nullable final String externalValue)
+	{
+		if (externalValue == null || Check.isBlank(externalValue))
+		{
+			return Optional.empty();
+		}
+
+		JsonExternalMapping matchedMapping = null;
+		boolean keyMatched = false;
+
+		for (final String key : externalRef2ProductCategory.keySet())
+		{
+			final Pattern keyPattern = Pattern.compile(".*" + key + ".*");
+			final Matcher matcher = keyPattern.matcher(externalValue);
+			while (matcher.find())
+			{
+				matchedMapping = externalRef2ProductCategory.get(key);
+				keyMatched = true;
+			}
+
+			if(keyMatched)
+			{
+				break;
+			}
+		}
+
+		return Optional.ofNullable(matchedMapping)
 				.map(JsonExternalMapping::getMetasfreshId);
 	}
 

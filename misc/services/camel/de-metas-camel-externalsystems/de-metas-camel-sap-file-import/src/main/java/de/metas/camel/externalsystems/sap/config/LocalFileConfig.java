@@ -102,9 +102,9 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 				.append("?")
 				.append("delay=").append(pollingFrequency.toMillis())
 				.append("&")
-				.append("move=.").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
+				.append("move=").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
 				.append("&")
-				.append("moveFailed=.").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
+				.append("moveFailed=").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
 
 		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> fileEndpoint.append("&").append("antInclude=").append(filePattern));
 

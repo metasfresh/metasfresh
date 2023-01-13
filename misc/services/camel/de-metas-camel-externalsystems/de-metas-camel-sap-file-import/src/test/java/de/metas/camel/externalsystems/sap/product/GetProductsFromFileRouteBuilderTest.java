@@ -63,7 +63,8 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE = "0_JsonStartExternalSystemRequestProduct_LocalFile.json";
 	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE = "0_JsonStopExternalSystemRequestProduct_LocalFile.json";
 	private static final String MATERIAL_SAMPLE_DAT_FILE = "10_MaterialSample.dat";
-	private static final String JSON_UPSERT_PRODUCT_REQUEST = "20_CamelUpsertProductRequest.json";
+	private static final String JSON_UPSERT_PRODUCT_REQUEST_20 = "20_CamelUpsertProductRequest.json";
+	private static final String JSON_UPSERT_PRODUCT_REQUEST_30 = "30_CamelUpsertProductRequest.json";
 
 	private static final String MATERIAL_SAMPLE_RESOURCE_PATH = "/de/metas/camel/externalsystems/sap/product/" + MATERIAL_SAMPLE_DAT_FILE;
 
@@ -117,9 +118,14 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 
 		prepareSyncRouteForTesting(mockUpsertProductProcessor, SFTPProductSyncServiceRouteBuilder.getProductsFromSFTPServerRouteId(externalSystemRequest));
 
-		final InputStream expectedUpsertProductRequest = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
+		final InputStream expectedUpsertProductRequest_20 = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST_20);
+		final ProductUpsertCamelRequest productUpsertCamelRequest_20 = objectMapper.readValue(expectedUpsertProductRequest_20, ProductUpsertCamelRequest.class);
+
+		final InputStream expectedUpsertProductRequest_30 = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST_30);
+		final ProductUpsertCamelRequest productUpsertCamelRequest_30 = objectMapper.readValue(expectedUpsertProductRequest_30, ProductUpsertCamelRequest.class);
+
 		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
-		productSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedUpsertProductRequest, ProductUpsertCamelRequest.class));
+		productSyncMockEndpoint.expectedBodiesReceived(productUpsertCamelRequest_20, productUpsertCamelRequest_30);
 
 		final InputStream materialSampleInputStream = this.getClass().getResourceAsStream(MATERIAL_SAMPLE_RESOURCE_PATH);
 
@@ -128,7 +134,7 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
-		assertThat(mockUpsertProductProcessor.called).isEqualTo(1);
+		assertThat(mockUpsertProductProcessor.called).isEqualTo(2);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
 
@@ -152,9 +158,14 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 
 		prepareSyncRouteForTesting(mockUpsertProductProcessor, LocalFileProductSyncServiceRouteBuilder.getProductsFromLocalFileRouteId(externalSystemRequest));
 
-		final InputStream expectedUpsertProductRequest = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
+		final InputStream expectedUpsertProductRequest_20 = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST_20);
+		final ProductUpsertCamelRequest productUpsertCamelRequest_20 = objectMapper.readValue(expectedUpsertProductRequest_20, ProductUpsertCamelRequest.class);
+
+		final InputStream expectedUpsertProductRequest_30 = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST_30);
+		final ProductUpsertCamelRequest productUpsertCamelRequest_30 = objectMapper.readValue(expectedUpsertProductRequest_30, ProductUpsertCamelRequest.class);
+
 		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
-		productSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedUpsertProductRequest, ProductUpsertCamelRequest.class));
+		productSyncMockEndpoint.expectedBodiesReceived(productUpsertCamelRequest_20, productUpsertCamelRequest_30);
 
 		final InputStream materialSampleInputStream = this.getClass().getResourceAsStream(MATERIAL_SAMPLE_RESOURCE_PATH);
 
@@ -163,7 +174,7 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
-		assertThat(mockUpsertProductProcessor.called).isEqualTo(1);
+		assertThat(mockUpsertProductProcessor.called).isEqualTo(2);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
 
@@ -255,7 +266,7 @@ public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 			@NonNull final String productSyncRouteId) throws Exception
 	{
 		AdviceWith.adviceWith(context, productSyncRouteId,
-										  advice -> {
+							  advice -> {
 								  advice.replaceFromWith("direct:" + PRODUCT_SYNC_DIRECT_ROUTE_ENDPOINT);
 
 								  advice.weaveById(UPSERT_PRODUCT_ENDPOINT_ID)

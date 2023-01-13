@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -2093,6 +2094,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, org.compiere.model.I_S_ExpenseType> COLUMN_S_ExpenseType_ID = new ModelColumn<>(I_M_Product.class, "S_ExpenseType_ID", org.compiere.model.I_S_ExpenseType.class);
 	String COLUMNNAME_S_ExpenseType_ID = "S_ExpenseType_ID";
+
+	/**
+	 * Set SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_ProductHierarchy (@Nullable java.lang.String SAP_ProductHierarchy);
+
+	/**
+	 * Get SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_ProductHierarchy();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SAP_ProductHierarchy = new ModelColumn<>(I_M_Product.class, "SAP_ProductHierarchy", null);
+	String COLUMNNAME_SAP_ProductHierarchy = "SAP_ProductHierarchy";
 
 	/**
 	 * Set Shelf Depth.

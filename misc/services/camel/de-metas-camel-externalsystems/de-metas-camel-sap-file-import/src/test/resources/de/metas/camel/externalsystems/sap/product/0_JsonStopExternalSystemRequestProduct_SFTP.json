@@ -16,6 +16,7 @@
     "SFTPProcessedDirectory": "doesntmatter",
     "SFTPErroredDirectory": "doesntmatter",
     "SFTPPollingFrequencyInMs": "1000",
-    "SFTPProductFileNamePattern": "doesntmatter"
+    "SFTPProductFileNamePattern": "doesntmatter",
+    "CheckDescriptionForMaterialType": "doesntmatter"
   }
 }
