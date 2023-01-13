@@ -103,7 +103,7 @@ public final class GuavaCollectors
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
 	 *
-	 * @param keyFunction key function for identifying duplicates
+	 * @param keyFunction        key function for identifying duplicates
 	 * @param duplicatesConsumer consumer that takes the duplicate key and item as parameters
 	 */
 	public static <T, K> Collector<T, ?, ImmutableList<T>> toImmutableListExcludingDuplicates(final Function<T, K> keyFunction, final BiConsumer<K, T> duplicatesConsumer)
@@ -364,6 +364,24 @@ public final class GuavaCollectors
 		};
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <T> Collector<T, ?, T> uniqueElementOrThrow(@NonNull final Function<Set<T>, ? extends RuntimeException> exceptionSupplier)
+	{
+		return Collector.<T, Set<T>, T>of(
+				LinkedHashSet::new,
+				Set::add,
+				(l, r) -> {
+					l.addAll(r);
+					return l;
+				},
+				set -> {
+					if (set.size() != 1)
+					{
+						throw exceptionSupplier.apply(set);
+					}
+					return set.iterator().next();
+				});
 	}
 
 	public static <T> Stream<List<T>> groupByAndStream(final Stream<T> stream, final Function<T, ?> classifier)
