@@ -24,6 +24,10 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -52,12 +56,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -87,6 +93,8 @@ public class DeliveryPlanningService
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
@@ -283,12 +291,12 @@ public class DeliveryPlanningService
 
 		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
 
-		deliveryPlanningRepository.updateDeliveryPlanningReleaseNo(deliveryPlanningId, deliveryInstruction.getDocumentNo());
-
 		docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		DeliveryInstructionUserNotificationsProducer.newInstance()
 				.notifyGenerated(deliveryInstruction);
+
+		deliveryPlanningRepository.updateDeliveryPlanningReleaseNo(deliveryPlanningId, deliveryInstruction.getDocumentNo());
 	}
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -304,6 +312,19 @@ public class DeliveryPlanningService
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
 		final BPartnerLocationId warehouseBPLocationId = warehouseBL.getBPartnerLocationId(warehouseId);
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningType.ofCode(deliveryPlanningRecord.getM_Delivery_Planning_Type());
+
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SpeditionsauftragLadeliste)
+				.docSubType(X_C_DocType.DOCSUBTYPE_DeliveryInstruction)
+				.adClientId(deliveryPlanningRecord.getAD_Client_ID())
+				.adOrgId(deliveryPlanningRecord.getAD_Org_ID())
+				.build();
+
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
+		{
+			throw new DocTypeNotFoundException(docTypeQuery);
+		}
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
 		return DeliveryInstructionCreateRequest.builder()
@@ -325,6 +346,9 @@ public class DeliveryPlanningService
 												   : warehouseBPLocationId)
 				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
 				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+
+				.dateDoc(SystemTime.asInstant())
+				.docTypeId(docTypeId)
 
 				.forwarderId(ForwarderId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Forwarder_ID()))
 
