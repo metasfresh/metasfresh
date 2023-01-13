@@ -1,6 +1,7 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -32,6 +33,7 @@ import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -131,7 +133,7 @@ public abstract class AbstractFlatrateTermTest
 	private TaxCategoryId taxCategoryId;
 
 	@BeforeAll
-	public final static void staticInit()
+	public static void staticInit()
 	{
 		POJOWrapper.setDefaultStrictValues(false);
 	}
@@ -142,9 +144,9 @@ public abstract class AbstractFlatrateTermTest
 		AdempiereTestHelper.get().init();
 
 		setupMasterData();
-		initialize();
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
@@ -155,11 +157,14 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
+		afterInit();
 	}
 
-	protected void initialize()
+	protected void afterInit()
 	{
 	}
+
 
 	protected FlatrateTermTestHelper createFlatrateTermTestHelper()
 	{

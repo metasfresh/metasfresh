@@ -28,7 +28,6 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -45,17 +44,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
 	private ContractChangePriceQtyService contractsRepository;
-	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+	private IContractsDAO contractsDAO;
 
 	private final static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 		contractsRepository = new ContractChangePriceQtyService();
+		contractsDAO = Services.get(IContractsDAO.class);
 
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 

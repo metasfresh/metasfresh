@@ -1,7 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.accounts.ProductAccountsRepository;
 import de.metas.acct.api.ProductActivityProvider;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
@@ -54,7 +53,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
 
-		Services.registerService(IProductActivityProvider.class, new ProductActivityProvider(new ProductAccountsRepository()));
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 		final SysConfigBL sysConfigBL = new SysConfigBL();
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 	}

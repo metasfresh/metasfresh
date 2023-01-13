@@ -48,7 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -62,16 +61,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 {
-	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
-	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
-	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private IContractChangeBL contractChangeBL;
+	private IContractsDAO contractsDAO;
+	private IInvoiceCandDAO invoiceCandDAO;
+	private IInvoiceCandBL invoiceCandBL;
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 
@@ -108,6 +107,12 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		}
 
 		de.metas.common.util.time.SystemTime.setTimeSource(today);
+
+
+		contractChangeBL = Services.get(IContractChangeBL.class);
+		contractsDAO = Services.get(IContractsDAO.class);
+		invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	}
 
 	@Test
@@ -134,9 +139,8 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
 
-		assertThatThrownBy(() -> {
-			contractChangeBL.cancelContract(contract, contractChangeParameters);
-		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT.toAD_Message());
+		assertThatThrownBy(() -> contractChangeBL.cancelContract(contract, contractChangeParameters))
+				.hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT.toAD_Message());
 
 	}
 

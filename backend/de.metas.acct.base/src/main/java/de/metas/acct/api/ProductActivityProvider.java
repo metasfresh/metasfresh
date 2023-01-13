@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.accounts.ProductAccounts;
 import de.metas.acct.accounts.ProductAccountsRepository;
 import de.metas.organization.OrgId;
@@ -23,6 +24,12 @@ public class ProductActivityProvider implements IProductActivityProvider
 			@NonNull final ProductAccountsRepository productAccountsRepository)
 	{
 		this.productAccountsRepository = productAccountsRepository;
+	}
+
+	@VisibleForTesting
+	public static ProductActivityProvider createInstanceForUnitTesting()
+	{
+		return new ProductActivityProvider(new ProductAccountsRepository());
 	}
 
 	@Override

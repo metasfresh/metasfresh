@@ -50,7 +50,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 			.build();
 
 	@Override
-	public void initialize()
+	protected void afterInit()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(
