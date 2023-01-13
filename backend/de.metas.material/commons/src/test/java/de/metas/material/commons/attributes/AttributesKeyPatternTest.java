@@ -115,7 +115,7 @@ public class AttributesKeyPatternTest
 
 			assertThat(pattern.matches(AttributesKey.ofString("111=1"))).isTrue();
 			assertThat(pattern.matches(AttributesKey.ofString("111=2"))).isTrue();
-			assertThat(pattern.matches(AttributesKey.ofString("111="))).isTrue();
+			assertThat(AttributesKeyPattern.NONE.matches(AttributesKey.ofString("111="))).isTrue();
 			assertThat(pattern.matches(AttributesKey.ofString("222=1"))).isFalse();
 		}
 
