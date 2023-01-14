@@ -117,7 +117,7 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, Mockito.mock(ProductAllergenRestService.class));
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

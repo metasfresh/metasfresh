@@ -30,16 +30,21 @@ import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.common.product.v2.request.JsonRequestAllergenItem;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestUpsertProductAllergen;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class PushProductProcessor implements Processor
 {
@@ -74,6 +79,7 @@ public class PushProductProcessor implements Processor
 		requestProduct.setGtin(jsonBOM.getGtin());
 
 		requestProduct.setBpartnerProductItems(ImmutableList.of(getBPartnerProductUpsertRequest(jsonBOM)));
+		requestProduct.setProductAllergens(getUpsertAllergenRequest(jsonBOM));
 
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOM.getProductId()))
@@ -105,5 +111,30 @@ public class PushProductProcessor implements Processor
 		requestBPartnerProductUpsert.setActive(true);
 
 		return requestBPartnerProductUpsert;
+	}
+
+	@Nullable
+	private JsonRequestUpsertProductAllergen getUpsertAllergenRequest(@NonNull final JsonBOM jsonBOM)
+	{
+		if (jsonBOM.getAllergens() == null)
+		{
+			return null;
+		}
+
+		final List<JsonRequestAllergenItem> allergenItemList = jsonBOM.getAllergens()
+				.stream()
+				.map(allergen -> JsonRequestAllergenItem.builder()
+						.identifier(ExternalIdentifierFormat.asExternalIdentifier(String.valueOf(allergen.getId())))
+						.name(allergen.getName())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonRequestUpsertProductAllergen.builder()
+				.allergenList(allergenItemList)
+				.syncAdvise(SyncAdvise.builder()
+									.ifExists(SyncAdvise.IfExists.REPLACE)
+									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+									.build())
+				.build();
 	}
 }

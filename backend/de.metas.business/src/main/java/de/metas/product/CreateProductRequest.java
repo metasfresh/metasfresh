@@ -82,4 +82,6 @@ public class CreateProductRequest
 	@Nullable
 	Boolean stocked;
 
+	@Nullable
+	String guaranteeMonths;
 }
