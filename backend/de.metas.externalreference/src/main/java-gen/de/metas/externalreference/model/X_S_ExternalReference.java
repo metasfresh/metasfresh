@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalreference.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalReference
  *  @author metasfresh (generated) 
@@ -184,6 +184,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Shipper = "Shipper";
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
+	/** Allergen = Allergen */
+	public static final String TYPE_Allergen = "Allergen";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

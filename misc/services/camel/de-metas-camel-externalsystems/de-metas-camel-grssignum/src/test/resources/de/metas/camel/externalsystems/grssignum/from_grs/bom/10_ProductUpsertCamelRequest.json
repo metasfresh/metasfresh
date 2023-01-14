@@ -65,7 +65,14 @@
               "usedForVendor": null,
               "usedForVendorSet": false
             }
-          ]
+          ],
+          "productAllergens": {
+            "allergenList": [],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          }
         }
       }
     ],
