@@ -43,7 +43,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class PushProductProcessor implements Processor
@@ -113,12 +112,12 @@ public class PushProductProcessor implements Processor
 		return requestBPartnerProductUpsert;
 	}
 
-	@Nullable
+	@NonNull
 	private JsonRequestUpsertProductAllergen getUpsertAllergenRequest(@NonNull final JsonBOM jsonBOM)
 	{
 		if (jsonBOM.getAllergens() == null)
 		{
-			return null;
+			return getAllergenUpsertRequest(ImmutableList.of());
 		}
 
 		final List<JsonRequestAllergenItem> allergenItemList = jsonBOM.getAllergens()
@@ -129,8 +128,14 @@ public class PushProductProcessor implements Processor
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
+		return getAllergenUpsertRequest(allergenItemList);
+	}
+
+	@NonNull
+	private static JsonRequestUpsertProductAllergen getAllergenUpsertRequest(@NonNull final List<JsonRequestAllergenItem> requestAllergenItems)
+	{
 		return JsonRequestUpsertProductAllergen.builder()
-				.allergenList(allergenItemList)
+				.allergenList(requestAllergenItems)
 				.syncAdvise(SyncAdvise.builder()
 									.ifExists(SyncAdvise.IfExists.REPLACE)
 									.ifNotExists(SyncAdvise.IfNotExists.CREATE)

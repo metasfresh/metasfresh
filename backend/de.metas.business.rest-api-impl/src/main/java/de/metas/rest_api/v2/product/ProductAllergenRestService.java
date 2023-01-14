@@ -81,11 +81,6 @@ public class ProductAllergenRestService
 	{
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
-		if (allergenRequest.getAllergenList().isEmpty())
-		{
-			return;
-		}
-
 		final ProductAllergens currentProductAllergens = productAllergensService.getProductAllergens(productId);
 		final Map<ExternalIdentifier, AllergenId> identifier2Id = upsertAllergens(org, allergenRequest);
 		final ImmutableSet<AllergenId> incomingAllergenIds = ImmutableSet.copyOf(identifier2Id.values());
