@@ -48,7 +48,7 @@ public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess
 
 		final boolean isExistsNoShipperDeliveryPlannings = deliveryPlanningService.isExistsNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
-		if (!isExistsNoShipperDeliveryPlannings)
+		if (isExistsNoShipperDeliveryPlannings)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
 		}
