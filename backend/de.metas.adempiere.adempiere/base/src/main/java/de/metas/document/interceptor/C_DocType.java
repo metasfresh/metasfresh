@@ -62,11 +62,19 @@ public class C_DocType
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_DocType.COLUMNNAME_C_DocType_Invoicing_Pool_ID, I_C_DocType.COLUMNNAME_IsSOTrx })
-	public void validateInvoicingPoolSOTrx(@NonNull final I_C_DocType docType)
+	public void validateInvoicingPoolAssignment(@NonNull final I_C_DocType docType)
 	{
 		Optional.ofNullable(DocTypeInvoicingPoolId.ofRepoIdOrNull(docType.getC_DocType_Invoicing_Pool_ID()))
 				.map(docTypeInvoicingPoolService::getById)
 				.ifPresent(docTypeInvoicingPool -> {
+					if (!docTypeInvoicingPool.getIsActive())
+					{
+						throw new AdempiereException("Invoicing Pool is not active!")
+								.appendParametersToMessage()
+								.setParameter("DocTypeInvoicingPool.Name", docTypeInvoicingPool.getName())
+								.setParameter("DocTypeId", docType.getC_DocType_ID());
+					}
+					
 					if (!docTypeInvoicingPool.getIsSoTrx().equals(docType.isSOTrx()))
 					{
 						throw new AdempiereException("Different SoTrx between Invoicing Pool and DocType!")

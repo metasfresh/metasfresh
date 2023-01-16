@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,36 +20,17 @@
  * #L%
  */
 
-package de.metas.document.invoicingpool;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.document.DocTypeId;
-import de.metas.money.Money;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.compiere.model.I_M_Locator;
 
-@Value
-@Builder
-public class DocTypeInvoicingPool
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class M_Locator_StepDefData extends StepDefData<I_M_Locator>
 {
-	@NonNull
-	String name;
-
-	@NonNull
-	DocTypeId positiveAmountDocTypeId;
-
-	@NonNull
-	DocTypeId negativeAmountDocTypeId;
-
-	@NonNull
-	Boolean isSoTrx;
-	
-	@NonNull
-	Boolean isActive;
-
-	@NonNull
-	public DocTypeId getDocTypeId(@NonNull final Money invoiceTotalAmt)
+	public M_Locator_StepDefData()
 	{
-		return invoiceTotalAmt.signum() >= 0 ? positiveAmountDocTypeId : negativeAmountDocTypeId;
+		super(I_M_Locator.class);
 	}
 }

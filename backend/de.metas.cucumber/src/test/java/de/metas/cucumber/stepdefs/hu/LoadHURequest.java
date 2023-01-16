@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,36 +20,28 @@
  * #L%
  */
 
-package de.metas.document.invoicingpool;
+package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.document.DocTypeId;
-import de.metas.money.Money;
+import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class DocTypeInvoicingPool
+public class LoadHURequest
 {
 	@NonNull
-	String name;
+	HuId huId;
 
 	@NonNull
-	DocTypeId positiveAmountDocTypeId;
+	String huIdentifier;
 
-	@NonNull
-	DocTypeId negativeAmountDocTypeId;
+	@Nullable
+	String huStatus;
 
-	@NonNull
-	Boolean isSoTrx;
-	
-	@NonNull
-	Boolean isActive;
-
-	@NonNull
-	public DocTypeId getDocTypeId(@NonNull final Money invoiceTotalAmt)
-	{
-		return invoiceTotalAmt.signum() >= 0 ? positiveAmountDocTypeId : negativeAmountDocTypeId;
-	}
+	@Nullable
+	HuId piItemProductId;
 }

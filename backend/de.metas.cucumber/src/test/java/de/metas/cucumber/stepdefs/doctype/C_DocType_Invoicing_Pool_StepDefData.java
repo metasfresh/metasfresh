@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,36 +20,18 @@
  * #L%
  */
 
-package de.metas.document.invoicingpool;
+package de.metas.cucumber.stepdefs.doctype;
 
-import de.metas.document.DocTypeId;
-import de.metas.money.Money;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
-@Value
-@Builder
-public class DocTypeInvoicingPool
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_DocType_Invoicing_Pool_StepDefData extends StepDefData<I_C_DocType_Invoicing_Pool>
 {
-	@NonNull
-	String name;
-
-	@NonNull
-	DocTypeId positiveAmountDocTypeId;
-
-	@NonNull
-	DocTypeId negativeAmountDocTypeId;
-
-	@NonNull
-	Boolean isSoTrx;
-	
-	@NonNull
-	Boolean isActive;
-
-	@NonNull
-	public DocTypeId getDocTypeId(@NonNull final Money invoiceTotalAmt)
+	public C_DocType_Invoicing_Pool_StepDefData()
 	{
-		return invoiceTotalAmt.signum() >= 0 ? positiveAmountDocTypeId : negativeAmountDocTypeId;
+		super(I_C_DocType_Invoicing_Pool.class);
 	}
 }

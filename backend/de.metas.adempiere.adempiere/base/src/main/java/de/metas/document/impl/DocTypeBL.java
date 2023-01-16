@@ -4,6 +4,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -13,6 +14,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
 import java.util.Optional;
+import java.util.Set;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -40,6 +42,13 @@ public class DocTypeBL implements IDocTypeBL
 		return docTypesRepo.getDocTypeIdOrNull(docTypeQuery);
 	}
 
+	@Override
+	@NonNull
+	public Set<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);
+	}
+	
 	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{

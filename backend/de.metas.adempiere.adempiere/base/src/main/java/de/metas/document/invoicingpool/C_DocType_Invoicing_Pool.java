@@ -34,6 +34,8 @@ import org.compiere.model.I_C_DocType_Invoicing_Pool;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Interceptor(I_C_DocType_Invoicing_Pool.class)
 @Component
 public class C_DocType_Invoicing_Pool
@@ -51,6 +53,28 @@ public class C_DocType_Invoicing_Pool
 		validateNegativeAmountDocType(docTypeInvoicingPoolRecord);
 	}
 
+	@ModelChange(
+			timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_DocType_Invoicing_Pool.COLUMNNAME_IsActive)
+	public void validateInactivation(@NonNull final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord)
+	{
+		if (docTypeInvoicingPoolRecord.isActive())
+		{
+			return;
+		}
+		
+		final Set<DocTypeId> referencingDocTypeIds = docTypeBL
+				.getDocTypeIdsByInvoicingPoolId(DocTypeInvoicingPoolId.ofRepoId(docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID()));
+
+		if (!referencingDocTypeIds.isEmpty())
+		{
+			throw new AdempiereException("Invoicing Pool is still referenced in DocTypes!")
+					.appendParametersToMessage()
+					.setParameter("DocTypeIds", referencingDocTypeIds)
+					.setParameter("DocTypeInvoicingPoolId", docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID());
+		}
+	}
+	
 	private void validatePositiveAmountDocType(@NonNull final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord)
 	{
 		final DocTypeId positiveAmountDocTypeId = DocTypeId.ofRepoId(docTypeInvoicingPoolRecord.getPositive_Amt_C_DocType_ID());

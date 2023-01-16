@@ -23,6 +23,7 @@ package de.metas.document;
  */
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -34,6 +35,7 @@ import org.compiere.model.I_C_DocType;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IDocTypeDAO extends ISingletonService
 {
@@ -45,6 +47,9 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @return C_DocType_ID or <code>null</code> if not found
 	 */
 	DocTypeId getDocTypeIdOrNull(final DocTypeQuery query);
+
+	@NonNull
+	Set<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	DocTypeId getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
