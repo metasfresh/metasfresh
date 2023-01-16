@@ -50,6 +50,7 @@ import java.util.stream.Stream;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class DeliveryPlanningRepository
@@ -270,7 +271,7 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(documentNo);
-		save(deliveryPlanningRecord);
+		saveRecord(deliveryPlanningRecord);
 	}
 
 	public Iterator<I_M_Delivery_Planning> extractDeliveryPlanningIdsFromSelection(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)

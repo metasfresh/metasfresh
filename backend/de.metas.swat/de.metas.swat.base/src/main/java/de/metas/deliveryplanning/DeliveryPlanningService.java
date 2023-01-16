@@ -362,7 +362,7 @@ public class DeliveryPlanningService
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
-			M_Delivery_Planning_Create_M_Delivery_Instruction_WorkpackageProcessor.scheduleOnTrxCommit(deliveryPlanningRecord);
+			generateCompleteDeliveryInstruction(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 		}
 	}
 }
