@@ -29,8 +29,8 @@ CREATE OR REPLACE FUNCTION de_metas_acct.report_inventory_clearing(
                 docstatus       varchar,
                 bpartner        text,
                 product         text,
-                payment_docno   varchar,
-                c_payment_id    numeric,
+                invoice_docno   varchar,
+                c_invoice_id    numeric,
                 aggrKey         text
             )
     LANGUAGE plpgsql
@@ -46,15 +46,15 @@ BEGIN
         p_C_AcctSchema_ID = (SELECT c_acctschema_id FROM metasfresh.public.c_acctschema WHERE isactive = 'Y');
     END IF;
 
-    DROP TABLE IF EXISTS tmp_fact_acct_prefiltered;
-    CREATE TEMPORARY TABLE tmp_fact_acct_prefiltered
+    DROP TABLE IF EXISTS tmp_fact_acct_prefiltered_inventory_clearing;
+    CREATE TEMPORARY TABLE tmp_fact_acct_prefiltered_inventory_clearing
     (
         fact_acct_id     numeric,
         tablename        text,
         C_InvoiceLine_ID numeric
     );
 
-    INSERT INTO tmp_fact_acct_prefiltered (fact_acct_id, tablename, C_InvoiceLine_ID)
+    INSERT INTO tmp_fact_acct_prefiltered_inventory_clearing (fact_acct_id, tablename, C_InvoiceLine_ID)
     SELECT fa.fact_acct_id,
            t.tablename,
            (CASE
@@ -67,13 +67,13 @@ BEGIN
       AND fa.c_acctschema_id = p_C_AcctSchema_ID
       AND (p_EndDate IS NULL OR fa.dateacct <= p_EndDate);
 
-    CREATE UNIQUE INDEX ON tmp_fact_acct_prefiltered (fact_acct_id);
+    CREATE UNIQUE INDEX ON tmp_fact_acct_prefiltered_inventory_clearing (fact_acct_id);
 
     --
     --
 
-    DROP TABLE IF EXISTS tmp_fact_acct;
-    CREATE TEMPORARY TABLE tmp_fact_acct AS
+    DROP TABLE IF EXISTS tmp_fact_acct_inventory_clearing;
+    CREATE TEMPORARY TABLE tmp_fact_acct_inventory_clearing AS
     SELECT (CASE
                 WHEN i.c_invoice_id IS NOT NULL THEN LEAST(i.c_invoice_id, i.reversal_id) || '_' || il.line::text
                                                 ELSE (t.tablename || '_' || t.record_id)::text
@@ -85,21 +85,21 @@ BEGIN
                  ev.value AS accountno,
                  ev.name  AS accountname,
                  fa.*
-          FROM tmp_fact_acct_prefiltered sel
+          FROM tmp_fact_acct_prefiltered_inventory_clearing sel
                    INNER JOIN fact_acct fa ON (fa.fact_acct_id = sel.fact_acct_id)
                    INNER JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id) t
              LEFT OUTER JOIN c_invoiceline il ON il.c_invoiceline_id = t.c_invoiceline_id
              LEFT OUTER JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id;
 
-    CREATE INDEX ON tmp_fact_acct (c_acctschema_id, aggregationKey, accountno);
+    CREATE INDEX ON tmp_fact_acct_inventory_clearing (c_acctschema_id, aggregationKey, accountno);
 
     --
     -- Aggregate
     --
     --
 
-    DROP TABLE IF EXISTS tmp_fact_acct_unbalanced_agg;
-    CREATE TEMPORARY TABLE tmp_fact_acct_unbalanced_agg AS
+    DROP TABLE IF EXISTS tmp_fact_acct_unbalanced_agg_inventory_clearing;
+    CREATE TEMPORARY TABLE tmp_fact_acct_unbalanced_agg_inventory_clearing AS
     SELECT t.accountno,
            i.documentno                                                                             AS invoice_docNo,
            i.dateacct                                                                               AS invoice_dateAcct,
@@ -110,7 +110,7 @@ BEGIN
            t.aggregationKey,
            t.c_acctschema_id,
            ARRAY_AGG(DISTINCT t.dateacct)                                                           AS dateaccts
-    FROM tmp_fact_acct t
+    FROM tmp_fact_acct_inventory_clearing t
              LEFT OUTER JOIN c_invoiceline il ON il.c_invoiceline_id = t.c_invoiceline_id
              LEFT OUTER JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
     GROUP BY t.c_acctschema_id, t.aggregationKey, t.accountno,
@@ -118,7 +118,7 @@ BEGIN
     HAVING COALESCE(SUM(t.amtacctdr), 0) != COALESCE(SUM(t.amtacctcr), 0);
 
     CREATE
-        INDEX ON tmp_fact_acct_unbalanced_agg (c_acctschema_id, aggregationKey, accountno);
+        INDEX ON tmp_fact_acct_unbalanced_agg_inventory_clearing (c_acctschema_id, aggregationKey, accountno);
 
     --
     -- Get detailed report
@@ -140,12 +140,12 @@ BEGIN
                         i.documentno                                                                                     AS invoice_docno,
                         i.c_invoice_id,
                         t.aggregationkey
-                 FROM tmp_fact_acct t
+                 FROM tmp_fact_acct_inventory_clearing t
                           LEFT OUTER JOIN c_invoiceline il ON il.c_invoiceline_id = t.c_invoiceline_id
                           LEFT OUTER JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
                  WHERE TRUE
                    AND EXISTS(SELECT 1
-                              FROM tmp_fact_acct_unbalanced_agg agg
+                              FROM tmp_fact_acct_unbalanced_agg_inventory_clearing agg
                               WHERE agg.c_acctschema_id = t.c_acctschema_id
                                 AND agg.aggregationKey = t.aggregationKey
                                 AND agg.accountno = t.accountno)
