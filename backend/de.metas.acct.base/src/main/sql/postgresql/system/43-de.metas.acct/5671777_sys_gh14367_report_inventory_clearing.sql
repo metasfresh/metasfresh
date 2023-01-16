@@ -65,7 +65,7 @@ BEGIN
              INNER JOIN ad_table t ON t.ad_table_id = fa.ad_table_id
     WHERE fa.account_id = p_C_ElementValue_ID
       AND fa.c_acctschema_id = p_C_AcctSchema_ID
-      AND (p_EndDate IS NULL OR fa.dateacct > p_EndDate);
+      AND (p_EndDate IS NULL OR fa.dateacct <= p_EndDate);
 
     CREATE UNIQUE INDEX ON tmp_fact_acct_prefiltered (fact_acct_id);
 
