@@ -1,7 +1,7 @@
 -- Value: report_bank_in_transit
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2023-01-13T15:40:31.012Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585179,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Bank In Transit','json','N','N','xls','SELECT * FROM de_metas_acct.report_bank_in_transit(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, @EndDate/quotedIfNotDefault/NULL@);','Excel',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'report_bank_in_transit')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585179,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Deposit in transit','json','N','N','xls','SELECT * FROM de_metas_acct.report_bank_in_transit(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, @EndDate/quotedIfNotDefault/NULL@);','Excel',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'report_bank_in_transit')
 ;
 
 -- 2023-01-13T15:40:31.284Z
@@ -140,7 +140,7 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 
 -- Process: report_payment_select(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- 2023-01-13T16:09:03.102Z
-UPDATE AD_Process_Trl SET Name='Payment Select',Updated=TO_TIMESTAMP('2023-01-13 18:09:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585182
+UPDATE AD_Process_Trl SET Name='Payment selection',Updated=TO_TIMESTAMP('2023-01-13 18:09:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585182
 ;
 
 -- Process: report_payment_select(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
@@ -174,7 +174,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 ;
 
 -- 2023-01-13T16:16:26.131Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581918,0,TO_TIMESTAMP('2023-01-13 18:16:25','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Bank Im Transit','Bank Im Transit',TO_TIMESTAMP('2023-01-13 18:16:25','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581918,0,TO_TIMESTAMP('2023-01-13 18:16:25','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','Wertstellung ausstehend','Wertstellung ausstehend',TO_TIMESTAMP('2023-01-13 18:16:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-01-13T16:16:26.376Z
@@ -183,7 +183,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Element: null
 -- 2023-01-13T16:16:43.903Z
-UPDATE AD_Element_Trl SET Name='Bank In Transit', PrintName='Bank In Transit',Updated=TO_TIMESTAMP('2023-01-13 18:16:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581918 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Deposit in transit', PrintName='Deposit in transit',Updated=TO_TIMESTAMP('2023-01-13 18:16:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581918 AND AD_Language='en_US'
 ;
 
 -- 2023-01-13T16:16:43.973Z
@@ -217,7 +217,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Element: null
 -- 2023-01-13T16:17:37.895Z
-UPDATE AD_Element_Trl SET Name='Payment Select', PrintName='Payment Select',Updated=TO_TIMESTAMP('2023-01-13 18:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581920 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Payment selection', PrintName='Payment selection',Updated=TO_TIMESTAMP('2023-01-13 18:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581920 AND AD_Language='en_US'
 ;
 
 -- 2023-01-13T16:17:37.934Z
@@ -241,11 +241,11 @@ UPDATE AD_Element_Trl SET Name='Unallocated Payments', PrintName='Unallocated Pa
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581921,'en_US') 
 ;
 
--- Name: Bank Im Transit
+-- Name: Wertstellung ausstehend
 -- Action Type: P
 -- Process: report_bank_in_transit(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- 2023-01-13T16:19:08.576Z
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('P',0,581918,542036,0,585179,TO_TIMESTAMP('2023-01-13 18:19:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','report_bank_in_transit','Y','N','N','N','N','Bank Im Transit',TO_TIMESTAMP('2023-01-13 18:19:07','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('P',0,581918,542036,0,585179,TO_TIMESTAMP('2023-01-13 18:19:07','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','report_bank_in_transit','Y','N','N','N','N','Wertstellung ausstehend',TO_TIMESTAMP('2023-01-13 18:19:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-01-13T16:19:08.657Z
