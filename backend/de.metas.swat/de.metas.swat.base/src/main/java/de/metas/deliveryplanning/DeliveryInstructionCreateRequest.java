@@ -27,11 +27,15 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -49,7 +53,6 @@ public class DeliveryInstructionCreateRequest
 	@NonNull BPartnerLocationId shipperLocationId;
 
 	@NonNull BPartnerLocationId loadingPartnerLocationId;
-
 
 	@NonNull BPartnerLocationId deliveryPartnerLocationId;
 
@@ -84,5 +87,17 @@ public class DeliveryInstructionCreateRequest
 	boolean processed;
 
 	boolean isToBeFetched;
+
+	@NonNull ProductId productId;
+
+	@Nullable String batchNo;
+
+	@NonNull LocatorId locatorId;
+
+	@NonNull Quantity qtyLoaded;
+
+	@NonNull Quantity qtyDischarged;
+
+	@NonNull I_C_UOM uom;
 
 }

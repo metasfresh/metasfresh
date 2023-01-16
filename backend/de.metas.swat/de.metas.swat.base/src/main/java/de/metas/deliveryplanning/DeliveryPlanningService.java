@@ -327,7 +327,14 @@ public class DeliveryPlanningService
 			throw new DocTypeNotFoundException(docTypeQuery);
 		}
 
+		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
+		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
+		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
+
+
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
+		final boolean isIncoming = deliveryPlanningType.isIncoming();
+
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
@@ -337,12 +344,12 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
-				.loadingPartnerLocationId(deliveryPlanningType.isIncoming()
+				.loadingPartnerLocationId(isIncoming
 												  ? warehouseBPLocationId
 												  : deliveryPlanningLocationId)
 				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
 				.loadingTime(deliveryPlanningRecord.getLoadingTime())
-				.deliveryPartnerLocationId(deliveryPlanningType.isIncoming()
+				.deliveryPartnerLocationId(isIncoming
 												   ? deliveryPlanningLocationId
 												   : warehouseBPLocationId)
 				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
@@ -353,6 +360,12 @@ public class DeliveryPlanningService
 
 				.shipperId(ShipperId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Shipper_ID()))
 
+				.productId(productId)
+				.isToBeFetched(isIncoming)
+				//.locatorId() : Not yet decided where to take it from. TODO in a future CR
+				.batchNo(deliveryPlanningRecord.getBatch())
+				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
+				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
 				.build();
 	}
 

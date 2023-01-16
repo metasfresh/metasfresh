@@ -35,12 +35,14 @@ import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -262,6 +264,28 @@ public class DeliveryPlanningRepository
 		// deliveryInstructionRecord.setDocAction(X_M_ShipperTransportation.DOCSTATUS_Drafted); todo: not sure if needed !
 
 		save(deliveryInstructionRecord);
+
+		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
+
+		shippingPackageRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
+
+		final I_M_Package mpackage = newInstance(I_M_Package.class);
+		mpackage.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
+		mpackage.setShipDate((TimeUtil.asTimestamp(request.getDeliveryDate())));
+		mpackage.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
+		mpackage.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
+		save(mpackage);
+
+		shippingPackageRecord.setM_Package_ID(mpackage.getM_Package_ID());
+		shippingPackageRecord.setIsToBeFetched(request.isToBeFetched());
+		shippingPackageRecord.setM_Product_ID(request.getProductId().getRepoId());
+
+		shippingPackageRecord.setActualDischargeQuantity(request.getQtyDischarged().toBigDecimal());
+		shippingPackageRecord.setActualLoadQty(request.getQtyLoaded().toBigDecimal());
+		shippingPackageRecord.setBatch(request.getBatchNo());
+		shippingPackageRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
+
+		saveRecord(shippingPackageRecord);
 
 
 		return deliveryInstructionRecord;
