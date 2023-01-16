@@ -2,9 +2,6 @@ package de.metas.shipping.api.impl;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -12,6 +9,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.X_C_DocType;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
@@ -67,21 +66,27 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	}
 
 	@Override
-	public boolean isDeliveryInstruction(@NonNull final  I_M_ShipperTransportation shipperTransportation)
+	public boolean isDeliveryInstruction(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(DocTypeId.ofRepoId(shipperTransportation.getC_DocType_ID()));
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(shipperTransportation.getC_DocType_ID());
+
+		return isDeliveryInstruction(docTypeId);
+
+	}
+	public boolean isDeliveryInstruction(@NonNull final DocTypeId docTypeId)
+	{
+		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 
 		final String docBaseType = docBaseAndSubTypeById.getDocBaseType();
 		final String docSubType = docBaseAndSubTypeById.getDocSubType();
 
-
-		if(!X_C_DocType.DOCBASETYPE_SpeditionsauftragLadeliste.equals(docBaseType))
+		if (!X_C_DocType.DOCBASETYPE_SpeditionsauftragLadeliste.equals(docBaseType))
 		{
 			// this is not a transportation order doc type
 			return false;
 		}
 
-		if(!X_C_DocType.DOCSUBTYPE_DeliveryInstruction.equals(docSubType))
+		if (!X_C_DocType.DOCSUBTYPE_DeliveryInstruction.equals(docSubType))
 		{
 			return false;
 		}

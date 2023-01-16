@@ -1,5 +1,6 @@
 package de.metas.shipping.api;
 
+import de.metas.document.DocTypeId;
 import de.metas.shipping.model.MMShipperTransportation;
 import org.compiere.model.I_M_Package;
 
@@ -26,4 +27,6 @@ public interface IShipperTransportationBL extends ISingletonService
 	void setC_DocType(I_M_ShipperTransportation shipperTransportation);
 
 	boolean isDeliveryInstruction(I_M_ShipperTransportation shipperTransportation);
+
+	boolean isDeliveryInstruction(DocTypeId docTypeId);
 }
