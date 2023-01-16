@@ -180,7 +180,7 @@ BEGIN
                     GET DIAGNOSTICS v_count = ROW_COUNT;
                     IF (v_count > 0) THEN
                         v_count_updated = v_count_updated + v_count;
-                        RAISE NOTICE '% updated where % because it did not match baselanguage translation', table_name, base_table || '_ID = ' || base_table_id;
+                        RAISE NOTICE '% updated where % because it did not match baselanguage translation', base_table, base_table || '_ID = ' || base_table_id;
                     END IF;
                 END LOOP;
         END LOOP;
