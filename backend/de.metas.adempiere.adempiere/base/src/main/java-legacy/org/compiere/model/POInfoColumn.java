@@ -5,6 +5,7 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.compiere.util.Env;
@@ -103,10 +104,10 @@ public final class POInfoColumn implements Serializable
 		this.AD_Val_Rule_ID = AD_Val_Rule_ID <= 0 ? -1 : AD_Val_Rule_ID;
 		//
 		FieldLength = fieldLength;
-		ValueMin = valueMin;
-		ValueMin_BD = toBigDecimalOrNull(ValueMin, "ValueMin");
-		ValueMax = valueMax;
-		ValueMax_BD = toBigDecimalOrNull(ValueMax, "ValueMax");
+		ValueMin = StringUtils.trimBlankToNull(valueMin);
+		ValueMin_BD = toBigDecimalOrNull(this.ValueMin, "ValueMin");
+		ValueMax = StringUtils.trimBlankToNull(valueMax);
+		ValueMax_BD = toBigDecimalOrNull(this.ValueMax, "ValueMax");
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
@@ -298,21 +299,21 @@ public final class POInfoColumn implements Serializable
 	@Nullable
 	private static BigDecimal toBigDecimalOrNull(final String valueStr, final String name)
 	{
-		if (Check.isEmpty(valueStr, true))
+		final String valueNorm = StringUtils.trimBlankToNull(valueStr);
+		if(valueNorm == null)
 		{
 			return null;
 		}
 
 		try
 		{
-			return new BigDecimal(valueStr.trim());
+			return new BigDecimal(valueNorm);
 		}
 		catch (final Exception ex) // i.e. NumberFormatException
 		{
-			logger.error("Cannot parse " + name + "=" + valueStr, ex);
+			logger.error("Cannot parse {}=`{}`. Returning null.", name, valueNorm, ex);
+			return null;
 		}
-
-		return null;
 	}
 
 	public String getColumnName()
