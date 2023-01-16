@@ -614,31 +614,6 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
 
 	/**
-	 * Set Forwarder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Forwarder_ID (int M_Forwarder_ID);
-
-	/**
-	 * Get Forwarder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Forwarder_ID();
-
-	@Nullable org.compiere.model.I_M_Forwarder getM_Forwarder();
-
-	void setM_Forwarder(@Nullable org.compiere.model.I_M_Forwarder M_Forwarder);
-
-	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Forwarder> COLUMN_M_Forwarder_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Forwarder_ID", org.compiere.model.I_M_Forwarder.class);
-	String COLUMNNAME_M_Forwarder_ID = "M_Forwarder_ID";
-
-	/**
 	 * Set Means of Transportation.
 	 *
 	 * <br>Type: Search
@@ -751,6 +726,33 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_ShipmentSchedule_ID", null);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Warehouse.

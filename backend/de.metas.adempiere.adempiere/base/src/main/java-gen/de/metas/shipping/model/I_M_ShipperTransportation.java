@@ -133,28 +133,7 @@ public interface I_M_ShipperTransportation
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-	/**
-	 * Set Sammelrechnung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
 
-	/**
-	 * Get Sammelrechnung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getCollectiveBillReport();
-
-	/** Column definition for CollectiveBillReport */
-	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
-	/** Column name CollectiveBillReport */
-	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
 	/**
 	 * Set Incoterms.
 	 *
@@ -512,31 +491,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_LoadingTime = "LoadingTime";
 
 	/**
-	 * Set Forwarder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Forwarder_ID (int M_Forwarder_ID);
-
-	/**
-	 * Get Forwarder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Forwarder_ID();
-
-	@Nullable org.compiere.model.I_M_Forwarder getM_Forwarder();
-
-	void setM_Forwarder(@Nullable org.compiere.model.I_M_Forwarder M_Forwarder);
-
-	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Forwarder> COLUMN_M_Forwarder_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Forwarder_ID", org.compiere.model.I_M_Forwarder.class);
-	String COLUMNNAME_M_Forwarder_ID = "M_Forwarder_ID";
-
-	/**
 	 * Set Means of Transportation.
 	 *
 	 * <br>Type: Search
@@ -566,7 +520,7 @@ public interface I_M_ShipperTransportation
 	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Shipper_ID (int M_Shipper_ID);
@@ -576,14 +530,14 @@ public interface I_M_ShipperTransportation
 	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Shipper_ID();
 
-	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+	org.compiere.model.I_M_Shipper getM_Shipper();
 
-	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+	void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
 
 	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";

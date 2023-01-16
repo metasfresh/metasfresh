@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2061626269L;
+	private static final long serialVersionUID = 510905355L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -91,24 +91,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
-
-
-	/** Set Sammelrechnung erstellen.
-	 @param CollectiveBillReport Sammelrechnung erstellen	  */
-	@Override
-	public void setCollectiveBillReport (java.lang.String CollectiveBillReport)
-	{
-		set_Value (COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
-	}
-
-	/** Get Sammelrechnung erstellen.
-	 @return Sammelrechnung erstellen	  */
-	@Override
-	public java.lang.String getCollectiveBillReport ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CollectiveBillReport);
-	}
-
 
 	@Override
 	public org.compiere.model.I_C_Incoterms getC_Incoterms()
@@ -355,33 +337,6 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public java.lang.String getLoadingTime() 
 	{
 		return get_ValueAsString(COLUMNNAME_LoadingTime);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Forwarder getM_Forwarder()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Forwarder_ID, org.compiere.model.I_M_Forwarder.class);
-	}
-
-	@Override
-	public void setM_Forwarder(final org.compiere.model.I_M_Forwarder M_Forwarder)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Forwarder_ID, org.compiere.model.I_M_Forwarder.class, M_Forwarder);
-	}
-
-	@Override
-	public void setM_Forwarder_ID (final int M_Forwarder_ID)
-	{
-		if (M_Forwarder_ID < 1) 
-			set_Value (COLUMNNAME_M_Forwarder_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Forwarder_ID, M_Forwarder_ID);
-	}
-
-	@Override
-	public int getM_Forwarder_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Forwarder_ID);
 	}
 
 	@Override
