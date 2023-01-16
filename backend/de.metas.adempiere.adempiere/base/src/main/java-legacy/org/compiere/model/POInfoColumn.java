@@ -10,11 +10,7 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.util.DisplayType;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
