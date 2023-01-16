@@ -83,12 +83,9 @@ BEGIN
         RAISE EXCEPTION 'Base language is not set';
     END IF;
 
-    RAISE NOTICE 'baselanguage: %', base_language;
-
     FOR table_name IN SELECT UPPER(tablename) FROM ad_table WHERE UPPER(tablename) LIKE UPPER('%_Trl') AND UPPER(tablename) NOT LIKE ALL( IGNORED_TABLES ) ORDER BY 1
         LOOP
             base_table := SUBSTRING(table_name, 1, LENGTH(table_name) - 4); -- that means without _TRL. e.g. AD_Ref_List
---             RAISE NOTICE 'base_table: %', base_table;
             insert_query_set_template := '';
             update_query_set_template := '';
             update_query_and_template := '';
@@ -107,7 +104,6 @@ BEGIN
                 LOOP
                     FOR destination_language IN EXECUTE 'SELECT DISTINCT ad_language FROM ad_language WHERE isbaselanguage = ''Y'' OR issystemlanguage = ''Y'';'  -- e.g. `en_US`
                         LOOP
---                             RAISE NOTICE 'destination_language: %', destination_language;
                             final_insert_query := FORMAT(REPLACE(insert_query_template, 'base_table', base_table),
                                                          insert_query_set_template || ' ad_language',
                                                          insert_query_set_template ||' '''||  destination_language || ''' ' || 'as AD_Language',
@@ -139,12 +135,11 @@ BEGIN
                                                AND btt.ad_language = 'en_US;
                            */
 
---                             RAISE NOTICE '%', final_insert_query;
                             EXECUTE final_insert_query;
                             GET DIAGNOSTICS v_count = ROW_COUNT;
                             IF (v_count > 0) THEN
                                 v_count_inserted = v_count_inserted + v_count;
-                                RAISE NOTICE 'Table %, %: % rows inserted for ad_language %', table_name, base_table || '_ID = ' || base_table_id, v_count, destination_language;
+                                RAISE NOTICE 'Inserted missing translation into % where % and ad_language %', table_name, base_table || '_ID = ' || base_table_id, destination_language;
                             END IF;
                         END LOOP;
 
@@ -161,16 +156,15 @@ BEGIN
                                 AND ( bt.Name <> x.Name OR bt.Description <> x.Description );
                         */
 
---                     RAISE NOTICE '%', final_update_query;
                     EXECUTE final_update_query;
                     GET DIAGNOSTICS v_count = ROW_COUNT;
                     IF (v_count > 0) THEN
                         v_count_updated = v_count_updated + v_count;
-                        RAISE NOTICE 'Table %, %: % rows updated', table_name, base_table || '_ID = ' || base_table_id, v_count;
+                        RAISE NOTICE '% updated where % because it did not match baselanguage translation', table_name, base_table || '_ID = ' || base_table_id;
                     END IF;
             END LOOP;
     END LOOP;
-    RAISE NOTICE 'inserted: % rows, updated: % rows', v_count_inserted, v_count_updated;
+    RAISE NOTICE 'Inserted % missing translation-rows, updated % base-table-rows that were not equal to baselanguage translation', v_count_inserted, v_count_updated;
 END;
 $$
     LANGUAGE plpgsql
