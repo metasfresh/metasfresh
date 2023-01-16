@@ -1,7 +1,7 @@
 -- Value: report_bank_in_transit
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2023-01-13T15:40:31.012Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585179,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Bank In Transit','json','N','N','xls','SELECT * FROM de_metas_acct.report_unallocated_payments(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/null@'');','Excel',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'report_bank_in_transit')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585179,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Bank In Transit','json','N','N','xls','SELECT * FROM de_metas_acct.report_bank_in_transit(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/#Date@'');','Excel',TO_TIMESTAMP('2023-01-13 17:40:30','YYYY-MM-DD HH24:MI:SS'),100,'report_bank_in_transit')
 ;
 
 -- 2023-01-13T15:40:31.284Z
@@ -38,16 +38,10 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542442 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
--- Value: report_bank_in_transit
--- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
--- 2023-01-13T15:44:10.891Z
-UPDATE AD_Process SET SQLStatement='SELECT * FROM de_metas_acct.report_bank_in_transit(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, @EndDate/null@);',Updated=TO_TIMESTAMP('2023-01-13 17:44:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585179
-;
-
 -- Value: report_inventory_clearing
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2023-01-13T16:02:30.140Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585180,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 18:02:29','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'In Rechnung gestellte Ware','json','N','N','xls','SELECT * FROM de_metas_acct.report_inventory_clearing(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/null@'');','Excel',TO_TIMESTAMP('2023-01-13 18:02:29','YYYY-MM-DD HH24:MI:SS'),100,'report_inventory_clearing')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585180,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 18:02:29','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'In Rechnung gestellte Ware','json','N','N','xls','SELECT * FROM de_metas_acct.report_inventory_clearing(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/#Date@'');','Excel',TO_TIMESTAMP('2023-01-13 18:02:29','YYYY-MM-DD HH24:MI:SS'),100,'report_inventory_clearing')
 ;
 
 -- 2023-01-13T16:02:30.386Z
@@ -92,7 +86,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- Value: report_unallocated_payments
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2023-01-13T16:06:06.478Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585181,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 18:06:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Nicht zugeordnete Debitoren Zahlungen','json','N','N','xls','SELECT * FROM de_metas_acct.report_unallocated_payments(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/null@'');','Excel',TO_TIMESTAMP('2023-01-13 18:06:06','YYYY-MM-DD HH24:MI:SS'),100,'report_unallocated_payments')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585181,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 18:06:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Nicht zugeordnete Debitoren Zahlungen','json','N','N','xls','SELECT * FROM de_metas_acct.report_unallocated_payments(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/#Date@'');','Excel',TO_TIMESTAMP('2023-01-13 18:06:06','YYYY-MM-DD HH24:MI:SS'),100,'report_unallocated_payments')
 ;
 
 -- 2023-01-13T16:06:06.603Z
@@ -137,7 +131,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- Value: report_payment_select
 -- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
 -- 2023-01-13T16:08:34.325Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585182,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 18:08:33','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Ausgewählte Zahlungen','json','N','N','xls','SELECT * FROM de_metas_acct.report_payment_select(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/null@'');','Excel',TO_TIMESTAMP('2023-01-13 18:08:33','YYYY-MM-DD HH24:MI:SS'),100,'report_payment_select')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,SQLStatement,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585182,'Y','de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess','N',TO_TIMESTAMP('2023-01-13 18:08:33','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.acct','Y','N','N','N','Y','N','N','N','N','Y','Y',0,'Ausgewählte Zahlungen','json','N','N','xls','SELECT * FROM de_metas_acct.report_payment_select(@C_ElementValue_ID/null@, @C_AcctSchema_ID/null@, ''@EndDate/#Date@'');','Excel',TO_TIMESTAMP('2023-01-13 18:08:33','YYYY-MM-DD HH24:MI:SS'),100,'report_payment_select')
 ;
 
 -- 2023-01-13T16:08:34.450Z
@@ -877,5 +871,29 @@ UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-13 18:2
 -- ParameterName: C_ElementValue_ID
 -- 2023-01-13T16:25:42.444Z
 UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-13 18:25:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542440
+;
+
+-- Process: report_bank_in_transit(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: EndDate
+-- 2023-01-16T09:42:19.126Z
+UPDATE AD_Process_Para SET DefaultValue='@#Date@', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-16 11:42:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542442
+;
+
+-- Process: report_inventory_clearing(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: EndDate
+-- 2023-01-16T09:42:35.525Z
+UPDATE AD_Process_Para SET DefaultValue='@#Date@', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-16 11:42:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542445
+;
+
+-- Process: report_payment_select(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: EndDate
+-- 2023-01-16T09:42:49.899Z
+UPDATE AD_Process_Para SET DefaultValue='@#Date@', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-16 11:42:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542451
+;
+
+-- Process: report_unallocated_payments(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: EndDate
+-- 2023-01-16T09:43:01.394Z
+UPDATE AD_Process_Para SET DefaultValue='@#Date@', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-16 11:43:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542448
 ;
 
