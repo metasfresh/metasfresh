@@ -104,5 +104,5 @@ public class Product
 	boolean purchased;
 
 	@Nullable
-	String SAPProductHierarchy;
+	String sapProductHierarchy;
 }

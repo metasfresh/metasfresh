@@ -332,10 +332,10 @@ public class M_Product_StepDef
 			assertThat(productRecord.isPurchased()).isEqualTo(purchased);
 		}
 
-		final String SAPProductHierarchy = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_SAP_ProductHierarchy);
-		if(Check.isNotBlank(SAPProductHierarchy))
+		final String sapProductHierarchy = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_SAP_ProductHierarchy);
+		if(Check.isNotBlank(sapProductHierarchy))
 		{
-			assertThat(productRecord.getSAP_ProductHierarchy()).isEqualTo(SAPProductHierarchy);
+			assertThat(productRecord.getSAP_ProductHierarchy()).isEqualTo(sapProductHierarchy);
 		}
 	}
 

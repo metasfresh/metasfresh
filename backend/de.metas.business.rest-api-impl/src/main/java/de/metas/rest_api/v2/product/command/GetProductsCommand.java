@@ -213,6 +213,7 @@ public class GetProductsCommand
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
 				.sectionCode(sectionCode)
+				.sapProductHierarchy(productRecord.getSAP_ProductHierarchy())
 				.build();
 	}
 

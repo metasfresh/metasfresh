@@ -45,7 +45,7 @@ import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.sap.SAPConstants.STANDARD_PRODUCT_CATEGORY_ID;
+import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_PRODUCT_CATEGORY_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
@@ -130,12 +130,12 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 				.pInstanceId(enabledByExternalSystemRequest.getAdPInstanceId())
 				.build();
 
-		final String standardProductCategoryValue = getContext().getPropertiesComponent().resolveProperty(STANDARD_PRODUCT_CATEGORY_ID)
-				.orElseThrow(() -> new RuntimeCamelException("Missing mandatory property: " + STANDARD_PRODUCT_CATEGORY_ID));
+		final String defaultProductCategoryId = getContext().getPropertiesComponent().resolveProperty(DEFAULT_PRODUCT_CATEGORY_ID)
+				.orElseThrow(() -> new RuntimeCamelException("Missing mandatory property: " + DEFAULT_PRODUCT_CATEGORY_ID));
 
 		return new ProductUpsertProcessor(enabledByExternalSystemRequest,
 										  pInstanceLogger,
 										  externalMappingsHolder,
-										  JsonMetasfreshId.of(standardProductCategoryValue));
+										  JsonMetasfreshId.of(defaultProductCategoryId));
 	}
 }

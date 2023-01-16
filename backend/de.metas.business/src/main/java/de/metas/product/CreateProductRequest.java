@@ -87,5 +87,5 @@ public class CreateProductRequest
 	SectionCodeId sectionCodeId;
 
 	@Nullable
-	String SAPProductHierarchy;
+	String sapProductHierarchy;
 }

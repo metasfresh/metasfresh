@@ -175,7 +175,7 @@ public class ProductRepository
 			product.setM_SectionCode_ID(request.getSectionCodeId().getRepoId());
 		}
 
-		product.setSAP_ProductHierarchy(request.getSAPProductHierarchy());
+		product.setSAP_ProductHierarchy(request.getSapProductHierarchy());
 
 		saveRecord(product);
 
@@ -314,7 +314,7 @@ public class ProductRepository
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(productRecord.getM_SectionCode_ID()))
 				.purchased(productRecord.isPurchased())
-				.SAPProductHierarchy(productRecord.getSAP_ProductHierarchy())
+				.sapProductHierarchy(productRecord.getSAP_ProductHierarchy())
 				.build();
 	}
 
@@ -356,7 +356,7 @@ public class ProductRepository
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(product.getSectionCodeId()));
 		record.setIsPurchased(product.isPurchased());
-		record.setSAP_ProductHierarchy(product.getSAPProductHierarchy());
+		record.setSAP_ProductHierarchy(product.getSapProductHierarchy());
 
 		return record;
 	}

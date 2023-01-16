@@ -86,28 +86,6 @@ UPDATE AD_Element_Trl SET Description='If enabled, the process also checks the p
 UPDATE AD_Element_Trl SET Description='If enabled, the process also checks the product description when trying to lookup material type.',Updated=TO_TIMESTAMP('2023-01-16 14:50:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581923 AND AD_Language='en_US'
 ;
 
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- 2023-01-16T12:50:13.425Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581923,'en_US') 
 ;
@@ -128,5 +106,36 @@ UPDATE AD_Element_Trl SET Description='If enabled, the process also checks the p
 
 -- 2023-01-16T12:50:18.618Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581923,'nl_NL') 
+;
+
+-- Element: IsCheckDescriptionForMaterialType
+-- 2023-01-16T16:00:50.141Z
+UPDATE AD_Element_Trl SET Description='Wenn diese Option aktiviert ist, prüft der Prozess auch die Produktbeschreibung, wenn er versucht, nach der Materialart zu suchen.', Name='Beschreibung für Materialtyp prüfen', PrintName='Beschreibung für Materialtyp prüfen',Updated=TO_TIMESTAMP('2023-01-16 18:00:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581923 AND AD_Language='de_CH'
+;
+
+-- 2023-01-16T16:00:50.191Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581923,'de_CH')
+;
+
+-- Element: IsCheckDescriptionForMaterialType
+-- 2023-01-16T16:01:01.206Z
+UPDATE AD_Element_Trl SET Description='Wenn diese Option aktiviert ist, prüft der Prozess auch die Produktbeschreibung, wenn er versucht, nach der Materialart zu suchen.', Name='Beschreibung für Materialtyp prüfen', PrintName='Beschreibung für Materialtyp prüfen',Updated=TO_TIMESTAMP('2023-01-16 18:01:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581923 AND AD_Language='de_DE'
+;
+
+-- 2023-01-16T16:01:01.208Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581923,'de_DE')
+;
+
+-- 2023-01-16T16:01:01.213Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581923,'de_DE')
+;
+
+-- Element: IsCheckDescriptionForMaterialType
+-- 2023-01-16T16:01:09.166Z
+UPDATE AD_Element_Trl SET Description='Wenn diese Option aktiviert ist, prüft der Prozess auch die Produktbeschreibung, wenn er versucht, nach der Materialart zu suchen.', Name='Beschreibung für Materialtyp prüfen', PrintName='Beschreibung für Materialtyp prüfen',Updated=TO_TIMESTAMP('2023-01-16 18:01:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581923 AND AD_Language='fr_CH'
+;
+
+-- 2023-01-16T16:01:09.171Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581923,'fr_CH')
 ;
 

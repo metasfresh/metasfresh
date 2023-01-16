@@ -52,18 +52,18 @@ public class ProductUpsertProcessor implements Processor
 	@NonNull
 	final ExternalMappingsHolder externalMappingsHolder;
 	@NonNull
-	final JsonMetasfreshId standardProductCategoryId;
+	final JsonMetasfreshId defaultProductCategoryId;
 
 	public ProductUpsertProcessor(
 			final @NonNull JsonExternalSystemRequest externalSystemRequest,
 			final @NonNull PInstanceLogger pInstanceLogger,
 			final @NonNull ExternalMappingsHolder externalMappingsHolder,
-			final @NonNull JsonMetasfreshId standardProductCategoryId)
+			final @NonNull JsonMetasfreshId defaultProductCategoryId)
 	{
 		this.externalSystemRequest = externalSystemRequest;
 		this.pInstanceLogger = pInstanceLogger;
 		this.externalMappingsHolder = externalMappingsHolder;
-		this.standardProductCategoryId = standardProductCategoryId;
+		this.defaultProductCategoryId = defaultProductCategoryId;
 	}
 
 	@Override
@@ -128,8 +128,6 @@ public class ProductUpsertProcessor implements Processor
 			return Optional.empty();
 		}
 
-		final JsonMetasfreshId resolvedProductCategoryId = resolveProductCategoryId(product);
-
 		final JsonRequestProduct jsonRequestProduct = new JsonRequestProduct();
 
 		jsonRequestProduct.setName(product.getName());
@@ -140,7 +138,10 @@ public class ProductUpsertProcessor implements Processor
 
 		jsonRequestProduct.setUomCode(resolvedUOMValue);
 		jsonRequestProduct.setType(JsonRequestProduct.Type.ofCode(resolvedProductTypeValue));
+
+		final JsonMetasfreshId resolvedProductCategoryId = resolveProductCategoryId(product);
 		jsonRequestProduct.setProductCategoryIdentifier(String.valueOf(resolvedProductCategoryId.getValue()));
+
 		jsonRequestProduct.setPurchased(true);
 		jsonRequestProduct.setSAPProductHierarchy(product.getProductHierarchy());
 
@@ -183,7 +184,7 @@ public class ProductUpsertProcessor implements Processor
 	{
 		if (!externalMappingsHolder.hasProductCategoryMappings())
 		{
-			return standardProductCategoryId;
+			return defaultProductCategoryId;
 		}
 
 		final Optional<JsonMetasfreshId> productCategoryIdFromMaterialType = externalMappingsHolder.resolveProductCategoryId(productRow.getMaterialType());
@@ -196,11 +197,10 @@ public class ProductUpsertProcessor implements Processor
 		if (checkDescriptionForMaterialType)
 		{
 			return externalMappingsHolder.resolveProductCategoryIdByMatchingValue(productRow.getDescription())
-					.orElse(standardProductCategoryId);
-
+					.orElse(defaultProductCategoryId);
 		}
 
-		return standardProductCategoryId;
+		return defaultProductCategoryId;
 	}
 
 	@NonNull
