@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class InvoiceHeaderImplBuilder
 {
-	private I_C_DocType docTypeInvoice = null;
+	private InvoiceDocTypeAggregator invoiceDocTypeAggregator = null;
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -83,7 +83,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Async_Batch_ID(getC_Async_Batch_ID());
 
 		// Document Type
-		invoiceHeader.setC_DocTypeInvoice(getC_DocTypeInvoice());
+		invoiceHeader.setInvoiceDocTypeAggregator(getInvoiceDocTypeAggregator());
 		invoiceHeader.setIsSOTrx(isSOTrx());
 
 		// Pricing and currency
@@ -129,14 +129,22 @@ public class InvoiceHeaderImplBuilder
 		C_Async_Batch_ID = checkOverrideID("C_Async_Batch_ID", C_Async_Batch_ID, asyncBatchId);
 	}
 
-	public I_C_DocType getC_DocTypeInvoice()
+	@Nullable
+	public InvoiceDocTypeAggregator getInvoiceDocTypeAggregator()
 	{
-		return docTypeInvoice;
+		return invoiceDocTypeAggregator;
 	}
 
-	public void setC_DocTypeInvoice(final I_C_DocType docTypeInvoice)
+	public void setC_DocTypeInvoice(@NonNull final I_C_DocType docTypeInvoice)
 	{
-		this.docTypeInvoice = checkOverrideModel("DocTypeInvoice", this.docTypeInvoice, docTypeInvoice);
+		if (invoiceDocTypeAggregator == null)
+		{
+			invoiceDocTypeAggregator = InvoiceDocTypeAggregator.ofDocType(docTypeInvoice);
+		}
+		else
+		{
+			invoiceDocTypeAggregator.addDocType(docTypeInvoice);
+		}
 	}
 
 	public String getPOReference()

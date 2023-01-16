@@ -7,6 +7,8 @@ import org.compiere.model.I_C_DocType;
 public interface IDocTypeBL extends ISingletonService
 {
 	I_C_DocType getById(DocTypeId docTypeId);
+	
+	I_C_DocType getByIdNonNull(DocTypeId docTypeId);
 
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
 

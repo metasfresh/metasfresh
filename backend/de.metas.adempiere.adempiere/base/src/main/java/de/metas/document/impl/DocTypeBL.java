@@ -7,9 +7,12 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
+
+import java.util.Optional;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -21,6 +24,16 @@ public class DocTypeBL implements IDocTypeBL
 		return docTypesRepo.getById(docTypeId);
 	}
 
+	@Override
+	@NonNull
+	public I_C_DocType getByIdNonNull(@NonNull final DocTypeId docTypeId)
+	{
+		return Optional.ofNullable(docTypesRepo.getById(docTypeId))
+				.orElseThrow(() -> new AdempiereException("No C_DocType record found for ID!")
+						.appendParametersToMessage()
+						.setParameter("DocTypeId", docTypeId));
+	}
+	
 	@Override
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery docTypeQuery)
 	{
