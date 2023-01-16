@@ -54,7 +54,6 @@ DECLARE
     base_language  varchar := '';
     destination_language        varchar := '';
     table_name                  varchar;
-    base_table_id               numeric;
     base_table                  varchar;
     insert_query_set_template   text    := '';
     update_query_set_template   text    := '';
@@ -68,13 +67,12 @@ DECLARE
     insert_query_template       varchar := 'INSERT INTO base_table_trl (base_table_id, ad_client_ID, ad_org_id, created, createdBy, updated, updatedBy, isTranslated, isActive, %s) '
                                             || 'SELECT base_table_id, bt.ad_client_ID, bt.ad_org_id, now(), 0, now(), 0, ''N'', bt.IsActive, %s '
                                             || 'FROM base_table bt '
-                                            || 'WHERE bt.base_table_id= %s '
-                                            || 'AND NOT EXISTS (SELECT 1 FROM base_table_trl btt WHERE btt.base_table_id = %s AND btt.ad_language = ''%s'')';
-    update_query_template       varchar := 'WITH X AS (SELECT * FROM base_table_trl WHERE base_table_id = %s AND ad_language =  ''%s'') '
-                                            || 'UPDATE base_table as bt '
+                                            || 'WHERE NOT EXISTS (SELECT 1 FROM base_table_trl trl WHERE trl.base_table_id = bt.base_table_id AND trl.ad_language = ''%s'')';
+    update_query_template       varchar := 'UPDATE base_table as bt '
                                             || 'SET %s '
-                                            || 'FROM X '
-                                            || 'WHERE bt.base_table_id = x.base_table_id ';
+                                            || 'FROM base_table_trl trl '
+                                            || 'WHERE bt.base_table_id = trl.base_table_id '
+                                            || 'AND trl.ad_language = ''%s'' ';
 BEGIN
 
     SELECT ad_language INTO base_language FROM ad_language WHERE isbaselanguage = 'Y';
@@ -92,78 +90,73 @@ BEGIN
             FOR v_columnname IN SELECT columnname FROM ad_column WHERE istranslated = 'Y' AND ad_table_id = get_table_id(base_table) -- e.g. AD_Ref_List.Name
                 LOOP
                     insert_query_set_template := insert_query_set_template || FORMAT('%s ,', v_columnname); -- Name ,Description ,
-                    update_query_set_template := update_query_set_template || FORMAT('%s = x.%s, ', v_columnname, v_columnname); -- Name = x.Name ,Description = x.Description ,
-                    update_query_and_template := update_query_and_template || FORMAT('bt.%s <> x.%s OR ', v_columnname, v_columnname); -- bt.Name <> x.Name OR bt.Description <> x.Description OR
+                    update_query_set_template := update_query_set_template || FORMAT('%s = trl.%s, ', v_columnname, v_columnname); -- Name = trl.Name ,Description = trl.Description ,
+                    update_query_and_template := update_query_and_template || FORMAT('bt.%s <> trl.%s OR ', v_columnname, v_columnname); -- bt.Name <> trl.Name OR bt.Description <> trl.Description OR
                 END LOOP;
 
-            insert_query_set_template := insert_query_set_template ; --=> Name ,Description,
-            update_query_set_template := SUBSTRING(update_query_set_template, 1, LENGTH(update_query_set_template) - 2); -- delete the last ", " => Name = x.Name ,Description = x.Description
-            update_query_and_template := 'AND ( ' || SUBSTRING( update_query_and_template, 1, LENGTH(update_query_and_template) - 3) || ' );'; -- delete the last "OR " => AND ( Name <> x.Name OR Description <> x.Description )
+                insert_query_set_template := insert_query_set_template ; --=> Name ,Description,
+                update_query_set_template := SUBSTRING(update_query_set_template, 1, LENGTH(update_query_set_template) - 2); -- delete the last ", " => Name = trl.Name ,Description = trl.Description
+                update_query_and_template := 'AND ( ' || SUBSTRING( update_query_and_template, 1, LENGTH(update_query_and_template) - 3) || ' );'; -- delete the last "OR " => AND ( Name <> trl.Name OR Description <> trl.Description )
 
-            FOR base_table_id IN EXECUTE 'SELECT ' || base_table || '_ID FROM ' || base_table -- e.g. AD_Ref_List_ID = 123456
-                LOOP
-                    FOR destination_language IN EXECUTE 'SELECT DISTINCT ad_language FROM ad_language WHERE isbaselanguage = ''Y'' OR issystemlanguage = ''Y'';'  -- e.g. `en_US`
-                        LOOP
-                            final_insert_query := FORMAT(REPLACE(insert_query_template, 'base_table', base_table),
-                                                         insert_query_set_template || ' ad_language',
-                                                         insert_query_set_template ||' '''||  destination_language || ''' ' || 'as AD_Language',
-                                                         base_table_id::varchar,
-                                                         base_table_id::varchar,
-                                                         destination_language);
-                            /*
-                              Example:  destination language is en_US, one of the updated entries is the AD_Ref_List with the ID 123456. The insert query will look like:
+                FOR destination_language IN EXECUTE 'SELECT DISTINCT ad_language FROM ad_language WHERE isbaselanguage = ''Y'' OR issystemlanguage = ''Y'';'  -- e.g. `en_US`
+                    LOOP
+                        final_insert_query := FORMAT(REPLACE(insert_query_template, 'base_table', base_table),
+                                                     insert_query_set_template || ' ad_language',
+                                                     insert_query_set_template ||' '''||  destination_language || ''' ' || 'as AD_Language',
+                                                     destination_language);
+                        /*
+                          Example:  destination language is de_DE. The insert query will look like:
 
-                            INSERT INTO AD_Ref_List_Trl (AD_Ref_List_ID, ad_client_ID, ad_org_id, created, createdBy, updated, updatedBy, isTranslated, isActive, Name, Description, Help, AD_Language)
-                            SELECT bt.AD_Ref_List_ID,
-                                   bt.ad_client_ID,
-                                   bt.ad_org_id,
-                                   NOW(),
-                                   0,
-                                   NOW(),
-                                   0,
-                                   'N',
-                                   bt.isActive,
-                                   Name,
-                                   Description,
-                                   Help,
-                                   'en_US' AS AD_Language
-                            FROM AD_Ref_List bt
-                            WHERE bt.AD_Ref_List_id = 123456
-                              AND NOT EXISTS(SELECT 1
-                                             FROM AD_Ref_List_trl btt
-                                             WHERE btt.AD_Ref_List_id = 123456
-                                               AND btt.ad_language = 'en_US;
-                           */
+                        INSERT INTO AD_Ref_List_Trl (AD_Ref_List_ID, ad_client_ID, ad_org_id, created, createdBy, updated, updatedBy, isTranslated, isActive, Name, Description, AD_Language)
+                        SELECT bt.AD_Ref_List_ID,
+                               bt.ad_client_ID,
+                               bt.ad_org_id,
+                               NOW(),
+                               0,
+                               NOW(),
+                               0,
+                               'N',
+                               bt.isActive,
+                               Name,
+                               Description,
+                               'de_DE' AS AD_Language
+                        FROM AD_Ref_List bt
+                        WHERE NOT EXISTS(SELECT 1
+                                         FROM AD_Ref_List_trl trl
+                                         WHERE trl.AD_Ref_List_id = bt.ad_ref_list_id
+                                           AND trl.ad_language = 'de_DE')
+                        ;
+                       */
 
-                            EXECUTE final_insert_query;
-                            GET DIAGNOSTICS v_count = ROW_COUNT;
-                            IF (v_count > 0) THEN
-                                v_count_inserted = v_count_inserted + v_count;
-                                RAISE NOTICE 'Inserted missing translation into % where % and ad_language %', table_name, base_table || '_ID = ' || base_table_id, destination_language;
-                            END IF;
-                        END LOOP;
+                        EXECUTE final_insert_query;
+                        GET DIAGNOSTICS v_count = ROW_COUNT;
+                        IF (v_count > 0) THEN
+                            v_count_inserted = v_count_inserted + v_count;
+                            RAISE NOTICE 'Inserted % missing translation-rows into % where ad_language = %', v_count, table_name, destination_language;
+                        END IF;
+                    END LOOP;
 
-                    final_update_query := FORMAT(REPLACE(update_query_template, 'base_table', base_table), base_table_id::varchar, base_language, update_query_set_template);
+                    final_update_query := FORMAT(REPLACE(update_query_template, 'base_table', base_table), update_query_set_template, base_language);
                     final_update_query := final_update_query || update_query_and_template;
                     /*
-                       Example: base language is en_US, one of the updated entries is the AD_Ref_List with the ID 123456. The update query will look like:
+                        Example: base language is de_DE. The update query will look like:
 
-                       WITH X AS (SELECT * FROM AD_Ref_List_trl WHERE AD_Ref_List_id = 123456 AND ad_language =  'en_US')
-                                                                 UPDATE AD_Ref_List as bt
-                                                                 SET Name = x.Name , Description = x.Description
-                                                                 FROM X
-                                WHERE target.AD_Ref_List_id = x.AD_Ref_List_id
-                                AND ( bt.Name <> x.Name OR bt.Description <> x.Description );
-                        */
+                        UPDATE AD_Ref_List AS bt
+                        SET Name = trl.Name, Description = trl.Description
+                        FROM ad_ref_list_trl trl
+                        WHERE bt.AD_Ref_List_id = trl.ad_ref_list_id
+                          AND trl.ad_language='de_DE'
+                          AND (bt.Name <> trl.Name OR bt.Description <> trl.Description)
+;
+                    */
 
                     EXECUTE final_update_query;
                     GET DIAGNOSTICS v_count = ROW_COUNT;
                     IF (v_count > 0) THEN
                         v_count_updated = v_count_updated + v_count;
-                        RAISE NOTICE '% updated where % because it did not match baselanguage translation', base_table, base_table || '_ID = ' || base_table_id;
+                        RAISE NOTICE '% updated % rows because they did not match baselanguage translation', base_table, v_count;
                     END IF;
-            END LOOP;
-    END LOOP;
+        END LOOP;
     RAISE NOTICE 'Inserted % missing translation-rows, updated % base-table-rows that were not equal to baselanguage translation', v_count_inserted, v_count_updated;
 END;
 $$
