@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.shipping.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipperTransportation
  *  @author metasfresh (generated) 
@@ -90,6 +90,22 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	/** Set Sammelrechnung erstellen.
+	 @param CollectiveBillReport Sammelrechnung erstellen	  */
+	@Override
+	public void setCollectiveBillReport (java.lang.String CollectiveBillReport)
+	{
+		set_Value (COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
+	}
+
+	/** Get Sammelrechnung erstellen.
+	 @return Sammelrechnung erstellen	  */
+	@Override
+	public java.lang.String getCollectiveBillReport ()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CollectiveBillReport);
 	}
 
 	@Override

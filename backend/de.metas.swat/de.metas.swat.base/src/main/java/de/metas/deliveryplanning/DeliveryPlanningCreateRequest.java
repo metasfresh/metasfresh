@@ -34,6 +34,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.Data;
@@ -146,7 +147,7 @@ public class DeliveryPlanningCreateRequest
 	String releaseNo;
 
 	@Nullable
-	ForwarderId forwarderId;
+	ShipperId shipperId;
 
 	@Nullable
 	String transportDetails;

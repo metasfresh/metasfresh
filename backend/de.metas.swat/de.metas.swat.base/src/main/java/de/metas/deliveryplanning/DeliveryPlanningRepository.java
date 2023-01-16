@@ -33,6 +33,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -105,7 +106,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setPlannedDischargeQuantity(plannedDischargeQty.toBigDecimal());
 		deliveryPlanningRecord.setActualDischargeQuantity(actualDischargeQty.toBigDecimal());
 
-		deliveryPlanningRecord.setM_Forwarder_ID(ForwarderId.toRepoId(request.getForwarderId()));
+		deliveryPlanningRecord.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
 
 		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
@@ -210,11 +211,11 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
-	public boolean isExistNoForwarderDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public boolean isExistNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Forwarder_ID, null)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID, null)
 				.create()
 				.anyMatch();
 	}
@@ -246,7 +247,7 @@ public class DeliveryPlanningRepository
 		deliveryInstructionRecord.setLoadingTime(request.getLoadingTime());
 		deliveryInstructionRecord.setDeliveryTime(request.getDeliveryTime());
 
-		deliveryInstructionRecord.setM_Forwarder_ID(ForwarderId.toRepoId(request.getForwarderId()));
+		deliveryInstructionRecord.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
 
 		deliveryInstructionRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 

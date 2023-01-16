@@ -1,8 +1,9 @@
 package de.metas.shipping.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ShipperTransportation
  *  @author metasfresh (generated) 
@@ -133,6 +134,29 @@ public interface I_M_ShipperTransportation
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Sammelrechnung erstellen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
+
+	/**
+	 * Get Sammelrechnung erstellen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCollectiveBillReport();
+
+	/** Column definition for CollectiveBillReport */
+	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
+	/** Column name CollectiveBillReport */
+	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
 
 	/**
 	 * Set Incoterms.

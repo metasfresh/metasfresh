@@ -48,6 +48,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -185,7 +186,7 @@ public class DeliveryPlanningService
 				.batch(deliveryPlanningRecord.getBatch())
 				.originCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OriginCountry_ID()))
 				.destinationCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_DestinationCountry_ID()))
-				.forwarderId(ForwarderId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Forwarder_ID()))
+				.shipperId(ShipperId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Shipper_ID()))
 				.transportDetails(deliveryPlanningRecord.getTransportDetails())
 				.build();
 	}
@@ -280,9 +281,9 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
-	public boolean isExistsNoForwarderDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public boolean isExistsNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return deliveryPlanningRepository.isExistNoForwarderDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		return deliveryPlanningRepository.isExistNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
 	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -350,7 +351,7 @@ public class DeliveryPlanningService
 				.dateDoc(SystemTime.asInstant())
 				.docTypeId(docTypeId)
 
-				.forwarderId(ForwarderId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Forwarder_ID()))
+				.shipperId(ShipperId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Shipper_ID()))
 
 				.build();
 	}

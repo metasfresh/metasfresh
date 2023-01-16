@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -73,7 +74,7 @@ public class DeliveryInstructionCreateRequest
 	Instant dateDoc;
 
 	@Nullable
-	ForwarderId forwarderId;
+	ShipperId shipperId;
 
 	@NonNull DocTypeId docTypeId;
 
