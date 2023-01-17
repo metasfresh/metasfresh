@@ -73,7 +73,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 			huIdsToRemove.add(hu.getM_HU_ID());
 		}
 
-		for (final I_M_ReceiptSchedule_Alloc rsa : retrieveHandlingUnitAllocations(receiptSchedule, trxName))
+		for (final I_M_ReceiptSchedule_Alloc rsa : retrieveAllHandlingUnitAllocations(receiptSchedule, trxName))
 		{
 			final int tuHUId = rsa.getM_TU_HU_ID();
 			final int luHUId = rsa.getM_LU_HU_ID();
@@ -133,7 +133,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 	}
 
 	@Override
-	public List<I_M_ReceiptSchedule_Alloc> retrieveHandlingUnitAllocations(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, final String trxName)
+	public List<I_M_ReceiptSchedule_Alloc> retrieveAllHandlingUnitAllocations(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule schedule, final String trxName)
 	{
 		final IQuery<I_M_ReceiptSchedule_Alloc> query = retrieveHandlingUnitAllocationsQueryBuilder(schedule, trxName).create();
 		return query.list(I_M_ReceiptSchedule_Alloc.class);
