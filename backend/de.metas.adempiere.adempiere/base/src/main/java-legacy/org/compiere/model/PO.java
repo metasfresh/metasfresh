@@ -2979,14 +2979,7 @@ public abstract class PO
 		// Translations
 		if (success)
 		{
-			if (newRecord)
-			{
-				insertTranslations();
-			}
-			else
-			{
-				updateTranslations();
-			}
+			updateTranslations(newRecord);
 		}
 
 		if (!isAssignedID)
@@ -4258,85 +4251,56 @@ public abstract class PO
 		}
 
 		// Make sure it's single ID key which is integer and which is set
-		if (m_IDs.length > 1 || m_IDs.length == 0
-				|| I_ZERO.equals(m_IDs[0])
-				|| !(m_IDs[0] instanceof Integer))
-		{
-			return false;
-		}
-
-		return true;
+		return isSingleIntegerPrimaryKeySet();
 	}
 
-	/**
-	 * Insert (missing) Translation Records
-	 *
-	 * @return false if error (true if no translation or success)
-	 */
-	public final boolean insertTranslations()
+	private boolean isSingleIntegerPrimaryKeySet()
 	{
-		// Not a translation table
-		if (!is_Translatable())
-		{
-			return true;
-		}
+		return m_IDs.length == 1
+				&& !I_ZERO.equals(m_IDs[0])
+				&& m_IDs[0] instanceof Integer;
+	}
 
-		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
-		if (ok)
-		{
-			m_translations = null; // reset translations cache
-		}
-		return ok;
-	}    // insertTranslations
-
-	/**
-	 * Update Translations.
-	 *
-	 * @return <ul>
-	 * <li>true if no translation or success
-	 * <li>false if error
-	 * </ul>
-	 */
-	private boolean updateTranslations()
+	private void updateTranslations(final boolean newRecord)
 	{
-		// Not a translation table
-		if (!is_Translatable())
-		{
-			return true; // OK
-		}
-
-		final boolean ok = POTrlRepository.instance.updateTranslations(this);
-		if (ok)
-		{
-			m_translations = null; // reset cached translations
-		}
+		final POTrlInfo trlInfo = p_info.getTrlInfo();
 
 		//
-		return ok;
-	}    // updateTranslations
-
-	/**
-	 * Delete Translation Records
-	 *
-	 * @return false if error (true if no translation or success)
-	 */
-	private boolean deleteTranslations()
-	{
-		// Not a translation table
-		if (!is_Translatable())
+		// Case: we deal with a base table which supports translations
+		if (trlInfo.isTranslated())
 		{
-			return true;
+			final boolean updated = newRecord
+					? POTrlRepository.instance.onBaseRecordCreated(trlInfo, get_ID())
+					: POTrlRepository.instance.onBaseRecordChanged(this);
+
+			// reset cached translations
+			if (updated)
+			{
+				m_translations = null;
+			}
+		}
+		//
+		// Case: we are dealing with a translation table
+		else if (POTrlRepository.isTrlTableName(p_info.getTableName()))
+		{
+			POTrlRepository.instance.onTrlRecordChanged(this);
+		}
+	}
+
+	private void deleteTranslations()
+	{
+		final POTrlInfo trlInfo = p_info.getTrlInfo();
+		if(!trlInfo.isTranslated())
+		{
+			return;
 		}
 
-		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
+		final boolean ok = POTrlRepository.instance.deleteTranslations(trlInfo, get_ID());
 		if (ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
-
-		//
-		return ok;
-	}    // deleteTranslations
+	}
 
 	/**
 	 * Insert Accounting Records
