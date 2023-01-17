@@ -7,6 +7,7 @@ Feature: Group invoices and credit memos into a single document
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+  @Id:S0242_100
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo amt > invoice amt => one invoice with 2 lines, DocType=CreditMemo
     Given metasfresh contains M_Products:
       | Identifier | Value                 | Name                  |
@@ -179,6 +180,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | product_SO              | -10         | true      | -10            |
 
   @from:cucumber
+  @Id:S0242_200
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo < invoice => one invoice with 2 lines, DocType=SalesInvoice
     Given metasfresh contains M_Products:
       | Identifier | Value                 | Name                  |
@@ -352,6 +354,7 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+  @Id:S0242_300
   Scenario: 2 invoice candidates(both sales); 1 x credit memo; 1 x invoice candidate; no invoicing pool setup => 2 invoices
     Given metasfresh contains M_Products:
       | Identifier | Value                 | Name                  |
