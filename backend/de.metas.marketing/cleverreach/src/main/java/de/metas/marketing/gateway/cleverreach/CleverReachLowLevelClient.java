@@ -1,5 +1,6 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.marketing.gateway.cleverreach.restapi.models.ErrorResponse;
@@ -56,7 +57,8 @@ public class CleverReachLowLevelClient
 
 	private final String authToken;
 
-	private CleverReachLowLevelClient(@NonNull final String authToken)
+	@VisibleForTesting
+	public CleverReachLowLevelClient(@NonNull final String authToken)
 	{
 		this.authToken = authToken;
 	}
