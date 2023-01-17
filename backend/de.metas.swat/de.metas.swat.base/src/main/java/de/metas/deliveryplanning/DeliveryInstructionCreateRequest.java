@@ -92,7 +92,7 @@ public class DeliveryInstructionCreateRequest
 
 	@Nullable String batchNo;
 
-	@NonNull LocatorId locatorId;
+	@Nullable LocatorId locatorId;
 
 	@NonNull Quantity qtyLoaded;
 
