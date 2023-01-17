@@ -65,15 +65,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
 	}
-
 	@Override
-	public boolean isDeliveryInstruction(@NonNull final I_M_ShipperTransportation shipperTransportation)
-	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoId(shipperTransportation.getC_DocType_ID());
-
-		return isDeliveryInstruction(docTypeId);
-
-	}
 	public boolean isDeliveryInstruction(@NonNull final DocTypeId docTypeId)
 	{
 		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);

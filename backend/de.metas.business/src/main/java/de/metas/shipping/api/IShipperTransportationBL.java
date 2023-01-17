@@ -26,7 +26,5 @@ public interface IShipperTransportationBL extends ISingletonService
 	 */
 	void setC_DocType(I_M_ShipperTransportation shipperTransportation);
 
-	boolean isDeliveryInstruction(I_M_ShipperTransportation shipperTransportation);
-
 	boolean isDeliveryInstruction(DocTypeId docTypeId);
 }
