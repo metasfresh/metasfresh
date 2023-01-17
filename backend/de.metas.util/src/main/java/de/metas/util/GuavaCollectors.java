@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -439,6 +440,12 @@ public final class GuavaCollectors
 		};
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+	public static <T> Collector<T, ?, Optional<ImmutableSet<T>>> toOptionalImmutableSet()
+	{
+		return Collectors.collectingAndThen(
+				ImmutableSet.toImmutableSet(),
+				set -> !set.isEmpty() ? Optional.of(set) : Optional.empty());
 	}
 
 }
