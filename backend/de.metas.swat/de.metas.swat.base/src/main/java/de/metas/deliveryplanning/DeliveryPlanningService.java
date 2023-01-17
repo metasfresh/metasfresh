@@ -182,7 +182,6 @@ public class DeliveryPlanningService
 				.actualDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
 				.loadingTime(deliveryPlanningRecord.getLoadingTime())
 				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
-				.releaseNo(deliveryPlanningRecord.getReleaseNo())
 				.wayBillNo(deliveryPlanningRecord.getWayBillNo())
 				.batch(deliveryPlanningRecord.getBatch())
 				.originCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OriginCountry_ID()))
