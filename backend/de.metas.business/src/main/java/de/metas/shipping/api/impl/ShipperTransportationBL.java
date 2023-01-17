@@ -1,7 +1,11 @@
 package de.metas.shipping.api.impl;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -9,8 +13,6 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
 import org.compiere.model.X_C_DocType;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
@@ -50,12 +52,11 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	@Override
 	public void setC_DocType(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		final String docBaseType = de.metas.shipping.util.Constants.C_DocType_DocBaseType_ShipperTransportation;
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(DocBaseType.ShipperTransportation)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
@@ -77,10 +78,10 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	{
 		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 
-		final String docBaseType = docBaseAndSubTypeById.getDocBaseType();
+		final DocBaseType docBaseType = docBaseAndSubTypeById.getDocBaseType();
 		final String docSubType = docBaseAndSubTypeById.getDocSubType();
 
-		if (!X_C_DocType.DOCBASETYPE_SpeditionsauftragLadeliste.equals(docBaseType))
+		if (!DocBaseType.ShipperTransportation.equals(docBaseType))
 		{
 			// this is not a transportation order doc type
 			return false;
