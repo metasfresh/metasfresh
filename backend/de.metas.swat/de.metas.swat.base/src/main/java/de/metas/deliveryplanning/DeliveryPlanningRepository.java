@@ -223,7 +223,6 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
-
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
@@ -253,7 +252,6 @@ public class DeliveryPlanningRepository
 		deliveryInstructionRecord.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
 
 		deliveryInstructionRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
-
 
 		deliveryInstructionRecord.setDeliveryDate(TimeUtil.asTimestamp(request.getDeliveryDate()));
 		deliveryInstructionRecord.setDateDoc(TimeUtil.asTimestamp(request.getDateDoc()));
@@ -287,7 +285,6 @@ public class DeliveryPlanningRepository
 
 		saveRecord(shippingPackageRecord);
 
-
 		return deliveryInstructionRecord;
 	}
 
@@ -304,5 +301,24 @@ public class DeliveryPlanningRepository
 				.filter(selectedDeliveryPlanningsFilter)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
+	}
+
+	private Iterator<I_M_Delivery_Planning> retrieveForReleaseNo(@NonNull final String releaseNo)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, releaseNo)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+	}
+
+	public void unlinkDeliveryPlannings(final String documentNo)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForReleaseNo(documentNo);
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setReleaseNo(null);
+			saveRecord(deliveryPlanningRecord);
+		}
 	}
 }

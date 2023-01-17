@@ -378,4 +378,9 @@ public class DeliveryPlanningService
 			generateCompleteDeliveryInstruction(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 		}
 	}
+
+	public void unlinkDeliveryPlannings(@NonNull final String releaseNo)
+	{
+		deliveryPlanningRepository.unlinkDeliveryPlannings(releaseNo);
+	}
 }
