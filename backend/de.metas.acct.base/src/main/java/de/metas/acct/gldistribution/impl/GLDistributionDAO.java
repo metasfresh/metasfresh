@@ -2,8 +2,10 @@ package de.metas.acct.gldistribution.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -64,7 +66,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 	}
 
 	@Override
-	public List<I_GL_Distribution> retrieve(final Properties ctx, final AccountDimension dimension, final String PostingType, final int C_DocType_ID)
+	public List<I_GL_Distribution> retrieve(final Properties ctx, final AccountDimension dimension, final String PostingType, final DocTypeId C_DocType_ID)
 	{
 		Check.assumeNotNull(dimension, "dimension not null");
 
@@ -82,12 +84,14 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				continue;
 			}
 			// Only Posting Type
-			if (glDistribution.getPostingType() != null && !Check.equals(glDistribution.getPostingType(), PostingType))
+			if (glDistribution.getPostingType() != null && !Objects.equals(glDistribution.getPostingType(), PostingType))
 			{
 				continue;
 			}
+
 			// Only DocType
-			if (glDistribution.getC_DocType_ID() > 0 && glDistribution.getC_DocType_ID() != C_DocType_ID)
+			final DocTypeId glDistributionDocTypeId = DocTypeId.ofRepoIdOrNull(glDistribution.getC_DocType_ID());
+			if (glDistributionDocTypeId != null && !DocTypeId.equals(glDistributionDocTypeId, C_DocType_ID))
 			{
 				continue;
 			}

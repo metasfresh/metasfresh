@@ -1,5 +1,6 @@
 package de.metas.invoice.acct;
 
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @EqualsAndHashCode
@@ -35,6 +37,13 @@ public final class AccountTypeName implements Comparable<AccountTypeName>
 				: null;
 	}
 
+	@NonNull
+	public static AccountTypeName ofColumnName(@NonNull final String columnName)
+	{
+		final AccountTypeName accountTypeName = ofNullableColumnName(columnName);
+		return Check.assumeNotNull(accountTypeName, "ColumnName shall not be blank");
+	}
+
 	public String toString() {return columnName;}
 
 	@Override
@@ -42,4 +51,6 @@ public final class AccountTypeName implements Comparable<AccountTypeName>
 	{
 		return this.columnName.compareTo(other.columnName);
 	}
+
+	public static boolean equals(@Nullable final AccountTypeName o1, @Nullable final AccountTypeName o2) {return Objects.equals(o1, o2);}
 }

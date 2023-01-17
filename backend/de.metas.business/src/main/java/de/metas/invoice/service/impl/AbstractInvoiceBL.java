@@ -26,6 +26,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -250,14 +251,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		//
 		// decide on which C_DocType to use for the credit memo
-		final String docBaseType;
+		final DocBaseType docBaseType;
 		if (invoice.isSOTrx())
 		{
-			docBaseType = X_C_DocType.DOCBASETYPE_ARCreditMemo;
+			docBaseType = DocBaseType.ARCreditMemo;
 		}
 		else
 		{
-			docBaseType = X_C_DocType.DOCBASETYPE_APCreditMemo;
+			docBaseType = DocBaseType.APCreditMemo;
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
@@ -623,7 +624,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setC_Activity_ID(order.getC_Activity_ID());
 		invoice.setUser1_ID(order.getUser1_ID());
 		invoice.setUser2_ID(order.getUser2_ID());
-
 		//
 		invoice.setSalesRep_ID(order.getSalesRep_ID());
 
@@ -634,6 +634,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			invoice.setEMail(order.getEMail());
 		}
+
 
 		// metas
 		final I_C_Invoice invoice2 = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
@@ -798,7 +799,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
+			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
 		}

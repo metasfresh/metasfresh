@@ -23,7 +23,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  */
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
@@ -45,6 +44,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -89,7 +89,7 @@ public class InvoiceCandidateWriter
 {
 	// Services
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -595,7 +595,7 @@ public class InvoiceCandidateWriter
 	@VisibleForTesting
 	protected void setC_Activity_ID(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
+		final ActivityId activityId = productActivityProvider.getActivityForAcct(
 				ClientId.ofRepoId(invoiceCandidate.getAD_Client_ID()),
 				OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID()),
 				ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()));

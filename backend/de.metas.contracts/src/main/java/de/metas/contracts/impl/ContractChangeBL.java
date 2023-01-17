@@ -14,6 +14,7 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,7 +45,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -262,7 +262,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
-		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
+		final DocBaseType docbasetype = openInvoice.isSOTrx() ? DocBaseType.ARCreditMemo : DocBaseType.APCreditMemo;
 		final DocTypeId targetDocTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeId(DocTypeQuery.builder()
 									  .docBaseType(docbasetype)

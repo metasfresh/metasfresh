@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inout.returns;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -237,7 +238,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		return emptiesInOut;
 	}
 
-	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
+	protected int getReturnsDocTypeId(final DocBaseType docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()

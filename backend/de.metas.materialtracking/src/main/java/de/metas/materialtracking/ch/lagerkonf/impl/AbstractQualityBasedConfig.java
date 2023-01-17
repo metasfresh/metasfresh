@@ -22,17 +22,7 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,6 +34,14 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceL
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Abstract implementation of {@link ILagerKonfQualityBasedConfig}.
@@ -165,7 +163,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 
 		return Services.get(IDocTypeDAO.class).getDocTypeId(
 				DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
+						.docBaseType(DocBaseType.APInvoice)
 						.docSubType(docSubType)
 						.adClientId(adClientId)
 						.adOrgId(adOrgId)

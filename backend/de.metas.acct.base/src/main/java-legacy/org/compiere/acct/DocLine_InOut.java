@@ -8,7 +8,7 @@ import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
@@ -63,7 +63,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return InOutLineId.ofRepoId(get_ID());
 	}
 
-	private final int getPP_Cost_Collector_ID()
+	private int getPP_Cost_Collector_ID()
 	{
 		if (ppCostCollectorId == null)
 		{
@@ -72,7 +72,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		return ppCostCollectorId;
 	}
 
-	private final int retrievePPCostCollectorId()
+	private int retrievePPCostCollectorId()
 	{
 		final OrderLineId orderLineId = getOrderLineId();
 		if (orderLineId != null)
@@ -106,16 +106,16 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		if (isItem())
 		{
-			return getAccount(ProductAcctType.Asset, as);
+			return getAccount(ProductAcctType.P_Asset_Acct, as);
 		}
 		// if the line is a Outside Processing then DR WIP
 		else if (getPP_Cost_Collector_ID() > 0)
 		{
-			return getAccount(ProductAcctType.WorkInProcess, as);
+			return getAccount(ProductAcctType.P_WIP_Acct, as);
 		}
 		else
 		{
-			return getAccount(ProductAcctType.Expense, as);
+			return getAccount(ProductAcctType.P_Expense_Acct, as);
 		}
 	}
 

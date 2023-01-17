@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
@@ -45,7 +46,7 @@ public class Doc_Requisition extends Doc<DocLine_Requisition>
 {
 	public Doc_Requisition(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_PurchaseRequisition);
+		super(ctx, DocBaseType.PurchaseRequisition);
 	}	// Doc_Requisition
 
 	@Override

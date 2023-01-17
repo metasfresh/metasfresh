@@ -1,6 +1,7 @@
 package de.metas.inout.invoicecandidate;
 
 import com.jgoodies.common.base.Objects;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
@@ -17,6 +18,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -98,6 +100,8 @@ public class M_InOutLine_HandlerTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		save(bPartner);

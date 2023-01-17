@@ -23,6 +23,7 @@ package org.eevolution.api.impl;
  */
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -51,7 +52,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.BOMComponentIssueMethod;
@@ -558,7 +558,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		final I_PP_Order ppOrder = request.getOrder();
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector)
+				.docBaseType(DocBaseType.ManufacturingCostCollector)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
 				.build());

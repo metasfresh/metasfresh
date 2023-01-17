@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -12,6 +13,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -46,7 +48,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 	public Doc_BankStatement(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_BankStatement);
+		super(ctx, DocBaseType.BankStatement);
 	}
 
 	@Override
@@ -127,7 +129,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// BankAsset DR/CR (StmtAmt)
 		return fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(AccountType.BankAsset, as))
+				.setAccount(getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, as))
 				// .setAmtSourceDrOrCr(line.getStmtAmt())
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(currencyConversionCtx)
@@ -220,7 +222,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// Bank In Transit: CR/DR
 		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(AccountType.BankInTransit, as))
+				.setAccount(getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as))
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getCurrencyConversionCtx())
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
@@ -289,7 +291,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// Flag this document as multi-currency to prevent source amounts balancing.
 		// Our source amounts won't be source balanced anymore because the bank transfer is booked in allocation's currency
 		// and the currency gain/loss is booked in accounting currency.
-		setIsMultiCurrency(true);
+		setIsMultiCurrency();
 
 		final AcctSchema as = fact.getAcctSchema();
 		final MAccount account;
@@ -349,7 +351,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	{
 		Check.assume(!line.isBankTransfer(), "Line is NOT bank transfer: {}", line);
 
-		final MAccount acct_BankInTransit = getAccount(AccountType.BankInTransit, as);
+		final MAccount acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 
@@ -473,7 +475,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 		bankAssetFactLine.setAmtSource(null, bankFeeAmt);
 		interestFactLine.setAmtSource(bankFeeAmt, null);
-		interestFactLine.setAccount(getAccount(AccountType.PayBankFee, as));
+		interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.PayBankFee_Acct, as));
 
 		bankAssetFactLine.buildAndAdd();
 		interestFactLine.buildAndAdd();
@@ -554,7 +556,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		{
 			bankAssetFactLine.setAmtSource(interestAmt, null);
 			interestFactLine.setAmtSource(null, interestAmt);
-			interestFactLine.setAccount(getAccount(AccountType.InterestRev, as));
+			interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.B_InterestRev_Acct, as));
 		}
 		//
 		// Expense
@@ -562,7 +564,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		{
 			bankAssetFactLine.setAmtSource(null, interestAmt);
 			interestFactLine.setAmtSource(interestAmt, null);
-			interestFactLine.setAccount(getAccount(AccountType.InterestExp, as));
+			interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.B_InterestExp_Acct, as));
 		}
 
 		bankAssetFactLine.buildAndAdd();
