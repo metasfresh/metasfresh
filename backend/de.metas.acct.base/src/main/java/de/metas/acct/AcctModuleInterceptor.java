@@ -4,11 +4,12 @@ import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.acct.impexp.AccountImportProcess;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
@@ -66,7 +67,7 @@ import java.util.Properties;
 @Component
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
+	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
@@ -77,19 +78,23 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
 
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
+	private final ProductActivityProvider productActivityProvider;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
 	public AcctModuleInterceptor(
 			@NonNull final ICostElementRepository costElementRepo,
-			@NonNull final TreeNodeService treeNodeService)
+			@NonNull final TreeNodeService treeNodeService,
+			@NonNull final ProductActivityProvider productActivityProvider)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
+		this.productActivityProvider = productActivityProvider;
 	}
 
 	@Override
@@ -106,7 +111,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			userRolePermissionsDAO.setAccountingModuleActive();
 		}
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		importProcessFactory.registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
 
@@ -141,7 +146,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
 
 		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
 
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));

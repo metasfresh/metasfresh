@@ -37,6 +37,7 @@ import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -55,7 +56,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -131,7 +131,7 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		// Make sure the period is open
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
-		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		factAcctDAO.deleteForDocumentModel(bankStatement);
 

@@ -36,6 +36,7 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -340,7 +341,7 @@ public class OrderBL implements IOrderBL
 		else
 		{
 			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+					.docBaseType(DocBaseType.PurchaseOrder)
 					.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
@@ -370,7 +371,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+				.docBaseType(DocBaseType.PurchaseOrder)
 				.docSubType(poDocSubType)
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
@@ -399,7 +400,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(soDocSubType)
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())

@@ -24,6 +24,7 @@ package de.metas.distribution.ddorder.process;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -242,7 +243,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setSalesRep_ID(salesRepId);
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.docBaseType(DocBaseType.DistributionOrder)
 				.adClientId(ddOrder.getAD_Client_ID())
 				.adOrgId(ddOrder.getAD_Org_ID())
 				.build();

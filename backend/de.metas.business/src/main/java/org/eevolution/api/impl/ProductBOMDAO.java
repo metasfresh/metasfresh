@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -26,7 +27,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
@@ -471,7 +471,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(X_C_DocType.DOCBASETYPE_BillOfMaterialVersion)
+				.docBaseType(DocBaseType.BillOfMaterialVersion)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 

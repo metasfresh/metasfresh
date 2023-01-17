@@ -255,8 +255,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
 	/** Interne Rechnung (Lieferant) = AVI */
 	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
-	/** Speditionsauftrag/Ladeliste = MST */
-	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** ShipperTransportation = MST */
+	public static final String DOCBASETYPE_ShipperTransportation = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */

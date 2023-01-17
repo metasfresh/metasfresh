@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.common.util.CoalesceUtil;
@@ -21,6 +20,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -193,7 +193,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		}
 		
 		// 07442 activity and tax
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
 				OrgId.ofRepoId(olcRecord.getAD_Org_ID()),
 				productId);
