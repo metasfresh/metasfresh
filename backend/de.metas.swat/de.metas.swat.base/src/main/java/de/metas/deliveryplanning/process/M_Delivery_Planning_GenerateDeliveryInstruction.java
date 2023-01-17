@@ -34,8 +34,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
 public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess implements IProcessPrecondition
-{
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+{	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -74,6 +73,8 @@ public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter);
+		// set of M_Delivery_Plannining IDs
+		// document collection, invalidate for each ID
 
 		return MSG_OK;
 

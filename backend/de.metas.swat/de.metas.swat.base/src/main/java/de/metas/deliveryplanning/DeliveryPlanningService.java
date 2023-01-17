@@ -24,6 +24,7 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -298,6 +299,9 @@ public class DeliveryPlanningService
 				.notifyGenerated(deliveryInstruction);
 
 		deliveryPlanningRepository.updateDeliveryPlanningReleaseNo(deliveryPlanningId, deliveryInstruction.getDocumentNo());
+
+		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
+
 	}
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)

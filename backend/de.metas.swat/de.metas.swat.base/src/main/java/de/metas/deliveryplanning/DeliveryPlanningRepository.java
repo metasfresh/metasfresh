@@ -24,6 +24,7 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cache.CacheMgt;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -42,6 +43,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Delivery_Planning_Delivery_Instructions_V;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -58,6 +60,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class DeliveryPlanningRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -259,7 +262,6 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setLoadingDate(TimeUtil.asTimestamp(request.getLoadingDate()));
 
-
 		deliveryInstructionRecord.setC_BPartner_Location_Delivery_ID(request.getDeliveryPartnerLocationId().getRepoId());
 		deliveryInstructionRecord.setC_BPartner_Location_Loading_ID(request.getLoadingPartnerLocationId().getRepoId());
 
@@ -289,6 +291,8 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
 
 		saveRecord(shippingPackageRecord);
+
+		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID() );
 
 		return deliveryInstructionRecord;
 	}
