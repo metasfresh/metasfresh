@@ -1623,7 +1623,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else
 		{
-			if (!order.isDropShip())
+			if (order.isDropShip())
 			{
 				final I_AD_Org org = Services.get(IOrgDAO.class).getById(order.getAD_Org_ID());
 				final I_C_BPartner linkedBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
