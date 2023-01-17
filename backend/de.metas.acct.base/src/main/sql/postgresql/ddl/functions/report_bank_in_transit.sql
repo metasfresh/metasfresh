@@ -28,7 +28,6 @@ CREATE OR REPLACE FUNCTION de_metas_acct.report_bank_in_transit(
                 doctype         varchar,
                 docstatus       varchar,
                 bpartner        text,
-                product         text,
                 payment_docno   varchar,
                 c_payment_id    numeric,
                 aggrKey         text
