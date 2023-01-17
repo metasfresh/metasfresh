@@ -403,3 +403,107 @@ UPDATE AD_Message SET MsgText='At least one lin has no forwarder.',Updated=TO_TI
 UPDATE AD_UI_Section SET IsActive='N',Updated=TO_TIMESTAMP('2023-01-17 22:48:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Section_ID=545362
 ;
 
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Nr.
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.DocumentNo
+-- 2023-01-17T20:58:52.639Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614681
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Belegstatus
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.DocStatus
+-- 2023-01-17T20:58:53.096Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614684
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Belegdatum
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.DateDoc
+-- 2023-01-17T20:58:53.755Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614685
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Loading Date
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.LoadingDate
+-- 2023-01-17T20:58:54.676Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614686
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Lieferdatum
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.DeliveryDate
+-- 2023-01-17T20:58:55.328Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614687
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Incoterms
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.C_Incoterms_ID
+-- 2023-01-17T20:58:55.717Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614688
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.IncotermLocation
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.IncotermLocation
+-- 2023-01-17T20:58:56.438Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614689
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Means of Transportation
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.M_MeansOfTransportation_ID
+-- 2023-01-17T20:58:58.360Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614690
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Produkt
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.M_Product_ID
+-- 2023-01-17T20:58:59.046Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614691
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Lagerort
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.M_Locator_ID
+-- 2023-01-17T20:58:59.569Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:58:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614692
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Tatsächlich verladene Menge
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.ActualLoadQty
+-- 2023-01-17T20:59:00.068Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:59:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614693
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Tatsächlich abgeladene Menge
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.ActualDischargeQuantity
+-- 2023-01-17T20:59:03.307Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:59:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614694
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> main -> 10 -> default.Sektionskennung
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.M_SectionCode_ID
+-- 2023-01-17T20:59:12.737Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-01-17 22:59:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614683
+;
+
+-- 2023-01-17T21:00:02.526Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581929,0,TO_TIMESTAMP('2023-01-17 23:00:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Document Status','Document Status',TO_TIMESTAMP('2023-01-17 23:00:02','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-01-17T21:00:02.532Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581929 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Field: Delivery Planning(541632,D) -> Delivery Instructions for Delivery Planning(546737,D) -> Document Status
+-- Column: M_Delivery_Planning_Delivery_Instructions_V.DocStatus
+-- 2023-01-17T21:00:13.480Z
+UPDATE AD_Field SET AD_Name_ID=581929, Description=NULL, Help=NULL, Name='Document Status',Updated=TO_TIMESTAMP('2023-01-17 23:00:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710210
+;
+
+-- 2023-01-17T21:00:13.482Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581929) 
+;
+
+-- 2023-01-17T21:00:13.486Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710210
+;
+
+-- 2023-01-17T21:00:13.487Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710210)
+;
+
