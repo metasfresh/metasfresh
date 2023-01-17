@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
@@ -164,7 +165,7 @@ import lombok.NonNull;
 		final Properties ctx = baseLine.getCtx();
 		final String postingType = baseLine.getPostingType();
 		final Doc<?> doc = baseLine.getDoc();
-		final int docTypeId = doc.getC_DocType_ID();
+		final DocTypeId docTypeId = doc.getC_DocType_ID();
 
 		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(ctx, baseLineDimension, postingType, docTypeId);
 		if (distributions.isEmpty())

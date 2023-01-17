@@ -24,7 +24,6 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
@@ -65,6 +64,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -87,6 +87,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -507,7 +508,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private ActivityId findActivityIdOrNull(final I_C_Flatrate_Term term, final int productId)
 	{
-		return Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		return Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(term.getAD_Client_ID()),
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				ProductId.ofRepoId(productId));
@@ -1553,7 +1554,7 @@ public class FlatrateBL implements IFlatrateBL
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())
-				.docBaseType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract)
+				.docBaseType(DocBaseType.CustomerContract)
 				.docSubType(subType)
 				.build();
 

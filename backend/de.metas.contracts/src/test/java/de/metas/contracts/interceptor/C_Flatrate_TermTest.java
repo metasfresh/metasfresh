@@ -1,5 +1,6 @@
 package de.metas.contracts.interceptor;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -74,7 +75,8 @@ public class C_Flatrate_TermTest
 			final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(
 					new ContractOrderService(),
 					new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-					ADReferenceService.newMocked());
+					ADReferenceService.newMocked(),
+					new GLCategoryRepository());
 			flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term);
 			fail("Expected an AdempiereExeception");
 		}
@@ -96,7 +98,8 @@ public class C_Flatrate_TermTest
 		final C_Flatrate_Term flatrateTermInterceptor = new C_Flatrate_Term(
 				new ContractOrderService(),
 				new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-				ADReferenceService.newMocked());
+				ADReferenceService.newMocked(),
+				new GLCategoryRepository());
 		flatrateTermInterceptor.prohibitReactivatingUnlessAllowed(term); // shall return with no exception
 	}
 

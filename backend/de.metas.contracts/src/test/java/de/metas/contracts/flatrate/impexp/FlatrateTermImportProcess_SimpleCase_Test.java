@@ -30,7 +30,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -38,7 +37,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -67,8 +66,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	private IInvoiceCandDAO iinvoiceCandDAO;
 	private IShipmentScheduleHandlerBL inOutCandHandlerBL;
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		helper.setupModuleInterceptors_Contracts_Full();
 
@@ -291,7 +290,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 
 		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
-		assertThat(candidates).hasSize(0);
+		assertThat(candidates).isEmpty();
 
 		assertShipmentSchedules(flatrateTerm, false);
 	}
@@ -300,7 +299,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	{
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 
@@ -342,7 +340,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		}
 		else
 		{
-			assertThat(createdShipmentCandidateIds).hasSize(0);
+			assertThat(createdShipmentCandidateIds).isEmpty();
 		}
 
 	}

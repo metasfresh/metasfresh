@@ -4,19 +4,23 @@ import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
+import lombok.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,11 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests {@link HUMovementBL}.
  *
  * @author RC
- *
  */
 public class HUMovementBLTest
 {
-	/** Service under test */
+	/**
+	 * Service under test
+	 */
 	private HUMovementBL huMovementBL;
 
 	private IContextAware context;
@@ -38,6 +43,7 @@ public class HUMovementBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 
 		context = PlainContextAware.newOutOfTrx();
@@ -47,57 +53,42 @@ public class HUMovementBLTest
 		huMovementBL = (HUMovementBL)Services.get(IHUMovementBL.class);
 	}
 
-	/**
-	 * @implNote task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
-	 */
 	@Test
 	public void test_setPackingMaterialCActivity()
 	{
-		final I_C_Activity productActivity = createActivity();
-		final I_M_Product product = createProduct(productActivity);
-		final I_M_MovementLine movementLine = createMovementLine(product);
+		final ProductId productId = ProductId.ofRepoId(111);
+		final I_M_MovementLine movementLine = movementLine().orgId(OrgId.MAIN).productId(productId).locatorActivityId(ActivityId.ofRepoId(201)).build();
+
+		final IProductActivityProvider productActivityProvider = Mockito.mock(IProductActivityProvider.class);
+		Mockito.doReturn(ActivityId.ofRepoId(678)).when(productActivityProvider).getActivityForAcct(ClientId.METASFRESH, OrgId.MAIN, productId);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		huMovementBL.setPackingMaterialCActivity(movementLine);
 
-		assertThat(movementLine.getC_Activity()).as("Movement line shall have the activity of the product").isEqualTo(productActivity);
+		assertThat(movementLine.getC_Activity_ID()).isEqualTo(678);
 	}
 
-	private I_M_Product createProduct(final I_C_Activity activity)
+	@Builder(builderMethodName = "movementLine", builderClassName = "$MovementLineBuilder")
+	private I_M_MovementLine createMovementLine(
+			final OrgId orgId,
+			final ProductId productId,
+			final ActivityId locatorActivityId)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class, context);
-		InterfaceWrapperHelper.save(product);
-
-		final I_M_Product_Acct productAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Acct.class, context);
-		productAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
-		productAcct.setM_Product(product);
-		productAcct.setC_Activity(activity);
-		InterfaceWrapperHelper.save(productAcct);
-
-		return product;
-	}
-
-	private I_M_MovementLine createMovementLine(final I_M_Product product)
-	{
-		final I_M_Locator locatorTo = createLocator();
-
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, context);
-		InterfaceWrapperHelper.save(org);
+		final I_M_Locator locatorTo = createLocator(locatorActivityId);
 
 		final I_M_MovementLine movementLine = InterfaceWrapperHelper.newInstance(I_M_MovementLine.class, context);
-		movementLine.setM_Product(product);
-		movementLine.setM_LocatorTo(locatorTo);
-		movementLine.setAD_Org(org);
+		movementLine.setM_Product_ID(productId.getRepoId());
+		movementLine.setM_LocatorTo_ID(locatorTo.getM_Locator_ID());
+		movementLine.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.save(movementLine);
 
 		return movementLine;
 	}
 
-	private I_M_Locator createLocator()
+	private I_M_Locator createLocator(final ActivityId activityId)
 	{
-		final I_C_Activity activity = createActivity();
-
 		final I_M_Warehouse warehouseDest = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, context);
-		warehouseDest.setC_Activity_ID(activity.getC_Activity_ID());
+		warehouseDest.setC_Activity_ID(activityId.getRepoId());
 		InterfaceWrapperHelper.save(warehouseDest);
 
 		final I_M_Locator locatorTo = InterfaceWrapperHelper.newInstance(I_M_Locator.class, context);
@@ -105,12 +96,4 @@ public class HUMovementBLTest
 		InterfaceWrapperHelper.save(locatorTo);
 		return locatorTo;
 	}
-
-	private I_C_Activity createActivity()
-	{
-		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, context);
-		InterfaceWrapperHelper.save(activity);
-		return activity;
-	}
-
 }

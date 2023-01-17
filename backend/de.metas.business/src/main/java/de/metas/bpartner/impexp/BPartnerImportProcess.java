@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
@@ -239,7 +240,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		if (importRecord.isVendor())
 		{
 			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+					.docBaseType(DocBaseType.PurchaseOrder)
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
@@ -249,7 +250,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		else
 		{
 			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+					.docBaseType(DocBaseType.MaterialReceipt)
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
