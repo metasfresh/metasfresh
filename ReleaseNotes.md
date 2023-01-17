@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14245](https://github.com/metasfresh/metasfresh/issues/14245) Use pagination when exchanging data with CMS-platform
   * [#14201](https://github.com/metasfresh/metasfresh/issues/14201) Allow lotNo to be set automatically, based on sequence Number
   * [#14160](https://github.com/metasfresh/metasfresh/issues/14160) SAP: Make sure credit limits are automatically enforced after import 
   * [#14223](https://github.com/metasfresh/metasfresh/issues/14223) Enhance import BOM Formula from GRS
