@@ -53,3 +53,24 @@ UPDATE C_DocType SET DocSubType='DI',Updated=TO_TIMESTAMP('2023-01-12 16:10:00',
 -- 2023-01-16T16:59:05.547Z
 UPDATE C_DocType SET DocNoSequence_ID=545440,Updated=TO_TIMESTAMP('2023-01-16 18:59:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541085
 ;
+
+
+
+-- 2023-01-17T20:01:31.548Z
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (1000000,1000000,556190,TO_TIMESTAMP('2023-01-17 22:01:31','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,'DocumentNo/Value for Table M_ShipperTransportation, doctype Delivery Instruction',1,'Y','N','N','N','DocumentNo_DeliveryInstruction','N',1000000,TO_TIMESTAMP('2023-01-17 22:01:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-01-17T20:01:31.640Z
+UPDATE AD_Sequence SET IsAutoSequence='Y',Updated=TO_TIMESTAMP('2023-01-17 22:01:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=556190
+;
+
+
+
+-- 2023-01-17T20:05:51.391Z
+UPDATE C_DocType SET DocNoSequence_ID=556190,Updated=TO_TIMESTAMP('2023-01-17 22:05:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541085
+;
+
+
+
+
+

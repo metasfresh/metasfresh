@@ -40,3 +40,49 @@ UPDATE AD_Field SET AD_Reference_ID=30, AD_Val_Rule_ID=540614,Updated=TO_TIMESTA
 UPDATE AD_Field SET AD_Reference_ID=30, AD_Val_Rule_ID=540615,Updated=TO_TIMESTAMP('2023-01-13 11:48:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710089
 ;
 
+
+
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder
+-- 2023-01-17T19:47:45.691Z
+UPDATE AD_Message SET MsgText='At least one lin has no forwarder.',Updated=TO_TIMESTAMP('2023-01-17 21:47:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545221
+;
+
+-- Tab: Transportation Order(540020,METAS_SHIPPING) -> Transportation Delivery
+-- Table: M_ShipperTransportation
+-- 2023-01-17T20:09:42.805Z
+UPDATE AD_Tab SET WhereClause='exists(select 1 from c_doctype dt where M_ShipperTransportation.c_doctype_id = dt.c_doctype_id and dt.docsubtype <> ''DI'')',Updated=TO_TIMESTAMP('2023-01-17 22:09:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540096
+;
+
+-- Tab: Transportation Order(540020,METAS_SHIPPING) -> Transportation Delivery
+-- Table: M_ShipperTransportation
+-- 2023-01-17T20:12:39.365Z
+UPDATE AD_Tab SET WhereClause='exists(select 1 from c_doctype dt where M_ShipperTransportation.c_doctype_id = dt.c_doctype_id and dt.docsubtype != ''DI'')',Updated=TO_TIMESTAMP('2023-01-17 22:12:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540096
+;
+
+-- Tab: Transportation Order(540020,METAS_SHIPPING) -> Transportation Delivery
+-- Table: M_ShipperTransportation
+-- 2023-01-17T20:18:19.821Z
+UPDATE AD_Tab SET WhereClause='',Updated=TO_TIMESTAMP('2023-01-17 22:18:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540096
+;
+
+-- Tab: Transportation Order(540020,METAS_SHIPPING) -> Transportation Delivery
+-- Table: M_ShipperTransportation
+-- 2023-01-17T20:20:26.459Z
+UPDATE AD_Tab SET WhereClause='exists(select 1 from c_doctype dt where M_InOut.c_doctype_id = dt.c_doctype_id and dt.docsubtype != ''DI'')',Updated=TO_TIMESTAMP('2023-01-17 22:20:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540096
+;
+
+-- Tab: Transportation Order(540020,METAS_SHIPPING) -> Transportation Delivery
+-- Table: M_ShipperTransportation
+-- 2023-01-17T20:21:19.077Z
+UPDATE AD_Tab SET WhereClause='exists(select 1 from c_doctype dt where M_ShipperTransportation.c_doctype_id = dt.c_doctype_id and dt.docsubtype != ''DI'')',Updated=TO_TIMESTAMP('2023-01-17 22:21:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540096
+;
+
+-- Tab: Transportation Order(540020,METAS_SHIPPING) -> Transportation Delivery
+-- Table: M_ShipperTransportation
+-- 2023-01-17T20:25:34.988Z
+UPDATE AD_Tab SET WhereClause='exists(select 1 from c_doctype dt where M_ShipperTransportation.c_doctype_id = dt.c_doctype_id and (dt.docsubtype is null OR dt.docsubtype != ''DI''))',Updated=TO_TIMESTAMP('2023-01-17 22:25:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540096
+;
+
+
+
+

@@ -397,3 +397,9 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710205
 UPDATE AD_Message SET MsgText='At least one lin has no forwarder.',Updated=TO_TIMESTAMP('2023-01-17 21:47:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545221
 ;
 
+-- Tab: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D)
+-- UI Section: advanced edit
+-- 2023-01-17T20:48:49.104Z
+UPDATE AD_UI_Section SET IsActive='N',Updated=TO_TIMESTAMP('2023-01-17 22:48:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Section_ID=545362
+;
+
