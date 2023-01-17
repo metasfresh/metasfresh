@@ -305,7 +305,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(receiptScheduleForCU1, notNullValue());
 			assertThat(receiptScheduleForCU1.getM_ReceiptSchedule_ID(), is(rs1.getM_ReceiptSchedule_ID()));
 
-			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas1ForCu1.size(), is(1));
 			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("2")));
@@ -331,7 +331,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(receiptScheduleForCU2_2, notNullValue());
 			assertThat(receiptScheduleForCU2_2.getM_ReceiptSchedule_ID(), is(rs2.getM_ReceiptSchedule_ID()));
 
-			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU2_2, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU2_2, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == existingTU.getM_HU_ID() && rsa.getVHU_ID() == newlySplitOffCU.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas2ForCu2.size(), is(1));
 			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("1.6")));
@@ -396,7 +396,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(receiptScheduleForCU1, notNullValue());
 			assertThat(receiptScheduleForCU1.getM_ReceiptSchedule_ID(), is(rs1.getM_ReceiptSchedule_ID()));
 
-			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU1, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas1ForCu1 = rsas1.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu1.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas1ForCu1.size(), is(1));
 			assertThat(rsas1ForCu1.get(0).getHU_QtyAllocated(), comparesEqualTo(new BigDecimal("5")));
@@ -406,7 +406,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(receiptScheduleForCU2, notNullValue());
 			assertThat(receiptScheduleForCU2.getM_ReceiptSchedule_ID(), is(rs2.getM_ReceiptSchedule_ID()));
 
-			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForCU2, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas2 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForCU2, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas2ForCu2 = rsas2.stream().filter(rsa -> rsa.getM_TU_HU_ID() == tuWithMixedCUs.getM_HU_ID() && rsa.getVHU_ID() == cu2.getM_HU_ID()).collect(Collectors.toList());
 			assertThat(rsas2ForCu2.size(), is(1));
 			assertThat(rsas2ForCu2.get(0).getHU_QtyAllocated(), comparesEqualTo(four));
@@ -480,7 +480,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			assertThat(receiptScheduleForAggregateTU, notNullValue());
 			assertThat(receiptScheduleForAggregateTU.getM_ReceiptSchedule_ID(), is(rs.getM_ReceiptSchedule_ID()));
 
-			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForAggregateTU, data.helper.getHUContext().getTrxName());
+			final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForAggregateTU, data.helper.getHUContext().getTrxName());
 			final List<I_M_ReceiptSchedule_Alloc> rsas1ForAggregateTUs = rsas1.stream()
 					.filter(rsa -> rsa.getM_TU_HU_ID() == aggregateTU.getM_HU_ID() && rsa.getVHU_ID() == aggregateTU.getM_HU_ID()) // aggregateTU acts both as TU and VHU
 					.collect(Collectors.toList());
@@ -597,7 +597,7 @@ public class HUTransformServiceReceiptCandidatesTests
 							}
 
 							final I_M_ReceiptSchedule receiptScheduleForHU = huReceiptScheduleDAO.retrieveReceiptScheduleForVHU(hu);
-							final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptScheduleForHU, data.helper.getHUContext().getTrxName());
+							final List<I_M_ReceiptSchedule_Alloc> rsas1 = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptScheduleForHU, data.helper.getHUContext().getTrxName());
 							final List<I_M_ReceiptSchedule_Alloc> rsas1ForAggregateTUs = rsas1.stream()
 									.filter(rsa -> rsa.getVHU_ID() == hu.getM_HU_ID())
 									.filter(rsa -> rsaIDsSeen.add(rsa.getM_ReceiptSchedule_Alloc_ID()))
