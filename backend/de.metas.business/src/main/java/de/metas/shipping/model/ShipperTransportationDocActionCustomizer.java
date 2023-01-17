@@ -66,6 +66,9 @@ public class ShipperTransportationDocActionCustomizer implements IDocActionOptio
 		if(isDeliveryInstruction)
 		{
 			docActions.remove(IDocument.ACTION_ReActivate);
+			docActions.remove(IDocument.ACTION_Close);
+
+			docActions.add(IDocument.ACTION_Void);
 		}
 
 		//

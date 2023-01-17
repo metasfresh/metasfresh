@@ -366,12 +366,13 @@ public class DeliveryPlanningService
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+				.uom(uomToUse)
 				.build();
 	}
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningIdsFromSelection(selectedDeliveryPlanningsFilter);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningsSuitableForDeliveryInstruction(selectedDeliveryPlanningsFilter);
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();

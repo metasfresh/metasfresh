@@ -259,7 +259,9 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setLoadingDate(TimeUtil.asTimestamp(request.getLoadingDate()));
 
-		// deliveryInstructionRecord.setDocAction(X_M_ShipperTransportation.DOCSTATUS_Drafted); todo: not sure if needed !
+
+		deliveryInstructionRecord.setC_BPartner_Location_Delivery_ID(request.getDeliveryPartnerLocationId().getRepoId());
+		deliveryInstructionRecord.setC_BPartner_Location_Loading_ID(request.getLoadingPartnerLocationId().getRepoId());
 
 		save(deliveryInstructionRecord);
 
@@ -283,6 +285,9 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setBatch(request.getBatchNo());
 		shippingPackageRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
 
+		shippingPackageRecord.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
+		shippingPackageRecord.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
+
 		saveRecord(shippingPackageRecord);
 
 		return deliveryInstructionRecord;
@@ -295,10 +300,12 @@ public class DeliveryPlanningRepository
 		saveRecord(deliveryPlanningRecord);
 	}
 
-	public Iterator<I_M_Delivery_Planning> extractDeliveryPlanningIdsFromSelection(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public Iterator<I_M_Delivery_Planning> extractDeliveryPlanningsSuitableForDeliveryInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
 	}

@@ -1309,3 +1309,10 @@ UPDATE AD_UI_Element SET SeqNo=150,Updated=TO_TIMESTAMP('2023-01-17 11:50:08','Y
 
 
 
+
+-- Tab: Lieferplanung(541632,D) -> Delivery Instructions for Delivery Planning
+-- Table: M_Delivery_Planning_Delivery_Instructions_V
+-- 2023-01-17T14:41:19.102Z
+UPDATE AD_Tab SET IsRefreshViewOnChangeEvents='Y',Updated=TO_TIMESTAMP('2023-01-17 16:41:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546737
+;
+
