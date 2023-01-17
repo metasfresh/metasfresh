@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -62,6 +63,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOutLine;
@@ -88,9 +90,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public final class AggregationEngine
 {
 
+	@VisibleForTesting
 	public static AggregationEngine newInstance()
 	{
-		return builder().build();
+		return builder()
+				.docTypeInvoicingPoolService(SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class))
+				.build();
 	}
 
 	//
