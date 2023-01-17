@@ -81,6 +81,8 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
 	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
 
+	private static final AdMessageKey MSG_M_Delivery_Planning_AlreadyReferenced = AdMessageKey.of("M_Delivery_Planning_AlreadyReferenced");
+
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
@@ -138,6 +140,12 @@ public class DeliveryPlanningService
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AtLeastOnePerOrderLine);
 		}
+
+		if (!Check.isBlank(deliveryPlanning.getReleaseNo()))
+		{
+			throw new AdempiereException(MSG_M_Delivery_Planning_AlreadyReferenced);
+		}
+
 	}
 
 	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)
@@ -334,7 +342,6 @@ public class DeliveryPlanningService
 		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
 		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
 		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
-
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
 		final boolean isIncoming = deliveryPlanningType.isIncoming();
