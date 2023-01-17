@@ -1,8 +1,8 @@
 /*
  * #%L
- * marketing-activecampaign
+ * marketing-base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,8 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign.restapi.model;
+package de.metas.marketing.base.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-/**
- * JSON wrapper used when creating 'contacts' in ActiveCampaign.
- */
-@Value
-@Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = CreateContact.CreateContactBuilder.class)
-public class CreateContact
+public interface PageDescriptor
 {
-	@NonNull
-	@JsonProperty("contact")
-	Contact contact;
 }

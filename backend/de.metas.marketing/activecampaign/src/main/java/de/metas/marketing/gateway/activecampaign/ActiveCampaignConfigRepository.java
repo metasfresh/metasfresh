@@ -22,8 +22,8 @@
 
 package de.metas.marketing.gateway.activecampaign;
 
-import de.metas.marketing.gateway.activecampaign.model.I_MKTG_ActiveCampaign_Config;
 import de.metas.marketing.base.model.PlatformId;
+import de.metas.marketing.gateway.activecampaign.model.I_MKTG_ActiveCampaign_Config;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,7 +51,7 @@ public class ActiveCampaignConfigRepository
 	}
 
 	@NonNull
-	private static ActiveCampaignConfig fromRecord(@NonNull final I_MKTG_ActiveCampaign_Config record)
+	public static ActiveCampaignConfig fromRecord(@NonNull final I_MKTG_ActiveCampaign_Config record)
 	{
 		return ActiveCampaignConfig.builder()
 				.platformId(PlatformId.ofRepoId(record.getMKTG_Platform_ID()))
