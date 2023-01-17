@@ -116,6 +116,13 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		return addFilter(filter);
 	}
 
+	default RT addStringNotLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
+	{
+		final String columnName = column.getColumnName();
+		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
+		return addFilter(NotQueryFilter.of(filter));
+	}
+
 	default RT addCoalesceEqualsFilter(final Object value, final String... columnNames)
 	{
 		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<>(value, columnNames);

@@ -32,7 +32,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * JSON used when retrieving and posting 'list' information from/to ActiveCampaign API.
+ * JSON used when creating/retrieving 'list' information from/to ActiveCampaign API.
  */
 @Value
 @Builder
@@ -60,4 +60,3 @@ public class CampaignList
 	@JsonProperty("sender_reminder")
 	String sender_reminder;
 }
-

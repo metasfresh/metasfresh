@@ -1,6 +1,6 @@
 package de.metas.marketing.base.process;
 
-import de.metas.marketing.base.CampaignSyncService;
+import de.metas.marketing.base.PlatformSyncService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.SyncDirection;
@@ -33,7 +33,7 @@ import org.compiere.SpringContextHolder;
 
 public class MKTG_ContactPerson_Platform_Import_From extends JavaProcess
 {
-	private final CampaignSyncService syncService = SpringContextHolder.instance.getBean(CampaignSyncService.class);
+	private final PlatformSyncService syncService = SpringContextHolder.instance.getBean(PlatformSyncService.class);
 
 	@Override
 	protected String doIt()
