@@ -392,3 +392,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710205
 
 
 
+-- Value: de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder
+-- 2023-01-17T19:47:45.691Z
+UPDATE AD_Message SET MsgText='At least one lin has no forwarder.',Updated=TO_TIMESTAMP('2023-01-17 21:47:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545221
+;
+
