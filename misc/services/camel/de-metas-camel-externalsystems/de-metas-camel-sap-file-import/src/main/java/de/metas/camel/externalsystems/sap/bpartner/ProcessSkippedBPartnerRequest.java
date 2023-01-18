@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-sap-file-import
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.v2;
+package de.metas.camel.externalsystems.sap.bpartner;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,25 +34,22 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = BPRetrieveCamelRequest.BPRetrieveCamelRequestBuilder.class)
-public class BPRetrieveCamelRequest
+@JsonDeserialize(builder = ProcessSkippedBPartnerRequest.ProcessSkippedBPartnerRequestBuilder.class)
+public class ProcessSkippedBPartnerRequest
 {
 	@NonNull
-	@JsonProperty("bpartnerIdentifier")
-	String bPartnerIdentifier;
+	@JsonProperty("bPartnerRow")
+	BPartnerRow bPartnerRow;
 
 	@NonNull
 	@JsonProperty("externalSystemConfigId")
 	JsonMetasfreshId externalSystemConfigId;
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@JsonProperty("adPInstanceId")
-	JsonMetasfreshId adPInstanceId;
-
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@NonNull
 	@JsonProperty("orgCode")
 	String orgCode;
+
+	@Nullable
+	@JsonProperty("adPInstanceId")
+	JsonMetasfreshId adPInstanceId;
 }

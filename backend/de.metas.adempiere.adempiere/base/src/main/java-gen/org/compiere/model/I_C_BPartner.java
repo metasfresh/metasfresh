@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -3205,6 +3206,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_SalesVolume = new ModelColumn<>(I_C_BPartner.class, "SalesVolume", null);
 	String COLUMNNAME_SalesVolume = "SalesVolume";
+
+	/**
+	 * Set SAP BPartner Id.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_BPartnerCode (@Nullable java.lang.String SAP_BPartnerCode);
+
+	/**
+	 * Get SAP BPartner Id.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_BPartnerCode();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_SAP_BPartnerCode = new ModelColumn<>(I_C_BPartner.class, "SAP_BPartnerCode", null);
+	String COLUMNNAME_SAP_BPartnerCode = "SAP_BPartnerCode";
 
 	/**
 	 * Set Section Group Partner.

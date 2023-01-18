@@ -99,6 +99,10 @@ public class BPartner
 	public static final String INCOTERMS_CUSTOMER_ID = "incotermsCustomerId";
 	public static final String INCOTERMS_VENDOR_ID = "incotermsVendorId";
 	public static final String SECTION_GROUP_PARTNER_ID = "sectionGroupPartnerId";
+	public static final String PROSPECT = "isProspect";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+	public static final String SECTION_GROUP_PARTNER = "sectionGroupPartner";
+	public static final String SECTION_PARTNER = "sectionPartner";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -211,6 +215,15 @@ public class BPartner
 	@Nullable
 	private BPartnerId sectionGroupPartnerId;
 
+	private boolean prospect;
+
+	@Nullable
+	private String sapBPartnerCode;
+
+	private boolean sectionGroupPartner;
+
+	private boolean sectionPartner;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 */
@@ -268,7 +281,11 @@ public class BPartner
 			@Nullable final Boolean storageWarehouse,
 			@Nullable final IncotermsId incotermsCustomerId,
 			@Nullable final IncotermsId incotermsVendorId,
-			@Nullable final BPartnerId sectionGroupPartnerId)
+			@Nullable final BPartnerId sectionGroupPartnerId,
+			@Nullable final Boolean prospect,
+			@Nullable final String sapBPartnerCode,
+			@Nullable final Boolean sectionGroupPartner,
+			@Nullable final Boolean sectionPartner)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -328,6 +345,10 @@ public class BPartner
 		this.incotermsCustomerId = incotermsCustomerId;
 		this.incotermsVendorId = incotermsVendorId;
 		this.sectionGroupPartnerId = sectionGroupPartnerId;
+		this.prospect = coalesce(prospect, false);
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sectionGroupPartner = coalesce(sectionGroupPartner, false);
+		this.sectionPartner = coalesce(sectionPartner, false);
 	}
 
 	/**

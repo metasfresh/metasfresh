@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.sap.model.bpartner;
 
+import de.metas.common.util.Check;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,6 +32,7 @@ import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @CsvRecord(separator = "	", skipField = true)
 @Getter
@@ -100,6 +102,10 @@ public class BPartnerRow
 	private String vatRegNo;
 
 	@Nullable
+	@DataField(pos = 31)
+	private String paymentMethod;
+
+	@Nullable
 	@DataField(pos = 36)
 	private String salesIncoterms;
 
@@ -123,9 +129,21 @@ public class BPartnerRow
 	@DataField(pos = 42)
 	private String purchasePaymentTerms;
 
+	@Nullable
+	@DataField(pos = 43)
+	private String activeFlag;
+
 	@NonNull
 	public PartnerCode getPartnerCode()
 	{
 		return PartnerCode.of(partnerCode);
+	}
+
+	public boolean isDisabled()
+	{
+		return Optional.ofNullable(activeFlag)
+				.filter(Check::isNotBlank)
+				.map(activeFlagValue -> activeFlagValue.equalsIgnoreCase("X"))
+				.orElse(false);
 	}
 }

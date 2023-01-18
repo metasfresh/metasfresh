@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.PROCESS_SKIPPED_BPARTNER_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.UPSERT_BPARTNER_GROUP_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.LocalFileBPartnerSyncServiceRouteBuilder.START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID;
@@ -111,6 +112,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 		final MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor = new MockUpsertBPartnerProcessor();
 		final MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor = new MockUpsertLastBPartnerProcessor();
+		final MockProcessSkippedBPartnerProcessor mockProcessSkippedBPartnerProcessor = new MockProcessSkippedBPartnerProcessor();
 
 		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, START_BPARTNERS_SYNC_SFTP_ROUTE_ID);
 
@@ -119,7 +121,10 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_BPARTNERS_SYNC_SFTP_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, SFTPBPartnerSyncServiceRouteBuilder.getSFTPBPartnersSyncRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor,
+								   mockUpsertLastBPartnerProcessor,
+								   SFTPBPartnerSyncServiceRouteBuilder.getSFTPBPartnersSyncRouteId(externalSystemRequest),
+								   mockProcessSkippedBPartnerProcessor);
 
 		final InputStream expectedBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 		final MockEndpoint bpartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER);
@@ -139,6 +144,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertLastBPartnerProcessor.called).isEqualTo(1);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
+		assertThat(mockProcessSkippedBPartnerProcessor.called).isEqualTo(1);
 	}
 
 	@Test
@@ -152,6 +158,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 		final MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor = new MockUpsertBPartnerProcessor();
 		final MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor = new MockUpsertLastBPartnerProcessor();
+		final MockProcessSkippedBPartnerProcessor mockProcessSkippedBPartnerProcessor = new MockProcessSkippedBPartnerProcessor();
 
 		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID);
 
@@ -160,7 +167,10 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, LocalFileBPartnerSyncServiceRouteBuilder.getBPartnersFromLocalFileRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor,
+								   mockUpsertLastBPartnerProcessor,
+								   LocalFileBPartnerSyncServiceRouteBuilder.getBPartnersFromLocalFileRouteId(externalSystemRequest),
+								   mockProcessSkippedBPartnerProcessor);
 
 		final InputStream expectedBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 		final MockEndpoint bpartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER);
@@ -180,6 +190,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertLastBPartnerProcessor.called).isEqualTo(1);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
+		assertThat(mockProcessSkippedBPartnerProcessor.called).isEqualTo(1);
 	}
 
 	@Test
@@ -268,10 +279,11 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	private void prepareSyncRouteForTesting(
 			@NonNull final GetBPartnerFromFileRouteBuilderTest.MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor,
 			@NonNull final GetBPartnerFromFileRouteBuilderTest.MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor,
-			@NonNull final String bPartnerSyncRouteId) throws Exception
+			@NonNull final String bPartnerSyncRouteId,
+			@NonNull final MockProcessSkippedBPartnerProcessor mockProcessSkippedBPartnerProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, bPartnerSyncRouteId,
-										  advice -> {
+							  advice -> {
 								  advice.replaceFromWith("direct:" + BPARTNER_SYNC_DIRECT_ROUTE_ENDPOINT);
 
 								  advice.weaveById(UPSERT_BPARTNER_GROUP_ENDPOINT_ID)
@@ -283,6 +295,10 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 										  .replace()
 										  .to(MOCK_UPSERT_LAST_BPARTNER)
 										  .process(mockUpsertLastBPartnerProcessor);
+
+								  advice.weaveById(PROCESS_SKIPPED_BPARTNER_ENDPOINT_ID)
+										  .replace()
+										  .process(mockProcessSkippedBPartnerProcessor);
 							  });
 	}
 
@@ -310,6 +326,18 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	private static class MockUpsertLastBPartnerProcessor implements Processor
+	{
+		@Getter
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockProcessSkippedBPartnerProcessor implements Processor
 	{
 		@Getter
 		private int called = 0;
