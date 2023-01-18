@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +22,20 @@
 
 package de.metas.deliveryplanning.process;
 
-import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
-public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPrecondition
-{
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess implements IProcessPrecondition
+{	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
-	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
@@ -49,13 +45,18 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
 
+		final boolean isExistsNoShipperDeliveryPlannings = deliveryPlanningService.isExistsNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
+
+		if (isExistsNoShipperDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
+		}
 		final boolean isExistsOpenDeliveryPlannings = deliveryPlanningService.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		if (!isExistsOpenDeliveryPlannings)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
 		}
-
 		final boolean isExistDeliveryPlanningsWithoutReleaseNo = deliveryPlanningService.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
 
 		if (!isExistDeliveryPlanningsWithoutReleaseNo)
@@ -67,13 +68,15 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 	}
 
 	@Override
-	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter);
+		// set of M_Delivery_Plannining IDs
+		// document collection, invalidate for each ID
 
 		return MSG_OK;
+
 	}
 }

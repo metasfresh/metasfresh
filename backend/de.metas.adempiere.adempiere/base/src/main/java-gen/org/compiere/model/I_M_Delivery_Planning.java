@@ -417,6 +417,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryTime (@Nullable java.lang.String DeliveryTime);
+
+	/**
+	 * Get Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryTime();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_DeliveryTime = new ModelColumn<>(I_M_Delivery_Planning.class, "DeliveryTime", null);
+	String COLUMNNAME_DeliveryTime = "DeliveryTime";
+
+	/**
 	 * Set Grade.
 	 *
 	 * <br>Type: String
@@ -440,6 +461,29 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_Grade = new ModelColumn<>(I_M_Delivery_Planning.class, "Grade", null);
 	String COLUMNNAME_Grade = "Grade";
+
+	/**
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_Delivery_Planning.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Active.
@@ -507,6 +551,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
+	 * Set Loading Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingTime (@Nullable java.lang.String LoadingTime);
+
+	/**
+	 * Get Loading Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLoadingTime();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_Delivery_Planning.class, "LoadingTime", null);
+	String COLUMNNAME_LoadingTime = "LoadingTime";
+
+	/**
 	 * Set Delivery Planning.
 	 *
 	 * <br>Type: ID
@@ -547,31 +612,6 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_Delivery_Planning_Type = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Delivery_Planning_Type", null);
 	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
-
-	/**
-	 * Set Forwarder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Forwarder_ID (int M_Forwarder_ID);
-
-	/**
-	 * Get Forwarder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Forwarder_ID();
-
-	@Nullable org.compiere.model.I_M_Forwarder getM_Forwarder();
-
-	void setM_Forwarder(@Nullable org.compiere.model.I_M_Forwarder M_Forwarder);
-
-	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Forwarder> COLUMN_M_Forwarder_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Forwarder_ID", org.compiere.model.I_M_Forwarder.class);
-	String COLUMNNAME_M_Forwarder_ID = "M_Forwarder_ID";
 
 	/**
 	 * Set Means of Transportation.
@@ -688,25 +728,31 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Transportation Order.
+	 * Set Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
+	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Transportation Order.
+	 * Get Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_ShipperTransportation_ID();
+	int getM_Shipper_ID();
 
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_ShipperTransportation_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_ShipperTransportation_ID", null);
-	String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Warehouse.
@@ -1082,31 +1128,6 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_ShipToLocation_Name = new ModelColumn<>(I_M_Delivery_Planning.class, "ShipToLocation_Name", null);
 	String COLUMNNAME_ShipToLocation_Name = "ShipToLocation_Name";
-
-	/**
-	 * Set Transport Order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setTransportationOrderNo (@Nullable java.lang.String TransportationOrderNo);
-
-	/**
-	 * Get Transport Order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getTransportationOrderNo();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_TransportationOrderNo = new ModelColumn<>(I_M_Delivery_Planning.class, "TransportationOrderNo", null);
-	String COLUMNNAME_TransportationOrderNo = "TransportationOrderNo";
 
 	/**
 	 * Set Transport Details.
