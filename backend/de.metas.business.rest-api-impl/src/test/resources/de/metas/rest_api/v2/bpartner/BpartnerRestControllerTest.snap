@@ -95,7 +95,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "paymentRulePO" : "Cash",
     "phone" : "bPartner.phone",
     "prospect" : false,
+<<<<<<< HEAD
     "sectionCodeId" : 1000001,
+=======
+    "sectionCodeId" : 100022,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -346,7 +350,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
     "prospect" : false,
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -559,7 +567,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
     "prospect" : false,
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -769,7 +781,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
     "prospect" : false,
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -947,7 +963,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
     "prospect" : false,
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -1274,14 +1294,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[ 
     "deliveryRule" : "Availability",
     "deliveryViaRule" : "Shipper",
     "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
     "incotermsCustomerId" : 1000000,
     "incotermsVendorId" : 1000001,
+=======
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "isProspect" : false,
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -1362,14 +1391,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[ 
     "deliveryRule" : "Availability",
     "deliveryViaRule" : "Shipper",
     "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
     "incotermsCustomerId" : 1000000,
     "incotermsVendorId" : 1000001,
+=======
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "isProspect" : false,
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -1450,14 +1488,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[ {
     "deliveryRule" : "Availability",
     "deliveryViaRule" : "Shipper",
     "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
     "incotermsCustomerId" : 1000000,
     "incotermsVendorId" : 1000001,
+=======
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "isProspect" : false,
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,
@@ -1553,14 +1600,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "deliveryRule" : "Availability",
       "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
       "incotermsCustomerId" : 1000000,
       "incotermsVendorId" : 1000001,
+=======
+      "incotermsCustomerId" : 100010,
+      "incotermsVendorId" : 100011,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "isProspect" : false,
       "metasfreshId" : 20,
       "name" : "bpartnerRecord.name",
       "paymentRule" : "OnCredit",
       "paymentRulePO" : "Cash",
+<<<<<<< HEAD
       "sectionCodeId" : 1000000,
+=======
+      "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "sectionGroupPartner" : false,
       "sectionPartner" : false,
       "storageWarehouse" : true,
@@ -1638,14 +1694,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "deliveryRule" : "Availability",
       "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
       "incotermsCustomerId" : 1000002,
       "incotermsVendorId" : 1000003,
+=======
+      "incotermsCustomerId" : 100024,
+      "incotermsVendorId" : 100025,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "isProspect" : false,
       "metasfreshId" : 21,
       "name" : "bpartnerRecord.name_1",
       "paymentRule" : "OnCredit",
       "paymentRulePO" : "Cash",
+<<<<<<< HEAD
       "sectionCodeId" : 1000001,
+=======
+      "sectionCodeId" : 100021,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "sectionGroupPartner" : false,
       "sectionPartner" : false,
       "storageWarehouse" : true,
@@ -1729,14 +1794,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "deliveryRule" : "Availability",
       "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
       "incotermsCustomerId" : 1000004,
       "incotermsVendorId" : 1000005,
+=======
+      "incotermsCustomerId" : 100036,
+      "incotermsVendorId" : 100037,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "isProspect" : false,
       "metasfreshId" : 22,
       "name" : "bpartnerRecord.name_2",
       "paymentRule" : "OnCredit",
       "paymentRulePO" : "Cash",
+<<<<<<< HEAD
       "sectionCodeId" : 1000002,
+=======
+      "sectionCodeId" : 100033,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "sectionGroupPartner" : false,
       "sectionPartner" : false,
       "storageWarehouse" : true,
@@ -1814,14 +1888,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "deliveryRule" : "Availability",
       "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
       "incotermsCustomerId" : 1000006,
       "incotermsVendorId" : 1000007,
+=======
+      "incotermsCustomerId" : 100048,
+      "incotermsVendorId" : 100049,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "isProspect" : false,
       "metasfreshId" : 23,
       "name" : "bpartnerRecord.name_3",
       "paymentRule" : "OnCredit",
       "paymentRulePO" : "Cash",
+<<<<<<< HEAD
       "sectionCodeId" : 1000003,
+=======
+      "sectionCodeId" : 100045,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "sectionGroupPartner" : false,
       "sectionPartner" : false,
       "storageWarehouse" : true,
@@ -1905,14 +1988,23 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "deliveryRule" : "Availability",
       "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+<<<<<<< HEAD
       "incotermsCustomerId" : 1000008,
       "incotermsVendorId" : 1000009,
+=======
+      "incotermsCustomerId" : 100060,
+      "incotermsVendorId" : 100061,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "isProspect" : false,
       "metasfreshId" : 24,
       "name" : "bpartnerRecord.name_4",
       "paymentRule" : "OnCredit",
       "paymentRulePO" : "Cash",
+<<<<<<< HEAD
       "sectionCodeId" : 1000004,
+=======
+      "sectionCodeId" : 100057,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
       "sectionGroupPartner" : false,
       "sectionPartner" : false,
       "storageWarehouse" : true,

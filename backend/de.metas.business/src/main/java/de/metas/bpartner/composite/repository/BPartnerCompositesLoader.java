@@ -415,7 +415,10 @@ final class BPartnerCompositesLoader
 				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
 				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
 				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
+<<<<<<< HEAD
 				.sapBPartnerCode(bPartnerLocationRecord.getSAP_BPartnerCode())
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);

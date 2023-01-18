@@ -301,6 +301,43 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
+<<<<<<< HEAD
+=======
+	@ApiModelProperty(position = 260, //
+			value = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String sectionGroupPartnerIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerIdentifierSet;
+
+	@ApiModelProperty(position = 270, //
+			value = "Translates to `C_BPartner.IsProspect`")
+	private Boolean prospect;
+
+	private boolean prospectSet;
+
+	@ApiModelProperty(position = 280,  //
+			value = "This translates to `C_BPartner.SAP_BPartnerCode`.")
+	private String sapBPartnerCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sapBPartnerCodeSet;
+
+	@ApiModelProperty(position = 290,  //
+			value = "This translates to `C_BPartner.IsSectionGroupPartner`.")
+	private boolean sectionGroupPartner;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerSet;
+
+	@ApiModelProperty(position = 300,  //
+			value = "This translates to `C_BPartner.IsSectionPartner`.")
+	private boolean sectionPartner;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionPartnerSet;
+
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 	public void setCode(final String code)
 	{
 		this.code = code;

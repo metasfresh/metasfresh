@@ -56,10 +56,13 @@ public class BPRetrieveCamelRequest
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonProperty("orgCode")
 	String orgCode;
+<<<<<<< HEAD
 
 	/**
 	 * If {@code true}, then make the metasfresh-API-call with that Http header {@code Cache-Control=no-cache}
 	 */
 	@JsonProperty("noCache")
 	boolean noCache;
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 }

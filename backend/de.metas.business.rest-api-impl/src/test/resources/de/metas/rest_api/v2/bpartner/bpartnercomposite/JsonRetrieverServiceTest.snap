@@ -54,7 +54,11 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     "paymentRule" : "OnCredit",
     "paymentRulePO" : "Cash",
     "prospect" : false,
+<<<<<<< HEAD
     "sectionCodeId" : 1000000,
+=======
+    "sectionCodeId" : 100007,
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
     "sectionGroupPartner" : false,
     "sectionPartner" : false,
     "storageWarehouse" : true,

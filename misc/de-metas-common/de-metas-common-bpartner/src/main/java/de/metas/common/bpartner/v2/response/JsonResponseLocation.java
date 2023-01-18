@@ -73,8 +73,11 @@ public class JsonResponseLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
 	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+<<<<<<< HEAD
 
 	public static final String COUNTRY_NAME = "countryName";
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;

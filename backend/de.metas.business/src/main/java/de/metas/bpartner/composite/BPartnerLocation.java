@@ -77,7 +77,10 @@ public class BPartnerLocation
 	public static final String VAT_TAX_ID = "vatTaxId";
 	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
 	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+<<<<<<< HEAD
 	public static final String COUNTRY_NAME = "countryName";
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -164,9 +167,12 @@ public class BPartnerLocation
 	@Nullable
 	private String sapBPartnerCode;
 
+<<<<<<< HEAD
 	@Nullable
 	private String countryName;
 
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */

@@ -2354,7 +2354,11 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+<<<<<<< HEAD
 	public java.lang.String getSAP_BPartnerCode()
+=======
+	public java.lang.String getSAP_BPartnerCode() 
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 	{
 		return get_ValueAsString(COLUMNNAME_SAP_BPartnerCode);
 	}

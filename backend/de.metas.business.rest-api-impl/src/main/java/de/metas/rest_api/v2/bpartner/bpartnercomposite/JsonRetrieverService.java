@@ -591,7 +591,10 @@ public class JsonRetrieverService
 					.vatId(location.getVatTaxId())
 					.sapPaymentMethod(location.getSapPaymentMethod())
 					.sapBPartnerCode(location.getSapBPartnerCode())
+<<<<<<< HEAD
 					.countryName(location.getCountryName())
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 					.build();
 		}
 		catch (final RuntimeException rte)

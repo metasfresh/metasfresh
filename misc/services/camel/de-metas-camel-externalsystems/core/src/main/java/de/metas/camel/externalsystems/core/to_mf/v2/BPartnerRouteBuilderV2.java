@@ -160,11 +160,14 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, retrieveCamelRequest.getAdPInstanceId().getValue());
 		}
 
+<<<<<<< HEAD
 		if (retrieveCamelRequest.isNoCache())
 		{
 			exchange.getIn().setHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_NO_CACHE);
 		}
 
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 		final String bpartnerBaseURL = exchange.getContext().getPropertiesComponent().resolveProperty(MF_UPSERT_BPARTNER_V2_BASE_URL)
 				.orElseThrow(() -> new RuntimeCamelException("Missing mandatory property: " + MF_UPSERT_BPARTNER_V2_BASE_URL));
 

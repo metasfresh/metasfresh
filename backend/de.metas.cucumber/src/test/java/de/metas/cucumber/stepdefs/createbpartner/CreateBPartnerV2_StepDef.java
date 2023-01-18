@@ -322,13 +322,17 @@ public class CreateBPartnerV2_StepDef
 			final boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
 			final String sapPaymentMethod = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.SAP_PaymentMethod");
+<<<<<<< HEAD
 			final Boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, null);
+=======
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
 					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
 			final JsonResponseLocation persistedLocation = persistedResult.get();
 
+<<<<<<< HEAD
 			final SoftAssertions softly = new SoftAssertions();
 
 			softly.assertThat(persistedLocation.getAddress1()).as(I_C_Location.COLUMNNAME_Address1).isEqualTo(address1);
@@ -350,6 +354,22 @@ public class CreateBPartnerV2_StepDef
 			{
 				softly.assertThat(persistedLocation.isShipToDefault()).as(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).isEqualTo(isShipToDefault);
 			}
+=======
+			softly.assertThat(persistedLocation.getAddress1()).isEqualTo(address1);
+			softly.assertThat(persistedLocation.getAddress2()).isEqualTo(address2);
+			softly.assertThat(persistedLocation.getPostal()).isEqualTo(postal);
+			softly.assertThat(persistedLocation.getPoBox()).isEqualTo(poBox);
+			softly.assertThat(persistedLocation.getRegion()).isEqualTo(region);
+			softly.assertThat(persistedLocation.getCountryCode()).isEqualTo(countryCode);
+			softly.assertThat(persistedLocation.getCity()).isEqualTo(city);
+			softly.assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
+			softly.assertThat(persistedLocation.getGln()).isEqualTo(gln);
+			softly.assertThat(persistedLocation.isHandoverLocation()).isEqualTo(handoverLocation);
+			softly.assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
+			softly.assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
+			softly.assertThat(persistedLocation.getVatId()).isEqualTo(vatId);
+			softly.assertThat(persistedLocation.getSapPaymentMethod()).isEqualTo(sapPaymentMethod);
+>>>>>>> 765109f47c2 (Enhancements SAP import BPartner (#14365))
 
 			softly.assertAll();
 		}
