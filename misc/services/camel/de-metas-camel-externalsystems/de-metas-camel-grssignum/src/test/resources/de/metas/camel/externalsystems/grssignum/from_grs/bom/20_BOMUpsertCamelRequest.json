@@ -11,7 +11,7 @@
       {
         "productIdentifier": "ext-GRSSignum-ProductId1",
         "qtyBom": {
-          "qty": 5000,
+          "qty": 50,
           "uomCode": "KGM"
         },
         "line": 1,
