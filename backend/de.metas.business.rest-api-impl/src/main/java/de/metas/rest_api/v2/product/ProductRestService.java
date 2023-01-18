@@ -92,11 +92,16 @@ public class ProductRestService
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final ProductAllergenRestService productAllergenRestService;
 
-	public ProductRestService(final ProductRepository productRepository, final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	public ProductRestService(
+			final ProductRepository productRepository,
+			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			final ProductAllergenRestService productAllergenRestService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.productAllergenRestService = productAllergenRestService;
 	}
 
 	@NonNull
@@ -197,10 +202,16 @@ public class ProductRestService
 			final CreateProductRequest createProductRequest = getCreateProductRequest(jsonRequestProduct, org);
 			productId = productRepository.createProduct(createProductRequest).getId();
 
-
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens() != null)
+		{
+			productAllergenRestService.upsertProductAllergens(org,
+															  productId,
+															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
 		}
 
 		handleProductExternalReference(org,
@@ -791,6 +802,15 @@ public class ProductRestService
 			builder.stocked(existingProduct.isStocked());
 		}
 
+		if (jsonRequestProductUpsertItem.isGuaranteeMonthsSet())
+		{
+			builder.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths());
+		}
+		else
+		{
+			builder.guaranteeMonths(existingProduct.getGuaranteeMonths());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -827,6 +847,7 @@ public class ProductRestService
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
+				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
 				.build();
 	}
 

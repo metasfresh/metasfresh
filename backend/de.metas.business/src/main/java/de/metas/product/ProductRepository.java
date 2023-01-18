@@ -142,6 +142,7 @@ public class ProductRepository
 		product.setGTIN(request.getGtin());
 		product.setDescription(request.getDescription());
 		product.setAD_Org_ID(request.getOrgId().getRepoId());
+		product.setGuaranteeMonths(request.getGuaranteeMonths());
 
 		final boolean isDiscontinued = Boolean.TRUE.equals(request.getDiscontinued());
 
@@ -341,6 +342,7 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+				.guaranteeMonths(productRecord.getGuaranteeMonths())
 				.build();
 	}
 
@@ -380,6 +382,7 @@ public class ProductRepository
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
+		record.setGuaranteeMonths(product.getGuaranteeMonths());
 
 		return record;
 	}
