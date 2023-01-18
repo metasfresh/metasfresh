@@ -191,7 +191,8 @@ public class UpsertBPartnerRequestBuilder
 				.map(purchasePaymentTerm -> VAL_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
 				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
 
-		final String bpartnerValue = bPartnerRow.getPartnerCode().getPartnerCode() + " (" + bPartnerRow.getSection() + ")";
+		final String bpartnerCode = bPartnerRow.getPartnerCode().getPartnerCode();
+		final String bpartnerValue = bpartnerCode + " (" + bPartnerRow.getSection() + ")";
 
 		jsonRequestBPartner.setCode(bpartnerValue);
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
@@ -220,6 +221,8 @@ public class UpsertBPartnerRequestBuilder
 		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
 		jsonRequestBPartner.setSectionGroupPartnerIdentifier(getParentExternalIdentifier());
 		jsonRequestBPartner.setProspect(false);
+		jsonRequestBPartner.setSapBPartnerCode(bpartnerCode);
+		jsonRequestBPartner.setSectionPartner(true);
 
 		return jsonRequestBPartner;
 	}
@@ -251,7 +254,7 @@ public class UpsertBPartnerRequestBuilder
 
 		jsonRequestLocation.setVatId(bPartnerRow.getVatRegNo());
 		jsonRequestLocation.setSapPaymentMethod(bPartnerRow.getPaymentMethod());
-
+		jsonRequestLocation.setSapBPartnerCode(bPartnerRow.getPartnerCode().getRawPartnerCode());
 
 		return JsonRequestLocationUpsertItem.builder()
 				.location(jsonRequestLocation)
@@ -281,12 +284,16 @@ public class UpsertBPartnerRequestBuilder
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
-		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode().getPartnerCode());
+		final String bpartnerCode = bPartnerRow.getPartnerCode().getPartnerCode();
+
+		jsonRequestBPartner.setCode(bpartnerCode);
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
 		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
 		jsonRequestBPartner.setProspect(false);
+		jsonRequestBPartner.setSapBPartnerCode(bpartnerCode);
+		jsonRequestBPartner.setSectionGroupPartner(true);
 
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)

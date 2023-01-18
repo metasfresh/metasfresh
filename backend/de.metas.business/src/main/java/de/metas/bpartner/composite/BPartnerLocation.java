@@ -76,6 +76,7 @@ public class BPartnerLocation
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 	public static final String VAT_TAX_ID = "vatTaxId";
 	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -159,6 +160,9 @@ public class BPartnerLocation
 	@Nullable
 	private String sapPaymentMethod;
 
+	@Nullable
+	private String sapBPartnerCode;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -202,7 +206,8 @@ public class BPartnerLocation
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
 			@Nullable final Boolean visitorsAddress,
-			@Nullable final String sapPaymentMethod)
+			@Nullable final String sapPaymentMethod,
+			@Nullable final String sapBPartnerCode)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -253,6 +258,7 @@ public class BPartnerLocation
 		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
 
 		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapBPartnerCode = sapBPartnerCode;
 	}
 
 	public BPartnerLocation deepCopy()

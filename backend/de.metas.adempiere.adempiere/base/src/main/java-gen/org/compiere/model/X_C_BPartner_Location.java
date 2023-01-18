@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1249477463L;
+	private static final long serialVersionUID = -130097375L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -479,9 +479,21 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getSAP_PaymentMethod() 
+	public java.lang.String getSAP_PaymentMethod()
 	{
 		return get_ValueAsString(COLUMNNAME_SAP_PaymentMethod);
+	}
+
+	@Override
+	public void setSAP_BPartnerCode (final @Nullable java.lang.String SAP_BPartnerCode)
+	{
+		set_Value (COLUMNNAME_SAP_BPartnerCode, SAP_BPartnerCode);
+	}
+
+	@Override
+	public java.lang.String getSAP_BPartnerCode()
+	{
+		return get_ValueAsString(COLUMNNAME_SAP_BPartnerCode);
 	}
 
 	@Override

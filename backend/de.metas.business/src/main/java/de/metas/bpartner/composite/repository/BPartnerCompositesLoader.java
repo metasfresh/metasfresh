@@ -370,6 +370,9 @@ final class BPartnerCompositesLoader
 				//
 				.sectionGroupPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getSection_Group_Partner_ID()))
 				.prospect(bpartnerRecord.isProspect())
+				.sapBPartnerCode(bpartnerRecord.getSAP_BPartnerCode())
+				.sectionGroupPartner(bpartnerRecord.isSectionGroupPartner())
+				.sectionPartner(bpartnerRecord.isSectionPartner())
 				.build();
 	}
 

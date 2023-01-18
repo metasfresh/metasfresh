@@ -47,6 +47,8 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
     "prospect" : false,
+    "sectionGroupPartner" : false,
+    "sectionPartner" : false,
     "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",

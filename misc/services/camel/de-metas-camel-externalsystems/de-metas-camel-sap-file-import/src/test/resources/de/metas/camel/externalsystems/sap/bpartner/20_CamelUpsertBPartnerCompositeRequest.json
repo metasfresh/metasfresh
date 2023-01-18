@@ -80,7 +80,13 @@
             "sectionGroupPartnerIdentifier":null,
             "sectionGroupPartnerIdentifierSet":false,
             "prospect":false,
-            "prospectSet":true
+            "prospectSet":true,
+            "sapBPartnerCode":"PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":true,
+            "sectionGroupPartnerSet":true,
+            "sectionPartner":false,
+            "sectionPartnerSet":false
           }
         }
       },
@@ -160,7 +166,13 @@
             "prospect":false,
             "prospectSet":true,
             "syncAdvise":null,
-            "syncAdviseSet":false
+            "syncAdviseSet":false,
+            "sapBPartnerCode":"PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":false,
+            "sectionGroupPartnerSet":false,
+            "sectionPartner":true,
+            "sectionPartnerSet":true
           },
           "locations":{
             "requestItems":[
@@ -223,7 +235,9 @@
                   "vatId":"DE111111111",
                   "vatIdSet":true,
                   "sapPaymentMethod":"EO",
-                  "sapPaymentMethodSet":true
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE01",
+                  "sapBPartnerCodeSet":true
                 }
               },
               {
@@ -285,7 +299,9 @@
                   "vatId":"DE111111111",
                   "vatIdSet":true,
                   "sapPaymentMethod":"EO",
-                  "sapPaymentMethodSet":true
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE02",
+                  "sapBPartnerCodeSet":true
                 }
               },
               {
@@ -347,7 +363,9 @@
                   "vatId":"DE111111111",
                   "vatIdSet":true,
                   "sapPaymentMethod":"EO",
-                  "sapPaymentMethodSet":true
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE03",
+                  "sapBPartnerCodeSet":true
                 }
               }
             ],
@@ -431,7 +449,13 @@
             "prospect":false,
             "prospectSet":true,
             "syncAdvise":null,
-            "syncAdviseSet":false
+            "syncAdviseSet":false,
+            "sapBPartnerCode":"PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":false,
+            "sectionGroupPartnerSet":false,
+            "sectionPartner":true,
+            "sectionPartnerSet":true
           },
           "locations":{
             "requestItems":[
@@ -494,7 +518,9 @@
                   "vatId":"DE111111111",
                   "vatIdSet":true,
                   "sapPaymentMethod":"EO",
-                  "sapPaymentMethodSet":true
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE04",
+                  "sapBPartnerCodeSet":true
                 }
               }
             ],
