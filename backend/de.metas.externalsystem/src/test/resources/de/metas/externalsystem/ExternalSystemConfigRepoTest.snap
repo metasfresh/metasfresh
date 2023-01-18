@@ -1,76 +1,76 @@
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getById=[
   {
-    "id": 100001,
-    "type": "Alberta",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testAlbertaValue",
       "apiKey": "apiKey",
       "baseUrl": "baseUrl",
-      "tenant": "tenant"
+      "id": 100002,
+      "parentId": 100001,
+      "tenant": "tenant",
+      "value": "testAlbertaValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Alberta",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
-    "value": "testAlbertaValue",
     "apiKey": "apiKey",
     "baseUrl": "baseUrl",
-    "tenant": "tenant"
+    "id": 100002,
+    "parentId": 100001,
+    "tenant": "tenant",
+    "value": "testAlbertaValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Alberta",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testAlbertaValue",
       "apiKey": "apiKey",
       "baseUrl": "baseUrl",
-      "tenant": "tenant"
+      "id": 100002,
+      "parentId": 100001,
+      "tenant": "tenant",
+      "value": "testAlbertaValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Alberta",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getById=[
   {
-    "id": 100001,
-    "type": "Ebay",
-    "name": "name",
     "active": true,
-    "orgId": 0,
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testEbayValue",
+      "apiMode": "SANDBOX",
       "appId": "appId",
       "certId": "certId",
       "devId": "devId",
-      "refreshToken": "refreshToken",
       "externalSystemEbayConfigMappingList": [ ],
-      "apiMode": "SANDBOX",
-      "isActive": true
+      "id": 100002,
+      "isActive": true,
+      "parentId": 100001,
+      "refreshToken": "refreshToken",
+      "value": "testEbayValue"
     },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Ebay",
     "writeAudit": false
   }
 ]
@@ -78,54 +78,54 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
-    "value": "testEbayValue",
+    "apiMode": "SANDBOX",
     "appId": "appId",
     "certId": "certId",
     "devId": "devId",
-    "refreshToken": "refreshToken",
     "externalSystemEbayConfigMappingList": [
       {
-        "seqNo": 10,
-        "docTypeOrderId": 10000,
-        "paymentRule": "K",
         "bpartnerIfExists": "UPDATE_MERGE",
         "bpartnerIfNotExists": "FAIL",
         "bpartnerLocationIfExists": "DONT_UPDATE",
         "bpartnerLocationIfNotExists": "CREATE",
-        "isInvoiceEmailEnabled": true,
-        "paymentTermId": 10000,
+        "description": "test",
+        "docTypeOrderId": 10000,
         "ebayCustomerGroup": "testWithAnä",
         "ebayPaymentMethod": "test",
-        "description": "test"
+        "isInvoiceEmailEnabled": true,
+        "paymentRule": "K",
+        "paymentTermId": 10000,
+        "seqNo": 10
       }
     ],
-    "apiMode": "SANDBOX",
-    "isActive": true
+    "id": 100002,
+    "isActive": true,
+    "parentId": 100001,
+    "refreshToken": "refreshToken",
+    "value": "testEbayValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Ebay",
-    "name": "name",
     "active": true,
-    "orgId": 0,
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testEbayValue",
+      "apiMode": "SANDBOX",
       "appId": "appId",
       "certId": "certId",
       "devId": "devId",
-      "refreshToken": "refreshToken",
       "externalSystemEbayConfigMappingList": [ ],
-      "apiMode": "SANDBOX",
-      "isActive": true
+      "id": 100002,
+      "isActive": true,
+      "parentId": 100001,
+      "refreshToken": "refreshToken",
+      "value": "testEbayValue"
     },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Ebay",
     "writeAudit": false
   }
 ]
@@ -133,26 +133,26 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
-    "id": 100001,
-    "type": "GRSSignum",
-    "name": "name",
     "active": true,
-    "orgId": 0,
     "childConfig": {
+      "authToken": "authToken",
+      "autoSendCustomers": false,
+      "autoSendVendors": false,
+      "baseUrl": "baseUrl",
+      "camelHttpResourceAuthKey": "authKey",
+      "createBPartnerFolders": false,
       "id": 100002,
       "parentId": 100001,
-      "value": "testGRSSignumValue",
-      "baseUrl": "baseUrl",
-      "tenantId": "tenantId",
-      "camelHttpResourceAuthKey": "authKey",
-      "authToken": "authToken",
       "syncBPartnersToRestEndpoint": true,
-      "autoSendVendors": false,
-      "autoSendCustomers": false,
       "syncHUsOnMaterialReceipt": false,
       "syncHUsOnProductionReceipt": false,
-      "createBPartnerFolders": false
+      "tenantId": "tenantId",
+      "value": "testGRSSignumValue"
     },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "GRSSignum",
     "writeAudit": false
   }
 ]
@@ -160,45 +160,45 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndParent=[
   {
+    "authToken": "authToken",
+    "autoSendCustomers": false,
+    "autoSendVendors": false,
+    "baseUrl": "baseUrl",
+    "camelHttpResourceAuthKey": "authKey",
+    "createBPartnerFolders": false,
     "id": 100002,
     "parentId": 100001,
-    "value": "testGRSSignumValue",
-    "baseUrl": "baseUrl",
-    "tenantId": "tenantId",
-    "camelHttpResourceAuthKey": "authKey",
-    "authToken": "authToken",
     "syncBPartnersToRestEndpoint": false,
-    "autoSendVendors": false,
-    "autoSendCustomers": false,
     "syncHUsOnMaterialReceipt": false,
     "syncHUsOnProductionReceipt": false,
-    "createBPartnerFolders": false
+    "tenantId": "tenantId",
+    "value": "testGRSSignumValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getByTypeAndValue=[
   {
-    "id": 100001,
-    "type": "GRSSignum",
-    "name": "name",
     "active": true,
-    "orgId": 0,
     "childConfig": {
+      "authToken": "authToken",
+      "autoSendCustomers": false,
+      "autoSendVendors": false,
+      "baseUrl": "baseUrl",
+      "camelHttpResourceAuthKey": "authKey",
+      "createBPartnerFolders": false,
       "id": 100002,
       "parentId": 100001,
-      "value": "testGRSSignumValue",
-      "baseUrl": "baseUrl",
-      "tenantId": "tenantId",
-      "camelHttpResourceAuthKey": "authKey",
-      "authToken": "authToken",
       "syncBPartnersToRestEndpoint": true,
-      "autoSendVendors": false,
-      "autoSendCustomers": false,
       "syncHUsOnMaterialReceipt": false,
       "syncHUsOnProductionReceipt": false,
-      "createBPartnerFolders": false
+      "tenantId": "tenantId",
+      "value": "testGRSSignumValue"
     },
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "GRSSignum",
     "writeAudit": false
   }
 ]
@@ -207,25 +207,25 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
   [
     {
-      "id": 100001,
-      "type": "LeichUndMehl",
-      "name": "name",
       "active": true,
-      "orgId": 0,
+      "auditFileFolder": "auditFileFolder",
       "childConfig": {
         "id": 100002,
         "parentId": 100001,
-        "value": "testLeichMehlValue",
-        "productBaseFolderName": "productBaseFolderName",
-        "tcpPort": 8080,
-        "tcpHost": "tcpHost",
-        "pluFileExportAuditEnabled": false,
-        "productMappings": [ ],
         "pluFileConfigs": [ ],
-        "productMappingEmpty": true
+        "pluFileExportAuditEnabled": false,
+        "productBaseFolderName": "productBaseFolderName",
+        "productMappingEmpty": true,
+        "productMappings": [ ],
+        "tcpHost": "tcpHost",
+        "tcpPort": 8080,
+        "value": "testLeichMehlValue"
       },
-      "writeAudit": true,
-      "auditFileFolder": "auditFileFolder"
+      "id": 100001,
+      "name": "name",
+      "orgId": 0,
+      "type": "LeichUndMehl",
+      "writeAudit": true
     }
   ]
 ]
@@ -235,320 +235,307 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
   {
     "id": 100002,
     "parentId": 100001,
-    "value": "testLeichMehlValue",
-    "productBaseFolderName": "productBaseFolderName",
-    "tcpPort": 8080,
-    "tcpHost": "tcpHost",
-    "pluFileExportAuditEnabled": false,
-    "productMappings": [ ],
     "pluFileConfigs": [ ],
-    "productMappingEmpty": true
+    "pluFileExportAuditEnabled": false,
+    "productBaseFolderName": "productBaseFolderName",
+    "productMappingEmpty": true,
+    "productMappings": [ ],
+    "tcpHost": "tcpHost",
+    "tcpPort": 8080,
+    "value": "testLeichMehlValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "LeichUndMehl",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
-      "value": "testLeichMehlValue",
-      "productBaseFolderName": "productBaseFolderName",
-      "tcpPort": 8080,
-      "tcpHost": "tcpHost",
-      "pluFileExportAuditEnabled": false,
-      "productMappings": [ ],
       "pluFileConfigs": [ ],
-      "productMappingEmpty": true
+      "pluFileExportAuditEnabled": false,
+      "productBaseFolderName": "productBaseFolderName",
+      "productMappingEmpty": true,
+      "productMappings": [ ],
+      "tcpHost": "tcpHost",
+      "tcpPort": 8080,
+      "value": "testLeichMehlValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "LeichUndMehl",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getById=[
   {
-    "id": 100001,
-    "type": "Metasfresh",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "camelHttpResourceAuthKey": "authKey",
+      "feedbackResourceAuthToken": "feedbackAuthToke",
+      "feedbackResourceURL": "feedbackURL",
       "id": 100002,
       "parentId": 100001,
-      "value": "externalSystemValue",
-      "camelHttpResourceAuthKey": "authKey",
-      "feedbackResourceURL": "feedbackURL",
-      "feedbackResourceAuthToken": "feedbackAuthToke"
+      "value": "externalSystemValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Metasfresh",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getByTypeAndParent=[
   {
+    "camelHttpResourceAuthKey": "authKey",
+    "feedbackResourceAuthToken": "feedbackAuthToke",
+    "feedbackResourceURL": "feedbackURL",
     "id": 100002,
     "parentId": 100001,
-    "value": "externalSystemValue",
-    "camelHttpResourceAuthKey": "authKey",
-    "feedbackResourceURL": "feedbackURL",
-    "feedbackResourceAuthToken": "feedbackAuthToke"
+    "value": "externalSystemValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Metasfresh",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "camelHttpResourceAuthKey": "authKey",
+      "feedbackResourceAuthToken": "feedbackAuthToke",
+      "feedbackResourceURL": "feedbackURL",
       "id": 100002,
       "parentId": 100001,
-      "value": "externalSystemValue",
-      "camelHttpResourceAuthKey": "authKey",
-      "feedbackResourceURL": "feedbackURL",
-      "feedbackResourceAuthToken": "feedbackAuthToke"
+      "value": "externalSystemValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Metasfresh",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
-    "id": 100001,
-    "type": "RabbitMQ",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testRabbitMQValue",
-      "routingKey": "routingKey",
-      "remoteUrl": "remoteURL",
       "authToken": "authToken",
-      "isSyncBPartnerToRabbitMQ": true,
+      "autoSendSubjectWhenCreatedByUserGroup": false,
+      "id": 100002,
       "isAutoSendWhenCreatedByUserGroup": false,
+      "isSyncBPartnerToRabbitMQ": true,
       "isSyncExternalReferencesToRabbitMQ": false,
+      "parentId": 100001,
+      "remoteUrl": "remoteURL",
+      "routingKey": "routingKey",
       "syncBPartnerToRabbitMQ": true,
       "syncExternalReferencesToRabbitMQ": false,
-      "autoSendSubjectWhenCreatedByUserGroup": false
+      "value": "testRabbitMQValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "RabbitMQ",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
-    "value": "testRabbitMQValue",
-    "routingKey": "routingKey",
-    "remoteUrl": "remoteURL",
     "authToken": "authToken",
-    "isSyncBPartnerToRabbitMQ": true,
+    "autoSendSubjectWhenCreatedByUserGroup": false,
+    "id": 100002,
     "isAutoSendWhenCreatedByUserGroup": false,
+    "isSyncBPartnerToRabbitMQ": true,
     "isSyncExternalReferencesToRabbitMQ": false,
+    "parentId": 100001,
+    "remoteUrl": "remoteURL",
+    "routingKey": "routingKey",
     "syncBPartnerToRabbitMQ": true,
     "syncExternalReferencesToRabbitMQ": false,
-    "autoSendSubjectWhenCreatedByUserGroup": false
+    "value": "testRabbitMQValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
   {
-    "id": 100001,
-    "type": "RabbitMQ",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testRabbitMQValue",
-      "routingKey": "routingKey",
-      "remoteUrl": "remoteURL",
       "authToken": "authToken",
-      "isSyncBPartnerToRabbitMQ": true,
+      "autoSendSubjectWhenCreatedByUserGroup": true,
+      "id": 100002,
       "isAutoSendWhenCreatedByUserGroup": true,
-      "userGroupId": 1,
+      "isSyncBPartnerToRabbitMQ": true,
       "isSyncExternalReferencesToRabbitMQ": false,
+      "parentId": 100001,
+      "remoteUrl": "remoteURL",
+      "routingKey": "routingKey",
       "syncBPartnerToRabbitMQ": true,
       "syncExternalReferencesToRabbitMQ": false,
-      "autoSendSubjectWhenCreatedByUserGroup": true
+      "userGroupId": 1,
+      "value": "testRabbitMQValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "RabbitMQ",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getById=[
   {
-    "id": 100001,
-    "type": "SAP",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "contentSourceLocalFile": {
+        "erroredDirectory": "testSAPLocalFileErroredDirectory",
+        "fileNamePatternBPartner": "BPartnerLocalFile*",
+        "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
+        "fileNamePatternProduct": "ProductLocalFile*",
+        "pollingFrequency": 1.000000000,
+        "processedDirectory": "testSAPLocalFileProcessedDirectory",
+        "rootLocation": "testLocalFileRootLocation",
+        "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+        "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
+        "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
+      },
+      "contentSourceSFTP": {
+        "erroredDirectory": "testSAPSFTPErroredDirectory",
+        "fileNamePatternBPartner": "BPartnerSFTP*",
+        "fileNamePatternCreditLimit": "CreditLimitSFTP*",
+        "fileNamePatternProduct": "ProductSFTP*",
+        "hostName": "testSAPSFTPHostName",
+        "password": "testSAPSFTPPassword",
+        "pollingFrequency": 1.000000000,
+        "port": "testSAPSFTPPort",
+        "processedDirectory": "testSAPSFTPProcessedDirectory",
+        "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+        "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
+        "targetDirectoryProduct": "testSAPSFTPProductDirectory",
+        "username": "testSAPSFTPUsername"
+      },
       "id": 100002,
       "parentId": 100001,
-      "value": "testSAPValue",
-      "contentSourceSFTP": {
-        "hostName": "testSAPSFTPHostName",
-        "port": "testSAPSFTPPort",
-        "username": "testSAPSFTPUsername",
-        "password": "testSAPSFTPPassword",
-        "processedDirectory": "testSAPSFTPProcessedDirectory",
-        "erroredDirectory": "testSAPSFTPErroredDirectory",
-        "pollingFrequency": 1.000000000,
-        "targetDirectoryProduct": "testSAPSFTPProductDirectory",
-        "fileNamePatternProduct": "ProductSFTP*",
-        "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
-        "fileNamePatternBPartner": "BPartnerSFTP*",
-        "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
-        "fileNamePatternCreditLimit": "CreditLimitSFTP*"
-      },
-      "contentSourceLocalFile": {
-        "rootLocation": "testLocalFileRootLocation",
-        "processedDirectory": "testSAPLocalFileProcessedDirectory",
-        "erroredDirectory": "testSAPLocalFileErroredDirectory",
-        "pollingFrequency": 1.000000000,
-        "targetDirectoryProduct": "testSAPLocalFileProductDirectory",
-        "fileNamePatternProduct": "ProductLocalFile*",
-        "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
-        "fileNamePatternBPartner": "BPartnerLocalFile*",
-        "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
-        "fileNamePatternCreditLimit": "CreditLimitLocalFile*"
-      }
+      "value": "testSAPValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "SAP",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getByTypeAndParent=[
   {
+    "contentSourceLocalFile": {
+      "erroredDirectory": "testSAPLocalFileErroredDirectory",
+      "fileNamePatternBPartner": "BPartnerLocalFile*",
+      "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
+      "fileNamePatternProduct": "ProductLocalFile*",
+      "pollingFrequency": 1.000000000,
+      "processedDirectory": "testSAPLocalFileProcessedDirectory",
+      "rootLocation": "testLocalFileRootLocation",
+      "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+      "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
+      "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
+    },
+    "contentSourceSFTP": {
+      "erroredDirectory": "testSAPSFTPErroredDirectory",
+      "fileNamePatternBPartner": "BPartnerSFTP*",
+      "fileNamePatternCreditLimit": "CreditLimitSFTP*",
+      "fileNamePatternProduct": "ProductSFTP*",
+      "hostName": "testSAPSFTPHostName",
+      "password": "testSAPSFTPPassword",
+      "pollingFrequency": 1.000000000,
+      "port": "testSAPSFTPPort",
+      "processedDirectory": "testSAPSFTPProcessedDirectory",
+      "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+      "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
+      "targetDirectoryProduct": "testSAPSFTPProductDirectory",
+      "username": "testSAPSFTPUsername"
+    },
     "id": 100002,
     "parentId": 100001,
-    "value": "testSAPValue",
-    "contentSourceSFTP": {
-      "hostName": "testSAPSFTPHostName",
-      "port": "testSAPSFTPPort",
-      "username": "testSAPSFTPUsername",
-      "password": "testSAPSFTPPassword",
-      "processedDirectory": "testSAPSFTPProcessedDirectory",
-      "erroredDirectory": "testSAPSFTPErroredDirectory",
-      "pollingFrequency": 1.000000000,
-      "targetDirectoryProduct": "testSAPSFTPProductDirectory",
-      "fileNamePatternProduct": "ProductSFTP*",
-      "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
-      "fileNamePatternBPartner": "BPartnerSFTP*",
-      "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
-      "fileNamePatternCreditLimit": "CreditLimitSFTP*"
-    },
-    "contentSourceLocalFile": {
-      "rootLocation": "testLocalFileRootLocation",
-      "processedDirectory": "testSAPLocalFileProcessedDirectory",
-      "erroredDirectory": "testSAPLocalFileErroredDirectory",
-      "pollingFrequency": 1.000000000,
-      "targetDirectoryProduct": "testSAPLocalFileProductDirectory",
-      "fileNamePatternProduct": "ProductLocalFile*",
-      "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
-      "fileNamePatternBPartner": "BPartnerLocalFile*",
-      "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
-      "fileNamePatternCreditLimit": "CreditLimitLocalFile*"
-    }
+    "value": "testSAPValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "SAP",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "contentSourceLocalFile": {
+        "erroredDirectory": "testSAPLocalFileErroredDirectory",
+        "fileNamePatternBPartner": "BPartnerLocalFile*",
+        "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
+        "fileNamePatternProduct": "ProductLocalFile*",
+        "pollingFrequency": 1.000000000,
+        "processedDirectory": "testSAPLocalFileProcessedDirectory",
+        "rootLocation": "testLocalFileRootLocation",
+        "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+        "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
+        "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
+      },
+      "contentSourceSFTP": {
+        "erroredDirectory": "testSAPSFTPErroredDirectory",
+        "fileNamePatternBPartner": "BPartnerSFTP*",
+        "fileNamePatternCreditLimit": "CreditLimitSFTP*",
+        "fileNamePatternProduct": "ProductSFTP*",
+        "hostName": "testSAPSFTPHostName",
+        "password": "testSAPSFTPPassword",
+        "pollingFrequency": 1.000000000,
+        "port": "testSAPSFTPPort",
+        "processedDirectory": "testSAPSFTPProcessedDirectory",
+        "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+        "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
+        "targetDirectoryProduct": "testSAPSFTPProductDirectory",
+        "username": "testSAPSFTPUsername"
+      },
       "id": 100002,
       "parentId": 100001,
-      "value": "testSAPValue",
-      "contentSourceSFTP": {
-        "hostName": "testSAPSFTPHostName",
-        "port": "testSAPSFTPPort",
-        "username": "testSAPSFTPUsername",
-        "password": "testSAPSFTPPassword",
-        "processedDirectory": "testSAPSFTPProcessedDirectory",
-        "erroredDirectory": "testSAPSFTPErroredDirectory",
-        "pollingFrequency": 1.000000000,
-        "targetDirectoryProduct": "testSAPSFTPProductDirectory",
-        "fileNamePatternProduct": "ProductSFTP*",
-        "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
-        "fileNamePatternBPartner": "BPartnerSFTP*",
-        "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
-        "fileNamePatternCreditLimit": "CreditLimitSFTP*"
-      },
-      "contentSourceLocalFile": {
-        "rootLocation": "testLocalFileRootLocation",
-        "processedDirectory": "testSAPLocalFileProcessedDirectory",
-        "erroredDirectory": "testSAPLocalFileErroredDirectory",
-        "pollingFrequency": 1.000000000,
-        "targetDirectoryProduct": "testSAPLocalFileProductDirectory",
-        "fileNamePatternProduct": "ProductLocalFile*",
-        "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
-        "fileNamePatternBPartner": "BPartnerLocalFile*",
-        "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
-        "fileNamePatternCreditLimit": "CreditLimitLocalFile*"
-      }
+      "value": "testSAPValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "SAP",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
+      "bPartnerLocationIdJSONPath": "JSONPathConstantBPartnerLocationID",
       "baseUrl": "baseUrl",
       "clientId": "id",
       "clientSecret": "secret",
-      "externalSystemShopware6ConfigMappingList": [ ],
-      "uomShopwareMappingList": [
-        {
-          "externalSystemShopware6ConfigId": 100002,
-          "uomId": 100003,
-          "shopwareCode": "shopwareCode"
-        }
-      ],
-      "bPartnerLocationIdJSONPath": "JSONPathConstantBPartnerLocationID",
-      "salesRepJSONPath": "/test/salesrep",
       "emailJSONPath": "JSONPathEmail",
+      "externalSystemShopware6ConfigMappingList": [ ],
       "freightCostNormalVatConfig": {
         "productId": 20,
         "vatRates": "1,2"
@@ -557,194 +544,207 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "productId": 30,
         "vatRates": "3,4"
       },
-      "priceListId": 40,
+      "id": 100002,
       "isActive": true,
-      "value": "testShopware6Value",
-      "productLookup": "ProductNumber",
       "metasfreshIdJSONPath": "JSONPathMetasfreshID",
+      "parentId": 100001,
+      "percentageToDeductFromAvailableForSales": 10,
+      "priceListId": 40,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
       "shopwareIdJSONPath": "JSONPathShopwareID",
       "syncAvailableForSalesToShopware6": true,
-      "percentageToDeductFromAvailableForSales": 10
+      "uomShopwareMappingList": [
+        {
+          "externalSystemShopware6ConfigId": 100002,
+          "shopwareCode": "shopwareCode",
+          "uomId": 100003
+        }
+      ],
+      "value": "testShopware6Value"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByQuery=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "name": "name",
     "active": false,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
       "baseUrl": "baseUrl",
       "clientId": "id",
       "clientSecret": "secret",
       "externalSystemShopware6ConfigMappingList": [ ],
+      "id": 100002,
+      "isActive": false,
+      "parentId": 100001,
+      "percentageToDeductFromAvailableForSales": 0,
+      "priceListId": 1,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
+      "syncAvailableForSalesToShopware6": false,
       "uomShopwareMappingList": [
         {
           "externalSystemShopware6ConfigId": 100002,
-          "uomId": 100003,
-          "shopwareCode": "shopwareCode"
+          "shopwareCode": "shopwareCode",
+          "uomId": 100003
         }
       ],
-      "salesRepJSONPath": "/test/salesrep",
-      "priceListId": 1,
-      "isActive": false,
-      "value": "testShopware6Value",
-      "productLookup": "ProductNumber",
-      "syncAvailableForSalesToShopware6": false,
-      "percentageToDeductFromAvailableForSales": 0
+      "value": "testShopware6Value"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
     "baseUrl": "baseUrl",
     "clientId": "id",
     "clientSecret": "secret",
     "externalSystemShopware6ConfigMappingList": [
       {
-        "seqNo": 10,
-        "docTypeOrderId": 10000,
-        "paymentRule": "K",
         "bpartnerIfExists": "UPDATE_MERGE",
         "bpartnerIfNotExists": "FAIL",
         "bpartnerLocationIfExists": "DONT_UPDATE",
         "bpartnerLocationIfNotExists": "CREATE",
+        "description": "test",
+        "docTypeOrderId": 10000,
         "isInvoiceEmailEnabled": true,
+        "paymentRule": "K",
         "paymentTermId": 10000,
+        "seqNo": 10,
         "sw6CustomerGroup": "testWithAnä",
-        "sw6PaymentMethod": "test",
-        "description": "test"
+        "sw6PaymentMethod": "test"
       }
     ],
+    "id": 100002,
+    "isActive": true,
+    "parentId": 100001,
+    "percentageToDeductFromAvailableForSales": 0,
+    "priceListId": 1,
+    "productLookup": "ProductNumber",
+    "salesRepJSONPath": "/test/salesrep",
+    "syncAvailableForSalesToShopware6": false,
     "uomShopwareMappingList": [
       {
         "externalSystemShopware6ConfigId": 100002,
-        "uomId": 100004,
-        "shopwareCode": "shopwareCode"
+        "shopwareCode": "shopwareCode",
+        "uomId": 100004
       }
     ],
-    "salesRepJSONPath": "/test/salesrep",
-    "priceListId": 1,
-    "isActive": true,
-    "value": "testShopware6Value",
-    "productLookup": "ProductNumber",
-    "syncAvailableForSalesToShopware6": false,
-    "percentageToDeductFromAvailableForSales": 0
+    "value": "testShopware6Value"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
       "baseUrl": "baseUrl",
       "clientId": "id",
       "clientSecret": "secret",
       "externalSystemShopware6ConfigMappingList": [ ],
+      "id": 100002,
+      "isActive": true,
+      "parentId": 100001,
+      "percentageToDeductFromAvailableForSales": 0,
+      "priceListId": 1,
+      "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
+      "syncAvailableForSalesToShopware6": false,
       "uomShopwareMappingList": [
         {
           "externalSystemShopware6ConfigId": 100002,
-          "uomId": 100003,
-          "shopwareCode": "shopwareCode"
+          "shopwareCode": "shopwareCode",
+          "uomId": 100003
         }
       ],
-      "salesRepJSONPath": "/test/salesrep",
-      "priceListId": 1,
-      "isActive": true,
-      "value": "testShopware6Value",
-      "productLookup": "ProductNumber",
-      "syncAvailableForSalesToShopware6": false,
-      "percentageToDeductFromAvailableForSales": 0
+      "value": "testShopware6Value"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_store=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
       "baseUrl": "new-baseURL",
       "clientId": "new-clientId",
       "clientSecret": "new-clientSecret",
       "externalSystemShopware6ConfigMappingList": [ ],
-      "uomShopwareMappingList": [ ],
-      "salesRepJSONPath": "/test/salesrep",
-      "priceListId": 2,
+      "id": 100002,
       "isActive": true,
-      "value": "new-value",
+      "parentId": 100001,
+      "percentageToDeductFromAvailableForSales": 0,
+      "priceListId": 2,
       "productLookup": "ProductNumber",
+      "salesRepJSONPath": "/test/salesrep",
       "syncAvailableForSalesToShopware6": false,
-      "percentageToDeductFromAvailableForSales": 0
+      "uomShopwareMappingList": [ ],
+      "value": "new-value"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Shopware6",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getById=[
   {
-    "id": 100001,
-    "type": "WOO",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "camelHttpResourceAuthKey": "authKey",
       "id": 100002,
       "parentId": 100001,
-      "value": "testWoocommerceValue",
-      "camelHttpResourceAuthKey": "authKey"
+      "value": "testWoocommerceValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "WOO",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "WOO",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
       "value": "testWoocommerceValue"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "WOO",
+    "writeAudit": true
   }
 ]
 
@@ -752,21 +752,21 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_Metasfresh=[
   [
     {
-      "id": 100001,
-      "type": "Metasfresh",
-      "name": "name",
       "active": true,
-      "orgId": 0,
+      "auditFileFolder": "auditFileFolder",
       "childConfig": {
+        "camelHttpResourceAuthKey": "authKey",
+        "feedbackResourceAuthToken": "feedbackResourceAuthToken",
+        "feedbackResourceURL": "feedbackResourceURL",
         "id": 100002,
         "parentId": 100001,
-        "value": "value",
-        "camelHttpResourceAuthKey": "authKey",
-        "feedbackResourceURL": "feedbackResourceURL",
-        "feedbackResourceAuthToken": "feedbackResourceAuthToken"
+        "value": "value"
       },
-      "writeAudit": true,
-      "auditFileFolder": "auditFileFolder"
+      "id": 100001,
+      "name": "name",
+      "orgId": 0,
+      "type": "Metasfresh",
+      "writeAudit": true
     }
   ]
 ]
@@ -775,27 +775,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
-      "id": 100001,
-      "type": "RabbitMQ",
-      "name": "name",
       "active": true,
-      "orgId": 0,
+      "auditFileFolder": "auditFileFolder",
       "childConfig": {
-        "id": 100002,
-        "parentId": 100001,
-        "value": "notImportant",
-        "routingKey": "routingKey",
-        "remoteUrl": "remoteURL",
         "authToken": "authToken",
-        "isSyncBPartnerToRabbitMQ": false,
+        "autoSendSubjectWhenCreatedByUserGroup": false,
+        "id": 100002,
         "isAutoSendWhenCreatedByUserGroup": false,
+        "isSyncBPartnerToRabbitMQ": false,
         "isSyncExternalReferencesToRabbitMQ": false,
+        "parentId": 100001,
+        "remoteUrl": "remoteURL",
+        "routingKey": "routingKey",
         "syncBPartnerToRabbitMQ": false,
         "syncExternalReferencesToRabbitMQ": false,
-        "autoSendSubjectWhenCreatedByUserGroup": false
+        "value": "notImportant"
       },
-      "writeAudit": true,
-      "auditFileFolder": "auditFileFolder"
+      "id": 100001,
+      "name": "name",
+      "orgId": 0,
+      "type": "RabbitMQ",
+      "writeAudit": true
     }
   ]
 ]
@@ -804,45 +804,45 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_SAP=[
   [
     {
-      "id": 100001,
-      "type": "SAP",
-      "name": "name",
       "active": true,
-      "orgId": 0,
+      "auditFileFolder": "auditFileFolder",
       "childConfig": {
+        "contentSourceLocalFile": {
+          "erroredDirectory": "testSAPLocalFileErroredDirectory",
+          "fileNamePatternBPartner": "BPartnerLocalFile*",
+          "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
+          "fileNamePatternProduct": "ProductLocalFile*",
+          "pollingFrequency": 1.000000000,
+          "processedDirectory": "testSAPLocalFileProcessedDirectory",
+          "rootLocation": "testLocalFileRootLocation",
+          "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+          "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
+          "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
+        },
+        "contentSourceSFTP": {
+          "erroredDirectory": "testSAPSFTPErroredDirectory",
+          "fileNamePatternBPartner": "BPartnerSFTP*",
+          "fileNamePatternCreditLimit": "CreditLimitSFTP*",
+          "fileNamePatternProduct": "ProductSFTP*",
+          "hostName": "testSAPSFTPHostName",
+          "password": "testSAPSFTPPassword",
+          "pollingFrequency": 1.000000000,
+          "port": "testSAPSFTPPort",
+          "processedDirectory": "testSAPSFTPProcessedDirectory",
+          "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+          "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
+          "targetDirectoryProduct": "testSAPSFTPProductDirectory",
+          "username": "testSAPSFTPUsername"
+        },
         "id": 100002,
         "parentId": 100001,
-        "value": "notImportant",
-        "contentSourceSFTP": {
-          "hostName": "testSAPSFTPHostName",
-          "port": "testSAPSFTPPort",
-          "username": "testSAPSFTPUsername",
-          "password": "testSAPSFTPPassword",
-          "processedDirectory": "testSAPSFTPProcessedDirectory",
-          "erroredDirectory": "testSAPSFTPErroredDirectory",
-          "pollingFrequency": 1.000000000,
-          "targetDirectoryProduct": "testSAPSFTPProductDirectory",
-          "fileNamePatternProduct": "ProductSFTP*",
-          "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
-          "fileNamePatternBPartner": "BPartnerSFTP*",
-          "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
-          "fileNamePatternCreditLimit": "CreditLimitSFTP*"
-        },
-        "contentSourceLocalFile": {
-          "rootLocation": "testLocalFileRootLocation",
-          "processedDirectory": "testSAPLocalFileProcessedDirectory",
-          "erroredDirectory": "testSAPLocalFileErroredDirectory",
-          "pollingFrequency": 1.000000000,
-          "targetDirectoryProduct": "testSAPLocalFileProductDirectory",
-          "fileNamePatternProduct": "ProductLocalFile*",
-          "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
-          "fileNamePatternBPartner": "BPartnerLocalFile*",
-          "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
-          "fileNamePatternCreditLimit": "CreditLimitLocalFile*"
-        }
+        "value": "notImportant"
       },
-      "writeAudit": true,
-      "auditFileFolder": "auditFileFolder"
+      "id": 100001,
+      "name": "name",
+      "orgId": 0,
+      "type": "SAP",
+      "writeAudit": true
     }
   ]
 ]
@@ -850,41 +850,35 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
   {
-    "id": 100001,
-    "type": "LeichUndMehl",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
-      "value": "LeichMehl",
-      "productBaseFolderName": "productBaseFolderName",
-      "tcpPort": 8080,
-      "tcpHost": "tcpHost",
-      "pluFileExportAuditEnabled": false,
-      "productMappings": [ ],
       "pluFileConfigs": [ ],
-      "productMappingEmpty": true
+      "pluFileExportAuditEnabled": false,
+      "productBaseFolderName": "productBaseFolderName",
+      "productMappingEmpty": true,
+      "productMappings": [ ],
+      "tcpHost": "tcpHost",
+      "tcpPort": 8080,
+      "value": "LeichMehl"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "LeichUndMehl",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config_getById=[
   {
-    "id": 100001,
-    "type": "Other",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "id": {
-        "externalSystemParentConfigId": 100001
-      },
-      "value": {
         "externalSystemParentConfigId": 100001
       },
       "parameters": [
@@ -898,53 +892,59 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "name": "name2",
           "value": "value2"
         }
-      ]
+      ],
+      "value": {
+        "externalSystemParentConfigId": 100001
+      }
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "Other",
+    "writeAudit": true
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo=[
   {
-    "id": 100001,
-    "type": "LeichUndMehl",
-    "name": "name",
     "active": true,
-    "orgId": 0,
+    "auditFileFolder": "auditFileFolder",
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
-      "value": "LeichMehl",
-      "productBaseFolderName": "productBaseFolderName",
-      "tcpPort": 8080,
-      "tcpHost": "tcpHost",
-      "pluFileExportAuditEnabled": false,
-      "productMappings": [
-        {
-          "id": 100003,
-          "seqNo": 10,
-          "pluFile": "plufile",
-          "productCategoryId": 2,
-          "productId": 1,
-          "bPartnerId": 3
-        }
-      ],
       "pluFileConfigs": [
         {
           "id": 100004,
           "leichMehlConfigId": 100002,
-          "targetFieldName": "targetFileName",
-          "targetFieldType": "Date",
           "replaceRegExp": "replacePattern",
           "replacement": "replacement",
-          "replacementSource": "PPOrder"
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
         }
       ],
-      "productMappingEmpty": false
+      "pluFileExportAuditEnabled": false,
+      "productBaseFolderName": "productBaseFolderName",
+      "productMappingEmpty": false,
+      "productMappings": [
+        {
+          "bPartnerId": 3,
+          "id": 100003,
+          "pluFile": "plufile",
+          "productCategoryId": 2,
+          "productId": 1,
+          "seqNo": 10
+        }
+      ],
+      "tcpHost": "tcpHost",
+      "tcpPort": 8080,
+      "value": "LeichMehl"
     },
-    "writeAudit": true,
-    "auditFileFolder": "auditFileFolder"
+    "id": 100001,
+    "name": "name",
+    "orgId": 0,
+    "type": "LeichUndMehl",
+    "writeAudit": true
   }
 ]

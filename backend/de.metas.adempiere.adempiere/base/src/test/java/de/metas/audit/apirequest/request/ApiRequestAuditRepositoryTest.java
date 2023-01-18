@@ -23,6 +23,7 @@
 package de.metas.audit.apirequest.request;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
@@ -74,6 +75,6 @@ public class ApiRequestAuditRepositoryTest
 		final ApiRequestAudit result = apiRequestAuditRepository.save(apiRequestAudit);
 
 		//then
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 }

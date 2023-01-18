@@ -2,9 +2,9 @@ de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContactTest.serializeDese
   {
     "gender": "gender",
     "genderSet": true,
-    "title": "title",
-    "titleSet": true,
     "timestamp": "2019-11-22T00:00:00Z",
-    "timestampSet": true
+    "timestampSet": true,
+    "title": "title",
+    "titleSet": true
   }
 ]

@@ -23,6 +23,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.margin;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -126,7 +127,7 @@ public class MarginAlgorithmTest
 		// then
 		assertThat(shares).hasSize(1);
 
-		expect.serializer("json").toMatchSnapshot(shares.get(0));
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(shares.get(0));
 	}
 
 	@Builder(builderMethodName = "commissionSharesRequestBuilder")

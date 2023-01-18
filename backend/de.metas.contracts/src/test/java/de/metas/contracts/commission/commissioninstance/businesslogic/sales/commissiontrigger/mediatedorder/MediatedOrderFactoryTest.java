@@ -23,6 +23,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -113,7 +114,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -143,7 +144,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test

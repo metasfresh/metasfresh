@@ -2,27 +2,27 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
   {
     "bPartnerAlbertaPatientId": 100001,
     "bPartnerId": 1,
-    "hospitalId": 2,
-    "dischargeDate": "2019-11-22",
-    "payerId": 3,
-    "payerType": "ProfessionalAssociation",
-    "numberOfInsured": "numberOfInsured",
+    "careDegree": 2.2,
+    "classification": "classification",
     "copaymentFrom": "2019-11-23",
     "copaymentTo": "2019-11-24",
-    "isTransferPatient": true,
-    "isIVTherapy": false,
-    "fieldNurseId": 4,
-    "deactivationReason": "AllTherapiesEnded",
-    "deactivationDate": "2019-11-25",
-    "deactivationComment": "deactivationComment",
-    "classification": "classification",
-    "careDegree": 2.2,
     "createdAt": "2019-11-26T00:00:00Z",
     "createdById": 5,
-    "updatedAt": "2019-11-27T00:00:00Z",
-    "updatedById": 6,
+    "deactivationComment": "deactivationComment",
+    "deactivationDate": "2019-11-25",
+    "deactivationReason": "AllTherapiesEnded",
+    "dischargeDate": "2019-11-22",
+    "fieldNurseId": 4,
+    "hospitalId": 2,
+    "isIVTherapy": false,
+    "isTransferPatient": true,
     "ivtherapy": false,
-    "transferPatient": true
+    "numberOfInsured": "numberOfInsured",
+    "payerId": 3,
+    "payerType": "ProfessionalAssociation",
+    "transferPatient": true,
+    "updatedAt": "2019-11-27T00:00:00Z",
+    "updatedById": 6
   }
 ]
 
@@ -31,9 +31,9 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
   {
     "bPartnerAlbertaPatientId": 100001,
     "bPartnerId": 1,
-    "isTransferPatient": false,
-    "isIVTherapy": false,
     "careDegree": 0,
+    "isIVTherapy": false,
+    "isTransferPatient": false,
     "ivtherapy": false,
     "transferPatient": false
   }

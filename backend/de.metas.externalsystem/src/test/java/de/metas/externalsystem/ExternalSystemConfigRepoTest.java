@@ -23,6 +23,7 @@
 package de.metas.externalsystem;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
@@ -108,7 +109,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -156,7 +157,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -179,7 +180,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -204,7 +205,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -244,7 +245,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -271,7 +272,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -298,7 +299,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -325,7 +326,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -378,7 +379,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Alberta_ID());
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -436,7 +437,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -461,7 +462,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -484,7 +485,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -514,7 +515,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -563,7 +564,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Ebay_ID());
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -594,7 +595,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -644,7 +645,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -668,7 +669,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -715,7 +716,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -740,7 +741,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -768,7 +769,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -795,7 +796,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -863,7 +864,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -915,7 +916,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
 		assertThat(updatedChildConfig).isNotNull();
-		expect.serializer("json").toMatchSnapshot(updatedChildConfig);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(updatedChildConfig);
 
 		assertThat(updatedChildConfig.isActive()).isTrue();
 
@@ -946,7 +947,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -968,7 +969,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1019,7 +1020,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1051,7 +1052,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1102,7 +1103,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1136,7 +1137,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1180,7 +1181,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1208,7 +1209,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1262,7 +1263,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1303,7 +1304,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -1348,6 +1349,6 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 }

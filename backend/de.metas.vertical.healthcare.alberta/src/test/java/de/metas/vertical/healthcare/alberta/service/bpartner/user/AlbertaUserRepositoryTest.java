@@ -23,6 +23,7 @@
 package de.metas.vertical.healthcare.alberta.service.bpartner.user;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.user.UserId;
 import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUser;
@@ -70,7 +71,7 @@ public class AlbertaUserRepositoryTest
 		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 
 	@Test
@@ -85,6 +86,6 @@ public class AlbertaUserRepositoryTest
 		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
-		expect.serializer("json").toMatchSnapshot(result);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
 	}
 }

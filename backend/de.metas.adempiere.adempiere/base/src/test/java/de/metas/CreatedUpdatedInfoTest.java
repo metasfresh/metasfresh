@@ -23,6 +23,7 @@
 package de.metas;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
@@ -55,7 +56,7 @@ class CreatedUpdatedInfoTest
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
-		expect.serializer("json").toMatchSnapshot(createdUpdatedInfo);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(createdUpdatedInfo);
 	}
 
 	@Test

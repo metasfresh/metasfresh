@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inventory;
 
 import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -199,7 +200,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
 
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
-		expect.serializer("json").toMatchSnapshot(reloadedResult);
+		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(reloadedResult);
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}

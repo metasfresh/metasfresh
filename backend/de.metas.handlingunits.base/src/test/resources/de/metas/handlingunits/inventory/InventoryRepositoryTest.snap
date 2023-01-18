@@ -1,30 +1,23 @@
 de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
   {
-    "id": 100015,
-    "orgId": 100001,
     "docBaseAndSubType": {
       "docBaseType": "MMI",
       "docSubType": "ISH"
     },
-    "inventoryType": "PHYSICAL",
-    "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
     "docStatus": "Drafted",
     "documentNo": "documentNo",
+    "id": 100015,
+    "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "id": 100016,
-        "orgId": 100001,
         "asiId": 100010,
-        "productId": 40,
-        "storageAttributesKey": "10§&§11§&§12",
-        "locatorId": "100004_100005",
-        "huAggregationType": "MULTI_HU",
-        "inventoryType": "PHYSICAL",
         "counted": true,
+        "huAggregationType": "MULTI_HU",
+        "id": 100016,
         "inventoryLineHUs": [
           {
-            "id": 100019,
             "huId": 100,
+            "id": 100019,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "10",
@@ -36,8 +29,8 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
             }
           },
           {
-            "id": 100020,
             "huId": 200,
+            "id": 100020,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": "20",
@@ -48,8 +41,15 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
               "uomId": 100003
             }
           }
-        ]
+        ],
+        "inventoryType": "PHYSICAL",
+        "locatorId": "100004_100005",
+        "orgId": 100001,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12"
       }
-    ]
+    ],
+    "movementDate": "2020-06-15T00:00:00-08:00[UTC-08:00]",
+    "orgId": 100001
   }
 ]
