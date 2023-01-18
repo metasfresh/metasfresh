@@ -286,7 +286,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		fact.setFactTrxLinesStrategy(Doc_GLJournal_FactTrxStrategy.instance);
 
 		// GLJ
-		if (getDocBaseType().equals(DocBaseType.GLJournal))
+		if (DocBaseType.GLJournal.equals(getDocBaseType()))
 		{
 			// account DR CR
 			for (final DocLine_GLJournal line : getDocLines())
@@ -331,8 +331,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		CurrencyConversionContext currencyConversionCtx = currencyBL.createCurrencyConversionContext(
 				line.getDateAcct(),
 				line.getCurrencyConversionTypeId(),
-				line.getClientId(),
-				line.getOrgId());
+				line.getClientId());
 
 		final BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)

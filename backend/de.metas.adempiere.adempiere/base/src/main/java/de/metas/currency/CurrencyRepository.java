@@ -1,10 +1,9 @@
 package de.metas.currency;
 
-import org.springframework.stereotype.Repository;
-
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Repository;
 
 /*
  * #%L

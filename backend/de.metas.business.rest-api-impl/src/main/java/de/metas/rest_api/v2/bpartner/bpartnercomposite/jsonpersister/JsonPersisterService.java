@@ -79,6 +79,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
@@ -2324,7 +2325,7 @@ public class JsonPersisterService
 	private Money convertToOrgCurrency(@NonNull final JsonMoney jsonMoney, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final CurrencyConversionContext currencyConversionContext =
-				currencyBL.createCurrencyConversionContext(LocalDate.now(),
+				currencyBL.createCurrencyConversionContext(Instant.now(),
 														   ConversionTypeMethod.Spot,
 														   clientAndOrgId.getClientId(),
 														   clientAndOrgId.getOrgId());

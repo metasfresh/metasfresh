@@ -336,7 +336,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		if (M_Product_ID > 0 || C_Charge_ID > 0)
 		{
-			return CoalesceUtil.firstGreaterThanZeroSupplier(
+			return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 					() -> this.getTaxFromVatCodeIdIfManualOrNull(vatCodeId),
 					() -> getGermanTax(
 							ctx,

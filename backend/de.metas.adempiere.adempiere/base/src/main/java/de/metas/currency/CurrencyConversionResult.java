@@ -33,7 +33,7 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 /**
  * The result of a currency conversion.
@@ -53,7 +53,7 @@ public class CurrencyConversionResult
 	// NOTE: it might be null when sourceAmount is ZERO and API decided to not fetch the conversionRate because it's pointless
 	@Nullable BigDecimal conversionRateOrNull;
 
-	@NonNull LocalDate conversionDate;
+	@NonNull Instant conversionDate;
 	@NonNull CurrencyConversionTypeId conversionTypeId;
 	@NonNull ClientId clientId;
 	@NonNull OrgId orgId;

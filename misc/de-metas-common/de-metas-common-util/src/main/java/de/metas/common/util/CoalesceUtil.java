@@ -62,6 +62,25 @@ public class CoalesceUtil
 		return value1 != null ? value1 : (value2 != null ? value2.get() : null);
 	}
 
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final Supplier<T> value2Supplier)
+	{
+		if(value1 != null)
+		{
+			return value1;
+		}
+		else
+		{
+			final T value2 = value2Supplier.get();
+			if (value2 == null)
+			{
+				throw new NullPointerException("At least one of value1 or value2 has to be not-null");
+			}
+
+			return value2;
+		}
+	}
+
 	/**
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
@@ -188,8 +207,49 @@ public class CoalesceUtil
 		return 0;
 	}
 
+	/**
+	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
+	 *
+	 * @return first greater than zero value or zero
+	 */
+	@NonNull
+	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
 	@SafeVarargs
-	public int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
+	@NonNull
+	public BigDecimal firstGreaterThanZeroBigDecimalSupplier(@NonNull final Supplier<BigDecimal>... suppliers)
+	{
+		if (suppliers == null || suppliers.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final Supplier<BigDecimal> supplier : suppliers)
+		{
+			final BigDecimal value = supplier.get();
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	@SafeVarargs
+	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
 		if (suppliers == null || suppliers.length == 0)
 		{
@@ -234,6 +294,7 @@ public class CoalesceUtil
 		return null;
 	}
 
+	@Nullable
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{

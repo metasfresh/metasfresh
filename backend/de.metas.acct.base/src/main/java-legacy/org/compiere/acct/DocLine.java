@@ -34,6 +34,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -54,13 +55,13 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -124,8 +125,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private I_M_Product _product; // lazy
 	private Boolean _productIsItem = null; // lazy
 
-	private LocalDate m_DateAcct = null;
-	private LocalDate m_DateDoc = null;
+	private LocalDateAndOrgId m_DateAcct = null;
+	private LocalDateAndOrgId m_DateDoc = null;
 	private int m_C_SalesRegion_ID = -1;
 	private Optional<BPartnerId> _bpartnerId;
 	private final LocationId locationFromId = null;
@@ -421,32 +422,52 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 	}
 
-	public final LocalDate getDateAcct()
+	@NonNull
+	public final LocalDateAndOrgId getDateAcct()
 	{
 		if (m_DateAcct == null)
 		{
-			m_DateAcct = CoalesceUtil.coalesceSuppliers(
+			m_DateAcct = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateAcct;
 	}
 
-	protected final void setDateDoc(final LocalDate dateDoc)
+	@NonNull
+	protected final Timestamp getDateAcctAsTimestamp()
+	{
+		return getDateAcct().toTimestamp(services::getTimeZone);
+	}
+
+	@NonNull
+	protected final Instant getDateAcctAsInstant()
+	{
+		return getDateAcct().toInstant(services::getTimeZone);
+	}
+
+	protected final void setDateDoc(@NonNull final LocalDateAndOrgId dateDoc)
 	{
 		m_DateDoc = dateDoc;
 	}   // setDateDoc
 
-	public final LocalDate getDateDoc()
+	@NonNull
+	public final LocalDateAndOrgId getDateDoc()
 	{
 		if (m_DateDoc == null)
 		{
-			m_DateDoc = CoalesceUtil.coalesceSuppliers(
+			m_DateDoc = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> getValueAsLocalDateOrNull("DateDoc"),
 					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateDoc;
+	}
+
+	@NonNull
+	protected final Timestamp getDateDocAsTimestamp()
+	{
+		return getDateDoc().toTimestamp(services::getTimeZone);
 	}
 
 	protected final Optional<ChargeId> getC_Charge_ID()
@@ -712,9 +733,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private int getC_BPartner_Location_ID()
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> getValue("C_BPartner_Location_ID"),
-				() -> m_doc.getC_BPartner_Location_ID());
+				m_doc::getC_BPartner_Location_ID);
 	}
 
 	public final OrgId getOrgTrxId()
@@ -748,11 +769,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				m_C_SalesRegion_ID = -2;        // don't try again
 			}
 		}
-		if (m_C_SalesRegion_ID < 0)
-		{
-			return 0;
-		}
-		return m_C_SalesRegion_ID;
+
+		return Math.max(m_C_SalesRegion_ID, 0);
 	}   // getC_SalesRegion_ID
 
 	public final int getC_Project_ID()
@@ -811,8 +829,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return null;
 		}
 
-		final T id = idOrNullMapper.apply(valueInt);
-		return id;
+		return idOrNullMapper.apply(valueInt);
 	}
 
 	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
@@ -855,36 +872,35 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			final Integer valueInt = (Integer)po.get_Value(index);
 			if (valueInt != null)
 			{
-				return valueInt.intValue();
+				return valueInt;
 			}
 		}
 		return 0;
 	}
 
 	@Nullable
-	final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
+	private LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
 	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
+		@NonNull final PO docLinePO = getPO();
+		final int index = docLinePO.get_ColumnIndex(columnName);
+		if (index < 0)
 		{
-			final Object valueObj = po.get_Value(index);
-			return NumberUtils.asBigDecimal(valueObj, defaultValue);
+			return null;
 		}
 
-		return defaultValue;
-	}
-
-	private LocalDate getValueAsLocalDateOrNull(final String columnName)
-	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
+		final Timestamp ts = docLinePO.get_ValueAsTimestamp(index);
+		if (ts == null)
 		{
-			return TimeUtil.asLocalDate(po.get_Value(index));
+			return null;
 		}
 
-		return null;
+		OrgId orgId = OrgId.ofRepoId(docLinePO.getAD_Org_ID());
+		if (orgId.isAny())
+		{
+			orgId = getDoc().getOrgId();
+		}
+
+		return LocalDateAndOrgId.ofTimestamp(ts, orgId, services::getTimeZone);
 	}
 
 	public final String getValueAsString(final String columnName)

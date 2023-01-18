@@ -35,14 +35,12 @@ public class MRefTable extends X_AD_Ref_Table
 	 *	@param AD_Reference_ID id warning if you are referring to reference list or table type should be used AD_Reference_Value_ID
 	 *	@param trxName trx
 	 */
+	@SuppressWarnings("unused")
 	public MRefTable (Properties ctx, int AD_Reference_ID, String trxName)
 	{
 		super (ctx, AD_Reference_ID, trxName);
-		if (AD_Reference_ID == 0)
+		if (is_new())
 		{
-		//	setAD_Table_ID (0);
-		//	setAD_Display (0);
-		//	setAD_Key (0);
 			setEntityType (ENTITYTYPE_UserMaintained);	// U
 			setIsValueDisplayed (false);
 		}
@@ -54,14 +52,16 @@ public class MRefTable extends X_AD_Ref_Table
 	 *	@param rs result set
 	 *	@param trxName trx
 	 */
+	@SuppressWarnings("unused")
 	public MRefTable (Properties ctx, ResultSet rs, String trxName)
 	{
 		super (ctx, rs, trxName);
 	}	//	MRefTable
 
 	// metas: begin
-	private static final CCache<Integer, MRefTable> s_cache = new CCache<Integer, MRefTable>(Table_Name, 50, 0);
+	private static final CCache<Integer, MRefTable> s_cache = new CCache<>(Table_Name, 50, 0);
 
+	@Deprecated
 	public static MRefTable get(Properties ctx, int AD_Reference_ID)
 	{
 		if (AD_Reference_ID <= 0)
@@ -73,7 +73,7 @@ public class MRefTable extends X_AD_Ref_Table
 
 		retValue = new Query(ctx, Table_Name, COLUMNNAME_AD_Reference_ID + "=?", null)
 				.setParameters(AD_Reference_ID)
-				.firstOnly();
+				.firstOnly(MRefTable.class);
 
 		if (retValue != null)
 		{

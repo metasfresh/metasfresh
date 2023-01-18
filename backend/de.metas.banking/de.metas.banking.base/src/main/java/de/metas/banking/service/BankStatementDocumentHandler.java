@@ -16,6 +16,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
@@ -29,11 +31,9 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -133,10 +133,10 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
-		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
-		return TimeUtil.asLocalDate(bankStatement.getStatementDate());
+		final I_C_BankStatement record = extractBankStatement(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getStatementDate(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@Override
@@ -214,8 +214,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
-		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, 0);
-		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, 0);
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, OrgId.ANY.getRepoId());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, OrgId.ANY.getRepoId());
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
 		return IDocument.STATUS_InProgress;

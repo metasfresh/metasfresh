@@ -44,7 +44,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -56,11 +56,9 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -276,14 +274,10 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = getPaymentCurrencyContext(bankStatementLine);
 
-		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(bankStatementLine.getDateAcct(), timeZone),
+				InstantAndOrgId.ofTimestamp(bankStatementLine.getDateAcct(), bankStatementLine.getAD_Org_ID()),
 				paymentCurrencyContext.getCurrencyConversionTypeId(),
-				ClientId.ofRepoId(bankStatementLine.getAD_Client_ID()),
-				orgId);
+				ClientId.ofRepoId(bankStatementLine.getAD_Client_ID()));
 
 		final FixedConversionRate fixedCurrencyRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 		if (fixedCurrencyRate != null)
