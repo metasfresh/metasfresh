@@ -23,19 +23,28 @@ package de.metas.order.callout;
  */
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.location.LocationId;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderBillLocationAdapter;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderMainLocationAdapter;
+import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Warehouse;
 
 @Callout(I_C_Order.class)
 public class C_Order
@@ -117,6 +126,34 @@ public class C_Order
 	public void updateDeliveryToAddress(final I_C_Order order)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_AD_Org_ID })
+	public void updateShipPartner(final I_C_Order order)
+	{
+		if (!order.isSOTrx() && !order.isDropShip())
+		{
+			final I_AD_Org org = Services.get(IOrgDAO.class).getById(order.getAD_Org_ID());
+			final I_C_BPartner linkedBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
+			if (null != linkedBPartner)
+			{
+				order.setDropShip_BPartner_ID(linkedBPartner.getC_BPartner_ID());
+			}
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+			if (warehouseId != null)
+			{
+				final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(DocumentLocation.builder()
+										 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
+										 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
+										 .build());
+			}
+			order.setDropShip_User_ID(-1);
+		}
 	}
 
 	@CalloutMethod(columnNames = {
