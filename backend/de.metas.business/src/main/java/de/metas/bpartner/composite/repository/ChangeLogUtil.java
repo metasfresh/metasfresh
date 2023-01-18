@@ -109,6 +109,10 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID, BPartner.INCOTERMS_CUSTOMER_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID, BPartner.INCOTERMS_VENDOR_ID)
 			.put(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, BPartner.SECTION_GROUP_PARTNER_ID)
+			.put(I_C_BPartner.COLUMNNAME_IsProspect, BPartner.PROSPECT)
+			.put(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, BPartner.SAP_BPARTNER_CODE)
+			.put(I_C_BPartner.COLUMNNAME_IsSectionGroupPartner, BPartner.SECTION_GROUP_PARTNER)
+			.put(I_C_BPartner.COLUMNNAME_IsSectionPartner, BPartner.SECTION_PARTNER)
 			.build();
 
 	@VisibleForTesting
@@ -169,6 +173,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsRemitTo, BPartnerLocation.REMIT_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, BPartnerLocation.REPLICATION_LOOKUP_DEFAULT)
 			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_SAP_PaymentMethod, BPartnerLocation.SAP_PAYMENT_METHOD)
+			.put(I_C_BPartner_Location.COLUMNNAME_SAP_BPartnerCode, BPartnerLocation.SAP_BPARTNER_CODE)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,

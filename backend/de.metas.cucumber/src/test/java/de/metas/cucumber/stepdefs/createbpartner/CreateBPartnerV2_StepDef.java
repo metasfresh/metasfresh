@@ -239,6 +239,12 @@ public class CreateBPartnerV2_StepDef
 				softly.assertThat(bPartnerRecord.getSection_Group_Partner_ID()).isEqualTo(sectionGroupPartner.getC_BPartner_ID());
 			}
 
+			final Boolean isProspect = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_IsProspect);
+			if(isProspect != null)
+			{
+				softly.assertThat(bPartnerRecord.isProspect()).isEqualTo(isProspect);
+			}
+
 			softly.assertAll();
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -269,6 +275,7 @@ public class CreateBPartnerV2_StepDef
 			final boolean remitTo = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsRemitTo, false);
 			final boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
+			final String sapPaymentMethod = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.SAP_PaymentMethod");
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -288,6 +295,7 @@ public class CreateBPartnerV2_StepDef
 			softly.assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
 			softly.assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
 			softly.assertThat(persistedLocation.getVatId()).isEqualTo(vatId);
+			softly.assertThat(persistedLocation.getSapPaymentMethod()).isEqualTo(sapPaymentMethod);
 
 			softly.assertAll();
 		}

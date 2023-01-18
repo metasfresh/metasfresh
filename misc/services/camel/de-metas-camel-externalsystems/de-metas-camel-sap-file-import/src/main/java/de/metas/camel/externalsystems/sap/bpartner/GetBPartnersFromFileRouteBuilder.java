@@ -39,6 +39,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.sap.bpartner.ProcessSkippedBPartnerRouteBuilder.PROCESS_SKIPPED_BPARTNER_ROUTE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 {
@@ -46,6 +48,8 @@ public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 	public static final String UPSERT_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertBPartnerEndpointId";
 	@VisibleForTesting
 	public static final String UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertLastBPartnerEndpointId";
+	@VisibleForTesting
+	public static final String PROCESS_SKIPPED_BPARTNER_ENDPOINT_ID = "SAP-BPartners-processSkippedPartnerEndpointId";
 	private static final String UPSERT_BPARTNER_PROCESSOR_ID = "SAP-BPartners-upsertBPartnerProcessorId";
 	public static final String ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT = "UpsertBPartnersRouteContext";
 
@@ -83,27 +87,35 @@ public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 		//@formatter:off
 		from(fileEndpointConfig.getBPartnerFileEndpoint())
 				.id(routeId)
+				.streamCaching()
 				.log("Business Partner Sync Route Started with Id=" + routeId)
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.process(this::prepareBPartnerSyncRouteContext)
 				.split(body().tokenize("\n"))
 					.streaming()
 				    .unmarshal(new BindyCsvDataFormat(BPartnerRow.class))
-					.process(new CreateBPartnerUpsertRequestProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_BPARTNER_PROCESSOR_ID)
 					.choice()
-				       .when(bodyAs(BPUpsertCamelRequest.class).isNull())
-							.log(LoggingLevel.INFO, "Nothing to do! No business partner to upsert!")
-					   .otherwise()
-							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
-							.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_BPARTNER_GROUP_ENDPOINT_ID)
-					   .endChoice()
-				    .end()
+						.when(this::shouldSkipRow)
+							.process(this::prepareProcessSkippedBPartnerRequest)
+							.to(direct(PROCESS_SKIPPED_BPARTNER_ROUTE)).id(PROCESS_SKIPPED_BPARTNER_ENDPOINT_ID)
+						.otherwise()
+							.process(new CreateBPartnerUpsertRequestProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_BPARTNER_PROCESSOR_ID)
+							.choice()
+							   .when(bodyAs(BPUpsertCamelRequest.class).isNull())
+									.log(LoggingLevel.INFO, "Nothing to do! No business partner to upsert!")
+							   .otherwise()
+									.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
+									.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_BPARTNER_GROUP_ENDPOINT_ID)
+							   .endChoice()
+							.end()
+						.endChoice()
+					.end()
 				.end()
 				.process(this::processLastBPartnerGroup)
 				.choice()
 					.when(bodyAs(BPUpsertCamelRequest.class).isNull())
 						.log(LoggingLevel.DEBUG, "No last group present! Nothing to upsert...")
-				    .otherwise()
+				   	.otherwise()
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
 						.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID)
 					.endChoice()
@@ -133,5 +145,26 @@ public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 
 		final BPUpsertCamelRequest bpUpsertCamelRequest = routeContext.getSyncBPartnerRequestBuilder().build();
 		exchange.getIn().setBody(bpUpsertCamelRequest);
+	}
+
+	@NonNull
+	private boolean shouldSkipRow(@NonNull final Exchange exchange)
+	{
+		final BPartnerRow bPartnerRow = exchange.getIn().getBody(BPartnerRow.class);
+		return bPartnerRow.isDisabled();
+	}
+
+	private void prepareProcessSkippedBPartnerRequest(@NonNull final Exchange exchange)
+	{
+		final BPartnerRow bPartnerRow = exchange.getIn().getBody(BPartnerRow.class);
+
+		final ProcessSkippedBPartnerRequest request = ProcessSkippedBPartnerRequest.builder()
+				.bPartnerRow(bPartnerRow)
+				.externalSystemConfigId(enabledByExternalSystemRequest.getExternalSystemConfigId())
+				.orgCode(enabledByExternalSystemRequest.getOrgCode())
+				.adPInstanceId(enabledByExternalSystemRequest.getAdPInstanceId())
+				.build();
+
+		exchange.getIn().setBody(request);
 	}
 }
