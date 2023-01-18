@@ -811,6 +811,15 @@ public class ProductRestService
 			builder.guaranteeMonths(existingProduct.getGuaranteeMonths());
 		}
 
+		if (jsonRequestProductUpsertItem.isWarehouseTemperatureSet())
+		{
+			builder.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature());
+		}
+		else
+		{
+			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())

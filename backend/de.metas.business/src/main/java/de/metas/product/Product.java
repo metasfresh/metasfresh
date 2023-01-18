@@ -99,4 +99,7 @@ public class Product
 
 	@Nullable
 	String guaranteeMonths;
+
+	@Nullable
+	String warehouseTemperature;
 }
