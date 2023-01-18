@@ -160,7 +160,8 @@ public class C_Order
 			I_C_Order.COLUMNNAME_IsDropShip,
 			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Order.COLUMNNAME_DropShip_Location_ID,
-			I_C_Order.COLUMNNAME_M_Warehouse_ID },
+			I_C_Order.COLUMNNAME_M_Warehouse_ID,
+			I_C_Order.COLUMNNAME_AD_Org_ID},
 			skipIfCopying = true)
 	public void updateDeliveryToAddressForceUpdateCaptureLocation(final I_C_Order order)
 	{
