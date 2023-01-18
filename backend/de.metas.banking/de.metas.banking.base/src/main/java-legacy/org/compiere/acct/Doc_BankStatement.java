@@ -270,7 +270,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final FactLineBuilder bankAssetFactLineBuilder = prepareBankAssetFactLine(fact, line);
 		final FactLineBuilder bankInTransitFactLineBuilder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(AccountType.BankInTransit, as))
+				.setAccount(getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as))
 				.setAmtSourceDrOrCr(trxAmt.negate())
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
@@ -306,7 +306,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			@NonNull final AcctSchema as,
 			@NonNull final DocLine_BankStatement line)
 	{
-		final MAccount acct_BankInTransit = getAccount(AccountType.BankInTransit, as);
+		final MAccount acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 		final List<BankStatementLineReferenceAcctInfo> lineReferences = line.getReferences();
@@ -553,7 +553,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			return BigDecimal.ZERO;
 		}
 
-		final MAccount bankAssetAccount = getBankAssetAccount(fact.getAcctSchema());
+		final MAccount bankAssetAccount = getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, fact.getAcctSchema());
 		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount);
 
 		final AmountSourceAndAcct bankAssetAmt;

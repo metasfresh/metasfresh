@@ -61,7 +61,7 @@ public class ProductCategoryAccountsRepository
 		return ProductCategoryAccounts.builder()
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.costingLevel(CostingLevel.forNullableCode(record.getCostingLevel()))
+				.costingLevel(CostingLevel.ofNullableCode(record.getCostingLevel()))
 				.costingMethod(CostingMethod.ofNullableCode(record.getCostingMethod()))
 				.P_Revenue_Acct(AccountId.ofRepoId(record.getP_Revenue_Acct()))
 				.P_Expense_Acct(AccountId.ofRepoId(record.getP_Expense_Acct()))

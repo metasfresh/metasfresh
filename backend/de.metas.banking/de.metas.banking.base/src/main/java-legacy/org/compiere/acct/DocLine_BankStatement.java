@@ -14,6 +14,7 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;

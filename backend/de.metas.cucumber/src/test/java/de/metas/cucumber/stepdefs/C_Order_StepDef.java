@@ -555,7 +555,7 @@ public class C_Order_StepDef
 			if (docBaseType != null && Check.isNotBlank(docSubType))
 			{
 				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-						.docBaseType(DocBaseType.ofCode(docBaseType))
+						.docBaseType(docBaseType)
 						.docSubType(docSubType)
 						.adClientId(order.getAD_Client_ID())
 						.adOrgId(order.getAD_Org_ID())
