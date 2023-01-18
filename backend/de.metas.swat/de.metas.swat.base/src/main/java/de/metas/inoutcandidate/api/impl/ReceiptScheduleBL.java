@@ -60,6 +60,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -809,7 +810,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			final I_C_Order order = orderDAO.getById(orderId);
 
 			requestBuilder.isB2B(order.isDropShip())
-					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
+					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
+					.incotermLocation(order.getIncotermLocation());
 		}
 
 		if (orderLineId != null)
@@ -817,6 +819,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 
 			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
+			requestBuilder.shipperId(ShipperId.ofRepoIdOrNull(orderLine.getM_Shipper_ID()));
 		}
 
 		return requestBuilder.build();
