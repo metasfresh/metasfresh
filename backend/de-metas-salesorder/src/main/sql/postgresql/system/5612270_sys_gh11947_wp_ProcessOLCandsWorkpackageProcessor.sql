@@ -1,10 +1,4 @@
 
-DO
-$$
-    BEGIN
-        IF NOT EXISTS(SELECT 1 FROM ad_migrationscript WHERE name ILIKE '%5612270_sys_gh11947_wp_ProcessOLCandsWorkpackageProcessor.sql')
-        THEN
-
 -- 2021-11-05T12:52:20.300Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO C_Queue_PackageProcessor (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,Classname,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,540089,'de.metas.salesorder.candidate.ProcessOLCandsWorkpackageProcessor',TO_TIMESTAMP('2021-11-05 14:52:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.salesorder','Y',TO_TIMESTAMP('2021-11-05 14:52:20','YYYY-MM-DD HH24:MI:SS'),100)
@@ -45,7 +39,3 @@ UPDATE C_Queue_Processor SET KeepAliveTimeMillis=1000,Updated=TO_TIMESTAMP('2021
 INSERT INTO C_Queue_Processor_Assign (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,C_Queue_Processor_Assign_ID,C_Queue_Processor_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540089,540095,540060,TO_TIMESTAMP('2021-11-05 14:53:53','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2021-11-05 14:53:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
-        END IF;
-    END;
-$$
-;

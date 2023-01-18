@@ -1,8 +1,3 @@
-DO
-$$
-    BEGIN
-        IF NOT EXISTS(SELECT 1 FROM ad_migrationscript WHERE name ILIKE '%5611430_sys_gh11947_wp_CompleteShipAndInvoiceWorkpackageProcessor.sql')
-        THEN
 
 -- 2021-11-02T13:34:25.775Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -39,7 +34,3 @@ UPDATE C_Queue_Processor SET KeepAliveTimeMillis=1000,Updated=TO_TIMESTAMP('2021
 INSERT INTO C_Queue_Processor_Assign (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,C_Queue_Processor_Assign_ID,C_Queue_Processor_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540074,540093,540057,TO_TIMESTAMP('2021-11-02 15:37:10','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2021-11-02 15:37:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
-        END IF;
-    END;
-$$
-;

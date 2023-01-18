@@ -29,7 +29,6 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -110,18 +109,6 @@ public class C_OLCandToOrderEnqueuer
 	{
 		final AsyncBatchId asyncBatchId = null;
 		return lockAndEnqueueSelection(selectionId, asyncBatchId);
-	}
-
-	@NonNull
-	public OlCandEnqueueResult enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
-	{
-		final I_C_Queue_WorkPackage result = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
-				.newWorkPackage()
-				.parameter(OLCandProcessor_ID, olCandProcessorId)
-				.setC_Async_Batch_ID(asyncBatchId)
-				.buildAndEnqueue();
-
-		return new OlCandEnqueueResult(ImmutableList.of(QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID())));
 	}
 
 	@NonNull

@@ -381,7 +381,7 @@ public class MD_Candidate_StepDef
 					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
 					.append(" See:\n");
 
-			logCandidateRecords(message);
+			logCandidateRecords(message, productIdSet);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -690,9 +690,15 @@ public class MD_Candidate_StepDef
 
 	private void logCandidateRecords(@NonNull final StringBuilder message)
 	{
+		logCandidateRecords(message, ImmutableSet.of());
+	}
+
+	private void logCandidateRecords(@NonNull final StringBuilder message, @NonNull final ImmutableSet<ProductId> productIds)
+	{
 		message.append("MD_Candidate records:").append("\n");
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_MD_Candidate.class)
 				.forEach(candidateRecord -> message

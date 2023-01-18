@@ -68,6 +68,11 @@ public class DD_Order_PostMaterialEvent
 		// when going with @DocAction, here the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
 		// also, it might still be rolled back
 		// those aren't show-stoppers, but we therefore rather work with @ModelChange
+
+		if (ddOrder.isSimulated())
+		{
+			return;
+		}
 		
 		// dev-note: running after commit to make sure the DD_OrderLines are created
 		trxManager.runAfterCommit(() -> {
