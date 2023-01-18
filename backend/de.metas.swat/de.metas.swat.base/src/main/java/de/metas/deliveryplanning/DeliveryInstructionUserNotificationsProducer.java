@@ -54,7 +54,7 @@ public class DeliveryInstructionUserNotificationsProducer
 			.build();
 
 	private static final AdWindowId WINDOW_DELIVERY_INSTRUCTION = AdWindowId.ofRepoId(541657); // FIXME: HARDCODED
-	private static final AdMessageKey MSG_Event_DeliveryInstructionGenerated = AdMessageKey.of("Event_DeliveryInstructionGenerated");
+	private static final AdMessageKey MSG_Event_DeliveryInstructionGenerated = AdMessageKey.of("de.metas.deliveryplanning.Event_DeliveryInstructionGenerated");
 
 	private DeliveryInstructionUserNotificationsProducer()
 	{
