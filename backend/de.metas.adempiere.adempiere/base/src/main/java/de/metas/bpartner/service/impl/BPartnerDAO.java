@@ -138,6 +138,12 @@ public class BPartnerDAO implements IBPartnerDAO
 			.initialCapacity(100)
 			.build();
 
+	private final CCache<BPartnerId, BPGroupId> bpartnerId2bpGroupIdCache = CCache.<BPartnerId, BPGroupId>builder()
+			.tableName(I_C_BPartner.Table_Name)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(100)
+			.build();
+
 	private static final AdMessageKey MSG_ADDRESS_INACTIVE = AdMessageKey.of("webui.salesorder.clone.inactivelocation");
 
 	@Override
@@ -934,8 +940,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-			final String bpValue,
-			final String bpValueSuffixToFallback)
+														final String bpValue,
+														final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1025,7 +1031,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return query.first(I_C_BP_Relation.class);
 	}
-	
+
 	@Nullable
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
@@ -1581,7 +1587,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public BPGroupId getBPGroupIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		return BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID());
+		return bpartnerId2bpGroupIdCache.getOrLoad(bpartnerId, () -> BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID()));
 	}
 
 	@Override
@@ -1918,7 +1924,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				previousLocationId = currentLocationId;
 			}
 		}
-		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(),previousLocationId);
+		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(), previousLocationId);
 	}
 
 	@Override

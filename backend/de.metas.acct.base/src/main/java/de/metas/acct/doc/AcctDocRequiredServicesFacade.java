@@ -1,19 +1,17 @@
 package de.metas.acct.doc;
 
+import de.metas.acct.GLCategoryId;
+import de.metas.acct.GLCategoryRepository;
+import de.metas.acct.accounts.AccountProvider;
+import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.tax.ITaxAcctBL;
-import de.metas.acct.tax.TaxAcctType;
 import de.metas.banking.BankAccount;
-import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -35,25 +33,30 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.acct.InvoiceAcct;
+import de.metas.invoice.acct.InvoiceAcctRepository;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -100,27 +103,35 @@ public class AcctDocRequiredServicesFacade
 	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@Getter private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
+	private final AccountProviderFactory accountProviderFactory;
+	private final InvoiceAcctRepository invoiceAcctRepository;
 
 	//
 	// Needed for DocLine:
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
 
 	private final ICostingService costingService;
 
 	public AcctDocRequiredServicesFacade(
+			@NonNull final GLCategoryRepository glCategoryRepository,
 			@NonNull final BankAccountService bankAccountService,
-			@NonNull final ICostingService costingService)
+			@NonNull final ICostingService costingService,
+			@NonNull final AccountProviderFactory accountProviderFactory,
+			@NonNull final InvoiceAcctRepository invoiceAcctRepository)
 	{
+		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
+		this.accountProviderFactory = accountProviderFactory;
+		this.invoiceAcctRepository = invoiceAcctRepository;
 	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
@@ -147,9 +158,9 @@ public class AcctDocRequiredServicesFacade
 		trxManager.runInThreadInheritedTrx(runnable);
 	}
 
-	public int deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
+	public void deleteFactAcctByDocumentModel(@NonNull final Object documentPO)
 	{
-		return factAcctDAO.deleteForDocumentModel(documentPO);
+		factAcctDAO.deleteForDocumentModel(documentPO);
 	}
 
 	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName)
@@ -168,6 +179,11 @@ public class AcctDocRequiredServicesFacade
 	public ITranslatableString translate(@NonNull final AdMessageKey adMessage)
 	{
 		return msgBL.getTranslatableMsgText(adMessage);
+	}
+
+	public AccountProvider.AccountProviderBuilder newAccountProvider()
+	{
+		return accountProviderFactory.newAccountProvider();
 	}
 
 	@NonNull
@@ -201,13 +217,6 @@ public class AcctDocRequiredServicesFacade
 	public BankAccount getBankAccountById(final BankAccountId bpBankAccountId)
 	{
 		return bankAccountService.getById(bpBankAccountId);
-	}
-
-	public BankAccountAcct getBankAccountAcct(
-			final BankAccountId bankAccountId,
-			final AcctSchemaId acctSchemaId)
-	{
-		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(
@@ -248,32 +257,6 @@ public class AcctDocRequiredServicesFacade
 	public UomId getProductStockingUOMId(final ProductId productId)
 	{
 		return productBL.getStockUOMId(productId);
-	}
-
-	public Optional<AccountId> getProductAcct(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final ProductId productId,
-			@NonNull final ProductAcctType acctType)
-	{
-		return productAcctDAO.getProductAccount(acctSchemaId, productId, acctType);
-	}
-
-	public Optional<AccountId> getProductDefaultAcct(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final ProductAcctType acctType)
-	{
-		final ProductCategoryId defaultProductCategoryId = productBL.getDefaultProductCategoryId();
-		return productAcctDAO.getProductCategoryAccount(acctSchemaId, defaultProductCategoryId, acctType);
-	}
-
-	public Optional<MAccount> getTaxAccount(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@Nullable final TaxId taxId,
-			@NonNull final TaxAcctType taxAcctType)
-	{
-		return taxId != null
-				? taxAcctBL.getAccountIfExists(taxId, acctSchemaId, taxAcctType)
-				: Optional.empty();
 	}
 
 	public CostingMethod getCostingMethod(
@@ -322,4 +305,15 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
+	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId) {return invoiceAcctRepository.getById(invoiceId);}
+
+	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypeBL.getById(docTypeId);
+	}
+
+	public Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
+	{
+		return glCategoryRepository.getDefaultId(clientId);
+	}
 }

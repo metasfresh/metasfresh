@@ -24,6 +24,7 @@ package de.metas.servicerepair.project.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -121,7 +122,7 @@ public class CreateQuotationFromProjectCommand
 	private DocTypeId getQuotationDocTypeId(@NonNull final ServiceRepairProjectInfo project)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_CostEstimate)
 				.adClientId(project.getClientAndOrgId().getClientId().getRepoId())
 				.adOrgId(project.getClientAndOrgId().getOrgId().getRepoId())

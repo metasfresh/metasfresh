@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.location.impl.DummyDocumentLocationBL;
@@ -46,7 +47,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				new C_Flatrate_Term(
 						new ContractOrderService(),
 						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-						ADReferenceService.newMocked()));
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -150,7 +151,7 @@ public class OrderProductProposalsService
 	public DocTypeId getQuotationDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())

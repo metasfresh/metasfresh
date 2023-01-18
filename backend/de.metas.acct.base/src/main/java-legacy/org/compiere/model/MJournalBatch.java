@@ -16,6 +16,18 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -25,18 +37,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
 
 /**
  *  Journal Batch Model
@@ -212,7 +212,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
