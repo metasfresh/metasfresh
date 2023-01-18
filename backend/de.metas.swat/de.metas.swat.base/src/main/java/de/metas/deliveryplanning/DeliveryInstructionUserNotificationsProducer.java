@@ -50,7 +50,7 @@ public class DeliveryInstructionUserNotificationsProducer
 	 */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.deliveryInstruction.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private static final AdWindowId WINDOW_DELIVERY_INSTRUCTION = AdWindowId.ofRepoId(541657); // FIXME: HARDCODED
