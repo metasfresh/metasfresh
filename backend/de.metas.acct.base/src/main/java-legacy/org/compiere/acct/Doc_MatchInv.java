@@ -17,6 +17,8 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.accounts.BPartnerGroupAccountType;
+import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -32,6 +34,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -89,22 +92,43 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
-	/** pseudo line */
+	/**
+	 * pseudo line
+	 */
 	private DocLine_MatchInv docLine = null;
 
 	private I_C_InvoiceLine _invoiceLine = null;
 	private CurrencyId invoiceCurrencyId;
-	/** Invoice line net amount, excluding taxes, in invoice's currency */
+	/**
+	 * Invoice line net amount, excluding taxes, in invoice's currency
+	 */
 	private BigDecimal invoiceLineNetAmt = null;
 	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private boolean isCreditMemoInvoice;
 
-	/** Material Receipt */
+	/**
+	 * Material Receipt
+	 */
 	private I_M_InOutLine _receiptLine = null;
 
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.MatchInvoice);
+	}
+
+	@Nullable
+	@Override
+	protected InvoiceAccountProviderExtension createAccountProviderExtension()
+	{
+		final InvoiceLineId invoiceLineId = getInvoiceLineId();
+		return services.getInvoiceAcct(invoiceLineId.getInvoiceId())
+				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
+						.accountDAO(services.getAccountDAO())
+						.invoiceAccounts(invoiceAccounts)
+						.clientId(getClientId())
+						.invoiceLineId(invoiceLineId)
+						.build())
+				.orElse(null);
 	}
 
 	@Override
@@ -145,7 +169,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 					logger.debug("LineNetAmt={} - LineTaxAmt={}", invoiceLineNetAmt, lineTaxAmt);
 					invoiceLineNetAmt = invoiceLineNetAmt.subtract(lineTaxAmt);
 				}
-			}	// correct included Tax
+			}    // correct included Tax
 
 		}
 
@@ -163,7 +187,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return docLine.getQty();
 	}
 
-	/** @return zero (always balanced) */
+	/**
+	 * @return zero (always balanced)
+	 */
 	@Override
 	public BigDecimal getBalance()
 	{
@@ -211,7 +237,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Zero quantity
 		if (getQty().signum() == 0
-				|| getQtyReceived().signum() == 0	// Qty = 0
+				|| getQtyReceived().signum() == 0    // Qty = 0
 				|| getQtyInvoiced().signum() == 0) // 08643 avoid division by zero further down; note that we don't really know if and what to book in this case.
 		{
 			return ImmutableList.of();
@@ -229,7 +255,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
-				.setAccount(getAccount(AccountType.NotInvoicedReceipts, as))
+				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSource(costs.getValue(), null)
 				.setQty(getQty())
@@ -364,6 +390,12 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getInvoice_Org_ID() != getReceipt_Org_ID();
 	}
 
+	private InvoiceLineId getInvoiceLineId()
+	{
+		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
+		return InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+	}
+
 	private I_C_InvoiceLine getInvoiceLine()
 	{
 		return _invoiceLine;
@@ -379,7 +411,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return this.invoiceCurrencyId;
 	}
 
-	/** @return total invoice line net amount, excluding taxes, in invoice's currency */
+	/**
+	 * @return total invoice line net amount, excluding taxes, in invoice's currency
+	 */
 	private BigDecimal getInvoiceLineNetAmt()
 	{
 		return this.invoiceLineNetAmt;
@@ -416,7 +450,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 	}
 
-	/** @return total qty that was invoiced by linked invoice line */
+	/**
+	 * @return total qty that was invoiced by linked invoice line
+	 */
 	private BigDecimal getQtyInvoiced()
 	{
 		return getInvoiceLine().getQtyInvoiced();
@@ -432,7 +468,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getReceiptLine().getAD_Org_ID();
 	}
 
-	/** @return total qty that was received by linked receipt line */
+	/**
+	 * @return total qty that was received by linked receipt line
+	 */
 	private BigDecimal getQtyReceived()
 	{
 		return getReceiptLine().getMovementQty();
@@ -448,7 +486,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return isCreditMemoInvoice;
 	}
 
-	/** Updates dimensions and UOM of given FactLine from invoice line */
+	/**
+	 * Updates dimensions and UOM of given FactLine from invoice line
+	 */
 	private void updateFromInvoiceLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)

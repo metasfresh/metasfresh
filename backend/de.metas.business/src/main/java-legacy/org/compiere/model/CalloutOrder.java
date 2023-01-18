@@ -651,7 +651,7 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																				   .docBaseType(DocBaseType.SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.defaultDocType(true)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
@@ -662,7 +662,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																						 .docBaseType(DocBaseType.SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)

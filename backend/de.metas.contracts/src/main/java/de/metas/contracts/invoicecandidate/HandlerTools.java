@@ -1,6 +1,5 @@
 package de.metas.contracts.invoicecandidate;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -17,6 +16,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -111,7 +111,7 @@ public class HandlerTools
 		ic.setM_PricingSystem_ID(term.getM_PricingSystem_ID());
 
 		// 07442 activity and tax
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(term.getAD_Client_ID()),
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				ProductId.ofRepoId(term.getM_Product_ID()));

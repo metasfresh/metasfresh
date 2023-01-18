@@ -1,4 +1,4 @@
-package de.metas.acct.doc;
+package org.compiere.acct;
 
 /*
  * #%L
@@ -22,10 +22,9 @@ package de.metas.acct.doc;
  * #L%
  */
 
-import de.metas.acct.api.AccountId;
+import de.metas.acct.accounts.InvoiceAccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -49,8 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.acct.DocLine;
-import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
@@ -59,9 +56,9 @@ import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Optional;
 
 public class DocLine_Invoice extends DocLine<Doc_Invoice>
 {
@@ -74,7 +71,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IProductDAO producDAO = Services.get(IProductDAO.class);
-	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 
 	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
@@ -119,6 +115,14 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		setAmount(lineNetAmt, priceList, qtyInvoiced.toBigDecimal());    // qty for discount calc
 	}
 
+	@Nullable
+	@Override
+	protected InvoiceAccountProviderExtension createAccountProviderExtension()
+	{
+		final InvoiceLineId invoiceLineId = getInvoiceLineId();
+		return getDoc().createInvoiceAccountProviderExtension(invoiceLineId);
+	}
+
 	public InvoiceLineId getInvoiceLineId()
 	{
 		final InvoiceId invoiceId = getDoc().getInvoiceId();
@@ -147,7 +151,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	 * <li>if {@link #isSOTrx()}, negate the quantity
 	 * </ul>
 	 *
-	 * @param qty
 	 * @return quantity (absolute value)
 	 */
 	private BigDecimal adjustQtySignByCreditMemoAndSOTrx(final BigDecimal qty)
@@ -233,7 +236,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	/**
 	 * Calculate the net amount of quantity received using <code>lineNetAmt</code> as total amount.
 	 *
-	 * @param lineNetAmt
 	 * @return quantity received invoiced amount
 	 */
 	public BigDecimal calculateAmtOfQtyReceived(final BigDecimal lineNetAmt)
@@ -273,7 +275,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	/**
 	 * Checks if invoice reposting is needed when given <code>matchInv</code> was created.
 	 *
-	 * @param matchInv
 	 * @return true if invoice reposting is needed
 	 */
 	public static boolean isInvoiceRepostingRequired(final I_M_MatchInv matchInv)
@@ -289,10 +290,11 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	}
 
 	@Override
+	@NonNull
 	// This is a workaround for a very specific case. Please, don't use it, if possible.
 	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
-		if (acctType == ProductAcctType.Revenue && isConsiderCompensationSchema())
+		if (acctType == ProductAcctType.P_Revenue_Acct && isConsiderCompensationSchema())
 		{
 			MAccount account = getRevenueAccountFromCompensationSchema(as);
 			if (account != null)
@@ -307,61 +309,53 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private boolean isConsiderCompensationSchema()
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema,
-										   false,
-										   ClientId.toRepoId(getClientId()),
-										   OrgId.toRepoId(getOrgId()));
+				false,
+				ClientId.toRepoId(getClientId()),
+				OrgId.toRepoId(getOrgId()));
 	}
 
 	private MAccount getRevenueAccountFromCompensationSchema(@NonNull final AcctSchema as)
 	{
+		final ProductCategoryId productCategoryId = getProductCategoryForGroupTemplateId();
+		if (productCategoryId == null)
+		{
+			return null;
+		}
+
+		return getAccountProvider()
+				.getProductCategoryAccount(as.getId(), productCategoryId, ProductAcctType.P_Revenue_Acct)
+				.orElse(null);
+	}
+
+	@Nullable
+	private ProductCategoryId getProductCategoryForGroupTemplateId()
+	{
 		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
 		final int orderLineRecordId = invoiceLine.getC_OrderLine_ID();
-
 		if (orderLineRecordId <= 0)
 		{
 			return null;
 		}
 
 		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineRecordId);
-
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLineRecord);
-
 		if (groupId == null)
 		{
 			return null;
 		}
 
 		final Group group = orderGroupRepo.retrieveGroupIfExists(groupId);
-
 		if (group == null)
 		{
 			return null;
 		}
 
 		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
-
 		if (groupTemplateId == null)
 		{
 			return null;
 		}
 
-		final ProductCategoryId productCategoryId = producDAO.retrieveProductCategoryForGroupTemplateId(groupTemplateId);
-
-		if (productCategoryId == null)
-		{
-			return null;
-		}
-
-		final Optional<AccountId> productCategoryAccount = productAcctDAO.getProductCategoryAccount(as.getId(),
-																									productCategoryId,
-																									ProductAcctType.Revenue);
-		if (!productCategoryAccount.isPresent())
-		{
-
-			return null;
-		}
-
-		return services.getAccountById(productCategoryAccount.get());
+		return producDAO.retrieveProductCategoryForGroupTemplateId(groupTemplateId);
 	}
-
 }

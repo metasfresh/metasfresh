@@ -14,7 +14,6 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
@@ -25,7 +24,6 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.ZoneId;
 import java.util.List;
 
 class DocLine_BankStatement extends DocLine<Doc_BankStatement>

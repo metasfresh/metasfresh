@@ -204,10 +204,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	private boolean m_IsSOTrx = true;
 	private boolean m_priceSet = false;
 	private MProduct m_product = null;
-	/**
-	 * Charge
-	 */
-	private MCharge m_charge = null;
 
 	/**
 	 * Cached Name of the line
@@ -760,20 +756,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
 		Services.get(IInvoiceBL.class).setLineNetAmt(invoiceLine);
 	}    // setLineNetAmt
-
-	/**
-	 * Get Charge
-	 *
-	 * @return product or null
-	 */
-	public MCharge getCharge()
-	{
-		if (m_charge == null && getC_Charge_ID() != 0)
-		{
-			m_charge = MCharge.get(getCtx(), getC_Charge_ID());
-		}
-		return m_charge;
-	}
 
 	/**
 	 * Get Tax

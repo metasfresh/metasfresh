@@ -1,26 +1,24 @@
-package de.metas.banking.api;
+package de.metas.banking.accounting;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_BP_BankAccount_Acct;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.banking.BankAccountAcct;
-import de.metas.banking.BankAccountId;
-import de.metas.cache.CCache;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.List;
 
 /*
  * #%L
@@ -32,12 +30,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,47 +45,52 @@ import lombok.ToString;
 @Repository
 public class BankAccountAcctRepository
 {
-	private static final String TABLENAME_C_BP_BankAccount_Acct = "C_BP_BankAccount_Acct";
-	private final CCache<BankAccountId, BPBankAccountAcctBySchemasMap> cache = CCache.<BankAccountId, BPBankAccountAcctBySchemasMap> builder()
-			.tableName(TABLENAME_C_BP_BankAccount_Acct)
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final CCache<BankAccountId, BPBankAccountAcctBySchemasMap> cache = CCache.<BankAccountId, BPBankAccountAcctBySchemasMap>builder()
+			.tableName(I_C_BP_BankAccount_Acct.Table_Name)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(50)
 			.build();
 
-	public BankAccountAcct getByBankAccountIdAndAcctSchemaId(
+	public BankAccountAcct getAccounts(
 			final BankAccountId bankAccountId,
 			final AcctSchemaId acctSchemaId)
 	{
-		return getBPBankAccounts(bankAccountId).getByAcctSchemaId(acctSchemaId);
+		return getAccountsMap(bankAccountId).getByAcctSchemaId(acctSchemaId);
 	}
 
-	private BPBankAccountAcctBySchemasMap getBPBankAccounts(final BankAccountId bankAccountId)
+	private BPBankAccountAcctBySchemasMap getAccountsMap(final BankAccountId bankAccountId)
 	{
-		return cache.getOrLoad(bankAccountId, this::retrieveBPBankAccountAcctBySchemasMap);
+		return cache.getOrLoad(bankAccountId, this::retrieveAccountsMap);
 	}
 
-	private BPBankAccountAcctBySchemasMap retrieveBPBankAccountAcctBySchemasMap(final BankAccountId bankAccountId)
+	private BPBankAccountAcctBySchemasMap retrieveAccountsMap(final BankAccountId bankAccountId)
 	{
-		final List<BankAccountAcct> accts = DB.retrieveRows(
-				"SELECT * FROM " + TABLENAME_C_BP_BankAccount_Acct + " WHERE C_BP_BankAccount_ID=? AND IsActive=?",
-				Arrays.asList(bankAccountId, true),
-				this::retrieveBPBankAccountAcct);
+		final List<BankAccountAcct> list = queryBL.createQueryBuilder(I_C_BP_BankAccount_Acct.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount_Acct.COLUMNNAME_C_BP_BankAccount_ID, bankAccountId)
+				.create()
+				.stream()
+				.map(BankAccountAcctRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 
-		return new BPBankAccountAcctBySchemasMap(accts);
+		return new BPBankAccountAcctBySchemasMap(list);
 	}
 
-	private BankAccountAcct retrieveBPBankAccountAcct(final ResultSet rs) throws SQLException
+	private static BankAccountAcct fromRecord(@NonNull final I_C_BP_BankAccount_Acct record)
 	{
 		return BankAccountAcct.builder()
-				.bankAccountId(BankAccountId.ofRepoId(rs.getInt("C_BP_BankAccount_ID")))
-				.acctSchemaId(AcctSchemaId.ofRepoId(rs.getInt("C_AcctSchema_ID")))
+				.bankAccountId(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				//
-				.bankAssetAcct(AccountId.ofRepoId(rs.getInt("B_Asset_Acct")))
-				.unallocatedCashAcct(AccountId.ofRepoId(rs.getInt("B_UnallocatedCash_Acct")))
-				.bankInTransitAcct(AccountId.ofRepoId(rs.getInt("B_InTransit_Acct")))
-				.paymentSelectAcct(AccountId.ofRepoId(rs.getInt("B_PaymentSelect_Acct")))
-				.interestRevenueAcct(AccountId.ofRepoId(rs.getInt("B_InterestRev_Acct")))
-				.interestExpenseAcct(AccountId.ofRepoId(rs.getInt("B_InterestExp_Acct")))
-				.paymentBankFeeAcct(AccountId.ofRepoId(rs.getInt("PayBankFee_Acct")))
-				.paymentWriteOffAcct(AccountId.optionalOfRepoId(rs.getInt("Payment_WriteOff_Acct")))
+				.B_Asset_Acct(AccountId.ofRepoId(record.getB_Asset_Acct()))
+				.B_UnallocatedCash_Acct(AccountId.ofRepoId(record.getB_UnallocatedCash_Acct()))
+				.B_InTransit_Acct(AccountId.ofRepoId(record.getB_InTransit_Acct()))
+				.B_PaymentSelect_Acct(AccountId.ofRepoId(record.getB_PaymentSelect_Acct()))
+				.B_InterestRev_Acct(AccountId.ofRepoId(record.getB_InterestRev_Acct()))
+				.B_InterestExp_Acct(AccountId.ofRepoId(record.getB_InterestExp_Acct()))
+				.PayBankFee_Acct(AccountId.ofRepoId(record.getPayBankFee_Acct()))
+				.Payment_WriteOff_Acct(AccountId.optionalOfRepoId(record.getPayment_WriteOff_Acct()))
 				//
 				.build();
 	}
@@ -96,7 +99,7 @@ public class BankAccountAcctRepository
 	{
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaDefault.getC_AcctSchema_ID());
 
-		final String sql = "UPDATE " + TABLENAME_C_BP_BankAccount_Acct + " a "
+		final String sql = "UPDATE " + I_C_BP_BankAccount_Acct.Table_Name + " a "
 				+ "SET B_InTransit_Acct=" + acctSchemaDefault.getB_InTransit_Acct()
 				+ ", B_Asset_Acct=" + acctSchemaDefault.getB_Asset_Acct()
 				+ ", B_Expense_Acct=" + acctSchemaDefault.getB_Expense_Acct()
@@ -121,7 +124,7 @@ public class BankAccountAcctRepository
 
 	public int createMissing(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final String sql = "INSERT INTO " + TABLENAME_C_BP_BankAccount_Acct
+		final String sql = "INSERT INTO " + I_C_BP_BankAccount_Acct.Table_Name
 				+ " (C_BP_BankAccount_ID, C_AcctSchema_ID,"
 				+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
 				+ " B_InTransit_Acct, B_Asset_Acct, B_Expense_Acct, B_InterestRev_Acct, B_InterestExp_Acct,"
@@ -158,9 +161,9 @@ public class BankAccountAcctRepository
 	{
 		private final ImmutableMap<@NonNull AcctSchemaId, BankAccountAcct> byAcctSchemaId;
 
-		private BPBankAccountAcctBySchemasMap(@NonNull final List<BankAccountAcct> accts)
+		private BPBankAccountAcctBySchemasMap(@NonNull final List<BankAccountAcct> list)
 		{
-			this.byAcctSchemaId = Maps.uniqueIndex(accts, BankAccountAcct::getAcctSchemaId);
+			this.byAcctSchemaId = Maps.uniqueIndex(list, BankAccountAcct::getAcctSchemaId);
 		}
 
 		public BankAccountAcct getByAcctSchemaId(final AcctSchemaId acctSchemaId)

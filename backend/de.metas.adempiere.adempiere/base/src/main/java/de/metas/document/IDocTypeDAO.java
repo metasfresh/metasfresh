@@ -22,19 +22,19 @@ package de.metas.document;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.compiere.model.I_C_DocType;
-
+import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.compiere.model.I_C_DocType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IDocTypeDAO extends ISingletonService
 {
@@ -60,7 +60,6 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
 	 *
-	 * @param query
 	 * @return a list of docTypes never <code>null</code>. Those with <code>IsDefault</code> and with <code>AD_Org_ID > 0</code> will be first in the list.
 	 */
 	List<I_C_DocType> retrieveDocTypesByBaseType(DocTypeQuery query);
@@ -86,7 +85,7 @@ public interface IDocTypeDAO extends ISingletonService
 		Boolean isSOTrx;
 		int docTypeShipmentId;
 		int docTypeInvoiceId;
-		int glCategoryId;
+		@NonNull GLCategoryId glCategoryId;
 
 		int docNoSequenceId;
 		int newDocNoSequenceStartNo;

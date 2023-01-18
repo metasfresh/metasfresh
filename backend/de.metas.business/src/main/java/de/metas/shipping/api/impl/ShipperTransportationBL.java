@@ -46,13 +46,12 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	@Override
 	public void setC_DocType(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		final DocBaseType docBaseType = DocBaseType.ShipperTransportation;
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(DocBaseType.ShipperTransportation)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)

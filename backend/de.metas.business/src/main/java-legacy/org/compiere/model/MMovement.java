@@ -146,7 +146,7 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (getC_DocType_ID() == 0)
+		if (getC_DocType_ID() <= 0)
 		{
 			MDocType[] types = MDocType.getOfDocBaseType(getCtx(), DocBaseType.MaterialMovement);
 			if (types.length > 0)

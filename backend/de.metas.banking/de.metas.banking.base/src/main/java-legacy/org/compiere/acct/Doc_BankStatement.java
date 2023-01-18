@@ -14,6 +14,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -183,24 +184,12 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// BankAsset DR/CR (StmtAmt)
 		return fact.createLine()
 				.setDocLine(line)
-				.setAccount(getBankAssetAccount(as))
+				.setAccount(getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, as))
 				// .setAmtSourceDrOrCr(line.getStmtAmt())
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankAsset())
 				.orgIdIfValid(bankOrgId)
 				.bpartnerIdIfNotNull(bpartnerId);
-	}
-
-	private MAccount getBankAssetAccount(@NonNull final AcctSchema as)
-	{
-		final MAccount account = getAccount(AccountType.BankAsset, as);
-		if (account == null)
-		{
-			throw newPostingException()
-					.setDetailMessage("No Bank Asset account found")
-					.setAcctSchema(as);
-		}
-		return account;
 	}
 
 	/**
@@ -392,7 +381,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 		bankAssetFactLine.setAmtSource(null, bankFeeAmt);
 		interestFactLine.setAmtSource(bankFeeAmt, null);
-		interestFactLine.setAccount(getAccount(AccountType.PayBankFee, as));
+		interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.PayBankFee_Acct, as));
 
 		bankAssetFactLine.buildAndAdd();
 		interestFactLine.buildAndAdd();
@@ -473,7 +462,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		{
 			bankAssetFactLine.setAmtSource(interestAmt, null);
 			interestFactLine.setAmtSource(null, interestAmt);
-			interestFactLine.setAccount(getAccount(AccountType.InterestRev, as));
+			interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.B_InterestRev_Acct, as));
 		}
 		//
 		// Expense
@@ -481,7 +470,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		{
 			bankAssetFactLine.setAmtSource(null, interestAmt);
 			interestFactLine.setAmtSource(interestAmt, null);
-			interestFactLine.setAccount(getAccount(AccountType.InterestExp, as));
+			interestFactLine.setAccount(getBankAccountAccount(BankAccountAcctType.B_InterestExp_Acct, as));
 		}
 
 		bankAssetFactLine.buildAndAdd();

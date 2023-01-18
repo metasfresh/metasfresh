@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.spi.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -27,6 +26,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
@@ -225,13 +225,13 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
 	{
-		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		IProductActivityProvider productActivityProvider = Mockito.mock(IProductActivityProvider.class);
 		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
 
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		Mockito.doReturn(null).when(productAcctDAO).retrieveActivityForAcct(
+		Mockito.doReturn(null).when(productActivityProvider).getActivityForAcct(
 				AdditionalMatchers.not(ArgumentMatchers.eq(clientId)),
 				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
 				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));

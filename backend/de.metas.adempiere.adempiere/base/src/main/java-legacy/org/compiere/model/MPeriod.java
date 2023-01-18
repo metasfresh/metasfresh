@@ -136,7 +136,6 @@ public class MPeriod extends X_C_Period
 		}
 		return period;
 	}
-
 	/**
 	 * Find standard Period of DateAcct based on Client Calendar
 	 * @param ctx context

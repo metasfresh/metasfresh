@@ -3,10 +3,10 @@
  */
 package de.metas.manufacturing.acct;
 
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -59,23 +59,23 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		final CostElementType costElementType = costElement.getCostElementType();
 		if (CostElementType.Material.equals(costElementType))
 		{
-			return ProductAcctType.Asset;
+			return ProductAcctType.P_Asset_Acct;
 		}
 		else if (CostElementType.Resource.equals(costElementType))
 		{
-			return ProductAcctType.Labor;
+			return ProductAcctType.P_Labor_Acct;
 		}
 		else if (CostElementType.BurdenMOverhead.equals(costElementType))
 		{
-			return ProductAcctType.Burden;
+			return ProductAcctType.P_Burden_Acct;
 		}
 		else if (CostElementType.Overhead.equals(costElementType))
 		{
-			return ProductAcctType.Overhead;
+			return ProductAcctType.P_Overhead_Acct;
 		}
 		else if (CostElementType.OutsideProcessing.equals(costElementType))
 		{
-			return ProductAcctType.OutsideProcessing;
+			return ProductAcctType.P_OutsideProcessing_Acct;
 		}
 		else
 		{

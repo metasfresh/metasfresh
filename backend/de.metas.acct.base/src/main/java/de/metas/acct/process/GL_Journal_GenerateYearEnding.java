@@ -6,9 +6,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
-import de.metas.acct.gljournal.GLCategoryId;
+import de.metas.acct.GLCategoryId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -16,7 +15,6 @@ import de.metas.process.Param;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
