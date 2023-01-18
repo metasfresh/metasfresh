@@ -29,3 +29,24 @@ pull_request_rules:
       queue:
         name: default
         method: squash
+pull_request_rules:
+  - name: add a label with the name of the branch
+    conditions:
+      - merged
+      - or:
+        - base=adorable_badger_uat
+        - base=big_coconut_uat
+        - base=inner_silence_uat
+        - base=intensive_care_uat
+        - base=mad_orange_uat
+        - base=master
+        - base=neon_underwear_uat
+        - base=release
+        - base=tasty_ham_uat
+        - base=tenacious_d_uat
+        - base=week_end_uat
+        - base=yoyo_uat
+    actions:
+      label:
+        add:
+          - "branch:{{base}}"        
