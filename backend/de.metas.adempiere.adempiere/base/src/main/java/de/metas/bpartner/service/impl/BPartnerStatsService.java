@@ -4,7 +4,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
@@ -50,17 +49,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 @Service
-public class BPartnerStatsBL implements IBPartnerStatsBL
+public class BPartnerStatsService
 {
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	final BPartnerCreditLimitRepository creditLimitRepo;
 
-	private BPartnerStatsBL(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
+	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
 	{
 		this.creditLimitRepo = creditLimitRepo;
 	}
 
-	@Override
 	public String calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
 	{
 		final BPartnerStats bpStats = request.getStat();
@@ -106,7 +104,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
 	}
 
-	@Override
 	public boolean isCreditStopSales(@NonNull final BPartnerStats stat, @NonNull final BigDecimal grandTotal, @NonNull final Timestamp date)
 	{
 		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
@@ -124,7 +121,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return false;
 	}
 
-	@Override
 	public BigDecimal getCreditWatchRatio(final BPartnerStats stats)
 	{
 		// bp group will be taken from the stats' bpartner
@@ -141,7 +137,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
 	}
 
-	@Override
 	public void resetCreditStatusFromBPGroup(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerStats bpartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bpartner);
@@ -170,7 +165,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch);
 	}
 
-	@Override
 	public void updateBPartnerStatistics(BPartnerStats bpStats)
 	{
 		updateOpenItems(bpStats);
@@ -214,8 +208,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
 		// load the statistics
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
@@ -242,7 +234,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		else
 		{
 			// Above Watch Limit
-			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+			final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
 
 			if (watchAmt.compareTo(creditUsed) < 0)
 			{
@@ -260,8 +252,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 	private void updateDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
 	{
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
 		// in accounting schema currency
 		// todo
 		final String initialCreditStatus = bpStats.getSoCreditStatus();
@@ -290,7 +280,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		else
 		{
 			// Above Watch Limit
-			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+			final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
 
 			if (watchAmt.compareTo(creditUsed) < 0)
 			{

@@ -1,49 +1,11 @@
 package de.metas.invoicecandidate.modelvalidator;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
@@ -53,6 +15,22 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -64,6 +42,10 @@ public class C_Order
 	// 	invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
 	// }
 
+	final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
+	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)
 	{
@@ -71,9 +53,6 @@ public class C_Order
 		{
 			return;
 		}
-
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
 		final BigDecimal creditUsed = stats.getSoCreditUsed();
@@ -86,20 +65,21 @@ public class C_Order
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
-					.appendADElement("BPartnerCreditStop").append(":")
-					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
-					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
-					.build());
+												 .appendADElement("BPartnerCreditStop").append(":")
+												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+												 .build());
 		}
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
-					.appendADElement("BPartnerCreditHold").append(":")
-					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
-					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
-					.build());
+												 .appendADElement("BPartnerCreditHold").append(":")
+												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+												 .build());
 		}
-		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(
+
+		final BigDecimal grandTotal = currencyBL.convertBase(
 				order.getGrandTotal(),
 				CurrencyId.ofRepoId(order.getC_Currency_ID()),
 				TimeUtil.asLocalDate(order.getDateOrdered()),
@@ -112,16 +92,16 @@ public class C_Order
 				.additionalAmt(grandTotal) // null is threated like zero
 				.date(dateOrdered)
 				.build();
-		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+		final String calculatedSOCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
-					.appendADElement("BPartnerOverOCreditHold").append(":")
-					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
-					.append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)
-					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
-					.build());
+												 .appendADElement("BPartnerOverOCreditHold").append(":")
+												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+												 .append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)
+												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
+												 .build());
 		}
 	}
 

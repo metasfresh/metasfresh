@@ -1,27 +1,26 @@
 package de.metas.bpartner.process;
 
-import org.compiere.model.I_C_BPartner_Stats;
-
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Stats;
 
 public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implements IProcessPrecondition
 {
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
+	private final BPartnerStatsService bpartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 
 	@Override
 	protected String doIt()
 	{
 		final I_C_BPartner_Stats stats = getRecord(I_C_BPartner_Stats.class);
 		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(stats.getC_BPartner_ID());
-		bpartnerStatsBL.updateBPartnerStatistics(bpStats);
+		bpartnerStatsService.updateBPartnerStatistics(bpStats);
 		return "@Success@";
 	}
 

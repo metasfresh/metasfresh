@@ -28,14 +28,15 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
@@ -53,7 +54,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 {
 	final static private String PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP = "alsoResetCreditStatusFromBPGroup";
 
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 	public static void createWorkpackage(@NonNull final BPartnerStatisticsUpdateRequest request)
@@ -112,11 +113,11 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		{
 			if (alsoSetCreditStatusBaseOnBPGroup)
 			{
-				Services.get(IBPartnerStatsBL.class).resetCreditStatusFromBPGroup(bpartner);
+				bPartnerStatsService.resetCreditStatusFromBPGroup(bpartner);
 			}
 
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bpartner);
-			bpartnerStatsBL.updateBPartnerStatistics(stats);
+			bPartnerStatsService.updateBPartnerStatistics(stats);
 		}
 
 		return Result.SUCCESS;

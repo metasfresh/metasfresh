@@ -3,9 +3,9 @@ package de.metas.bpartner.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -14,6 +14,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BPartner_Stats;
 
@@ -26,7 +27,7 @@ import org.compiere.model.X_C_BPartner_Stats;
  */
 public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements IProcessPrecondition
 {
-	private  final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private  final BPartnerStatsService bpartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 	private  final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -55,7 +56,7 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())
 					.build();
-			creditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+			creditStatus = bpartnerStatsService.calculateProjectedSOCreditStatus(request);
 		}
 		else
 		{

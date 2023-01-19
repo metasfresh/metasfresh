@@ -23,9 +23,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
@@ -1249,7 +1249,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Services
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 
 		if (!isCheckCreditLimitNeeded())
@@ -1285,7 +1285,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				.additionalAmt(notInvoicedAmt)
 				.date(getMovementDate())
 				.build();
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+		final String calculatedCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
