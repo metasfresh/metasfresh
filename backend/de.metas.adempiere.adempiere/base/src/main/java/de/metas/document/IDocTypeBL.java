@@ -1,12 +1,11 @@
 package de.metas.document;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
-
-import java.util.Set;
 
 public interface IDocTypeBL extends ISingletonService
 {
@@ -20,7 +19,7 @@ public interface IDocTypeBL extends ISingletonService
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
 
 	@NonNull
-	Set<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 	
 	ITranslatableString getNameById(DocTypeId docTypeId);
 

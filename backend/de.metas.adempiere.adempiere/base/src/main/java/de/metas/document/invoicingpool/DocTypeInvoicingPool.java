@@ -26,6 +26,7 @@ import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -48,8 +49,8 @@ public class DocTypeInvoicingPool
 	@NonNull
 	SOTrx isSoTrx;
 	
-	@NonNull
-	Boolean isActive;
+	@Default
+	boolean isActive = true;
 
 	@NonNull
 	public DocTypeId getDocTypeId(@NonNull final Money invoiceTotalAmt)

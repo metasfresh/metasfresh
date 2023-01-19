@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -11,8 +12,6 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
-
-import java.util.Set;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -40,7 +39,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	@Override
 	@NonNull
-	public Set<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
 		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);
 	}

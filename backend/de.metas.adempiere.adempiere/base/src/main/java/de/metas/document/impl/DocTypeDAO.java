@@ -1,6 +1,7 @@
 package de.metas.document.impl;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -33,7 +34,6 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -67,7 +67,7 @@ public class DocTypeDAO implements IDocTypeDAO
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
-	private CCache<DocTypeInvoicingPoolId, Set<DocTypeId>> docTypeIdsByInvoicingPoolId = CCache.<DocTypeInvoicingPoolId, Set<DocTypeId>>builder()
+	private CCache<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>> docTypeIdsByInvoicingPoolId = CCache.<DocTypeInvoicingPoolId, ImmutableSet<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
@@ -124,7 +124,7 @@ public class DocTypeDAO implements IDocTypeDAO
 
 	@Override
 	@NonNull
-	public Set<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
 		return docTypeIdsByInvoicingPoolId.getOrLoad(docTypeInvoicingPoolId, this::retrieveDocTypeIdsByInvoicingPoolId);
 	}
@@ -392,7 +392,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@NonNull
-	private Set<DocTypeId> retrieveDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	private ImmutableSet<DocTypeId> retrieveDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
 		return queryBL.createQueryBuilder(I_C_DocType.class)
 				.addOnlyActiveRecordsFilter()

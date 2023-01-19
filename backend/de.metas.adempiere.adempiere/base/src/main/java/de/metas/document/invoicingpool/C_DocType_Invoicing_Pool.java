@@ -22,11 +22,10 @@
 
 package de.metas.document.invoicingpool;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,8 +36,6 @@ import org.compiere.model.I_C_DocType_Invoicing_Pool;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
 @Interceptor(I_C_DocType_Invoicing_Pool.class)
 @Component
 public class C_DocType_Invoicing_Pool
@@ -47,7 +44,6 @@ public class C_DocType_Invoicing_Pool
 	private static final AdMessageKey MSG_REFERENCED_INVOICING_POOL = AdMessageKey.of("ReferencedInvoicingPool");
 
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -71,13 +67,12 @@ public class C_DocType_Invoicing_Pool
 			return;
 		}
 		
-		final Set<DocTypeId> referencingDocTypeIds = docTypeBL
+		final ImmutableSet<DocTypeId> referencingDocTypeIds = docTypeBL
 				.getDocTypeIdsByInvoicingPoolId(DocTypeInvoicingPoolId.ofRepoId(docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID()));
 
 		if (!referencingDocTypeIds.isEmpty())
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFERENCED_INVOICING_POOL);
-			throw new AdempiereException(msg)
+			throw new AdempiereException(MSG_REFERENCED_INVOICING_POOL)
 					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("DocTypeIds", referencingDocTypeIds)
@@ -106,8 +101,7 @@ public class C_DocType_Invoicing_Pool
 		final I_C_DocType docTypeRecord = docTypeBL.getById(docTypeId);
 		if (docTypeRecord.isSOTrx() != docTypeInvoicingPoolRecord.isSOTrx())
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_DIFFERENT_SO_TRX_INVOICING_POOL_DOCUMENT_TYPE);
-			throw new AdempiereException(msg)
+			throw new AdempiereException(MSG_DIFFERENT_SO_TRX_INVOICING_POOL_DOCUMENT_TYPE)
 					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("DocType.Name", docTypeRecord.getName())
