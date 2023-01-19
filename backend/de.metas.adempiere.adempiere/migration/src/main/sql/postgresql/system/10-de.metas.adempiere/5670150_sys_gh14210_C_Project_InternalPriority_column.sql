@@ -105,3 +105,27 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- 2023-01-11T08:29:03.737Z
 UPDATE AD_Val_Rule SET Code='C_Project.C_Project_ID NOT IN (SELECT DISTINCT pp.C_Project_ID FROM c_project pp WHERE pp.C_Project_Parent_ID = @C_Project_ID@) AND C_Project.C_Project_ID != @C_Project_ID@ AND (''@ProjectCategory@'' <> ''W'' OR C_Project.ProjectCategory = ''B'')',Updated=TO_TIMESTAMP('2023-01-11 10:29:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540581
 ;
+
+-- 2023-01-19T07:33:47.059Z
+UPDATE AD_Element_Trl SET Name='Interne Priorität', PrintName='Interne Priorität',Updated=TO_TIMESTAMP('2023-01-19 09:33:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581907 AND AD_Language='de_CH'
+;
+
+-- 2023-01-19T07:33:47.092Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581907,'de_CH')
+;
+
+-- 2023-01-19T07:33:56.614Z
+UPDATE AD_Element_Trl SET Name='Interne Priorität', PrintName='Interne Priorität',Updated=TO_TIMESTAMP('2023-01-19 09:33:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581907 AND AD_Language='de_DE'
+;
+
+-- 2023-01-19T07:33:56.615Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581907,'de_DE')
+;
+
+-- 2023-01-19T07:33:56.631Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581907,'de_DE')
+;
+
+-- 2023-01-19T07:33:56.633Z
+UPDATE AD_Column SET ColumnName='InternalPriority', Name='Interne Priorität', Description=NULL, Help=NULL WHERE AD_Element_ID=581907
+;
