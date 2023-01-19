@@ -1565,6 +1565,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setSAP_ProductHierarchy (final @Nullable java.lang.String SAP_ProductHierarchy)
+	{
+		set_Value (COLUMNNAME_SAP_ProductHierarchy, SAP_ProductHierarchy);
+	}
+
+	@Override
+	public java.lang.String getSAP_ProductHierarchy()
+	{
+		return get_ValueAsString(COLUMNNAME_SAP_ProductHierarchy);
+	}
+
+	@Override
 	public void setShelfDepth (final int ShelfDepth)
 	{
 		set_Value (COLUMNNAME_ShelfDepth, ShelfDepth);
