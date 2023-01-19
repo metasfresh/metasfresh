@@ -1641,7 +1641,6 @@ public class CalloutOrder extends CalloutEngine
 							.deliveryLocationAdapter(order)
 							.setFrom(DocumentLocation.builder()
 											 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
-											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
 											 .build());
 				}
 				order.setDropShip_User_ID(-1);
