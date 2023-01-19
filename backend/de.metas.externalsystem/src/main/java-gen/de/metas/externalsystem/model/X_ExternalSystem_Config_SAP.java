@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -688300913L;
+	private static final long serialVersionUID = -1815587035L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -86,5 +86,17 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setIsCheckDescriptionForMaterialType (final boolean IsCheckDescriptionForMaterialType)
+	{
+		set_Value (COLUMNNAME_IsCheckDescriptionForMaterialType, IsCheckDescriptionForMaterialType);
+	}
+
+	@Override
+	public boolean isCheckDescriptionForMaterialType() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCheckDescriptionForMaterialType);
 	}
 }

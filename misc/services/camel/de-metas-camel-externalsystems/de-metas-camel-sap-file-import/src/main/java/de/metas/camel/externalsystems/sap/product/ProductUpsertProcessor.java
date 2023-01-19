@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.mapping.ExternalMappingsHolder;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
@@ -50,15 +51,19 @@ public class ProductUpsertProcessor implements Processor
 	final PInstanceLogger pInstanceLogger;
 	@NonNull
 	final ExternalMappingsHolder externalMappingsHolder;
+	@NonNull
+	final JsonMetasfreshId defaultProductCategoryId;
 
 	public ProductUpsertProcessor(
 			final @NonNull JsonExternalSystemRequest externalSystemRequest,
 			final @NonNull PInstanceLogger pInstanceLogger,
-			final @NonNull ExternalMappingsHolder externalMappingsHolder)
+			final @NonNull ExternalMappingsHolder externalMappingsHolder,
+			final @NonNull JsonMetasfreshId defaultProductCategoryId)
 	{
 		this.externalSystemRequest = externalSystemRequest;
 		this.pInstanceLogger = pInstanceLogger;
 		this.externalMappingsHolder = externalMappingsHolder;
+		this.defaultProductCategoryId = defaultProductCategoryId;
 	}
 
 	@Override
@@ -118,14 +123,6 @@ public class ProductUpsertProcessor implements Processor
 			skipProduct = true;
 		}
 
-		final JsonMetasfreshId resolvedProductCategoryId = externalMappingsHolder.resolveProductCategoryId(product.getMaterialType()).orElse(null);
-		if (resolvedProductCategoryId == null)
-		{
-			pInstanceLogger.logMessage("Skipping row due to missing mapping for provided product category code: " + product.getMaterialType() +
-											   "! MaterialCode =" + product.getMaterialCode());
-			skipProduct = true;
-		}
-
 		if (skipProduct)
 		{
 			return Optional.empty();
@@ -134,15 +131,19 @@ public class ProductUpsertProcessor implements Processor
 		final JsonRequestProduct jsonRequestProduct = new JsonRequestProduct();
 
 		jsonRequestProduct.setName(product.getName());
-		jsonRequestProduct.setCode(product.getMaterialCode() + "_" + product.getName());
+		jsonRequestProduct.setCode(product.getMaterialCode() + " (" + product.getSectionCode() + ")");
 		jsonRequestProduct.setSectionCode(product.getSectionCode());
 		jsonRequestProduct.setStocked(true);
 		jsonRequestProduct.setDiscontinued(false);
 
 		jsonRequestProduct.setUomCode(resolvedUOMValue);
 		jsonRequestProduct.setType(JsonRequestProduct.Type.ofCode(resolvedProductTypeValue));
+
+		final JsonMetasfreshId resolvedProductCategoryId = resolveProductCategoryId(product);
 		jsonRequestProduct.setProductCategoryIdentifier(String.valueOf(resolvedProductCategoryId.getValue()));
+
 		jsonRequestProduct.setPurchased(true);
+		jsonRequestProduct.setSAPProductHierarchy(product.getProductHierarchy());
 
 		return Optional.of(jsonRequestProduct);
 	}
@@ -176,6 +177,30 @@ public class ProductUpsertProcessor implements Processor
 		}
 
 		return skipProduct;
+	}
+
+	@NonNull
+	private JsonMetasfreshId resolveProductCategoryId(@NonNull final ProductRow productRow)
+	{
+		if (!externalMappingsHolder.hasProductCategoryMappings())
+		{
+			return defaultProductCategoryId;
+		}
+
+		final Optional<JsonMetasfreshId> productCategoryIdFromMaterialType = externalMappingsHolder.resolveProductCategoryId(productRow.getMaterialType());
+		if (productCategoryIdFromMaterialType.isPresent())
+		{
+			return productCategoryIdFromMaterialType.get();
+		}
+
+		final boolean checkDescriptionForMaterialType = Boolean.parseBoolean(externalSystemRequest.getParameter(ExternalSystemConstants.PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE));
+		if (checkDescriptionForMaterialType)
+		{
+			return externalMappingsHolder.resolveProductCategoryIdByMatchingValue(productRow.getDescription())
+					.orElse(defaultProductCategoryId);
+		}
+
+		return defaultProductCategoryId;
 	}
 
 	@NonNull

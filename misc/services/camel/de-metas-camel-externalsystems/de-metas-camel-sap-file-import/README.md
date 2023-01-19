@@ -25,6 +25,7 @@
 * `JsonExternalSystemRequest.parameters.SFTPProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPErroredDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPPollingFrequencyInMs`
+* `JsonExternalSystemRequest.parameters.CheckDescriptionForMaterialType` - If set, the process also checks the product description when trying to lookup material type.
 
 ### Local File
 
@@ -38,6 +39,7 @@
 * `JsonExternalSystemRequest.parameters.LocalFileProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFileErroredDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFilePollingFrequencyInMs`
+* `JsonExternalSystemRequest.parameters.CheckDescriptionForMaterialType` - If set, the process also checks the product description when trying to lookup material type.
 
 ## **SAP => metasfresh product**
 
@@ -81,15 +83,16 @@ Configs available in `Externalsystem_Config_SAP_LocalFile`:
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
 SAP | metasfresh-column                     | mandatory in mf | metasfresh-json                                | note                                                               |
----- |---------------------------------------|-----------------|------------------------------------------------|--------------------------------------------------------------------|
-ProductRow.materialCode + "_" + ProductRow.name | `value`                               | Y               | JsonRequestProduct.code                        |                                                                    |
+---- |--------------------------------------|-----------------|------------------------------------------------|--------------------------------------------------------------------|
+ProductRow.materialCode + " (" + ProductRow.sectionCode + ")" | `value`                                        | Y               | JsonRequestProduct.code                        |                                                                    |
 ProductRow.uom | `c_uom_id`                            | Y               | JsonRequestProduct.uomCode                     |                                                                    |
 ProductRow.name | `name`                                | Y               | JsonRequestProduct.name                        |                                                                    |
 ProductRow.sectionCode | `m_sectioncode_id`                    | N               | JsonRequestProduct.sectionCode                 |                                                                    |
 ---- | `isstocked`                           | Y               | JsonRequestProduct.stocked                     | always set to `true`                                               |
 ---- | `discontinued`                        | N               | JsonRequestProduct.discontinued                | always set to `false`                                              |
 ProductRow.materialGroup | `producttype`                         | Y               | JsonRequestProduct.type                        | always set to JsonRequestProduct.Type.ITEM                         |
-ProductRow.materialType | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
+ProductRow.materialType | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | resolved from `Product category mapping` or using `ProductRow.description` when`CheckDescriptionForMaterialType` is enabled. If none is provided then default value `Standard` is set. |
+ProductRow.productHierarchy | `SAP_ProductHierarchy`               | Y               | JsonRequestProduct.sapProductHierarchy   |  |
 --- | ----                                  | N               | JsonRequestProductUpsert.syncAdvise            | default value CREATE_OR_MERGE                                      |
 ProductRow.materialCode | `S_ExternalReference.externalReference` | Y               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
 --- | `S_ExternalReference.isreadonlyinmetasfresh` | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                                        | always set to `true`                                               |
@@ -141,7 +144,7 @@ SAP | metasfresh-column                                | mandatory in mf | metas
 BPartnerRow.partnerCode | `C_BPartner.value`                               | Y               | JsonRequestBPartner.code                                                                             | BPartnerRow.partnerCode(without the last 2 digits) + "00"                  |
 BPartnerRow.name1 | `C_BPartner.companyname`                         | N               | JsonRequestBPartner.companyName                                                                      |                                                                            |
 BPartnerRow.name2 | `C_BPartner.name`                                | Y               | JsonRequestBPartner.name                                                                             |                                                                            |
-BPartnerRow.searchTerm | `C_BPartner.description`                         | N               | JsonRequestBPartner.description                                                                      |                                                                            |
+--- | `C_BPartner.IsProspect`                          | N               | JsonRequestBPartner.prospect                                                                      | always set to `false`                                                          |
 --- | ----                                             | N               | JsonRequestBPartnerUpsert.syncAdvise                                                                  | default value CREATE_OR_MERGE                                              |
 BPartnerRow.partnerCode | `S_ExternalReference.externalreference`          | Y               | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | "ext-SAP-" + BPartnerRow.partnerCode(without the last 2 characters) + "00" |
 --- | `S_ExternalReference.isreadonlyinmetasfresh`     | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                 | always set to `true`                                                       |
@@ -151,13 +154,10 @@ BPartnerRow.partnerCode | `S_ExternalReference.externalreference`          | Y  
 
 SAP | metasfresh-column                                | mandatory in mf | metasfresh-json                                      | note                                                                                                                            |
 ---- |--------------------------------------------------|-----------------|------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-BPartnerRow.partnerCode + BPartnerRow.section | `C_BPartner.value`                               | Y               | JsonRequestBPartner.code                             | BPartnerRow.partnerCode(without the last 2 digits) + "00" + "_" + BPartnerRow.section                                           |
+BPartnerRow.partnerCode + BPartnerRow.section | `C_BPartner.value`   | Y               | JsonRequestBPartner.code                             | BPartnerRow.partnerCode(without the last 2 digits) + "00" + " (" + BPartnerRow.section  + ")"                                    |
 BPartnerRow.name1 | `C_BPartner.companyname`                         | N               | JsonRequestBPartner.companyName                      |                                                                                                                                 |
 BPartnerRow.name2 | `C_BPartner.name`                                | Y               | JsonRequestBPartner.name                             |                                                                                                                                 |
-BPartnerRow.searchTerm | `C_BPartner.description`                         | N               | JsonRequestBPartner.description                      |                                                                                                                                 |
 BPartnerRow.section | `C_BPartner.m_sectioncode_id`                    | N               | JsonRequestBPartner.sectionCode                      |                                                                                                                                 |
-BPartnerRow.salesIncoterms | `C_BPartner.c_incoterms_customer_id`             | N               | JsonRequestBPartner.incotermsCustomer                |                                                                                                                                 |
-BPartnerRow.purchaseIncoterms | `C_BPartner.c_incoterms_vendor_id`               | N               | JsonRequestBPartner.incotermsVendor                  |                                                                                                                                 |
 BPartnerRow.salesPaymentTerms | `C_BPartner.c_paymentterm_id`                    | N               | JsonRequestBPartner.salesPaymentTermIdentifier       |                                                                                                                                 |
 BPartnerRow.purchasePaymentTerms | `C_BPartner.po_paymentterm_id`                   | N               | JsonRequestBPartner.purchasePaymentTermIdentifier    |                                                                                                                                 |
 --- | `C_BPartner.deliveryrule`                        | N               | JsonRequestBPartner.deliveryRule                     | always set to JsonDeliveryRule.Availability                                                                                     |
@@ -168,6 +168,7 @@ BPartnerRow.purchasePaymentTerms | `C_BPartner.po_paymentterm_id`               
 --- | `C_BPartner.isvendor`                            | Y               | JsonRequestBPartner.vendor                           | always set to `true`                                                                                                            |
 --- | `C_BPartner.isstoragewarehouse`                  | Y               | JsonRequestBPartner.storageWarehouse                 | set to `true` if BPartnerRow.partnerCategory is equal to 4, else set always to `false` which is the default value in metasfresh |
 --- | `C_BPartner.bpartner_parent_id`                  | N               | JsonRequestBPartner.parentIdentifier                 | set to the associated Section Group Partner -> BPartnerRow.partnerCode(without the last 2 digits) + "00"                        |
+--- | `C_BPartner.IsProspect`                          | N               | JsonRequestBPartner.prospect                         | always set to `false`                                                                         |
 --- | ----                                             | N               | JsonRequestBPartnerUpsert.syncAdvise                 | default value CREATE_OR_MERGE                                                                                                   |
 BPartnerRow.partnerCode + "_" + BPartnerRow.section  | `S_ExternalReference.externalreference`          | Y               | JsonRequestBPartnerUpsertItem.bpartnerIdentifier     | "ext-SAP-" + BPartnerRow.partnerCode(without the last 2 digits) + "00" + "_" + BPartnerRow.section                              |
 --- | `S_ExternalReference.isreadonlyinmetasfresh`     | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh | always set to `true`                                                                                                            |
@@ -197,7 +198,8 @@ BPartnerRow.postal | `C_Location.postal`                              | N       
 Office Address | ?                                                | ?               | ?                                                                                                     |                                                                                                                                                             |
 Warehouse Address | ?                                                | ?               | ?                                                                                                     |                                                                                                                                                             |
 Production Site | ?                                                | ?               | ?                                                                                                     |                                                                                                                                                             |
-BPartnerRow.vatRegNo | ?                                                | ?               | ?                                                                                                     |                                                                                                                                                             |
+BPartnerRow.vatRegNo | `C_BPartner_Location.VATaxId`   | N              | JsonRequestLocation.vatId                                                                              |                                                                                                                                                             |
+BPartnerRow.paymentType | `C_BPartner_Location.SAP_PaymentMethod`              | N               | JsonRequestLocation.sapPaymentMethod                                                       |                                                                                                                |
 --- | ----                                             | N               | JsonRequestBPartnerUpsert.syncAdvise                                                                  | default value CREATE_OR_MERGE                                                                                                                               |
 BPartnerRow.partnerCode + "_" + BPartnerRow.section  | `S_ExternalReference.externalreference`          | Y               | JsonRequestLocationUpsertItem.locationIdentifier | "ext-SAP-" + BPartnerRow.PartnerCode + "_" + BPartnerRow.SectionCode (the PartnerCode is not truncated)                                                     |
 --- | `S_ExternalReference.isreadonlyinmetasfresh`     | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                  | always set to `true`                                                                                                                                        |

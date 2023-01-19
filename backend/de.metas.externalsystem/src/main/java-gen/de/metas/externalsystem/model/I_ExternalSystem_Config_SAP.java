@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -165,6 +164,29 @@ public interface I_ExternalSystem_Config_SAP
 
 	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Check description for material type.
+	 * If enabled, the process also checks the product description when trying to lookup material type.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsCheckDescriptionForMaterialType (boolean IsCheckDescriptionForMaterialType);
+
+	/**
+	 * Get Check description for material type.
+	 * If enabled, the process also checks the product description when trying to lookup material type.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCheckDescriptionForMaterialType();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_IsCheckDescriptionForMaterialType = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "IsCheckDescriptionForMaterialType", null);
+	String COLUMNNAME_IsCheckDescriptionForMaterialType = "IsCheckDescriptionForMaterialType";
 
 	/**
 	 * Get Updated.

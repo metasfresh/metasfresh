@@ -53,8 +53,8 @@
             "memoIsSet":false,
             "sectionCodeValue":null,
             "sectionCodeValueSet":false,
-            "description":"XXXX AAAA. DE VAT",
-            "descriptionSet":true,
+            "description":null,
+            "descriptionSet":false,
             "deliveryRule":null,
             "deliveryRuleSet":false,
             "deliveryViaRule":null,
@@ -78,7 +78,15 @@
             "syncAdvise":null,
             "syncAdviseSet":false,
             "sectionGroupPartnerIdentifier":null,
-            "sectionGroupPartnerIdentifierSet":false
+            "sectionGroupPartnerIdentifierSet":false,
+            "prospect":false,
+            "prospectSet":true,
+            "sapBPartnerCode":"PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":true,
+            "sectionGroupPartnerSet":true,
+            "sectionPartner":false,
+            "sectionPartnerSet":false
           }
         }
       },
@@ -91,7 +99,7 @@
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"PARTNER_CODE00_SCOD",
+            "code":"PARTNER_CODE00 (SCOD)",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -133,18 +141,18 @@
             "memoIsSet":false,
             "sectionCodeValue":"SCOD",
             "sectionCodeValueSet":true,
-            "description":"XXXX AAAA. DE VAT",
-            "descriptionSet":true,
+            "description":null,
+            "descriptionSet":false,
             "deliveryRule":"Availability",
             "deliveryRuleSet":true,
             "deliveryViaRule":"Shipper",
             "deliveryViaRuleSet":true,
             "storageWarehouse":false,
             "storageWarehouseSet":true,
-            "incotermsCustomerValue":"",
-            "incotermsCustomerValueSet":true,
-            "incotermsVendorValue":"",
-            "incotermsVendorValueSet":true,
+            "incotermsCustomerValue":null,
+            "incotermsCustomerValueSet":false,
+            "incotermsVendorValue":null,
+            "incotermsVendorValueSet":false,
             "customerPaymentTermIdentifier":"val-M000",
             "customerPaymentTermIdentifierSet":true,
             "vendorPaymentTermIdentifier":"val-M000",
@@ -155,8 +163,16 @@
             "paymentRuleSet":true,
             "paymentRulePO":"OnCredit",
             "paymentRulePOSet":true,
+            "prospect":false,
+            "prospectSet":true,
             "syncAdvise":null,
-            "syncAdviseSet":false
+            "syncAdviseSet":false,
+            "sapBPartnerCode":"PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":false,
+            "sectionGroupPartnerSet":false,
+            "sectionPartner":true,
+            "sectionPartnerSet":true
           },
           "locations":{
             "requestItems":[
@@ -217,7 +233,11 @@
                   "replicationLookupDefault":false,
                   "replicationLookupDefaultSet":true,
                   "vatId":"DE111111111",
-                  "vatIdSet":true
+                  "vatIdSet":true,
+                  "sapPaymentMethod":"EO",
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE01",
+                  "sapBPartnerCodeSet":true
                 }
               },
               {
@@ -277,7 +297,11 @@
                   "replicationLookupDefault":false,
                   "replicationLookupDefaultSet":true,
                   "vatId":"DE111111111",
-                  "vatIdSet":true
+                  "vatIdSet":true,
+                  "sapPaymentMethod":"EO",
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE02",
+                  "sapBPartnerCodeSet":true
                 }
               },
               {
@@ -337,7 +361,11 @@
                   "replicationLookupDefault":false,
                   "replicationLookupDefaultSet":true,
                   "vatId":"DE111111111",
-                  "vatIdSet":true
+                  "vatIdSet":true,
+                  "sapPaymentMethod":"EO",
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE03",
+                  "sapBPartnerCodeSet":true
                 }
               }
             ],
@@ -354,7 +382,7 @@
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"PARTNER_CODE00_SCOD1",
+            "code":"PARTNER_CODE00 (SCOD1)",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -396,18 +424,18 @@
             "memoIsSet":false,
             "sectionCodeValue":"SCOD1",
             "sectionCodeValueSet":true,
-            "description":"XXXX AAAA. DE VAT",
-            "descriptionSet":true,
+            "description":null,
+            "descriptionSet":false,
             "deliveryRule":"Availability",
             "deliveryRuleSet":true,
             "deliveryViaRule":"Shipper",
             "deliveryViaRuleSet":true,
             "storageWarehouse":false,
             "storageWarehouseSet":true,
-            "incotermsCustomerValue":"",
-            "incotermsCustomerValueSet":true,
-            "incotermsVendorValue":"",
-            "incotermsVendorValueSet":true,
+            "incotermsCustomerValue":null,
+            "incotermsCustomerValueSet":false,
+            "incotermsVendorValue":null,
+            "incotermsVendorValueSet":false,
             "customerPaymentTermIdentifier":"val-M000",
             "customerPaymentTermIdentifierSet":true,
             "vendorPaymentTermIdentifier":"val-M000",
@@ -418,8 +446,16 @@
             "paymentRuleSet":true,
             "paymentRulePO":"OnCredit",
             "paymentRulePOSet":true,
+            "prospect":false,
+            "prospectSet":true,
             "syncAdvise":null,
-            "syncAdviseSet":false
+            "syncAdviseSet":false,
+            "sapBPartnerCode":"PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":false,
+            "sectionGroupPartnerSet":false,
+            "sectionPartner":true,
+            "sectionPartnerSet":true
           },
           "locations":{
             "requestItems":[
@@ -480,7 +516,11 @@
                   "replicationLookupDefault":false,
                   "replicationLookupDefaultSet":true,
                   "vatId":"DE111111111",
-                  "vatIdSet":true
+                  "vatIdSet":true,
+                  "sapPaymentMethod":"EO",
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"PARTNER_CODE04",
+                  "sapBPartnerCodeSet":true
                 }
               }
             ],

@@ -446,7 +446,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "fileNamePatternBPartner" : "BPartnerLocalFile*",
         "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
         "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
-      }
+      },
+      "checkDescriptionForMaterialType" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -495,7 +496,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "fileNamePatternBPartner" : "BPartnerLocalFile*",
       "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
       "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
-    }
+    },
+    "checkDescriptionForMaterialType" : false
   }
 ]
 
@@ -547,7 +549,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "fileNamePatternBPartner" : "BPartnerLocalFile*",
         "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
         "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
-      }
+      },
+      "checkDescriptionForMaterialType" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -879,7 +882,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           "fileNamePatternBPartner" : "BPartnerLocalFile*",
           "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
           "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
-        }
+        },
+        "checkDescriptionForMaterialType" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"

@@ -136,6 +136,12 @@ public class JsonRequestProduct
 	@ApiModelProperty(hidden = true)
 	private boolean purchasedSet;
 
+	@ApiModelProperty(position = 180, value = "Corresponding to `M_Product.SAP_ProductHierarchy`")
+	private String sapProductHierarchy;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sapProductHierarchySet;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -228,6 +234,12 @@ public class JsonRequestProduct
 	{
 		this.sectionCode = sectionCode;
 		this.sectionCodeSet = true;
+	}
+
+	public void setSAPProductHierarchy(final String sapProductHierarchy)
+	{
+		this.sapProductHierarchy = sapProductHierarchy;
+		this.sapProductHierarchySet = true;
 	}
 
 	@AllArgsConstructor

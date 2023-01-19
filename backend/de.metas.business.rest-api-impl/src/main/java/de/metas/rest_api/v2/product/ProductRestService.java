@@ -833,6 +833,16 @@ public class ProductRestService
 			builder.purchased(existingProduct.isPurchased());
 		}
 
+		// SAPProductHierarchy
+		if (jsonRequestProductUpsertItem.isSapProductHierarchySet())
+		{
+			builder.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy());
+		}
+		else
+		{
+			builder.sapProductHierarchy(existingProduct.getSapProductHierarchy());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -877,6 +887,7 @@ public class ProductRestService
 				.productValue(jsonRequestProductUpsertItem.getCode())
 				.sectionCodeId(sectionCodeId)
 				.purchased(purchased)
+				.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy())
 				.build();
 	}
 

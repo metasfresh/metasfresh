@@ -51,4 +51,9 @@ public class BPRetrieveCamelRequest
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonProperty("adPInstanceId")
 	JsonMetasfreshId adPInstanceId;
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonProperty("orgCode")
+	String orgCode;
 }
