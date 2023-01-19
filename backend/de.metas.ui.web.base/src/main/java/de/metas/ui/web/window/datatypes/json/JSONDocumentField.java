@@ -300,16 +300,17 @@ public final class JSONDocumentField
 	public JSONDocumentField setWidgetType(@Nullable final JSONLayoutWidgetType widgetType)
 	{
 		this.widgetType = widgetType;
-		if(widgetType != null)
+		if (widgetType != null)
 		{
 			setPrecision(widgetType.getStandardNumberPrecision());
 		}
 		return this;
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public JSONDocumentField setPrecision(@NonNull OptionalInt precision)
 	{
-		setPrecision(precision);
+		this.precision = precision.isPresent() ? precision.getAsInt() : null;
 		return this;
 	}
 
