@@ -10,9 +10,12 @@ import java.util.Set;
 
 public interface IDocTypeBL extends ISingletonService
 {
-	I_C_DocType getById(DocTypeId docTypeId);
-	
-	I_C_DocType getByIdNonNull(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
+
 
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
 
@@ -66,4 +69,6 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isRequisition(DocTypeId docTypeId);
 
 	boolean isMediated(DocTypeId docTypeId);
+	
+	void save(I_C_DocType dt);
 }

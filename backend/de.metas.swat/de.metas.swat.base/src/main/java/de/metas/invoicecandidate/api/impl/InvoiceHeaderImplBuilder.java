@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -13,7 +14,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -30,7 +30,7 @@ import java.util.Set;
  */
 public class InvoiceHeaderImplBuilder
 {
-	private InvoiceDocTypeAggregator invoiceDocTypeAggregator = null;
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -83,7 +83,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Async_Batch_ID(getC_Async_Batch_ID());
 
 		// Document Type
-		invoiceHeader.setInvoiceDocTypeAggregator(getInvoiceDocTypeAggregator());
+		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
 		invoiceHeader.setIsSOTrx(isSOTrx());
 
 		// Pricing and currency
@@ -130,21 +130,22 @@ public class InvoiceHeaderImplBuilder
 	}
 
 	@Nullable
-	public InvoiceDocTypeAggregator getInvoiceDocTypeAggregator()
+	public DocTypeInvoicingPoolId getDocTypeInvoicingPoolId()
 	{
-		return invoiceDocTypeAggregator;
+		return docTypeInvoicingPoolId;
 	}
 
-	public void setC_DocTypeInvoice(@NonNull final I_C_DocType docTypeInvoice)
+	public void setDocTypeInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
-		if (invoiceDocTypeAggregator == null)
+		if (this.docTypeInvoicingPoolId != null && !this.docTypeInvoicingPoolId.equals(docTypeInvoicingPoolId))
 		{
-			invoiceDocTypeAggregator = InvoiceDocTypeAggregator.ofDocType(docTypeInvoice);
+			throw new AdempiereException("DocTypeInvoicingPoolIds do not match!")
+					.appendParametersToMessage()
+					.setParameter("this.docTypeInvoicingPoolId", this.docTypeInvoicingPoolId)
+					.setParameter("docTypeInvoicingPoolId", docTypeInvoicingPoolId);
 		}
-		else
-		{
-			invoiceDocTypeAggregator.addDocType(docTypeInvoice);
-		}
+		
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
 	}
 
 	public String getPOReference()

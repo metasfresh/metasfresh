@@ -24,6 +24,9 @@ package de.metas.document.invoicingpool;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -40,11 +43,16 @@ import java.util.Set;
 @Component
 public class C_DocType_Invoicing_Pool
 {
+	private static final AdMessageKey MSG_DIFFERENT_SO_TRX_INVOICING_POOL_DOCUMENT_TYPE = AdMessageKey.of("DifferentSOTrxInvoicingPoolDocumentType");
+	private static final AdMessageKey MSG_REFERENCED_INVOICING_POOL = AdMessageKey.of("ReferencedInvoicingPool");
+
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_DocType_Invoicing_Pool.COLUMNNAME_Positive_Amt_C_DocType_ID,
+			ifColumnsChanged = { 
+					I_C_DocType_Invoicing_Pool.COLUMNNAME_Positive_Amt_C_DocType_ID,
 					I_C_DocType_Invoicing_Pool.COLUMNNAME_Negative_Amt_C_DocType_ID,
 					I_C_DocType_Invoicing_Pool.COLUMNNAME_IsSOTrx })
 	public void validateSOTrx(@NonNull final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord)
@@ -68,7 +76,9 @@ public class C_DocType_Invoicing_Pool
 
 		if (!referencingDocTypeIds.isEmpty())
 		{
-			throw new AdempiereException("Invoicing Pool is still referenced in DocTypes!")
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFERENCED_INVOICING_POOL);
+			throw new AdempiereException(msg)
+					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("DocTypeIds", referencingDocTypeIds)
 					.setParameter("DocTypeInvoicingPoolId", docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID());
@@ -93,10 +103,12 @@ public class C_DocType_Invoicing_Pool
 			@NonNull final DocTypeId docTypeId,
 			@NonNull final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord)
 	{
-		final I_C_DocType docTypeRecord = docTypeBL.getByIdNonNull(docTypeId);
+		final I_C_DocType docTypeRecord = docTypeBL.getById(docTypeId);
 		if (docTypeRecord.isSOTrx() != docTypeInvoicingPoolRecord.isSOTrx())
 		{
-			throw new AdempiereException("Different SoTrx between Invoicing Pool and DocType!")
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_DIFFERENT_SO_TRX_INVOICING_POOL_DOCUMENT_TYPE);
+			throw new AdempiereException(msg)
+					.markAsUserValidationError()
 					.appendParametersToMessage()
 					.setParameter("DocType.Name", docTypeRecord.getName())
 					.setParameter("DocTypeInvoicingPoolId", docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID());

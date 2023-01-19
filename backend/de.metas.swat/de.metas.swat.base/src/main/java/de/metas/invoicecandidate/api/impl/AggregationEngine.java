@@ -24,6 +24,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolCreateRequest;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
@@ -445,8 +447,10 @@ public final class AggregationEngine
 
 			if (icRecord.getC_DocTypeInvoice_ID() > 0)
 			{
-				final I_C_DocType docTypeInvoice = docTypeBL.getByIdNonNull(DocTypeId.ofRepoId(icRecord.getC_DocTypeInvoice_ID()));
-				invoiceHeader.setC_DocTypeInvoice(docTypeInvoice);
+				final DocTypeInvoicingPoolId docTypeInvoicingPoolId = getOrCreateDocTypeInvoicingPool(DocTypeId.ofRepoId(icRecord.getC_DocTypeInvoice_ID()))
+						.getId();
+
+				invoiceHeader.setDocTypeInvoicingPoolId(docTypeInvoicingPoolId);
 			}
 
 			// 06630: set shipment id to header
@@ -793,20 +797,13 @@ public final class AggregationEngine
 
 		final I_C_DocType docTypeToBeUsed;
 
-		// Case: Multiple DocTypes are aggregated
-		if (invoiceHeader.getAggregatedDocTypeInvoicingPoolId().isPresent())
+		if (invoiceHeader.getDocTypeInvoicingPoolId().isPresent())
 		{
-			final DocTypeInvoicingPool docTypeInvoicingPool = docTypeInvoicingPoolService.getById(invoiceHeader.getAggregatedDocTypeInvoicingPoolId().get());
+			final DocTypeInvoicingPool docTypeInvoicingPool = docTypeInvoicingPoolService.getById(invoiceHeader.getDocTypeInvoicingPoolId().get());
 			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
 
-			docTypeToBeUsed = docTypeBL.getByIdNonNull(docTypeInvoicingPool.getDocTypeId(totalAmt));
+			docTypeToBeUsed = docTypeBL.getById(docTypeInvoicingPool.getDocTypeId(totalAmt));
 
-			Check.assume(invoiceIsSOTrx == docTypeToBeUsed.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, docTypeToBeUsed);
-		}
-		// Case: Invoice DocType was preset and only one DocType is aggregated
-		else if (invoiceHeader.getSingleDocType().isPresent())
-		{
-			docTypeToBeUsed = invoiceHeader.getSingleDocType().get();
 			Check.assume(invoiceIsSOTrx == docTypeToBeUsed.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, docTypeToBeUsed);
 		}
 		else
@@ -815,5 +812,30 @@ public final class AggregationEngine
 		}
 
 		invoiceHeader.setC_DocTypeInvoice(docTypeToBeUsed);
+	}
+	
+	@NonNull
+	private DocTypeInvoicingPool getOrCreateDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docTypeInvoice = docTypeBL.getByIdInTrx(docTypeId);
+		
+		return Optional.ofNullable(DocTypeInvoicingPoolId.ofRepoIdOrNull(docTypeInvoice.getC_DocType_Invoicing_Pool_ID()))
+				.map(docTypeInvoicingPoolService::getById)
+				.orElseGet(() -> {
+					final DocTypeInvoicingPoolCreateRequest request = DocTypeInvoicingPoolCreateRequest.builder()
+							.name(docTypeInvoice.getName())
+							.positiveAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoice.getC_DocType_ID()))
+							.negativeAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoice.getC_DocType_ID()))
+							.isSoTrx(SOTrx.ofBooleanNotNull(docTypeInvoice.isSOTrx()))
+							.build();
+
+					final DocTypeInvoicingPool pool = docTypeInvoicingPoolService.create(request);
+					
+					docTypeInvoice.setC_DocType_Invoicing_Pool_ID(pool.getId().getRepoId());
+					
+					docTypeBL.save(docTypeInvoice);
+					
+					return pool;
+				});		
 	}
 }

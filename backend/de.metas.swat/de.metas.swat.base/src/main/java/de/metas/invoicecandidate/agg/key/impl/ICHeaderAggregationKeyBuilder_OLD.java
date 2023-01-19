@@ -27,6 +27,7 @@ import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
@@ -105,11 +106,12 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		final I_C_DocType invoiceDocType = Optional.ofNullable(DocTypeId.ofRepoIdOrNull(ic.getC_DocTypeInvoice_ID()))
 				.map(docTypeBL::getById)
 				.orElse(null);
-		
-		final int docTypeIdToBeUsed = Optional.ofNullable(invoiceDocType)
+
+		final DocTypeId docTypeIdToBeUsed = Optional.ofNullable(invoiceDocType)
 				.filter(docType -> docType.getC_DocType_Invoicing_Pool_ID() <= 0)
 				.map(I_C_DocType::getC_DocType_ID)
-				.orElse(0);
+				.map(DocTypeId::ofRepoId)
+				.orElse(null);
 
 		values.add(docTypeIdToBeUsed);
 		values.add(ic.getAD_Org_ID());
@@ -138,10 +140,11 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		values.add(compact ? toHashcode(ic.getDescriptionHeader()) : ic.getDescriptionHeader());
 		values.add(compact ? toHashcode(ic.getDescriptionBottom()) : ic.getDescriptionBottom());
 
-		final int docTypeInvoicingPoolId = Optional.ofNullable(invoiceDocType)
+		final DocTypeInvoicingPoolId docTypeInvoicingPoolId = Optional.ofNullable(invoiceDocType)
 				.filter(docType -> docType.getC_DocType_Invoicing_Pool_ID() > 0)
 				.map(I_C_DocType::getC_DocType_Invoicing_Pool_ID)
-				.orElse(0);
+				.map(DocTypeInvoicingPoolId::ofRepoId)
+				.orElse(null);
 		values.add(docTypeInvoicingPoolId);
 
 		return values;

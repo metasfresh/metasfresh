@@ -22,19 +22,49 @@
 
 package de.metas.document.invoicingpool;
 
+import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
+import de.metas.lang.SOTrx;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class DocTypeInvoicingPoolRepository
 {
+	private CCache<DocTypeInvoicingPoolId, DocTypeInvoicingPool> docTypeInvoicingPoolById = CCache.<DocTypeInvoicingPoolId, DocTypeInvoicingPool>builder()
+			.tableName(I_C_DocType_Invoicing_Pool.Table_Name)
+			.build();
+
 	@NonNull
 	public DocTypeInvoicingPool getById(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return docTypeInvoicingPoolById.getOrLoad(docTypeInvoicingPoolId, this::retrieveDocTypeInvoicingPoolById);
+	}
+
+	@NonNull
+	public DocTypeInvoicingPool create(@NonNull final DocTypeInvoicingPoolCreateRequest request)
+	{
+		final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord = newInstance(I_C_DocType_Invoicing_Pool.class);
+
+		docTypeInvoicingPoolRecord.setName(request.getName());
+		docTypeInvoicingPoolRecord.setPositive_Amt_C_DocType_ID(DocTypeId.toRepoId(request.getPositiveAmountDocTypeId()));
+		docTypeInvoicingPoolRecord.setNegative_Amt_C_DocType_ID(DocTypeId.toRepoId(request.getNegativeAmountDocTypeId()));
+		docTypeInvoicingPoolRecord.setIsSOTrx(request.getIsSoTrx().toBoolean());
+		docTypeInvoicingPoolRecord.setIsActive(request.isActive());
+
+		saveRecord(docTypeInvoicingPoolRecord);
+		
+		return ofRecord(docTypeInvoicingPoolRecord);
+	}
+
+	@NonNull
+	private DocTypeInvoicingPool retrieveDocTypeInvoicingPoolById(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
 		final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord = load(docTypeInvoicingPoolId, I_C_DocType_Invoicing_Pool.class);
 
@@ -52,10 +82,11 @@ public class DocTypeInvoicingPoolRepository
 	private static DocTypeInvoicingPool ofRecord(@NonNull final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord)
 	{
 		return DocTypeInvoicingPool.builder()
+				.id(DocTypeInvoicingPoolId.ofRepoId(docTypeInvoicingPoolRecord.getC_DocType_Invoicing_Pool_ID()))
 				.name(docTypeInvoicingPoolRecord.getName())
 				.positiveAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoicingPoolRecord.getPositive_Amt_C_DocType_ID()))
 				.negativeAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoicingPoolRecord.getNegative_Amt_C_DocType_ID()))
-				.isSoTrx(docTypeInvoicingPoolRecord.isSOTrx())
+				.isSoTrx(SOTrx.ofBoolean(docTypeInvoicingPoolRecord.isSOTrx()))
 				.isActive(docTypeInvoicingPoolRecord.isActive())
 				.build();
 	}

@@ -8,12 +8,10 @@ import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
-import java.util.Optional;
 import java.util.Set;
 
 public class DocTypeBL implements IDocTypeBL
@@ -21,19 +19,17 @@ public class DocTypeBL implements IDocTypeBL
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	@Override
-	public I_C_DocType getById(final DocTypeId docTypeId)
+	@NonNull
+	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
 		return docTypesRepo.getById(docTypeId);
 	}
 
 	@Override
 	@NonNull
-	public I_C_DocType getByIdNonNull(@NonNull final DocTypeId docTypeId)
+	public I_C_DocType getByIdInTrx(@NonNull final DocTypeId docTypeId)
 	{
-		return Optional.ofNullable(docTypesRepo.getById(docTypeId))
-				.orElseThrow(() -> new AdempiereException("No C_DocType record found for ID!")
-						.appendParametersToMessage()
-						.setParameter("DocTypeId", docTypeId));
+		return docTypesRepo.getByIdInTrx(docTypeId);
 	}
 	
 	@Override
@@ -147,5 +143,11 @@ public class DocTypeBL implements IDocTypeBL
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 		return X_C_DocType.DOCSUBTYPE_Mediated.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType());
+	}
+	
+	@Override
+	public void save(@NonNull final I_C_DocType dt)
+	{
+		docTypesRepo.save(dt);
 	}
 }

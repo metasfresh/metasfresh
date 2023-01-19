@@ -2,6 +2,9 @@ package de.metas.document.interceptor;
 
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,6 +44,11 @@ import java.util.Optional;
 @Component
 public class C_DocType
 {
+	private static final AdMessageKey MSG_INACTIVE_INVOICING_POOL = AdMessageKey.of("InvoicingPoolNotActive");
+	private static final AdMessageKey MSG_DIFFERENT_SO_TRX_INVOICING_POOL_DOCUMENT_TYPE = AdMessageKey.of("DifferentSOTrxInvoicingPoolDocumentType");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	
 	@NonNull
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 
@@ -69,15 +77,19 @@ public class C_DocType
 				.ifPresent(docTypeInvoicingPool -> {
 					if (!docTypeInvoicingPool.getIsActive())
 					{
-						throw new AdempiereException("Invoicing Pool is not active!")
+						final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_INACTIVE_INVOICING_POOL);
+						throw new AdempiereException(msg)
+								.markAsUserValidationError()
 								.appendParametersToMessage()
 								.setParameter("DocTypeInvoicingPool.Name", docTypeInvoicingPool.getName())
 								.setParameter("DocTypeId", docType.getC_DocType_ID());
 					}
 					
-					if (!docTypeInvoicingPool.getIsSoTrx().equals(docType.isSOTrx()))
+					if (docTypeInvoicingPool.getIsSoTrx().toBoolean() != docType.isSOTrx())
 					{
-						throw new AdempiereException("Different SoTrx between Invoicing Pool and DocType!")
+						final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_DIFFERENT_SO_TRX_INVOICING_POOL_DOCUMENT_TYPE);
+						throw new AdempiereException(msg)
+								.markAsUserValidationError()
 								.appendParametersToMessage()
 								.setParameter("DocTypeInvoicingPool.Name", docTypeInvoicingPool.getName())
 								.setParameter("DocTypeId", docType.getC_DocType_ID());

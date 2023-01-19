@@ -76,7 +76,7 @@ import java.util.Optional;
 	private I_C_DocType docTypeInvoice;
 
 	@Nullable
-	private InvoiceDocTypeAggregator invoiceDocTypeAggregator;
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId;
 
 	private boolean taxIncluded;
 	private String  externalId;
@@ -102,7 +102,7 @@ import java.util.Optional;
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
-				+ ", invoiceDocTypeAggregator=" + invoiceDocTypeAggregator
+				+ ", docTypeInvoicingPoolId=" + docTypeInvoicingPoolId
 				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
@@ -247,24 +247,15 @@ import java.util.Optional;
 
 	@Override
 	@NonNull
-	public Optional<DocTypeInvoicingPoolId> getAggregatedDocTypeInvoicingPoolId()
+	public Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId()
 	{
-		return Optional.ofNullable(invoiceDocTypeAggregator)
-				.map(InvoiceDocTypeAggregator::getAggregatedPoolIdOrNull);
+		return Optional.ofNullable(docTypeInvoicingPoolId);
 	}
 
 	@Override
-	@NonNull
-	public Optional<I_C_DocType> getSingleDocType()
+	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
-		return Optional.ofNullable(invoiceDocTypeAggregator)
-				.map(InvoiceDocTypeAggregator::getSingleDocTypeOrNull);
-	}
-
-	@Override
-	public void setInvoiceDocTypeAggregator(@Nullable final InvoiceDocTypeAggregator invoiceDocTypeAggregator)
-	{
-		this.invoiceDocTypeAggregator = invoiceDocTypeAggregator;
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
 	}
 	
 	@Override

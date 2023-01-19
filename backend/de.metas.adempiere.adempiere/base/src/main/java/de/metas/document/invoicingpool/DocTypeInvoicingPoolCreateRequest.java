@@ -24,18 +24,15 @@ package de.metas.document.invoicingpool;
 
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
-import de.metas.money.Money;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class DocTypeInvoicingPool
+public class DocTypeInvoicingPoolCreateRequest
 {
-	@NonNull
-	DocTypeInvoicingPoolId id;
-	
 	@NonNull
 	String name;
 
@@ -47,13 +44,7 @@ public class DocTypeInvoicingPool
 
 	@NonNull
 	SOTrx isSoTrx;
-	
-	@NonNull
-	Boolean isActive;
 
-	@NonNull
-	public DocTypeId getDocTypeId(@NonNull final Money invoiceTotalAmt)
-	{
-		return invoiceTotalAmt.signum() >= 0 ? positiveAmountDocTypeId : negativeAmountDocTypeId;
-	}
+	@Default
+	boolean isActive = true;
 }

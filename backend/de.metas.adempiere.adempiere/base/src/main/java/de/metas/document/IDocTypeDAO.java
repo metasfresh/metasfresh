@@ -39,9 +39,14 @@ import java.util.Set;
 
 public interface IDocTypeDAO extends ISingletonService
 {
+	@NonNull
 	I_C_DocType getById(int docTypeId);
 
-	I_C_DocType getById(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
@@ -75,6 +80,8 @@ public interface IDocTypeDAO extends ISingletonService
 	Optional<String> getDocBaseTypeCounter(String docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
+	
+	void save(@NonNull I_C_DocType dt);
 
 	@Value
 	@Builder

@@ -4,7 +4,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoicecandidate.api.impl.InvoiceDocTypeAggregator;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -66,12 +65,9 @@ public interface IInvoiceHeader
 	I_C_DocType getC_DocTypeInvoice();
 
 	@NonNull
-	Optional<DocTypeInvoicingPoolId> getAggregatedDocTypeInvoicingPoolId();
-		
-	@NonNull
-	Optional<I_C_DocType> getSingleDocType();
+	Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId();
 
-	void setInvoiceDocTypeAggregator(@Nullable InvoiceDocTypeAggregator invoiceDocTypeAggregator);
+	void setDocTypeInvoicingPoolId(@Nullable DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	boolean isTaxIncluded();
 

@@ -41,4 +41,10 @@ public class DocTypeInvoicingPoolService
 	{
 		return docTypeInvoicingPoolRepository.getById(docTypeInvoicingPoolId);
 	}
+
+	@NonNull
+	public DocTypeInvoicingPool create(@NonNull final DocTypeInvoicingPoolCreateRequest request)
+	{
+		return docTypeInvoicingPoolRepository.create(request);
+	}
 }
