@@ -42,13 +42,12 @@ public class BPartnerStats
 {
 	int repoId;
 
-	BPartnerId bpartnerId;
-
-	BigDecimal openItems;
-	BigDecimal actualLifeTimeValue;
-	BigDecimal soCreditUsed;
-	BigDecimal deliveryCreditUsed;
-	String soCreditStatus;
+	@NonNull BPartnerId bpartnerId;
+	@Nullable BigDecimal openItems;
+	@Nullable BigDecimal actualLifeTimeValue;
+	@Nullable BigDecimal soCreditUsed;
+	@Nullable BigDecimal deliveryCreditUsed;
+	@Nullable String soCreditStatus;
 
 	@Builder
 	public BPartnerStats(

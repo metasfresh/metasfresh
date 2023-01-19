@@ -100,4 +100,6 @@ public interface IBPartnerStatsBL extends ISingletonService
 	void resetCreditStatusFromBPGroup(I_C_BPartner bpartner);
 
 	void enableCreditLimitCheck(@NonNull BPartnerId bPartnerId);
+
+	void updateBPartnerStatistics(BPartnerStats bpStats);
 }

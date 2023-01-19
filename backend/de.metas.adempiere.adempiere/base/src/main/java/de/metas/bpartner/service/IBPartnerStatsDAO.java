@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -62,7 +63,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
-
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
 	 */
@@ -70,5 +70,8 @@ public interface IBPartnerStatsDAO extends ISingletonService
 
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
-	void updateBPartnerStatistics(BPartnerStats bpStats);
+	I_C_BPartner_Stats loadDataRecord(@NonNull BPartnerStats bpStats);
+
+	@Nullable
+	abstract BigDecimal computeActualLifeTimeValue(@NonNull BPartnerId partnerId);
 }

@@ -6,9 +6,11 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -18,9 +20,12 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -163,5 +168,162 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		}
 
 		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch);
+	}
+
+	@Override
+	public void updateBPartnerStatistics(BPartnerStats bpStats)
+	{
+		updateOpenItems(bpStats);
+		updateActualLifeTimeValue(bpStats);
+		updateSOCreditUsed(bpStats);
+		updateSOCreditStatus(bpStats);
+		updateDeliveryCreditUsed(bpStats);
+		updateCreditLimitIndicator(bpStats);
+	}
+
+	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+
+		final BigDecimal openItems = bPartnerStatsDAO.retrieveOpenItems(bpStats);
+
+		// update the statistics with the up tp date openItems
+		stats.setOpenItems(openItems);
+
+		// save in db
+		saveRecord(stats);
+	}
+
+	private void updateActualLifeTimeValue(final BPartnerStats bpStats)
+	{
+		BigDecimal actualLifeTimeValue = bPartnerStatsDAO.computeActualLifeTimeValue(bpStats.getBpartnerId());
+
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+		stats.setActualLifeTimeValue(actualLifeTimeValue);
+		saveRecord(stats);
+	}
+
+	private void updateSOCreditUsed(final BPartnerStats bpStats)
+	{
+		final BigDecimal SO_CreditUsed = bPartnerStatsDAO.retrieveSOCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+		stats.setSO_CreditUsed(SO_CreditUsed);
+		saveRecord(stats);
+	}
+
+	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
+	{
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+		// load the statistics
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
+
+		final String initialCreditStatus = bpStats.getSoCreditStatus();
+
+		String creditStatusToSet;
+
+		// Nothing to do
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
+				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
+			return;
+		}
+
+		// Above Credit Limit
+		if (creditLimit.compareTo(creditUsed) < 0)
+		{
+			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
+		}
+		else
+		{
+			// Above Watch Limit
+			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+
+			if (watchAmt.compareTo(creditUsed) < 0)
+			{
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
+			}
+			else
+			{
+				// is OK
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+			}
+		}
+
+		stats.setSOCreditStatus(creditStatusToSet);
+	}
+
+	private void updateDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
+	{
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+		// in accounting schema currency
+		// todo
+		final String initialCreditStatus = bpStats.getSoCreditStatus();
+
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
+
+		// Nothing to do
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
+				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
+			return;
+		}
+
+		String creditStatusToSet;
+
+		// load the statistics
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+
+		// Above Credit Limit
+		if (creditLimit.compareTo(creditUsed) < 0)
+		{
+			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
+		}
+		else
+		{
+			// Above Watch Limit
+			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+
+			if (watchAmt.compareTo(creditUsed) < 0)
+			{
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
+			}
+			else
+			{
+				// is OK
+				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+			}
+		}
+
+		stats.setSOCreditStatus(creditStatusToSet);
+	}
+
+	private void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bstats);
+		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
+		final Locale locale = Locale.getDefault();
+		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
+		fmt.setMinimumFractionDigits(1);
+		fmt.setMaximumFractionDigits(1);
+		final String percentSring = fmt.format(percent);
+
+		stats.setCreditLimitIndicator(percentSring);
+
+		saveRecord(stats);
 	}
 }
