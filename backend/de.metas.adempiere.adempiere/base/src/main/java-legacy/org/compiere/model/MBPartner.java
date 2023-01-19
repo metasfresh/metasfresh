@@ -518,7 +518,7 @@ public class MBPartner extends X_C_BPartner
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(partner);
 
-		final String status = stats.getSOCreditStatus();
+		final String status = stats.getSoCreditStatus();
 
 		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(status)
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(status);

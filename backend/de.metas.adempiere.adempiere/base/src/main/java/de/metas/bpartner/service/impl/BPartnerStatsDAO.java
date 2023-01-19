@@ -19,6 +19,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -53,8 +54,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+
+@Service
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
+
+	private final BPartnerCreditLimitRepository creditLimitRepo;
+
+	private BPartnerStatsDAO(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
+	{
+		this.creditLimitRepo = creditLimitRepo;
+	}
+
 	@Override
 	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
@@ -77,6 +88,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.openItems(statsRecord.getOpenItems())
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
+				.deliveryCreditUsed(statsRecord.getDelivery_CreditUsed())
 				.build();
 	}
 
@@ -203,8 +215,11 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		updateActualLifeTimeValue(bpStats);
 		updateSOCreditUsed(bpStats);
 		updateSOCreditStatus(bpStats);
+		updateDeliveryCreditUsed(bpStats);
 		updateCreditLimitIndicator(bpStats);
 	}
+
+
 
 	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
 	{
@@ -271,6 +286,24 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		saveRecord(stats);
 	}
 
+	private void updateDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
+	{
+		// in accounting schema currency
+		// todo
+		final String initialCreditStatus = bpStats.getSoCreditStatus();
+
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
+
+
+		// Nothing to do
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
+				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
+			return;
+		}
+	}
+
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
@@ -279,10 +312,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
 
-		final String initialCreditStatus = bpStats.getSOCreditStatus();
+		final String initialCreditStatus = bpStats.getSoCreditStatus();
 
 		String creditStatusToSet;
 

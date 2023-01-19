@@ -888,7 +888,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			// task FRESH-152
 			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
+			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSoCreditStatus()))
 			{
 				final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
@@ -896,7 +896,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true), getDateInvoiced()))
 				{
 					throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-														 + stats.getSOCreditUsed()
+														 + stats.getSoCreditUsed()
 														 + ", @SO_CreditLimit@=" + creditLimit);
 				}
 			}

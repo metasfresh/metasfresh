@@ -680,7 +680,7 @@ public class CalloutOrder extends CalloutEngine
 
 		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 				.bpartnerId(bpartnerId.getRepoId())
-				.creditStatus(bPartnerStats.getSOCreditStatus())
+				.creditStatus(bPartnerStats.getSoCreditStatus())
 				.evalCreditstatus(true)
 				.evaluationDate(order.getDateOrdered())
 				.build();
@@ -693,7 +693,7 @@ public class CalloutOrder extends CalloutEngine
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId.getRepoId(), order.getDateOrdered());
 
-		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
+		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSoCreditUsed());
 		if (CreditAvailable.signum() < 0)
 		{
 			calloutField.fireDataStatusEEvent(

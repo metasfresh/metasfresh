@@ -13,7 +13,6 @@ import de.metas.util.Services;
 
 public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implements IProcessPrecondition
 {
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 
@@ -21,7 +20,7 @@ public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implement
 	protected String doIt()
 	{
 		final I_C_BPartner_Stats stats = getRecord(I_C_BPartner_Stats.class);
-		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(stats.getC_BPartner());
+		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(stats.getC_BPartner_ID());
 		bpartnerStatsDAO.updateBPartnerStatistics(bpStats);
 		return "@Success@";
 	}

@@ -1240,20 +1240,20 @@ public final class MPayment extends X_C_Payment
 
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-		final String soCreditStatus = stats.getSOCreditStatus();
+		final String soCreditStatus = stats.getSoCreditStatus();
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
 		{
 			return;
 		}
 
-		final BigDecimal crediUsed = stats.getSOCreditUsed();
+		final BigDecimal crediUsed = stats.getSoCreditUsed();
 		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
 
 		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true), getDateTrx()))
 		{
 			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-					+ stats.getSOCreditUsed()
+					+ stats.getSoCreditUsed()
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 

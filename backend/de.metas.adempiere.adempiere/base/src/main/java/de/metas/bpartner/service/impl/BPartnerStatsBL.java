@@ -9,12 +9,12 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -44,9 +44,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
+@Service
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	final BPartnerCreditLimitRepository creditLimitRepo;
+
+	private BPartnerStatsBL(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
+	{
+		this.creditLimitRepo = creditLimitRepo;
+	}
 
 	@Override
 	public String calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
@@ -55,7 +62,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		final BigDecimal additionalAmt = request.getAdditionalAmt();
 		final Timestamp date = request.getDate();
 
-		final String initialCreditStatus = bpStats.getSOCreditStatus();
+		final String initialCreditStatus = bpStats.getSoCreditStatus();
 
 		if (!request.isForceCheckCreditStatus() && additionalAmt.signum() == 0)
 		{
@@ -64,7 +71,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// get credit limit from BPartner
 		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpStats.getBpartnerId());
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+
 		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
 
 		// Nothing to do
@@ -77,7 +84,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Above (reduced) Credit Limit
 		creditLimit = creditLimit.subtract(additionalAmt);
-		final BigDecimal so_creditUsed = bpStats.getSOCreditUsed();
+		final BigDecimal so_creditUsed = bpStats.getSoCreditUsed();
 		if (creditLimit.compareTo(so_creditUsed) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
@@ -150,7 +157,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	{
 		final BPartnerStats bPartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bPartnerId);
 
-		if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(bPartnerStats.getSOCreditStatus()))
+		if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(bPartnerStats.getSoCreditUsed()))
 		{
 			return;
 		}

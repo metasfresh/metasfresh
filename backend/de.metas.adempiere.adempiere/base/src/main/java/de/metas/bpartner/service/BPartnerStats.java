@@ -47,6 +47,7 @@ public class BPartnerStats
 	BigDecimal openItems;
 	BigDecimal actualLifeTimeValue;
 	BigDecimal soCreditUsed;
+	BigDecimal deliveryCreditUsed;
 	String soCreditStatus;
 
 	@Builder
@@ -56,6 +57,7 @@ public class BPartnerStats
 			@Nullable final BigDecimal openItems,
 			@Nullable final BigDecimal actualLifeTimeValue,
 			@Nullable final BigDecimal soCreditUsed,
+			@Nullable final BigDecimal deliveryCreditUsed,
 			@Nullable final String soCreditStatus)
 	{
 		Check.assume(repoId > 0, "Given parameter repoId is > 0");
@@ -65,16 +67,7 @@ public class BPartnerStats
 		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
 		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
 		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
+		this.deliveryCreditUsed = CoalesceUtil.coalesce(deliveryCreditUsed, ZERO);
 		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
-	}
-
-	public BigDecimal getSOCreditUsed()
-	{
-		return soCreditUsed;
-	}
-
-	public String getSOCreditStatus()
-	{
-		return soCreditStatus;
 	}
 }

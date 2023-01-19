@@ -76,8 +76,8 @@ public class C_Order
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
-		final BigDecimal creditUsed = stats.getSOCreditUsed();
-		final String soCreditStatus = stats.getSOCreditStatus();
+		final BigDecimal creditUsed = stats.getSoCreditUsed();
+		final String soCreditStatus = stats.getSoCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
@@ -134,7 +134,7 @@ public class C_Order
 
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSoCreditStatus()))
 		{
 			return false;
 		}
