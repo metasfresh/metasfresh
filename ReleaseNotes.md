@@ -12,7 +12,6 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-  * [#14215](https://github.com/metasfresh/metasfresh/issues/14215) Delivery Instruction
   * [#14368](https://github.com/metasfresh/metasfresh/issues/14368) Enhancements SAP import product
   * [#14362](https://github.com/metasfresh/metasfresh/issues/14362) Enhancements SAP import BPartner
   * [#14215](https://github.com/metasfresh/metasfresh/issues/14215) Delivery Instruction 
