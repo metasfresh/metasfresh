@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_APPROVED_BY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN;
@@ -116,6 +117,7 @@ public class InvokeSAPService
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
+		parameters.put(PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE, String.valueOf(sapConfig.isCheckDescriptionForMaterialType()));
 		parameters.putAll(extractContentSourceParameters(sapConfig, externalRequest));
 
 		parameters.putAll(getMappingParameters(sapConfig.getParentId()));

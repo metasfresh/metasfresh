@@ -3,15 +3,15 @@
   "jsonRequestProductUpsert": {
     "requestItems": [
       {
-        "productIdentifier": "ext-SAP-PRODUCT_CODE",
+        "productIdentifier": "ext-SAP-PRODUCT_CODE1",
         "externalVersion": null,
         "externalReferenceUrl": null,
         "isReadOnlyInMetasfresh": true,
         "externalSystemConfigId": 1,
         "requestProduct": {
-          "code": "PRODUCT_CODE (SCOD)",
+          "code": "PRODUCT_CODE1 (SCOD)",
           "codeSet": true,
-          "name": "Product Name",
+          "name": "Product Name1",
           "nameSet": true,
           "type": "ITEM",
           "typeSet": true,
@@ -29,7 +29,7 @@
           "activeSet": false,
           "stocked": true,
           "stockedSet": true,
-          "productCategoryIdentifier": "123456",
+          "productCategoryIdentifier": "123466",
           "productCategoryIdentifierSet": true,
           "syncAdvise": null,
           "bpartnerProductItems": null,

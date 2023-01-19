@@ -115,9 +115,9 @@ public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpoi
 				.append("?")
 				.append("delay=").append(pollingFrequency.toMillis())
 				.append("&")
-				.append("move=.").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
+				.append("move=").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
 				.append("&")
-				.append("moveFailed=.").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
+				.append("moveFailed=").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
 
 		Optional.ofNullable(password).ifPresent(pass -> sftpEndpoint.append("&").append("password=").append(pass));
 		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> sftpEndpoint.append("&").append("antInclude=").append(filePattern));
