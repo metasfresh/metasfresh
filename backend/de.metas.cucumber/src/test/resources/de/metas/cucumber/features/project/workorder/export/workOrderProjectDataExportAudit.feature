@@ -6,7 +6,6 @@ Feature: WorkOrder project data export audit
     And all the export audit data is reset
     And metasfresh has date and time 2023-01-12T13:30:13+01:00[Europe/Berlin]
 
-  @runThisOne
   Scenario:Project data export audit with external system config and pinstance is created
     Given add Other external system config with identifier: otherConfig
       | Name      | Value      |

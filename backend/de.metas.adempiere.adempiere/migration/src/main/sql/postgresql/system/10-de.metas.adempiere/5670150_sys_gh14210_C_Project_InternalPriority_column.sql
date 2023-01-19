@@ -100,3 +100,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710128
 -- 2023-01-05T09:14:28.673Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,710128,0,546289,614631,549191,'F',TO_TIMESTAMP('2023-01-05 11:14:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Internal Priority',55,0,0,TO_TIMESTAMP('2023-01-05 11:14:28','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+-- Name: Parent Project
+-- 2023-01-11T08:29:03.737Z
+UPDATE AD_Val_Rule SET Code='C_Project.C_Project_ID NOT IN (SELECT DISTINCT pp.C_Project_ID FROM c_project pp WHERE pp.C_Project_Parent_ID = @C_Project_ID@) AND C_Project.C_Project_ID != @C_Project_ID@ AND (''@ProjectCategory@'' <> ''W'' OR C_Project.ProjectCategory = ''B'')',Updated=TO_TIMESTAMP('2023-01-11 10:29:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540581
+;

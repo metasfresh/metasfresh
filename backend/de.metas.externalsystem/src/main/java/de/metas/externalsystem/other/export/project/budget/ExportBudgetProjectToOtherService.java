@@ -42,6 +42,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_BUDGET_PROJECT;
+
 @Service
 public class ExportBudgetProjectToOtherService extends ExportProjectToOtherService
 {
@@ -77,7 +79,7 @@ public class ExportBudgetProjectToOtherService extends ExportProjectToOtherServi
 								   .filter(ExternalSystemParentConfig::isActive)
 								   .map(ExternalSystemParentConfig::getChildConfig)
 								   .map(ExternalSystemOtherConfig::cast)
-								   .filter(externalSystemConfigService::isExportBudgetProjectRequired)
+								   .filter(config -> externalSystemConfigService.isOtherConfigParameterSet(config, PARAM_EXPORT_BUDGET_PROJECT))
 								   .map(IExternalSystemChildConfig::getId)
 								   .collect(ImmutableSet.toImmutableSet()));
 	}

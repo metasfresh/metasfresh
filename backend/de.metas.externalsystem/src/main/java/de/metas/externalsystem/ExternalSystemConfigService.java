@@ -34,9 +34,6 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.Optional;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_BUDGET_PROJECT;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_WO_STEP_PROJECT;
-
 @Service
 public class ExternalSystemConfigService
 {
@@ -60,21 +57,10 @@ public class ExternalSystemConfigService
 						.setParameter("adSequenceId", AUDIT_AD_SEQUENCE_ID));
 	}
 
-	public boolean isExportBudgetProjectRequired(@NonNull final ExternalSystemOtherConfig externalSystemOtherConfig)
+	public boolean isOtherConfigParameterSet(@NonNull final ExternalSystemOtherConfig config, @NonNull final String parameterName)
 	{
-		return externalSystemOtherConfig.getParameters().stream()
-				.filter(param -> param.getName().equals(PARAM_EXPORT_BUDGET_PROJECT))
-				.map(ExternalSystemOtherConfigParameter::getValue)
-				.filter(Objects::nonNull)
-				.map(Boolean::parseBoolean)
-				.anyMatch(value -> value.equals(Boolean.TRUE));
-	}
-
-
-	public boolean isExportWOStepRequired(@NonNull final ExternalSystemOtherConfig externalSystemOtherConfig)
-	{
-		return externalSystemOtherConfig.getParameters().stream()
-				.filter(param -> param.getName().equals(PARAM_EXPORT_WO_STEP_PROJECT))
+		return config.getParameters().stream()
+				.filter(param -> param.getName().equals(parameterName))
 				.map(ExternalSystemOtherConfigParameter::getValue)
 				.filter(Objects::nonNull)
 				.map(Boolean::parseBoolean)

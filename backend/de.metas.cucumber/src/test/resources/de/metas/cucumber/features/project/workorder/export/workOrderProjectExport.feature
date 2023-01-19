@@ -3,8 +3,7 @@ Feature: Validate work order project is sent to RabbitMQ
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
-    @runThisOne
-  Scenario: Work order project is exported when created
+  Scenario: Work order project is exported to external system when created
     Given RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And add Other external system config with identifier: otherConfig

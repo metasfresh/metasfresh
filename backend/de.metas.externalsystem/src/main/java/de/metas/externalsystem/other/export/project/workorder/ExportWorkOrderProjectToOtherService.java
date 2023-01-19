@@ -42,6 +42,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_WO_STEP_PROJECT;
+
 @Service
 public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherService
 {
@@ -76,7 +78,7 @@ public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherSe
 								   .filter(ExternalSystemParentConfig::isActive)
 								   .map(ExternalSystemParentConfig::getChildConfig)
 								   .map(ExternalSystemOtherConfig::cast)
-								   .filter(externalSystemConfigService::isExportWOStepRequired)
+								   .filter(config -> externalSystemConfigService.isOtherConfigParameterSet(config, PARAM_EXPORT_WO_STEP_PROJECT))
 								   .map(IExternalSystemChildConfig::getId)
 								   .collect(ImmutableSet.toImmutableSet()));
 	}
