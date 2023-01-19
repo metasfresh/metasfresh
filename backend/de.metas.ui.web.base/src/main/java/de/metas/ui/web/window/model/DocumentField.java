@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -309,10 +310,10 @@ class DocumentField implements IDocumentField
 		// Apply number precision
 		if (valueConv instanceof BigDecimal)
 		{
-			final Integer precision = getWidgetType().getStandardNumberPrecision();
-			if (precision != null)
+			final OptionalInt minPrecision = getDescriptor().getMinPrecision();
+			if (minPrecision.isPresent())
 			{
-				return NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
+				return NumberUtils.setMinimumScale((BigDecimal)valueConv, minPrecision.getAsInt());
 			}
 			else
 			{

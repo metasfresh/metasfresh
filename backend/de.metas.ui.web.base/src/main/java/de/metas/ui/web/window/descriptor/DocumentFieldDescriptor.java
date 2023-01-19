@@ -15,6 +15,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -35,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -93,6 +95,8 @@ public final class DocumentFieldDescriptor
 	private final String parentLinkFieldName;
 
 	private final DocumentFieldWidgetType widgetType;
+	@Getter
+	private final OptionalInt minPrecision;
 	private final int fieldMaxLength;
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
@@ -163,6 +167,7 @@ public final class DocumentFieldDescriptor
 		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
+		minPrecision = builder.getMinPrecision();
 		fieldMaxLength = builder.getFieldMaxLength();
 
 		widgetSize = builder.getWidgetSize();
@@ -652,6 +657,21 @@ public final class DocumentFieldDescriptor
 		{
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
+		}
+
+		private OptionalInt getMinPrecision()
+		{
+			final SqlDocumentFieldDataBindingDescriptor sqlFieldBinding = getDataBinding()
+					.map(SqlDocumentFieldDataBindingDescriptor::castOrNull)
+					.orElse(null);
+			if (sqlFieldBinding != null)
+			{
+				return sqlFieldBinding.getMinPrecision();
+			}
+			else
+			{
+				return WidgetTypeStandardNumberPrecision.DEFAULT.getMinPrecision(getWidgetType());
+			}
 		}
 
 		public Builder setWidgetSize(final WidgetSize widgetSize)
