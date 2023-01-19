@@ -12,6 +12,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -48,6 +49,7 @@ public interface IDocumentFieldView
 	DocumentPath getDocumentPath();
 	default String getFieldName() { return getDescriptor().getFieldName(); }
 	default DocumentFieldWidgetType getWidgetType() { return getDescriptor().getWidgetType(); }
+	default OptionalInt getMinPrecision() { return getDescriptor().getMinPrecision(); }
 	default boolean isKey() { return getDescriptor().isKey(); }
 	default boolean isCalculated() { return getDescriptor().isCalculated(); }
 	default boolean isReadonlyVirtualField() { return getDescriptor().isReadonlyVirtualField(); }
