@@ -526,7 +526,7 @@ Feature: Group invoices and credit memos into a single document
 
   @from:cucumber
   @Id:S0242_400
-  Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; no invoicing pool setup => 1 invoice with 1 line, DocType=SalesInvoice
+  Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; no invoicing pool setup => 1 invoice with 2 lines, DocType=SalesInvoice
     Given metasfresh contains M_Products:
       | Identifier | Value                 | Name                  |
       | product_SO | product_SO_12012023_4 | product_SO_12012023_4 |
