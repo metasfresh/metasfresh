@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
@@ -39,6 +40,7 @@ import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.product.v2.request.JsonRequestUpsertProductAllergen;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import lombok.NonNull;
@@ -57,6 +59,14 @@ import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.ROUTE_
 
 public class PushRawMaterialsProcessor implements Processor
 {
+	@NonNull
+	private final ProcessLogger processLogger;
+
+	public PushRawMaterialsProcessor(final @NonNull ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void process(final Exchange exchange)
 	{
@@ -118,6 +128,8 @@ public class PushRawMaterialsProcessor implements Processor
 	{
 		if (jsonProduct.getBPartnerProducts() == null || jsonProduct.getBPartnerProducts().size() != 1)
 		{
+			processLogger.logMessage("Skipping Allergen import due to multiple 'KRED' entries received! ARTNRID (GRS-ProductId) = " + jsonProduct.getProductId(), getPInstanceIdFromLoggedInIdentity().getValue());
+
 			return Optional.empty();
 		}
 
@@ -182,5 +194,18 @@ public class PushRawMaterialsProcessor implements Processor
 		}
 
 		throw new RuntimeException("Missing mandatory METASFRESHID! see JsonBPartnerProduct: " + jsonBPartnerProduct);
+	}
+
+	@NonNull
+	private static JsonMetasfreshId getPInstanceIdFromLoggedInIdentity()
+	{
+		try
+		{
+			return ((TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials()).getPInstance();
+		}
+		catch (final Throwable e)
+		{
+			throw new RuntimeException("Cannot get the token credentials from the authenticated user! See message" + e.getMessage(), e);
+		}
 	}
 }
