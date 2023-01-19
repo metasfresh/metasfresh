@@ -25,6 +25,7 @@
 * `JsonExternalSystemRequest.parameters.SFTPProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPErroredDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPPollingFrequencyInMs`
+* `JsonExternalSystemRequest.parameters.CheckDescriptionForMaterialType` - If set, the process also checks the product description when trying to lookup material type.
 
 ### Local File
 
@@ -38,6 +39,7 @@
 * `JsonExternalSystemRequest.parameters.LocalFileProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFileErroredDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFilePollingFrequencyInMs`
+* `JsonExternalSystemRequest.parameters.CheckDescriptionForMaterialType` - If set, the process also checks the product description when trying to lookup material type.
 
 ## **SAP => metasfresh product**
 
@@ -81,15 +83,16 @@ Configs available in `Externalsystem_Config_SAP_LocalFile`:
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
 SAP | metasfresh-column                     | mandatory in mf | metasfresh-json                                | note                                                               |
----- |---------------------------------------|-----------------|------------------------------------------------|--------------------------------------------------------------------|
-ProductRow.materialCode + "_" + ProductRow.name | `value`                               | Y               | JsonRequestProduct.code                        |                                                                    |
+---- |--------------------------------------|-----------------|------------------------------------------------|--------------------------------------------------------------------|
+ProductRow.materialCode + " (" + ProductRow.sectionCode + ")" | `value`                                        | Y               | JsonRequestProduct.code                        |                                                                    |
 ProductRow.uom | `c_uom_id`                            | Y               | JsonRequestProduct.uomCode                     |                                                                    |
 ProductRow.name | `name`                                | Y               | JsonRequestProduct.name                        |                                                                    |
 ProductRow.sectionCode | `m_sectioncode_id`                    | N               | JsonRequestProduct.sectionCode                 |                                                                    |
 ---- | `isstocked`                           | Y               | JsonRequestProduct.stocked                     | always set to `true`                                               |
 ---- | `discontinued`                        | N               | JsonRequestProduct.discontinued                | always set to `false`                                              |
 ProductRow.materialGroup | `producttype`                         | Y               | JsonRequestProduct.type                        | always set to JsonRequestProduct.Type.ITEM                         |
-ProductRow.materialType | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
+ProductRow.materialType | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | resolved from `Product category mapping` or using `ProductRow.description` when`CheckDescriptionForMaterialType` is enabled. If none is provided then default value `Standard` is set. |
+ProductRow.productHierarchy | `SAP_ProductHierarchy`               | Y               | JsonRequestProduct.sapProductHierarchy   |  |
 --- | ----                                  | N               | JsonRequestProductUpsert.syncAdvise            | default value CREATE_OR_MERGE                                      |
 ProductRow.materialCode | `S_ExternalReference.externalReference` | Y               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
 --- | `S_ExternalReference.isreadonlyinmetasfresh` | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                                        | always set to `true`                                               |

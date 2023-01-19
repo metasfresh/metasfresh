@@ -50,19 +50,23 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@Nullable
 	SAPContentSourceLocalFile contentSourceLocalFile;
 
+	boolean checkDescriptionForMaterialType;
+
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
 			@Nullable final SAPContentSourceSFTP contentSourceSFTP,
-			@Nullable final SAPContentSourceLocalFile contentSourceLocalFile)
+			@Nullable final SAPContentSourceLocalFile contentSourceLocalFile,
+			final boolean checkDescriptionForMaterialType)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.value = value;
 		this.contentSourceSFTP = contentSourceSFTP;
 		this.contentSourceLocalFile = contentSourceLocalFile;
+		this.checkDescriptionForMaterialType = checkDescriptionForMaterialType;
 	}
 
 	@NonNull

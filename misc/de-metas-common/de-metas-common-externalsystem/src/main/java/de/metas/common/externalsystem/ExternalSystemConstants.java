@@ -139,4 +139,5 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
 	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";
+	public static final String PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE = "CheckDescriptionForMaterialType";
 }
