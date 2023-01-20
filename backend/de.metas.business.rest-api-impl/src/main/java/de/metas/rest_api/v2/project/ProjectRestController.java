@@ -44,15 +44,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
-import static de.metas.rest_api.v2.project.ProjectRestController.PROJECT_REST_CONTROLLER_PATH_V2;
-
-@RequestMapping(value = { PROJECT_REST_CONTROLLER_PATH_V2})
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/project" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ProjectRestController
 {
-	public static final String PROJECT_REST_CONTROLLER_PATH_V2 = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/project";
-
+	@NonNull
 	private final ProjectRestService projectRestService;
 
 	public ProjectRestController(@NonNull final ProjectRestService projectRestService)

@@ -31,49 +31,45 @@ import de.metas.audit.data.service.DataExportAuditService;
 import de.metas.audit.data.service.GenericDataExportAuditRequest;
 import de.metas.process.PInstanceId;
 import de.metas.project.ProjectId;
-import de.metas.rest_api.v2.project.ProjectRestController;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Project;
-import org.springframework.stereotype.Service;
+import org.springframework.util.AntPathMatcher;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
-@Service
-public abstract class ProjectAuditService implements IMasterDataExportAuditService
+public abstract class ProjectAuditBase implements IMasterDataExportAuditService
 {
-	//dev-note: meant to capture any rest calls made against `PROJECT_RESOURCE`
-	public final static String PROJECT_RESOURCE = ProjectRestController.PROJECT_REST_CONTROLLER_PATH_V2 + "/**";
+	@NonNull
+	protected final DataExportAuditService dataExportAuditService;
 
-	private final DataExportAuditService dataExportAuditService;
-
-	protected ProjectAuditService(@NonNull final DataExportAuditService dataExportAuditService)
+	protected ProjectAuditBase(@NonNull final DataExportAuditService dataExportAuditService)
 	{
 		this.dataExportAuditService = dataExportAuditService;
 	}
 
 	@Override
-	public void performDataAuditForRequest(final GenericDataExportAuditRequest genericDataExportAuditRequest)
+	public boolean isHandled(@NonNull final GenericDataExportAuditRequest genericDataExportAuditRequest)
 	{
-		if (!isHandled(genericDataExportAuditRequest))
+		final AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+		return antPathMatcher.match(getResourcePath(), genericDataExportAuditRequest.getRequestURI());
+	}
+
+	@Override
+	public void performDataAuditForRequest(@NonNull final GenericDataExportAuditRequest request)
+	{
+		if (!isHandled(request))
 		{
 			return;
 		}
 
-		final Object exportedObject = genericDataExportAuditRequest.getExportedObject();
-
-		final ExternalSystemParentConfigId externalSystemParentConfigId = genericDataExportAuditRequest.getExternalSystemParentConfigId();
-		final PInstanceId pInstanceId = genericDataExportAuditRequest.getPInstanceId();
-
-		processExportedObject(exportedObject, externalSystemParentConfigId, pInstanceId);
+		performAudit(request, projectId -> auditProject(projectId, request.getExternalSystemParentConfigId(), request.getPInstanceId()));
 	}
 
-	@Override
-	public abstract boolean isHandled(final GenericDataExportAuditRequest genericDataExportAuditRequest);
-
-	public abstract void processExportedObject(Object exportedObject, final ExternalSystemParentConfigId externalSystemParentConfigId, final PInstanceId pInstanceId);
-
-	public DataExportAuditId auditProject(
+	@NonNull
+	private DataExportAuditId auditProject(
 			@NonNull final ProjectId projectId,
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Nullable final PInstanceId pInstanceId)
@@ -87,4 +83,10 @@ public abstract class ProjectAuditService implements IMasterDataExportAuditServi
 
 		return dataExportAuditService.createExportAudit(projectDataExportAuditRequest);
 	}
+
+	protected abstract void performAudit(
+			@NonNull final GenericDataExportAuditRequest genericDataExportAuditRequest,
+			@NonNull final Function<ProjectId, DataExportAuditId> auditProject);
+
+	protected abstract String getResourcePath();
 }

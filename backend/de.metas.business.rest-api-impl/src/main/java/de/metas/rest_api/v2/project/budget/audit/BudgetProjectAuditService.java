@@ -34,74 +34,72 @@ import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResponse;
 import de.metas.process.PInstanceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectResourceId;
-import de.metas.rest_api.v2.project.audit.ProjectAuditService;
+import de.metas.rest_api.v2.project.audit.ProjectAuditBase;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Service;
-import org.springframework.util.AntPathMatcher;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.function.Function;
+
+import static de.metas.rest_api.v2.project.budget.BudgetProjectRestController.BUDGET_PROJECT_REST_CONTROLLER_PATH_V2;
 
 @Service
-public class BudgetProjectAuditService extends ProjectAuditService
+public class BudgetProjectAuditService extends ProjectAuditBase
 {
 	//dev-note: meant to capture any rest calls made against `BUDGET_PROJECT_RESOURCE`
-	private final static String BUDGET_PROJECT_RESOURCE = PROJECT_RESOURCE + "/budget/**";
+	private final static String BUDGET_PROJECT_RESOURCE = BUDGET_PROJECT_REST_CONTROLLER_PATH_V2 + "/**";
 
-	private final DataExportAuditService dataExportAuditService;
-
-	protected BudgetProjectAuditService(@NonNull final DataExportAuditService dataExportAuditService)
+	public BudgetProjectAuditService(@NonNull final DataExportAuditService dataExportAuditService)
 	{
 		super(dataExportAuditService);
-		this.dataExportAuditService = dataExportAuditService;
 	}
 
 	@Override
-	public boolean isHandled(final GenericDataExportAuditRequest genericDataExportAuditRequest)
+	protected void performAudit(
+			final @NonNull GenericDataExportAuditRequest auditRequest,
+			final @NonNull Function<ProjectId, DataExportAuditId> auditProject)
 	{
-		final AntPathMatcher antPathMatcher = new AntPathMatcher();
+		final JsonBudgetProjectResponse jsonBudgetProject = JsonMapperUtil
+				.tryDeserializeToType(auditRequest.getExportedObject(), JsonBudgetProjectResponse.class)
+				.orElse(null);
 
-		return antPathMatcher.match(BUDGET_PROJECT_RESOURCE, genericDataExportAuditRequest.getRequestURI());
+		if (jsonBudgetProject == null)
+		{
+			return;
+		}
+
+		final DataExportAuditId dataExportAuditId = auditProject.apply(jsonBudgetProject.getProjectId().mapValue(ProjectId::ofRepoId));
+
+		jsonBudgetProject.getProjectResources()
+				.forEach(jsonProjectResource -> auditBudgetProjectResource(jsonProjectResource,
+																		   dataExportAuditId,
+																		   auditRequest.getExternalSystemParentConfigId(),
+																		   auditRequest.getPInstanceId()));
 	}
 
-	public void processExportedObject(
-			@NonNull final Object exportedObject,
-			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
-			@Nullable final PInstanceId pInstanceId)
+	@Override
+	protected String getResourcePath()
 	{
-		final Optional<JsonBudgetProjectResponse> jsonBudgetProject = JsonMapperUtil.tryDeserializeToType(exportedObject, JsonBudgetProjectResponse.class);
-
-		jsonBudgetProject.ifPresent(jsonBudgetProjectResponse ->
-									{
-										final ProjectId projectId = ProjectId.ofRepoId(jsonBudgetProjectResponse.getProjectId().getValue());
-										final DataExportAuditId budgetProjectDataExportAuditId = auditProject(projectId, externalSystemParentConfigId, pInstanceId);
-
-										jsonBudgetProjectResponse
-												.getProjectResources()
-												.forEach(jsonProjectResource -> auditBudgetProjectResource(jsonProjectResource, budgetProjectDataExportAuditId, externalSystemParentConfigId, pInstanceId));
-									});
+		return BUDGET_PROJECT_RESOURCE;
 	}
 
 	private void auditBudgetProjectResource(
-			@NonNull final JsonBudgetProjectResourceResponse jsonBudgetProjectResourceResponse,
-			@Nullable final DataExportAuditId dataExportParentId,
+			@NonNull final JsonBudgetProjectResourceResponse jsonBudgetResource,
+			@NonNull final DataExportAuditId budgetProjectExportAuditId,
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
-			@Nullable final PInstanceId pInstanceId
-	)
+			@Nullable final PInstanceId pInstanceId)
 	{
-		final Action exportAction = dataExportParentId != null ? Action.AlongWithParent : Action.Standalone;
-
-		final BudgetProjectResourceId budgetProjectResourceId = BudgetProjectResourceId.ofRepoId(jsonBudgetProjectResourceResponse.getProjectId().getValue(),
-																								 jsonBudgetProjectResourceResponse.getBudgetProjectResourceId().getValue());
+		final BudgetProjectResourceId budgetProjectResourceId = BudgetProjectResourceId.ofRepoId(jsonBudgetResource.getProjectId().getValue(),
+																								 jsonBudgetResource.getBudgetProjectResourceId().getValue());
 
 		final DataExportAuditRequest budgetResourceRequest = DataExportAuditRequest.builder()
-				.tableRecordReference(TableRecordReference.of(I_C_Project_Resource_Budget.Table_Name, budgetProjectResourceId.getRepoId()))
-				.action(exportAction)
+				.tableRecordReference(TableRecordReference.of(I_C_Project_Resource_Budget.Table_Name, budgetProjectResourceId))
+				.action(Action.AlongWithParent)
 				.externalSystemConfigId(externalSystemParentConfigId)
 				.adPInstanceId(pInstanceId)
-				.parentExportAuditId(dataExportParentId)
+				.parentExportAuditId(budgetProjectExportAuditId)
 				.build();
 
 		dataExportAuditService.createExportAudit(budgetResourceRequest);
