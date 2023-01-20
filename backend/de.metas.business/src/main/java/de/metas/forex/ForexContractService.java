@@ -66,7 +66,8 @@ public class ForexContractService
 		order.setC_ConversionType_ID(fecConversionTypeId.getRepoId());
 		orderBL.save(order);
 
-		final Money amountToAllocate = Money.of(amountToAllocateBD, CurrencyId.ofRepoId(order.getC_Currency_ID()));
+		final Money orderGrandTotal = Money.of(order.getGrandTotal(), CurrencyId.ofRepoId(order.getC_Currency_ID()));
+		final Money amountToAllocate = Money.of(amountToAllocateBD, orderGrandTotal.getCurrencyId());
 
 		forexContractRepository.updateById(
 				forexContractId,
@@ -77,7 +78,8 @@ public class ForexContractService
 							.forexContractId(contract.getId())
 							.orgId(contract.getOrgId())
 							.orderId(orderId)
-							.amount(amountToAllocate)
+							.orderGrandTotal(orderGrandTotal)
+							.amountToAllocate(amountToAllocate)
 							.build());
 
 					updateAmountsNoSave(contract);

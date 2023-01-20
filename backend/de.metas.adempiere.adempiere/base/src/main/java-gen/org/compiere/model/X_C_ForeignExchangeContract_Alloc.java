@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_ForeignExchangeContract_Alloc extends org.compiere.model.PO implements I_C_ForeignExchangeContract_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1749878814L;
+	private static final long serialVersionUID = -1149013682L;
 
     /** Standard Constructor */
     public X_C_ForeignExchangeContract_Alloc (final Properties ctx, final int C_ForeignExchangeContract_Alloc_ID, @Nullable final String trxName)
@@ -130,5 +130,18 @@ public class X_C_ForeignExchangeContract_Alloc extends org.compiere.model.PO imp
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public void setGrandTotal (final BigDecimal GrandTotal)
+	{
+		set_ValueNoCheck (COLUMNNAME_GrandTotal, GrandTotal);
+	}
+
+	@Override
+	public BigDecimal getGrandTotal() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrandTotal);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

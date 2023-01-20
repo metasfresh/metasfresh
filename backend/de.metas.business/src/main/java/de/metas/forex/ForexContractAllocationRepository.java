@@ -25,8 +25,9 @@ public class ForexContractAllocationRepository
 		final I_C_ForeignExchangeContract_Alloc record = InterfaceWrapperHelper.newInstance(I_C_ForeignExchangeContract_Alloc.class);
 		record.setC_ForeignExchangeContract_ID(request.getForexContractId().getRepoId());
 		record.setC_Order_ID(request.getOrderId().getRepoId());
-		record.setC_Currency_ID(request.getAmount().getCurrencyId().getRepoId());
-		record.setAmount(request.getAmount().toBigDecimal());
+		record.setC_Currency_ID(request.getAmountToAllocate().getCurrencyId().getRepoId());
+		record.setAmount(request.getAmountToAllocate().toBigDecimal());
+		record.setGrandTotal(request.getOrderGrandTotal().toBigDecimal());
 		InterfaceWrapperHelper.save(record);
 
 		return fromRecord(record);

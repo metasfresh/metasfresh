@@ -194,6 +194,29 @@ public interface I_C_ForeignExchangeContract_Alloc
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGrandTotal (BigDecimal GrandTotal);
+
+	/**
+	 * Get Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrandTotal();
+
+	ModelColumn<I_C_ForeignExchangeContract_Alloc, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_ForeignExchangeContract_Alloc.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
