@@ -142,6 +142,11 @@ public class Money
 		return signum() == 0;
 	}
 
+	public boolean isNegative()
+	{
+		return signum() < 0;
+	}
+
 	public Money negate()
 	{
 		if (value.signum() == 0)
@@ -164,6 +169,11 @@ public class Money
 			return this;
 		}
 		return Money.zero(currencyId);
+	}
+
+	public Money toZeroIfNegative()
+	{
+		return signum() >= 0 ? this : zero(currencyId);
 	}
 
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
