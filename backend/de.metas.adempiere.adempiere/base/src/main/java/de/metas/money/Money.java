@@ -176,6 +176,11 @@ public class Money
 		return signum() >= 0 ? this : zero(currencyId);
 	}
 
+	public static void assertSameCurrency(final Money... moneys)
+	{
+		getCommonCurrencyIdOfAll(moneys);
+	}
+
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
 	{
 		if (moneys == null || moneys.length == 0)
