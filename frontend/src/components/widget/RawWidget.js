@@ -283,7 +283,7 @@ export class RawWidget extends PureComponent {
       (key === 'ArrowUp' || key === 'ArrowDown') &&
       NumberWidgets.includes(widgetType)
     ) {
-      closeTableField();
+      closeTableField?.();
       e.preventDefault();
 
       return this.handlePatch(widgetField, value, null, null, true);
