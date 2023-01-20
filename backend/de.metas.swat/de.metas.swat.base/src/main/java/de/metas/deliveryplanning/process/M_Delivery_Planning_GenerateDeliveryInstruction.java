@@ -73,8 +73,6 @@ public class M_Delivery_Planning_GenerateDeliveryInstruction extends JavaProcess
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
 		deliveryPlanningService.generateDeliveryInstructions(selectedDeliveryPlanningsFilter);
-		// set of M_Delivery_Plannining IDs
-		// document collection, invalidate for each ID
 
 		return MSG_OK;
 
