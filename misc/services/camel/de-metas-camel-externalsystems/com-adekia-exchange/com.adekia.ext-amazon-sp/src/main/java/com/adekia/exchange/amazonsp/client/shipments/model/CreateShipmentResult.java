@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.RateList;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The payload schema for the createShipment operation.
  */
-@ApiModel(description = "The payload schema for the createShipment operation.")
+@Schema(description = "The payload schema for the createShipment operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class CreateShipmentResult {
   @SerializedName("shipmentId")
@@ -46,7 +39,7 @@ public class CreateShipmentResult {
    * Get shipmentId
    * @return shipmentId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getShipmentId() {
     return shipmentId;
   }
@@ -64,7 +57,7 @@ public class CreateShipmentResult {
    * Get eligibleRates
    * @return eligibleRates
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public RateList getEligibleRates() {
     return eligibleRates;
   }

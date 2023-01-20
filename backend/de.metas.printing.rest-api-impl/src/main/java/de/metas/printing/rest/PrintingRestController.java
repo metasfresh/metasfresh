@@ -1,28 +1,6 @@
 package de.metas.printing.rest;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.i18n.BooleanWithReason;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import de.metas.organization.OrgId;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.esb.api.LoginRequest;
@@ -41,8 +19,29 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -81,10 +80,10 @@ public class PrintingRestController
 	 */
 	@PostMapping("/login/{sessionId}")
 	public LoginResponse login(
-			@ApiParam("Ignored/deprecated; you can savely provide e.g. 0") //
+			@Parameter(deprecated = true, description = "Ignored/deprecated; you can savely provide e.g. 0") //
 			@PathVariable("sessionId") final int sessionIdIGNORED,
 
-			@ApiParam(required = true, value = "The request body's user and password are ignored.\nThey are required for another (legacy) client.") //
+			@Parameter(required = true, description = "The request body's user and password are ignored.\nThey are required for another (legacy) client.") //
 			@RequestBody final LoginRequest loginRequest)
 	{
 		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(Env.getCtx());

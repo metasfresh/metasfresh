@@ -46,11 +46,7 @@
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
-        <springfox-swagger.version>3.0.0</springfox-swagger.version>
-        <!--        Compatibility with Springfox-->
-        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
-        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
-        <springfox-enum-plugin.version>3.0.0</springfox-enum-plugin.version>
+        <springdoc-swagger.version>1.6.14</springdoc-swagger.version>
 
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>2.0.6</slf4j-api.version>
@@ -421,6 +417,14 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
+                    <dependencies>
+                        <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
+                        <dependency>
+                            <groupId>org.glassfish.jaxb</groupId>
+                            <artifactId>jaxb-runtime</artifactId>
+                            <version>2.3.3</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
 
                 <plugin>

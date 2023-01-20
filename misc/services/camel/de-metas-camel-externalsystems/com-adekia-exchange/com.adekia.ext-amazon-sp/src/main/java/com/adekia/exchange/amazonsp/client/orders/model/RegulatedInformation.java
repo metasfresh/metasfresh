@@ -13,24 +13,17 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.RegulatedInformationField;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The regulated information collected during purchase and used to verify the order.
  */
-@ApiModel(description = "The regulated information collected during purchase and used to verify the order.")
+@Schema(description = "The regulated information collected during purchase and used to verify the order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class RegulatedInformation {
   @SerializedName("Fields")
@@ -50,7 +43,7 @@ public class RegulatedInformation {
    * A list of regulated information fields as collected from the regulatory form.
    * @return fields
   **/
-  @ApiModelProperty(required = true, value = "A list of regulated information fields as collected from the regulatory form.")
+  @Schema(required = true, description = "A list of regulated information fields as collected from the regulatory form.")
   public List<RegulatedInformationField> getFields() {
     return fields;
   }

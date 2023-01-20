@@ -13,17 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Container;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * A list of container.
  */
-@ApiModel(description = "A list of container.")
+@Schema(description = "A list of container.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class ContainerList extends ArrayList<Container> {
 

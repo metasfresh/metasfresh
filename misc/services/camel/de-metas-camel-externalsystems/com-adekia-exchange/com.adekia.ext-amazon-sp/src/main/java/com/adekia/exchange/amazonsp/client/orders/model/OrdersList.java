@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.OrderList;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * A list of orders along with additional information to make subsequent API calls.
  */
-@ApiModel(description = "A list of orders along with additional information to make subsequent API calls.")
+@Schema(description = "A list of orders along with additional information to make subsequent API calls.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrdersList {
   @SerializedName("Orders")
@@ -52,7 +45,7 @@ public class OrdersList {
    * Get orders
    * @return orders
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public OrderList getOrders() {
     return orders;
   }
@@ -70,7 +63,7 @@ public class OrdersList {
    * When present and not empty, pass this string token in the next request to return the next response page.
    * @return nextToken
   **/
-  @ApiModelProperty(value = "When present and not empty, pass this string token in the next request to return the next response page.")
+  @Schema(description = "When present and not empty, pass this string token in the next request to return the next response page.")
   public String getNextToken() {
     return nextToken;
   }
@@ -88,7 +81,7 @@ public class OrdersList {
    * A date used for selecting orders that were last updated before (or at) a specified time. An update is defined as any change in order status, including the creation of a new order. Includes updates made by Amazon and by the seller. All dates must be in ISO 8601 format.
    * @return lastUpdatedBefore
   **/
-  @ApiModelProperty(value = "A date used for selecting orders that were last updated before (or at) a specified time. An update is defined as any change in order status, including the creation of a new order. Includes updates made by Amazon and by the seller. All dates must be in ISO 8601 format.")
+  @Schema(description = "A date used for selecting orders that were last updated before (or at) a specified time. An update is defined as any change in order status, including the creation of a new order. Includes updates made by Amazon and by the seller. All dates must be in ISO 8601 format.")
   public String getLastUpdatedBefore() {
     return lastUpdatedBefore;
   }
@@ -106,7 +99,7 @@ public class OrdersList {
    * A date used for selecting orders created before (or at) a specified time. Only orders placed before the specified time are returned. The date must be in ISO 8601 format.
    * @return createdBefore
   **/
-  @ApiModelProperty(value = "A date used for selecting orders created before (or at) a specified time. Only orders placed before the specified time are returned. The date must be in ISO 8601 format.")
+  @Schema(description = "A date used for selecting orders created before (or at) a specified time. Only orders placed before the specified time are returned. The date must be in ISO 8601 format.")
   public String getCreatedBefore() {
     return createdBefore;
   }

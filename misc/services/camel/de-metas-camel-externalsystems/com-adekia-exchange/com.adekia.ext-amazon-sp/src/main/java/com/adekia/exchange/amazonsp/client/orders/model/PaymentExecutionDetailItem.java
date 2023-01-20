@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.Money;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Information about a sub-payment method used to pay for a COD order.
  */
-@ApiModel(description = "Information about a sub-payment method used to pay for a COD order.")
+@Schema(description = "Information about a sub-payment method used to pay for a COD order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class PaymentExecutionDetailItem {
   @SerializedName("Payment")
@@ -46,7 +39,7 @@ public class PaymentExecutionDetailItem {
    * Get payment
    * @return payment
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Money getPayment() {
     return payment;
   }
@@ -64,7 +57,7 @@ public class PaymentExecutionDetailItem {
    * A sub-payment method for a COD order.  Possible values:  * COD - Cash On Delivery.  * GC - Gift Card.  * PointsAccount - Amazon Points.
    * @return paymentMethod
   **/
-  @ApiModelProperty(required = true, value = "A sub-payment method for a COD order.  Possible values:  * COD - Cash On Delivery.  * GC - Gift Card.  * PointsAccount - Amazon Points.")
+  @Schema(required = true, description = "A sub-payment method for a COD order.  Possible values:  * COD - Cash On Delivery.  * GC - Gift Card.  * PointsAccount - Amazon Points.")
   public String getPaymentMethod() {
     return paymentMethod;
   }

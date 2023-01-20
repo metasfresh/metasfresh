@@ -25,7 +25,7 @@ package de.metas.common.rest_api.v2.project.budget;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.money.JsonMoney;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -40,67 +40,67 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIE
 @EqualsAndHashCode
 public class JsonBudgetResourceUpsertRequest
 {
-	@ApiModelProperty(position = 10, value = RESOURCE_IDENTIFIER_DOC, required = true)
+	@Schema(description = RESOURCE_IDENTIFIER_DOC, required = true)
 	private String resourceIdentifier;
 
-	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project_Resource_Budget.ExternalId`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.ExternalId`")
 	private JsonExternalId externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean externalIdSet;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to `C_Project_Resource_Budget.C_UOM_Time_ID`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.C_UOM_Time_ID`")
 	private JsonMetasfreshId uomTimeId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean uomTimeIdSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `C_Project_Resource_Budget.DateFinishPlan`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.DateFinishPlan`")
 	private LocalDate dateFinishPlan;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateFinishPlanSet;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to `C_Project_Resource_Budget.DateStartPlan`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.DateStartPlan`")
 	private LocalDate dateStartPlan;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateStartPlanSet;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to `C_Project_Resource_Budget.PlannedAmt`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.PlannedAmt`")
 	private JsonMoney plannedAmt;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean plannedAmtSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project_Resource_Budget.PlannedDuration`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.PlannedDuration`")
 	private BigDecimal plannedDuration;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean plannedDurationSet;
 
-	@ApiModelProperty(position = 80, value = "Corresponding to `C_Project_Resource_Budget.PricePerTimeUOM`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.PricePerTimeUOM`")
 	private JsonMoney pricePerTimeUOM;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean pricePerTimeUOMSet;
 
-	@ApiModelProperty(position = 90, value = "Corresponding to `C_Project_Resource_Budget.Description`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.Description`")
 	private String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `C_Project_Resource_Budget.S_Resource_Group_ID`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.S_Resource_Group_ID`")
 	private JsonMetasfreshId resourceGroupId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean resourceGroupIdSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `C_Project_Resource_Budget.IsActive`")
+	@Schema(description = "Corresponding to `C_Project_Resource_Budget.IsActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
 	public void setUomTimeId(final JsonMetasfreshId uomTimeId)

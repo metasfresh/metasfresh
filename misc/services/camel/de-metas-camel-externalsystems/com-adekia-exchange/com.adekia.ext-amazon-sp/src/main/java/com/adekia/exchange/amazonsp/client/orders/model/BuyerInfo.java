@@ -14,21 +14,15 @@
 package com.adekia.exchange.amazonsp.client.orders.model;
 
 import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.BuyerTaxInfo;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
 
 /**
  * Buyer information
  */
-@ApiModel(description = "Buyer information")
+@Schema(description = "Buyer information")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class BuyerInfo {
   @SerializedName("BuyerEmail")
@@ -55,7 +49,7 @@ public class BuyerInfo {
    * The anonymized email address of the buyer.
    * @return buyerEmail
   **/
-  @ApiModelProperty(value = "The anonymized email address of the buyer.")
+  @Schema(description = "The anonymized email address of the buyer.")
   public String getBuyerEmail() {
     return buyerEmail;
   }
@@ -73,7 +67,7 @@ public class BuyerInfo {
    * The name of the buyer.
    * @return buyerName
   **/
-  @ApiModelProperty(value = "The name of the buyer.")
+  @Schema(description = "The name of the buyer.")
   public String getBuyerName() {
     return buyerName;
   }
@@ -91,7 +85,7 @@ public class BuyerInfo {
    * The county of the buyer.
    * @return buyerCounty
   **/
-  @ApiModelProperty(value = "The county of the buyer.")
+  @Schema(description = "The county of the buyer.")
   public String getBuyerCounty() {
     return buyerCounty;
   }
@@ -109,7 +103,7 @@ public class BuyerInfo {
    * Tax information about the buyer.
    * @return buyerTaxInfo
   **/
-  @ApiModelProperty(value = "Tax information about the buyer.")
+  @Schema(description = "Tax information about the buyer.")
   public BuyerTaxInfo getBuyerTaxInfo() {
     return buyerTaxInfo;
   }
@@ -127,7 +121,7 @@ public class BuyerInfo {
    * The purchase order (PO) number entered by the buyer at checkout. Returned only for orders where the buyer entered a PO number at checkout.
    * @return purchaseOrderNumber
   **/
-  @ApiModelProperty(value = "The purchase order (PO) number entered by the buyer at checkout. Returned only for orders where the buyer entered a PO number at checkout.")
+  @Schema(description = "The purchase order (PO) number entered by the buyer at checkout. Returned only for orders where the buyer entered a PO number at checkout.")
   public String getPurchaseOrderNumber() {
     return purchaseOrderNumber;
   }

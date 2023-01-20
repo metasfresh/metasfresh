@@ -13,28 +13,20 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.BuyerRequestedCancel;
-import com.adekia.exchange.amazonsp.client.orders.model.ItemBuyerInfo;
-import com.adekia.exchange.amazonsp.client.orders.model.Money;
-import com.adekia.exchange.amazonsp.client.orders.model.PointsGrantedDetail;
-import com.adekia.exchange.amazonsp.client.orders.model.ProductInfoDetail;
-import com.adekia.exchange.amazonsp.client.orders.model.PromotionIdList;
-import com.adekia.exchange.amazonsp.client.orders.model.TaxCollection;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A single order item.
  */
-@ApiModel(description = "A single order item.")
+@Schema(description = "A single order item.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrderItem {
   @SerializedName("ASIN")
@@ -195,7 +187,7 @@ public class OrderItem {
    * The Amazon Standard Identification Number (ASIN) of the item.
    * @return ASIN
   **/
-  @ApiModelProperty(required = true, value = "The Amazon Standard Identification Number (ASIN) of the item.")
+  @Schema(required = true, description = "The Amazon Standard Identification Number (ASIN) of the item.")
   public String getASIN() {
     return ASIN;
   }
@@ -213,7 +205,7 @@ public class OrderItem {
    * The seller stock keeping unit (SKU) of the item.
    * @return sellerSKU
   **/
-  @ApiModelProperty(value = "The seller stock keeping unit (SKU) of the item.")
+  @Schema(description = "The seller stock keeping unit (SKU) of the item.")
   public String getSellerSKU() {
     return sellerSKU;
   }
@@ -231,7 +223,7 @@ public class OrderItem {
    * An Amazon-defined order item identifier.
    * @return orderItemId
   **/
-  @ApiModelProperty(required = true, value = "An Amazon-defined order item identifier.")
+  @Schema(required = true, description = "An Amazon-defined order item identifier.")
   public String getOrderItemId() {
     return orderItemId;
   }
@@ -249,7 +241,7 @@ public class OrderItem {
    * The name of the item.
    * @return title
   **/
-  @ApiModelProperty(value = "The name of the item.")
+  @Schema(description = "The name of the item.")
   public String getTitle() {
     return title;
   }
@@ -267,7 +259,7 @@ public class OrderItem {
    * The number of items in the order. 
    * @return quantityOrdered
   **/
-  @ApiModelProperty(required = true, value = "The number of items in the order. ")
+  @Schema(required = true, description = "The number of items in the order. ")
   public Integer getQuantityOrdered() {
     return quantityOrdered;
   }
@@ -285,7 +277,7 @@ public class OrderItem {
    * The number of items shipped.
    * @return quantityShipped
   **/
-  @ApiModelProperty(value = "The number of items shipped.")
+  @Schema(description = "The number of items shipped.")
   public Integer getQuantityShipped() {
     return quantityShipped;
   }
@@ -303,7 +295,7 @@ public class OrderItem {
    * Product information for the item.
    * @return productInfo
   **/
-  @ApiModelProperty(value = "Product information for the item.")
+  @Schema(description = "Product information for the item.")
   public ProductInfoDetail getProductInfo() {
     return productInfo;
   }
@@ -321,7 +313,7 @@ public class OrderItem {
    * The number and value of Amazon Points granted with the purchase of an item.
    * @return pointsGranted
   **/
-  @ApiModelProperty(value = "The number and value of Amazon Points granted with the purchase of an item.")
+  @Schema(description = "The number and value of Amazon Points granted with the purchase of an item.")
   public PointsGrantedDetail getPointsGranted() {
     return pointsGranted;
   }
@@ -339,7 +331,7 @@ public class OrderItem {
    * The selling price of the order item. Note that an order item is an item and a quantity. This means that the value of ItemPrice is equal to the selling price of the item multiplied by the quantity ordered. Note that ItemPrice excludes ShippingPrice and GiftWrapPrice.
    * @return itemPrice
   **/
-  @ApiModelProperty(value = "The selling price of the order item. Note that an order item is an item and a quantity. This means that the value of ItemPrice is equal to the selling price of the item multiplied by the quantity ordered. Note that ItemPrice excludes ShippingPrice and GiftWrapPrice.")
+  @Schema(description = "The selling price of the order item. Note that an order item is an item and a quantity. This means that the value of ItemPrice is equal to the selling price of the item multiplied by the quantity ordered. Note that ItemPrice excludes ShippingPrice and GiftWrapPrice.")
   public Money getItemPrice() {
     return itemPrice;
   }
@@ -357,7 +349,7 @@ public class OrderItem {
    * The shipping price of the item.
    * @return shippingPrice
   **/
-  @ApiModelProperty(value = "The shipping price of the item.")
+  @Schema(description = "The shipping price of the item.")
   public Money getShippingPrice() {
     return shippingPrice;
   }
@@ -375,7 +367,7 @@ public class OrderItem {
    * The tax on the item price.
    * @return itemTax
   **/
-  @ApiModelProperty(value = "The tax on the item price.")
+  @Schema(description = "The tax on the item price.")
   public Money getItemTax() {
     return itemTax;
   }
@@ -393,7 +385,7 @@ public class OrderItem {
    * The tax on the shipping price.
    * @return shippingTax
   **/
-  @ApiModelProperty(value = "The tax on the shipping price.")
+  @Schema(description = "The tax on the shipping price.")
   public Money getShippingTax() {
     return shippingTax;
   }
@@ -411,7 +403,7 @@ public class OrderItem {
    * The discount on the shipping price.
    * @return shippingDiscount
   **/
-  @ApiModelProperty(value = "The discount on the shipping price.")
+  @Schema(description = "The discount on the shipping price.")
   public Money getShippingDiscount() {
     return shippingDiscount;
   }
@@ -429,7 +421,7 @@ public class OrderItem {
    * The tax on the discount on the shipping price.
    * @return shippingDiscountTax
   **/
-  @ApiModelProperty(value = "The tax on the discount on the shipping price.")
+  @Schema(description = "The tax on the discount on the shipping price.")
   public Money getShippingDiscountTax() {
     return shippingDiscountTax;
   }
@@ -447,7 +439,7 @@ public class OrderItem {
    * The total of all promotional discounts in the offer.
    * @return promotionDiscount
   **/
-  @ApiModelProperty(value = "The total of all promotional discounts in the offer.")
+  @Schema(description = "The total of all promotional discounts in the offer.")
   public Money getPromotionDiscount() {
     return promotionDiscount;
   }
@@ -465,7 +457,7 @@ public class OrderItem {
    * The tax on the total of all promotional discounts in the offer.
    * @return promotionDiscountTax
   **/
-  @ApiModelProperty(value = "The tax on the total of all promotional discounts in the offer.")
+  @Schema(description = "The tax on the total of all promotional discounts in the offer.")
   public Money getPromotionDiscountTax() {
     return promotionDiscountTax;
   }
@@ -483,7 +475,7 @@ public class OrderItem {
    * Get promotionIds
    * @return promotionIds
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public PromotionIdList getPromotionIds() {
     return promotionIds;
   }
@@ -501,7 +493,7 @@ public class OrderItem {
    * The fee charged for COD service.
    * @return coDFee
   **/
-  @ApiModelProperty(value = "The fee charged for COD service.")
+  @Schema(description = "The fee charged for COD service.")
   public Money getCoDFee() {
     return coDFee;
   }
@@ -519,7 +511,7 @@ public class OrderItem {
    * The discount on the COD fee.
    * @return coDFeeDiscount
   **/
-  @ApiModelProperty(value = "The discount on the COD fee.")
+  @Schema(description = "The discount on the COD fee.")
   public Money getCoDFeeDiscount() {
     return coDFeeDiscount;
   }
@@ -537,7 +529,7 @@ public class OrderItem {
    * When true, the item is a gift.
    * @return isGift
   **/
-  @ApiModelProperty(value = "When true, the item is a gift.")
+  @Schema(description = "When true, the item is a gift.")
   public Boolean isIsGift() {
     return isGift;
   }
@@ -555,7 +547,7 @@ public class OrderItem {
    * The condition of the item as described by the seller.
    * @return conditionNote
   **/
-  @ApiModelProperty(value = "The condition of the item as described by the seller.")
+  @Schema(description = "The condition of the item as described by the seller.")
   public String getConditionNote() {
     return conditionNote;
   }
@@ -573,7 +565,7 @@ public class OrderItem {
    * The condition of the item.  Possible values: New, Used, Collectible, Refurbished, Preorder, Club.
    * @return conditionId
   **/
-  @ApiModelProperty(value = "The condition of the item.  Possible values: New, Used, Collectible, Refurbished, Preorder, Club.")
+  @Schema(description = "The condition of the item.  Possible values: New, Used, Collectible, Refurbished, Preorder, Club.")
   public String getConditionId() {
     return conditionId;
   }
@@ -591,7 +583,7 @@ public class OrderItem {
    * The subcondition of the item.  Possible values: New, Mint, Very Good, Good, Acceptable, Poor, Club, OEM, Warranty, Refurbished Warranty, Refurbished, Open Box, Any, Other.
    * @return conditionSubtypeId
   **/
-  @ApiModelProperty(value = "The subcondition of the item.  Possible values: New, Mint, Very Good, Good, Acceptable, Poor, Club, OEM, Warranty, Refurbished Warranty, Refurbished, Open Box, Any, Other.")
+  @Schema(description = "The subcondition of the item.  Possible values: New, Mint, Very Good, Good, Acceptable, Poor, Club, OEM, Warranty, Refurbished Warranty, Refurbished, Open Box, Any, Other.")
   public String getConditionSubtypeId() {
     return conditionSubtypeId;
   }
@@ -609,7 +601,7 @@ public class OrderItem {
    * The start date of the scheduled delivery window in the time zone of the order destination. In ISO 8601 date time format.
    * @return scheduledDeliveryStartDate
   **/
-  @ApiModelProperty(value = "The start date of the scheduled delivery window in the time zone of the order destination. In ISO 8601 date time format.")
+  @Schema(description = "The start date of the scheduled delivery window in the time zone of the order destination. In ISO 8601 date time format.")
   public String getScheduledDeliveryStartDate() {
     return scheduledDeliveryStartDate;
   }
@@ -627,7 +619,7 @@ public class OrderItem {
    * The end date of the scheduled delivery window in the time zone of the order destination. In ISO 8601 date time format.
    * @return scheduledDeliveryEndDate
   **/
-  @ApiModelProperty(value = "The end date of the scheduled delivery window in the time zone of the order destination. In ISO 8601 date time format.")
+  @Schema(description = "The end date of the scheduled delivery window in the time zone of the order destination. In ISO 8601 date time format.")
   public String getScheduledDeliveryEndDate() {
     return scheduledDeliveryEndDate;
   }
@@ -645,7 +637,7 @@ public class OrderItem {
    * Indicates that the selling price is a special price that is available only for Amazon Business orders. For more information about the Amazon Business Seller Program, see the [Amazon Business website](https://www.amazon.com/b2b/info/amazon-business).   Possible values: BusinessPrice - A special price that is available only for Amazon Business orders.
    * @return priceDesignation
   **/
-  @ApiModelProperty(value = "Indicates that the selling price is a special price that is available only for Amazon Business orders. For more information about the Amazon Business Seller Program, see the [Amazon Business website](https://www.amazon.com/b2b/info/amazon-business).   Possible values: BusinessPrice - A special price that is available only for Amazon Business orders.")
+  @Schema(description = "Indicates that the selling price is a special price that is available only for Amazon Business orders. For more information about the Amazon Business Seller Program, see the [Amazon Business website](https://www.amazon.com/b2b/info/amazon-business).   Possible values: BusinessPrice - A special price that is available only for Amazon Business orders.")
   public String getPriceDesignation() {
     return priceDesignation;
   }
@@ -663,7 +655,7 @@ public class OrderItem {
    * Information about withheld taxes.
    * @return taxCollection
   **/
-  @ApiModelProperty(value = "Information about withheld taxes.")
+  @Schema(description = "Information about withheld taxes.")
   public TaxCollection getTaxCollection() {
     return taxCollection;
   }
@@ -681,7 +673,7 @@ public class OrderItem {
    * When true, the product type for this item has a serial number.  Returned only for Amazon Easy Ship orders.
    * @return serialNumberRequired
   **/
-  @ApiModelProperty(value = "When true, the product type for this item has a serial number.  Returned only for Amazon Easy Ship orders.")
+  @Schema(description = "When true, the product type for this item has a serial number.  Returned only for Amazon Easy Ship orders.")
   public Boolean isSerialNumberRequired() {
     return serialNumberRequired;
   }
@@ -699,7 +691,7 @@ public class OrderItem {
    * When true, transparency codes are required.
    * @return isTransparency
   **/
-  @ApiModelProperty(value = "When true, transparency codes are required.")
+  @Schema(description = "When true, transparency codes are required.")
   public Boolean isIsTransparency() {
     return isTransparency;
   }
@@ -717,7 +709,7 @@ public class OrderItem {
    * The IOSS number for the marketplace. Sellers shipping to the European Union (EU) from outside of the EU must provide this IOSS number to their carrier when Amazon has collected the VAT on the sale.
    * @return iossNumber
   **/
-  @ApiModelProperty(value = "The IOSS number for the marketplace. Sellers shipping to the European Union (EU) from outside of the EU must provide this IOSS number to their carrier when Amazon has collected the VAT on the sale.")
+  @Schema(description = "The IOSS number for the marketplace. Sellers shipping to the European Union (EU) from outside of the EU must provide this IOSS number to their carrier when Amazon has collected the VAT on the sale.")
   public String getIossNumber() {
     return iossNumber;
   }
@@ -735,7 +727,7 @@ public class OrderItem {
    * The store chain store identifier. Linked to a specific store in a store chain.
    * @return storeChainStoreId
   **/
-  @ApiModelProperty(value = "The store chain store identifier. Linked to a specific store in a store chain.")
+  @Schema(description = "The store chain store identifier. Linked to a specific store in a store chain.")
   public String getStoreChainStoreId() {
     return storeChainStoreId;
   }
@@ -753,7 +745,7 @@ public class OrderItem {
    * The category of deemed reseller. This applies to selling partners that are not based in the EU and is used to help them meet the VAT Deemed Reseller tax laws in the EU and UK.
    * @return deemedResellerCategory
   **/
-  @ApiModelProperty(value = "The category of deemed reseller. This applies to selling partners that are not based in the EU and is used to help them meet the VAT Deemed Reseller tax laws in the EU and UK.")
+  @Schema(description = "The category of deemed reseller. This applies to selling partners that are not based in the EU and is used to help them meet the VAT Deemed Reseller tax laws in the EU and UK.")
   public DeemedResellerCategoryEnum getDeemedResellerCategory() {
     return deemedResellerCategory;
   }
@@ -771,7 +763,7 @@ public class OrderItem {
    * Get buyerInfo
    * @return buyerInfo
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public ItemBuyerInfo getBuyerInfo() {
     return buyerInfo;
   }
@@ -789,7 +781,7 @@ public class OrderItem {
    * Information about whether or not a buyer requested cancellation.
    * @return buyerRequestedCancel
   **/
-  @ApiModelProperty(value = "Information about whether or not a buyer requested cancellation.")
+  @Schema(description = "Information about whether or not a buyer requested cancellation.")
   public BuyerRequestedCancel getBuyerRequestedCancel() {
     return buyerRequestedCancel;
   }

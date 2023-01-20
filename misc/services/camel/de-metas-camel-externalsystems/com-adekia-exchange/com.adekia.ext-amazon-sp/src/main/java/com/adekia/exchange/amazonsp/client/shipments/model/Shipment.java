@@ -13,25 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.AcceptedRate;
-import com.adekia.exchange.amazonsp.client.shipments.model.Address;
-import com.adekia.exchange.amazonsp.client.shipments.model.ContainerList;
-import com.adekia.exchange.amazonsp.client.shipments.model.Party;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The shipment related data.
  */
-@ApiModel(description = "The shipment related data.")
+@Schema(description = "The shipment related data.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Shipment {
   @SerializedName("shipmentId")
@@ -64,7 +54,7 @@ public class Shipment {
    * Get shipmentId
    * @return shipmentId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getShipmentId() {
     return shipmentId;
   }
@@ -82,7 +72,7 @@ public class Shipment {
    * Get clientReferenceId
    * @return clientReferenceId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getClientReferenceId() {
     return clientReferenceId;
   }
@@ -100,7 +90,7 @@ public class Shipment {
    * Get shipFrom
    * @return shipFrom
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipFrom() {
     return shipFrom;
   }
@@ -118,7 +108,7 @@ public class Shipment {
    * Get shipTo
    * @return shipTo
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipTo() {
     return shipTo;
   }
@@ -136,7 +126,7 @@ public class Shipment {
    * Get acceptedRate
    * @return acceptedRate
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public AcceptedRate getAcceptedRate() {
     return acceptedRate;
   }
@@ -154,7 +144,7 @@ public class Shipment {
    * Get shipper
    * @return shipper
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public Party getShipper() {
     return shipper;
   }
@@ -172,7 +162,7 @@ public class Shipment {
    * Get containers
    * @return containers
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ContainerList getContainers() {
     return containers;
   }

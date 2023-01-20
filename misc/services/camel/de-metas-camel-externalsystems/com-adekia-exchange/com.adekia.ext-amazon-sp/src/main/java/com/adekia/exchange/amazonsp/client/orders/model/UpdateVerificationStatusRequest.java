@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.UpdateVerificationStatusRequestBody;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Request to update the verification status of an order containing regulated products.
  */
-@ApiModel(description = "Request to update the verification status of an order containing regulated products.")
+@Schema(description = "Request to update the verification status of an order containing regulated products.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class UpdateVerificationStatusRequest {
   @SerializedName("regulatedOrderVerificationStatus")
@@ -43,7 +36,7 @@ public class UpdateVerificationStatusRequest {
    * The updated values of the VerificationStatus field.
    * @return regulatedOrderVerificationStatus
   **/
-  @ApiModelProperty(required = true, value = "The updated values of the VerificationStatus field.")
+  @Schema(required = true, description = "The updated values of the VerificationStatus field.")
   public UpdateVerificationStatusRequestBody getRegulatedOrderVerificationStatus() {
     return regulatedOrderVerificationStatus;
   }

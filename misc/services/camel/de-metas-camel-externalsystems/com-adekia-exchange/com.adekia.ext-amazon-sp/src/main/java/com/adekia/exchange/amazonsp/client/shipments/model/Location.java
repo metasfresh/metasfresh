@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The location where the person, business or institution is located.
  */
-@ApiModel(description = "The location where the person, business or institution is located.")
+@Schema(description = "The location where the person, business or institution is located.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Location {
   @SerializedName("stateOrRegion")
@@ -51,7 +45,7 @@ public class Location {
    * Get stateOrRegion
    * @return stateOrRegion
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public String getStateOrRegion() {
     return stateOrRegion;
   }
@@ -69,7 +63,7 @@ public class Location {
    * Get city
    * @return city
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public String getCity() {
     return city;
   }
@@ -87,7 +81,7 @@ public class Location {
    * Get countryCode
    * @return countryCode
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public String getCountryCode() {
     return countryCode;
   }
@@ -105,7 +99,7 @@ public class Location {
    * Get postalCode
    * @return postalCode
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public String getPostalCode() {
     return postalCode;
   }

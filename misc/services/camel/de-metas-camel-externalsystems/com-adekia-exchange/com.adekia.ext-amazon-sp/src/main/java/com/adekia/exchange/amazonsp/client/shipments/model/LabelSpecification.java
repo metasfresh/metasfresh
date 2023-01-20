@@ -13,21 +13,20 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * The label specification info.
  */
-@ApiModel(description = "The label specification info.")
+@Schema(description = "The label specification info.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class LabelSpecification {
   /**
@@ -135,7 +134,7 @@ public class LabelSpecification {
    * The format of the label. Enum of PNG only for now.
    * @return labelFormat
   **/
-  @ApiModelProperty(required = true, value = "The format of the label. Enum of PNG only for now.")
+  @Schema(required = true, description = "The format of the label. Enum of PNG only for now.")
   public LabelFormatEnum getLabelFormat() {
     return labelFormat;
   }
@@ -153,7 +152,7 @@ public class LabelSpecification {
    * The label stock size specification in length and height. Enum of 4x6 only for now.
    * @return labelStockSize
   **/
-  @ApiModelProperty(required = true, value = "The label stock size specification in length and height. Enum of 4x6 only for now.")
+  @Schema(required = true, description = "The label stock size specification in length and height. Enum of 4x6 only for now.")
   public LabelStockSizeEnum getLabelStockSize() {
     return labelStockSize;
   }

@@ -13,27 +13,22 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.ContainerItem;
-import com.adekia.exchange.amazonsp.client.shipments.model.Currency;
-import com.adekia.exchange.amazonsp.client.shipments.model.Dimensions;
-import com.adekia.exchange.amazonsp.client.shipments.model.Weight;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Container in the shipment.
  */
-@ApiModel(description = "Container in the shipment.")
+@Schema(description = "Container in the shipment.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Container {
   /**
@@ -108,7 +103,7 @@ public class Container {
    * The type of physical container being used. (always &#39;PACKAGE&#39;)
    * @return containerType
   **/
-  @ApiModelProperty(value = "The type of physical container being used. (always 'PACKAGE')")
+  @Schema(description = "The type of physical container being used. (always 'PACKAGE')")
   public ContainerTypeEnum getContainerType() {
     return containerType;
   }
@@ -126,7 +121,7 @@ public class Container {
    * Get containerReferenceId
    * @return containerReferenceId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getContainerReferenceId() {
     return containerReferenceId;
   }
@@ -144,7 +139,7 @@ public class Container {
    * The total value of all items in the container.
    * @return value
   **/
-  @ApiModelProperty(required = true, value = "The total value of all items in the container.")
+  @Schema(required = true, description = "The total value of all items in the container.")
   public Currency getValue() {
     return value;
   }
@@ -162,7 +157,7 @@ public class Container {
    * The length, width, height, and weight of the container.
    * @return dimensions
   **/
-  @ApiModelProperty(required = true, value = "The length, width, height, and weight of the container.")
+  @Schema(required = true, description = "The length, width, height, and weight of the container.")
   public Dimensions getDimensions() {
     return dimensions;
   }
@@ -185,7 +180,7 @@ public class Container {
    * A list of the items in the container.
    * @return items
   **/
-  @ApiModelProperty(required = true, value = "A list of the items in the container.")
+  @Schema(required = true, description = "A list of the items in the container.")
   public List<ContainerItem> getItems() {
     return items;
   }
@@ -203,7 +198,7 @@ public class Container {
    * The weight of the container.
    * @return weight
   **/
-  @ApiModelProperty(required = true, value = "The weight of the container.")
+  @Schema(required = true, description = "The weight of the container.")
   public Weight getWeight() {
     return weight;
   }

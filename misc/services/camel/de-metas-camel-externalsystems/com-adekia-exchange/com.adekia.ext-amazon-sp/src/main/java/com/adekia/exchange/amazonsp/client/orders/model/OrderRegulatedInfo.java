@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.RegulatedInformation;
-import com.adekia.exchange.amazonsp.client.orders.model.RegulatedOrderVerificationStatus;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The order&#39;s regulated information along with its verification status.
  */
-@ApiModel(description = "The order's regulated information along with its verification status.")
+@Schema(description = "The order's regulated information along with its verification status.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrderRegulatedInfo {
   @SerializedName("AmazonOrderId")
@@ -53,7 +45,7 @@ public class OrderRegulatedInfo {
    * An Amazon-defined order identifier, in 3-7-7 format.
    * @return amazonOrderId
   **/
-  @ApiModelProperty(required = true, value = "An Amazon-defined order identifier, in 3-7-7 format.")
+  @Schema(required = true, description = "An Amazon-defined order identifier, in 3-7-7 format.")
   public String getAmazonOrderId() {
     return amazonOrderId;
   }
@@ -71,7 +63,7 @@ public class OrderRegulatedInfo {
    * The regulated information collected during purchase and used to verify the order.
    * @return regulatedInformation
   **/
-  @ApiModelProperty(required = true, value = "The regulated information collected during purchase and used to verify the order.")
+  @Schema(required = true, description = "The regulated information collected during purchase and used to verify the order.")
   public RegulatedInformation getRegulatedInformation() {
     return regulatedInformation;
   }
@@ -89,7 +81,7 @@ public class OrderRegulatedInfo {
    * Whether the order requires attaching a dosage information label when shipped.
    * @return requiresDosageLabel
   **/
-  @ApiModelProperty(required = true, value = "Whether the order requires attaching a dosage information label when shipped.")
+  @Schema(required = true, description = "Whether the order requires attaching a dosage information label when shipped.")
   public Boolean isRequiresDosageLabel() {
     return requiresDosageLabel;
   }
@@ -107,7 +99,7 @@ public class OrderRegulatedInfo {
    * The order&#39;s verification status.
    * @return regulatedOrderVerificationStatus
   **/
-  @ApiModelProperty(required = true, value = "The order's verification status.")
+  @Schema(required = true, description = "The order's verification status.")
   public RegulatedOrderVerificationStatus getRegulatedOrderVerificationStatus() {
     return regulatedOrderVerificationStatus;
   }

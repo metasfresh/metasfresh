@@ -13,17 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.OrderItemsInner;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * the list of order items and quantities when the seller wants to partially update the shipment status of the order
  */
-@ApiModel(description = "the list of order items and quantities when the seller wants to partially update the shipment status of the order")
+@Schema(description = "the list of order items and quantities when the seller wants to partially update the shipment status of the order")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrderItems extends ArrayList<OrderItemsInner> {
 

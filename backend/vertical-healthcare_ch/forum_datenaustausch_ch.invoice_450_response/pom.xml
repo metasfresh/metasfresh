@@ -76,6 +76,7 @@
 			<plugin>
 				<!-- source for the request xsd: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceResponse_450.zip -->
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
+
 				<artifactId>maven-jaxb2-plugin</artifactId>
 				<executions>
 					<execution>

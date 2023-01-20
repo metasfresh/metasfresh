@@ -24,7 +24,7 @@ package de.metas.common.ordercandidates.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -36,20 +36,18 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @Value
 public class JsonOrderLineGroup
 {
-	@ApiModelProperty(value = "All JsonOLCandCreateRequests with the same ExternalHeaderId and the same groupId shall belong to the same bundle (compensation-group)")
+	@Schema(description = "All JsonOLCandCreateRequests with the same ExternalHeaderId and the same groupId shall belong to the same bundle (compensation-group)")
 	@JsonInclude(NON_NULL)
 	String groupKey;
-	@ApiModelProperty(value = "If true, marks the associated as the \"main\" product. Should only be set to true for non-stocked products.")
+	@Schema(description = "If true, marks the associated as the \"main\" product. Should only be set to true for non-stocked products.")
 	@JsonInclude(NON_NULL)
 	boolean isGroupMainItem;
 
-	@ApiModelProperty( //
-			value = "Translates to C_OLCand.GroupCompensationDiscountPercentage")
+	@Schema(description = "Translates to C_OLCand.GroupCompensationDiscountPercentage")
 	@JsonInclude(NON_NULL)
 	BigDecimal discount;
 
-	@ApiModelProperty( //
-			value = "It is taken into consideration when C_OLCand.Line is renumbered. Translates to C_OLCand.CompensationGroupOrderBy")
+	@Schema(description = "It is taken into consideration when C_OLCand.Line is renumbered. Translates to C_OLCand.CompensationGroupOrderBy")
 	@JsonInclude(NON_NULL)
 	JsonGroupCompensationOrderBy ordering;
 

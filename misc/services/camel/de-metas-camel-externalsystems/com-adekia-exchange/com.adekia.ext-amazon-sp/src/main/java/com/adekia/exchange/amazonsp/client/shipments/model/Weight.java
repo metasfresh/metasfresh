@@ -13,22 +13,21 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * The weight.
  */
-@ApiModel(description = "The weight.")
+@Schema(description = "The weight.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Weight {
   /**
@@ -97,7 +96,7 @@ public class Weight {
    * The unit of measurement.
    * @return unit
   **/
-  @ApiModelProperty(required = true, value = "The unit of measurement.")
+  @Schema(required = true, description = "The unit of measurement.")
   public UnitEnum getUnit() {
     return unit;
   }
@@ -115,7 +114,7 @@ public class Weight {
    * The measurement value.
    * @return value
   **/
-  @ApiModelProperty(required = true, value = "The measurement value.")
+  @Schema(required = true, description = "The measurement value.")
   public BigDecimal getValue() {
     return value;
   }

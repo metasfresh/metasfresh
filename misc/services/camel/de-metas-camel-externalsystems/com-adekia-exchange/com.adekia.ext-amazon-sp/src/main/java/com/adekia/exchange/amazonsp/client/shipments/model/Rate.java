@@ -13,26 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Currency;
-import com.adekia.exchange.amazonsp.client.shipments.model.ServiceType;
-import com.adekia.exchange.amazonsp.client.shipments.model.ShippingPromiseSet;
-import com.adekia.exchange.amazonsp.client.shipments.model.Weight;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.threeten.bp.OffsetDateTime;
+
+import java.util.Objects;
 
 /**
  * The available rate that can be used to send the shipment
  */
-@ApiModel(description = "The available rate that can be used to send the shipment")
+@Schema(description = "The available rate that can be used to send the shipment")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Rate {
   @SerializedName("rateId")
@@ -62,7 +52,7 @@ public class Rate {
    * An identifier for the rate.
    * @return rateId
   **/
-  @ApiModelProperty(value = "An identifier for the rate.")
+  @Schema(description = "An identifier for the rate.")
   public String getRateId() {
     return rateId;
   }
@@ -80,7 +70,7 @@ public class Rate {
    * The total charge that will be billed for the rate.
    * @return totalCharge
   **/
-  @ApiModelProperty(value = "The total charge that will be billed for the rate.")
+  @Schema(description = "The total charge that will be billed for the rate.")
   public Currency getTotalCharge() {
     return totalCharge;
   }
@@ -98,7 +88,7 @@ public class Rate {
    * The weight that was used to calculate the totalCharge.
    * @return billedWeight
   **/
-  @ApiModelProperty(value = "The weight that was used to calculate the totalCharge.")
+  @Schema(description = "The weight that was used to calculate the totalCharge.")
   public Weight getBilledWeight() {
     return billedWeight;
   }
@@ -116,7 +106,7 @@ public class Rate {
    * The time after which the offering will expire.
    * @return expirationTime
   **/
-  @ApiModelProperty(value = "The time after which the offering will expire.")
+  @Schema(description = "The time after which the offering will expire.")
   public OffsetDateTime getExpirationTime() {
     return expirationTime;
   }
@@ -134,7 +124,7 @@ public class Rate {
    * Get serviceType
    * @return serviceType
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public ServiceType getServiceType() {
     return serviceType;
   }
@@ -152,7 +142,7 @@ public class Rate {
    * Get promise
    * @return promise
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public ShippingPromiseSet getPromise() {
     return promise;
   }

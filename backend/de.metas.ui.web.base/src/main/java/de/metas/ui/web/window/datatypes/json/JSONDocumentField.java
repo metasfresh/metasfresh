@@ -17,7 +17,7 @@ import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -51,7 +51,7 @@ import java.util.Map;
  */
 
 @SuppressWarnings("UnusedReturnValue")
-@ApiModel("document-field")
+@Schema(description = "document-field")
 @JsonPropertyOrder({
 		"field",
 		"value", "value-reason",

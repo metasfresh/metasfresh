@@ -60,8 +60,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -92,7 +92,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-@Api
+@Tag(name = "ViewRestController")
 @RestController
 @RequestMapping(value = ViewRestController.ENDPOINT)
 public class ViewRestController
@@ -267,9 +267,9 @@ public class ViewRestController
 	public JSONViewResult getViewData(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
+			@RequestParam(name = PARAM_FirstRow) @Parameter(description = PARAM_FirstRow_Description) final int firstRow,
 			@RequestParam(name = PARAM_PageLength) final int pageLength,
-			@RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr)
+			@RequestParam(name = PARAM_OrderBy, required = false) @Parameter(description = PARAM_OrderBy_Description) final String orderBysListStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -340,7 +340,7 @@ public class ViewRestController
 	public List<JSONViewRow> getByIds(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
-			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr //
+			, @RequestParam("ids") @Parameter(description = "comma separated IDs") final String idsListStr //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -580,7 +580,7 @@ public class ViewRestController
 	public ResponseEntity<Resource> exportToExcel(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr)
+			@RequestParam(name = "selectedIds", required = false) @Parameter(description = "comma separated IDs") final String selectedIdsListStr)
 			throws Exception
 	{
 		userSession.assertLoggedIn();

@@ -13,24 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Currency;
-import com.adekia.exchange.amazonsp.client.shipments.model.Weight;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * Item in the container.
  */
-@ApiModel(description = "Item in the container.")
+@Schema(description = "Item in the container.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class ContainerItem {
   @SerializedName("quantity")
@@ -54,7 +46,7 @@ public class ContainerItem {
    * The quantity of the items of this type in the container.
    * @return quantity
   **/
-  @ApiModelProperty(required = true, value = "The quantity of the items of this type in the container.")
+  @Schema(required = true, description = "The quantity of the items of this type in the container.")
   public BigDecimal getQuantity() {
     return quantity;
   }
@@ -72,7 +64,7 @@ public class ContainerItem {
    * The unit price of an item of this type (the total value of this item type in the container is unitPrice * quantity).
    * @return unitPrice
   **/
-  @ApiModelProperty(required = true, value = "The unit price of an item of this type (the total value of this item type in the container is unitPrice * quantity).")
+  @Schema(required = true, description = "The unit price of an item of this type (the total value of this item type in the container is unitPrice * quantity).")
   public Currency getUnitPrice() {
     return unitPrice;
   }
@@ -90,7 +82,7 @@ public class ContainerItem {
    * The unit weight of an item of this type (the total weight of this item type in the container is unitWeight * quantity).
    * @return unitWeight
   **/
-  @ApiModelProperty(required = true, value = "The unit weight of an item of this type (the total weight of this item type in the container is unitWeight * quantity).")
+  @Schema(required = true, description = "The unit weight of an item of this type (the total weight of this item type in the container is unitWeight * quantity).")
   public Weight getUnitWeight() {
     return unitWeight;
   }
@@ -108,7 +100,7 @@ public class ContainerItem {
    * A descriptive title of the item.
    * @return title
   **/
-  @ApiModelProperty(required = true, value = "A descriptive title of the item.")
+  @Schema(required = true, description = "A descriptive title of the item.")
   public String getTitle() {
     return title;
   }

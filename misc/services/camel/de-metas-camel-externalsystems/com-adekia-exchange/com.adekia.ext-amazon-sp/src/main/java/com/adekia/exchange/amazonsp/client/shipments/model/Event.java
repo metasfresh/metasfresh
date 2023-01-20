@@ -13,23 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Location;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.threeten.bp.OffsetDateTime;
+
+import java.util.Objects;
 
 /**
  * An event of a shipment
  */
-@ApiModel(description = "An event of a shipment")
+@Schema(description = "An event of a shipment")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Event {
   @SerializedName("eventCode")
@@ -50,7 +43,7 @@ public class Event {
    * Get eventCode
    * @return eventCode
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getEventCode() {
     return eventCode;
   }
@@ -68,7 +61,7 @@ public class Event {
    * The date and time of an event for a shipment.
    * @return eventTime
   **/
-  @ApiModelProperty(required = true, value = "The date and time of an event for a shipment.")
+  @Schema(required = true, description = "The date and time of an event for a shipment.")
   public OffsetDateTime getEventTime() {
     return eventTime;
   }
@@ -86,7 +79,7 @@ public class Event {
    * Get location
    * @return location
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public Location getLocation() {
     return location;
   }

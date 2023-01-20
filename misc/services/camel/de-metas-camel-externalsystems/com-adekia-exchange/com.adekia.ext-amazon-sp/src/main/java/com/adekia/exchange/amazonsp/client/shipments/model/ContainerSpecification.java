@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Dimensions;
-import com.adekia.exchange.amazonsp.client.shipments.model.Weight;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Container specification for checking the service rate.
  */
-@ApiModel(description = "Container specification for checking the service rate.")
+@Schema(description = "Container specification for checking the service rate.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class ContainerSpecification {
   @SerializedName("dimensions")
@@ -47,7 +39,7 @@ public class ContainerSpecification {
    * The length, width, and height of the container.
    * @return dimensions
   **/
-  @ApiModelProperty(required = true, value = "The length, width, and height of the container.")
+  @Schema(required = true, description = "The length, width, and height of the container.")
   public Dimensions getDimensions() {
     return dimensions;
   }
@@ -65,7 +57,7 @@ public class ContainerSpecification {
    * The weight of the container.
    * @return weight
   **/
-  @ApiModelProperty(required = true, value = "The weight of the container.")
+  @Schema(required = true, description = "The weight of the container.")
   public Weight getWeight() {
     return weight;
   }

@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,32 +37,29 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER
 
 @Value
 @Builder(toBuilder = true)
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestContactUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, position = 10, //
-			value = CONTACT_IDENTIFIER_DOC + "\n"//
+	@Schema(minLength = 1,
+			description = CONTACT_IDENTIFIER_DOC + "\n"//
 					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.\n"
 					+ "If a new contact is created and the actual contact has no different identifier, then this identifier is stored within the newly created contact.") //
 	@NonNull
 	String contactIdentifier;
 
-	@ApiModelProperty(position = 30, //
-			value = "ID of the external system config.")
+	@Schema(nullable = true, description = "ID of the external system config.")
 	@Nullable
 	JsonMetasfreshId externalSystemConfigId;
 
-	@ApiModelProperty(position = 40)
+	@Schema(nullable = true)
 	@Nullable
 	Boolean isReadOnlyInMetasfresh;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 20, value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@Schema(description = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestContact contact;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 30, value = "The alberta contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@Schema(description = "The alberta contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@Nullable
 	JsonAlbertaContact jsonAlbertaContact;
 
