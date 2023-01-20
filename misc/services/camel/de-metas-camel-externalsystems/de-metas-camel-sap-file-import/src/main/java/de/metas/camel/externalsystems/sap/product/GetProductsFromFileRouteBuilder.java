@@ -32,6 +32,7 @@ import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.config.ProductFileEndpointConfig;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,10 +40,12 @@ import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_PRODUCT_CATEGORY_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
@@ -115,9 +118,6 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 
 	private void validateEnableExternalSystemRequest(@NonNull final Exchange exchange)
 	{
-		Check.assume(externalMappingsHolder.hasProductCategoryMappings(),
-					 "Product category mappings cannot be missing! ExternalSystem_Config_Id: " + enabledByExternalSystemRequest.getExternalSystemConfigId() + "!");
-
 		Check.assume(externalMappingsHolder.hasProductTypeMappings(),
 					 "Product type mappings cannot be missing! ExternalSystem_Config_Id: " + enabledByExternalSystemRequest.getExternalSystemConfigId() + "!");
 	}
@@ -130,6 +130,12 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 				.pInstanceId(enabledByExternalSystemRequest.getAdPInstanceId())
 				.build();
 
-		return new ProductUpsertProcessor(enabledByExternalSystemRequest, pInstanceLogger, externalMappingsHolder);
+		final String defaultProductCategoryId = getContext().getPropertiesComponent().resolveProperty(DEFAULT_PRODUCT_CATEGORY_ID)
+				.orElseThrow(() -> new RuntimeCamelException("Missing mandatory property: " + DEFAULT_PRODUCT_CATEGORY_ID));
+
+		return new ProductUpsertProcessor(enabledByExternalSystemRequest,
+										  pInstanceLogger,
+										  externalMappingsHolder,
+										  JsonMetasfreshId.of(defaultProductCategoryId));
 	}
 }

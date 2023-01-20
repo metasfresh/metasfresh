@@ -24,7 +24,7 @@ package de.metas.handlingunits.receiptschedule.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.distribution.ddorder.DDOrderService;
@@ -90,7 +90,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		super.afterInitialize();
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);

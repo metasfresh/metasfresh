@@ -20,11 +20,9 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_Category;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
@@ -236,7 +234,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		dt.setDocBaseType(request.getDocBaseType().getCode());
 		dt.setName(name);
 		dt.setPrintName(name);
-		dt.setGL_Category_ID(retrieveDefaultGL_Category_ID());
+		dt.setGL_Category_ID(request.getGlCategoryId().getRepoId());
 
 		//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
@@ -259,10 +257,6 @@ public class DocTypeDAO implements IDocTypeDAO
 		if (request.getDocTypeInvoiceId() > 0)
 		{
 			dt.setC_DocTypeInvoice_ID(request.getDocTypeInvoiceId());
-		}
-		if (request.getGlCategoryId() > 0)
-		{
-			dt.setGL_Category_ID(request.getGlCategoryId());
 		}
 
 		if (docNoSequenceId <= 0)
@@ -291,21 +285,6 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		InterfaceWrapperHelper.save(dt);
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
-	}
-
-	/**
-	 * Set Default GL Category
-	 */
-	private int retrieveDefaultGL_Category_ID()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_GL_Category.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_GL_Category.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId())
-				.orderByDescending(I_GL_Category.COLUMNNAME_IsDefault)
-				.orderBy(I_GL_Category.COLUMNNAME_GL_Category_ID)
-				.create()
-				.firstId();
 	}
 
 	@Override

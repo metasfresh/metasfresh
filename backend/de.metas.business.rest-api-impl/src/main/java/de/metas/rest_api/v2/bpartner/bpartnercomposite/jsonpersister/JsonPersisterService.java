@@ -1171,6 +1171,26 @@ public class JsonPersisterService
 			bpartner.setSectionGroupPartnerId(sectionGroupPartnerId);
 		}
 
+		if (jsonBPartner.isProspectSet())
+		{
+			bpartner.setProspect(jsonBPartner.getProspect());
+		}
+
+		if(jsonBPartner.isSapBPartnerCodeSet())
+		{
+			bpartner.setSapBPartnerCode(jsonBPartner.getSapBPartnerCode());
+		}
+
+		if(jsonBPartner.isSectionGroupPartnerSet())
+		{
+			bpartner.setSectionGroupPartner(jsonBPartner.isSectionGroupPartner());
+		}
+
+		if(jsonBPartner.isSectionPartnerSet())
+		{
+			bpartner.setSectionPartner(jsonBPartner.isSectionPartner());
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
@@ -1924,6 +1944,16 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isVatIdSet())
 		{
 			location.setVatTaxId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
+		}
+
+		if(jsonBPartnerLocation.isSapPaymentMethodSet())
+		{
+			location.setSapPaymentMethod(jsonBPartnerLocation.getSapPaymentMethod());
+		}
+
+		if (jsonBPartnerLocation.isSapBPartnerCodeSet())
+		{
+			location.setSapBPartnerCode(jsonBPartnerLocation.getSapBPartnerCode());
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);

@@ -42,6 +42,12 @@ public class ProductRow
 	@DataField(pos = 5)
 	private String uom;
 
+	@DataField(pos = 6)
+	private String productHierarchy;
+
+	@DataField(pos = 9)
+	private String description;
+
 	@DataField(pos = 13)
 	private String materialType;
 

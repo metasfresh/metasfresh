@@ -265,8 +265,35 @@ public class JsonRequestBPartner
 
 	@ApiModelProperty(hidden = true)
 	private boolean sectionGroupPartnerIdentifierSet;
+
+	@ApiModelProperty(position = 300, //
+			value = "Translates to `C_BPartner.IsProspect`")
+	private Boolean prospect;
+
+	private boolean prospectSet;
+
+	@ApiModelProperty(position = 310,  //
+			value = "This translates to `C_BPartner.SAP_BPartnerCode`.")
+	private String sapBPartnerCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sapBPartnerCodeSet;
+
+	@ApiModelProperty(position = 320,  //
+			value = "This translates to `C_BPartner.IsSectionGroupPartner`.")
+	private boolean sectionGroupPartner;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerSet;
+
+	@ApiModelProperty(position = 330,  //
+			value = "This translates to `C_BPartner.IsSectionPartner`.")
+	private boolean sectionPartner;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionPartnerSet;
 	
-	@ApiModelProperty(position = 300, // shall be last
+	@ApiModelProperty(position = 340, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -485,5 +512,29 @@ public class JsonRequestBPartner
 	{
 		this.sectionGroupPartnerIdentifier = sectionGroupPartnerIdentifier;
 		this.sectionGroupPartnerIdentifierSet = true;
+	}
+
+	public void setProspect(final Boolean prospect)
+	{
+		this.prospect = prospect;
+		this.prospectSet = true;
+	}
+
+	public void setSapBPartnerCode(final String sapBPartnerCode)
+	{
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sapBPartnerCodeSet = true;
+	}
+
+	public void setSectionGroupPartner(final boolean sectionGroupPartner)
+	{
+		this.sectionGroupPartner = sectionGroupPartner;
+		this.sectionGroupPartnerSet = true;
+	}
+
+	public void setSectionPartner(final boolean sectionPartner)
+	{
+		this.sectionPartner = sectionPartner;
+		this.sectionPartnerSet = true;
 	}
 }

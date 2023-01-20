@@ -65,6 +65,7 @@ public class JsonRequestUtil
 		jsonRequestProduct.setProductCategoryIdentifier("test");
 		jsonRequestProduct.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		jsonRequestProduct.setBpartnerProductItems(Collections.singletonList(getJsonRequestBPartnerProductUpsert()));
+		jsonRequestProduct.setSAPProductHierarchy("SAPProductHierarchy");
 
 		return jsonRequestProduct;
 	}

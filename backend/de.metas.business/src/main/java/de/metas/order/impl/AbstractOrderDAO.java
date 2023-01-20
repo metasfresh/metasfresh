@@ -7,7 +7,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.GetOrdersQuery;
 import de.metas.order.IOrderDAO;
@@ -20,7 +19,6 @@ import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -398,13 +396,11 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
-		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 
 		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo);
 
 		return queryBuilder.create().firstOnly(I_C_Order.class);
 	}

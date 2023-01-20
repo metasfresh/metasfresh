@@ -268,6 +268,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
+
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -281,6 +282,10 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
 		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
 		bpartnerRecord.setSection_Group_Partner_ID(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId()));
+		bpartnerRecord.setIsProspect(bpartner.isProspect());
+		bpartnerRecord.setSAP_BPartnerCode(bpartner.getSapBPartnerCode());
+		bpartnerRecord.setIsSectionGroupPartner(bpartner.isSectionGroupPartner());
+		bpartnerRecord.setIsSectionPartner(bpartner.isSectionPartner());
 
 		saveRecord(bpartnerRecord);
 
@@ -385,6 +390,8 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
 
 			bpartnerLocationRecord.setVATaxID(partnerLocation.getVatTaxId());
+			bpartnerLocationRecord.setSAP_PaymentMethod(partnerLocation.getSapPaymentMethod());
+			bpartnerLocationRecord.setSAP_BPartnerCode(partnerLocation.getSapBPartnerCode());
 
 			saveRecord(bpartnerLocationRecord);
 

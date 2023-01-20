@@ -12,6 +12,8 @@ pull_request_rules:
       - or:
         - base=adorable_badger_uat
         - base=big_coconut_uat
+        - base=hard_encoded_uat
+        - base=holy_cow_uat
         - base=inner_silence_uat
         - base=intensive_care_uat
         - base=mad_orange_uat
@@ -36,6 +38,8 @@ pull_request_rules:
       - or:
         - base=adorable_badger_uat
         - base=big_coconut_uat
+        - base=hard_encoded_uat 
+        - base=holy_cow_uat
         - base=inner_silence_uat
         - base=intensive_care_uat
         - base=mad_orange_uat

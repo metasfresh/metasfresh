@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -19,6 +20,7 @@ import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.location.LocationId;
@@ -1674,6 +1676,13 @@ public final class FactLine extends X_Fact_Acct
 	{
 		super.setC_Order_ID(OrderId.toRepoId(orderId));
 	}
+
+	public void setC_DocType_ID(@Nullable DocTypeId docTypeId)
+	{
+		setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
+	}
+
+	public void setGL_Category_ID(@Nullable GLCategoryId glCategoryId) {setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));}
 
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{

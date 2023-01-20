@@ -1,6 +1,11 @@
 package de.metas.shipping.api.impl;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -8,11 +13,12 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
+import org.compiere.model.X_C_DocType;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
+	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	@Override
 	public I_M_ShippingPackage createShippingPackage(final I_M_ShipperTransportation shipperTransportation, final I_M_Package mpackage)
 	{
@@ -46,13 +52,11 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	@Override
 	public void setC_DocType(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		final DocBaseType docBaseType = DocBaseType.ShipperTransportation;
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
 
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(DocBaseType.ShipperTransportation)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
@@ -61,4 +65,26 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		shipperTransportation.setC_DocType_ID(docTypeId);
 	}
+	@Override
+	public boolean isDeliveryInstruction(@NonNull final DocTypeId docTypeId)
+	{
+		final DocBaseAndSubType docBaseAndSubTypeById = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
+
+		final DocBaseType docBaseType = docBaseAndSubTypeById.getDocBaseType();
+		final String docSubType = docBaseAndSubTypeById.getDocSubType();
+
+		if (!DocBaseType.ShipperTransportation.equals(docBaseType))
+		{
+			// this is not a transportation order doc type
+			return false;
+		}
+
+		if (!X_C_DocType.DOCSUBTYPE_DeliveryInstruction.equals(docSubType))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 }

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1539313489L;
+	private static final long serialVersionUID = 923087334L;
 
 	/** Standard Constructor */
 	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -2345,6 +2345,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getSalesVolume()
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesVolume);
+	}
+
+	@Override
+	public void setSAP_BPartnerCode (final @Nullable java.lang.String SAP_BPartnerCode)
+	{
+		set_Value (COLUMNNAME_SAP_BPartnerCode, SAP_BPartnerCode);
+	}
+
+	@Override
+	public java.lang.String getSAP_BPartnerCode()
+	{
+		return get_ValueAsString(COLUMNNAME_SAP_BPartnerCode);
 	}
 
 	@Override

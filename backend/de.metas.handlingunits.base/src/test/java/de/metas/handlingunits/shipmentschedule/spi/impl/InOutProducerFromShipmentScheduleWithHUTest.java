@@ -1,11 +1,13 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -71,7 +73,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.NONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -419,10 +421,14 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 		private void createDocType(final DocBaseAndSubType docBaseAndSubType)
 		{
-			final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
-			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
-			saveRecord(docTypeRecord);
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
+					.ctx(Env.getCtx())
+					.name(docBaseAndSubType.toString())
+					.docBaseType(docBaseAndSubType.getDocBaseType())
+					.docSubType(docBaseAndSubType.getDocSubType())
+					.glCategoryId(GLCategoryId.ofRepoId(123))
+					.build());
 		}
 
 		private OrderId order()
@@ -481,7 +487,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final InOutProducerFromShipmentScheduleWithHU producer = new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult(true));
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(producer)
 					.setExceptionHandler(FailTrxItemExceptionHandler.instance)

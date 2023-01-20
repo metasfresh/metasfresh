@@ -9,7 +9,7 @@
         "isReadOnlyInMetasfresh": true,
         "externalSystemConfigId": 1,
         "requestProduct": {
-          "code": "PRODUCT_CODE_Product Name",
+          "code": "PRODUCT_CODE (SCOD)",
           "codeSet": true,
           "name": "Product Name",
           "nameSet": true,
@@ -36,7 +36,9 @@
           "sectionCode": "SCOD",
           "sectionCodeSet": true,
           "purchased": true,
-          "purchasedSet": true
+          "purchasedSet": true,
+          "sapProductHierarchy": "335  81",
+          "sapProductHierarchySet": true
         }
       }
     ],

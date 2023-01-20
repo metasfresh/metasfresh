@@ -129,6 +129,13 @@ public class JsonProduct
 	@JsonProperty("sectionCode")
 	String sectionCode;
 
+	@ApiModelProperty( //
+			value = "This translates to `M_Product.SAP_ProductHierarchy`.")
+	@Nullable
+	@JsonInclude(Include.NON_NULL)
+	@JsonProperty("sapProductHierarchy")
+	String sapProductHierarchy;
+
 	@NonNull
 	@Singular
 	@JsonProperty("bpartners")

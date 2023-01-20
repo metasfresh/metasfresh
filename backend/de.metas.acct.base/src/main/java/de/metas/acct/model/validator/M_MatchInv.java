@@ -22,27 +22,25 @@ package de.metas.acct.model.validator;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IPostingService;
 import de.metas.document.DocBaseType;
+import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.acct.DocLine_Invoice;
 import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_DocType;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IPostingService;
-import de.metas.acct.doc.DocLine_Invoice;
-import de.metas.user.UserId;
-import lombok.NonNull;
+import java.util.Properties;
 
 @Interceptor(I_M_MatchInv.class)
 public class M_MatchInv

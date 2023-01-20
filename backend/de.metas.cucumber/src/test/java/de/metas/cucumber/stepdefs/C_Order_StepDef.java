@@ -550,13 +550,13 @@ public class C_Order_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Order order = orderTable.get(orderIdentifier);
 
-			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			final DocBaseType docBaseType = DocBaseType.ofNullableCode(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType));
 			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
-			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
+			if (docBaseType != null && Check.isNotBlank(docSubType))
 			{
 				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-						.docBaseType(DocBaseType.ofCode(docBaseType))
+						.docBaseType(docBaseType)
 						.docSubType(docSubType)
 						.adClientId(order.getAD_Client_ID())
 						.adOrgId(order.getAD_Org_ID())

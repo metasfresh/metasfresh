@@ -24,7 +24,6 @@ package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
@@ -45,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -115,7 +115,7 @@ public abstract class ReceiptScheduleTestBase
 
 	// 07629 just adding to fix existing tests; TODO extend the tests
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
-	private IProductAcctDAO productAcctDAO; // 07629
+	private IProductActivityProvider productActivityProvider; // 07629
 
 	protected Properties ctx;
 	/**
@@ -199,8 +199,8 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(priceUOM);
 
 		// 07629 just adding to fix existing tests; TODO extend the tests
-		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		productActivityProvider = Mockito.spy(IProductActivityProvider.class);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
@@ -216,7 +216,7 @@ public abstract class ReceiptScheduleTestBase
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
-		Mockito.when(productAcctDAO.retrieveActivityForAcct(
+		Mockito.when(productActivityProvider.getActivityForAcct(
 				ArgumentMatchers.any(),
 				ArgumentMatchers.eq(orgId),
 				ArgumentMatchers.any()))

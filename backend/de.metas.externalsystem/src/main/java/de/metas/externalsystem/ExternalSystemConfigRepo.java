@@ -1268,6 +1268,7 @@ public class ExternalSystemConfigRepo
 				.value(config.getExternalSystemValue())
 				.contentSourceSFTP(contentSourceSFTP)
 				.contentSourceLocalFile(contentSourceLocalFile)
+				.checkDescriptionForMaterialType(config.isCheckDescriptionForMaterialType())
 				.build();
 	}
 

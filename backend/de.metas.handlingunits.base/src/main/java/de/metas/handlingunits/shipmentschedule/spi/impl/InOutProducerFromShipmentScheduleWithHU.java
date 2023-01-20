@@ -75,8 +75,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;

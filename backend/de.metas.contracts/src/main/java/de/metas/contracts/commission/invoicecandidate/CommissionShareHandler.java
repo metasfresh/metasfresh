@@ -1,6 +1,5 @@
 package de.metas.contracts.commission.invoicecandidate;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -34,6 +33,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -96,7 +96,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
 	protected transient final Logger log = LogManager.getLogger(getClass());
 	private final transient IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -245,7 +245,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 
 		// 07442 activity and tax
-		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
+		final ActivityId activityId = productActivityProvider.getActivityForAcct(
 				ClientId.ofRepoId(commissionShareRecord.getAD_Client_ID()),
 				orgId,
 				commissionProductId);

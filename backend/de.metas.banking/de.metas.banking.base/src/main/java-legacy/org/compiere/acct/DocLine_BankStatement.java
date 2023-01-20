@@ -25,7 +25,6 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.ZoneId;
 import java.util.List;
 
 class DocLine_BankStatement extends DocLine<Doc_BankStatement>

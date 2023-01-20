@@ -67,4 +67,9 @@ public enum DeliveryPlanningType implements ReferenceListAwareEnum
 	{
 		return type != null ? type.getCode() : null;
 	}
+
+	public boolean isIncoming()
+	{
+		return this == Incoming;
+	}
 }

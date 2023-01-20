@@ -425,6 +425,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_Withholding = "WH";
 	/** InternalVendorInvoice = IVI */
 	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
+	/** Delivery Instruction = DI */
+	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
