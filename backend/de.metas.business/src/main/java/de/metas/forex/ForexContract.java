@@ -32,17 +32,26 @@ public class ForexContract
 
 	public void setAllocatedAmountAndUpdate(@NonNull final Money allocatedAmount)
 	{
+		if (allocatedAmount.isNegative())
+		{
+			throw new AdempiereException("Negative allocated amount is not allowed");
+		}
+
 		this.allocatedAmount = allocatedAmount;
-		this.openAmount = this.amount.subtract(this.allocatedAmount);
+		this.openAmount = this.amount.subtract(this.allocatedAmount).toZeroIfNegative();
 	}
 
-	public void assertCanAllocate(final Money amountToAllocate)
+	public void assertCanAllocate(@NonNull final Money amountToAllocate)
 	{
 		if (!docStatus.isCompleted())
 		{
 			throw new AdempiereException("Cannot allocate to a contract which is not completed");
 		}
 
+		if (amountToAllocate.signum() <= 0)
+		{
+			throw new AdempiereException("Amount to allocate shall be greater than zero");
+		}
 		if (!openAmount.isGreaterThanOrEqualTo(amountToAllocate))
 		{
 			throw new AdempiereException("Not enough open amount");

@@ -48,7 +48,7 @@ public class ForexContractAllocationRepository
 		return Money.of(record.getAmount(), CurrencyId.ofRepoId(record.getC_Currency_ID()));
 	}
 
-	public Money computeAllocatedAmount(final ForexContractId contractId, final CurrencyId expectedCurrencyId)
+	public Money computeAllocatedAmount(@NonNull final ForexContractId contractId, @NonNull final CurrencyId expectedCurrencyId)
 	{
 		final ImmutableMap<CurrencyId, Money> amountsByCurrencyId = queryBL
 				.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
@@ -59,6 +59,26 @@ public class ForexContractAllocationRepository
 				.map(ForexContractAllocationRepository::extractAmount)
 				.collect(Money.sumByCurrency());
 
+		return singleCurrency(amountsByCurrencyId, expectedCurrencyId);
+	}
+
+	public Money computeAllocatedAmount(@NonNull final OrderId orderId, @NonNull final CurrencyId expectedCurrencyId)
+	{
+		final ImmutableMap<CurrencyId, Money> amountsByCurrencyId = queryBL
+				.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.stream()
+				.map(ForexContractAllocationRepository::extractAmount)
+				.collect(Money.sumByCurrency());
+
+		return singleCurrency(amountsByCurrencyId, expectedCurrencyId);
+	}
+
+	@NonNull
+	private static Money singleCurrency(@NonNull final ImmutableMap<CurrencyId, Money> amountsByCurrencyId, @NonNull final CurrencyId expectedCurrencyId)
+	{
 		if (amountsByCurrencyId.isEmpty())
 		{
 			return Money.zero(expectedCurrencyId);
@@ -75,7 +95,7 @@ public class ForexContractAllocationRepository
 		else
 		{
 			// shall not happen
-			throw new AdempiereException("Allocation in multiple currencies for " + contractId + ": " + amountsByCurrencyId);
+			throw new AdempiereException("Allocation in multiple currencies is not allowed: " + amountsByCurrencyId);
 		}
 	}
 
@@ -94,6 +114,15 @@ public class ForexContractAllocationRepository
 		return queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, contractId)
+				.create()
+				.anyMatch();
+	}
+
+	public boolean hasAllocations(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.anyMatch();
 	}
