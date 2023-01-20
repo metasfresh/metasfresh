@@ -2,7 +2,6 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
@@ -15,7 +14,6 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.util.DB;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -49,16 +47,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Service
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
-	private final BPartnerCreditLimitRepository creditLimitRepo;
-
-	private BPartnerStatsDAO(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
-	{
-		this.creditLimitRepo = creditLimitRepo;
-	}
-
 	@Override
 	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
