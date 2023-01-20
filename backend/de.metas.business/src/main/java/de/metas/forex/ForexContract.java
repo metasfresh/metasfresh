@@ -1,5 +1,6 @@
 package de.metas.forex;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -8,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
 
@@ -18,6 +20,7 @@ public class ForexContract
 {
 	@Getter @NonNull private final ForexContractId id;
 	@Getter @NonNull private final OrgId orgId;
+	@Getter @NonNull private final DocStatus docStatus;
 
 	@Getter @NonNull private final CurrencyId currencyId;
 	@Getter @NonNull private final CurrencyId toCurrencyId;
@@ -31,5 +34,18 @@ public class ForexContract
 	{
 		this.allocatedAmount = allocatedAmount;
 		this.openAmount = this.amount.subtract(this.allocatedAmount);
+	}
+
+	public void assertCanAllocate(final Money amountToAllocate)
+	{
+		if (!docStatus.isCompleted())
+		{
+			throw new AdempiereException("Cannot allocate to a contract which is not completed");
+		}
+
+		if (!openAmount.isGreaterThanOrEqualTo(amountToAllocate))
+		{
+			throw new AdempiereException("Not enough open amount");
+		}
 	}
 }

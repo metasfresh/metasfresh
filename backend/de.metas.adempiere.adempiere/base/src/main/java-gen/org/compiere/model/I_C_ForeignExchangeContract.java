@@ -162,6 +162,48 @@ public interface I_C_ForeignExchangeContract
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Process Batch.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocAction (java.lang.String DocAction);
+
+	/**
+	 * Get Process Batch.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocAction();
+
+	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_DocAction = new ModelColumn<>(I_C_ForeignExchangeContract.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocStatus();
+
+	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_ForeignExchangeContract.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
 	 * Set Document No.
 	 * Document sequence number of the document
 	 *
@@ -332,6 +374,27 @@ public interface I_C_ForeignExchangeContract
 
 	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_Processed = new ModelColumn<>(I_C_ForeignExchangeContract.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
+
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_Processing = new ModelColumn<>(I_C_ForeignExchangeContract.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set To Currency.

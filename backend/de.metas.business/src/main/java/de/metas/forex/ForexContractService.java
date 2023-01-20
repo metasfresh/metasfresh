@@ -57,6 +57,8 @@ public class ForexContractService
 		forexContractRepository.updateById(
 				forexContractId,
 				contract -> {
+					contract.assertCanAllocate(amountToAllocate);
+
 					forexContractAllocationRepository.create(ForexContractAllocateRequest.builder()
 							.forexContractId(contract.getId())
 							.orgId(contract.getOrgId())
@@ -83,5 +85,10 @@ public class ForexContractService
 		}
 
 		return BooleanWithReason.TRUE;
+	}
+
+	public boolean hasAllocations(final ForexContractId contractId)
+	{
+		return forexContractAllocationRepository.hasAllocations(contractId);
 	}
 }

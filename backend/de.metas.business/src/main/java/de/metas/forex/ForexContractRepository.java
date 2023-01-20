@@ -1,5 +1,6 @@
 package de.metas.forex;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -31,6 +32,7 @@ public class ForexContractRepository
 		return ForexContract.builder()
 				.id(ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.docStatus(DocStatus.ofCode(record.getDocStatus()))
 				.currencyId(currencyId)
 				.toCurrencyId(CurrencyId.ofRepoId(record.getTo_Currency_ID()))
 				.currencyRate(record.getCurrencyRate())

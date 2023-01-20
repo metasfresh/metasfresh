@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_ForeignExchangeContract extends org.compiere.model.PO implements I_C_ForeignExchangeContract, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -563059722L;
+	private static final long serialVersionUID = 1878725846L;
 
     /** Standard Constructor */
     public X_C_ForeignExchangeContract (final Properties ctx, final int C_ForeignExchangeContract_ID, @Nullable final String trxName)
@@ -88,6 +88,94 @@ public class X_C_ForeignExchangeContract extends org.compiere.model.PO implement
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
+	public static final String DOCACTION_Complete = "CO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
+	/** Void = VO */
+	public static final String DOCACTION_Void = "VO";
+	/** Close = CL */
+	public static final String DOCACTION_Close = "CL";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
+	/** None = -- */
+	public static final String DOCACTION_None = "--";
+	/** Prepare = PR */
+	public static final String DOCACTION_Prepare = "PR";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
+	@Override
+	public void setDocAction (final java.lang.String DocAction)
+	{
+		set_Value (COLUMNNAME_DocAction, DocAction);
+	}
+
+	@Override
+	public java.lang.String getDocAction() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocAction);
+	}
+
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	@Override
+	public void setDocStatus (final java.lang.String DocStatus)
+	{
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	@Override
+	public java.lang.String getDocStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
@@ -175,6 +263,18 @@ public class X_C_ForeignExchangeContract extends org.compiere.model.PO implement
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setProcessing (final boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Processing);
+	}
+
+	@Override
+	public boolean isProcessing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
 	@Override

@@ -88,4 +88,13 @@ public class ForexContractAllocationRepository
 				.listDistinct(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, ForexContractId.class);
 		return ImmutableSet.copyOf(contractIds);
 	}
+
+	public boolean hasAllocations(@NonNull final ForexContractId contractId)
+	{
+		return queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, contractId)
+				.create()
+				.anyMatch();
+	}
 }
