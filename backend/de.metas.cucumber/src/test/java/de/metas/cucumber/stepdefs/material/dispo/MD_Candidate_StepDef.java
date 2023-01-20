@@ -381,7 +381,7 @@ public class MD_Candidate_StepDef
 					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
 					.append(" See:\n");
 
-			logCandidateRecords(message);
+			logCandidateRecords(message, productIdSet);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -673,26 +673,12 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	private void logCurrentContext(@NonNull final MaterialDispoTableRow tableRow)
-	{
-		final StringBuilder message = new StringBuilder();
-
-		message.append("Looking for instance with:").append("\n")
-				.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(tableRow.getType().getCode()).append("\n")
-				.append(COLUMNNAME_M_Product_ID).append(" : ").append(tableRow.getProductId().getRepoId()).append("\n")
-				.append(COLUMNNAME_DateProjected).append(" : ").append(tableRow.getTime()).append("\n")
-				.append(COLUMNNAME_Qty).append(" : ").append(tableRow.getQty()).append("\n")
-				.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(tableRow.getAtp()).append("\n")
-				.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(tableRow.getBusinessCase()).append("\n");
-
-		logCandidateRecords(message);
-	}
-
-	private void logCandidateRecords(@NonNull final StringBuilder message)
+	private void logCandidateRecords(@NonNull final StringBuilder message, @NonNull final ImmutableSet<ProductId> productIds)
 	{
 		message.append("MD_Candidate records:").append("\n");
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_MD_Candidate.class)
 				.forEach(candidateRecord -> message

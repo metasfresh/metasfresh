@@ -518,8 +518,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | olCand_1               |
 
     And validate C_OLCand is with error
-      | C_OLCand_ID.Identifier | ErrorMsg                             |
-      | olCand_1               | Produkt ist nicht auf der Preisliste |
+      | C_OLCand_ID.Identifier | ErrorMsg                    |
+      | olCand_1               | Product is not on PriceList |
 
   @from:cucumber
   @topic:orderCandidate
@@ -576,5 +576,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | olCand_1               |
 
     And validate C_OLCand is with error
-      | C_OLCand_ID.Identifier | ErrorMsg                             |
-      | olCand_1               | Produkt ist nicht auf der Preisliste |
+      | C_OLCand_ID.Identifier | ErrorMsg                    |
+      | olCand_1               | Product is not on PriceList |

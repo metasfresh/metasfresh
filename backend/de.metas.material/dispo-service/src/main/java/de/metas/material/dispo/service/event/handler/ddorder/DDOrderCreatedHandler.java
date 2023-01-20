@@ -15,6 +15,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -114,10 +115,16 @@ public class DDOrderCreatedHandler extends DDOrderAdvisedOrCreatedHandler<DDOrde
 
 		final DDOrder ddOrder = ddOrderCreatedEvent.getDdOrder();
 		final MaterialDispoGroupId groupId = ddOrder.getMaterialDispoGroupId();
+
+		final SimulatedQueryQualifier simulatedQueryQualifier = ddOrder.isSimulated()
+				? SimulatedQueryQualifier.ONLY_SIMULATED
+				: SimulatedQueryQualifier.EXCLUDE_SIMULATED;
+
 		final CandidatesQuery.CandidatesQueryBuilder candidatesQueryBuilder = CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.groupId(groupId)
+				.simulatedQueryQualifier(simulatedQueryQualifier)
 				.materialDescriptorQuery(
 						createMaterialDescriptorQuery(
 								ddOrderLine.getProductDescriptor()));

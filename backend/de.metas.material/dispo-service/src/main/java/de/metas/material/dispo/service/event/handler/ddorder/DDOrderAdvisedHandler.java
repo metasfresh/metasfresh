@@ -17,6 +17,7 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
@@ -169,12 +170,17 @@ public class DDOrderAdvisedHandler
 				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
 				.build();
 
+		final SimulatedQueryQualifier simulatedQueryQualifier = ddOrder.isSimulated()
+				? SimulatedQueryQualifier.ONLY_SIMULATED
+				: SimulatedQueryQualifier.EXCLUDE_SIMULATED;
+
 		return CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.distributionDetailsQuery(distributionDetailsQuery)
+				.simulatedQueryQualifier(simulatedQueryQualifier)
 				.build();
 	}
 
