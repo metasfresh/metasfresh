@@ -9,7 +9,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
     "recordId" : {
       "keyColumnNames" : [ "AD_User_ID" ],
       "keysByColumnName" : {
-        "AD_User_ID" : 100021
+        "AD_User_ID" : 1000000
       }
     },
     "tableName" : "AD_User"
@@ -24,7 +24,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
     "shipToDefault" : false
   },
   "handles" : [ ],
-  "id" : "20-100021",
+  "id" : "20-1000000",
   "membershipContact" : false,
   "name" : "jsonContact.name",
   "newsletter" : false,

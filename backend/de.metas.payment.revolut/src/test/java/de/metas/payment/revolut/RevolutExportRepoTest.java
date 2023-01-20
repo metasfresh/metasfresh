@@ -29,6 +29,8 @@ import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.payment.revolut.model.RecipientType;
 import de.metas.payment.revolut.model.RevolutPaymentExport;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_PaySelection;
@@ -53,6 +55,7 @@ public class RevolutExportRepoTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 		revolutExportRepo = new RevolutExportRepo();
 	}
 
