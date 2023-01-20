@@ -378,6 +378,8 @@ public class DeliveryPlanningService
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
 				.uom(uomToUse)
+				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+				.deliveryPlanningId(deliveryPlanningId)
 				.build();
 	}
 

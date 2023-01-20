@@ -290,6 +290,9 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
 		shippingPackageRecord.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
 
+		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
+		shippingPackageRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
+
 		saveRecord(shippingPackageRecord);
 
 		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID() );

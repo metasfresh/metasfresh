@@ -182,6 +182,31 @@ public interface I_M_ShippingPackage
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_ID (int C_OrderLine_ID);
+
+	/**
+	 * Get Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine();
+
+	void setC_OrderLine(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine);
+
+	ModelColumn<I_M_ShippingPackage, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_ShippingPackage.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -271,6 +296,31 @@ public interface I_M_ShippingPackage
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_IsToBeFetched = new ModelColumn<>(I_M_ShippingPackage.class, "IsToBeFetched", null);
 	String COLUMNNAME_IsToBeFetched = "IsToBeFetched";
+
+	/**
+	 * Set Delivery Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
+
+	/**
+	 * Get Delivery Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Delivery_Planning_ID();
+
+	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
+
+	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
+
+	ModelColumn<I_M_ShippingPackage, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_ShippingPackage.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
+	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
 	 * Set Shipment/ Receipt.
