@@ -12,7 +12,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "companyName" : "bpartnerRecord.companyName",
     "customer" : false,
     "group" : "bpGroupRecord.name",
-    "metasfreshId" : 100011,
+    "metasfreshId" : 100012,
     "name" : "bpartnerRecord.name_updated",
     "vendor" : false
   },
@@ -29,7 +29,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "countryCode" : "countryRecord.countryCode",
     "externalId" : "123",
     "handoverLocation" : false,
-    "metasfreshId" : 100013,
+    "metasfreshId" : 100014,
     "poBox" : "poBox",
     "postal" : "5040",
     "remitTo" : false,
@@ -55,7 +55,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_ID" : 100013
+          "C_BPartner_ID" : 100014
         }
       },
       "tableName" : "C_BPartner"
@@ -66,7 +66,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "excludeFromPromotions" : false,
     "externalId" : "fghij_2",
     "groupId" : 15,
-    "id" : 100013,
+    "id" : 100014,
     "identifiedByExternalReference" : false,
     "language" : {
       "_mediaSize" : {
@@ -106,7 +106,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100018
+          "AD_User_ID" : 100019
         }
       },
       "tableName" : "AD_User"
@@ -123,7 +123,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "email" : "c1_email@email.net",
     "externalId" : "c1_externalId",
     "handles" : [ ],
-    "id" : "100013-100018",
+    "id" : "100014-100019",
     "membershipContact" : false,
     "name" : "c1_name",
     "newsletter" : false,
@@ -141,7 +141,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100019
+          "AD_User_ID" : 100020
         }
       },
       "tableName" : "AD_User"
@@ -158,7 +158,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "email" : "c2_email@email.net",
     "externalId" : "c2_externalId",
     "handles" : [ ],
-    "id" : "100013-100019",
+    "id" : "100014-100020",
     "membershipContact" : false,
     "name" : "c2_name",
     "newsletter" : false,
@@ -180,7 +180,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100015
+          "C_BPartner_Location_ID" : 100016
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -188,14 +188,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "city" : "l1_city",
     "countryCode" : "CH",
     "ephemeral" : false,
-    "existingLocationId" : 100014,
+    "existingLocationId" : 100015,
     "externalId" : "l1_externalId",
     "gln" : "l1_gln",
     "handOverLocation" : false,
     "handles" : [ ],
     "id" : {
-      "bpartnerId" : 100013,
-      "repoId" : 100015
+      "bpartnerId" : 100014,
+      "repoId" : 100016
     },
     "locationType" : {
       "billTo" : false,
@@ -222,7 +222,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100017
+          "C_BPartner_Location_ID" : 100018
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -230,14 +230,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "city" : "l2_city",
     "countryCode" : "DE",
     "ephemeral" : false,
-    "existingLocationId" : 100016,
+    "existingLocationId" : 100017,
     "externalId" : "l2_externalId",
     "gln" : "l2_gln",
     "handOverLocation" : false,
     "handles" : [ ],
     "id" : {
-      "bpartnerId" : 100013,
-      "repoId" : 100017
+      "bpartnerId" : 100014,
+      "repoId" : 100018
     },
     "locationType" : {
       "billTo" : false,
@@ -273,7 +273,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100010,
+    "currencyId" : 100011,
     "iban" : "INITIAL-IBAN-1",
     "id" : {
       "bpartnerId" : 20,
@@ -361,7 +361,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100011
+          "AD_User_ID" : 100012
         }
       },
       "tableName" : "AD_User"
@@ -378,7 +378,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "email" : "newContact-_email@email.net",
     "externalId" : "newContact-_externalId",
     "handles" : [ ],
-    "id" : "20-100011",
+    "id" : "20-100012",
     "membershipContact" : false,
     "name" : "newContact-_name",
     "newsletter" : false,
@@ -409,7 +409,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100009,
+    "existingLocationId" : 100010,
     "externalId" : "bpartnerLocation.externalId",
     "gln" : "bpartnerLocationRecord.gln",
     "handOverLocation" : false,
@@ -452,7 +452,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100010,
+    "currencyId" : 100011,
     "iban" : "INITIAL-IBAN-1",
     "id" : {
       "bpartnerId" : 20,
@@ -553,7 +553,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100009,
+    "existingLocationId" : 100010,
     "externalId" : "bpartnerLocation.externalId",
     "gln" : "bpartnerLocationRecord.gln",
     "handOverLocation" : false,
@@ -596,7 +596,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100010,
+    "currencyId" : 100011,
     "iban" : "INITIAL-IBAN-1",
     "id" : {
       "bpartnerId" : 20,
@@ -697,7 +697,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100009,
+    "existingLocationId" : 100010,
     "externalId" : "bpartnerLocation.externalId",
     "gln" : "bpartnerLocationRecord.gln",
     "handOverLocation" : false,
@@ -740,7 +740,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100010,
+    "currencyId" : 100011,
     "iban" : "INITIAL-IBAN-1",
     "id" : {
       "bpartnerId" : 20,
@@ -841,7 +841,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100009,
+    "existingLocationId" : 100010,
     "externalId" : "bpartnerLocation.externalId",
     "gln" : "bpartnerLocationRecord.gln",
     "handOverLocation" : false,
@@ -875,7 +875,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100013
+          "C_BPartner_Location_ID" : 100014
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -883,14 +883,14 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "city" : "newLocation-_city",
     "countryCode" : "DE",
     "ephemeral" : false,
-    "existingLocationId" : 100012,
+    "existingLocationId" : 100013,
     "externalId" : "newLocation-_externalId",
     "gln" : "newLocation-_gln",
     "handOverLocation" : false,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
-      "repoId" : 100013
+      "repoId" : 100014
     },
     "locationType" : {
       "billTo" : false,
