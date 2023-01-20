@@ -191,7 +191,7 @@ public class Money
 			}
 		}
 
-		if(commonCurrencyId == null)
+		if (commonCurrencyId == null)
 		{
 			throw new AdempiereException("The given moneys may not be empty");
 		}
@@ -293,6 +293,12 @@ public class Money
 	{
 		assertCurrencyIdMatching(other);
 		return this.value.compareTo(other.value) <= 0;
+	}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) >= 0;
 	}
 
 	public boolean isEqualByComparingTo(@Nullable final Money other)
