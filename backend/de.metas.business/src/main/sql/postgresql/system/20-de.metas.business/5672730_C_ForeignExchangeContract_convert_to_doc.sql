@@ -38,8 +38,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2023-01-20T00:24:15.161Z
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
+--UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
+-- ;
 
 -- 2023-01-20T00:24:15.170Z
 INSERT INTO AD_Workflow (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Table_ID,AD_Workflow_ID,Author,Cost,Created,CreatedBy,DocumentNo,Duration,DurationUnit,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsValid,Name,PublishStatus,Updated,UpdatedBy,Value,Version,WaitingTime,WorkflowType,WorkingTime) VALUES ('1',0,0,542281,540122,'metasfresh ERP',0,TO_TIMESTAMP('2023-01-20 02:24:14','YYYY-MM-DD HH24:MI:SS'),100,'10000001',1,'D','D','Y','N','N','N','Process_C_ForeignExchangeContract','R',TO_TIMESTAMP('2023-01-20 02:24:14','YYYY-MM-DD HH24:MI:SS'),100,'Process_C_ForeignExchangeContract',0,0,'P',0)
