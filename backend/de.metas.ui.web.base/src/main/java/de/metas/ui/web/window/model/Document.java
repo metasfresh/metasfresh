@@ -101,8 +101,6 @@ import java.util.function.Supplier;
 
 public final class Document
 {
-	private static final IDocumentNoBuilderFactory documentNoBuilder = SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class);
-
 	public static Builder builder(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return new Builder(entityDescriptor);
@@ -737,19 +735,6 @@ public final class Document
 				}
 
 				return value;
-			}
-
-			if (fieldDescriptor.getDocSequenceId() != null)
-			{
-				return Optional.ofNullable(documentNoBuilder.forSequenceId(fieldDescriptor.getDocSequenceId())
-												   .setClientId(Env.getClientId(Env.getCtx()))
-												   .setEvaluationContext(Evaluatees.mapBuilder()
-																				 .put(fieldDescriptor.getFieldName(), true)
-																				 .build())
-												   .build())
-						.orElseThrow(() -> new AdempiereException("Failed to compute sequenceId")
-								.appendParametersToMessage()
-								.setParameter("adSequenceId", fieldDescriptor.getDocSequenceId()));
 			}
 
 			//

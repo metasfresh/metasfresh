@@ -32,6 +32,7 @@ import org.compiere.model.X_C_Project;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Keep in sync with reference list "_PriorityRule" {@code AD_Reference_ID=154}
@@ -56,6 +57,14 @@ public enum InternalPriority implements ReferenceListAwareEnum
 	public static InternalPriority ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
+	}
+
+	@Nullable
+	public static String toCode(@Nullable final InternalPriority internalPriority)
+	{
+		return Optional.ofNullable(internalPriority)
+				.map(InternalPriority::getCode)
+				.orElse(null);
 	}
 
 	public static InternalPriority ofCode(@NonNull final String code)

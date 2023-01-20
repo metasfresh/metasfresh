@@ -1354,54 +1354,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.filter(poInfoColumnPredicate);
 	}
 
-	@NonNull
-	public Optional<String> computeColumnValueBasedOnSequenceIdIfProvided(@NonNull final String columnName, final int clientId)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		final POInfoColumn poInfoColumn = getColumn(columnIndex);
-		Check.assumeNotNull(poInfoColumn, "POInfoColumn cannot be missing for an existing ColumnName!");
-
-		if (poInfoColumn.isString(getTableName(), columnName))
-		{
-			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(getColumnSequenceId(columnName));
-			if (sequenceId == null)
-			{
-				return Optional.empty();
-			}
-
-			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-			final String computedSeqNo = documentNoFactory.forSequenceId(sequenceId)
-					.setClientId(ClientId.ofRepoId(clientId))
-					.build();
-
-			if (computedSeqNo == null)
-			{
-				throw new AdempiereException("Failed to compute sequenceId")
-						.appendParametersToMessage()
-						.setParameter("sequenceId", sequenceId);
-			}
-
-			return Optional.of(computedSeqNo);
-		}
-
-		return Optional.empty();
-	}
-
-	private int getColumnSequenceId(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return getColumnSequenceId(columnIndex);
-	}
-
-	private int getColumnSequenceId(final int columnIndex)
-	{
-		if (columnIndex < 0 || columnIndex >= m_columns.size())
-		{
-			return -1;
-		}
-		return m_columns.get(columnIndex).getAD_Sequence_ID();
-	}
-
 	@Value
 	@Builder
 	private static class POInfoHeader

@@ -156,9 +156,9 @@ public final class POInfoColumn implements Serializable
 		return false;
 	}
 
-	public boolean isString(@NonNull final String tableName, @NonNull final String columnName)
+	public boolean isString()
 	{
-		return isString(tableName, columnName, getDisplayType(), getAD_Reference_Value_ID());
+		return isString(TableName, ColumnName, DisplayType, AD_Reference_Value_ID);
 	}
 
 	private static boolean isSearchDisplayType(final int displayType)

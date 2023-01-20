@@ -23,41 +23,22 @@
 package de.metas.externalsystem.other.export.project.workorder;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.other.export.project.C_Project_SyncTo_Other;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProjectRepository;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Project;
+
+import java.util.Iterator;
 
 public class C_WorkOrderProject_SyncTo_Other extends C_Project_SyncTo_Other
 {
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	private final WOProjectRepository woProjectRepository = SpringContextHolder.instance.getBean(WOProjectRepository.class);
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
-	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
-
-		final ProjectId projectId = ProjectId.ofRepoId(context.getSingleSelectedRecordId());
-		if (!woProjectRepository.isWorkOrderProject(projectId))
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
+	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
 	private final ExportWorkOrderProjectToOtherService exportWorkOrderProjectToOtherService = SpringContextHolder.instance.getBean(ExportWorkOrderProjectToOtherService.class);
 
@@ -65,5 +46,25 @@ public class C_WorkOrderProject_SyncTo_Other extends C_Project_SyncTo_Other
 	protected ExportToExternalSystemService getExportProjectToExternalSystem()
 	{
 		return exportWorkOrderProjectToOtherService;
+	}
+
+	@NonNull
+	protected Iterator<I_C_Project> iterateAllActive()
+	{
+		return woProjectRepository.iterateAllActive();
+	}
+
+	@Override
+	protected void checkIsExportAllowed()
+	{
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(externalSystemConfigOtherId);
+
+		final IExternalSystemChildConfig childConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, getExternalSystemType())
+				.orElseThrow(() -> new AdempiereException("Could not load child config for ExternalSystemParentConfigId = " + externalSystemParentConfigId));
+
+		if (!exportWorkOrderProjectToOtherService.isSyncEnabled(childConfig))
+		{
+			throw new AdempiereException("WOStep cannot be sent to ExternalSystem as Export is not allowed!");
+		}
 	}
 }

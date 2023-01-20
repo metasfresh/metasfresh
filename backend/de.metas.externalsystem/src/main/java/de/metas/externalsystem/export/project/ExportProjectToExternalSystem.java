@@ -113,6 +113,12 @@ public abstract class ExportProjectToExternalSystem extends ExportToExternalSyst
 			return Optional.empty();
 		}
 
+		if (!isSyncEnabled(config.getChildConfig()))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} ExportProject to external system is false! No action is performed!", config.getChildConfig().getId());
+			return Optional.empty();
+		}
+
 		final Project project = projectRepository.getOptionalById(projectId)
 				.orElseThrow(() -> new AdempiereException("C_Project record cannot be missing for C_Project_ID = " + projectId.getRepoId()));
 
@@ -146,6 +152,8 @@ public abstract class ExportProjectToExternalSystem extends ExportToExternalSyst
 
 	@NonNull
 	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ProjectId projectId);
+
+	protected abstract boolean isSyncEnabled(@NonNull final IExternalSystemChildConfig childConfig);
 
 	private void syncCollectedProjectsIfRequired(@NonNull final Collection<ProjectId> projectIdList)
 	{

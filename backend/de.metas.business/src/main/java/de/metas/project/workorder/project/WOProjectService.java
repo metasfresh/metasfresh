@@ -28,7 +28,6 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.resource.WOProjectResource;
@@ -44,7 +43,6 @@ import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
@@ -60,18 +58,15 @@ public class WOProjectService
 	private final WOProjectRepository woProjectRepository;
 	private final WOProjectResourceRepository woProjectResourceRepository;
 	private final WOProjectStepRepository woProjectStepRepository;
-	private final BudgetProjectRepository budgetProjectRepository;
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
 			final WOProjectResourceRepository woProjectResourceRepository,
-			final WOProjectStepRepository woProjectStepRepository,
-			final BudgetProjectRepository budgetProjectRepository)
+			final WOProjectStepRepository woProjectStepRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
 		this.woProjectStepRepository = woProjectStepRepository;
-		this.budgetProjectRepository = budgetProjectRepository;
 	}
 
 	@NonNull
@@ -164,37 +159,13 @@ public class WOProjectService
 		woProjectResourceRepository.updateProjectResourcesByIds(projectResourceIds, mapper);
 	}
 
-	public void updateWOChildProjectsFromParent(@NonNull final ProjectId budgetProjectId)
+	public void updateWOChildProjectsFromParent(@NonNull final BudgetProject budgetProject)
 	{
-		final BudgetProject budgetProject = budgetProjectRepository.getOptionalById(budgetProjectId)
-				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + budgetProjectId.getRepoId()));
-
-		woProjectRepository.getByParentProjectId(budgetProjectId)
+		woProjectRepository.getByParentProjectId(budgetProject.getProjectId())
 				.forEach(woProject -> syncWithParentAndUpdate(woProject, budgetProject));
 	}
 
-	public void updateWOProjectFromParent(@NonNull final I_C_Project woProjectToBeUpdated)
-	{
-		if (woProjectToBeUpdated.getC_Project_Parent_ID() <= 0)
-		{
-			return;
-		}
-
-		final BudgetProject parentProject = budgetProjectRepository.getOptionalById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_Parent_ID()))
-				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + woProjectToBeUpdated.getC_Project_Parent_ID()));
-
-		final WOProject woProject = woProjectRepository.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_ID()));
-
-		final String logMessage = syncWithParentAndUpdate(woProject, parentProject);
-
-		if (Check.isNotBlank(logMessage)) // log this, particularly in case the change is done via API
-		{
-			Loggables.get().addLog("Set the following columns from C_Project_Parent_ID={}: {}", woProjectToBeUpdated.getC_Project_Parent_ID(), logMessage);
-		}
-	}
-
-	@NonNull
-	public String syncWithParentAndUpdate(@NonNull final WOProject woProject, @NonNull final BudgetProject parentProject)
+	public void syncWithParentAndUpdate(@NonNull final WOProject woProject, @NonNull final BudgetProject parentProject)
 	{
 		final WOProject.WOProjectBuilder projectToUpdateBuilder = woProject.toBuilder()
 				.bpartnerDepartment(parentProject.getBpartnerDepartment())
@@ -218,6 +189,12 @@ public class WOProjectService
 
 		woProjectRepository.update(projectToUpdateBuilder.build());
 
-		return message.toString();
+		final String logMessage = message.toString();
+
+		if (Check.isNotBlank(logMessage)) // log this, particularly in case the change is done via API
+		{
+			Loggables.get().addLog("Update WO_Project_ID = {} with the following columns from C_Project_Parent_ID={}: {}",
+								   woProject.getProjectId().getRepoId(), parentProject.getProjectId().getRepoId(), logMessage);
+		}
 	}
 }

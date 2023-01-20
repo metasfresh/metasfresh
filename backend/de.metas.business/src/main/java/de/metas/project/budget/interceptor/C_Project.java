@@ -27,6 +27,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
+import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.workorder.project.WOProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -45,13 +46,16 @@ public class C_Project
 {
 	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
 	private final WOProjectService woProjectService;
+	private final BudgetProjectService budgetProjectService;
 
 	public C_Project(
 			@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository,
-			@NonNull final WOProjectService woProjectService)
+			@NonNull final WOProjectService woProjectService,
+			@NonNull final BudgetProjectService budgetProjectService)
 	{
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
 		this.woProjectService = woProjectService;
+		this.budgetProjectService = budgetProjectService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -84,6 +88,9 @@ public class C_Project
 			return;
 		}
 
-		woProjectService.updateWOChildProjectsFromParent(ProjectId.ofRepoId(record.getC_Project_ID()));
+		final BudgetProject budgetProject = budgetProjectService.getById(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + record.getC_Project_ID()));
+
+		woProjectService.updateWOChildProjectsFromParent(budgetProject);
 	}
 }

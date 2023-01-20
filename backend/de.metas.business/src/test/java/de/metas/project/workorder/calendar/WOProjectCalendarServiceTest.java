@@ -57,7 +57,7 @@ class WOProjectCalendarServiceTest
 		this.budgetProjectRepository = new BudgetProjectRepository();
 		this.woProjectRepository = new WOProjectRepository();
 		final WOProjectResourceRepository woProjectResourceRepository = new WOProjectResourceRepository();
-		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), budgetProjectRepository);
+		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository());
 		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository());
 		final WOProjectSimulationRepository woProjectSimulationRepository = new WOProjectSimulationRepository();
 		final SimulationPlanRepository simulationPlanRepository = new SimulationPlanRepository();

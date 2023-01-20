@@ -50,6 +50,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,10 +111,8 @@ public class WOProjectRepository
 		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(woProject.getBpartnerTargetDate()));
 		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(woProject.getWoProjectCreatedDate()));
 		projectRecord.setC_ProjectType_ID(woProject.getProjectTypeId().getRepoId());
-		projectRecord.setSpecialist_Consultant_ID(woProject.getSpecialistConsultantID() != null
-														  ? woProject.getSpecialistConsultantID().getRepoId()
-														  : null);
-		projectRecord.setInternalPriority(woProject.getInternalPriority().getCode());
+		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(woProject.getSpecialistConsultantID()));
+		projectRecord.setInternalPriority(InternalPriority.toCode(woProject.getInternalPriority()));
 
 		saveRecord(projectRecord);
 
@@ -209,16 +208,14 @@ public class WOProjectRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean isWorkOrderProject(@NonNull final ProjectId projectId)
+	@NonNull
+	public Iterator<I_C_Project> iterateAllActive()
 	{
-		final I_C_Project project = getRecordById(projectId);
-
-		if (project == null)
-		{
-			return false;
-		}
-
-		return ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder();
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.create()
+				.iterate(I_C_Project.class);
 	}
 
 	@Nullable

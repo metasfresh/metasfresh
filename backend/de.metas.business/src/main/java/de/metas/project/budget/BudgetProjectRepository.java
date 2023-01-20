@@ -48,6 +48,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -181,10 +182,8 @@ public class BudgetProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProject.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(budgetProject.getProjectReferenceExt());
 		projectRecord.setBPartnerDepartment(budgetProject.getBpartnerDepartment());
-		projectRecord.setSpecialist_Consultant_ID(budgetProject.getSpecialistConsultantID() != null
-														  ? budgetProject.getSpecialistConsultantID().getRepoId()
-														  : null);
-		projectRecord.setInternalPriority(budgetProject.getInternalPriority().getCode());
+		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(budgetProject.getSpecialistConsultantID()));
+		projectRecord.setInternalPriority(InternalPriority.toCode(budgetProject.getInternalPriority()));
 
 		InterfaceWrapperHelper.saveRecord(projectRecord);
 
@@ -237,13 +236,14 @@ public class BudgetProjectRepository
 		return mapProject.apply(projectRecord);
 	}
 
-	public boolean isBudgetProject(@NonNull final ProjectId projectId)
+	@NonNull
+	public Iterator<I_C_Project> iterateAllActive()
 	{
 		return queryBL.createQueryBuilder(I_C_Project.class)
-				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectId)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget.getCode())
 				.create()
-				.anyMatch();
+				.iterate(I_C_Project.class);
 	}
 
 	@NonNull

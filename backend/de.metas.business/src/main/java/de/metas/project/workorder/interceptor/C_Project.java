@@ -23,10 +23,15 @@
 package de.metas.project.workorder.interceptor;
 
 import de.metas.project.ProjectCategory;
+import de.metas.project.ProjectId;
+import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectService;
+import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -36,9 +41,14 @@ import org.springframework.stereotype.Component;
 public class C_Project
 {
 	private final WOProjectService woProjectService;
-	public C_Project( @NonNull final WOProjectService woProjectService)
+	private final BudgetProjectService budgetProjectService;
+
+	public C_Project(
+			@NonNull final WOProjectService woProjectService,
+			@NonNull final BudgetProjectService budgetProjectService)
 	{
 		this.woProjectService = woProjectService;
+		this.budgetProjectService = budgetProjectService;
 	}
 
 	/**
@@ -46,17 +56,23 @@ public class C_Project
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_Project.COLUMNNAME_C_Project_Parent_ID, I_C_Project.COLUMNNAME_ProjectCategory })
-	public void updateFromParent(@NonNull final I_C_Project project)
+	public void updateFromParent(@NonNull final I_C_Project woProjectToBeUpdated)
 	{
-		if (!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder())
+		if (!ProjectCategory.ofNullableCodeOrGeneral(woProjectToBeUpdated.getProjectCategory()).isWorkOrder())
 		{
 			return; // not our business
 		}
-		if (project.getC_Project_Parent_ID() <= 0)
+
+		if (woProjectToBeUpdated.getC_Project_Parent_ID() <= 0)
 		{
 			return; // nothing for us to do
 		}
 
-		woProjectService.updateWOProjectFromParent(project);
+		final BudgetProject parentProject = budgetProjectService.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_Parent_ID()))
+				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + woProjectToBeUpdated.getC_Project_Parent_ID()));
+
+		final WOProject woProject = woProjectService.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_ID()));
+
+		woProjectService.syncWithParentAndUpdate(woProject, parentProject);
 	}
 }

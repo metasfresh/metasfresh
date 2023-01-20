@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.ui.web.window.descriptor.sql.DocSequenceAwareFieldStringExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -128,7 +130,8 @@ public class DefaultValueExpressionsFactory
 			final DocumentFieldWidgetType widgetType,
 			final Class<?> fieldValueClass,
 			final boolean isMandatory,
-			final boolean allowUsingAutoSequence)
+			final boolean allowUsingAutoSequence,
+			final DocSequenceId docSequenceId)
 	{
 		final boolean isDetailTab = isDetailTab();
 
@@ -145,7 +148,11 @@ public class DefaultValueExpressionsFactory
 		// If there is no default value expression, use some defaults
 		if (Check.isEmpty(defaultValueStr))
 		{
-			if (WindowConstants.FIELDNAME_AD_Client_ID.equals(columnName))
+			if (docSequenceId != null && allowUsingAutoSequence)
+			{
+				return Optional.of(DocSequenceAwareFieldStringExpression.of(docSequenceId));
+			}
+			else if (WindowConstants.FIELDNAME_AD_Client_ID.equals(columnName))
 			{
 				return DEFAULT_VALUE_AD_Client_ID;
 			}

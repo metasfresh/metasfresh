@@ -66,7 +66,15 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 	}
 
 	@Override
-	public abstract ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context);
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected String doIt() throws Exception
@@ -75,7 +83,7 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 
 		addLog("Calling with params: externalSystemChildConfigId: {}", externalSystemChildConfigId);
 
-		final Iterator<I_C_Project> projectIterator = getSelectedProjectRecords();
+		final Iterator<I_C_Project> projectIterator = getProjectsToIterate();
 
 		while (projectIterator.hasNext())
 		{
@@ -104,4 +112,20 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 	protected abstract String getExternalSystemParam();
 
 	protected abstract ExportToExternalSystemService getExportProjectToExternalSystem();
+
+	@NonNull
+	protected abstract Iterator<I_C_Project> iterateAllActive();
+
+	@NonNull
+	private Iterator<I_C_Project> getProjectsToIterate()
+	{
+		final Iterator<I_C_Project> selectedRecords = getSelectedProjectRecords();
+
+		if (selectedRecords.hasNext())
+		{
+			return selectedRecords;
+		}
+
+		return iterateAllActive();
+	}
 }

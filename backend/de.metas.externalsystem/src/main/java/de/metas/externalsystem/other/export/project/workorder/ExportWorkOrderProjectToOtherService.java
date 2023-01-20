@@ -64,6 +64,14 @@ public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherSe
 	}
 
 	@Override
+	public boolean isSyncEnabled(@NonNull final IExternalSystemChildConfig childConfig)
+	{
+		final ExternalSystemOtherConfig externalSystemOtherConfig = ExternalSystemOtherConfig.cast(childConfig);
+
+		return externalSystemConfigService.isOtherConfigParameterSet(externalSystemOtherConfig, PARAM_EXPORT_WO_STEP_PROJECT);
+	}
+
+	@Override
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_WORK_ORDER;
@@ -77,8 +85,7 @@ public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherSe
 		return Optional.of(otherExternalSysConfigs.stream()
 								   .filter(ExternalSystemParentConfig::isActive)
 								   .map(ExternalSystemParentConfig::getChildConfig)
-								   .map(ExternalSystemOtherConfig::cast)
-								   .filter(config -> externalSystemConfigService.isOtherConfigParameterSet(config, PARAM_EXPORT_WO_STEP_PROJECT))
+								   .filter(this::isSyncEnabled)
 								   .map(IExternalSystemChildConfig::getId)
 								   .collect(ImmutableSet.toImmutableSet()));
 	}

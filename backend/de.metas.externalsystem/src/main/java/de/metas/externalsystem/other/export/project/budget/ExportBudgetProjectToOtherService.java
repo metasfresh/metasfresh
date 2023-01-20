@@ -65,21 +65,28 @@ public class ExportBudgetProjectToOtherService extends ExportProjectToOtherServi
 	}
 
 	@Override
+	public boolean isSyncEnabled(@NonNull final IExternalSystemChildConfig childConfig)
+	{
+		final ExternalSystemOtherConfig externalSystemOtherConfig = ExternalSystemOtherConfig.cast(childConfig);
+
+		return externalSystemConfigService.isOtherConfigParameterSet(externalSystemOtherConfig, PARAM_EXPORT_BUDGET_PROJECT);
+	}
+
+	@Override
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BUDGET;
 	}
 
 	@NonNull
-	protected  Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ProjectId projectId)
+	protected Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ProjectId projectId)
 	{
 		final ImmutableList<ExternalSystemParentConfig> otherExternalSysConfigs = externalSystemConfigRepo.getActiveByType(getExternalSystemType());
 
 		return Optional.of(otherExternalSysConfigs.stream()
 								   .filter(ExternalSystemParentConfig::isActive)
 								   .map(ExternalSystemParentConfig::getChildConfig)
-								   .map(ExternalSystemOtherConfig::cast)
-								   .filter(config -> externalSystemConfigService.isOtherConfigParameterSet(config, PARAM_EXPORT_BUDGET_PROJECT))
+								   .filter(this::isSyncEnabled)
 								   .map(IExternalSystemChildConfig::getId)
 								   .collect(ImmutableSet.toImmutableSet()));
 	}

@@ -82,4 +82,6 @@ public abstract class ExportProjectToOtherService extends ExportProjectToExterna
 
 	@NonNull
 	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ProjectId projectId);
+
+	protected abstract boolean isSyncEnabled(@NonNull final IExternalSystemChildConfig childConfig);
 }

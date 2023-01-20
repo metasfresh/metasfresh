@@ -385,7 +385,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 					widgetType,
 					valueClass,
 					gridFieldVO.isMandatory(),
-					gridFieldVO.isUseDocSequence());
+					gridFieldVO.isUseDocSequence(),
+					DocSequenceId.ofRepoIdOrNull(gridFieldVO.getAD_Sequence_ID()));
 
 			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
