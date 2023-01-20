@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
+import de.metas.currency.CurrencyConversionContext;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -104,6 +105,7 @@ public final class Fact
 	private List<FactLine> m_lines = new ArrayList<>();
 
 	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private CurrencyConversionContext currencyConversionContext = null;
 
 	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
@@ -111,9 +113,18 @@ public final class Fact
 		return this;
 	}
 
-	/**
-	 * Dispose
-	 */
+	public Fact setCurrencyConversionContext(@Nullable final CurrencyConversionContext currencyConversionContext)
+	{
+		this.currencyConversionContext = currencyConversionContext;
+		return this;
+	}
+
+	@Nullable
+	CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return currencyConversionContext;
+	}
+
 	public void dispose()
 	{
 		m_lines.clear();

@@ -3,6 +3,7 @@ package de.metas.invoice.service;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
@@ -16,6 +17,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -373,4 +375,8 @@ public interface IInvoiceBL extends ISingletonService
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
+
+	CurrencyConversionContext getCurrencyConversionCtx(
+			@NonNull I_C_Invoice invoice,
+			@NonNull CurrencyId acctCurrencyId);
 }

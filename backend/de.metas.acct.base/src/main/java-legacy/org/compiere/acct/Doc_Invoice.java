@@ -27,16 +27,20 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.ChargeId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.MatchInvId;
 import de.metas.invoice.acct.InvoiceAcct;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.money.CurrencyId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -56,6 +60,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +83,7 @@ import java.util.Set;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
@@ -96,6 +102,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private boolean m_allLinesItem = true;
 	private Optional<InvoiceAcct> _invoiceAccounts = null; // lazy
+
+	private final HashMap<CurrencyId, CurrencyConversionContext> invoiceCurrencyConversionCtxByAcctCurrencyId = new HashMap<>();
 
 	public Doc_Invoice(final AcctDocContext ctx)
 	{
@@ -324,6 +332,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				.orElse(null);
 	}
 
+	private Fact newFact(@NonNull final AcctSchema as)
+	{
+		return new Fact(this, as, PostingType.Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance)
+				.setCurrencyConversionContext(getCurrencyConversionContext(as));
+	}
+
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
@@ -378,8 +393,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_SalesInvoice(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual)
-				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+		final Fact fact = newFact(as);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -492,8 +506,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_SalesCreditMemo(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual)
-				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+		final Fact fact = newFact(as);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -604,8 +617,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_PurchaseInvoice(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual)
-				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+		final Fact fact = newFact(as);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -733,8 +745,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_PurchaseCreditMemo(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual)
-				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
+		final Fact fact = newFact(as);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 		BigDecimal serviceAmt = BigDecimal.ZERO;
@@ -846,6 +857,18 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		return ImmutableList.of(fact);
+	}
+
+	@Override
+	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	{
+		return invoiceCurrencyConversionCtxByAcctCurrencyId.computeIfAbsent(acctSchema.getCurrencyId(), this::createCurrencyConversionCtx);
+	}
+
+	private CurrencyConversionContext createCurrencyConversionCtx(final CurrencyId acctCurrencyId)
+	{
+		final I_C_Invoice invoice = getModel(I_C_Invoice.class);
+		return invoiceBL.getCurrencyConversionCtx(invoice, acctCurrencyId);
 	}
 
 	@Override
