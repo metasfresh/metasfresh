@@ -1,7 +1,9 @@
 package de.metas.bpartner.service;
 
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
 import com.google.common.collect.ImmutableSet;
@@ -31,7 +33,7 @@ public interface IBPartnerStatisticsUpdater extends ISingletonService
 		final ImmutableSet<Integer> bpartnerIds;
 
 		/**
-		 * This flag decides if {@link IBPartnerStatsBL#resetCreditStatusFromBPGroup(org.compiere.model.I_C_BPartner)} will also be invoked
+		 * This flag decides if {@link BPartnerStatsService#resetCreditStatusFromBPGroup(I_C_BPartner) } will also be invoked
 		 */
 		final boolean alsoResetCreditStatusFromBPGroup;
 

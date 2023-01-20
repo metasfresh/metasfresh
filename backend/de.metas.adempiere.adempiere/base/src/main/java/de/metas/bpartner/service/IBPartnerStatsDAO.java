@@ -74,4 +74,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 
 	@Nullable
 	abstract BigDecimal computeActualLifeTimeValue(@NonNull BPartnerId partnerId);
+
+	BigDecimal retrieveDeliveryCreditUsed(BPartnerStats bpStats);
 }

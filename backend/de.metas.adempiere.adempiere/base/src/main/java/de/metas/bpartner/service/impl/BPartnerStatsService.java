@@ -170,8 +170,9 @@ public class BPartnerStatsService
 		updateOpenItems(bpStats);
 		updateActualLifeTimeValue(bpStats);
 		updateSOCreditUsed(bpStats);
-		updateSOCreditStatus(bpStats);
 		updateDeliveryCreditUsed(bpStats);
+		updateSOCreditStatus(bpStats);
+		updateDeliveryCreditStatus(bpStats);
 		updateCreditLimitIndicator(bpStats);
 	}
 
@@ -203,6 +204,14 @@ public class BPartnerStatsService
 		final BigDecimal SO_CreditUsed = bPartnerStatsDAO.retrieveSOCreditUsed(bpStats);
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
 		stats.setSO_CreditUsed(SO_CreditUsed);
+		saveRecord(stats);
+	}
+
+	private void updateDeliveryCreditUsed(final BPartnerStats bpStats)
+	{
+		final BigDecimal deliveryCreditUsed = bPartnerStatsDAO.retrieveDeliveryCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+		stats.setDelivery_CreditUsed(deliveryCreditUsed);
 		saveRecord(stats);
 	}
 
@@ -248,9 +257,10 @@ public class BPartnerStatsService
 		}
 
 		stats.setSOCreditStatus(creditStatusToSet);
+		saveRecord(stats);
 	}
 
-	private void updateDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
+	private void updateDeliveryCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
 		// in accounting schema currency
 		// todo
@@ -270,7 +280,7 @@ public class BPartnerStatsService
 
 		// load the statistics
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
-		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+		final BigDecimal creditUsed = stats.getDelivery_CreditUsed();
 
 		// Above Credit Limit
 		if (creditLimit.compareTo(creditUsed) < 0)
@@ -294,6 +304,7 @@ public class BPartnerStatsService
 		}
 
 		stats.setSOCreditStatus(creditStatusToSet);
+		saveRecord(stats);
 	}
 
 	private void updateCreditLimitIndicator(@NonNull final BPartnerStats bstats)

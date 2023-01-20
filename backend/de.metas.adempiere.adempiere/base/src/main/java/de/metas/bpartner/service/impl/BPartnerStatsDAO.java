@@ -174,6 +174,15 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 	}
 
+
+	@Override
+	public BigDecimal retrieveDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
+	{
+
+		//todo
+		return null;
+	}
+
 	@Override
 	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
 	{
