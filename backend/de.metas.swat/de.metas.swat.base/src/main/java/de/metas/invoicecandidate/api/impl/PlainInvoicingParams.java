@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @ToString
+@SuppressWarnings("UnusedReturnValue")
 public class PlainInvoicingParams implements IInvoicingParams
 {
 	private final IInvoicingParams defaults;
@@ -47,7 +48,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean poReferenceSet = false;
 	private BigDecimal check_NetAmtToInvoice = null;
 	private boolean updateLocationAndContactForInvoice = false;
-	private boolean completeInvoices = true; // default=true for backwards-compantibility
+	private boolean completeInvoices = true; // default=true for backwards-compatibility
 
 	public PlainInvoicingParams()
 	{
