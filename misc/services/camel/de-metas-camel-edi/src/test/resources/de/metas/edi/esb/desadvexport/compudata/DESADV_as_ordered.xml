@@ -163,5 +163,14 @@
         <ISO_4217Numeric>756</ISO_4217Numeric>
         <ISO_Code>CHF</ISO_Code>
     </C_Currency_ID>
+    <HandOver_Location_ID>
+        <GLN>1234567890125</GLN>
+        <Name>HandOver_Location_Name</Name>
+    </HandOver_Location_ID>
+    <DropShip_Location_ID>
+        <!--Business Partner Location for shipping to-->
+        <GLN>1234567890126</GLN>
+        <Name>DropShip_Location_Name</Name>
+    </DropShip_Location_ID>
     <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
 </EDI_Exp_Desadv>
