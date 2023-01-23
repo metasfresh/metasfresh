@@ -22,14 +22,12 @@
 
 package de.metas.externalsystem.other.export.project;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
+import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.export.project.budget.ExportBudgetProjectToOtherService;
 import de.metas.project.budget.BudgetProjectRepository;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Project;
 
@@ -38,8 +36,6 @@ import java.util.Iterator;
 public class C_BudgetProject_SyncTo_Other extends C_Project_SyncTo_Other
 {
 	private final BudgetProjectRepository budgetProjectRepository = SpringContextHolder.instance.getBean(BudgetProjectRepository.class);
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
-
 	private final ExportBudgetProjectToOtherService exportBudgetProjectToOtherService = SpringContextHolder.instance.getBean(ExportBudgetProjectToOtherService.class);
 
 	@Override
@@ -49,21 +45,15 @@ public class C_BudgetProject_SyncTo_Other extends C_Project_SyncTo_Other
 	}
 
 	@Override
-	protected void checkIsExportAllowed()
+	protected boolean isExportAllowed(@NonNull final IExternalSystemChildConfig childConfig)
 	{
-		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(externalSystemConfigOtherId);
+		final ExternalSystemOtherConfig otherConfig = ExternalSystemOtherConfig.cast(childConfig);
 
-		final IExternalSystemChildConfig childConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, getExternalSystemType())
-				.orElseThrow(() -> new AdempiereException("Could not load child config for ExternalSystemParentConfigId = " + externalSystemParentConfigId));
-
-		if (!exportBudgetProjectToOtherService.isSyncEnabled(childConfig))
-		{
-			throw new AdempiereException("Budget project cannot be sent to ExternalSystem as Export is not allowed!");
-		}
+		return otherConfig.isSyncBudgetProjectsEnabled();
 	}
 
 	@NonNull
-	protected Iterator<I_C_Project> iterateAllActive()
+	protected Iterator<I_C_Project> getAllActive()
 	{
 		return budgetProjectRepository.iterateAllActive();
 	}

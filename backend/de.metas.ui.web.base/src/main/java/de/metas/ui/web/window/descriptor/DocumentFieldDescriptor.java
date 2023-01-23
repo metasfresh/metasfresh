@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -150,9 +149,6 @@ public final class DocumentFieldDescriptor
 	@Getter
 	private final DeviceDescriptorsProvider deviceDescriptorsProvider;
 
-	@Nullable
-	private final DocSequenceId docSequenceId;
-
 	private DocumentFieldDescriptor(@NonNull final Builder builder)
 	{
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
@@ -200,8 +196,6 @@ public final class DocumentFieldDescriptor
 		defaultFilterInfo = builder.defaultFilterInfo;
 
 		deviceDescriptorsProvider = builder.getDeviceDescriptorsProvider();
-
-		docSequenceId = builder.getDocSequenceId();
 	}
 
 	@Override
@@ -406,12 +400,6 @@ public final class DocumentFieldDescriptor
 		return defaultFilterInfo;
 	}
 
-	@Nullable
-	public DocSequenceId getDocSequenceId()
-	{
-		return docSequenceId;
-	}
-
 	/**
 	 * Builder
 	 */
@@ -458,9 +446,6 @@ public final class DocumentFieldDescriptor
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
-
-		@Nullable
-		private DocSequenceId docSequenceId;
 
 		/**
 		 * See {@link #setTooltipIconName(String)}.
@@ -1181,19 +1166,6 @@ public final class DocumentFieldDescriptor
 		private DeviceDescriptorsProvider getDeviceDescriptorsProvider()
 		{
 			return deviceDescriptorsProvider;
-		}
-
-		@Nullable
-		public DocSequenceId getDocSequenceId()
-		{
-			return docSequenceId;
-		}
-
-		@NonNull
-		public Builder setDocSequenceId(@Nullable final DocSequenceId docSequenceId)
-		{
-			this.docSequenceId = docSequenceId;
-			return this;
 		}
 	}
 }

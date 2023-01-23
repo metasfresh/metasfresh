@@ -42,14 +42,10 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_BUDGET_PROJECT;
-
 @Service
 public class ExportBudgetProjectToOtherService extends ExportProjectToOtherService
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_BUDGET = "exportBudgetProject";
-
-	private final ExternalSystemConfigService externalSystemConfigService;
 
 	protected ExportBudgetProjectToOtherService(
 			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
@@ -59,9 +55,12 @@ public class ExportBudgetProjectToOtherService extends ExportProjectToOtherServi
 			final @NonNull ExternalSystemConfigService externalSystemConfigService,
 			final @NonNull ProjectRepository projectRepository)
 	{
-		super(externalSystemConfigRepo, externalSystemMessageSender, dataExportAuditLogRepository, dataExportAuditRepository, externalSystemConfigService, projectRepository);
-
-		this.externalSystemConfigService = externalSystemConfigService;
+		super(externalSystemConfigRepo,
+			  externalSystemMessageSender,
+			  dataExportAuditLogRepository,
+			  dataExportAuditRepository,
+			  externalSystemConfigService,
+			  projectRepository);
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class ExportBudgetProjectToOtherService extends ExportProjectToOtherServi
 	{
 		final ExternalSystemOtherConfig externalSystemOtherConfig = ExternalSystemOtherConfig.cast(childConfig);
 
-		return externalSystemConfigService.isOtherConfigParameterSet(externalSystemOtherConfig, PARAM_EXPORT_BUDGET_PROJECT);
+		return externalSystemOtherConfig.isSyncBudgetProjectsEnabled();
 	}
 
 	@Override

@@ -29,21 +29,16 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
-import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.project.ExportProjectToExternalSystem;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
-@Service
 public abstract class ExportProjectToOtherService extends ExportProjectToExternalSystem
 {
 	protected ExportProjectToOtherService(
@@ -77,11 +72,4 @@ public abstract class ExportProjectToOtherService extends ExportProjectToExterna
 	{
 		return ExternalSystemType.Other;
 	}
-
-	protected abstract String getExternalCommand();
-
-	@NonNull
-	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ProjectId projectId);
-
-	protected abstract boolean isSyncEnabled(@NonNull final IExternalSystemChildConfig childConfig);
 }

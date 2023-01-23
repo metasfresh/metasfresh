@@ -24,14 +24,11 @@ package de.metas.externalsystem;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.externalsystem.other.ExternalSystemOtherConfig;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigParameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -55,15 +52,5 @@ public class ExternalSystemConfigService
 				.orElseThrow(() -> new AdempiereException("Failed to compute sequenceId")
 						.appendParametersToMessage()
 						.setParameter("adSequenceId", AUDIT_AD_SEQUENCE_ID));
-	}
-
-	public boolean isOtherConfigParameterSet(@NonNull final ExternalSystemOtherConfig config, @NonNull final String parameterName)
-	{
-		return config.getParameters().stream()
-				.filter(param -> param.getName().equals(parameterName))
-				.map(ExternalSystemOtherConfigParameter::getValue)
-				.filter(Objects::nonNull)
-				.map(Boolean::parseBoolean)
-				.anyMatch(value -> value.equals(Boolean.TRUE));
 	}
 }

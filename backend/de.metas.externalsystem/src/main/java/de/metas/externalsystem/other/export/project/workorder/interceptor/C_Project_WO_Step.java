@@ -39,6 +39,7 @@ public class C_Project_WO_Step
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	@NonNull
 	private final ExportWorkOrderProjectToOtherService exportWorkOrderProjectToOtherService;
 
 	public C_Project_WO_Step(@NonNull final ExportWorkOrderProjectToOtherService exportWorkOrderProjectToOtherService)

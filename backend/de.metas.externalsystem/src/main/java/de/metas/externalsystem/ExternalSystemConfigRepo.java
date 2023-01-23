@@ -216,10 +216,10 @@ public class ExternalSystemConfigRepo
 			case LeichUndMehl:
 				result = getAllByTypeLeichMehl();
 				break;
-			case Shopware6:
 			case Other:
 				result = getAllByTypeOther();
 				break;
+			case Shopware6:
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -907,7 +907,8 @@ public class ExternalSystemConfigRepo
 	private ImmutableList<ExternalSystemParentConfig> getAllByTypeOther()
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config.class)
-				.addEqualsFilter(I_ExternalSystem_Config.COLUMNNAME_Type, ExternalSystemType.Other)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config.COLUMNNAME_Type, ExternalSystemType.Other.getCode())
 				.create()
 				.stream()
 				.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)

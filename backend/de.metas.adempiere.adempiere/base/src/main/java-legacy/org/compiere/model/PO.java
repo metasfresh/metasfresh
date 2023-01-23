@@ -5485,15 +5485,20 @@ public abstract class PO
 
 		Check.assumeNotNull(poInfoColumn, "POInfoColumn cannot be missing at this stage!");
 
-		if (poInfoColumn.isString())
+		if (!poInfoColumn.isString())
 		{
-			final String value = (String)get_Value(columnIndex);
-			if (Check.isBlank(value))
-			{
-				SequenceUtil.computeColumnValueBasedOnSequenceIdIfProvided(poInfoColumn, getAD_Client_ID())
-						.ifPresent((computedValue) -> set_ValueNoCheck(columnIndex, computedValue));
-			}
+			return;
 		}
+
+		final String value = (String)get_Value(columnIndex);
+		if (Check.isNotBlank(value))
+		{
+			return;
+		}
+
+		SequenceUtil.computeColumnValueBasedOnSequenceIdIfProvided(poInfoColumn, getAD_Client_ID())
+				.ifPresent((computedValue) -> set_ValueNoCheck(columnIndex, computedValue));
+
 	}
 
 	// metas: end

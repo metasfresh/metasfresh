@@ -70,7 +70,7 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 	}
 
 	/** @return the given {@code context}'s {@code POReference} value. */
-	private String provideSequenceNo(@NonNull final Evaluatee context)
+	private static String provideSequenceNo(@NonNull final Evaluatee context)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);

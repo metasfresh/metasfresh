@@ -22,21 +22,16 @@
 
 package de.metas.externalsystem.other.export.project;
 
-import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.project.C_Project_SyncTo_ExternalSystem;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.process.Param;
-import org.compiere.SpringContextHolder;
 
 public abstract class C_Project_SyncTo_Other extends C_Project_SyncTo_ExternalSystem
 {
-	private final ExternalSystemConfigService externalSystemConfigService = SpringContextHolder.instance.getBean(ExternalSystemConfigService.class);
-
 	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_OTHER_ID = I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_OTHER_ID)
 	public int externalSystemConfigOtherId;
@@ -56,13 +51,6 @@ public abstract class C_Project_SyncTo_Other extends C_Project_SyncTo_ExternalSy
 	@Override
 	protected IExternalSystemChildConfigId getExternalSystemChildConfigId()
 	{
-		checkIsExportAllowed();
-
 		return ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigOtherId));
 	}
-
-	@Override
-	protected abstract ExportToExternalSystemService getExportProjectToExternalSystem();
-
-	protected abstract void checkIsExportAllowed();
 }

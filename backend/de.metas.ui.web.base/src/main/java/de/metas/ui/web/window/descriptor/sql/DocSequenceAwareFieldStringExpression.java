@@ -49,6 +49,7 @@ public class DocSequenceAwareFieldStringExpression implements IStringExpression
 	private static final String PARAMETER_AD_Client_ID = WindowConstants.FIELDNAME_AD_Client_ID;
 	private static final Set<CtxName> PARAMETERS = ImmutableSet.of(CtxNames.parse(PARAMETER_AD_Client_ID));
 
+	@NonNull
 	private final DocSequenceId sequenceId;
 
 	public DocSequenceAwareFieldStringExpression(@NonNull final DocSequenceId sequenceId)

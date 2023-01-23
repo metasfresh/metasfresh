@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.process.IProcessDefaultParameter;
@@ -36,6 +37,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Project;
@@ -81,9 +83,18 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 	{
 		final IExternalSystemChildConfigId externalSystemChildConfigId = getExternalSystemChildConfigId();
 
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(externalSystemChildConfigId);
+
+		if (!isExportAllowed(parentConfig.getChildConfig()))
+		{
+			throw new AdempiereException("Export is not allowed for configId!")
+					.appendParametersToMessage()
+					.setParameter("configId", externalSystemChildConfigId);
+		}
+
 		addLog("Calling with params: externalSystemChildConfigId: {}", externalSystemChildConfigId);
 
-		final Iterator<I_C_Project> projectIterator = getProjectsToIterate();
+		final Iterator<I_C_Project> projectIterator = getProjectsToExport();
 
 		while (projectIterator.hasNext())
 		{
@@ -93,6 +104,32 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 		}
 
 		return JavaProcess.MSG_OK;
+	}
+
+	protected abstract ExternalSystemType getExternalSystemType();
+
+	protected abstract String getExternalSystemParam();
+
+	protected abstract IExternalSystemChildConfigId getExternalSystemChildConfigId();
+
+	protected abstract ExportToExternalSystemService getExportProjectToExternalSystem();
+
+	protected abstract boolean isExportAllowed(@NonNull IExternalSystemChildConfig childConfig);
+
+	@NonNull
+	protected abstract Iterator<I_C_Project> getAllActive();
+
+	@NonNull
+	private Iterator<I_C_Project> getProjectsToExport()
+	{
+		final Iterator<I_C_Project> selectedRecords = getSelectedProjectRecords();
+
+		if (selectedRecords.hasNext())
+		{
+			return selectedRecords;
+		}
+
+		return getAllActive();
 	}
 
 	@NonNull
@@ -105,27 +142,4 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 				.iterate(I_C_Project.class);
 	}
 
-	protected abstract ExternalSystemType getExternalSystemType();
-
-	protected abstract IExternalSystemChildConfigId getExternalSystemChildConfigId();
-
-	protected abstract String getExternalSystemParam();
-
-	protected abstract ExportToExternalSystemService getExportProjectToExternalSystem();
-
-	@NonNull
-	protected abstract Iterator<I_C_Project> iterateAllActive();
-
-	@NonNull
-	private Iterator<I_C_Project> getProjectsToIterate()
-	{
-		final Iterator<I_C_Project> selectedRecords = getSelectedProjectRecords();
-
-		if (selectedRecords.hasNext())
-		{
-			return selectedRecords;
-		}
-
-		return iterateAllActive();
-	}
 }

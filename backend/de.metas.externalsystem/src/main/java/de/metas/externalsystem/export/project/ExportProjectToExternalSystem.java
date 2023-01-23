@@ -47,7 +47,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Project;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -55,13 +54,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-@Service
 public abstract class ExportProjectToExternalSystem extends ExportToExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExportProjectToExternalSystem.class);
 
+	@NonNull
 	private final ExternalSystemConfigService externalSystemConfigService;
+	@NonNull
 	private final ProjectRepository projectRepository;
+	@NonNull
 	private final Debouncer<ProjectId> syncProjectDebouncer;
 
 	protected ExportProjectToExternalSystem(
@@ -98,6 +99,7 @@ public abstract class ExportProjectToExternalSystem extends ExportToExternalSyst
 	}
 
 	@Override
+	@NonNull
 	protected Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
 			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
 			@NonNull final TableRecordReference recordReference,
@@ -143,7 +145,7 @@ public abstract class ExportProjectToExternalSystem extends ExportToExternalSyst
 	@Override
 	public int getCurrentPendingItems()
 	{
-		return 0;
+		return syncProjectDebouncer.getCurrentBufferSize();
 	}
 
 	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final ProjectId projectId);

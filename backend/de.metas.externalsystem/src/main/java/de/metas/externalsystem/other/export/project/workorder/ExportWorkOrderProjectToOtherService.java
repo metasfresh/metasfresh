@@ -42,14 +42,10 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.Set;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_EXPORT_WO_STEP_PROJECT;
-
 @Service
 public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherService
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_WORK_ORDER = "exportWorkOrderProject";
-
-	private final ExternalSystemConfigService externalSystemConfigService;
 
 	protected ExportWorkOrderProjectToOtherService(
 			final @NonNull ExternalSystemConfigRepo externalSystemConfigRepo,
@@ -59,8 +55,12 @@ public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherSe
 			final @NonNull ExternalSystemConfigService externalSystemConfigService,
 			final @NonNull ProjectRepository projectRepository)
 	{
-		super(externalSystemConfigRepo, externalSystemMessageSender, dataExportAuditLogRepository, dataExportAuditRepository, externalSystemConfigService, projectRepository);
-		this.externalSystemConfigService = externalSystemConfigService;
+		super(externalSystemConfigRepo,
+			  externalSystemMessageSender,
+			  dataExportAuditLogRepository,
+			  dataExportAuditRepository,
+			  externalSystemConfigService,
+			  projectRepository);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherSe
 	{
 		final ExternalSystemOtherConfig externalSystemOtherConfig = ExternalSystemOtherConfig.cast(childConfig);
 
-		return externalSystemConfigService.isOtherConfigParameterSet(externalSystemOtherConfig, PARAM_EXPORT_WO_STEP_PROJECT);
+		return externalSystemOtherConfig.isSyncWOProjectsEnabled();
 	}
 
 	@Override

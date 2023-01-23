@@ -22,14 +22,12 @@
 
 package de.metas.externalsystem.other.export.project.workorder;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
+import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.export.project.C_Project_SyncTo_Other;
 import de.metas.project.workorder.project.WOProjectRepository;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Project;
 
@@ -38,8 +36,6 @@ import java.util.Iterator;
 public class C_WorkOrderProject_SyncTo_Other extends C_Project_SyncTo_Other
 {
 	private final WOProjectRepository woProjectRepository = SpringContextHolder.instance.getBean(WOProjectRepository.class);
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
-
 	private final ExportWorkOrderProjectToOtherService exportWorkOrderProjectToOtherService = SpringContextHolder.instance.getBean(ExportWorkOrderProjectToOtherService.class);
 
 	@Override
@@ -48,23 +44,17 @@ public class C_WorkOrderProject_SyncTo_Other extends C_Project_SyncTo_Other
 		return exportWorkOrderProjectToOtherService;
 	}
 
-	@NonNull
-	protected Iterator<I_C_Project> iterateAllActive()
+	@Override
+	protected boolean isExportAllowed(@NonNull final IExternalSystemChildConfig childConfig)
 	{
-		return woProjectRepository.iterateAllActive();
+		final ExternalSystemOtherConfig otherConfig = ExternalSystemOtherConfig.cast(childConfig);
+
+		return otherConfig.isSyncWOProjectsEnabled();
 	}
 
-	@Override
-	protected void checkIsExportAllowed()
+	@NonNull
+	protected Iterator<I_C_Project> getAllActive()
 	{
-		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(externalSystemConfigOtherId);
-
-		final IExternalSystemChildConfig childConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, getExternalSystemType())
-				.orElseThrow(() -> new AdempiereException("Could not load child config for ExternalSystemParentConfigId = " + externalSystemParentConfigId));
-
-		if (!exportWorkOrderProjectToOtherService.isSyncEnabled(childConfig))
-		{
-			throw new AdempiereException("WOStep cannot be sent to ExternalSystem as Export is not allowed!");
-		}
+		return woProjectRepository.iterateAllActive();
 	}
 }

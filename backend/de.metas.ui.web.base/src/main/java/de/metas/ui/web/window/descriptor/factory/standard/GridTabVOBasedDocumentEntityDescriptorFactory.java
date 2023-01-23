@@ -474,8 +474,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				//
 				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType, fieldBinding.getValueClass(), lookupDescriptorProvider))
 				//
-				.setDataBinding(fieldBinding)
-				.setDocSequenceId(DocSequenceId.ofRepoIdOrNull(gridFieldVO.getAD_Sequence_ID()));
+				.setDataBinding(fieldBinding);
 
 		//
 		// Add Field builder to document entity
