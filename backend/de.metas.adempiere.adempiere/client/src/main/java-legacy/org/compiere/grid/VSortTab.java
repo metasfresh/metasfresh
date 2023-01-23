@@ -885,7 +885,7 @@ public class VSortTab extends CPanel implements APanelTab
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final PO po = new Query(ctx, m_TableName, m_KeyColumnName + "=?", trxName)
 				.setParameters(item.getKey())
-				.firstOnly();
+				.firstOnly(PO.class);
 		if (po == null)
 		{
 			return false;

@@ -26,12 +26,13 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -39,7 +40,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -840,9 +840,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	}	// getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateTrx());
+		return InstantAndOrgId.ofTimestamp(getDateTrx(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**
@@ -946,8 +946,6 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	/**
 	 * Reverse current allocation (another allocation is produced)
 	 * NOTE: this method is not saving current object's modifications
-	 *
-	 * @see http://dewiki908/mediawiki/index.php/02181:_Verbuchungsfehler_bei_Zuordnungen_%282011092910000015%29
 	 */
 	private void reverseCorrectIt0()
 	{

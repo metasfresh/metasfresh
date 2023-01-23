@@ -36,6 +36,7 @@ import java.util.Set;
  * #L%
  */
 
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public enum DocStatus implements ReferenceListAwareEnum
 {
 	Drafted(IDocument.STATUS_Drafted), //
@@ -200,6 +201,8 @@ public enum DocStatus implements ReferenceListAwareEnum
 				|| this == Approved
 				|| this == NotApproved;
 	}
+
+	public boolean isVoided() {return this == Voided;}
 
 	public boolean isAccountable()
 	{

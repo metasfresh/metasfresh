@@ -90,9 +90,15 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 	}
 
 	@Override
@@ -120,12 +126,6 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
-	@Override
-	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
-	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
-		return inoutLine;
-	}
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
@@ -146,6 +146,22 @@ public class InOutDAO implements IInOutDAO
 	{
 		final boolean retrieveAll = false;
 		return retrieveLines(inOut, retrieveAll, inoutLineClass);
+	}
+
+	@Override
+	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
+	{
+		if(inoutIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutIds)
+				.create()
+				.listIds(InOutLineId::ofRepoId);
+
 	}
 
 	private <T extends I_M_InOutLine> List<T> retrieveLines(
@@ -332,6 +348,12 @@ public class InOutDAO implements IInOutDAO
 				.stream()
 				.map(this::extractInOutAndLineId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
 	}
 
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)

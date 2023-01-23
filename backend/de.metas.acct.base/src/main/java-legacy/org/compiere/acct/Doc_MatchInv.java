@@ -39,6 +39,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -56,7 +57,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -151,6 +151,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 			invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 			invoiceLineNetAmt = _invoiceLine.getLineNetAmt();
+			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+					LocalDateAndOrgId.ofTimestamp(invoice.getDateAcct(), OrgId.ofRepoId(invoice.getAD_Org_ID()), services::getTimeZone),
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+					ClientId.ofRepoId(invoice.getAD_Client_ID()));
 
 			// Correct included Tax
 			final boolean taxIncluded = invoiceBL.isTaxIncluded(_invoiceLine);
@@ -474,18 +478,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
-		if (invoiceCurrencyConversionCtx == null)
-		{
-			final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-			final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-			Check.assumeNotNull(invoice, "invoice not null");
-			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					TimeUtil.asLocalDate(invoice.getDateAcct()),
-					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					ClientId.ofRepoId(invoice.getAD_Client_ID()),
-					OrgId.ofRepoId(invoice.getAD_Org_ID()));
-		}
-		return invoiceCurrencyConversionCtx;
+		return Check.assumeNotNull(invoiceCurrencyConversionCtx, "invoice shall be loaded");
 	}
 
 	private boolean isCreditMemoInvoice()
@@ -563,7 +556,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
 						.amt(matchAmt)
-						.date(getDateAcct())
+						.date(getDateAcct().toInstant(services::getTimeZone))
 						.description(getDescription())
 						.build())
 				.getTotalAmountToPost(as);

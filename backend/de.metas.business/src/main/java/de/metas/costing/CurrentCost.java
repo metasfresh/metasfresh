@@ -200,11 +200,16 @@ public final class CurrentCost
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty)
 	{
-		assertCostCurrency(amt);
 		assertCostUOM(qty);
 
-		cumulatedAmt = cumulatedAmt.add(amt);
+		addCumulatedAmt(amt);
 		cumulatedQty = cumulatedQty.add(qty);
+	}
+
+	public void addCumulatedAmt(@NonNull final CostAmount amt)
+	{
+		assertCostCurrency(amt);
+		cumulatedAmt = cumulatedAmt.add(amt);
 	}
 
 	public void addToCurrentQtyAndCumulate(

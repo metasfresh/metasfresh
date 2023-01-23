@@ -37,6 +37,8 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -66,14 +68,12 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -229,9 +229,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private int m_C_Period_ID = 0;
 	@Nullable private final LocationId locationFromId = null;
 	@Nullable private final LocationId locationToId = null;
-	private LocalDate _dateAcct = null;
-	private LocalDate _dateDoc = null;
+	private LocalDateAndOrgId _dateAcct = null;
+	private LocalDateAndOrgId _dateDoc = null;
 	/**
+	 *
 	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
 	 */
 	private boolean m_MultiCurrency = false;
@@ -745,7 +746,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			setDocBaseType(null);
 		}
 		return _docBaseType;
-	}   // getDocumentType
+	}
 
 	/**
 	 * Load Document Type and GL Info. Set p_DocumentType and p_GL_Category_ID
@@ -872,8 +873,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return services.createCurrencyConversionContext(
 				getDateAcct(),
 				getCurrencyConversionTypeId(),
-				getClientId(),
-				getOrgId());
+				getClientId());
 	}
 
 	/**
@@ -894,12 +894,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (m_period == null)
 		{
-			m_period = MPeriod.get(Env.getCtx(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId());
+			m_period = MPeriod.get(Env.getCtx(), getDateAcctAsTimestamp(), getOrgId().getRepoId());
 		}
 
 		// Is Period Open?
 		if (m_period != null
-				&& m_period.isOpen(getDocBaseType(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId()))
+				&& m_period.isOpen(getDocBaseType(), getDateAcctAsTimestamp(), getOrgId().getRepoId()))
 		{
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
@@ -1121,6 +1121,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_DocumentNo;
 	}
 
+	@Nullable
 	protected final DocStatus getDocStatus()
 	{
 		return _docStatus;
@@ -1203,9 +1204,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("GL_Budget_ID");
 	}
 
-	protected final LocalDate getDateAcct()
+	@NonNull
+	protected final LocalDateAndOrgId getDateAcct()
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> _dateAcct,
 				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {
@@ -1213,17 +1215,28 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				});
 	}
 
-	protected final void setDateAcct(final Timestamp dateAcct)
+	@NonNull
+	protected final Timestamp getDateAcctAsTimestamp()
 	{
-		setDateAcct(TimeUtil.asLocalDate(dateAcct));
+		return getDateAcct().toTimestamp(services::getTimeZone);
 	}
 
-	protected final void setDateAcct(final LocalDate dateAcct)
+	protected final void setDateAcct(@NonNull final Timestamp dateAcct)
+	{
+		setDateAcct(LocalDateAndOrgId.ofTimestamp(dateAcct, getOrgId(), getServices()::getTimeZone));
+	}
+
+	protected final void setDateAcct(@NonNull final InstantAndOrgId dateAcct)
+	{
+		_dateAcct = dateAcct.toLocalDateAndOrgId(services::getTimeZone);
+	}
+
+	protected final void setDateAcct(@NonNull final LocalDateAndOrgId dateAcct)
 	{
 		_dateAcct = dateAcct;
 	}
 
-	protected final LocalDate getDateDoc()
+	protected final LocalDateAndOrgId getDateDoc()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateDoc,
@@ -1234,19 +1247,30 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				});
 	}
 
-	protected final void setDateDoc(final Timestamp dateDoc)
+	@NonNull
+	protected final Timestamp getDateDocAsTimestamp()
 	{
-		setDateDoc(TimeUtil.asLocalDate(dateDoc));
+		return getDateDoc().toTimestamp(services::getTimeZone);
 	}
 
-	protected final void setDateDoc(final LocalDate dateDoc)
+	protected final void setDateDoc(final Timestamp dateDoc)
+	{
+		setDateDoc(LocalDateAndOrgId.ofTimestamp(dateDoc, getOrgId(), getServices()::getTimeZone));
+	}
+
+	protected final void setDateDoc(final LocalDateAndOrgId dateDoc)
 	{
 		_dateDoc = dateDoc;
 	}
 
+	protected final void setDateDoc(@NonNull final InstantAndOrgId dateDoc)
+	{
+		_dateDoc = dateDoc.toLocalDateAndOrgId(services::getTimeZone);
+	}
+
 	private boolean isPosted()
 	{
-		final Boolean posted = getValueAsBoolean("Posted", null);
+		final Boolean posted = getValueAsBooleanOrNull("Posted");
 		if (posted == null)
 		{
 			throw new AdempiereException("Posted column is missing or it's null");
@@ -1257,8 +1281,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	public final boolean isSOTrx()
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> getValueAsBoolean("IsSOTrx", null),
-				() -> getValueAsBoolean("IsReceipt", null),
+				() -> getValueAsBooleanOrNull("IsSOTrx"),
+				() -> getValueAsBooleanOrNull("IsReceipt"),
 				SOTrx.PURCHASE::toBoolean);
 	}
 
@@ -1500,30 +1524,35 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	@Nullable
-	private LocalDate getValueAsLocalDateOrNull(final String columnName)
+	private LocalDateAndOrgId getValueAsLocalDateOrNull(final String columnName)
 	{
-		final PO po = getPO();
+		@NonNull final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
 		if (index != -1)
 		{
-			return TimeUtil.asLocalDate(po.get_Value(index));
+			final Timestamp ts = po.get_ValueAsTimestamp(index);
+			if (ts != null)
+			{
+				final OrgId orgId = OrgId.ofRepoId(po.getAD_Org_ID());
+				return LocalDateAndOrgId.ofTimestamp(ts, orgId, getServices()::getTimeZone);
+			}
 		}
 
 		return null;
 	}
 
 	@Nullable
-	private Boolean getValueAsBoolean(final String columnName, @Nullable final Boolean defaultValue)
+	private Boolean getValueAsBooleanOrNull(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
 		if (index != -1)
 		{
 			final Object valueObj = po.get_Value(index);
-			return DisplayType.toBoolean(valueObj, defaultValue);
+			return DisplayType.toBoolean(valueObj, null);
 		}
 
-		return defaultValue;
+		return null;
 	}
 
 	@Nullable
