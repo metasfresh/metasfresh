@@ -1,49 +1,11 @@
 package de.metas.invoicecandidate.modelvalidator;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
@@ -53,6 +15,21 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DisplayType;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -104,7 +81,7 @@ public class C_Order
 		final BigDecimal grandTotal = currencyBL.convertBase(
 				order.getGrandTotal(),
 				CurrencyId.ofRepoId(order.getC_Currency_ID()),
-				TimeUtil.asLocalDate(order.getDateOrdered()),
+				order.getDateOrdered().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));
