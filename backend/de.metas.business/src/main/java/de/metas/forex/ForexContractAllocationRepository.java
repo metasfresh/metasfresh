@@ -14,6 +14,7 @@ import org.compiere.model.I_C_ForeignExchangeContract_Alloc;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class ForexContractAllocationRepository
@@ -100,11 +101,16 @@ public class ForexContractAllocationRepository
 		}
 	}
 
-	public ImmutableSet<ForexContractId> getContractIdsByOrderId(@NonNull final OrderId orderId)
+	public ImmutableSet<ForexContractId> getContractIdsByOrderIds(@NonNull final Set<OrderId> orderIds)
 	{
+		if (orderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		final List<ForexContractId> contractIds = queryBL.createQueryBuilder(I_C_ForeignExchangeContract_Alloc.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_Order_ID, orderId)
+				.addInArrayFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
 				.listDistinct(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, ForexContractId.class);
 		return ImmutableSet.copyOf(contractIds);

@@ -3,6 +3,7 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
+import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -103,7 +104,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		/**
 		 * If the receipt was created and the good were not automatically moved to the quarantine warehouse,
 		 * then the system can create a movement or distribution order (depends on product-planning master data) to this warehouse-locator.
-		 *
 		 * If {@code null}, then the respective receipt schedules', {@link I_M_ReceiptSchedule#getM_Warehouse_Dest_ID()}s' default locators will be used.
 		 */
 		@Nullable
@@ -114,6 +114,9 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 		@Nullable
 		Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+
+		@Nullable
+		ForexContractId forexContractId;
 	}
 
 	/**
@@ -124,7 +127,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	/**
 	 * Mark LU and TU handling units of the allocations as destroyed, and unassign them, if the allocation does not already reference a receipt, if they are active and if they have the status
 	 * "Planning".
-	 *
 	 * Also, the receipt schedule allocations of the destroyed HUs will be deactivated and saved.
 	 */
 	void destroyHandlingUnits(List<I_M_ReceiptSchedule_Alloc> allocations, String trxName);
@@ -146,7 +148,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	/**
 	 * Set request's initial attribute values defaults to be used when new HUs are created.
-	 *
 	 * Mainly this method is setting the {@link HUAttributeConstants#ATTR_CostPrice}.
 	 *
 	 * @param request request to be updated

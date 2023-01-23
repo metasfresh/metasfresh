@@ -19,6 +19,7 @@ import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Service
 public class ForexContractService
@@ -37,9 +38,19 @@ public class ForexContractService
 		this.forexContractAllocationRepository = forexContractAllocationRepository;
 	}
 
+	public ForexContract getById(@NonNull final ForexContractId id)
+	{
+		return forexContractRepository.getById(id);
+	}
+
 	public ImmutableSet<ForexContractId> getContractIdsByOrderId(@NonNull final OrderId orderId)
 	{
-		return forexContractAllocationRepository.getContractIdsByOrderId(orderId);
+		return forexContractAllocationRepository.getContractIdsByOrderIds(ImmutableSet.of(orderId));
+	}
+
+	public ImmutableSet<ForexContractId> getContractIdsByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return forexContractAllocationRepository.getContractIdsByOrderIds(orderIds);
 	}
 
 	public Money computeOrderAmountToAllocate(final OrderId orderId)

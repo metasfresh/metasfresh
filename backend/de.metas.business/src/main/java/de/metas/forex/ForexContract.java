@@ -1,5 +1,6 @@
 package de.metas.forex;
 
+import de.metas.currency.FixedConversionRate;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -57,4 +58,14 @@ public class ForexContract
 			throw new AdempiereException("Not enough open amount");
 		}
 	}
+
+	public FixedConversionRate toFixedConversionRate()
+	{
+		return FixedConversionRate.builder()
+				.fromCurrencyId(currencyId)
+				.toCurrencyId(toCurrencyId)
+				.multiplyRate(currencyRate)
+				.build();
+	}
+
 }

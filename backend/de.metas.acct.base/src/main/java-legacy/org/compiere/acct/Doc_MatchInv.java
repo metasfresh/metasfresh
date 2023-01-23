@@ -30,10 +30,10 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -107,8 +107,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	 * Material Receipt
 	 */
 	private I_M_InOutLine _receiptLine = null;
+	private I_M_InOut _receipt = null;
 
 	private final HashMap<CurrencyId, CurrencyConversionContext> invoiceCurrencyConversionCtxByAcctCurrencyId = new HashMap<>();
+	private CurrencyConversionContext _inoutCurrencyConversionCtx = null;
 
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
@@ -169,7 +171,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		// Receipt info
-		_receiptLine = matchInv.getM_InOutLine();
+		_receiptLine = inOutBL.getLineById(InOutLineId.ofRepoId(matchInv.getM_InOutLine_ID()));
+		_receipt = inOutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
 	}
 
 	public I_M_MatchInv getM_MatchInv()
@@ -252,6 +255,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setCurrencyId(costs.getCurrencyId())
+				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
 				.setAmtSource(costs.getValue(), null)
 				.setQty(getQty())
 				.buildAndAdd();
@@ -463,6 +467,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return _receiptLine;
 	}
 
+	private I_M_InOut getReceipt() {return _receipt;}
+
 	private int getReceipt_Org_ID()
 	{
 		return getReceiptLine().getAD_Org_ID();
@@ -485,6 +491,16 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	{
 		final I_C_Invoice invoice = getInvoice();
 		return invoiceBL.getCurrencyConversionCtx(invoice, acctCurrencyId);
+	}
+
+	public final CurrencyConversionContext getInOutCurrencyConversionCtx()
+	{
+		CurrencyConversionContext inoutCurrencyConversionCtx = this._inoutCurrencyConversionCtx;
+		if (inoutCurrencyConversionCtx == null)
+		{
+			inoutCurrencyConversionCtx = this._inoutCurrencyConversionCtx = inOutBL.getCurrencyConversionContext(getReceipt());
+		}
+		return inoutCurrencyConversionCtx;
 	}
 
 	private boolean isCreditMemoInvoice()
@@ -562,6 +578,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
 						.amt(matchAmt)
+						.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
 						.date(getDateAcct())
 						.description(getDescription())
 						.build())

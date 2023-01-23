@@ -33,11 +33,7 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -89,7 +85,6 @@ public class CostingService implements ICostingService
 
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final CostingMethodHandlerUtils utils;
 	private final ICostDetailService costDetailsService;
 	private final ICostElementRepository costElementsRepo;
@@ -196,27 +191,8 @@ public class CostingService implements ICostingService
 			return request;
 		}
 
-		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
-		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
-		if (request.getAmt().getCurrencyId().equals(acctCurrencyId))
-		{
-			return request;
-		}
-
-		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				request.getDate(),
-				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId())
-				.withPrecision(acctSchema.getCosting().getCostingPrecision());
-
-		final CurrencyConversionResult amtConversionResult = currencyConversionBL.convert(
-				conversionCtx,
-				request.getAmt().getValue(),
-				request.getAmt().getCurrencyId(),
-				acctCurrencyId);
-
-		return request.withAmount(CostAmount.of(amtConversionResult.getAmount(), acctCurrencyId));
+		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(request.getAmt(), request);
+		return request.withAmount(amtConv);
 	}
 
 	@Override
@@ -390,7 +366,7 @@ public class CostingService implements ICostingService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						costDetail -> costDetail.getCostElementId(),
+						CostDetail::getCostElementId,
 						costDetail -> costDetail));
 
 		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();

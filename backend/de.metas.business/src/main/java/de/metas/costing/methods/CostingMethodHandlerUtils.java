@@ -21,7 +21,6 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -30,10 +29,8 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -178,7 +175,7 @@ public class CostingMethodHandlerUtils
 
 		return convertToAcctSchemaCurrency(
 				amt,
-				() -> createCurrencyConversionContext(request),
+				() -> getCurrencyConversionContext(request),
 				acctSchemaId);
 	}
 
@@ -214,26 +211,21 @@ public class CostingMethodHandlerUtils
 		return currencyBL.convert(conversionCtx, price, acctCurrencyId);
 	}
 
-	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
+	private CurrencyConversionContext getCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		return createCurrencyConversionContext(
-				request.getDate(),
-				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId());
-	}
-
-	public CurrencyConversionContext createCurrencyConversionContext(
-			final LocalDate dateAcct,
-			final CurrencyConversionTypeId conversionTypeId,
-			final ClientId clientId,
-			final OrgId orgId)
-	{
-		return currencyBL.createCurrencyConversionContext(
-				dateAcct,
-				conversionTypeId,
-				clientId,
-				orgId);
+		final CurrencyConversionContext currencyConversionContext = request.getCurrencyConversionContext();
+		if (currencyConversionContext != null)
+		{
+			return currencyConversionContext;
+		}
+		else
+		{
+			return currencyBL.createCurrencyConversionContext(
+					request.getDate(),
+					(CurrencyConversionTypeId)null,
+					request.getClientId(),
+					request.getOrgId());
+		}
 	}
 
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)

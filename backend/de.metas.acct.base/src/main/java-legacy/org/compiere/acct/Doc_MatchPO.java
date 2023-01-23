@@ -34,7 +34,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,14 +102,6 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
-		// Skip posting if MatchPO does not have the receipt line set.
-		// It's enough to create no facts at all.
-		// Usually, system creates separate M_MatchPO records for each receipt.
-		if (docLine.getReceipt_InOutLine_ID() <= 0)
-		{
-			return ImmutableList.of();
-		}
-
 		//
 		// Mark sure inbound costs are created
 		docLine.createCostDetails(as);
@@ -144,7 +135,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		//
 		// Calculate PO Cost and Standard Cost
-		final CostAmount poCost = docLine.getPOCostAmount(as);
+		final CostAmount poCost = docLine.getPOCostAmountInAcctCurrency(as);
 		final CostAmount standardCosts = docLine.getStandardCosts(as);
 		final CostAmount difference = poCost.subtract(standardCosts);
 		if (difference.signum() == 0)
@@ -154,9 +145,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		//
 		// create Fact Header
-		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, PostingType.Actual);
-		facts.add(fact);
 		setC_Currency_ID(as.getCurrencyId());
 
 		final boolean isReturnTrx = docLine.isReturnTrx();
@@ -191,7 +180,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr, cr, this::isInterOrg);
 
 		//
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	private void updateFromPurchaseOrderLine(final FactLine factLine)
