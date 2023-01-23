@@ -19,7 +19,6 @@ package org.compiere.model;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -36,7 +35,6 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.location.LocationId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
@@ -1635,14 +1633,11 @@ public class CalloutOrder extends CalloutEngine
 				final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
 				if (warehouseId != null)
 				{
-					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+					final BPartnerLocationAndCaptureId warehouseBPLocationId = Services.get(IWarehouseDAO.class).getWarehouseLocationById(warehouseId);
 
 					OrderDocumentLocationAdapterFactory
 							.deliveryLocationAdapter(order)
-							.setFrom(DocumentLocation.builder()
-											 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
-											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
-											 .build());
+							.setFrom(DocumentLocation.ofBPartnerLocationAndCaptureId(warehouseBPLocationId));
 				}
 				order.setDropShip_User_ID(-1);
 

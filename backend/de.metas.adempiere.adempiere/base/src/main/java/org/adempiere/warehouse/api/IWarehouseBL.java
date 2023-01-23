@@ -66,5 +66,8 @@ public interface IWarehouseBL extends ISingletonService
 
 	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
 
+	/**
+	 * Loads all warehouses that have the old location and updates them to the new location.
+	 */
 	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
 }
