@@ -31,3 +31,11 @@ UPDATE AD_PrintFormat SET AD_Table_ID=542280,Updated=TO_TIMESTAMP('2023-01-23 12
 -- 2023-01-23T11:08:47.137Z
 UPDATE C_DocType SET AD_PrintFormat_ID=540128,Updated=TO_TIMESTAMP('2023-01-23 12:08:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541085
 ;
+
+
+-- Tab: Delivery Instruction(541657,D) -> Delivery Instruction
+-- Table: M_ShipperTransportation
+-- 2023-01-23T14:29:16.205Z
+UPDATE AD_Tab SET AD_Process_ID=585190,Updated=TO_TIMESTAMP('2023-01-23 16:29:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546732
+;
+
