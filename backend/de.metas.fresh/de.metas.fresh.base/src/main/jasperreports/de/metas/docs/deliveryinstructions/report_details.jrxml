@@ -18,7 +18,7 @@
 		<defaultValueExpression><![CDATA[new String("EN_us")]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_ab182.Docs_DeliveryInstructions_ProductDetails($P{record_id}, $P{ad_language});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_ProductDetails($P{record_id}, $P{ad_language});]]>
 	</queryString>
 	<field name="warehousename" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="warehousename"/>
@@ -102,10 +102,7 @@
 				<textFieldExpression><![CDATA[$F{productname}
 +"\n"+$F{productvalue}
 +($F{grade} !=null ? ("\n"+$F{grade}) : "")
-+($F{ab182_dangerous_transport} !=null ? ("\n"+$F{ab182_dangerous_transport}) : "") 
-+($F{ab182_cas_number} !=null ? ("\n"+$F{ab182_cas_number}) : "")
-+($F{ab182_hs_code} !=null ? ("\n"+$F{ab182_hs_code}) : "")
-+($F{ab182_rreach_number} !=null ? ("\n"+$F{ab182_rreach_number}) : "") ]]></textFieldExpression>
+]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="320" y="3" width="90" height="22" uuid="e3899b6c-e602-446d-8e22-cb10d128274c">
