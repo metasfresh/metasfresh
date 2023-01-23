@@ -49,7 +49,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofProjectIssueId(getReversalLine_ID()))
-					.date(getDateAcct())
+					.date(getDateAcctAsInstant())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -65,7 +65,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 							.documentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(getDateAcct())
+							.date(getDateAcctAsInstant())
 							.build())
 					.getTotalAmountToPost(as);
 		}

@@ -114,7 +114,7 @@ public class C_BankStatementLine
 		final CurrencyId trxAmtCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
 
 		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(bsl.getValutaDate()),
+				TimeUtil.asInstant(bsl.getValutaDate()),
 				ConversionTypeMethod.Spot,
 				ClientId.ofRepoId(bsl.getAD_Client_ID()),
 				OrgId.ofRepoId(bsl.getAD_Org_ID()));

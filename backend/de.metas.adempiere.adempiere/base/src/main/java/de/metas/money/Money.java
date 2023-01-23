@@ -168,35 +168,7 @@ public class Money
 
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
 	{
-		if (moneys == null || moneys.length == 0)
-		{
-			throw new AdempiereException("The given moneys may not be empty");
-		}
-
-		CurrencyId commonCurrencyId = null;
-		for (final Money money : moneys)
-		{
-			if (money == null)
-			{
-				continue;
-			}
-
-			if (commonCurrencyId == null)
-			{
-				commonCurrencyId = money.getCurrencyId();
-			}
-			else if (!CurrencyId.equals(commonCurrencyId, money.getCurrencyId()))
-			{
-				throw new AdempiereException("Moneys shall have the same currency: " + Arrays.asList(moneys));
-			}
-		}
-
-		if(commonCurrencyId == null)
-		{
-			throw new AdempiereException("The given moneys may not be empty");
-		}
-
-		return commonCurrencyId;
+		return CurrencyId.getCommonCurrencyIdOfAll(Money::getCurrencyId, "Money", moneys);
 	}
 
 	public static boolean isSameCurrency(@NonNull final Money... moneys)

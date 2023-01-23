@@ -78,11 +78,11 @@ public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 	public List<Fact> createFacts(final AcctSchema as)
 	{
 		final DocStatus docStatus = getDocStatus();
-		if (docStatus.isCompletedOrClosed())
+		if (docStatus != null && docStatus.isCompletedOrClosed())
 		{
 			createOrderCosts();
 		}
-		else if (DocStatus.Voided.equals(docStatus))
+		else if (docStatus != null && docStatus.isVoided())
 		{
 			logger.debug("Skip creating costs for voided documents");
 		}

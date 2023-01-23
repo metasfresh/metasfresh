@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -299,7 +300,7 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	public FactLineBuilder setQty(final Quantity qty)
+	public FactLineBuilder setQty(@NonNull final Quantity qty)
 	{
 		assertNotBuild();
 		this.qty = qty.toBigDecimal();
@@ -329,6 +330,16 @@ public final class FactLineBuilder
 		assertNotBuild();
 		this.amtSourceDr = amtSourceDr;
 		this.amtSourceCr = amtSourceCr;
+		return this;
+	}
+
+	public FactLineBuilder setAmtSource(@Nullable final CostAmount amtSourceDr, @Nullable final CostAmount amtSourceCr)
+	{
+		assertNotBuild();
+		setCurrencyId(CostAmount.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr));
+		setAmtSource(
+				amtSourceDr != null ? amtSourceDr.toBigDecimal() : null,
+				amtSourceCr != null ? amtSourceCr.toBigDecimal() : null);
 		return this;
 	}
 

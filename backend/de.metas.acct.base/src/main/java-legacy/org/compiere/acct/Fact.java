@@ -16,23 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.MAccount;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -46,8 +30,21 @@ import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
+import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.MAccount;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Accounting Fact
@@ -756,19 +753,47 @@ public final class Fact
 		sb.append(",PostType=").append(getPostingType());
 		sb.append("]");
 		return sb.toString();
-	}    // toString
+	}
 
-	/**
-	 * Get Lines
-	 *
-	 * @return FactLine Array
-	 */
+	public boolean isEmpty()
+	{
+		return m_lines.isEmpty();
+	}
+
 	public FactLine[] getLines()
 	{
 		final FactLine[] temp = new FactLine[m_lines.size()];
 		m_lines.toArray(temp);
 		return temp;
 	}    // getLines
+
+	@NonNull
+	public FactLine getSingleLineByAccountId(final MAccount account)
+	{
+		FactLine lineFound = null;
+		for (FactLine line : m_lines)
+		{
+			if (line.getAccount_ID() == account.getAccount_ID())
+			{
+				if (lineFound == null)
+				{
+					lineFound = line;
+				}
+				else
+				{
+					throw new AdempiereException("More than one fact line found for " + account + ": " + lineFound + ", " + line);
+				}
+			}
+
+		}
+
+		if (lineFound == null)
+		{
+			throw new AdempiereException("No fact line found for " + account + " in " + m_lines);
+		}
+
+		return lineFound;
+	}
 
 	public void save()
 	{

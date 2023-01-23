@@ -338,7 +338,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public static MADBoilerPlate getByName(final Properties ctx, final String name, final String trxName)
 	{
-		return getByNameQuery(ctx, name, trxName).firstOnly();
+		return getByNameQuery(ctx, name, trxName).firstOnly(MADBoilerPlate.class);
 	}
 
 	public static KeyNamePair[] getDependsOn(final Properties ctx, final int AD_BoilerPlate_ID, final String trxName)

@@ -43,6 +43,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -229,7 +230,7 @@ public class OrderProductProposalsService
 	@NonNull
 	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final LocalDate conversionDate = LocalDate.now();
+		final Instant conversionDate = Instant.now();
 		return currencyConversionBL.createCurrencyConversionContext(conversionDate,
 																	ConversionTypeMethod.Spot,
 																	clientAndOrgId.getClientId(),

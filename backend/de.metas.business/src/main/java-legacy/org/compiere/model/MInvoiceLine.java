@@ -668,7 +668,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(getM_InOutLine_ID());
 
-		final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
 		final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
 		final OrgId fromOrgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());

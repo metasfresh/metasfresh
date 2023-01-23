@@ -91,7 +91,7 @@ public class ShipmentLinesForCustomsInvoiceRepo
 
 		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
 
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(inOutLineId, I_M_InOutLine.class);
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineByIdOutOfTrx(inOutLineId, I_M_InOutLine.class);
 
 		if (shipmentLineRecord.isPackagingMaterial())
 		{
