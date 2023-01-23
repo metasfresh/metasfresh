@@ -207,7 +207,7 @@ public class BPartnerStatsService
 		saveRecord(stats);
 	}
 
-	private void updateDeliveryCreditUsed(final BPartnerStats bpStats)
+	private void updateDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
 	{
 		final BigDecimal deliveryCreditUsed = bPartnerStatsDAO.retrieveDeliveryCreditUsed(bpStats);
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
@@ -303,7 +303,7 @@ public class BPartnerStatsService
 			}
 		}
 
-		stats.setSOCreditStatus(creditStatusToSet);
+		stats.setDelivery_CreditStatus(creditStatusToSet);
 		saveRecord(stats);
 	}
 

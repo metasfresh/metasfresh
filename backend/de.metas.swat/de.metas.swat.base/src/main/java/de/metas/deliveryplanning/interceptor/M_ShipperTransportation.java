@@ -4,6 +4,7 @@ import de.metas.deliveryplanning.DeliveryInstructionUserNotificationsProducer;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.event.IEventBusFactory;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -32,7 +33,7 @@ public class M_ShipperTransportation
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
 	public void unlinkDeliveryPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		deliveryPlanningService.unlinkDeliveryPlannings(shipperTransportation.getDocumentNo());
+		deliveryPlanningService.unlinkDeliveryPlannings(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
 	}
 }

@@ -52,6 +52,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -393,8 +394,8 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public void unlinkDeliveryPlannings(@NonNull final String releaseNo)
+	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		deliveryPlanningRepository.unlinkDeliveryPlannings(releaseNo);
+		deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId);
 	}
 }

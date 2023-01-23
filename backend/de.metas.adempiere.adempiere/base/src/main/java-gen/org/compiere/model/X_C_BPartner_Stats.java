@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPartner_Stats, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 340909553L;
+	private static final long serialVersionUID = 1297267663L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (final Properties ctx, final int C_BPartner_Stats_ID, @Nullable final String trxName)
@@ -99,6 +99,35 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	public java.lang.String getCreditLimitIndicator() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	/** 
+	 * Delivery_CreditStatus AD_Reference_ID=289
+	 * Reference name: C_BPartner SOCreditStatus
+	 */
+	public static final int DELIVERY_CREDITSTATUS_AD_Reference_ID=289;
+	/** CreditStop = S */
+	public static final String DELIVERY_CREDITSTATUS_CreditStop = "S";
+	/** CreditHold = H */
+	public static final String DELIVERY_CREDITSTATUS_CreditHold = "H";
+	/** CreditWatch = W */
+	public static final String DELIVERY_CREDITSTATUS_CreditWatch = "W";
+	/** NoCreditCheck = X */
+	public static final String DELIVERY_CREDITSTATUS_NoCreditCheck = "X";
+	/** CreditOK = O */
+	public static final String DELIVERY_CREDITSTATUS_CreditOK = "O";
+	/** NurEineRechnung = I */
+	public static final String DELIVERY_CREDITSTATUS_NurEineRechnung = "I";
+	@Override
+	public void setDelivery_CreditStatus (final @Nullable java.lang.String Delivery_CreditStatus)
+	{
+		set_Value (COLUMNNAME_Delivery_CreditStatus, Delivery_CreditStatus);
+	}
+
+	@Override
+	public java.lang.String getDelivery_CreditStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_Delivery_CreditStatus);
 	}
 
 	@Override

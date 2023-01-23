@@ -188,6 +188,27 @@ public interface I_C_BPartner_Stats
 	String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
+	 * Set Delivery Credit Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDelivery_CreditStatus (@Nullable java.lang.String Delivery_CreditStatus);
+
+	/**
+	 * Get Delivery Credit Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDelivery_CreditStatus();
+
+	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Delivery_CreditStatus = new ModelColumn<>(I_C_BPartner_Stats.class, "Delivery_CreditStatus", null);
+	String COLUMNNAME_Delivery_CreditStatus = "Delivery_CreditStatus";
+
+	/**
 	 * Set Delivery Credit Used.
 	 *
 	 * <br>Type: Amount
