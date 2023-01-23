@@ -9,7 +9,6 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
@@ -22,7 +21,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -86,7 +84,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final MatchInvId matchInvId = MatchInvId.ofRepoId(request.getDocumentRef().getRecordId());
+		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 
 		final I_C_OrderLine orderLine = Optional.of(matchInv)
@@ -111,8 +109,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final InOutLineId receipLineId = InOutLineId.ofRepoId(request.getDocumentRef().getRecordId());
-		final I_M_InOutLine receiptLine = inoutBL.getLineById(receipLineId);
+		final InOutLineId receipLineId = request.getDocumentRef().getId(InOutLineId.class);
+		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
 		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
 		final CostAmount amtConv;
 		if (orderLine != null)
@@ -351,13 +349,5 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				amt,
 				() -> currencyConversionContext,
 				acctSchemaId);
-	}
-
-	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final OrderLineId orderLineId_NOTUSED)
-	{
-		throw new UnsupportedOperationException();
 	}
 }

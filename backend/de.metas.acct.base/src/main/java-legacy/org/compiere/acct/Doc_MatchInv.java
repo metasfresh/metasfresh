@@ -39,8 +39,6 @@ import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -154,10 +152,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 			invoiceCurrencyId = CurrencyId.ofRepoId(_invoice.getC_Currency_ID());
 			invoiceLineNetAmt = _invoiceLine.getLineNetAmt();
-			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					LocalDateAndOrgId.ofTimestamp(invoice.getDateAcct(), OrgId.ofRepoId(invoice.getAD_Org_ID()), services::getTimeZone),
-					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					ClientId.ofRepoId(invoice.getAD_Client_ID()));
 
 			// Correct included Tax
 			final boolean taxIncluded = invoiceBL.isTaxIncluded(_invoiceLine);
@@ -177,7 +171,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		// Receipt info
-		_receiptLine = inOutBL.getLineById(InOutLineId.ofRepoId(matchInv.getM_InOutLine_ID()));
+		_receiptLine = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(matchInv.getM_InOutLine_ID()));
 		_receipt = inOutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
 	}
 

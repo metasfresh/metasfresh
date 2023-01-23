@@ -144,9 +144,9 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
-		return inOutDAO.getLineById(inoutLineId);
+		return inOutDAO.getLineByIdInTrx(inoutLineId);
 	}
 
 	@Override
@@ -658,7 +658,7 @@ public class InOutBL implements IInOutBL
 	public CurrencyConversionContext getCurrencyConversionContext(final I_M_InOut inout)
 	{
 		CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(inout.getDateAcct()),
+				inout.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(inout.getAD_Client_ID()),
 				OrgId.ofRepoId(inout.getAD_Org_ID()));

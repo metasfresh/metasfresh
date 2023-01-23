@@ -1,8 +1,6 @@
 package org.compiere.acct;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.costing.AggregatedCostAmount;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostPrice;
@@ -79,7 +77,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		IInOutBL inoutBL = Services.get(IInOutBL.class);
 		final InOutLineId receiptLineId = InOutLineId.ofRepoId(matchPO.getM_InOutLine_ID());
-		this._receiptLine = inoutBL.getLineById(receiptLineId);
+		this._receiptLine = inoutBL.getLineByIdInTrx(receiptLineId);
 		this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
 		this._currencyConversionContext = inoutBL.getCurrencyConversionContext(_receipt);
 

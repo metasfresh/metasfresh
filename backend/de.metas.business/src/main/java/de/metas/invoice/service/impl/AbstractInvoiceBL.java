@@ -64,7 +64,6 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -129,7 +128,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -173,7 +171,6 @@ import static de.metas.util.Check.assumeNotNull;
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	/**
@@ -1959,10 +1956,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final CurrencyId acctCurrencyId)
 	{
 		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(invoice.getDateAcct(), timeZone),
+				invoice.getDateAcct().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 				ClientId.ofRepoId(invoice.getAD_Client_ID()),
 				OrgId.ofRepoId(invoice.getAD_Org_ID()));

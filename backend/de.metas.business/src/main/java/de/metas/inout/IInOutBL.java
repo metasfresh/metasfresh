@@ -68,7 +68,7 @@ public interface IInOutBL extends ISingletonService
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
 
-	I_M_InOutLine getLineById(@NonNull InOutLineId inoutLineId);
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)

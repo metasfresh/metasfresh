@@ -5,15 +5,14 @@ import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractService;
+import de.metas.organization.InstantAndOrgId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.model.X_GL_Journal;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class ForexContractDocumentHandler implements DocumentHandler
 {
@@ -45,9 +44,10 @@ public class ForexContractDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
-		return TimeUtil.asLocalDate(extractRecord(docFields).getCreated());
+		final I_C_ForeignExchangeContract record = extractRecord(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getCreated(), record.getAD_Org_ID());
 	}
 
 	@Override
