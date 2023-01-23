@@ -126,6 +126,12 @@ public class JsonRequestProduct
 	@ApiModelProperty(hidden = true)
 	private boolean guaranteeMonthsSet;
 
+	@ApiModelProperty(position = 136)
+	private String warehouseTemperature;
+
+	@ApiModelProperty(hidden = true)
+	private boolean warehouseTemperatureSet;
+
 	@ApiModelProperty(position = 140, value = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
@@ -222,9 +228,15 @@ public class JsonRequestProduct
 		this.productAllergens = productAllergens;
 	}
 
-	public void setGuaranteeMonths(final String guaranteeMonths)
+	public void setGuaranteeMonths(@Nullable final String guaranteeMonths)
 	{
 		this.guaranteeMonths = guaranteeMonths;
 		this.guaranteeMonthsSet = true;
+	}
+
+	public void setWarehouseTemperature(@Nullable final String warehouseTemperature)
+	{
+		this.warehouseTemperature = warehouseTemperature;
+		this.warehouseTemperatureSet = true;
 	}
 }

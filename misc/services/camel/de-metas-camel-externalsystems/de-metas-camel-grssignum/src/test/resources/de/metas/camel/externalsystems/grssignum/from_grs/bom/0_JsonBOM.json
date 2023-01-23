@@ -4,7 +4,7 @@
   "ARTNRID": "ProductId",
   "TEXT": "Name1",
   "TEXT2": "Name2",
-  "INAKTIV": 0,
+  "INAKTIV": 1,
   "VERLUST": 10.5,
   "GTIN": 12345678,
   "METASFRESHID": "100",
@@ -28,7 +28,16 @@
           "Resource_2": 500.00000,
           "Resource_3": 501.00000
         }
-      ]
+      ],
+      "Rezeptur_Angaben_GTIN": "additional_gtin",
+      "Lagerungsbedingungen_Lagerungstemperatur": "warehouse_temperature",
+      "Lagerungsbedingungen_MHD_in_Monaten": 12
+    }
+  ],
+  "ALLERGENE": [
+    {
+      "ALID": 1,
+      "Text": "AllergenName"
     }
   ]
 }
