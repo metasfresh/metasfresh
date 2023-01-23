@@ -306,7 +306,7 @@ public class DeliveryPlanningService
 		DeliveryInstructionUserNotificationsProducer.newInstance()
 				.notifyGenerated(deliveryInstruction);
 
-		deliveryPlanningRepository.updateDeliveryPlanningReleaseNo(deliveryPlanningId, deliveryInstruction.getDocumentNo());
+		deliveryPlanningRepository.updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstruction);
 
 		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
 
