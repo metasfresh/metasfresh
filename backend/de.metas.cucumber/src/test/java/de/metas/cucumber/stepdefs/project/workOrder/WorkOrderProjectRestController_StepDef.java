@@ -125,7 +125,10 @@ public class WorkOrderProjectRestController_StepDef
 		final String woResourceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(woResourceIdentifier))
 		{
-			final List<JsonWorkOrderResourceUpsertResponse> woResourcesResponse = workOrderProjectUpsertResponse.getSteps().get(0).getResources();
+			final List<JsonWorkOrderStepUpsertResponse> stepResponse = workOrderProjectUpsertResponse.getSteps();
+			assertThat(stepResponse).isNotNull();
+			assertThat(stepResponse).hasSize(1);
+			final List<JsonWorkOrderResourceUpsertResponse> woResourcesResponse = stepResponse.get(0).getResources();
 
 			assertThat(woResourcesResponse).hasSize(1);
 

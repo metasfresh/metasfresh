@@ -10,7 +10,7 @@ Feature: Validate work order project is sent to RabbitMQ
       | Name         | Value   |
       | BaseURL      | baseURL |
       | Token        | token   |
-      | ExportWOStep | true    |
+      | ExportWOProject | true    |
 
     And add external system config and pinstance headers
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |

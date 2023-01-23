@@ -36,7 +36,6 @@ import de.metas.common.rest_api.v2.project.budget.JsonResponseBudgetProjectResou
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
-import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -58,7 +57,6 @@ public class BudgetProjectRestController_StepDef
 	private static final String ENDPOINT_API_V2_BUDGET = "api/v2/project/budget";
 
 	private final TestContext testContext;
-	private final ProjectId_StepDefData projectIdTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Project_Resource_Budget_StepDefData budgetProjectResourceTable;
 
@@ -70,12 +68,10 @@ public class BudgetProjectRestController_StepDef
 
 	public BudgetProjectRestController_StepDef(
 			@NonNull final TestContext testContext,
-			@NonNull final ProjectId_StepDefData projectIdTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Project_Resource_Budget_StepDefData budgetProjectResourceTable)
 	{
 		this.testContext = testContext;
-		this.projectIdTable = projectIdTable;
 		this.projectTable = projectTable;
 		this.budgetProjectResourceTable = budgetProjectResourceTable;
 	}
