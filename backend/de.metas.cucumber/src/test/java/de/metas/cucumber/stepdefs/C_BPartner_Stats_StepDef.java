@@ -52,15 +52,13 @@ public class C_BPartner_Stats_StepDef
 {
 	private final C_BPartner_StepDefData bPartnerTable;
 
-	private final BPartnerStatsService bPartnerStatsService;
+	private final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public C_BPartner_Stats_StepDef(@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final BPartnerStatsService bPartnerStatsService)
+	public C_BPartner_Stats_StepDef(@NonNull final C_BPartner_StepDefData bPartnerTable)
 	{
 		this.bPartnerTable = bPartnerTable;
-		this.bPartnerStatsService = bPartnerStatsService;
 	}
 
 	@And("upsert C_BPartner_Stats")
