@@ -15,11 +15,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Set;
+import java.util.function.Consumer;
 
 @Service
 public class ForexContractService
@@ -141,5 +143,10 @@ public class ForexContractService
 	{
 		final Money allocatedAmount = forexContractAllocationRepository.computeAllocatedAmount(contract.getId(), contract.getCurrencyId());
 		contract.setAllocatedAmountAndUpdate(allocatedAmount);
+	}
+
+	public void updateWhileSaving(@NonNull final I_C_ForeignExchangeContract record, @NonNull final Consumer<ForexContract> updater)
+	{
+		ForexContractRepository.updateRecordNoSave(record, updater);
 	}
 }

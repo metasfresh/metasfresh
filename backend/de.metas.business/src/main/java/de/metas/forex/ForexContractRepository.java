@@ -65,11 +65,15 @@ public class ForexContractRepository
 
 	private static void updateRecordAndSave(final I_C_ForeignExchangeContract record, final @NonNull Consumer<ForexContract> updater)
 	{
+		updateRecordNoSave(record, updater);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	static void updateRecordNoSave(final I_C_ForeignExchangeContract record, final @NonNull Consumer<ForexContract> updater)
+	{
 		final ForexContract contract = fromRecord(record);
 		updater.accept(contract);
-
 		updateRecord(record, contract);
-		InterfaceWrapperHelper.save(record);
 	}
 
 	public void updateByIds(@NonNull final Collection<ForexContractId> contractIds, @NonNull final Consumer<ForexContract> updater)
@@ -85,5 +89,4 @@ public class ForexContractRepository
 			updateRecordAndSave(record, updater);
 		}
 	}
-
 }

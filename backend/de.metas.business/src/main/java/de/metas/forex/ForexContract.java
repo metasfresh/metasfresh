@@ -39,6 +39,11 @@ public class ForexContract
 		}
 
 		this.allocatedAmount = allocatedAmount;
+		updateOpenAmount();
+	}
+
+	public void updateOpenAmount()
+	{
 		this.openAmount = this.amount.subtract(this.allocatedAmount).toZeroIfNegative();
 	}
 
