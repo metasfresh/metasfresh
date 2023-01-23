@@ -87,28 +87,26 @@ public class AsyncBatchService
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
 
-		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
-
 		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
 																" allWPSize: " + workPackages.size() +
 																" processedWPSize: " + workPackagesProcessedCount +
 																" erroredWPSize: " + workPackagesWithErrorCount);
 
-		if (workPackagesFinalized >= workPackages.size())
-		{
-			final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
-					.clientId(Env.getClientId())
-					.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
-					.success(workPackagesWithErrorCount <= 0)
-					.build();
+		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
+				.clientId(Env.getClientId())
+				.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
+				.noOfProcessedWPs(workPackagesProcessedCount)
+				.noOfEnqueuedWPs(workPackages.size())
+				.noOfErrorWPs(workPackagesWithErrorCount)
+				.build();
 
-			asyncBatchEventBusService.postRequest(request);
-		}
+		asyncBatchEventBusService.postRequest(request);
 	}
 
 	/**
 	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
 	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
+	 * If the supplier enqueues no workpackages
 	 *
 	 * @param supplier     Supplier<>
 	 * @param asyncBatchId C_Async_Batch_ID
@@ -116,31 +114,27 @@ public class AsyncBatchService
 	 * @return model type of supplier
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
-	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		asyncBatchObserver.observeOn(asyncBatchId);
+		final T result;
+		try
+		{
+			asyncBatchObserver.observeOn(asyncBatchId);
 
-		final T result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get);
 
-		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
-
-		return result;
-	}
-
-	@NonNull
-	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		asyncBatchObserver.observeOn(asyncBatchId);
-
-		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
-
-		if (result.getEnqueuedWorkPackageIds().isEmpty())
+			if (result.getWorkpackageEnqueuedCount() > 0)
+			{
+				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			}
+			else 
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());
+			}
+		}
+		finally
 		{
 			asyncBatchObserver.removeObserver(asyncBatchId);
-		}
-		else
-		{
-			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 		}
 
 		return result;
@@ -175,19 +169,19 @@ public class AsyncBatchService
 	}
 
 	/**
-	 *
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * This is important as we want to avoid old "with-error" work packages failing a new async batch run.
 	 * <br/>
 	 * <br/>
 	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * This is important as we want to consider work packages that were created in the past but only run now.
 	 * <br/>
 	 * <br/>
 	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.
 	 * <br/>
+	 *
 	 * @return true, if {@code wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping}
 	 */
 	private boolean qualifiesForBatchProcessingStatus(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Instant startMonitoringFrom)

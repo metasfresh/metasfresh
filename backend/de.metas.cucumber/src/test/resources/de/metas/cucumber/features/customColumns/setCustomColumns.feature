@@ -2,6 +2,7 @@
 Feature: Setting customColumns via SetCustomColumns method
 
   Background:
+    Given infrastructure and metasfresh are running
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value                     | OPT.IsActive |
       | ps_1       | PricingSystemName | PricingPricingSystemValue | true         |
