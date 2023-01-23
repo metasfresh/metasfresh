@@ -101,8 +101,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}
 +"\n"+$F{productvalue}
-+($F{grade} !=null ? ("\n"+$F{grade}) : "")
-]]></textFieldExpression>
++($F{grade} !=null ? ("\n"+$F{grade}) : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="ContainerHeight" x="320" y="3" width="90" height="22" uuid="e3899b6c-e602-446d-8e22-cb10d128274c">
