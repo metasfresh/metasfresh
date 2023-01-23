@@ -343,6 +343,7 @@ public class ProductRepository
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.guaranteeMonths(productRecord.getGuaranteeMonths())
+				.warehouseTemperature(productRecord.getWarehouse_temperature())
 				.build();
 	}
 
@@ -383,6 +384,7 @@ public class ProductRepository
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
 		record.setGuaranteeMonths(product.getGuaranteeMonths());
+		record.setWarehouse_temperature(product.getWarehouseTemperature());
 
 		return record;
 	}

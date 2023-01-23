@@ -28,8 +28,10 @@ import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.JsonBOMUtil;
 import de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMsRouteContext;
+import de.metas.camel.externalsystems.grssignum.from_grs.helper.JsonRequestHelper;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
+import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMAdditionalInfo;
 import de.metas.common.product.v2.request.JsonRequestAllergenItem;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
@@ -44,6 +46,10 @@ import org.apache.camel.Processor;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import java.util.Optional;
+
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_PURCHASE_REASON;
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_SALES_REASON;
 
 public class PushProductProcessor implements Processor
 {
@@ -64,7 +70,8 @@ public class PushProductProcessor implements Processor
 	}
 
 	@NonNull
-	private ProductUpsertCamelRequest getProductUpsertCamelRequest(@NonNull final JsonBOM jsonBOM){
+	private ProductUpsertCamelRequest getProductUpsertCamelRequest(@NonNull final JsonBOM jsonBOM)
+	{
 
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -79,6 +86,17 @@ public class PushProductProcessor implements Processor
 
 		requestProduct.setBpartnerProductItems(ImmutableList.of(getBPartnerProductUpsertRequest(jsonBOM)));
 		requestProduct.setProductAllergens(getUpsertAllergenRequest(jsonBOM));
+
+		getSingleAdditionalInfo(jsonBOM)
+				.ifPresent(additionalInfo -> {
+					requestProduct.setGuaranteeMonths(additionalInfo.getGuaranteeMonthsAsString());
+					requestProduct.setWarehouseTemperature(additionalInfo.getWarehouseTemperature());
+
+					if (additionalInfo.getGtin() != null)
+					{
+						requestProduct.setGtin(additionalInfo.getGtin());
+					}
+				});
 
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOM.getProductId()))
@@ -99,17 +117,23 @@ public class PushProductProcessor implements Processor
 	@NonNull
 	private JsonRequestBPartnerProductUpsert getBPartnerProductUpsertRequest(@NonNull final JsonBOM jsonBOM)
 	{
-		if(Check.isBlank(jsonBOM.getBPartnerMetasfreshId()))
+		if (Check.isBlank(jsonBOM.getBPartnerMetasfreshId()))
 		{
 			throw new RuntimeException("Missing mandatory METASFRESHID! JsonBOM.ARTNRID=" + jsonBOM.getProductId());
 		}
 
-		final JsonRequestBPartnerProductUpsert requestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
+		final JsonRequestBPartnerProductUpsert upsertRequest = new JsonRequestBPartnerProductUpsert();
 
-		requestBPartnerProductUpsert.setBpartnerIdentifier(jsonBOM.getBPartnerMetasfreshId());
-		requestBPartnerProductUpsert.setActive(true);
+		upsertRequest.setBpartnerIdentifier(jsonBOM.getBPartnerMetasfreshId());
+		upsertRequest.setActive(jsonBOM.isActive());
 
-		return requestBPartnerProductUpsert;
+		upsertRequest.setExcludedFromSales(!jsonBOM.isActive());
+		upsertRequest.setExclusionFromSalesReason(upsertRequest.getExcludedFromSales() ? EXCLUSION_FROM_SALES_REASON : null);
+
+		upsertRequest.setExcludedFromPurchase(!jsonBOM.isActive());
+		upsertRequest.setExclusionFromPurchaseReason(upsertRequest.getExcludedFromPurchase() ? EXCLUSION_FROM_PURCHASE_REASON : null);
+
+		return upsertRequest;
 	}
 
 	@NonNull
@@ -117,7 +141,7 @@ public class PushProductProcessor implements Processor
 	{
 		if (jsonBOM.getAllergens() == null)
 		{
-			return getAllergenUpsertRequest(ImmutableList.of());
+			return JsonRequestHelper.getAllergenUpsertRequest(ImmutableList.of());
 		}
 
 		final List<JsonRequestAllergenItem> allergenItemList = jsonBOM.getAllergens()
@@ -128,18 +152,14 @@ public class PushProductProcessor implements Processor
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
-		return getAllergenUpsertRequest(allergenItemList);
+		return JsonRequestHelper.getAllergenUpsertRequest(allergenItemList);
 	}
 
 	@NonNull
-	private static JsonRequestUpsertProductAllergen getAllergenUpsertRequest(@NonNull final List<JsonRequestAllergenItem> requestAllergenItems)
+	private static Optional<JsonBOMAdditionalInfo> getSingleAdditionalInfo(@NonNull final JsonBOM bom)
 	{
-		return JsonRequestUpsertProductAllergen.builder()
-				.allergenList(requestAllergenItems)
-				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.REPLACE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
-				.build();
+		return Optional.ofNullable(bom.getAdditionalInfos())
+				.filter(additionalInfoList -> additionalInfoList.size() == 1)
+				.map(singleElementList -> singleElementList.get(0));
 	}
 }

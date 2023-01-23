@@ -4,7 +4,7 @@
     "uomCode": "KGM",
     "productIdentifier": "ext-GRSSignum-ProductId",
     "name": "Name1 Name2",
-    "isActive": "true",
+    "isActive": "false",
     "validFrom": "2021-11-01T20:00:00.00Z",
     "resourceCode": "Resource_2",
     "bomLines": [
