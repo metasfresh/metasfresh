@@ -31,9 +31,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -145,6 +145,11 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetail(request);
 	}
 
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	{
+		return costDetailsService.updateDateAcct(costDetail, newDateAcct);
+	}
+
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(request);
@@ -226,10 +231,5 @@ public class CostingMethodHandlerUtils
 					request.getClientId(),
 					request.getOrgId());
 		}
-	}
-
-	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
-	{
-		return costDetailsService.streamAllCostDetailsAfter(costDetail);
 	}
 }

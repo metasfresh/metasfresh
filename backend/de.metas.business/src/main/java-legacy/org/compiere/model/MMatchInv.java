@@ -16,22 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Properties;
-
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
 import de.metas.document.DocBaseType;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
-import de.metas.order.IMatchPODAO;
-import de.metas.order.OrderLineId;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.
@@ -55,6 +54,7 @@ public class MMatchInv extends X_M_MatchInv
 {
 	private static final long serialVersionUID = 3668871839074170205L;
 
+	@SuppressWarnings("unused")
 	public MMatchInv(final Properties ctx, final int M_MatchInv_ID, final String trxName)
 	{
 		super(ctx, M_MatchInv_ID, trxName);
@@ -72,6 +72,7 @@ public class MMatchInv extends X_M_MatchInv
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MMatchInv(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);

@@ -26,11 +26,14 @@ import de.metas.calendar.IPeriodBL;
 import de.metas.calendar.IPeriodDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -118,8 +121,21 @@ public class MPeriod extends X_C_Period
 	{
 		return get(ctx, DateAcct, 0);
 	}	//	get
-	
 
+	public static MPeriod getOrFail(@NonNull Properties ctx, @NonNull Timestamp DateAcct, int AD_Org_ID)
+	{
+		final MPeriod period = get(ctx, DateAcct, AD_Org_ID);
+		if (period == null)
+		{
+			final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+			throw new AdempiereException(TranslatableStrings.builder()
+												 .appendADMessage(AdMessageKey.of("PeriodClosed"))
+												 .append(" ").appendADElement("DateAcct").append("=").appendDate(DateAcct)
+												 .append(" ").appendADElement("AD_Org_ID").append("=").append(orgDAO.retrieveOrgName(AD_Org_ID))
+												 .build());
+		}
+		return period;
+	}
 	/**
 	 * Find standard Period of DateAcct based on Client Calendar
 	 * @param ctx context

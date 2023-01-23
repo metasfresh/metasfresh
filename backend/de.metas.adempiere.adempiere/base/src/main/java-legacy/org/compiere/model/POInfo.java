@@ -383,6 +383,18 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		//
+		// Correct IsLazyLoading,
+		// i.e. Always load effective Key columns (Key or Parent)
+		for (final POInfoColumn column : m_columns)
+		{
+			if (column.IsLazyLoading && m_keyColumnNames.contains(column.getColumnName()))
+			{
+				column.IsLazyLoading = false;
+				logger.info("Column {}.{} was marked as IsLazyLoading but effectively it is an key column, we we set IsLazyLoading=false.", this.m_TableName, column.getColumnName());
+			}
+		}
+
+		//
 		// Setup some pre-built SQLs which are frequently used
 		sqlSelectColumns = buildSqlSelectColumns();
 		sqlSelect = buildSqlSelect();
@@ -917,21 +929,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final int columnIndex = getColumnIndex(columnName);
 		return isColumnUpdateable(columnIndex);
 	}   // isUpdateable
-
-	/**
-	 * Set all columns updateable
-	 *
-	 * @param updateable updateable
-	 * @deprecated This method will be deleted in future because our {@link POInfo} has to be immutable.
-	 */
-	@Deprecated
-	public void setUpdateable(final boolean updateable)
-	{
-		for (final POInfoColumn m_column : m_columns)
-		{
-			m_column.IsUpdateable = updateable;
-		}
-	}    // setUpdateable
 
 	@Nullable
 	public String getReferencedTableNameOrNull(final String columnName)

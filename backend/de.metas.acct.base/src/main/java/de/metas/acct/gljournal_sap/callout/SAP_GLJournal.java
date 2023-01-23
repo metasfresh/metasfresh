@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Callout(value = I_SAP_GLJournal.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 @TabCallout(I_SAP_GLJournal.class)
@@ -146,10 +146,10 @@ public class SAP_GLJournal implements ITabCallout
 
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournal.getC_ConversionType_ID());
 
-		LocalDate dateAcct = TimeUtil.asLocalDate(glJournal.getDateAcct());
+		Instant dateAcct = TimeUtil.asInstant(glJournal.getDateAcct());
 		if (dateAcct == null)
 		{
-			dateAcct = SystemTime.asLocalDate();
+			dateAcct = SystemTime.asInstant();
 		}
 
 		final ClientId adClientId = ClientId.ofRepoId(glJournal.getAD_Client_ID());

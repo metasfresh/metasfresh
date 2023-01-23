@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -9,7 +10,6 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.PostingException;
-import de.metas.acct.GLCategoryId;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
@@ -27,6 +27,7 @@ import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -35,7 +36,6 @@ import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,14 +53,12 @@ import org.compiere.model.MAccount;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 
 /**
  * Accounting Fact Entry.
@@ -70,13 +68,12 @@ import java.time.LocalDate;
  * <p>
  * Contributor(s):
  * Chris Farley: Fix Bug [ 1657372 ] M_MatchInv records can not be balanced
- * https://sourceforge.net/forum/message.php?msg_id=4151117
  * Carlos Ruiz - globalqss: Add setAmtAcct method rounded by Currency
  * Armen Rizal, Goodwill Consulting
  * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs Bayu Sistematika -
  * <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
  * amt Teo Sarca
- * <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
+ * <li>FR [ 2819081 ] FactLine.getDocLine should be public
  */
 public final class FactLine extends X_Fact_Acct
 {
@@ -491,17 +488,23 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		// Date Trx
-		setDateTrx(m_doc.getDateDoc());
-		if (m_docLine != null && m_docLine.getDateDoc() != null)
+		if (m_docLine != null)
 		{
-			setDateTrx(m_docLine.getDateDoc());
+			setDateTrx(m_docLine.getDateDocAsTimestamp());
+		}
+		else
+		{
+			setDateTrx(m_doc.getDateDocAsTimestamp());
 		}
 
 		// Date Acct
-		setDateAcct(m_doc.getDateAcct());
-		if (m_docLine != null && m_docLine.getDateAcct() != null)
+		if (m_docLine != null)
 		{
-			setDateAcct(m_docLine.getDateAcct());
+			setDateAcct(m_docLine.getDateAcctAsTimestamp());
+		}
+		else
+		{
+			setDateAcct(m_doc.getDateAcctAsTimestamp());
 		}
 
 		// Period
@@ -700,16 +703,6 @@ public final class FactLine extends X_Fact_Acct
 	private void setC_LocFrom_ID(final LocationId locationFromId)
 	{
 		super.setC_LocFrom_ID(LocationId.toRepoId(locationFromId));
-	}
-
-	private void setDateTrx(final LocalDate dateTrx)
-	{
-		super.setDateTrx(TimeUtil.asTimestamp(dateTrx));
-	}
-
-	private void setDateAcct(final LocalDate dateAcct)
-	{
-		super.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 	}
 
 	public Doc<?> getDoc()
@@ -1111,29 +1104,28 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		// Get Conversion Type from Line or Header
+		LocalDateAndOrgId convDate;
 		CurrencyConversionTypeId conversionTypeId = null;
-		OrgId orgId = OrgId.ANY;
 		if (m_docLine != null)            // get from line
 		{
+			convDate = m_docLine.getDateAcct();
 			conversionTypeId = m_docLine.getCurrencyConversionTypeId();
-			orgId = m_docLine.getOrgId();
 		}
+		else
+		{
+			convDate = m_doc.getDateAcct();
+		}
+
 		if (conversionTypeId == null)    // get from header
 		{
-			Check.assumeNotNull(m_doc, "m_doc not null");
 			conversionTypeId = m_doc.getCurrencyConversionTypeId();
-			if (orgId == null || orgId.isAny())
-			{
-				orgId = m_doc.getOrgId();
-			}
 		}
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		return currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(getDateAcct()),
+				convDate,
 				conversionTypeId,
-				m_doc.getClientId(),
-				orgId);
+				m_doc.getClientId());
 	}
 
 	/**

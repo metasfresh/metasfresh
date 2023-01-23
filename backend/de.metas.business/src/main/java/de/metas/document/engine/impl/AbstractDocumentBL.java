@@ -3,6 +3,7 @@ package de.metas.document.engine.impl;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADRefListItem;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -17,11 +18,12 @@ import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import de.metas.ad_reference.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
@@ -34,12 +36,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -420,7 +420,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 
-	protected final LocalDate getDocumentDate(final Object model)
+	@Nullable
+	protected final InstantAndOrgId getDocumentDate(final Object model)
 	{
 		if (model == null)
 		{
@@ -429,7 +430,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		if (model instanceof I_C_OrderLine)
 		{
-			return TimeUtil.asLocalDate(((I_C_OrderLine)model).getDateOrdered());
+			final I_C_OrderLine orderLine = (I_C_OrderLine)model;
+			return InstantAndOrgId.ofTimestamp(orderLine.getDateOrdered(), OrgId.ofRepoId(orderLine.getAD_Org_ID()));
 		}
 
 		final IDocument doc = getDocumentOrNull(model);

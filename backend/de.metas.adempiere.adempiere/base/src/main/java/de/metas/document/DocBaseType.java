@@ -53,6 +53,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	ServiceRepairOrder(X_C_DocType.DOCBASETYPE_ServiceRepairOrder),
 	RemittanceAdvice(X_C_DocType.DOCBASETYPE_RemittanceAdvice),
 	BillOfMaterialVersion(X_C_DocType.DOCBASETYPE_BillOfMaterialVersion),
+	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
 	;
 
 	public static final int AD_REFERENCE_ID = X_C_DocType.DOCBASETYPE_AD_Reference_ID;

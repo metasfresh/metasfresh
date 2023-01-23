@@ -3,18 +3,16 @@
  */
 package de.metas.currency;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import lombok.NonNull;
-import org.adempiere.service.ClientId;
-
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -40,7 +38,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface ICurrencyDAO extends ISingletonService
 {
@@ -61,7 +58,7 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
-	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
+	@NonNull CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, Instant date);
 
 	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 

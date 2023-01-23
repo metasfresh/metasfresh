@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.AggregatedCostAmount;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostPrice;
@@ -19,6 +20,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -30,7 +32,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /*
  * #%L
@@ -79,7 +83,10 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
 		this._currencyConversionContext = inoutBL.getCurrencyConversionContext(_receipt);
 
-		setDateDoc(TimeUtil.asLocalDate(matchPO.getDateTrx()));
+		setDateDoc(LocalDateAndOrgId.ofTimestamp(
+				matchPO.getDateTrx(),
+				OrgId.ofRepoId(matchPO.getAD_Org_ID()),
+				doc.getServices()::getTimeZone));
 
 		final Quantity qty = Quantity.of(matchPO.getQty(), getProductStockingUOM());
 		final boolean isSOTrx = false;
@@ -136,13 +143,16 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
-	AggregatedCostAmount createCostDetails(final AcctSchema as)
+	void createCostDetails(final AcctSchema as)
 	{
 		final I_M_InOut receipt = getReceipt();
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
 		final CostAmount amt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), qty);
 
-		return services.createCostDetail(
+		// NOTE: there is no need to fail if no cost details were created because:
+		// * not all costing methods are creating cost details for MatchPO
+		// * we are not using the result of cost details
+		services.createCostDetailOrEmpty(
 				CostDetailCreateRequest.builder()
 						.acctSchemaId(as.getId())
 						.clientId(ClientId.ofRepoId(receipt.getAD_Client_ID()))
@@ -153,7 +163,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 						.qty(qty)
 						.amt(amt)
 						.currencyConversionContext(getCurrencyConversionContext())
-						.date(TimeUtil.asLocalDate(receipt.getDateAcct()))
+						.date(getReceiptDateAcct())
 						.description(getOrderLine().getDescription())
 						.build());
 	}
@@ -176,6 +186,13 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	private CurrencyConversionContext getCurrencyConversionContext()
 	{
 		return this._currencyConversionContext;
+	}
+
+	Instant getReceiptDateAcct()
+	{
+		final I_M_InOut receipt = getReceipt();
+		final Timestamp receiptDateAcct = receipt.getDateAcct();
+		return receiptDateAcct.toInstant();
 	}
 
 	boolean isReturnTrx()

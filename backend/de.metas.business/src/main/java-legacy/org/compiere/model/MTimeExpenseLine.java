@@ -232,7 +232,7 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 						getExpenseAmt(),
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(getC_Currency_Report_ID()),
-						TimeUtil.asLocalDate(getDateExpense()),
+						getDateExpense().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID())));

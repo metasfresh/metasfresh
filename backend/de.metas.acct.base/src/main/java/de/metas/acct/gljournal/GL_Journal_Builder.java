@@ -49,7 +49,6 @@ public class GL_Journal_Builder
 
 	// services
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
 	private final GLCategoryRepository glCategoryRepository = GLCategoryRepository.get();
 
 	private final I_GL_Journal glJournal;
@@ -67,6 +66,7 @@ public class GL_Journal_Builder
 		glJournal.setPostingType(request.getPostingType());
 		glJournal.setDescription(request.getDescription());
 
+		final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
 		final DocTypeId docTypeId = glJournalBL.getDocTypeGLJournal(request.getClientId(), request.getOrgId());
 		glJournal.setC_DocType_ID(docTypeId.getRepoId());
 
@@ -116,7 +116,7 @@ public class GL_Journal_Builder
 		return currencyDAO.getDefaultConversionTypeId(
 				request.getClientId(),
 				request.getOrgId(),
-				TimeUtil.asLocalDate(request.getDateAcct()));
+				request.getDateAcct());
 	}
 
 	private Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
