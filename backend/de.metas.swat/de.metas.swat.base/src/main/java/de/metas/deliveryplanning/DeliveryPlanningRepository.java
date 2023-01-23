@@ -61,7 +61,6 @@ public class DeliveryPlanningRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
@@ -292,15 +291,17 @@ public class DeliveryPlanningRepository
 
 		saveRecord(shippingPackageRecord);
 
-		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID() );
+		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID());
 
 		return deliveryInstructionRecord;
 	}
 
-	public void updateDeliveryPlanningReleaseNo(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final String documentNo)
+	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
-		deliveryPlanningRecord.setReleaseNo(documentNo);
+		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
+		deliveryPlanningRecord.setM_ShipperTransportation_ID(deliveryInstruction.getM_ShipperTransportation_ID());
 		saveRecord(deliveryPlanningRecord);
 	}
 
@@ -329,6 +330,7 @@ public class DeliveryPlanningRepository
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			deliveryPlanningRecord.setReleaseNo(null);
+			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
 			saveRecord(deliveryPlanningRecord);
 		}
 	}
