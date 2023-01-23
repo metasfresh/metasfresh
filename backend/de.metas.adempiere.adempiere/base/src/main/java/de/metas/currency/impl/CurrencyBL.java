@@ -181,6 +181,12 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	public CurrencyPrecision getCostingPrecision(final CurrencyId currencyId)
+	{
+		return currencyDAO.getCostingPrecision(currencyId);
+	}
+
+	@Override
 	@NonNull
 	public final BigDecimal convert(
 			final BigDecimal amt,
@@ -339,9 +345,7 @@ public class CurrencyBL implements ICurrencyBL
 		{
 			final CurrencyCode currencyFrom = currencyDAO.getCurrencyCodeById(currencyFromId);
 			final CurrencyCode currencyTo = currencyDAO.getCurrencyCodeById(currencyToId);
-			final ConversionTypeMethod conversionTypeMethod = conversionCtx.getConversionTypeId() != null
-					? currencyDAO.getConversionTypeMethodById(conversionCtx.getConversionTypeId())
-					: null;
+			final ConversionTypeMethod conversionTypeMethod = currencyDAO.getConversionTypeMethodById(conversionCtx.getConversionTypeId());
 
 			throw new NoCurrencyRateFoundException(
 					currencyFrom,
