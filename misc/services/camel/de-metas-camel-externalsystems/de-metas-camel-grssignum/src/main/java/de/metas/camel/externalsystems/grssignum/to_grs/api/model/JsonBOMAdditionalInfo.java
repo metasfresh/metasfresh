@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.grssignum.to_grs.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -29,26 +30,57 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Value
 @JsonDeserialize(builder = JsonBOMAdditionalInfo.JsonBOMAdditionalInfoBuilder.class)
 public class JsonBOMAdditionalInfo
 {
 	@JsonProperty("Produktion_Maschinengrößen")
+	@Nullable
 	List<Map<String, BigDecimal>> plantConfig;
 
+	@JsonProperty("Lagerungsbedingungen_MHD_in_Monaten")
+	@Nullable
+	Integer guaranteeMonths;
+
+	@JsonProperty("Lagerungsbedingungen_Lagerungstemperatur")
+	@Nullable
+	String warehouseTemperature;
+
+	@JsonProperty("Rezeptur_Angaben_GTIN")
+	@Nullable
+	String gtin;
+
 	@Builder
-	public JsonBOMAdditionalInfo(@JsonProperty("Produktion_Maschinengrößen") final List<Map<String, BigDecimal>> plantConfig)
+	public JsonBOMAdditionalInfo(
+			@Nullable @JsonProperty("Produktion_Maschinengrößen") final List<Map<String, BigDecimal>> plantConfig,
+			@Nullable @JsonProperty("Lagerungsbedingungen_MHD_in_Monaten") final Integer guaranteeMonths,
+			@Nullable @JsonProperty("Lagerungsbedingungen_Lagerungstemperatur") final String warehouseTemperature,
+			@Nullable @JsonProperty("Rezeptur_Angaben_GTIN") final String gtin)
 	{
 		this.plantConfig = plantConfig;
+		this.guaranteeMonths = guaranteeMonths;
+		this.warehouseTemperature = warehouseTemperature;
+		this.gtin = gtin;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonBOMAdditionalInfoBuilder
 	{
+	}
+
+	@Nullable
+	@JsonIgnore
+	public String getGuaranteeMonthsAsString()
+	{
+		return Optional.ofNullable(guaranteeMonths)
+				.map(String::valueOf)
+				.orElse(null);
 	}
 }
