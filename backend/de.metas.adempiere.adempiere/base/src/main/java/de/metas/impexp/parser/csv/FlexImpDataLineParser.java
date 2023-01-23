@@ -1,8 +1,10 @@
-package de.metas.impexp.parser;
+package de.metas.impexp.parser.csv;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.impexp.parser.ErrorMessage;
+import de.metas.impexp.parser.ImpDataCell;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
@@ -36,7 +38,7 @@ import lombok.NonNull;
  */
 
 @ToString
-final class FlexImpDataLineParser implements ImpDataLineParser
+final class FlexImpDataLineParser implements CsvImpDataLineParser
 {
 	private static final char DEFAULT_CELL_QUOTE = '"';
 

@@ -1,4 +1,6 @@
-package de.metas.impexp.parser;
+package de.metas.impexp.parser.csv;
+
+import de.metas.impexp.parser.ImpDataCell;
 
 import java.util.List;
 
@@ -24,7 +26,7 @@ import java.util.List;
  * #L%
  */
 
-public interface ImpDataLineParser
+interface CsvImpDataLineParser
 {
 
 	List<ImpDataCell> parseDataCells(String line);
