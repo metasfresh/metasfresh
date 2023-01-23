@@ -1,6 +1,7 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -9,6 +10,7 @@ import org.compiere.model.I_C_BPartner_Stats;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -75,5 +77,5 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	@Nullable
 	abstract BigDecimal computeActualLifeTimeValue(@NonNull BPartnerId partnerId);
 
-	BigDecimal retrieveDeliveryCreditUsed(BPartnerStats bpStats);
+	Iterator<I_M_ShippingPackage> retrieveCompletedDeliveryInstructionLines(BPartnerStats bpStats);
 }

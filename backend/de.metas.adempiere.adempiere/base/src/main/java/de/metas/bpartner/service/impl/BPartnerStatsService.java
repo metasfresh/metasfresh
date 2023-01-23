@@ -1,18 +1,27 @@
 package de.metas.bpartner.service.impl;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -20,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
+import java.util.Iterator;
 import java.util.Locale;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -52,7 +62,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BPartnerStatsService
 {
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-	final BPartnerCreditLimitRepository creditLimitRepo;
+
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+
+
+	private final BPartnerCreditLimitRepository creditLimitRepo;
+
 
 	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
 	{
@@ -209,9 +224,27 @@ public class BPartnerStatsService
 
 	private void updateDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
 	{
-		final BigDecimal deliveryCreditUsed = bPartnerStatsDAO.retrieveDeliveryCreditUsed(bpStats);
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
-		stats.setDelivery_CreditUsed(deliveryCreditUsed);
+
+		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(ClientId.ofRepoId(stats.getAD_Client_ID()),
+																		  OrgId.ofRepoId(stats.getAD_Org_ID()));
+
+		final CurrencyId baseCurrencyId = acctSchema.getCurrencyId();
+		Money deliveryCreditUsed = Money.zero(baseCurrencyId);
+
+		final Iterator<I_M_ShippingPackage> shippingPackages = bPartnerStatsDAO.retrieveCompletedDeliveryInstructionLines(bpStats);
+
+		while(shippingPackages.hasNext())
+		{
+			final I_M_ShippingPackage shippingPackage = shippingPackages.next();
+			final BigDecimal actualLoadQty = shippingPackage.getActualLoadQty();
+			final I_C_OrderLine orderLine = shippingPackage.getC_OrderLine(); // fixme I think the whole BPartnerDtats logic should be moved upper, so it has access to various repositories
+
+			final Money priceActual = Money.of(orderLine.getPriceActual(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+
+
+		}
+		stats.setDelivery_CreditUsed(deliveryCreditUsed.toBigDecimal()); // todo verify the currency
 		saveRecord(stats);
 	}
 

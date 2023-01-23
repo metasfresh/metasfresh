@@ -5,6 +5,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -20,6 +23,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -49,10 +53,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
+	private IQueryBL queryBL = Services.get(IQueryBL.class);
+	private IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+
 	@Override
 	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
-		I_C_BPartner_Stats statsRecord = Services.get(IQueryBL.class)
+
+		I_C_BPartner_Stats statsRecord = queryBL
 				.createQueryBuilder(I_C_BPartner_Stats.class) // using current trx, because we will save in current trx too
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
@@ -81,7 +89,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
-		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByIdInInheritedTrx(bpGroupId);
+
+		final I_C_BP_Group bpGroup = bpGroupDAO.getByIdInInheritedTrx(bpGroupId);
 
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
@@ -174,13 +183,16 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 	}
 
-
 	@Override
-	public BigDecimal retrieveDeliveryCreditUsed(@NonNull final BPartnerStats bpStats)
+	public Iterator<I_M_ShippingPackage> retrieveCompletedDeliveryInstructionLines(@NonNull final BPartnerStats bpStats)
 	{
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, bpStats.getBpartnerId())
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Completed)
+				.andCollectChildren(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, I_M_ShippingPackage.class)
+				.create()
+				.iterate(I_M_ShippingPackage.class);
 
-		//todo
-		return null;
 	}
 
 	@Override
