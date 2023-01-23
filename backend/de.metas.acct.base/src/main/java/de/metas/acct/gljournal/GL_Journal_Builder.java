@@ -49,7 +49,6 @@ public class GL_Journal_Builder
 
 	// services
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
 	private final GLCategoryRepository glCategoryRepository = GLCategoryRepository.get();
 
 	private final I_GL_Journal glJournal;

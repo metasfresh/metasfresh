@@ -22,7 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -115,9 +114,7 @@ import java.util.Properties;
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(create().toString()) // shows the generated SQL
-				.toString();
+		return create().toString(); // shows the generated SQL
 	}
 
 	@Override
