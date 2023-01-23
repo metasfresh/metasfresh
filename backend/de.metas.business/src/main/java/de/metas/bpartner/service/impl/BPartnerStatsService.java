@@ -1,7 +1,27 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.bpartner.service.impl;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -10,13 +30,14 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
-import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -36,42 +57,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
 public class BPartnerStatsService
 {
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	private final MoneyService moneyService;
 
 	private final BPartnerCreditLimitRepository creditLimitRepo;
 
-
-	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
+	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo,
+			@NonNull final MoneyService moneyService)
 	{
 		this.creditLimitRepo = creditLimitRepo;
+		this.moneyService = moneyService;
 	}
 
 	public String calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
@@ -226,21 +229,24 @@ public class BPartnerStatsService
 	{
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
 
-		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(ClientId.ofRepoId(stats.getAD_Client_ID()),
-																		  OrgId.ofRepoId(stats.getAD_Org_ID()));
-
-		final CurrencyId baseCurrencyId = acctSchema.getCurrencyId();
+		final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(stats.getAD_Client_ID(), stats.getAD_Org_ID()));
 		Money deliveryCreditUsed = Money.zero(baseCurrencyId);
 
 		final Iterator<I_M_ShippingPackage> shippingPackages = bPartnerStatsDAO.retrieveCompletedDeliveryInstructionLines(bpStats);
 
-		while(shippingPackages.hasNext())
+		while (shippingPackages.hasNext())
 		{
-			final I_M_ShippingPackage shippingPackage = shippingPackages.next();
-			final BigDecimal actualLoadQty = shippingPackage.getActualLoadQty();
-			final I_C_OrderLine orderLine = shippingPackage.getC_OrderLine(); // fixme I think the whole BPartnerDtats logic should be moved upper, so it has access to various repositories
 
-			final Money priceActual = Money.of(orderLine.getPriceActual(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+			final I_M_ShippingPackage shippingPackage = shippingPackages.next();
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(shippingPackage.getC_OrderLine_ID());
+
+
+
+		//	final Quantity actualLoadQty = Quantity.of(shippingPackage.getActualLoadQty(), shippingPackage.getC_UOM());
+
+
+			// final Money priceActual = Money.of(orderLine.getPriceActual(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+			// final BigDecimal orderedQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty);
 
 
 		}
