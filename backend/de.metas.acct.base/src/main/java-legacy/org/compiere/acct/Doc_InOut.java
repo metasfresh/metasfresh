@@ -446,7 +446,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		return precision.round(costs.getValue());
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
 	{
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		return inOutBL.getCurrencyConversionContext(inout);

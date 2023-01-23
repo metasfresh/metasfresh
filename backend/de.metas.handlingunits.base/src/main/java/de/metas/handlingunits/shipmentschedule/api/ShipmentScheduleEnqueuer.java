@@ -34,6 +34,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
+import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
@@ -219,7 +220,8 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
-							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_C_ForeignExchangeContract_ID, workPackageParameters.getForexContractId());
 
 					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
@@ -331,7 +333,7 @@ public class ShipmentScheduleEnqueuer
 	 * Contains the enqueuer's result. Right now it's just two counters, but might be extended in future.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 * task https://metasfresh.atlassian.net/browse/FRESH-342
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-342">task</a>
 	 */
 	public static class Result implements IEnqueueResult
 	{
@@ -377,6 +379,7 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
+		public static final String PARAM_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -408,6 +411,8 @@ public class ShipmentScheduleEnqueuer
 
 		@Nullable
 		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
+
+		@Nullable ForexContractId forexContractId;
 	}
 
 }

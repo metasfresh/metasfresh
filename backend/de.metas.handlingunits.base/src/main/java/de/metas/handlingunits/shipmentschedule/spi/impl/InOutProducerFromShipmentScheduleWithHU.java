@@ -32,6 +32,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -166,6 +167,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
+
+	private ForexContractId forexContractId;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -409,6 +412,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());
 		}
+
+		shipment.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
 
 		//
 		// Save Shipment Header
@@ -716,6 +721,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
 	{
 		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setForexContractId(final ForexContractId forexContractId)
+	{
+		this.forexContractId = forexContractId;
 		return this;
 	}
 
