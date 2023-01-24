@@ -108,7 +108,7 @@ public class C_BPartner
 		Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_C_BP_Group_ID)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {I_C_BPartner.COLUMNNAME_C_BP_Group_ID})
 	public void updateSO_CreditStatus(@NonNull final I_C_BPartner bpartner)
 	{
 		// make sure that the SO_CreditStatus is correct
@@ -235,4 +235,17 @@ public class C_BPartner
 							.build());
 		}
 	}
+
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_M_SectionCode_ID)
+	public void updateStatsSectionCode(@NonNull final I_C_BPartner bpartner)
+	{
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+												  .bpartnerId(bpartner.getC_BPartner_ID())
+												  .build());
+	}
+
+
+
 }
