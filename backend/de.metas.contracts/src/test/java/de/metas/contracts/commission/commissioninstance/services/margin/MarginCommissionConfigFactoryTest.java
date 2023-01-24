@@ -43,6 +43,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeAll;
@@ -72,6 +74,8 @@ public class MarginCommissionConfigFactoryTest
 	@BeforeEach
 	void beforeEach()
 	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final MoneyService moneyService = new MoneyService(currencyRepository);
 		final CustomerTradeMarginService customerTradeMarginService = new CustomerTradeMarginService(moneyService, new CustomerTradeMarginRepository());

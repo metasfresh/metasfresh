@@ -1224,4 +1224,10 @@ public class OrderBL implements IOrderBL
 	{
 		return getById(orderId).getDocumentNo();
 	}
+
+	@Override
+	public void save(final I_C_Order order)
+	{
+		orderDAO.save(order);
+	}
 }

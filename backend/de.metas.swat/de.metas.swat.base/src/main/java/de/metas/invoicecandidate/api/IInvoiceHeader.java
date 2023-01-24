@@ -13,8 +13,10 @@ import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface IInvoiceHeader
 {
@@ -87,4 +89,6 @@ public interface IInvoiceHeader
 
 	@Nullable
 	SectionCodeId getM_SectionCode_ID();
+
+	@Nullable BigDecimal getCurrencyRate();
 }

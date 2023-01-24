@@ -28,6 +28,7 @@ import org.adempiere.util.api.IParams;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 /**
  * Invoicing Enqueueing & generating parameters (wrapped from {@link IParams}).
@@ -109,7 +110,16 @@ public class InvoicingParams implements IInvoicingParams
 	{
 		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
 	}
-	
+
+	@Override
+	public Optional<BigDecimal> getCurrencyRate()
+	{
+		final BigDecimal currencyRate = params.getParameterAsBigDecimal(PARA_CurrencyRate);
+		return currencyRate != null && currencyRate.signum() != 0
+				? Optional.of(currencyRate)
+				: Optional.empty();
+	}
+
 	/**
 	 * Always returns {@code false}.
 	 */

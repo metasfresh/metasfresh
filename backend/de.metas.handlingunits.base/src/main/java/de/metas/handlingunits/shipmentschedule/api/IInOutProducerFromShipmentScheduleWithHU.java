@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
@@ -13,8 +14,6 @@ import java.util.List;
 
 /**
  * Interface responsible creating {@link I_M_InOut} shipments from {@link ShipmentScheduleWithHU}s.
- *
- *
  */
 public interface IInOutProducerFromShipmentScheduleWithHU
 {
@@ -24,7 +23,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 
 	/**
 	 * Determines if this producer shall explicitly invoke {@link IHUInOutBL#createPackingMaterialLines(org.compiere.model.I_M_InOut)} to create packing inOutLines.
-	 *
 	 * Notes:
 	 * <ul>
 	 * <li>if this is set to <code>true</code>, then packing lines will be created <b>before</b> the shipment's DocAction is processed
@@ -39,4 +37,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
+
+	IInOutProducerFromShipmentScheduleWithHU setForexContractId(ForexContractId forexContractId);
 }

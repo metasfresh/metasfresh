@@ -854,7 +854,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			final CurrencyConversionContext conversionCtx = getCurrencyConversionContext();
+			final CurrencyConversionContext conversionCtx = getCurrencyConversionContext(acctSchema);
 			try
 			{
 				services.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
@@ -868,7 +868,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	protected CurrencyConversionContext getCurrencyConversionContext()
+	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
 	{
 		return services.createCurrencyConversionContext(
 				getDateAcct(),

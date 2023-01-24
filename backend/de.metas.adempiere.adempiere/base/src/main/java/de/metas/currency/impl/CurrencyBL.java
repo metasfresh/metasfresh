@@ -184,6 +184,12 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	public CurrencyPrecision getCostingPrecision(final CurrencyId currencyId)
+	{
+		return currencyDAO.getCostingPrecision(currencyId);
+	}
+
+	@Override
 	@NonNull
 	public final BigDecimal convert(
 			final BigDecimal amt,

@@ -375,7 +375,12 @@ public final class FactLineBuilder
 	@Nullable
 	private CurrencyConversionContext getCurrencyConversionCtx()
 	{
-		return currencyConversionCtx;
+		if(currencyConversionCtx != null)
+		{
+			return currencyConversionCtx;
+		}
+
+		return fact.getCurrencyConversionContext();
 	}
 
 	@Nullable
