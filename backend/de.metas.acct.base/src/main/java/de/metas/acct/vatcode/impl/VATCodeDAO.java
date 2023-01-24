@@ -65,7 +65,7 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			if (isMatching(matching, request))
 			{
-				return VATCode.of(matching.getVATCode());
+				return VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID());
 			}
 		}
 
