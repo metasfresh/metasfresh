@@ -12,7 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-  
+  * [#14370](https://github.com/metasfresh/metasfresh/pull/14370) import Allergens for bom products
+  * [#14354](https://github.com/metasfresh/metasfresh/issues/14354) Automatically update PP Orders when a new BOM Version is imported
   * [#14414](https://github.com/metasfresh/metasfresh/issues/14414) Add Department Data Structures
   * [#14368](https://github.com/metasfresh/metasfresh/issues/14368) Enhancements SAP import product
   * [#14362](https://github.com/metasfresh/metasfresh/issues/14362) Enhancements SAP import BPartner
