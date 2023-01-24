@@ -7,6 +7,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -43,7 +44,7 @@ import java.util.List;
  * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author metas-dev <dev@metasfresh.com>
- * task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary">task</a>
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
 {
@@ -79,6 +80,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+		final ForexContractId forexContractId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_C_ForeignExchangeContract_ID, ForexContractId.class);
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
@@ -98,6 +100,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.setCreatePackingLines(isCreatePackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
+				.setForexContractId(forexContractId)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
@@ -147,7 +150,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 * <p>
-	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29">task</a>
 	 */
 	@Override
 	public ILatchStragegy getLatchStrategy()

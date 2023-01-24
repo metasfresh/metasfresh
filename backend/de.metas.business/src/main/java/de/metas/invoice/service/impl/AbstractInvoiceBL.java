@@ -23,8 +23,11 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.FixedConversionRate;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -56,6 +59,7 @@ import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -93,6 +97,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
@@ -166,6 +171,7 @@ import static de.metas.util.Check.assumeNotNull;
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -634,7 +640,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			invoice.setEMail(order.getEMail());
 		}
-
 
 		// metas
 		final I_C_Invoice invoice2 = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
@@ -1834,8 +1839,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-			final I_C_Invoice creditMemo,
-			final BigDecimal openAmt)
+										 final I_C_Invoice creditMemo,
+										 final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
@@ -1910,7 +1915,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
 
-		final org.compiere.model.I_C_Invoice invoice =invoiceDAO.getByIdInTrx(invoiceId);
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
@@ -1923,7 +1928,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final BPartnerContactId invoiceContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, invoice.getAD_User_ID());
 
-		if(invoiceContactId == null)
+		if (invoiceContactId == null)
 		{
 			return null;
 		}
@@ -1931,17 +1936,44 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final I_AD_User invoiceContactRecord = partnersRepo.getContactById(invoiceContactId);
 
 		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoiceContactRecord.getC_BPartner_Location_ID());
-		if(contactLocationId != null)
+		if (contactLocationId != null)
 		{
 			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
 			final String contactLocationEmail = contactLocationRecord.getEMail();
 
-			if(!Check.isEmpty(contactLocationEmail))
+			if (!Check.isEmpty(contactLocationEmail))
 			{
 				return contactLocationEmail;
 			}
 		}
 
 		return null;
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionCtx(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final CurrencyId acctCurrencyId)
+	{
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+				invoice.getDateAcct().toInstant(),
+				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+				ClientId.ofRepoId(invoice.getAD_Client_ID()),
+				OrgId.ofRepoId(invoice.getAD_Org_ID()));
+
+		final BigDecimal currencyRate = invoice.getCurrencyRate();
+		if (currencyRate != null && currencyRate.signum() != 0)
+		{
+			final FixedConversionRate fixedCurrencyRate = FixedConversionRate.builder()
+					.fromCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
+					.toCurrencyId(acctCurrencyId)
+					.multiplyRate(currencyRate)
+					.build();
+			conversionCtx = conversionCtx.withFixedConversionRate(fixedCurrencyRate);
+		}
+
+		return conversionCtx;
 	}
 }

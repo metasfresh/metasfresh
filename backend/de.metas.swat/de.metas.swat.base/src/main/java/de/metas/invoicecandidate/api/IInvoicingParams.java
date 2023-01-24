@@ -30,6 +30,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Invoicing Enqueueing & generating parameters.
@@ -48,8 +49,9 @@ public interface IInvoicingParams
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
-	
-	
+
+	String PARA_CurrencyRate = "CurrencyRate";
+
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
 	 */
@@ -91,7 +93,7 @@ public interface IInvoicingParams
 	 * This parameter is created and when invoice candidates to invoice workpackage is enqueued.
 	 *
 	 * @return total net amount to invoice checksum
-	 * task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29">task</a>
 	 */
 	BigDecimal getCheck_NetAmtToInvoice();
 
@@ -117,11 +119,13 @@ public interface IInvoicingParams
 	boolean isUpdateLocationAndContactForInvoice();
 
 	/**
-	 *  When this parameter is set on true, the newly generated invoices are directly completed.
-	 *  Otherwise they are just prepared and left in the DocStatus IP (in progress);
+	 * When this parameter is set on true, the newly generated invoices are directly completed.
+	 * Otherwise they are just prepared and left in the DocStatus IP (in progress);
 	 */
 	boolean isCompleteInvoices();
-	
+
+	Optional<BigDecimal> getCurrencyRate();
+
 	default Map<String, ?> asMap()
 	{
 		final Builder<String, Object> result = ImmutableMap.builder();
@@ -149,6 +153,7 @@ public interface IInvoicingParams
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
 		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
+		getCurrencyRate().ifPresent(currencyRate -> result.put(PARA_CurrencyRate, currencyRate));
 
 		return result.build();
 	}

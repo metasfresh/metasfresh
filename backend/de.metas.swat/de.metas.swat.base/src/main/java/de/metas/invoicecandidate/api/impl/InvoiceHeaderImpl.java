@@ -21,6 +21,7 @@ import lombok.Setter;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -101,6 +102,8 @@ import java.util.List;
 
 	@Setter
 	private SectionCodeId sectionCodeId;
+
+	@Setter @Getter @Nullable BigDecimal currencyRate;
 
 	/* package */ InvoiceHeaderImpl()
 	{

@@ -1,5 +1,6 @@
 package de.metas.inout;
 
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -66,6 +67,8 @@ public interface IInOutBL extends ISingletonService
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -186,4 +189,8 @@ public interface IInOutBL extends ISingletonService
 	LocalDate retrieveMovementDate(I_M_InOut inOut);
 
 	String getLocationEmail(InOutId ofRepoId);
+
+	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
 }

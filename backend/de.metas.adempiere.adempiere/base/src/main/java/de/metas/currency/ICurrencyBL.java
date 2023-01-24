@@ -185,4 +185,6 @@ public interface ICurrencyBL extends ISingletonService
 	Money convertToBase(@NonNull CurrencyConversionContext conversionCtx, @NonNull Money amt);
 
 	CurrencyPrecision getStdPrecision(CurrencyId currencyId);
+
+	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 }

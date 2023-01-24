@@ -18,6 +18,7 @@ import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -33,7 +34,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -180,7 +180,7 @@ public class CostingMethodHandlerUtils
 
 		return convertToAcctSchemaCurrency(
 				amt,
-				() -> createCurrencyConversionContext(request),
+				() -> getCurrencyConversionContext(request),
 				acctSchemaId);
 	}
 
@@ -216,12 +216,20 @@ public class CostingMethodHandlerUtils
 		return currencyBL.convert(conversionCtx, price, acctCurrencyId);
 	}
 
-	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
+	private CurrencyConversionContext getCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		return currencyBL.createCurrencyConversionContext(
-				request.getDate(),
-				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId());
+		final CurrencyConversionContext currencyConversionContext = request.getCurrencyConversionContext();
+		if (currencyConversionContext != null)
+		{
+			return currencyConversionContext;
+		}
+		else
+		{
+			return currencyBL.createCurrencyConversionContext(
+					request.getDate(),
+					(CurrencyConversionTypeId)null,
+					request.getClientId(),
+					request.getOrgId());
+		}
 	}
 }

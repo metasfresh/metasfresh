@@ -14,6 +14,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.forex.ForexContractId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
@@ -121,6 +122,7 @@ public class InOutProducer implements IInOutProducer
 
 	@NonNull
 	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+	@Nullable private final ForexContractId forexContractId;
 
 	private I_M_InOut _currentReceipt = null;
 	private int _currentReceiptLinesCount = 0;
@@ -128,31 +130,28 @@ public class InOutProducer implements IInOutProducer
 	private I_M_ReceiptSchedule previousReceiptSchedule = null;
 	private final Set<Integer> _currentOrderIds = new HashSet<>();
 
-	/**
-	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, ReceiptMovementDateRule, Map)} with <code> ReceiptMovementDateRule.CURRENT_DATE && externalInfoByScheduleId = null</code>.
-	 */
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
-		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null);
+		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null, null);
 	}
 
 	/**
-	 * @param result
-	 * @param complete
 	 * @param movementDateRule if {@code ReceiptMovementDateRule#CURRENT_DATE} (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}.
 	 *                         else if {@code ReceiptMovementDateRule#EXTERNAL_DATE_IF_AVAIL} then the MovementDate will be taken from {@code externalInfoByReceiptScheduleId} if available
 	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
 	 */
-	protected InOutProducer(@NonNull final InOutGenerateResult result,
+	protected InOutProducer(
+			@NonNull final InOutGenerateResult result,
 			final boolean complete,
 			@NonNull final ReceiptMovementDateRule movementDateRule,
-			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
+			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId,
+			@Nullable final ForexContractId forexContractId)
 	{
 		this.result = result;
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
-
-		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesce(externalInfoByReceiptScheduleId, ImmutableMap.of());
+		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap::of);
+		this.forexContractId = forexContractId;
 	}
 
 	@Override
@@ -232,8 +231,6 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * @param previousReceiptSchedule
-	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
@@ -265,7 +262,7 @@ public class InOutProducer implements IInOutProducer
 		return false;
 	}
 
-	private final void addToCurrentReceiptLines(final List<? extends I_M_InOutLine> lines)
+	private void addToCurrentReceiptLines(final List<? extends I_M_InOutLine> lines)
 	{
 		Check.assumeNotNull(_currentReceipt, "current receipt not null");
 
@@ -277,7 +274,7 @@ public class InOutProducer implements IInOutProducer
 		_currentReceiptLinesCount += lines.size();
 	}
 
-	private final int getCurrentReceiptLinesCount()
+	private int getCurrentReceiptLinesCount()
 	{
 		return _currentReceiptLinesCount;
 	}
@@ -334,8 +331,6 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Sets current receipt on which next lines will be added
-	 *
-	 * @param currentReceipt
 	 */
 	private void setCurrentReceipt(final I_M_InOut currentReceipt)
 	{
@@ -399,7 +394,6 @@ public class InOutProducer implements IInOutProducer
 	/**
 	 * Same as {@link #getCurrentReceipt()} but it will wrapped to given model interface.
 	 *
-	 * @param inoutType
 	 * @return current receipt; never returns null
 	 * @see #getCurrentReceipt()
 	 */
@@ -432,7 +426,7 @@ public class InOutProducer implements IInOutProducer
 		return currentReceiptSchedule;
 	}
 
-	private final I_M_InOut createReceiptHeader(final I_M_ReceiptSchedule rs)
+	private I_M_InOut createReceiptHeader(final I_M_ReceiptSchedule rs)
 	{
 		final Properties ctx = processorCtx.getCtx();
 		final String trxName = processorCtx.getTrx().getTrxName();
@@ -458,10 +452,10 @@ public class InOutProducer implements IInOutProducer
 			InOutDocumentLocationAdapterFactory
 					.locationAdapter(receiptHeader)
 					.setFrom(DocumentLocation.builder()
-									 .bpartnerId(BPartnerId.ofRepoId(bpartnerId))
-									 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
-									 .contactId(bpartnerContactId)
-									 .build());
+							.bpartnerId(BPartnerId.ofRepoId(bpartnerId))
+							.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
+							.contactId(bpartnerContactId)
+							.build());
 		}
 
 		//
@@ -493,10 +487,10 @@ public class InOutProducer implements IInOutProducer
 		//
 		// DropShip informations (08402)
 		final I_C_Order order = rs.getC_Order();
-		if(order!=null)
+		if (order != null)
 		{
 			final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-			if(order!=null && propagateToMInOut)
+			if (order != null && propagateToMInOut)
 			{
 				receiptHeader.setEMail(order.getEMail());
 			}
@@ -520,6 +514,8 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setExternalId(getExternalId(rs));
 			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
+
+		receiptHeader.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
 
 		//
 		// Save & Return

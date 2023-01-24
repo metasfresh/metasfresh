@@ -24,6 +24,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
@@ -32,6 +33,7 @@ import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -54,9 +56,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- *         <li>BF [ 2858043 ] Correct Included Tax in Average Costing
- *
+ * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * <li>BF [ 2858043 ] Correct Included Tax in Average Costing
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
@@ -115,9 +116,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		return docLines;
-	}	// loadLines
+	}    // loadLines
 
-	/** @return zero (always balanced) */
+	/**
+	 * @return zero (always balanced)
+	 */
 	@Override
 	protected BigDecimal getBalance()
 	{
@@ -179,9 +182,16 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 	}
 
+	@NonNull
+	private Fact newFacts(final AcctSchema as)
+	{
+		return new Fact(this, as, PostingType.Actual)
+				.setCurrencyConversionContext(getCurrencyConversionContext(as));
+	}
+
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
 		return ImmutableList.of(fact);
 	}
@@ -210,7 +220,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());		// Revenue X-Org
+		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());        // Revenue X-Org
 		dr.setQty(line.getQty().negate());
 
 		//
@@ -230,7 +240,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -274,13 +284,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
+		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
 		cr.setQty(line.getQty().negate());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -330,7 +340,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_PurchasingReturn(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_PurchasingReturnLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -435,4 +445,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final CurrencyPrecision precision = services.getCurrencyStandardPrecision(currencyId);
 		return precision.round(costs.getValue());
 	}
+
+	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
+	{
+		final I_M_InOut inout = getModel(I_M_InOut.class);
+		return inOutBL.getCurrencyConversionContext(inout);
+	}
+
 }   // Doc_InOut

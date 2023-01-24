@@ -1,19 +1,18 @@
 package de.metas.bpartner.service;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.X_C_BPartner_Stats;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.util.Check;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.X_C_BPartner_Stats;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -40,7 +39,7 @@ import lombok.Value;
 @Value
 public class BPartnerStats
 {
-	int repoId;
+
 
 	@NonNull BPartnerId bpartnerId;
 	@Nullable BigDecimal openItems;
@@ -48,11 +47,14 @@ public class BPartnerStats
 	@Nullable BigDecimal soCreditUsed;
 	@Nullable BigDecimal deliveryCreditUsed;
 	@Nullable String soCreditStatus;
+	@Nullable SectionCodeId sectionCodeId;
+
 
 	@Builder
 	public BPartnerStats(
 			final int repoId,
 			@NonNull final BPartnerId bpartnerId,
+			@Nullable final SectionCodeId sectionCodeId,
 			@Nullable final BigDecimal openItems,
 			@Nullable final BigDecimal actualLifeTimeValue,
 			@Nullable final BigDecimal soCreditUsed,
@@ -63,6 +65,7 @@ public class BPartnerStats
 
 		this.repoId = repoId;
 		this.bpartnerId = bpartnerId;
+		this.sectionCodeId = sectionCodeId;
 		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
 		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
 		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);

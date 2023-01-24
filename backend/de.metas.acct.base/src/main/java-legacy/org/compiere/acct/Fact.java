@@ -24,6 +24,7 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -101,6 +102,7 @@ public final class Fact
 	private List<FactLine> m_lines = new ArrayList<>();
 
 	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private CurrencyConversionContext currencyConversionContext = null;
 
 	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
@@ -108,9 +110,18 @@ public final class Fact
 		return this;
 	}
 
-	/**
-	 * Dispose
-	 */
+	public Fact setCurrencyConversionContext(@Nullable final CurrencyConversionContext currencyConversionContext)
+	{
+		this.currencyConversionContext = currencyConversionContext;
+		return this;
+	}
+
+	@Nullable
+	CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return currencyConversionContext;
+	}
+
 	public void dispose()
 	{
 		m_lines.clear();

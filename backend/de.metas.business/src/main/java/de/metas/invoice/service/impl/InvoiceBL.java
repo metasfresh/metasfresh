@@ -22,18 +22,18 @@ public final class InvoiceBL extends AbstractInvoiceBL
 
 	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice,
-			final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef) // settings
+							 final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef) // settings
 	{
 		return copyLinesFrom(fromInvoice, toInvoice, counter, setOrderRef, setInvoiceRef, defaultDocLineCopyHandler);
 	}
 
 	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice,
-			final I_C_Invoice toInvoice,
-			final boolean counter,
-			final boolean setOrderRef,
-			final boolean setInvoiceRef,      // settings
-			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)
+							 final I_C_Invoice toInvoice,
+							 final boolean counter,
+							 final boolean setOrderRef,
+							 final boolean setInvoiceRef,      // settings
+							 final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)
 	{
 		if (toInvoice.isProcessed() || toInvoice.isPosted() || fromInvoice == null)
 		{
@@ -101,7 +101,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			// New Tax
 			if (toInvoice.getC_BPartner_ID() != fromInvoice.getC_BPartner_ID())
 			{
-				toLinePO.setTax();	// recalculate
+				toLinePO.setTax();    // recalculate
 			}
 			//
 			if (counter || setInvoiceRef)
