@@ -28,13 +28,23 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentQuery;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.tax.api.ITaxBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,6 +53,9 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.MTax;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -65,6 +78,10 @@ public class BPartnerStatsService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	private final MoneyService moneyService;
 
@@ -175,7 +192,7 @@ public class BPartnerStatsService
 	{
 		final BPartnerStats bPartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bPartnerId);
 
-		if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(bPartnerStats.getSoCreditUsed()))
+		if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(bPartnerStats.getSoCreditStatus()))
 		{
 			return;
 		}
@@ -238,20 +255,60 @@ public class BPartnerStatsService
 		{
 
 			final I_M_ShippingPackage shippingPackage = shippingPackages.next();
-			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(shippingPackage.getC_OrderLine_ID());
 
-
-
-		//	final Quantity actualLoadQty = Quantity.of(shippingPackage.getActualLoadQty(), shippingPackage.getC_UOM());
-
-
-			// final Money priceActual = Money.of(orderLine.getPriceActual(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-			// final BigDecimal orderedQtyNetPrice = orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty);
-
-
+			// TODO convert moneyService.convertMoneyToCurrency(computeCreditUsedPerShippingPackage(shippingPackage))
+			deliveryCreditUsed.add(computeCreditUsedPerShippingPackage(shippingPackage));
 		}
+
+		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
+																					  .docStatus(DocStatus.Completed)
+																					  .bpartnerId(bpStats.getBpartnerId())
+																					  .direction(PaymentDirection.INBOUND)
+																					  .build())
+				.stream().iterator();
+		while(paymentIdIterator.hasNext())
+		{
+			final PaymentId paymentId = paymentIdIterator.next();
+			final I_C_Payment payment = paymentBL.getById(paymentId);
+
+			final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+
+			// TODO; conversion moneyService.
+			deliveryCreditUsed.subtract(creditUsageGainedByPayment);
+		}
+
 		stats.setDelivery_CreditUsed(deliveryCreditUsed.toBigDecimal()); // todo verify the currency
 		saveRecord(stats);
+	}
+
+	private Money computeCreditUsedPerShippingPackage(final I_M_ShippingPackage shippingPackage)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(shippingPackage.getC_OrderLine_ID());
+
+		final Quantity actualLoadQty = Quantitys.create(shippingPackage.getActualLoadQty(), UomId.ofRepoId(shippingPackage.getC_UOM_ID()));
+
+		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+
+		final int taxId = orderLine.getC_Tax_ID();
+
+		final BigDecimal taxAmtInfo;
+		if (taxId <= 0)
+		{
+			taxAmtInfo = BigDecimal.ZERO;
+		}
+
+		else
+		{
+			final boolean taxIncluded = orderLineBL.isTaxIncluded(orderLine);
+
+			final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
+
+			final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
+
+			taxAmtInfo = taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt());
+		}
+
+		return Money.of(taxAmtInfo, CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 	}
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
