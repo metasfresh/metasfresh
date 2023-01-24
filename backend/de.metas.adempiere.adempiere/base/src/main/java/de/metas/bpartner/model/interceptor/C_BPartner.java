@@ -108,7 +108,7 @@ public class C_BPartner
 		Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {I_C_BPartner.COLUMNNAME_C_BP_Group_ID})
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_C_BP_Group_ID)
 	public void updateSO_CreditStatus(@NonNull final I_C_BPartner bpartner)
 	{
 		// make sure that the SO_CreditStatus is correct
