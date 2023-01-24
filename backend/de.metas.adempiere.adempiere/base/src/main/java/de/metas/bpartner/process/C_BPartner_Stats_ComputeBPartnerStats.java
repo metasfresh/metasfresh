@@ -1,5 +1,8 @@
 package de.metas.bpartner.process;
 
+import de.metas.bpartner.BPartnerId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
 import de.metas.bpartner.service.BPartnerStats;
@@ -21,7 +24,8 @@ public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implement
 	protected String doIt()
 	{
 		final I_C_BPartner_Stats stats = getRecord(I_C_BPartner_Stats.class);
-		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(stats.getC_BPartner());
+		final I_C_BPartner statsPartner = InterfaceWrapperHelper.load(BPartnerId.ofRepoId(stats.getC_BPartner_ID()), I_C_BPartner.class);
+		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(statsPartner);
 		bpartnerStatsDAO.updateBPartnerStatistics(bpStats);
 		return "@Success@";
 	}
