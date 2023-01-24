@@ -25,7 +25,7 @@ public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implement
 	{
 		final I_C_BPartner_Stats stats = getRecord(I_C_BPartner_Stats.class);
 		final I_C_BPartner statsPartner = InterfaceWrapperHelper.load(BPartnerId.ofRepoId(stats.getC_BPartner_ID()), I_C_BPartner.class);
-		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(statsPartner);
+		final BPartnerStats bpStats = bpartnerStatsDAO.getCreateBPartnerStats(statsPartner);
 		bpartnerStatsDAO.updateBPartnerStatistics(bpStats);
 		return "@Success@";
 	}
