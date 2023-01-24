@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,26 +30,28 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
 @Value
-@JsonDeserialize(builder = JsonBPartnerProductAdditionalInfo.JsonBPartnerProductAdditionalInfoBuilder.class)
-public class JsonBPartnerProductAdditionalInfo
+@JsonDeserialize(builder = JsonAllergen.JsonAllergenBuilder.class)
+public class JsonAllergen
 {
-	@Nullable
-	@JsonProperty("ATTACHMENT")
-	List<JsonAttachment> attachments;
+	@JsonProperty("ALID")
+	Integer id;
+
+	@JsonProperty("Text")
+	String name;
 
 	@Builder
-	public JsonBPartnerProductAdditionalInfo(@JsonProperty("ATTACHMENT") @Nullable final List<JsonAttachment> attachments)
+	public JsonAllergen(
+			@JsonProperty("ALID") @NonNull final Integer id,
+			@JsonProperty("Text") @NonNull final String name)
 	{
-		this.attachments = attachments;
+		this.id = id;
+		this.name = name;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonBPartnerProductAdditionalInfoBuilder
+	static class JsonAllergenBuilder
 	{
 	}
 }

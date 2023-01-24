@@ -145,6 +145,7 @@ public class ProductRepository
 		product.setGTIN(request.getGtin());
 		product.setDescription(request.getDescription());
 		product.setAD_Org_ID(request.getOrgId().getRepoId());
+		product.setGuaranteeMonths(request.getGuaranteeMonths());
 
 		final boolean isDiscontinued = Boolean.TRUE.equals(request.getDiscontinued());
 
@@ -377,6 +378,8 @@ public class ProductRepository
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(productRecord.getM_SectionCode_ID()))
 				.purchased(productRecord.isPurchased())
 				.sapProductHierarchy(productRecord.getSAP_ProductHierarchy())
+				.guaranteeMonths(productRecord.getGuaranteeMonths())
+				.warehouseTemperature(productRecord.getWarehouse_temperature())
 				.build();
 	}
 
@@ -419,6 +422,8 @@ public class ProductRepository
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(product.getSectionCodeId()));
 		record.setIsPurchased(product.isPurchased());
 		record.setSAP_ProductHierarchy(product.getSapProductHierarchy());
+		record.setGuaranteeMonths(product.getGuaranteeMonths());
+		record.setWarehouse_temperature(product.getWarehouseTemperature());
 
 		return record;
 	}

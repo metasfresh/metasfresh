@@ -95,15 +95,18 @@ public class ProductRestService
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final SectionCodeService sectionCodeService;
+	private final ProductAllergenRestService productAllergenRestService;
 
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final SectionCodeService sectionCodeService)
+			@NonNull final SectionCodeService sectionCodeService,
+			final ProductAllergenRestService productAllergenRestService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.sectionCodeService = sectionCodeService;
+		this.productAllergenRestService = productAllergenRestService;
 	}
 
 	@NonNull
@@ -207,6 +210,13 @@ public class ProductRestService
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens() != null)
+		{
+			productAllergenRestService.upsertProductAllergens(org,
+															  productId,
+															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
 		}
 
 		handleProductExternalReference(org,
@@ -843,6 +853,24 @@ public class ProductRestService
 			builder.sapProductHierarchy(existingProduct.getSapProductHierarchy());
 		}
 
+		if (jsonRequestProductUpsertItem.isGuaranteeMonthsSet())
+		{
+			builder.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths());
+		}
+		else
+		{
+			builder.guaranteeMonths(existingProduct.getGuaranteeMonths());
+		}
+
+		if (jsonRequestProductUpsertItem.isWarehouseTemperatureSet())
+		{
+			builder.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature());
+		}
+		else
+		{
+			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -888,6 +916,7 @@ public class ProductRestService
 				.sectionCodeId(sectionCodeId)
 				.purchased(purchased)
 				.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy())
+				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
 				.build();
 	}
 

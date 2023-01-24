@@ -98,14 +98,14 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	@Override
 	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
 	{
-		if (ExternalSystem_Config_ID < 1) 
+		if (ExternalSystem_Config_ID < 1)
 			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_ID() 
+	public int getExternalSystem_Config_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
 	}
@@ -117,7 +117,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public boolean isReadOnlyInMetasfresh() 
+	public boolean isReadOnlyInMetasfresh()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReadOnlyInMetasfresh);
 	}
@@ -217,6 +217,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Warehouse = "Warehouse";
 	/** UOM = UOM */
 	public static final String TYPE_UOM = "UOM";
+	/** Allergen = Allergen */
+	public static final String TYPE_Allergen = "Allergen";
 	@Override
 	public void setType (final String Type)
 	{

@@ -105,4 +105,11 @@ public class Product
 
 	@Nullable
 	String sapProductHierarchy;
+
+
+	@Nullable
+	String guaranteeMonths;
+
+	@Nullable
+	String warehouseTemperature;
 }

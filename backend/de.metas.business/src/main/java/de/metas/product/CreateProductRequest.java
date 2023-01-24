@@ -88,4 +88,7 @@ public class CreateProductRequest
 
 	@Nullable
 	String sapProductHierarchy;
+
+	@Nullable
+	String guaranteeMonths;
 }
