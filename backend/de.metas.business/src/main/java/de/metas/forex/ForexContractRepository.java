@@ -1,15 +1,22 @@
 package de.metas.forex;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -17,6 +24,8 @@ import java.util.function.Consumer;
 @Repository
 public class ForexContractRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public ForexContract getById(@NonNull ForexContractId id)
 	{
 		final I_C_ForeignExchangeContract record = getRecordById(id);
@@ -49,6 +58,41 @@ public class ForexContractRepository
 	private static ForexContractId extractId(final I_C_ForeignExchangeContract record)
 	{
 		return ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID());
+	}
+
+	public ImmutableList<ForexContract> query(@NonNull ForexContractQuery query)
+	{
+		return toSqlQuery(query)
+				.stream()
+				.map(ForexContractRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public ImmutableSet<ForexContractId> queryIds(@NonNull ForexContractQuery query)
+	{
+		return toSqlQuery(query).listIds(ForexContractId::ofRepoId);
+	}
+
+	private IQuery<I_C_ForeignExchangeContract> toSqlQuery(@NonNull ForexContractQuery query)
+	{
+		final IQueryBuilder<I_C_ForeignExchangeContract> queryBuilder = queryBL.createQueryBuilder(I_C_ForeignExchangeContract.class)
+				.addOnlyActiveRecordsFilter()
+				.setLimit(query.getLimit());
+
+		if (query.getDocStatus() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_ForeignExchangeContract.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getCurrencyId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_ForeignExchangeContract.COLUMNNAME_C_Currency_ID, query.getCurrencyId());
+		}
+		if (query.isOnlyWithOpenAmount())
+		{
+			queryBuilder.addCompareFilter(I_C_ForeignExchangeContract.COLUMN_FEC_Amount_Open, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		}
+
+		return queryBuilder.create();
 	}
 
 	private static void updateRecord(@NonNull final I_C_ForeignExchangeContract record, @NonNull final ForexContract from)
