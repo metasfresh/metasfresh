@@ -917,6 +917,7 @@ public class ProductRestService
 				.purchased(purchased)
 				.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy())
 				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
+				.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature())
 				.build();
 	}
 
