@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.sectionCode.SectionCodeId;
 import org.compiere.model.X_C_BPartner_Stats;
 
 import de.metas.bpartner.BPartnerId;
@@ -41,9 +42,8 @@ import lombok.Value;
 public class BPartnerStats
 {
 	int repoId;
-
 	BPartnerId bpartnerId;
-
+	SectionCodeId sectionCodeId;
 	BigDecimal openItems;
 	BigDecimal actualLifeTimeValue;
 	BigDecimal soCreditUsed;
@@ -53,15 +53,18 @@ public class BPartnerStats
 	public BPartnerStats(
 			final int repoId,
 			@NonNull final BPartnerId bpartnerId,
+			@Nullable final SectionCodeId sectionCodeId,
 			@Nullable final BigDecimal openItems,
 			@Nullable final BigDecimal actualLifeTimeValue,
 			@Nullable final BigDecimal soCreditUsed,
 			@Nullable final String soCreditStatus)
 	{
+
 		Check.assume(repoId > 0, "Given parameter repoId is > 0");
 
 		this.repoId = repoId;
 		this.bpartnerId = bpartnerId;
+		this.sectionCodeId = sectionCodeId;
 		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
 		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
 		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
