@@ -80,9 +80,9 @@ public class VATCodeDAOTest
 	{
 		// CLogMgt.getLogger(VATCodeDAO.class).setLevel(Level.FINEST);
 
-		final VATCode code1 = VATCode.of("VATCode1",1);
-		final VATCode code2 = VATCode.of("VATCode2",2);
-		final VATCode code3 = VATCode.of("VATCode3",3);
+		final VATCode code1 = VATCode.of("VATCode1", 1);
+		final VATCode code2 = VATCode.of("VATCode2", 2);
+		final VATCode code3 = VATCode.of("VATCode3", 3);
 
 		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(null).setValidFrom(date_1970_01_01).setVATCode(code1).build();
 		newVATCodeBuilder().setC_Tax(tax1).setIsSOTrx(false).setValidFrom(date_1970_01_01).setVATCode(code2).build();
@@ -96,12 +96,12 @@ public class VATCodeDAOTest
 		assertVATCode(code1, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax1.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
 
 		// Test not matching
-		assertVATCode(VATCode.NULL, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax3.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
+		assertVATCode(null, VATCodeMatchingRequest.builder().setC_AcctSchema_ID(acctSchemaId).setC_Tax_ID(tax3.getC_Tax_ID()).setIsSOTrx(true).setDate(date_2016_01_01).build());
 	}
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
 	{
-		final VATCode actualVATCode = vatCodeDAO.findVATCode(request);
+		final VATCode actualVATCode = vatCodeDAO.findVATCode(request).orElse(null);
 		assertThat(actualVATCode)
 				.as("request=" + request)
 				.withFailMessage("Invalid VATCode for " + request)

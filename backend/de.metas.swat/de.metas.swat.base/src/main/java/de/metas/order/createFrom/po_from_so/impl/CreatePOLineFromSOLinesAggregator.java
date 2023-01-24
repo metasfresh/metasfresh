@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -159,16 +160,13 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 			//TODO delete after C_VAT_Code_ID is removed from C_OrderLine
 			final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(ClientId.ofRepoId(salesOrderLine.getAD_Client_ID()), OrgId.ofRepoId(salesOrderLine.getAD_Org_ID()));
-			final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
+			final Optional<VATCode> vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
 					.setC_AcctSchema_ID(acctSchema.getId().getRepoId())
 					.setIsSOTrx(false)
 					.setC_Tax_ID(taxIdRepoId)
 					.setDate(SystemTime.asDate())
 					.build());
-			if (vatCode != null && vatCode.getVatCodeId() != null)
-			{
-				purchaseOrderLine.setC_VAT_Code_ID(vatCode.getVatCodeId().getRepoId());
-			}
+			vatCode.ifPresent((id) -> purchaseOrderLine.setC_VAT_Code_ID(id.getVatCodeId().getRepoId()));
 		}
 
 		purchaseOrderLine.setC_Charge_ID(salesOrderLine.getC_Charge_ID());

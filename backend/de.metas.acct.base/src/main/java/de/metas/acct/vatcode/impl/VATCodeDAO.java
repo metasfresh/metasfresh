@@ -20,6 +20,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /*
@@ -49,7 +50,8 @@ public class VATCodeDAO implements IVATCodeDAO
 	private static final transient Logger logger = LogManager.getLogger(VATCodeDAO.class);
 
 	@Override
-	public VATCode findVATCode(@NonNull final VATCodeMatchingRequest request)
+	@NonNull
+	public Optional<VATCode> findVATCode(@NonNull final VATCodeMatchingRequest request)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -65,12 +67,12 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			if (isMatching(matching, request))
 			{
-				return VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID());
+				return Optional.of(VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID()));
 			}
 		}
 
 		logger.debug("Nothing matched. Returning NULL");
-		return VATCode.NULL;
+		return Optional.empty();
 	}
 
 	/**

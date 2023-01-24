@@ -33,8 +33,6 @@ import lombok.ToString;
 @ToString
 public final class VATCode
 {
-	public static final VATCode NULL = new VATCode();
-
 	public static VATCode of(final String code, final int vatCodeId)
 	{
 		return new VATCode(code, VatCodeId.ofRepoId(vatCodeId));
@@ -45,13 +43,6 @@ public final class VATCode
 
 	@Getter
 	private final VatCodeId vatCodeId;
-
-	/** null constructor */
-	private VATCode()
-	{
-		code = null;
-		vatCodeId = null;
-	}
 
 	private VATCode(final String code, @NonNull final VatCodeId vatCodeId)
 	{
