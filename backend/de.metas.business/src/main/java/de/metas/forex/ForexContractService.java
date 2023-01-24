@@ -14,7 +14,6 @@ import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
@@ -69,11 +68,7 @@ public class ForexContractService
 			@NonNull final BigDecimal amountToAllocateBD)
 	{
 		final I_C_Order order = orderBL.getById(orderId);
-		final BooleanWithReason orderEligibleToAllocate = checkOrderEligibleToAllocate(order);
-		if (orderEligibleToAllocate.isFalse())
-		{
-			throw new AdempiereException(orderEligibleToAllocate.getReason());
-		}
+		checkOrderEligibleToAllocate(order).assertTrue();
 
 		final CurrencyConversionTypeId fecConversionTypeId = currencyBL.getCurrencyConversionTypeId(ConversionTypeMethod.ForeignExchangeContract);
 		order.setC_ConversionType_ID(fecConversionTypeId.getRepoId());
@@ -148,5 +143,18 @@ public class ForexContractService
 	public void updateWhileSaving(@NonNull final I_C_ForeignExchangeContract record, @NonNull final Consumer<ForexContract> updater)
 	{
 		ForexContractRepository.updateRecordNoSave(record, updater);
+	}
+
+	public ImmutableSet<ForexContractId> getContractIdsEligibleToAllocateOrder(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = orderBL.getById(orderId);
+		checkOrderEligibleToAllocate(order).assertTrue();
+
+		return forexContractRepository.queryIds(
+				ForexContractQuery.builder()
+						.docStatus(DocStatus.Completed)
+						.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
+						.onlyWithOpenAmount(true)
+						.build());
 	}
 }
