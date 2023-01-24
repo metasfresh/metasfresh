@@ -1228,4 +1228,10 @@ public class OrderBL implements IOrderBL
 
 		return DocStatus.ofCode(order.getDocStatus());
 	}
+
+	@Override
+	public void save(final I_C_Order order)
+	{
+		orderDAO.save(order);
+	}
 }

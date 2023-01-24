@@ -17,12 +17,13 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -36,6 +37,7 @@ import java.util.Set;
  *
  * @author tsa
  */
+@ToString
 public class InvoiceHeaderImplBuilder
 {
 	private I_C_DocType docTypeInvoice = null;
@@ -94,16 +96,9 @@ public class InvoiceHeaderImplBuilder
 
 	private int C_Activity_ID;
 
-	/* package */ InvoiceHeaderImplBuilder()
-	{
-		super();
-	}
+	@Nullable private BigDecimal currencyRate;
 
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
+	InvoiceHeaderImplBuilder() {}
 
 	public InvoiceHeaderImpl build()
 	{
@@ -117,6 +112,7 @@ public class InvoiceHeaderImplBuilder
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
+		invoiceHeader.setCurrencyRate(currencyRate);
 		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
 
 		// Tax
@@ -331,17 +327,15 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
-	public int get_SaleRep_ID ()
+	public int get_SaleRep_ID()
 	{
 		return SalesRep_User_ID;
 	}
-
 
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
 	}
-
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
@@ -472,8 +466,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-												 + "\n Current value: " + value
-												 + "\n New value: " + valueNew);
+					+ "\n Current value: " + value
+					+ "\n New value: " + valueNew);
 		}
 	}
 
@@ -494,8 +488,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-												 + "\n Current value: " + id
-												 + "\n New value: " + idNew);
+					+ "\n Current value: " + id
+					+ "\n New value: " + idNew);
 		}
 	}
 
@@ -528,8 +522,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-													+ "\n Model: " + model
-													+ "\n Model new: " + modelNew);
+					+ "\n Model: " + model
+					+ "\n Model new: " + modelNew);
 		}
 	}
 
@@ -546,8 +540,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-											 + "\n Current value: " + value
-											 + "\n New value: " + valueNew);
+				+ "\n Current value: " + value
+				+ "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(@Nullable final String externalIdStr)
@@ -597,5 +591,10 @@ public class InvoiceHeaderImplBuilder
 	public void setC_Activity_ID(final int activityId)
 	{
 		C_Activity_ID = checkOverrideID("C_Activity_ID", C_Activity_ID, activityId);
+	}
+
+	public void setCurrencyRate(@Nullable final BigDecimal currencyRate)
+	{
+		this.currencyRate = currencyRate;
 	}
 }

@@ -28,8 +28,10 @@ import lombok.ToString;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @ToString
+@SuppressWarnings("UnusedReturnValue")
 public class PlainInvoicingParams implements IInvoicingParams
 {
 	private final IInvoicingParams defaults;
@@ -47,7 +49,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean poReferenceSet = false;
 	private BigDecimal check_NetAmtToInvoice = null;
 	private boolean updateLocationAndContactForInvoice = false;
-	private boolean completeInvoices = true; // default=true for backwards-compantibility
+	private boolean completeInvoices = true; // default=true for backwards-compatibility
 
 	public PlainInvoicingParams()
 	{
@@ -298,10 +300,16 @@ public class PlainInvoicingParams implements IInvoicingParams
 		this.completeInvoices = completeInvoices;
 		return this;
 	}
-	
+
 	@Override
 	public boolean isCompleteInvoices()
 	{
 		return completeInvoices;
+	}
+
+	@Override
+	public Optional<BigDecimal> getCurrencyRate()
+	{
+		return Optional.empty();
 	}
 }

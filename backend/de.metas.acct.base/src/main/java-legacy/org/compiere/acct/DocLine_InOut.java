@@ -1,24 +1,24 @@
 package org.compiere.acct;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MAccount;
-import org.compiere.util.DB;
-
-import de.metas.acct.api.AcctSchema;
 import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MAccount;
+import org.compiere.util.DB;
 
 /*
  * #%L
@@ -44,7 +44,9 @@ import lombok.NonNull;
 
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
-	/** Outside Processing */
+	/**
+	 * Outside Processing
+	 */
 	private Integer ppCostCollectorId = null;
 
 	@Builder
@@ -124,27 +126,28 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build())
+							.acctSchemaId(as.getId())
+							.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+							.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
+							.date(getDateAcctAsInstant())
+							.build())
 					.getTotalAmountToPost(as);
 		}
 		else
 		{
 			return services.createCostDetail(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getId())
-							.clientId(getClientId())
-							.orgId(getOrgId())
-							.productId(getProductId())
-							.attributeSetInstanceId(getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-							.date(getDateAcctAsInstant())
-							.build())
+							CostDetailCreateRequest.builder()
+									.acctSchemaId(as.getId())
+									.clientId(getClientId())
+									.orgId(getOrgId())
+									.productId(getProductId())
+									.attributeSetInstanceId(getAttributeSetInstanceId())
+									.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+									.qty(getQty())
+									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+									.currencyConversionContext(getCurrencyConversionContext(as))
+									.date(getDateAcctAsInstant())
+									.build())
 					.getTotalAmountToPost(as);
 		}
 	}
@@ -154,11 +157,11 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build())
+							.acctSchemaId(as.getId())
+							.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+							.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
+							.date(getDateAcctAsInstant())
+							.build())
 					.getTotalAmountToPost(as)
 					// Negate the amount coming from the costs because it must be negative in the accounting.
 					.negate();
@@ -166,22 +169,28 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		else
 		{
 			return services.createCostDetail(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getId())
-							.clientId(getClientId())
-							.orgId(getOrgId())
-							.productId(getProductId())
-							.attributeSetInstanceId(getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-							.date(getDateAcctAsInstant())
-							.build())
+							CostDetailCreateRequest.builder()
+									.acctSchemaId(as.getId())
+									.clientId(getClientId())
+									.orgId(getOrgId())
+									.productId(getProductId())
+									.attributeSetInstanceId(getAttributeSetInstanceId())
+									.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+									.qty(getQty())
+									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
+									.currencyConversionContext(getCurrencyConversionContext(as))
+									.date(getDateAcctAsInstant())
+									.build())
 					.getTotalAmountToPost(as)
 					// The shipment is an outgoing document, so the costing amounts will be negative values.
 					// In the accounting they must be positive values. This is the reason why the amount
 					// coming from the product costs must be negated.
 					.negate();
 		}
+	}
+
+	private CurrencyConversionContext getCurrencyConversionContext(final AcctSchema as)
+	{
+		return getDoc().getCurrencyConversionContext(as);
 	}
 }

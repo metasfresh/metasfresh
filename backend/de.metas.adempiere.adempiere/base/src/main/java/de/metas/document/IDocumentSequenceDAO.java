@@ -6,6 +6,8 @@ import org.compiere.model.I_C_DocType;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 /**
  * DAO methods for retrieving DocumentNo sequence informations.
  *
@@ -14,8 +16,9 @@ import java.util.Date;
  */
 public interface IDocumentSequenceDAO extends ISingletonService
 {
-	DocumentSequenceInfo retriveDocumentSequenceInfo(String sequenceName, int adClientId, int adOrgId);
+	DocumentSequenceInfo getOrCreateDocumentSequenceInfo(String sequenceName, int adClientId, int adOrgId);
 
+	@Nullable
 	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
 
 	@Deprecated

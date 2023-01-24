@@ -73,6 +73,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -122,6 +123,7 @@ public final class AggregationEngine
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
+	@Nullable private final BigDecimal currencyRate;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -135,7 +137,8 @@ public final class AggregationEngine
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
-			final boolean useDefaultBillLocationAndContactIfNotOverride)
+			final boolean useDefaultBillLocationAndContactIfNotOverride,
+			@Nullable final BigDecimal currencyRate)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 
@@ -146,6 +149,7 @@ public final class AggregationEngine
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
 		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
+		this.currencyRate = currencyRate;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
@@ -287,7 +291,7 @@ public final class AggregationEngine
 		InvoiceHeaderAndLineAggregators headerAndAggregators = key2headerAndAggregators.get(headerAggregationKey);
 		if (headerAndAggregators == null)
 		{
-			headerAndAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey);
+			headerAndAggregators = createInvoiceHeaderAndLineAggregators(headerAggregationKey);
 			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
@@ -296,10 +300,10 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-									+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-									+ " ic's own headerAggregationKey = {};\n"
-									+ " new headerAndAggregators = {}",
-							key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
+							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+							+ " ic's own headerAggregationKey = {};\n"
+							+ " new headerAndAggregators = {}",
+					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
 		{
@@ -366,6 +370,14 @@ public final class AggregationEngine
 		// Add invoice candidate to invoice line aggregator
 		final IInvoiceLineAggregationRequest icAggregationRequest = icAggregationRequestBuilder.build();
 		lineAggregator.addInvoiceCandidate(icAggregationRequest);
+	}
+
+	@NonNull
+	private InvoiceHeaderAndLineAggregators createInvoiceHeaderAndLineAggregators(@NonNull final AggregationKey headerAggregationKey)
+	{
+		final InvoiceHeaderAndLineAggregators invoiceHeaderAndLineAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey);
+		invoiceHeaderAndLineAggregators.getInvoiceHeader().setCurrencyRate(currencyRate);
+		return invoiceHeaderAndLineAggregators;
 	}
 
 	private void addToInvoiceHeader(
@@ -436,8 +448,8 @@ public final class AggregationEngine
 				{
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-												 pricingSystemName,
-												 invoiceHeader.getBillTo())
+							pricingSystemName,
+							invoiceHeader.getBillTo())
 							.appendParametersToMessage()
 							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
 							.setParameter("C_Invoice_Candidate", icRecord);
@@ -576,12 +588,12 @@ public final class AggregationEngine
 		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
 			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																					 .onlyActive(true)
-																					 .contactType(ContactType.BILL_TO_DEFAULT)
-																					 .bpartnerId(billBPLocationId.getBpartnerId())
-																					 .bPartnerLocationId(billBPLocationId)
-																					 .ifNotFound(IfNotFound.RETURN_NULL)
-																					 .build());
+					.onlyActive(true)
+					.contactType(ContactType.BILL_TO_DEFAULT)
+					.bpartnerId(billBPLocationId.getBpartnerId())
+					.bPartnerLocationId(billBPLocationId)
+					.ifNotFound(IfNotFound.RETURN_NULL)
+					.build());
 			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());

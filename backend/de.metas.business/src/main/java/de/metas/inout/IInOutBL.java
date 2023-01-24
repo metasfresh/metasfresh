@@ -1,5 +1,6 @@
 package de.metas.inout;
 
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.engine.DocStatus;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -68,6 +69,8 @@ public interface IInOutBL extends ISingletonService
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
+
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -194,4 +197,8 @@ public interface IInOutBL extends ISingletonService
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
 
 	DocStatus getDocStatus(InOutId inOutId);
+
+	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
 }

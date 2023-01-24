@@ -29,6 +29,7 @@ import java.util.Set;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
@@ -44,7 +45,7 @@ public interface IInvoiceCandidateEnqueuer
 	String SYSCONFIG_FailOnChanges = "de.metas.invoicecandidate.api.impl.InvoiceCandidateEnqueuer.FailOnChanges";
 	boolean DEFAULT_FailOnChanges = true;
 
-	String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
+	AdMessageKey MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = AdMessageKey.of("InvoiceGenerate_No_Candidates_Selected");
 
 	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
@@ -67,38 +68,28 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Set to <code>true</code> if you want the enqueuer to make sure that the invoice candidates that will be enqueued shall not be changed.
-	 *
 	 * By default, if you are not setting a particular value the {@link #SYSCONFIG_FailOnChanges} (default {@link #DEFAULT_FailOnChanges}) will be used.
 	 */
 	IInvoiceCandidateEnqueuer setFailOnChanges(boolean failOnChanges);
 
 	/**
 	 * Sets invoicing parameters to be used.
-	 *
-	 * @param invoicingParams
 	 */
 	IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams);
 
 	/**
 	 * Sets the total net amount to invoice checksum.
-	 *
 	 * If the amount is not null and "FailOnChanges" is set then this checksum will be enforced on enqueued invoice candidates.
-	 *
-	 * @param totalNetAmtToInvoiceChecksum
 	 */
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);
 
 	/**
 	 * Sets the asyncBatch that will be used for grouping
-	 * @param asyncBatch
-	 * @return
 	 */
 	IInvoiceCandidateEnqueuer setC_Async_Batch(I_C_Async_Batch asyncBatch);
 
 	/**
 	 * Sets the priority to be used when processing the WPs
-	 * @param priority
-	 * @return
 	 */
 	IInvoiceCandidateEnqueuer setPriority(IWorkpackagePrioStrategy priority);
 }

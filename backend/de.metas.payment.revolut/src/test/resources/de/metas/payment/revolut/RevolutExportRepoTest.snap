@@ -1,7 +1,7 @@
 de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
   [
     {
-      "revolutPaymentExportId" : 100007,
+      "revolutPaymentExportId" : 1000000,
       "recordReference" : {
         "tableName" : "C_PaySelection",
         "recordId" : 1
@@ -13,6 +13,7 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
         "currencyCode" : "CHF",
         "zero" : false
       },
+      "recipientType" : "COMPANY",
       "accountNo" : "accountNo",
       "routingNo" : "routingNo",
       "IBAN" : "iban",
@@ -25,8 +26,7 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "city" : "city",
       "postalCode" : "postal",
       "recipientCountryId" : 5,
-      "recipientBankCountryId" : 4,
-      "recipientType" : "COMPANY"
+      "recipientBankCountryId" : 4
     }
   ]
 ]

@@ -1,7 +1,7 @@
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxIncluded_whenForRecord_thenReturnMediatedOrderModel=[
   {
-    "id" : 100024,
-    "orgId" : 100016,
+    "id" : 1000000,
+    "orgId" : 1000000,
     "vendorBPartnerId" : 2,
     "orgBPartnerId" : 1,
     "orderDateAcct" : {
@@ -14,10 +14,10 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
       "seconds" : 1631157,
       "nanos" : 38000000
     },
-    "currencyId" : 100023,
+    "currencyId" : 1000000,
     "mediatedOrderLines" : [
       {
-        "id" : 100025,
+        "id" : 1000000,
         "productId" : 100,
         "invoicedCommissionPoints" : 200.00,
         "updated" : {
@@ -26,7 +26,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
         },
         "orderedQty" : {
           "qty" : "10",
-          "uomId" : 100022
+          "uomId" : 1000000
         }
       }
     ]
@@ -36,8 +36,8 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
 
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxNotIncluded_whenForRecord_thenReturnMediatedOrderModel=[
   {
-    "id" : 100034,
-    "orgId" : 100026,
+    "id" : 1000000,
+    "orgId" : 1000000,
     "vendorBPartnerId" : 2,
     "orgBPartnerId" : 1,
     "orderDateAcct" : {
@@ -50,10 +50,10 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
       "seconds" : 1631157,
       "nanos" : 38000000
     },
-    "currencyId" : 100033,
+    "currencyId" : 1000000,
     "mediatedOrderLines" : [
       {
-        "id" : 100035,
+        "id" : 1000000,
         "productId" : 100,
         "invoicedCommissionPoints" : 220,
         "updated" : {
@@ -62,7 +62,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
         },
         "orderedQty" : {
           "qty" : "10",
-          "uomId" : 100032
+          "uomId" : 1000000
         }
       }
     ]

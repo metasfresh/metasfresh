@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1093045251L;
+	private static final long serialVersionUID = -1696730019L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -234,6 +234,33 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ForeignExchangeContract getC_ForeignExchangeContract()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ForeignExchangeContract_ID, org.compiere.model.I_C_ForeignExchangeContract.class);
+	}
+
+	@Override
+	public void setC_ForeignExchangeContract(final org.compiere.model.I_C_ForeignExchangeContract C_ForeignExchangeContract)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ForeignExchangeContract_ID, org.compiere.model.I_C_ForeignExchangeContract.class, C_ForeignExchangeContract);
+	}
+
+	@Override
+	public void setC_ForeignExchangeContract_ID (final int C_ForeignExchangeContract_ID)
+	{
+		if (C_ForeignExchangeContract_ID < 1) 
+			set_Value (COLUMNNAME_C_ForeignExchangeContract_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ForeignExchangeContract_ID, C_ForeignExchangeContract_ID);
+	}
+
+	@Override
+	public int getC_ForeignExchangeContract_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_ForeignExchangeContract_ID);
 	}
 
 	@Override

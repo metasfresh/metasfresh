@@ -55,8 +55,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.DB;
 
-import java.util.Properties;
-
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating extends JavaProcess
@@ -87,8 +85,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 
 		if (selectionCount <= 0)
 		{
-			final Properties ctx = getCtx();
-			throw new AdempiereException(msgBL.getMsg(ctx, IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException(IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P);
 		}
 
 	}
@@ -135,12 +132,10 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 
 		DB.deleteT_Selection(adPInstanceId, ITrx.TRXNAME_ThreadInherited);
 
-		final int selectionCount = queryBuilder
+		return queryBuilder
 				.create()
 				.setRequiredAccess(Access.READ)
 				.createSelection(adPInstanceId);
-
-		return selectionCount;
 	}
 
 	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder()
@@ -160,7 +155,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 				.end()
 				.create();
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, p_OrgId)
 				.addInSubQueryFilter()
@@ -168,7 +163,5 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 				.subQuery(subQuery_Product)
 				.end()
 				.addOnlyContextClient();
-
-		return queryBuilder;
 	}
 }

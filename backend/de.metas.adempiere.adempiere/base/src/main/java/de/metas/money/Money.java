@@ -142,6 +142,11 @@ public class Money
 		return signum() == 0;
 	}
 
+	public boolean isNegative()
+	{
+		return signum() < 0;
+	}
+
 	public Money negate()
 	{
 		if (value.signum() == 0)
@@ -164,6 +169,16 @@ public class Money
 			return this;
 		}
 		return Money.zero(currencyId);
+	}
+
+	public Money toZeroIfNegative()
+	{
+		return signum() >= 0 ? this : zero(currencyId);
+	}
+
+	public static void assertSameCurrency(final Money... moneys)
+	{
+		getCommonCurrencyIdOfAll(moneys);
 	}
 
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
@@ -265,6 +280,12 @@ public class Money
 	{
 		assertCurrencyIdMatching(other);
 		return this.value.compareTo(other.value) <= 0;
+	}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) >= 0;
 	}
 
 	public boolean isEqualByComparingTo(@Nullable final Money other)

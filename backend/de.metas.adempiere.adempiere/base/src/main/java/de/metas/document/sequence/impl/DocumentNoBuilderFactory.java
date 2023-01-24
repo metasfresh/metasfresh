@@ -77,7 +77,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 		final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 
 		final String sequenceName = IDocumentNoBuilder.PREFIX_DOCSEQ + tableName;
-		return documentSequenceDAO.retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
+		return documentSequenceDAO.getOrCreateDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
 	}
 
 	@Override

@@ -275,4 +275,6 @@ public interface IOrderBL extends ISingletonService
 	String getLocationEmail(OrderId ofRepoId);
 
 	DocStatus getDocStatus(OrderId orderId);
+
+	void save(I_C_Order order);
 }

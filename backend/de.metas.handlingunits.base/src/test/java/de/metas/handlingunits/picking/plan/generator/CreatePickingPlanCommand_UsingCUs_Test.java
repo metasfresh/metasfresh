@@ -27,6 +27,7 @@ import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -71,6 +72,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 	void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 		bpartnersService = new BPartnerBL(new UserRepository());
 		huReservationService = new HUReservationService(new HUReservationRepository());
 		pickingCandidateRepository = new PickingCandidateRepository();

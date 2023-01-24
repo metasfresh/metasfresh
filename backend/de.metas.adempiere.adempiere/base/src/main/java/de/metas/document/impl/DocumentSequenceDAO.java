@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentSequenceInfo;
@@ -12,16 +13,16 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
@@ -30,12 +31,12 @@ import org.compiere.model.I_AD_Sequence_No;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -43,6 +44,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class DocumentSequenceDAO implements IDocumentSequenceDAO
 {
 	private static final Logger logger = LogManager.getLogger(DocumentSequenceDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String SQL_AD_Sequence_CurrentNext = "SELECT " + I_AD_Sequence.COLUMNNAME_CurrentNext
 			+ " FROM " + I_AD_Sequence.Table_Name
@@ -62,32 +64,50 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			+ I_AD_Sequence_No.COLUMNNAME_CalendarYear + "=? AND "
 			+ I_AD_Sequence_No.COLUMNNAME_CalendarMonth + "=?";
 
+	private final CCache<BySequenceNameCacheKey, DocumentSequenceInfo> bySequenceNameCache = CCache.<BySequenceNameCacheKey, DocumentSequenceInfo>builder()
+			.tableName(I_AD_Sequence.Table_Name)
+			.build();
+
 	@Override
-	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#SequenceName")
-	public DocumentSequenceInfo retriveDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
+	public DocumentSequenceInfo getOrCreateDocumentSequenceInfo(final String sequenceName, final int adClientId, final int adOrgId)
 	{
-		final IQueryBuilder<I_AD_Sequence> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Sequence.class, Env.getCtx(), ITrx.TRXNAME_None)
+		final BySequenceNameCacheKey key = BySequenceNameCacheKey.builder()
+				.sequenceName(sequenceName)
+				.adClientId(ClientId.ofRepoId(adClientId))
+				.adOrgId(OrgId.ofRepoId(adOrgId))
+				.build();
+		return bySequenceNameCache.getOrLoad(key, this::retrieveOrCreateDocumentSequenceInfo);
+	}
+
+	private DocumentSequenceInfo retrieveOrCreateDocumentSequenceInfo(final BySequenceNameCacheKey key)
+	{
+		return retrieveDocumentSequenceInfo(key)
+				.orElseGet(() -> createDocumentSequence(key.getAdClientId(), key.getSequenceName()));
+	}
+
+	private Optional<DocumentSequenceInfo> retrieveDocumentSequenceInfo(final BySequenceNameCacheKey key)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Sequence.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, false)
-				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId)
-				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, sequenceName);
-
-		//
-		// Only for given organization or organization "*" (fallback).
-		queryBuilder.addInArrayOrAllFilter(I_AD_Sequence.COLUMNNAME_AD_Org_ID, adOrgId, 0);
-		queryBuilder.orderBy()
-				.addColumn(I_AD_Sequence.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last); // make sure we get for our particular org first
-
-		final I_AD_Sequence adSequence = queryBuilder.create().first(I_AD_Sequence.class);
-		if (adSequence == null)
-		{
-			// TODO: shall not happen but it's safe to create AD_Sequence
-			throw new AdempiereException("@NotFound@ @AD_Sequence_ID@ (@Name@: " + sequenceName + ")");
-		}
-
-		return toDocumentSequenceInfo(adSequence);
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, key.getAdClientId())
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, key.getSequenceName())
+				.addInArrayFilter(I_AD_Sequence.COLUMNNAME_AD_Org_ID, key.getAdOrgId(), OrgId.ANY)
+				.orderBy().addColumn(I_AD_Sequence.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last).endOrderBy() // make sure we get for our particular org first
+				.create()
+				.firstOptional(I_AD_Sequence.class)
+				.map(DocumentSequenceDAO::toDocumentSequenceInfo);
 	}
+
+	private DocumentSequenceInfo createDocumentSequence(ClientId adClientId, String sequenceName)
+	{
+		final I_AD_Sequence record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Sequence.class);
+		InterfaceWrapperHelper.setValue(record, I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId()); // Client Ownership
+		record.setName(sequenceName);
+		InterfaceWrapperHelper.save(record);
+		return toDocumentSequenceInfo(record);
+	}    // MSequence;
 
 	@Override
 	@Cached(cacheName = I_AD_Sequence.Table_Name + "#DocumentSequenceInfo#By#AD_Sequence_ID")
@@ -108,7 +128,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return toDocumentSequenceInfo(adSequence);
 	}
 
-	private DocumentSequenceInfo toDocumentSequenceInfo(final I_AD_Sequence record)
+	private static DocumentSequenceInfo toDocumentSequenceInfo(final I_AD_Sequence record)
 	{
 		return DocumentSequenceInfo.builder()
 				.adSequenceId(record.getAD_Sequence_ID())
@@ -128,7 +148,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.build();
 	}
 
-	private IStringExpression compileStringExpressionOrUseItAsIs(final String expr)
+	private static IStringExpression compileStringExpressionOrUseItAsIs(final String expr)
 	{
 		try
 		{
@@ -141,7 +161,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		}
 	}
 
-	private CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
+	private static CustomSequenceNoProvider createCustomSequenceNoProviderOrNull(final I_AD_Sequence adSequence)
 	{
 		if (adSequence.getCustomSequenceNoProvider_JavaClass_ID() <= 0)
 		{
@@ -227,5 +247,18 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		}
 
 		return docTypeSequenceMapBuilder.build();
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class BySequenceNameCacheKey
+	{
+		@NonNull String sequenceName;
+		@NonNull ClientId adClientId;
+		@NonNull OrgId adOrgId;
 	}
 }

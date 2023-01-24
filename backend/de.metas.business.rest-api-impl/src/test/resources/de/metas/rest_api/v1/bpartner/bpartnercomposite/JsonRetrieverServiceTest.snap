@@ -15,7 +15,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100010,
+    "currencyId" : 1000000,
     "iban" : "INITIAL-IBAN-1",
     "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
@@ -117,7 +117,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100009,
+    "existingLocationId" : 1000000,
     "externalId" : "bpartnerLocation.externalId",
     "gln" : "bpartnerLocationRecord.gln",
     "handOverLocation" : false,

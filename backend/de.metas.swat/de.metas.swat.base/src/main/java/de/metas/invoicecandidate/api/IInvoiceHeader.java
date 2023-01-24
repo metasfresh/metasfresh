@@ -15,6 +15,7 @@ import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -95,4 +96,6 @@ public interface IInvoiceHeader
 
 	@Nullable
 	ActivityId getActivityId();
+
+	@Nullable BigDecimal getCurrencyRate();
 }

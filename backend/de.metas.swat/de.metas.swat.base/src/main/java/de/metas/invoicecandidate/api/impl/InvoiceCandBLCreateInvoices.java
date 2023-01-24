@@ -401,6 +401,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					.setFrom(billTo.toDocumentLocation());
 
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
+			invoice.setCurrencyRate(invoiceHeader.getCurrencyRate());
 			final BPartnerId salesRepId = invoiceHeader.getSalesPartnerId();
 			if (!BPartnerId.equals(billTo.getBpartnerId(), salesRepId))
 			{
@@ -844,7 +845,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public boolean doCatch(final Throwable e) throws Throwable
+		public boolean doCatch(final Throwable e)
 		{
 			if (errorException[0] == null)
 			{
@@ -950,6 +951,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
+				.currencyRate(invoicingParams != null ? invoicingParams.getCurrencyRate().orElse(null) : null)
 				.build();
 	}
 
