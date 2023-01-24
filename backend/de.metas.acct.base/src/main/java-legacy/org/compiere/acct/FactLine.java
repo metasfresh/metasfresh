@@ -1601,14 +1601,14 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
-		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
-				.setC_AcctSchema_ID(getC_AcctSchema_ID())
-				.setC_Tax_ID(taxId)
-				.setIsSOTrx(isSOTrx)
-				.setDate(getDateAcct())
-				.build());
-
-		setVATCode(vatCode.getCode());
+		setVATCode(vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
+						.setC_AcctSchema_ID(getC_AcctSchema_ID())
+						.setC_Tax_ID(taxId)
+						.setIsSOTrx(isSOTrx)
+						.setDate(getDateAcct())
+						.build())
+				.map(VATCode::getCode)
+				.orElse(null));
 	}
 
 	public void setQty(@NonNull final Quantity quantity)

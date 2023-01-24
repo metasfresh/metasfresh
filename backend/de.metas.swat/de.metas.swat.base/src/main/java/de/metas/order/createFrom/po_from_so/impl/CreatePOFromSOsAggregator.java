@@ -10,6 +10,7 @@ import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
@@ -25,6 +26,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +69,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+
+	@Nullable
+	private final TaxId p_taxId;
 	private static final Logger logger = LogManager.getLogger(CreatePOFromSOsAggregator.class);
 
 	@NonNull
@@ -87,12 +92,14 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	public CreatePOFromSOsAggregator(
 			final IContextAware context,
 			final String purchaseQtySource,
-			@NonNull final PurchaseTypeEnum p_TypeOfPurchase)
+			@NonNull final PurchaseTypeEnum p_TypeOfPurchase,
+			@Nullable final TaxId p_taxId)
 	{
 		this.context = context;
 		this.p_IsDropShip = p_TypeOfPurchase.equals(PurchaseTypeEnum.DROPSHIP);
 		this.p_TypeOfPurchase = p_TypeOfPurchase;
 		this.purchaseQtySource = purchaseQtySource;
+		this.p_taxId = p_taxId;
 
 		dummyOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
 		dummyOrder.setDocumentNo(CreatePOFromSOsAggregationKeyBuilder.KEY_SKIP);
@@ -209,7 +216,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(pruchaseOrder.getDocumentNo());
 		if (orderLinesAggregator == null)
 		{
-			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase);
+			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase, p_taxId);
 			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
 			orderLinesAggregator.setGroupsBufferSize(100);
 
