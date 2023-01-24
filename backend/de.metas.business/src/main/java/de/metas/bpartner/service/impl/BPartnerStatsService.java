@@ -49,6 +49,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -435,5 +436,41 @@ public class BPartnerStatsService
 		stats.setCreditLimitIndicator(percentSring);
 
 		saveRecord(stats);
+	}
+
+	public void checkPaymentCreditLimit(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment payment = paymentBL.getById(paymentId);
+
+		if (payment.isReceipt())
+		{
+			return;
+		}
+
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(payment.getC_BPartner_ID());
+		final String soCreditStatus = stats.getSoCreditStatus();
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
+		{
+			return;
+		}
+
+		final BigDecimal crediUsed = stats.getSoCreditUsed();
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(payment.getC_BPartner_ID(), payment.getDateTrx());
+
+		if (isCreditStopSales(stats, payment.getPayAmt().negate() // because it's not receipt !
+				, payment.getDateTrx()))
+		{
+			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
+												 + stats.getSoCreditUsed()
+												 + ", @SO_CreditLimit@=" + creditLimit);
+		}
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
+												 + crediUsed
+												 + ", @SO_CreditLimit@=" + creditLimit);
+		}
 	}
 }

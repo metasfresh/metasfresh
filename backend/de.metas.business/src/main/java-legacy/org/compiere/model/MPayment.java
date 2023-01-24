@@ -1213,9 +1213,6 @@ public final class MPayment extends X_C_Payment
 			return DocStatus.Invalid.getCode();
 		}
 
-		// Do not pay when Credit Stop/Hold
-		checkCreditLimit();
-
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
@@ -1230,43 +1227,7 @@ public final class MPayment extends X_C_Payment
 		return DocStatus.InProgress.getCode();
 	}    // prepareIt
 
-	private void checkCreditLimit()
-	{
-		// Services
-		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 
-		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
-		
-		if (isReceipt())
-		{
-			return;
-		}
-
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-		final String soCreditStatus = stats.getSoCreditStatus();
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
-		{
-			return;
-		}
-
-		final BigDecimal crediUsed = stats.getSoCreditUsed();
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
-
-		if (bPartnerStatsService.isCreditStopSales(stats, getPayAmt(true), getDateTrx()))
-		{
-			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-												 + stats.getSoCreditUsed()
-												 + ", @SO_CreditLimit@=" + creditLimit);
-		}
-
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
-		{
-			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
-												 + crediUsed
-												 + ", @SO_CreditLimit@=" + creditLimit);
-		}
-	}
 
 	@Override
 	public boolean approveIt()
@@ -1324,15 +1285,7 @@ public final class MPayment extends X_C_Payment
 		{
 			// MProject project = new MProject(getCtx(), getC_Project_ID());
 		}
-		// Update BP for Prepayments
-		if (getC_BPartner_ID() != 0 && getC_Invoice_ID() == 0 && getC_Charge_ID() == 0)
-		{
-			// task FRESH-152. Update bpartner stats
-			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-													  .bpartnerId(getC_BPartner_ID())
-													  .build());
-		}
+
 
 		// Counter Doc
 		final MPayment counter = createCounterDoc();
@@ -1990,15 +1943,6 @@ public final class MPayment extends X_C_Payment
 		final StringBuffer info = new StringBuffer(reversal.getDocumentNo());
 		info.append(" - @C_AllocationHdr_ID@: ").append(alloc.getDocumentNo());
 
-		// FRESH-152 Update BPartner stats
-		if (getC_BPartner_ID() > 0)
-		{
-			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-													  .bpartnerId(getC_BPartner_ID())
-													  .build());
-
-		}
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
