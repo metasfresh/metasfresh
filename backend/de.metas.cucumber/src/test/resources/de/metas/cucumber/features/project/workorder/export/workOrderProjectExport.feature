@@ -1,15 +1,15 @@
-Feature: Validate work order project is sent to RabbitMQ
+Feature: WO Project interaction with RabbitMQ after export process was triggered
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
-  Scenario: Work order project is exported to external system when created
+  Scenario: Create WO Project having one WOStep and send WOProjectID to RabbitMQ - export process is triggered on WOStep creation
     Given RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And add Other external system config with identifier: otherConfig
-      | Name         | Value   |
-      | BaseURL      | baseURL |
-      | Token        | token   |
+      | Name            | Value   |
+      | BaseURL         | baseURL |
+      | Token           | token   |
       | ExportWOProject | true    |
 
     And add external system config and pinstance headers
@@ -57,32 +57,7 @@ Feature: Validate work order project is sent to RabbitMQ
       "woPlannedPersonDurationHours": 2,
       "woStepStatus": "CREATED",
       "woPlannedResourceDurationHours": 1,
-      "externalId": "1115",
-      "resources":[
-        {
-          "resourceIdentifier": "540006",
-          "assignDateFrom": "2023-01-01",
-          "assignDateTo": "2023-01-20",
-          "isActive": true,
-          "isAllDay": true,
-          "duration": 1,
-          "durationUnit": "Hour",
-          "testFacilityGroupName": "testFacilityGroupNameTestExport",
-          "externalId": "2341"
-        }
-      ]
-    }
-  ],
-  "objectsUnderTest":[
-    {
-      "identifier": "ext-2221",
-      "numberOfObjectsUnderTest": 1,
-      "woDeliveryNote": "deliveryNote",
-      "woManufacturer": "woManufacturerTest",
-      "woObjectType": "woObjectTypeTestExport",
-      "woObjectName": "woObjectNameTestExport",
-      "woObjectWhereabouts": "whereabouts",
-      "externalId": "2221"
+      "externalId": "1115"
     }
   ]
 }

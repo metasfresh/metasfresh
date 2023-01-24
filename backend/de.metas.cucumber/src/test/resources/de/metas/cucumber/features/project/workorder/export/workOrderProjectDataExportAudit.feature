@@ -2,11 +2,12 @@
 Feature: WorkOrder project data export audit
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
     And metasfresh has date and time 2023-01-12T13:30:13+01:00[Europe/Berlin]
 
-  Scenario:Project data export audit with external system config and pinstance is created
+  Scenario:Project data export audit with external system config and pinstance is created when WO Project is retrieved via API
     Given add Other external system config with identifier: otherConfig
       | Name      | Value      |
       | paramName | paramValue |
@@ -128,7 +129,7 @@ Feature: WorkOrder project data export audit
         "projectId": 1000002,
         "description": "stepDescriptionTest",
         "seqNo": 10,
-        "dateStart": "2023-01-10",
+        "dateStart": "2023-01-01",
         "dateEnd": "2023-01-20",
         "externalId": "11111",
         "woPlannedResourceDurationHours": 1,

@@ -2,11 +2,12 @@
 Feature: Budget project data export audit
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
     And metasfresh has date and time 2023-01-10T13:30:13+01:00[Europe/Berlin]
 
-  Scenario:Project data export audit with external system config and pinstance is created
+  Scenario:Project data export audit with external system config and pinstance is created when Budget Project is retrieved via API
     Given add Other external system config with identifier: otherConfig
       | Name    | Value   |
       | BaseURL | baseURL |
@@ -21,7 +22,7 @@ Feature: Budget project data export audit
       | standard_category                | Standard | Standard |
     And metasfresh contains S_Resource_Group with the following id:
       | S_Resource_Group_ID | M_Product_Category_ID.Identifier | Name     | DurationUnit |
-      | 3000000             | standard_category                | testName | h            |
+      | 4000000             | standard_category                | testName | h            |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 
@@ -48,7 +49,7 @@ Feature: Budget project data export audit
             "dateStartPlan" : "2023-01-10",
             "dateFinishPlan" : "2023-01-11",
             "description" : "resourceTestDescription",
-            "resourceGroupId" : 3000000,
+            "resourceGroupId" : 4000000,
             "plannedAmt" : {
                 "amount" : 100,
                 "currencyCode" : "EUR"
@@ -108,7 +109,7 @@ Feature: Budget project data export audit
                 "currencyCode": "EUR",
                 "plannedDuration": 2,
                 "pricePerTimeUOM": 100,
-                "resourceGroupId": 3000000,
+                "resourceGroupId": 4000000,
                 "resourceId": 540006,
                 "externalId": "testExternalId",
                 "isActive": true

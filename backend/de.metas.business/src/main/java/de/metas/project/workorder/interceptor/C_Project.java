@@ -54,7 +54,7 @@ public class C_Project
 	/**
 	 * If the given work order project has no values for certain columns, then take them from the parent-project
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_C_Project.COLUMNNAME_C_Project_Parent_ID, I_C_Project.COLUMNNAME_ProjectCategory })
 	public void updateFromParent(@NonNull final I_C_Project woProjectToBeUpdated)
 	{
@@ -69,7 +69,7 @@ public class C_Project
 		}
 
 		final BudgetProject parentProject = budgetProjectService.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_Parent_ID()))
-				.orElseThrow(() -> new AdempiereException("No record found for C_Project_ID = " + woProjectToBeUpdated.getC_Project_Parent_ID()));
+				.orElseThrow(() -> new AdempiereException("No budget project record found for C_Project_ID = " + woProjectToBeUpdated.getC_Project_Parent_ID()));
 
 		final WOProject woProject = woProjectService.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_ID()));
 

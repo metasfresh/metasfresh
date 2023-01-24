@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.R_Status_StepDefData;
@@ -47,6 +48,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -70,19 +72,22 @@ public class C_Project_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_ProjectType_StepDefData projectTypeTable;
 	private final R_Status_StepDefData rStatusTable;
+	private final AD_User_StepDefData userTable;
 
 	public C_Project_StepDef(
 			@NonNull final TestContext testContext,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_ProjectType_StepDefData projectTypeTable,
-			@NonNull final R_Status_StepDefData rStatusTable)
+			@NonNull final R_Status_StepDefData rStatusTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.testContext = testContext;
 		this.projectTable = projectTable;
 		this.bpartnerTable = bpartnerTable;
 		this.projectTypeTable = projectTypeTable;
 		this.rStatusTable = rStatusTable;
+		this.userTable = userTable;
 	}
 
 	@Given("metasfresh contains C_Project")
@@ -139,6 +144,63 @@ public class C_Project_StepDef
 		if (projectId != null)
 		{
 			projectRecord.setC_Project_ID(projectId);
+		}
+
+		final String projectCategory = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_ProjectCategory);
+		if (Check.isNotBlank(projectCategory))
+		{
+			projectRecord.setProjectCategory(projectCategory);
+		}
+
+		final String value = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_Value);
+		if (Check.isNotBlank(value))
+		{
+			projectRecord.setValue(value);
+		}
+
+		final String projectTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_ProjectType_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectTypeIdentifier))
+		{
+			final I_C_ProjectType projectType = projectTypeTable.get(projectTypeIdentifier);
+			assertThat(projectType).isNotNull();
+
+			projectRecord.setC_ProjectType_ID(projectType.getC_ProjectType_ID());
+		}
+
+		final String projectRefExt = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_Project_Reference_Ext);
+		if (Check.isNotBlank(projectRefExt))
+		{
+			projectRecord.setC_Project_Reference_Ext(projectRefExt);
+		}
+
+		final String bpartnerDepartment = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_BPartnerDepartment);
+		if (Check.isNotBlank(bpartnerDepartment))
+		{
+			projectRecord.setBPartnerDepartment(bpartnerDepartment);
+		}
+
+		final String specialistConsultantIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_Specialist_Consultant_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(specialistConsultantIdentifier))
+		{
+			final I_AD_User specialistConsultant = userTable.get(specialistConsultantIdentifier);
+			assertThat(specialistConsultant).isNotNull();
+
+			projectRecord.setSpecialist_Consultant_ID(specialistConsultant.getAD_User_ID());
+		}
+
+		final String salesRepIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_SalesRep_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(salesRepIdentifier))
+		{
+			final I_AD_User salesRep = userTable.get(salesRepIdentifier);
+			assertThat(salesRep).isNotNull();
+
+			projectRecord.setSalesRep_ID(salesRep.getAD_User_ID());
+		}
+
+		final String internalPriority = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_InternalPriority);
+		if (Check.isNotBlank(internalPriority))
+		{
+			projectRecord.setInternalPriority(internalPriority);
 		}
 
 		saveRecord(projectRecord);

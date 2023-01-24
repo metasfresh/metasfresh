@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.util
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,21 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.project;
+package de.metas.util.async;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.project.ProjectId;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
 
-public class ProjectId_StepDefData extends StepDefData<ProjectId>
+@AllArgsConstructor
+@Getter
+public enum DebouncerSysConfig
 {
-	public ProjectId_StepDefData()
-	{
-		super(ProjectId.class);
-	}
+	EXPORT_BUFFER_MAX_SIZE("de.metas.externalsystem.debouncer.bufferMaxSize", 100),
+	EXPORT_DELAY_IN_MILLIS("de.metas.externalsystem.debouncer.delayInMillis", 5000);
+
+	@NonNull
+	private final String sysConfigName;
+
+	private final int defaultValue;
 }

@@ -5496,9 +5496,15 @@ public abstract class PO
 			return;
 		}
 
-		SequenceUtil.computeColumnValueBasedOnSequenceIdIfProvided(poInfoColumn, getAD_Client_ID())
-				.ifPresent((computedValue) -> set_ValueNoCheck(columnIndex, computedValue));
+		final String computedValue = SequenceUtil.computeColumnValueBasedOnSequenceIdIfProvided(poInfoColumn, getAD_Client_ID())
+				.orElse(null);
 
+		if (computedValue == null)
+		{
+			return;
+		}
+
+		set_ValueNoCheck(columnIndex, computedValue);
 	}
 
 	// metas: end

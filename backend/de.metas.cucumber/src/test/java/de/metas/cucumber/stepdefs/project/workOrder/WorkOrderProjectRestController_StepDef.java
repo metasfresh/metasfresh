@@ -41,13 +41,13 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
-import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
 import de.metas.project.ProjectTypeId;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -65,7 +65,6 @@ public class WorkOrderProjectRestController_StepDef
 	private static final String ENDPOINT_API_V2_WORK_ORDER = "api/v2/project/workorder";
 	private static final String NEXT_DOC_SEQ_NO_PLACEHOLDER = "nextDocNo";
 
-	private final ProjectId_StepDefData projectIdTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Project_WO_Step_StepDefData projectWOStepTable;
 	private final C_Project_WO_Resource_StepDefData woResourceTable;
@@ -76,14 +75,12 @@ public class WorkOrderProjectRestController_StepDef
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	public WorkOrderProjectRestController_StepDef(
-			@NonNull final ProjectId_StepDefData projectIdTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Project_WO_Step_StepDefData projectWOStepTable,
 			@NonNull final C_Project_WO_Resource_StepDefData woResourceTable,
 			@NonNull final C_Project_WO_ObjectUnderTest_StepDefData woObjectUnderTestTable,
 			@NonNull final TestContext testContext)
 	{
-		this.projectIdTable = projectIdTable;
 		this.projectTable = projectTable;
 		this.projectWOStepTable = projectWOStepTable;
 		this.woResourceTable = woResourceTable;
@@ -232,16 +229,20 @@ public class WorkOrderProjectRestController_StepDef
 		final List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest = jsonWorkOrderProjectResponse.getObjectsUnderTest();
 		final List<JsonWorkOrderObjectsUnderTestResponse> expectedObjectsUnderTest = expectedJsonWorkOrderProjectResponse.getObjectsUnderTest();
 
-		assertThat(objectsUnderTest).isNotNull();
-		assertThat(expectedObjectsUnderTest).isNotNull();
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(objectsUnderTest).isNotNull();
+		softly.assertThat(expectedObjectsUnderTest).isNotNull();
 
 		final int objectsUnderTestSize = objectsUnderTest.size();
-		assertThat(objectsUnderTestSize).isEqualByComparingTo(expectedObjectsUnderTest.size());
+		softly.assertThat(objectsUnderTestSize).isEqualByComparingTo(expectedObjectsUnderTest.size());
 
 		for (int i = 0; i < objectsUnderTestSize; i++)
 		{
 			validateJsonWorkOrderObjectsUnderTestResponse(objectsUnderTest.get(i), expectedObjectsUnderTest.get(i));
 		}
+
+		softly.assertAll();
 	}
 
 	private void validateJsonWorkOrderStepResponseList(
@@ -251,16 +252,20 @@ public class WorkOrderProjectRestController_StepDef
 		final List<JsonWorkOrderStepResponse> projectSteps = jsonWorkOrderProjectResponse.getSteps();
 		final List<JsonWorkOrderStepResponse> expectedSteps = expectedJsonWorkOrderProjectResponse.getSteps();
 
-		assertThat(projectSteps).isNotNull();
-		assertThat(expectedSteps).isNotNull();
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(projectSteps).isNotNull();
+		softly.assertThat(expectedSteps).isNotNull();
 
 		final int projectStepsSize = projectSteps.size();
-		assertThat(projectStepsSize).isEqualByComparingTo(expectedSteps.size());
+		softly.assertThat(projectStepsSize).isEqualByComparingTo(expectedSteps.size());
 
 		for (int i = 0; i < projectStepsSize; i++)
 		{
 			validateJsonWorkOrderStepResponse(projectSteps.get(i), expectedSteps.get(i));
 		}
+
+		softly.assertAll();
 	}
 
 	private void validateJsonWorkOrderResourceResponseList(
@@ -270,121 +275,151 @@ public class WorkOrderProjectRestController_StepDef
 		final List<JsonWorkOrderResourceResponse> projectStepResources = jsonWorkOrderStepResponse.getResources();
 		final List<JsonWorkOrderResourceResponse> expectedStepResources = expectedJsonWorkOrderStepResponse.getResources();
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		if (projectStepResources == null)
 		{
-			assertThat(expectedStepResources).isNull();
+			softly.assertThat(expectedStepResources).isNull();
 		}
 		else
 		{
-			assertThat(projectStepResources).isNotNull();
-			assertThat(expectedStepResources).isNotNull();
+			softly.assertThat(projectStepResources).isNotNull();
+			softly.assertThat(expectedStepResources).isNotNull();
 
 			final int projectStepResourcesSize = projectStepResources.size();
-			assertThat(projectStepResourcesSize).isEqualByComparingTo(expectedStepResources.size());
+			softly.assertThat(projectStepResourcesSize).isEqualByComparingTo(expectedStepResources.size());
 
 			for (int i = 0; i < projectStepResourcesSize; i++)
 			{
 				validateJsonWorkOrderResourceResponse(projectStepResources.get(i), expectedStepResources.get(i));
 			}
 		}
+
+		softly.assertAll();
 	}
 
 	private void validateJsonWorkOrderProjectResponse(
 			@NonNull final JsonWorkOrderProjectResponse jsonWorkOrderProjectResponse,
 			@NonNull final JsonWorkOrderProjectResponse expectedJsonWorkOrderProjectResponse)
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		if (!expectedJsonWorkOrderProjectResponse.getValue().equalsIgnoreCase(NEXT_DOC_SEQ_NO_PLACEHOLDER))
 		{
-			assertThat(jsonWorkOrderProjectResponse.getValue()).isEqualTo(expectedJsonWorkOrderProjectResponse.getValue());
+			softly.assertThat(jsonWorkOrderProjectResponse.getValue()).isEqualTo(expectedJsonWorkOrderProjectResponse.getValue());
 		}
 		else
 		{
-			assertThat(jsonWorkOrderProjectResponse.getValue())
+			softly.assertThat(jsonWorkOrderProjectResponse.getValue())
 					.isEqualTo(getDocSeqNumber(ProjectTypeId.ofRepoId(jsonWorkOrderProjectResponse.getProjectTypeId().getValue())));
 		}
 
 		if (!expectedJsonWorkOrderProjectResponse.getName().equalsIgnoreCase(NEXT_DOC_SEQ_NO_PLACEHOLDER))
 		{
-			assertThat(jsonWorkOrderProjectResponse.getName()).isEqualTo(expectedJsonWorkOrderProjectResponse.getName());
+			softly.assertThat(jsonWorkOrderProjectResponse.getName()).isEqualTo(expectedJsonWorkOrderProjectResponse.getName());
 		}
 		else
 		{
-			assertThat(jsonWorkOrderProjectResponse.getName())
+			softly.assertThat(jsonWorkOrderProjectResponse.getName())
 					.isEqualTo(getDocSeqNumber(ProjectTypeId.ofRepoId(jsonWorkOrderProjectResponse.getProjectTypeId().getValue())));
 		}
 
-		assertThat(jsonWorkOrderProjectResponse.getProjectTypeId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getProjectTypeId());
-		assertThat(jsonWorkOrderProjectResponse.getPriceListVersionId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getPriceListVersionId());
-		assertThat(jsonWorkOrderProjectResponse.getCurrencyCode()).isEqualTo(expectedJsonWorkOrderProjectResponse.getCurrencyCode());
-		assertThat(jsonWorkOrderProjectResponse.getSalesRepId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getSalesRepId());
-		assertThat(jsonWorkOrderProjectResponse.getDescription()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDescription());
-		assertThat(jsonWorkOrderProjectResponse.getDateContract()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDateContract());
-		assertThat(jsonWorkOrderProjectResponse.getDateFinish()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDateFinish());
-		assertThat(jsonWorkOrderProjectResponse.getBpartnerId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getBpartnerId());
-		assertThat(jsonWorkOrderProjectResponse.getProjectReferenceExt()).isEqualTo(expectedJsonWorkOrderProjectResponse.getProjectReferenceExt());
-		assertThat(jsonWorkOrderProjectResponse.getProjectParentId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getProjectParentId());
-		assertThat(jsonWorkOrderProjectResponse.getOrgCode()).isEqualTo(expectedJsonWorkOrderProjectResponse.getOrgCode());
-		assertThat(jsonWorkOrderProjectResponse.getIsActive()).isEqualTo(expectedJsonWorkOrderProjectResponse.getIsActive());
-		assertThat(jsonWorkOrderProjectResponse.getDateOfProvisionByBPartner()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDateOfProvisionByBPartner());
-		assertThat(jsonWorkOrderProjectResponse.getWoOwner()).isEqualTo(expectedJsonWorkOrderProjectResponse.getWoOwner());
-		assertThat(jsonWorkOrderProjectResponse.getPoReference()).isEqualTo(expectedJsonWorkOrderProjectResponse.getPoReference());
-		assertThat(jsonWorkOrderProjectResponse.getBpartnerDepartment()).isEqualTo(expectedJsonWorkOrderProjectResponse.getBpartnerDepartment());
-		assertThat(jsonWorkOrderProjectResponse.getBpartnerTargetDate()).isEqualTo(expectedJsonWorkOrderProjectResponse.getBpartnerTargetDate());
-		assertThat(jsonWorkOrderProjectResponse.getWoProjectCreatedDate()).isEqualTo(expectedJsonWorkOrderProjectResponse.getWoProjectCreatedDate());
+		softly.assertThat(jsonWorkOrderProjectResponse.getProjectTypeId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getProjectTypeId());
+		softly.assertThat(jsonWorkOrderProjectResponse.getPriceListVersionId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getPriceListVersionId());
+		softly.assertThat(jsonWorkOrderProjectResponse.getCurrencyCode()).isEqualTo(expectedJsonWorkOrderProjectResponse.getCurrencyCode());
+		softly.assertThat(jsonWorkOrderProjectResponse.getSalesRepId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getSalesRepId());
+		softly.assertThat(jsonWorkOrderProjectResponse.getDescription()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDescription());
+		softly.assertThat(jsonWorkOrderProjectResponse.getDateContract()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDateContract());
+		softly.assertThat(jsonWorkOrderProjectResponse.getDateFinish()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDateFinish());
+		softly.assertThat(jsonWorkOrderProjectResponse.getBpartnerId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getBpartnerId());
+		softly.assertThat(jsonWorkOrderProjectResponse.getProjectReferenceExt()).isEqualTo(expectedJsonWorkOrderProjectResponse.getProjectReferenceExt());
+		softly.assertThat(jsonWorkOrderProjectResponse.getProjectParentId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getProjectParentId());
+		softly.assertThat(jsonWorkOrderProjectResponse.getOrgCode()).isEqualTo(expectedJsonWorkOrderProjectResponse.getOrgCode());
+		softly.assertThat(jsonWorkOrderProjectResponse.getIsActive()).isEqualTo(expectedJsonWorkOrderProjectResponse.getIsActive());
+		softly.assertThat(jsonWorkOrderProjectResponse.getDateOfProvisionByBPartner()).isEqualTo(expectedJsonWorkOrderProjectResponse.getDateOfProvisionByBPartner());
+		softly.assertThat(jsonWorkOrderProjectResponse.getWoOwner()).isEqualTo(expectedJsonWorkOrderProjectResponse.getWoOwner());
+		softly.assertThat(jsonWorkOrderProjectResponse.getPoReference()).isEqualTo(expectedJsonWorkOrderProjectResponse.getPoReference());
+		softly.assertThat(jsonWorkOrderProjectResponse.getBpartnerDepartment()).isEqualTo(expectedJsonWorkOrderProjectResponse.getBpartnerDepartment());
+		softly.assertThat(jsonWorkOrderProjectResponse.getBpartnerTargetDate()).isEqualTo(expectedJsonWorkOrderProjectResponse.getBpartnerTargetDate());
+		softly.assertThat(jsonWorkOrderProjectResponse.getWoProjectCreatedDate()).isEqualTo(expectedJsonWorkOrderProjectResponse.getWoProjectCreatedDate());
+
+		if (expectedJsonWorkOrderProjectResponse.getSpecialistConsultantId() != null)
+		{
+			softly.assertThat(jsonWorkOrderProjectResponse.getSpecialistConsultantId()).isEqualTo(expectedJsonWorkOrderProjectResponse.getSpecialistConsultantId());
+		}
+
+		if (Check.isNotBlank(expectedJsonWorkOrderProjectResponse.getInternalPriority()))
+		{
+			softly.assertThat(jsonWorkOrderProjectResponse.getInternalPriority()).isEqualTo(expectedJsonWorkOrderProjectResponse.getInternalPriority());
+		}
 
 		validateJsonWorkOrderStepResponseList(jsonWorkOrderProjectResponse, expectedJsonWorkOrderProjectResponse);
 		validateJsonWorkOrderObjectsUnderTestResponseList(jsonWorkOrderProjectResponse, expectedJsonWorkOrderProjectResponse);
+
+		softly.assertAll();
 	}
 
 	private void validateJsonWorkOrderStepResponse(
 			@NonNull final JsonWorkOrderStepResponse jsonWorkOrderStepResponse,
 			@NonNull final JsonWorkOrderStepResponse expectedJsonWorkOrderStepResponse)
 	{
-		assertThat(jsonWorkOrderStepResponse.getName()).isEqualTo(expectedJsonWorkOrderStepResponse.getName());
-		assertThat(jsonWorkOrderStepResponse.getDescription()).isEqualTo(expectedJsonWorkOrderStepResponse.getDescription());
-		assertThat(jsonWorkOrderStepResponse.getSeqNo()).isEqualTo(expectedJsonWorkOrderStepResponse.getSeqNo());
-		assertThat(jsonWorkOrderStepResponse.getDateStart()).isEqualTo(expectedJsonWorkOrderStepResponse.getDateStart());
-		assertThat(jsonWorkOrderStepResponse.getDateEnd()).isEqualTo(expectedJsonWorkOrderStepResponse.getDateEnd());
-		assertThat(jsonWorkOrderStepResponse.getExternalId()).isEqualTo(expectedJsonWorkOrderStepResponse.getExternalId());
-		assertThat(jsonWorkOrderStepResponse.getWoPartialReportDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoPartialReportDate());
-		assertThat(jsonWorkOrderStepResponse.getWoPlannedResourceDurationHours()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoPlannedResourceDurationHours());
-		assertThat(jsonWorkOrderStepResponse.getDeliveryDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getDeliveryDate());
-		assertThat(jsonWorkOrderStepResponse.getWoTargetStartDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoTargetStartDate());
-		assertThat(jsonWorkOrderStepResponse.getWoTargetEndDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoTargetEndDate());
-		assertThat(jsonWorkOrderStepResponse.getWoPlannedPersonDurationHours()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoPlannedPersonDurationHours());
-		assertThat(jsonWorkOrderStepResponse.getWoStepStatus()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoStepStatus());
-		assertThat(jsonWorkOrderStepResponse.getWoFindingsReleasedDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoFindingsReleasedDate());
-		assertThat(jsonWorkOrderStepResponse.getWoFindingsCreatedDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoFindingsCreatedDate());
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(jsonWorkOrderStepResponse.getName()).isEqualTo(expectedJsonWorkOrderStepResponse.getName());
+		softly.assertThat(jsonWorkOrderStepResponse.getDescription()).isEqualTo(expectedJsonWorkOrderStepResponse.getDescription());
+		softly.assertThat(jsonWorkOrderStepResponse.getSeqNo()).isEqualTo(expectedJsonWorkOrderStepResponse.getSeqNo());
+		softly.assertThat(jsonWorkOrderStepResponse.getDateStart()).isEqualTo(expectedJsonWorkOrderStepResponse.getDateStart());
+		softly.assertThat(jsonWorkOrderStepResponse.getDateEnd()).isEqualTo(expectedJsonWorkOrderStepResponse.getDateEnd());
+		softly.assertThat(jsonWorkOrderStepResponse.getExternalId()).isEqualTo(expectedJsonWorkOrderStepResponse.getExternalId());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoPartialReportDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoPartialReportDate());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoPlannedResourceDurationHours()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoPlannedResourceDurationHours());
+		softly.assertThat(jsonWorkOrderStepResponse.getDeliveryDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getDeliveryDate());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoTargetStartDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoTargetStartDate());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoTargetEndDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoTargetEndDate());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoPlannedPersonDurationHours()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoPlannedPersonDurationHours());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoStepStatus()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoStepStatus());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoFindingsReleasedDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoFindingsReleasedDate());
+		softly.assertThat(jsonWorkOrderStepResponse.getWoFindingsCreatedDate()).isEqualTo(expectedJsonWorkOrderStepResponse.getWoFindingsCreatedDate());
 
 		validateJsonWorkOrderResourceResponseList(jsonWorkOrderStepResponse, expectedJsonWorkOrderStepResponse);
+
+		softly.assertAll();
 	}
 
 	private void validateJsonWorkOrderResourceResponse(
 			@NonNull final JsonWorkOrderResourceResponse jsonWorkOrderResourceResponse,
 			@NonNull final JsonWorkOrderResourceResponse expectedJsonWorkOrderResourceResponse)
 	{
-		assertThat(jsonWorkOrderResourceResponse.getAssignDateFrom()).isEqualTo(expectedJsonWorkOrderResourceResponse.getAssignDateFrom());
-		assertThat(jsonWorkOrderResourceResponse.getAssignDateTo()).isEqualTo(expectedJsonWorkOrderResourceResponse.getAssignDateTo());
-		assertThat(jsonWorkOrderResourceResponse.getIsActive()).isEqualTo(expectedJsonWorkOrderResourceResponse.getIsActive());
-		assertThat(jsonWorkOrderResourceResponse.getResourceId()).isEqualTo(expectedJsonWorkOrderResourceResponse.getResourceId());
-		assertThat(jsonWorkOrderResourceResponse.getIsAllDay()).isEqualTo(expectedJsonWorkOrderResourceResponse.getIsAllDay());
-		assertThat(jsonWorkOrderResourceResponse.getDuration()).isEqualTo(expectedJsonWorkOrderResourceResponse.getDuration());
-		assertThat(jsonWorkOrderResourceResponse.getDurationUnit()).isEqualTo(expectedJsonWorkOrderResourceResponse.getDurationUnit());
-		assertThat(jsonWorkOrderResourceResponse.getTestFacilityGroupName()).isEqualTo(expectedJsonWorkOrderResourceResponse.getTestFacilityGroupName());
-		assertThat(jsonWorkOrderResourceResponse.getExternalId()).isEqualTo(expectedJsonWorkOrderResourceResponse.getExternalId());
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(jsonWorkOrderResourceResponse.getAssignDateFrom()).isEqualTo(expectedJsonWorkOrderResourceResponse.getAssignDateFrom());
+		softly.assertThat(jsonWorkOrderResourceResponse.getAssignDateTo()).isEqualTo(expectedJsonWorkOrderResourceResponse.getAssignDateTo());
+		softly.assertThat(jsonWorkOrderResourceResponse.getIsActive()).isEqualTo(expectedJsonWorkOrderResourceResponse.getIsActive());
+		softly.assertThat(jsonWorkOrderResourceResponse.getResourceId()).isEqualTo(expectedJsonWorkOrderResourceResponse.getResourceId());
+		softly.assertThat(jsonWorkOrderResourceResponse.getIsAllDay()).isEqualTo(expectedJsonWorkOrderResourceResponse.getIsAllDay());
+		softly.assertThat(jsonWorkOrderResourceResponse.getDuration()).isEqualTo(expectedJsonWorkOrderResourceResponse.getDuration());
+		softly.assertThat(jsonWorkOrderResourceResponse.getDurationUnit()).isEqualTo(expectedJsonWorkOrderResourceResponse.getDurationUnit());
+		softly.assertThat(jsonWorkOrderResourceResponse.getTestFacilityGroupName()).isEqualTo(expectedJsonWorkOrderResourceResponse.getTestFacilityGroupName());
+		softly.assertThat(jsonWorkOrderResourceResponse.getExternalId()).isEqualTo(expectedJsonWorkOrderResourceResponse.getExternalId());
+
+		softly.assertAll();
 	}
 
 	private void validateJsonWorkOrderObjectsUnderTestResponse(
 			@NonNull final JsonWorkOrderObjectsUnderTestResponse jsonWorkOrderObjectsUnderTestResponse,
 			@NonNull final JsonWorkOrderObjectsUnderTestResponse expectedJsonWorkOrderObjectsUnderTestResponse)
 	{
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getNumberOfObjectsUnderTest()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getNumberOfObjectsUnderTest());
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getExternalId()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getExternalId());
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoDeliveryNote()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoDeliveryNote());
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoManufacturer()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoManufacturer());
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoObjectType()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoObjectType());
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoObjectName()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoObjectName());
-		assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoObjectWhereabouts()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoObjectWhereabouts());
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getNumberOfObjectsUnderTest()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getNumberOfObjectsUnderTest());
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getExternalId()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getExternalId());
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoDeliveryNote()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoDeliveryNote());
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoManufacturer()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoManufacturer());
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoObjectType()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoObjectType());
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoObjectName()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoObjectName());
+		softly.assertThat(jsonWorkOrderObjectsUnderTestResponse.getWoObjectWhereabouts()).isEqualTo(expectedJsonWorkOrderObjectsUnderTestResponse.getWoObjectWhereabouts());
+
+		softly.assertAll();
 	}
 
 	@NonNull

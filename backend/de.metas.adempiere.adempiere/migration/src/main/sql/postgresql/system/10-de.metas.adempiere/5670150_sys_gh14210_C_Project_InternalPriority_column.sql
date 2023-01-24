@@ -129,3 +129,7 @@ UPDATE AD_Element_Trl SET Name='Interne Priorität', PrintName='Interne Priorit�
 -- 2023-01-19T07:33:56.633Z
 UPDATE AD_Column SET ColumnName='InternalPriority', Name='Interne Priorität', Description=NULL, Help=NULL WHERE AD_Element_ID=581907
 ;
+
+-- 2022-12-22T13:52:18.273Z
+INSERT INTO AD_JavaClass (AD_Client_ID,AD_JavaClass_ID,AD_JavaClass_Type_ID,AD_Org_ID,Classname,Created,CreatedBy,EntityType,IsActive,IsInterface,Name,Updated,UpdatedBy) VALUES (0,540075,540040,0,'de.metas.document.sequenceno.ExternalProjectRefSequenceNoProvider',TO_TIMESTAMP('2022-12-22 15:52:18','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','ExternalProjectRefSequenceNoProvider',TO_TIMESTAMP('2022-12-22 15:52:18','YYYY-MM-DD HH24:MI:SS'),100)
+;

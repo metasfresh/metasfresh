@@ -43,6 +43,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Project_Resource_Budget;
 
@@ -135,27 +136,31 @@ public class BudgetProjectRestController_StepDef
 			@NonNull final JsonBudgetProjectResponse jsonBudgetProjectResponse,
 			@NonNull final JsonBudgetProjectResponse expectedJsonBudgetProjectResponse)
 	{
-		assertThat(jsonBudgetProjectResponse.getOrgCode()).isEqualTo(expectedJsonBudgetProjectResponse.getOrgCode());
-		assertThat(jsonBudgetProjectResponse.getCurrencyCode()).isEqualTo(expectedJsonBudgetProjectResponse.getCurrencyCode());
-		assertThat(jsonBudgetProjectResponse.getName()).isEqualTo(expectedJsonBudgetProjectResponse.getName());
-		assertThat(jsonBudgetProjectResponse.getValue()).isEqualTo(expectedJsonBudgetProjectResponse.getValue());
-		assertThat(jsonBudgetProjectResponse.getIsActive()).isEqualTo(expectedJsonBudgetProjectResponse.getIsActive());
-		assertThat(jsonBudgetProjectResponse.getPriceListVersionId()).isEqualTo(expectedJsonBudgetProjectResponse.getPriceListVersionId());
-		assertThat(jsonBudgetProjectResponse.getDescription()).isEqualTo(expectedJsonBudgetProjectResponse.getDescription());
-		assertThat(jsonBudgetProjectResponse.getProjectParentId()).isEqualTo(expectedJsonBudgetProjectResponse.getProjectParentId());
-		assertThat(jsonBudgetProjectResponse.getProjectTypeId()).isEqualTo(expectedJsonBudgetProjectResponse.getProjectTypeId());
-		assertThat(jsonBudgetProjectResponse.getProjectReferenceExt()).isEqualTo(expectedJsonBudgetProjectResponse.getProjectReferenceExt());
-		assertThat(jsonBudgetProjectResponse.getBpartnerId()).isEqualTo(expectedJsonBudgetProjectResponse.getBpartnerId());
-		assertThat(jsonBudgetProjectResponse.getSalesRepId()).isEqualTo(expectedJsonBudgetProjectResponse.getSalesRepId());
-		assertThat(jsonBudgetProjectResponse.getDateContract()).isEqualTo(expectedJsonBudgetProjectResponse.getDateContract());
-		assertThat(jsonBudgetProjectResponse.getDateFinish()).isEqualTo(expectedJsonBudgetProjectResponse.getDateFinish());
-		assertThat(jsonBudgetProjectResponse.getExtendedProps()).isEqualTo(expectedJsonBudgetProjectResponse.getExtendedProps());
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(jsonBudgetProjectResponse.getOrgCode()).isEqualTo(expectedJsonBudgetProjectResponse.getOrgCode());
+		softly.assertThat(jsonBudgetProjectResponse.getCurrencyCode()).isEqualTo(expectedJsonBudgetProjectResponse.getCurrencyCode());
+		softly.assertThat(jsonBudgetProjectResponse.getName()).isEqualTo(expectedJsonBudgetProjectResponse.getName());
+		softly.assertThat(jsonBudgetProjectResponse.getValue()).isEqualTo(expectedJsonBudgetProjectResponse.getValue());
+		softly.assertThat(jsonBudgetProjectResponse.getIsActive()).isEqualTo(expectedJsonBudgetProjectResponse.getIsActive());
+		softly.assertThat(jsonBudgetProjectResponse.getPriceListVersionId()).isEqualTo(expectedJsonBudgetProjectResponse.getPriceListVersionId());
+		softly.assertThat(jsonBudgetProjectResponse.getDescription()).isEqualTo(expectedJsonBudgetProjectResponse.getDescription());
+		softly.assertThat(jsonBudgetProjectResponse.getProjectParentId()).isEqualTo(expectedJsonBudgetProjectResponse.getProjectParentId());
+		softly.assertThat(jsonBudgetProjectResponse.getProjectTypeId()).isEqualTo(expectedJsonBudgetProjectResponse.getProjectTypeId());
+		softly.assertThat(jsonBudgetProjectResponse.getProjectReferenceExt()).isEqualTo(expectedJsonBudgetProjectResponse.getProjectReferenceExt());
+		softly.assertThat(jsonBudgetProjectResponse.getBpartnerId()).isEqualTo(expectedJsonBudgetProjectResponse.getBpartnerId());
+		softly.assertThat(jsonBudgetProjectResponse.getSalesRepId()).isEqualTo(expectedJsonBudgetProjectResponse.getSalesRepId());
+		softly.assertThat(jsonBudgetProjectResponse.getDateContract()).isEqualTo(expectedJsonBudgetProjectResponse.getDateContract());
+		softly.assertThat(jsonBudgetProjectResponse.getDateFinish()).isEqualTo(expectedJsonBudgetProjectResponse.getDateFinish());
+		softly.assertThat(jsonBudgetProjectResponse.getExtendedProps()).isEqualTo(expectedJsonBudgetProjectResponse.getExtendedProps());
 
 		final List<JsonBudgetProjectResourceResponse> projectResources = jsonBudgetProjectResponse.getProjectResources();
 		final List<JsonBudgetProjectResourceResponse> expectedProjectResources = expectedJsonBudgetProjectResponse.getProjectResources();
 
 		final int projectResourcesSize = jsonBudgetProjectResponse.getProjectResources().size();
-		assertThat(projectResourcesSize).isEqualByComparingTo(expectedProjectResources.size());
+		softly.assertThat(projectResourcesSize).isEqualByComparingTo(expectedProjectResources.size());
+
+		softly.assertAll();
 
 		for (int i = 0; i < projectResourcesSize; i++)
 		{
@@ -167,17 +172,19 @@ public class BudgetProjectRestController_StepDef
 			@NonNull final JsonBudgetProjectResourceResponse jsonBudgetProjectResourceResponse,
 			@NonNull final JsonBudgetProjectResourceResponse expectedJsonBudgetProjectResourceResponse)
 	{
-		assertThat(jsonBudgetProjectResourceResponse.getUomTimeId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getUomTimeId());
-		assertThat(jsonBudgetProjectResourceResponse.getDateStartPlan()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDateStartPlan());
-		assertThat(jsonBudgetProjectResourceResponse.getDateFinishPlan()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDateFinishPlan());
-		assertThat(jsonBudgetProjectResourceResponse.getDescription()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDescription());
-		assertThat(jsonBudgetProjectResourceResponse.getPlannedAmt()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPlannedAmt());
-		assertThat(jsonBudgetProjectResourceResponse.getCurrencyCode()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getCurrencyCode());
-		assertThat(jsonBudgetProjectResourceResponse.getPlannedDuration()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPlannedDuration());
-		assertThat(jsonBudgetProjectResourceResponse.getPricePerTimeUOM()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPricePerTimeUOM());
-		assertThat(jsonBudgetProjectResourceResponse.getResourceGroupId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getResourceGroupId());
-		assertThat(jsonBudgetProjectResourceResponse.getResourceId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getResourceId());
-		assertThat(jsonBudgetProjectResourceResponse.getExternalId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getExternalId());
-		assertThat(jsonBudgetProjectResourceResponse.getIsActive()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getIsActive());
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(jsonBudgetProjectResourceResponse.getUomTimeId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getUomTimeId());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getDateStartPlan()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDateStartPlan());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getDateFinishPlan()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDateFinishPlan());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getDescription()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDescription());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getPlannedAmt()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPlannedAmt());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getCurrencyCode()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getCurrencyCode());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getPlannedDuration()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPlannedDuration());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getPricePerTimeUOM()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPricePerTimeUOM());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getResourceGroupId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getResourceGroupId());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getResourceId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getResourceId());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getExternalId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getExternalId());
+		softly.assertThat(jsonBudgetProjectResourceResponse.getIsActive()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getIsActive());
 	}
 }

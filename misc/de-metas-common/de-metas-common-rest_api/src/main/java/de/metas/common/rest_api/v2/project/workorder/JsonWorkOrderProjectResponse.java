@@ -104,6 +104,12 @@ public class JsonWorkOrderProjectResponse
 	String bpartnerDepartment;
 
 	@Nullable
+	JsonMetasfreshId specialistConsultantId;
+
+	@Nullable
+	String internalPriority;
+
+	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate bpartnerTargetDate;
 
@@ -140,6 +146,8 @@ public class JsonWorkOrderProjectResponse
 			@JsonProperty("woOwner") @Nullable String woOwner,
 			@JsonProperty("poReference") @Nullable String poReference,
 			@JsonProperty("bpartnerDepartment") @Nullable String bpartnerDepartment,
+			@JsonProperty("specialistConsultantId") @Nullable JsonMetasfreshId specialistConsultantId,
+			@JsonProperty("internalPriority") @Nullable String internalPriority,
 			@JsonProperty("bpartnerTargetDate") LocalDate bpartnerTargetDate,
 			@JsonProperty("woProjectCreatedDate") LocalDate woProjectCreatedDate,
 			@JsonProperty("steps") @Nullable List<JsonWorkOrderStepResponse> steps,
@@ -166,6 +174,8 @@ public class JsonWorkOrderProjectResponse
 		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
 		this.woOwner = woOwner;
 		this.poReference = poReference;
+		this.specialistConsultantId = specialistConsultantId;
+		this.internalPriority = internalPriority;
 		this.bpartnerTargetDate = bpartnerTargetDate;
 		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.steps = steps;

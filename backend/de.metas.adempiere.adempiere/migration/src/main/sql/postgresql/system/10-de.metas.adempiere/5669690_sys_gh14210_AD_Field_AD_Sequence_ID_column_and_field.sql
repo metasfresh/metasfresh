@@ -22,7 +22,7 @@ ALTER TABLE AD_Field ADD CONSTRAINT ADSequence_ADField FOREIGN KEY (AD_Sequence_
 -- Field: Fenster Verwaltung -> Feld -> Reihenfolge
 -- Column: AD_Field.AD_Sequence_ID
 -- 2022-12-22T14:07:23.067Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585429,710061,0,107,0,TO_TIMESTAMP('2022-12-22 16:07:22','YYYY-MM-DD HH24:MI:SS'),100,'Nummernfolgen für Belege',0,'D','Der Nummernkreis bestimmt, welche Nummernfolge für eine Belegart verwendet wird.',0,'Y','Y','Y','N','N','N','N','N','Reihenfolge',0,280,0,1,1,TO_TIMESTAMP('2022-12-22 16:07:22','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585429,710061,0,107,0,TO_TIMESTAMP('2022-12-22 16:07:22','YYYY-MM-DD HH24:MI:SS'),100,'Bietet sequenzielle Standardwerte',0,'D','Bietet sequenzielle Standardwerte',0,'Y','Y','Y','N','N','N','N','N','Reihenfolge',0,280,0,1,1,TO_TIMESTAMP('2022-12-22 16:07:22','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-12-22T14:07:23.069Z

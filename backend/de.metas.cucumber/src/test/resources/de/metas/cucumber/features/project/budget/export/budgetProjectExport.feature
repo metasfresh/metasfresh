@@ -1,9 +1,9 @@
-Feature: Validate budget project is sent to RabbitMQ
+Feature: Budget Project interaction with RabbitMQ after export process was triggered
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
-  Scenario: Budget project is exported to external system when created
+  Scenario: Create Budget Project and send BudgetProjectID to RabbitMQ - export process is triggered on project creation
     Given RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And add Other external system config with identifier: otherConfig

@@ -42,6 +42,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Loggables;
 import de.metas.util.async.Debouncer;
+import de.metas.util.async.DebouncerSysConfig;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -79,8 +80,8 @@ public abstract class ExportProjectToExternalSystem extends ExportToExternalSyst
 		this.projectRepository = projectRepository;
 		this.syncProjectDebouncer = Debouncer.<ProjectId>builder()
 				.name("syncProjectDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
+				.bufferMaxSize(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getSysConfigName(), DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getDefaultValue()))
+				.delayInMillis(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getSysConfigName(), DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getDefaultValue()))
 				.distinct(true)
 				.consumer(this::syncCollectedProjectsIfRequired)
 				.build();

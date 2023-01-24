@@ -45,6 +45,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
+import de.metas.util.async.DebouncerSysConfig;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -79,8 +80,8 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 		this.syncHuDebouncer = Debouncer.<ExportHUCandidate>builder()
 				.name("syncHuDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
+				.bufferMaxSize(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getSysConfigName(), DebouncerSysConfig.EXPORT_BUFFER_MAX_SIZE.getDefaultValue()))
+				.delayInMillis(sysConfigBL.getIntValue(DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getSysConfigName(), DebouncerSysConfig.EXPORT_DELAY_IN_MILLIS.getDefaultValue()))
 				.distinct(true)
 				.consumer(this::exportCollectedHUsIfRequired)
 				.build();
