@@ -71,10 +71,11 @@ import java.util.List;
 public class C_BPartner
 {
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
-
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerStatisticsUpdater partnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
+
 
 	private final static transient Logger logger = LogManager.getLogger(C_BPartner.class);
 
@@ -236,14 +237,12 @@ public class C_BPartner
 		}
 	}
 
-
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_M_SectionCode_ID)
 	public void updateStatsSectionCode(@NonNull final I_C_BPartner bpartner)
 	{
-		Services.get(IBPartnerStatisticsUpdater.class)
-				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-												  .bpartnerId(bpartner.getC_BPartner_ID())
-												  .build());
+		partnerStatisticsUpdater.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
+																  .bpartnerId(bpartner.getC_BPartner_ID())
+																  .build());
 	}
 
 
