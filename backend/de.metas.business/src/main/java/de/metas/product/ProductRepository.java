@@ -143,6 +143,7 @@ public class ProductRepository
 		product.setDescription(request.getDescription());
 		product.setAD_Org_ID(request.getOrgId().getRepoId());
 		product.setGuaranteeMonths(request.getGuaranteeMonths());
+		product.setWarehouse_temperature(request.getWarehouseTemperature());
 
 		final boolean isDiscontinued = Boolean.TRUE.equals(request.getDiscontinued());
 
