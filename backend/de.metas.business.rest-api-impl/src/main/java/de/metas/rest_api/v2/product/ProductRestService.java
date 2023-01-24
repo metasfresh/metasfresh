@@ -857,6 +857,7 @@ public class ProductRestService
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
 				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
+				.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature())
 				.build();
 	}
 

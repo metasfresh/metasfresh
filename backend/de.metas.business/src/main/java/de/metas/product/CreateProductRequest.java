@@ -84,4 +84,7 @@ public class CreateProductRequest
 
 	@Nullable
 	String guaranteeMonths;
+
+	@Nullable
+	String warehouseTemperature;
 }
