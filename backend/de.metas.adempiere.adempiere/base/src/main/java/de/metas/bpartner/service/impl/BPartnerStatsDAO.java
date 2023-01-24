@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
@@ -346,7 +347,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private void updateSectionCode(@NonNull final BPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
-		stats.setM_SectionCode(stats.getM_SectionCode());
+
+		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpStats.getBpartnerId());
+		stats.setM_SectionCode(partner.getM_SectionCode());
+
 		saveRecord(stats);
 	}
 }
