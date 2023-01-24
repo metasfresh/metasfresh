@@ -32,10 +32,6 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -84,7 +80,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
