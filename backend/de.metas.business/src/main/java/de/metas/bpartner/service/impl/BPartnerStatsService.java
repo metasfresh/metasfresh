@@ -28,6 +28,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
@@ -253,11 +254,10 @@ public class BPartnerStatsService
 
 		while (shippingPackages.hasNext())
 		{
-
 			final I_M_ShippingPackage shippingPackage = shippingPackages.next();
 
-			// TODO convert moneyService.convertMoneyToCurrency(computeCreditUsedPerShippingPackage(shippingPackage))
-			deliveryCreditUsed.add(computeCreditUsedPerShippingPackage(shippingPackage));
+			final Money creditUsedPerShippingPackageInBaseCurrency = computeCreditUsedPerShippingPackageInBaseCurrency(shippingPackage, baseCurrencyId);
+			deliveryCreditUsed.add(creditUsedPerShippingPackageInBaseCurrency);
 		}
 
 		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
@@ -266,35 +266,48 @@ public class BPartnerStatsService
 																					  .direction(PaymentDirection.INBOUND)
 																					  .build())
 				.stream().iterator();
-		while(paymentIdIterator.hasNext())
+		while (paymentIdIterator.hasNext())
 		{
 			final PaymentId paymentId = paymentIdIterator.next();
-			final I_C_Payment payment = paymentBL.getById(paymentId);
+			final Money creditGainedByPaymentInBaseCurrency = computeCreditGainedByPaymentInBaseCurrency(baseCurrencyId, paymentId);
 
-			final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+			deliveryCreditUsed.subtract(creditGainedByPaymentInBaseCurrency);
 
-			// TODO; conversion moneyService.
-			deliveryCreditUsed.subtract(creditUsageGainedByPayment);
 		}
 
-		stats.setDelivery_CreditUsed(deliveryCreditUsed.toBigDecimal()); // todo verify the currency
+		stats.setDelivery_CreditUsed(deliveryCreditUsed.toBigDecimal());
 		saveRecord(stats);
 	}
 
-	private Money computeCreditUsedPerShippingPackage(final I_M_ShippingPackage shippingPackage)
+	private Money computeCreditGainedByPaymentInBaseCurrency(final CurrencyId baseCurrencyId, final PaymentId paymentId)
+	{
+		final I_C_Payment payment = paymentBL.getById(paymentId);
+
+		final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+
+		final CurrencyConversionContext currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
+
+		return moneyService.convertMoneyToCurrency(creditUsageGainedByPayment, baseCurrencyId, currencyConversionContext);
+
+	}
+
+	private Money computeCreditUsedPerShippingPackageInBaseCurrency(@NonNull final I_M_ShippingPackage shippingPackage,
+			@NonNull final CurrencyId baseCurrencyId)
 	{
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(shippingPackage.getC_OrderLine_ID());
 
 		final Quantity actualLoadQty = Quantitys.create(shippingPackage.getActualLoadQty(), UomId.ofRepoId(shippingPackage.getC_UOM_ID()));
 
-		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
+														orderLineCurrencyId);
 
 		final int taxId = orderLine.getC_Tax_ID();
 
-		final BigDecimal taxAmtInfo;
+		final Money taxAmtInfo;
 		if (taxId <= 0)
 		{
-			taxAmtInfo = BigDecimal.ZERO;
+			taxAmtInfo = Money.zero(orderLineCurrencyId);
 		}
 
 		else
@@ -305,10 +318,12 @@ public class BPartnerStatsService
 
 			final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
-			taxAmtInfo = taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt());
+			taxAmtInfo = Money.of(taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt()), orderLineCurrencyId);
 		}
 
-		return Money.of(taxAmtInfo, CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+		final CurrencyConversionContext currencyConversionContext = orderLineBL.extractCurrencyConversionContext(orderLine);
+
+		return moneyService.convertMoneyToCurrency(taxAmtInfo.add(qtyNetPriceFromOrderLine), baseCurrencyId, currencyConversionContext);
 	}
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
@@ -358,8 +373,6 @@ public class BPartnerStatsService
 
 	private void updateDeliveryCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-		// in accounting schema currency
-		// todo
 		final String initialCreditStatus = bpStats.getSoCreditStatus();
 
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
