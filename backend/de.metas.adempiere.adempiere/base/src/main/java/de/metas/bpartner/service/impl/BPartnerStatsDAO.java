@@ -8,6 +8,7 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -77,6 +78,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.openItems(statsRecord.getOpenItems())
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(partner.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -91,6 +93,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
 		stat.setC_BPartner_ID(partner.getC_BPartner_ID());
+		stat.setM_SectionCode(partner.getM_SectionCode());
 		stat.setSOCreditStatus(status);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
@@ -204,6 +207,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		updateSOCreditUsed(bpStats);
 		updateSOCreditStatus(bpStats);
 		updateCreditLimitIndicator(bpStats);
+		updateSectionCode(bpStats);
 	}
 
 	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
@@ -336,6 +340,13 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		stats.setCreditLimitIndicator(percentSring);
 
+		saveRecord(stats);
+	}
+
+	private void updateSectionCode(@NonNull final BPartnerStats bpStats)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+		stats.setM_SectionCode(stats.getM_SectionCode());
 		saveRecord(stats);
 	}
 }
