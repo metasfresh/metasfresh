@@ -1,7 +1,6 @@
 package de.metas.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
@@ -14,9 +13,10 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implements IProcessPrecondition
 {
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 
@@ -24,7 +24,7 @@ public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implement
 	protected String doIt()
 	{
 		final I_C_BPartner_Stats stats = getRecord(I_C_BPartner_Stats.class);
-		final I_C_BPartner statsPartner = InterfaceWrapperHelper.load(BPartnerId.ofRepoId(stats.getC_BPartner_ID()), I_C_BPartner.class);
+		final I_C_BPartner statsPartner = load(BPartnerId.ofRepoId(stats.getC_BPartner_ID()), I_C_BPartner.class);
 		final BPartnerStats bpStats = bpartnerStatsDAO.getCreateBPartnerStats(statsPartner);
 		bpartnerStatsDAO.updateBPartnerStatistics(bpStats);
 		return "@Success@";
