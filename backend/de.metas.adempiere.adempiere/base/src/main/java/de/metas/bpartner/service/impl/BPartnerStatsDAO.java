@@ -353,7 +353,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
 		final I_C_BPartner partner = partnerDAO.getById(bpStats.getBpartnerId());
-		stats.setM_SectionCode(partner.getM_SectionCode());
+		stats.setM_SectionCode_ID(partner.getM_SectionCode_ID());
 
 		saveRecord(stats);
 	}
