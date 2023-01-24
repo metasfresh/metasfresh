@@ -6,6 +6,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -43,13 +44,18 @@ public class ForexContractRepository
 
 		return ForexContract.builder()
 				.id(extractId(record))
+				.documentNo(record.getDocumentNo())
+				.created(record.getCreated().toInstant())
+				.createdBy(UserId.ofRepoId(record.getCreatedBy()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
+				.validityDate(record.getFEC_ValidityDate().toInstant())
+				.maturityDate(record.getFEC_MaturityDate().toInstant())
 				.currencyId(currencyId)
 				.toCurrencyId(CurrencyId.ofRepoId(record.getTo_Currency_ID()))
 				.currencyRate(record.getCurrencyRate())
 				.amount(Money.of(record.getFEC_Amount(), currencyId))
-				.allocatedAmount(Money.of(record.getFEC_Amount_Open(), currencyId))
+				.allocatedAmount(Money.of(record.getFEC_Amount_Alloc(), currencyId))
 				.openAmount(Money.of(record.getFEC_Amount_Open(), currencyId))
 				.build();
 	}

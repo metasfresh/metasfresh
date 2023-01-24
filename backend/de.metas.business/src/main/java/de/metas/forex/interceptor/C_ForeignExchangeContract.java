@@ -1,6 +1,7 @@
 package de.metas.forex.interceptor;
 
 import de.metas.forex.ForexContract;
+import de.metas.forex.ForexContractRepository;
 import de.metas.forex.ForexContractService;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -22,6 +23,8 @@ public class C_ForeignExchangeContract
 	{
 		if (InterfaceWrapperHelper.isUIAction(record))
 		{
+			ForexContractRepository.fromRecord(record); // validate
+
 			if (InterfaceWrapperHelper.isValueChanged(record, I_C_ForeignExchangeContract.COLUMNNAME_FEC_Amount))
 			{
 				forexContractService.updateWhileSaving(record, ForexContract::updateOpenAmount);
