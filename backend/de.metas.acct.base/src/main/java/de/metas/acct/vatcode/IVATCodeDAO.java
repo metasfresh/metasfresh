@@ -2,6 +2,8 @@ package de.metas.acct.vatcode;
 
 import de.metas.util.ISingletonService;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.acct.base
@@ -33,10 +35,10 @@ import de.metas.util.ISingletonService;
 public interface IVATCodeDAO extends ISingletonService
 {
 	/**
-	 * Find matching {@link VATCode} for given context.
+	 * Find matching {@link VATCode} for given context, .
 	 * 
-	 * @return vat code or {@link VATCode#NULL}; never returns null
+	 * @return vat code or {@link Optional#empty()}; never returns null
 	 */
-	VATCode findVATCode(VATCodeMatchingRequest request);
+	Optional<VATCode> findVATCode(VATCodeMatchingRequest request);
 
 }
