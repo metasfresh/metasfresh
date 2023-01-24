@@ -61,7 +61,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	 private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	 private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	 private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
-	 private final IBPartnerStatsBL partnerStatsBL = Services.get(IBPartnerStatsBL.class);
 
 	@Override
 	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
@@ -284,6 +283,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
+		final IBPartnerStatsBL partnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
