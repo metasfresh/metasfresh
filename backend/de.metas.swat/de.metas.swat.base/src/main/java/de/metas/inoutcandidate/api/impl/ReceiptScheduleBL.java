@@ -109,7 +109,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
 
-	private final static transient Logger logger = LogManager.getLogger(ReceiptScheduleBL.class);
+	private final static Logger logger = LogManager.getLogger(ReceiptScheduleBL.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
@@ -135,6 +135,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public IAggregationKeyBuilder<I_M_ReceiptSchedule> getHeaderAggregationKeyBuilder()
 	{
 		return headerAggregationKeyBuilder;
+	}
+
+	@Override
+	public <T extends I_M_ReceiptSchedule> T getById(@NonNull final ReceiptScheduleId id, @NonNull final Class<T> modelClass)
+	{
+		return receiptScheduleDAO.getById(id, modelClass);
 	}
 
 	@Override

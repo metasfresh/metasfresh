@@ -26,10 +26,10 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
@@ -54,6 +54,8 @@ import java.util.Properties;
 public interface IReceiptScheduleBL extends ISingletonService
 {
 	void addReceiptScheduleListener(IReceiptScheduleListener listener);
+
+	<T extends I_M_ReceiptSchedule> T getById(@NonNull ReceiptScheduleId id, @NonNull Class<T> modelClass);
 
 	/**
 	 * Create {@link IInOutProducer} instance for given initial result

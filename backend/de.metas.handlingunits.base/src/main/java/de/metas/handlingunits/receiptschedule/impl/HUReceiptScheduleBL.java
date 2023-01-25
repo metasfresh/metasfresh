@@ -40,6 +40,7 @@ import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -133,6 +134,11 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 
+	@Override
+	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
+	{
+		return receiptScheduleBL.getById(id, I_M_ReceiptSchedule.class);
+	}
 	@Override
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
 	{

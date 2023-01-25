@@ -23,6 +23,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.warehouse.LocatorId;
@@ -63,6 +64,8 @@ import java.util.Set;
  */
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
+	I_M_ReceiptSchedule getById(@NonNull ReceiptScheduleId id);
+
 	/**
 	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
 	 */
