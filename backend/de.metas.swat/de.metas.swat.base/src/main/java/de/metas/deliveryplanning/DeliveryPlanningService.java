@@ -64,10 +64,11 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -81,12 +82,9 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.MTax;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -114,9 +112,6 @@ public class DeliveryPlanningService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
-	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
-
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -139,7 +134,7 @@ public class DeliveryPlanningService
 
 	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final BPartnerStatsService bPartnerStatsService,
-			@NonNull MoneyService moneyService)
+			@NonNull final MoneyService moneyService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.bPartnerStatsService = bPartnerStatsService;
@@ -407,24 +402,17 @@ public class DeliveryPlanningService
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
 														orderLineCurrencyId);
 
-		final int taxId = orderLine.getC_Tax_ID();
+		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
-		final Money taxAmtInfo;
-		if (taxId <= 0)
-		{
-			taxAmtInfo = Money.zero(orderLineCurrencyId);
-		}
+		final boolean isTaxIncluded = orderLineBL.isTaxIncluded(orderLine);
 
-		else
-		{
-			final boolean taxIncluded = orderLineBL.isTaxIncluded(orderLine);
+		final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
 
-			final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
+		final Tax tax = taxBL.getTaxById(taxId);
 
-			final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
+		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt());
 
-			taxAmtInfo = Money.of(taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt()), orderLineCurrencyId);
-		}
+		final Money taxAmtInfo = Money.of(taxAmt, orderLineCurrencyId);
 
 		final CurrencyConversionContext currencyConversionContext = extractDeliveryInstructionConversionContext(request);
 

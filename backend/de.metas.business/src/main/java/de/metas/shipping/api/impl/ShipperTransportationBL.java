@@ -1,7 +1,6 @@
 package de.metas.shipping.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -25,6 +24,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,12 +33,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.MTax;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
@@ -45,8 +44,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-
-	final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 
 	final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
@@ -57,7 +54,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	final ITaxBL taxBL = Services.get(ITaxBL.class);
-
 
 	@Override
 	public I_M_ShippingPackage createShippingPackage(final I_M_ShipperTransportation shipperTransportation, final I_M_Package mpackage)
@@ -128,7 +124,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		return true;
 	}
 
-
 	@Override
 	public Money getCreditUsedByDeliveryInstructionsInCurrency(final BPartnerId bpartnerId, final CurrencyId currencyId)
 	{
@@ -149,7 +144,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		return creditUsedNuDeliveryInstructions;
 	}
 
-	private Money computeCreditUsedPerShippingPackageInCurrency(@NonNull final I_M_ShippingPackage shippingPackage,	@NonNull final CurrencyId currencyId)
+	private Money computeCreditUsedPerShippingPackageInCurrency(@NonNull final I_M_ShippingPackage shippingPackage, @NonNull final CurrencyId currencyId)
 	{
 		if (shippingPackage.getC_OrderLine_ID() <= 0)
 		{
@@ -164,24 +159,17 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
 														orderLineCurrencyId);
 
-		final int taxId = orderLine.getC_Tax_ID();
+		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
-		final Money taxAmtInfo;
-		if (taxId <= 0)
-		{
-			taxAmtInfo = Money.zero(orderLineCurrencyId);
-		}
+		final boolean isTaxIncluded = orderLineBL.isTaxIncluded(orderLine);
 
-		else
-		{
-			final boolean taxIncluded = orderLineBL.isTaxIncluded(orderLine);
+		final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
 
-			final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
+		final Tax tax = taxBL.getTaxById(taxId);
 
-			final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
+		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt());
 
-			taxAmtInfo = Money.of(taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt()), orderLineCurrencyId);
-		}
+		final Money taxAmtInfo =Money.of(taxAmt, orderLineCurrencyId);
 
 		final CurrencyConversionContext currencyConversionContext = extractShippingPackageCurrencyConversionContext(shippingPackage);
 
@@ -190,7 +178,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 	private CurrencyConversionContext extractShippingPackageCurrencyConversionContext(@NonNull final I_M_ShippingPackage shippingPackage)
 	{
-
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(ShipperTransportationId.ofRepoId(shippingPackage.getM_ShipperTransportation_ID()));
 		return currencyBL.createCurrencyConversionContext(
 				shipperTransportation.getDateDoc().toInstant(),
