@@ -22,10 +22,13 @@
 
 package de.metas.edi.esb.ordersimport.compudata;
 
+import de.metas.common.util.Check;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.strategy.aggregation.ValidTypeAggregationStrategy;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.ExceptionUtil;
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRequest;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -46,6 +49,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import static de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute.NOTIFY_REPLICATION_TRX_UPDATE;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 /**
  * <a href="http://www.smooks.org/mediawiki/index.php?title=V1.5:Smooks_v1.5_User_Guide#Apache_Camel_Integration"> Read more about Smooks Integration</a>
@@ -143,18 +149,79 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 		// process the unmarshalled output
 		// @formatter:off
 		ediToXMLOrdersRoute
-				.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
-				.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
-				//
-				// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
-				.aggregationStrategy(new ListAggregationStrategy())
-				//
-				.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
-				.marshal(jaxb)
-				//
-				.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
-				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
-				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+				.doTry()
+					.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
+					.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
+						//
+						// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
+						.aggregationStrategy(new ListAggregationStrategy())
+						//
+						.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
+						.marshal(jaxb)
+						//
+						.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
+						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
+					.end()
+					.process(this::prepareNotifyReplicationTrxDone)
+					.choice()
+						.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
+							.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
+						.otherwise()
+							.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
+						.endChoice()
+					.end()
+				.endDoTry()
+				.doCatch(Exception.class)
+					.process(this::prepareNotifyReplicationTrxError)
+					.choice()
+						.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
+							.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
+						.otherwise()
+							.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
+						.endChoice()
+					.end()
+				.end();
 		// @formatter:on
+	}
+
+	private void prepareNotifyReplicationTrxDone(final Exchange exchange)
+	{
+		final String trxName = exchange.getProperty(Exchange.FILE_NAME, String.class);
+		final String clientValue = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
+
+		if (Check.isBlank(trxName) || Check.isBlank(clientValue))
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
+
+		final NotifyReplicationTrxRequest request = NotifyReplicationTrxRequest.finished()
+				.clientValue(clientValue)
+				.trxName(trxName)
+				.build();
+
+		exchange.getIn().setBody(request);
+	}
+
+	private void prepareNotifyReplicationTrxError(final Exchange exchange)
+	{
+		final String clientValue = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
+		final String trxName = exchange.getProperty(Exchange.FILE_NAME, String.class);
+
+		if (Check.isBlank(trxName) || Check.isBlank(clientValue))
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
+
+		final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
+
+		final NotifyReplicationTrxRequest request = NotifyReplicationTrxRequest.error(errorMsg)
+				.clientValue(clientValue)
+				.trxName(trxName)
+				.build();
+
+		exchange.getIn().setBody(request);
 	}
 }
