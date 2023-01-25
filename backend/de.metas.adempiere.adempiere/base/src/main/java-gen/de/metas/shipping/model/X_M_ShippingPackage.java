@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_ShippingPackage, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1251376828L;
+	private static final long serialVersionUID = 1778894926L;
 
     /** Standard Constructor */
     public X_M_ShippingPackage (final Properties ctx, final int M_ShippingPackage_ID, @Nullable final String trxName)
@@ -182,33 +182,6 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	public boolean isToBeFetched() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsToBeFetched);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class);
-	}
-
-	@Override
-	public void setM_Delivery_Planning(final org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class, M_Delivery_Planning);
-	}
-
-	@Override
-	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
-	{
-		if (M_Delivery_Planning_ID < 1) 
-			set_Value (COLUMNNAME_M_Delivery_Planning_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Delivery_Planning_ID, M_Delivery_Planning_ID);
-	}
-
-	@Override
-	public int getM_Delivery_Planning_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
 	}
 
 	@Override
