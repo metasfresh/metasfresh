@@ -1,5 +1,6 @@
 package de.metas.document.sequenceno;
 
+import de.metas.document.DocumentSequenceInfo;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
@@ -30,11 +31,11 @@ import java.util.function.Supplier;
 
 public interface CustomSequenceNoProvider
 {
-	boolean isApplicable(Evaluatee context);
+	boolean isApplicable(Evaluatee context, DocumentSequenceInfo documentSequenceInfo);
 
 	@NonNull
 	String provideSeqNo(
 			@NonNull Supplier<String> incrementalSeqNoSupplier,
 			@NonNull Evaluatee context,
-			@Nullable String decimalPattern);
+			@NonNull DocumentSequenceInfo documentSequenceInfo);
 }

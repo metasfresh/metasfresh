@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -62,7 +63,10 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 	 * @return the given prefix + {@code context}'s {@code Date} value.
 	 */
 	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, @Nullable final String autoIncrementedSeqNumber)
+	public @NonNull String provideSeqNo(
+			@NonNull final Supplier<String> incrementalSeqNoSupplier,
+			@NonNull final Evaluatee context,
+			@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final Date date = getDateOrNull(context, docSeqInfo);
 		Check.assumeNotNull(date, "The given context needs to have a non-empty Date value; context={}", context);
@@ -70,6 +74,8 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 		final String dateFormatToUse = sysConfigBL.getValue(SYSCONFIG_DATE_FORMAT);
 		Check.assumeNotEmpty(dateFormatToUse, "{} sysconfig has not been defined", SYSCONFIG_DATE_FORMAT);
 		final String result = TimeUtil.formatDate(TimeUtil.asTimestamp(date), dateFormatToUse);
+
+		final String autoIncrementedSeqNumber = incrementalSeqNoSupplier.get();
 
 		if (Check.isNotBlank(autoIncrementedSeqNumber))
 		{

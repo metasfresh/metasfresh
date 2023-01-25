@@ -1,12 +1,12 @@
 package de.metas.document.sequenceno;
 
+import de.metas.document.DocumentSequenceInfo;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /*
@@ -41,14 +41,14 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 	public @NonNull String provideSeqNo(
 			@NonNull final Supplier<String> incrementalSeqNoSupplier,
 			@NonNull final Evaluatee evaluatee,
-			@Nullable final String decimalPattern)
+			@NonNull final DocumentSequenceInfo documentSequenceInfo)
 	{
 		return provideSequenceNo(evaluatee) + "-" + incrementalSeqNoSupplier.get();
 	}
 
 	/** @return {@code true} if the given {@code context} has a non-null {@code POReference} value. */
 	@Override
-	public boolean isApplicable(@NonNull final Evaluatee context)
+	public boolean isApplicable(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		final boolean result = Check.isNotBlank(poReference);

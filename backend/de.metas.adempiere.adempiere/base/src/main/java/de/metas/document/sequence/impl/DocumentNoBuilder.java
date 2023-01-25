@@ -293,7 +293,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			logger.debug("getSequenceNoToUse - going to invoke customSequenceNoProvider={}", customSequenceNoProvider);
 
 			final Evaluatee evalContext = getEvaluationContext();
-			if (!customSequenceNoProvider.isApplicable(evalContext))
+			if (!customSequenceNoProvider.isApplicable(evalContext, docSeqInfo))
 			{
 				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
 				throw new DocumentNoBuilderException(msg)
@@ -303,7 +303,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 			result = customSequenceNoProvider.provideSeqNo(() -> getIncrementalSeqNo(docSeqInfo),
 														   evalContext,
-														   docSeqInfo.getDecimalPattern());
+														   docSeqInfo);
 		}
 		else
 		{
