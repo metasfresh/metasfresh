@@ -841,10 +841,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-		if (docType == null)
-		{
-			return;
-		}
 
 		if (!docType.isCopyDescriptionToDocument())
 		{

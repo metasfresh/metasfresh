@@ -29,9 +29,11 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
@@ -41,6 +43,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.i18n.AdMessageKey;
@@ -71,6 +75,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_SectionCode;
@@ -89,6 +95,7 @@ import java.util.stream.Collectors;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -110,6 +117,7 @@ public class M_InOut_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
+	private final C_DocType_StepDefData docTypeTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -131,7 +139,8 @@ public class M_InOut_StepDef
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final AD_Message_StepDefData messageTable,
-			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
+			@NonNull final C_DocType_StepDefData docTypeTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
@@ -143,6 +152,7 @@ public class M_InOut_StepDef
 		this.warehouseTable = warehouseTable;
 		this.messageTable = messageTable;
 		this.sectionCodeTable = sectionCodeTable;
+		this.docTypeTable = docTypeTable;
 	}
 
 	@And("^validate the created (shipments|material receipt)$")
@@ -331,6 +341,16 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
+	@And("^after not more than (.*)s, Customer Return is found:$")
+	public void customerReturnIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			findCustomerReturn(timeoutSec, row);
+		}
+	}
+	
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
 	{
@@ -597,5 +617,72 @@ public class M_InOut_StepDef
 				.map(I_M_InOutLine::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private void findCustomerReturn(
+			final int timeoutSec,
+			@NonNull final Map<String, String> row) throws InterruptedException
+	{
+		final I_M_InOut customerReturnRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isCustomerReturnFound(row));
+
+		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		shipmentTable.put(customerReturnIdentifier, customerReturnRecord);
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<I_M_InOut> isCustomerReturnFound(@NonNull final Map<String, String> row)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		assertThat(orderRecord).isNotNull();
+		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+		assertThat(docTypeRecord).isNotNull();
+
+		final Optional<I_M_InOut> customerReturnRecord = queryBL
+				.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_DocType_ID, docTypeRecord.getC_DocType_ID())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+				.create()
+				.firstOnlyOptional(I_M_InOut.class);
+
+		return customerReturnRecord.map(ItemProvider.ProviderResult::resultWasFound)
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(getCurrentCustomerReturnContext(row)));
+	}
+
+	@NonNull
+	private String getCurrentCustomerReturnContext(@NonNull final Map<String, String> row)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
+		assertThat(orderRecord).isNotNull();
+		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+		assertThat(docTypeRecord).isNotNull();
+
+		message.append("Looking for customer return instance with:").append("\n")
+				.append(I_M_InOut.COLUMNNAME_C_Order_ID).append(" : ").append(orderRecord.getC_Order_ID()).append("\n")
+				.append(I_M_InOut.COLUMNNAME_C_DocType_ID).append(" : ").append(docTypeRecord.getC_DocType_ID()).append("\n");
+
+		message.append("See all M_InOut records for C_Order_ID = ").append(orderRecord.getC_Order_ID()).append(" and C_DocType_ID = ")
+				.append(docTypeRecord.getC_DocType_ID()).append(":\n");
+
+		queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_DocType_ID, docTypeRecord.getC_DocType_ID())
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
+				.create()
+				.stream()
+				.forEach(inOut -> message
+						.append("-->").append(I_M_InOut.COLUMNNAME_C_BPartner_ID).append(" : ").append(inOut.getC_BPartner_ID()).append(" ; ")
+						.append("-->").append(I_M_InOut.COLUMNNAME_C_Invoice_ID).append(" : ").append(inOut.getC_Invoice_ID()).append(" ; ")
+						.append("-->").append(I_M_InOut.COLUMNNAME_M_Warehouse_ID).append(" : ").append(inOut.getM_Warehouse_ID()).append(" ; "));
+
+		return message.toString();
 	}
 }

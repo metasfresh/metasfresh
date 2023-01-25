@@ -28,6 +28,8 @@ import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -63,6 +65,14 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -80,10 +90,12 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -95,11 +107,15 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.X_C_Invoice;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +141,10 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
+import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID;
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 
 public class C_Invoice_StepDef
 {
@@ -155,6 +175,7 @@ public class C_Invoice_StepDef
 	private final M_SectionCode_StepDefData sectionCodeTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
+	private final C_DocType_StepDefData docTypeTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -167,6 +188,7 @@ public class C_Invoice_StepDef
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
 			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
 			@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.invoiceTable = invoiceTable;
@@ -180,6 +202,7 @@ public class C_Invoice_StepDef
 		this.sectionCodeTable = sectionCodeTable;
 		this.projectTable = projectTable;
 		this.activityTable = activityTable;
+		this.invoiceCandTable = invoiceCandTable;
 	}
 
 	@And("validate created invoices")
@@ -481,6 +504,13 @@ public class C_Invoice_StepDef
 			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
 			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
 		}
+		
+		final BigDecimal grandTotal = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_GrandTotal);
+		if (grandTotal != null)
+		{
+			softly.assertThat(invoice.getGrandTotal()).isEqualByComparingTo(grandTotal);
+		}
+		
 		softly.assertAll();
 	}
 

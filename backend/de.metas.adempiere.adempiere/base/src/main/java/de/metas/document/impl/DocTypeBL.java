@@ -23,10 +23,12 @@
 package de.metas.document.impl;
 
 import de.metas.document.DocBaseType;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,17 +41,32 @@ public class DocTypeBL implements IDocTypeBL
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	@Override
-	public I_C_DocType getById(final DocTypeId docTypeId)
+	@NonNull
+	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
 	{
 		return docTypesRepo.getById(docTypeId);
 	}
 
+	@Override
+	@NonNull
+	public I_C_DocType getByIdInTrx(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypesRepo.getByIdInTrx(docTypeId);
+	}
+	
 	@Override
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery docTypeQuery)
 	{
 		return docTypesRepo.getDocTypeIdOrNull(docTypeQuery);
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);
+	}
+	
 	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{
@@ -158,5 +175,11 @@ public class DocTypeBL implements IDocTypeBL
 
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_InternalVendorInvoice.equals(dt.getDocSubType());
+	}
+	
+	@Override
+	public void save(@NonNull final I_C_DocType dt)
+	{
+		docTypesRepo.save(dt);
 	}
 }

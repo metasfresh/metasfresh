@@ -57,6 +57,10 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.edi.model.I_M_InOut;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
@@ -70,6 +74,9 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.util.Loggables;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.v2.invoice.impl.InvoiceService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -98,6 +105,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.logging.LogbackLoggable;
+import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
@@ -108,6 +120,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -116,10 +129,13 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
@@ -164,6 +180,8 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute.CO
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
+import static org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID;
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -185,6 +203,8 @@ public class C_Invoice_Candidate_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_DocType_StepDefData docTypeTable;
 	private final C_Tax_StepDefData taxTable;
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final I_Invoice_Candidate_StepDefData iInvoiceCandidatetable;
@@ -205,6 +225,9 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_DocType_StepDefData docTypeTable)
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
@@ -238,6 +261,7 @@ public class C_Invoice_Candidate_StepDef
 		this.issueTable = issueTable;
 		this.projectTable = projectTable;
 		this.activityTable = activityTable;
+		this.shipmentTable = shipmentTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -522,6 +546,15 @@ public class C_Invoice_Candidate_StepDef
 			{
 				wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 			}
+		}
+	}
+
+	@And("^after not more than (.*)s, credit memo candidates are found:$")
+	public void find_credit_memo_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadCreditMemoCandidate(row));
 		}
 	}
 
@@ -1270,6 +1303,27 @@ public class C_Invoice_Candidate_StepDef
 		return true;
 	}
 
+	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
+	{
+		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int customerReturnId = shipmentTable.get(customerReturnIdentifier).getM_InOut_ID();
+
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
+				.create()
+				.firstOnlyOptional(I_C_Invoice_Candidate.class);
+
+		if (!invoiceCandidate.isPresent())
+		{
+			return false;
+		}
+
+		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
+
+		return true;
+	}
+	
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InterfaceWrapperHelper.refresh(invoiceCandidate);

@@ -11,6 +11,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
@@ -152,6 +153,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -952,6 +954,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.currencyRate(invoicingParams != null ? invoicingParams.getCurrencyRate().orElse(null) : null)
+				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
 				.build();
 	}
 

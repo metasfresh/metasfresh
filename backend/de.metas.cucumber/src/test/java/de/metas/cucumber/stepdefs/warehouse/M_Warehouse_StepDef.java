@@ -44,6 +44,9 @@ import java.util.Optional;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -117,6 +120,8 @@ public class M_Warehouse_StepDef
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 
 			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+			final boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, false);
+			final boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
@@ -124,6 +129,8 @@ public class M_Warehouse_StepDef
 			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
 			warehouseRecord.setIsInTransit(isInTransit);
+			warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
+			warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
 
 			saveRecord(warehouseRecord);
 

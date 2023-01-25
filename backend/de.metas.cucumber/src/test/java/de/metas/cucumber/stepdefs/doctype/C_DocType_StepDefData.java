@@ -20,28 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.hu;
+package de.metas.cucumber.stepdefs.doctype;
 
-import de.metas.handlingunits.HuId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_DocType;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class LoadHURequest
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_DocType_StepDefData extends StepDefData<I_C_DocType>
 {
-	@NonNull
-	HuId huId;
-
-	@NonNull
-	String huIdentifier;
-
-	@Nullable
-	String huStatus;
-
-	@Nullable
-	HuId piItemProductId;
+	public C_DocType_StepDefData()
+	{
+		super(I_C_DocType.class);
+	}
 }

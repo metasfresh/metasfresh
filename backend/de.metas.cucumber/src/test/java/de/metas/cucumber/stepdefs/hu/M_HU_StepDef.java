@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -257,6 +257,15 @@ public class M_HU_StepDef
 		}
 	}
 
+	@And("return hu from customer")
+	public void return_HU_from_customer(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			returnHUFromCustomer(tableRow);
+		}
+	}
+	
 	@And("^after not more than (.*)s, M_HUs should have$")
 	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -806,5 +815,14 @@ public class M_HU_StepDef
 
 		final boolean somethingWasProcessed = !result.getInventories().isEmpty();
 		assertThat(somethingWasProcessed).isTrue();
+	}
+
+	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Picking_Candidate.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_HU hu = huTable.get(huIdentifier);
+		assertThat(hu).isNotNull();
+
+		returnsServiceFacade.createCustomerReturnInOutForHUs(ImmutableList.of(hu));
 	}
 }

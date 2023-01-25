@@ -5,6 +5,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -17,8 +20,10 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
 
@@ -26,6 +31,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
@@ -87,7 +95,11 @@ import java.util.List;
 	// 06630
 	private int M_InOut_ID = -1;
 
+	@Nullable
 	private I_C_DocType docTypeInvoice;
+
+	@Nullable
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId;
 
 	private boolean taxIncluded;
 	private String externalId;
@@ -132,6 +144,7 @@ import java.util.List;
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
+				+ ", docTypeInvoicingPoolId=" + docTypeInvoicingPoolId
 				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
@@ -279,16 +292,25 @@ import java.util.List;
 	}
 
 	@Override
+	@Nullable
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
 	}
 
-	public void setC_DocTypeInvoice(final I_C_DocType docType)
+	@Override
+	@NonNull
+	public Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId()
 	{
-		this.docTypeInvoice = docType;
+		return Optional.ofNullable(docTypeInvoicingPoolId);
 	}
 
+	@Override
+	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+	
 	@Override
 	public boolean isTaxIncluded()
 	{
@@ -409,5 +431,10 @@ import java.util.List;
 	public SectionCodeId getM_SectionCode_ID()
 	{
 		return sectionCodeId;
+	}
+
+	void setC_DocTypeInvoice(@Nullable final I_C_DocType docType)
+	{
+		this.docTypeInvoice = docType;
 	}
 }

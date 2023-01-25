@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.impex.InputDataSourceId;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -21,6 +22,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
+import org.adempiere.util.lang.ObjectUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -40,7 +42,7 @@ import java.util.Set;
 @ToString
 public class InvoiceHeaderImplBuilder
 {
-	private I_C_DocType docTypeInvoice = null;
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -107,7 +109,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Async_Batch_ID(getC_Async_Batch_ID());
 
 		// Document Type
-		invoiceHeader.setC_DocTypeInvoice(getC_DocTypeInvoice());
+		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
 		invoiceHeader.setIsSOTrx(isSOTrx());
 
 		// Pricing and currency
@@ -191,14 +193,23 @@ public class InvoiceHeaderImplBuilder
 		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
 	}
 
-	public I_C_DocType getC_DocTypeInvoice()
+	@Nullable
+	public DocTypeInvoicingPoolId getDocTypeInvoicingPoolId()
 	{
-		return docTypeInvoice;
+		return docTypeInvoicingPoolId;
 	}
 
-	public void setC_DocTypeInvoice(final I_C_DocType docTypeInvoice)
+	public void setDocTypeInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
-		this.docTypeInvoice = checkOverrideModel("DocTypeInvoice", this.docTypeInvoice, docTypeInvoice);
+		if (this.docTypeInvoicingPoolId != null && !this.docTypeInvoicingPoolId.equals(docTypeInvoicingPoolId))
+		{
+			throw new AdempiereException("DocTypeInvoicingPoolIds do not match!")
+					.appendParametersToMessage()
+					.setParameter("this.docTypeInvoicingPoolId", this.docTypeInvoicingPoolId)
+					.setParameter("docTypeInvoicingPoolId", docTypeInvoicingPoolId);
+		}
+		
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
 	}
 
 	public String getPOReference()
