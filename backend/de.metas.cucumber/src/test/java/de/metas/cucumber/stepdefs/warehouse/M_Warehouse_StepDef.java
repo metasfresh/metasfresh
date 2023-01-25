@@ -66,6 +66,16 @@ public class M_Warehouse_StepDef
 		this.bPartnerLocationTable = bPartnerLocationTable;
 	}
 
+	@And("update M_Warehouse:")
+	public void update_M_Warehouse(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			updateWarehouse(row);
+		}
+	}
+
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
@@ -180,5 +190,37 @@ public class M_Warehouse_StepDef
 				.updateDirectly()
 				.addSetColumnValue(I_M_Warehouse.COLUMNNAME_IsInTransit, false)
 				.execute();
+	}
+
+	private void updateWarehouse(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Warehouse warehouseRecord = warehouseTable.get(identifier);
+
+		final Boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse);
+		if (isQuarantineWarehouse != null)
+		{
+			warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
+		}
+
+		final Boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse);
+		if (isQualityReturnWarehouse != null)
+		{
+			warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
+		}
+
+		final Boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse);
+		if (isIssueWarehouse != null)
+		{
+			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+		}
+
+		final Boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit);
+		if (isInTransit != null)
+		{
+			warehouseRecord.setIsInTransit(isInTransit);
+		}
+
+		saveRecord(warehouseRecord);
 	}
 }

@@ -180,6 +180,10 @@ Feature: Group invoices and credit memos into a single document
       | invoiceLine_1               | invoice_1               | product_SO              | 8           | true      | 8              |
       | invoiceLine_2               | invoice_1               | product_SO              | -10         | true      | -10            |
 
+    And update M_Warehouse:
+      | M_Warehouse_ID.Identifier | OPT.IsQuarantineWarehouse | OPT.IsQualityReturnWarehouse | OPT.IsIssueWarehouse | OPT.IsInTransit |
+      | returnWarehouse           | false                     | false                        | false                | false           |
+
   @from:cucumber
   @Id:S0242_200
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo < invoice => one invoice with 2 lines, DocType=SalesInvoice
@@ -353,6 +357,9 @@ Feature: Group invoices and credit memos into a single document
       | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
       | invoiceLine_2               | invoice_1               | product_SO              | -10         | true      | -10            |
 
+    And update M_Warehouse:
+      | M_Warehouse_ID.Identifier | OPT.IsQuarantineWarehouse | OPT.IsQualityReturnWarehouse | OPT.IsIssueWarehouse | OPT.IsInTransit |
+      | returnWarehouse           | false                     | false                        | false                | false           |
 
   @from:cucumber
   @Id:S0242_300
@@ -524,6 +531,10 @@ Feature: Group invoices and credit memos into a single document
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
       | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
       | invoiceLine_2               | invoice_2               | product_SO              | -10         | true      | -10            |
+
+    And update M_Warehouse:
+      | M_Warehouse_ID.Identifier | OPT.IsQuarantineWarehouse | OPT.IsQualityReturnWarehouse | OPT.IsIssueWarehouse | OPT.IsInTransit |
+      | returnWarehouse           | false                     | false                        | false                | false           |
 
   @from:cucumber
   @Id:S0242_400
