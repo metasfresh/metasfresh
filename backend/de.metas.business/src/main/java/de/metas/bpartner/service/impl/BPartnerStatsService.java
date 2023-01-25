@@ -213,6 +213,7 @@ public class BPartnerStatsService
 		updateSOCreditStatus(bpStats);
 		updateDeliveryCreditStatus(bpStats);
 		updateSOCreditLimitIndicator(bpStats);
+		updateDeliveryCreditLimitIndicator(bpStats);
 	}
 
 	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
@@ -398,6 +399,26 @@ public class BPartnerStatsService
 		saveRecord(stats);
 	}
 
+
+	private void updateDeliveryCreditLimitIndicator(@NonNull final BPartnerStats bstats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bstats);
+		final BigDecimal deliveryCreditUsed = stats.getDelivery_CreditUsed();
+
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : deliveryCreditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
+		final Locale locale = Locale.getDefault();
+		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
+		fmt.setMinimumFractionDigits(1);
+		fmt.setMaximumFractionDigits(1);
+		final String percentSring = fmt.format(percent);
+
+		stats.setDeliveryCreditLimitIndicator(percentSring);
+
+		saveRecord(stats);
+	}
 	public void checkPaymentCreditLimit(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment payment = paymentBL.getById(paymentId);
