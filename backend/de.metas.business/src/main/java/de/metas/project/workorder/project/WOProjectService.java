@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.budget.BudgetProject;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.resource.WOProjectResource;
@@ -38,8 +39,11 @@ import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -75,8 +79,8 @@ public class WOProjectService
 	public List<WOProject> getAllActiveProjects(@NonNull final Set<ProjectId> projectIds)
 	{
 		return woProjectRepository.getAllActiveProjectsByProjectCalendarQuery(WOProjectCalendarQuery.builder()
-				.projectIds(InSetPredicate.only(projectIds))
-				.build());
+																					  .projectIds(InSetPredicate.only(projectIds))
+																					  .build());
 	}
 
 	@NonNull
@@ -153,5 +157,44 @@ public class WOProjectService
 			@NonNull final UnaryOperator<WOProjectResource> mapper)
 	{
 		woProjectResourceRepository.updateProjectResourcesByIds(projectResourceIds, mapper);
+	}
+
+	public void updateWOChildProjectsFromParent(@NonNull final BudgetProject budgetProject)
+	{
+		woProjectRepository.getByParentProjectId(budgetProject.getProjectId())
+				.forEach(woProject -> syncWithParentAndUpdate(woProject, budgetProject));
+	}
+
+	public void syncWithParentAndUpdate(@NonNull final WOProject woProject, @NonNull final BudgetProject parentProject)
+	{
+		final WOProject.WOProjectBuilder projectToUpdateBuilder = woProject.toBuilder()
+				.bpartnerDepartment(parentProject.getBpartnerDepartment())
+				.salesRepId(parentProject.getSalesRepId())
+				.specialistConsultantID(parentProject.getSpecialistConsultantID())
+				.projectReferenceExt(parentProject.getProjectReferenceExt())
+				.internalPriority(parentProject.getInternalPriority());
+
+		final StringBuilder message = new StringBuilder()
+				.append(I_C_Project.COLUMNNAME_SalesRep_ID)
+				.append(I_C_Project.COLUMNNAME_Specialist_Consultant_ID)
+				.append(I_C_Project.COLUMNNAME_C_Project_Reference_Ext)
+				.append(I_C_Project.COLUMNNAME_InternalPriority)
+				.append(I_C_Project.COLUMNNAME_BPartnerDepartment);
+
+		if (woProject.getBPartnerId() == null)
+		{
+			projectToUpdateBuilder.bPartnerId(parentProject.getBPartnerId());
+			message.append(I_C_Project.COLUMNNAME_C_BPartner_ID);
+		}
+
+		woProjectRepository.update(projectToUpdateBuilder.build());
+
+		final String logMessage = message.toString();
+
+		if (Check.isNotBlank(logMessage)) // log this, particularly in case the change is done via API
+		{
+			Loggables.get().addLog("Update WO_Project_ID = {} with the following columns from C_Project_Parent_ID={}: {}",
+								   woProject.getProjectId().getRepoId(), parentProject.getProjectId().getRepoId(), logMessage);
+		}
 	}
 }

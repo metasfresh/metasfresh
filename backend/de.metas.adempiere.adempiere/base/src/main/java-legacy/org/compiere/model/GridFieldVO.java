@@ -49,6 +49,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -376,6 +377,10 @@ public class GridFieldVO implements Serializable
 				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_IsUseDocSequence))
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
+				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_AD_Sequence_ID))
+				{
+					vo.AD_Sequence_ID = rs.getInt(i);
 				}
 			}
 
@@ -858,6 +863,8 @@ public class GridFieldVO implements Serializable
 
 	private final boolean applyRolePermissions;
 
+	private int AD_Sequence_ID = 0;
+
 	/**
 	 * Set Context including contained elements
 	 *
@@ -1060,6 +1067,8 @@ public class GridFieldVO implements Serializable
 		clone.fieldEntityType = fieldEntityType;
 		clone.useDocSequence = useDocSequence;
 		clone.isHiddenFromUI = isHiddenFromUI;
+
+		clone.AD_Sequence_ID = AD_Sequence_ID;
 
 		return clone;
 	}    // clone
@@ -1588,5 +1597,10 @@ public class GridFieldVO implements Serializable
 	public boolean isUseDocSequence()
 	{
 		return useDocSequence;
+	}
+
+	public int getAD_Sequence_ID()
+	{
+		return AD_Sequence_ID;
 	}
 }

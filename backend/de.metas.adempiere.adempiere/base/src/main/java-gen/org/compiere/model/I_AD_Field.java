@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Field
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public interface I_AD_Field 
@@ -206,6 +206,33 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new ModelColumn<>(I_AD_Field.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
 	String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
+
+	/**
+	 * Set Sequence.
+	 * Document Sequence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Sequence_ID (int AD_Sequence_ID);
+
+	/**
+	 * Get Sequence.
+	 * Document Sequence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getAD_Sequence();
+
+	void setAD_Sequence(@Nullable org.compiere.model.I_AD_Sequence AD_Sequence);
+
+	ModelColumn<I_AD_Field, org.compiere.model.I_AD_Sequence> COLUMN_AD_Sequence_ID = new ModelColumn<>(I_AD_Field.class, "AD_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
 
 	/**
 	 * Set Tab.

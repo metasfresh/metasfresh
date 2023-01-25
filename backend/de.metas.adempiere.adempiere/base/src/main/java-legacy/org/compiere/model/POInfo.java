@@ -8,11 +8,15 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.security.TableAccessLevel;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +30,7 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -221,6 +226,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
 				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
+ 				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -450,6 +456,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 
 		final POInfoColumn col = new POInfoColumn(
 				AD_Column_ID,
@@ -471,7 +478,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn);
+				isRestAPICustomColumn,
+				adSequenceID);
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -1349,7 +1357,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final int columnIndex = getColumnIndex(columnName);
 		return isRestAPICustomColumn(columnIndex);
 	}
-
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{

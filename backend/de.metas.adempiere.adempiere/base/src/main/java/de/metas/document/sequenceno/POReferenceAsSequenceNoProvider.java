@@ -7,6 +7,9 @@ import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,34 +38,24 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	private static final String PARAM_POReference = "POReference";
 
+	@Override
+	public @NonNull String provideSeqNo(
+			@NonNull final Supplier<String> incrementalSeqNoSupplier,
+			@NonNull final Evaluatee evaluatee,
+			@Nullable final String decimalPattern)
+	{
+		return provideSequenceNo(evaluatee) + "-" + incrementalSeqNoSupplier.get();
+	}
+
 	/** @return {@code true} if the given {@code context} has a non-null {@code POReference} value. */
 	@Override
-	public boolean isApplicable(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
+	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		final boolean result = Check.isNotBlank(poReference);
 		logger.debug("isApplicable - Given evaluatee-context contains {}={}; -> returning {}; context={}", PARAM_POReference, poReference, result, context);
 
 		return result;
-	}
-
-	/** @return the given {@code context}'s {@code POReference} value. */
-	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, final String autoIncrementedSeqNumber)
-	{
-		final String poReference = getPOReferenceOrNull(context);
-		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);
-
-		final String poReferenceResult;
-		if (Check.isNotBlank(autoIncrementedSeqNumber))
-		{
-			poReferenceResult = poReference + "-" + autoIncrementedSeqNumber;
-		}
-		else {
-			poReferenceResult = poReference;
-		}
-		logger.debug("provideSequenceNo - returning {};", poReferenceResult);
-		return poReferenceResult;
 	}
 
 	private static String getPOReferenceOrNull(@NonNull final Evaluatee context)
@@ -77,4 +70,13 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 		return !poReference.isEmpty() ? poReference : null;
 	}
 
+	/** @return the given {@code context}'s {@code POReference} value. */
+	private static String provideSequenceNo(@NonNull final Evaluatee context)
+	{
+		final String poReference = getPOReferenceOrNull(context);
+		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);
+
+		logger.debug("provideSequenceNo - returning {};", poReference);
+		return poReference;
+	}
 }

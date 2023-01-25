@@ -159,6 +159,33 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+	public org.compiere.model.I_AD_Sequence getAD_Sequence()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setAD_Sequence(final org.compiere.model.I_AD_Sequence AD_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Sequence_ID, org.compiere.model.I_AD_Sequence.class, AD_Sequence);
+	}
+
+	@Override
+	public void setAD_Sequence_ID (final int AD_Sequence_ID)
+	{
+		if (AD_Sequence_ID < 1) 
+			set_Value (COLUMNNAME_AD_Sequence_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
+	}
+
+	@Override
+	public int getAD_Sequence_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
+	}
+
+	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 

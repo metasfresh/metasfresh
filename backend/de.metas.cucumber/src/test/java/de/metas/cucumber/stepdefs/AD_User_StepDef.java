@@ -199,6 +199,12 @@ public class AD_User_StepDef
 			userRecord.setNotificationType(notificationType);
 		}
 
+		final Integer userId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_User_ID);
+		if (userId != null)
+		{
+			userRecord.setAD_User_ID(userId);
+		}
+
 		InterfaceWrapperHelper.saveRecord(userRecord);
 
 		final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);

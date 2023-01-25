@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.project.workOrder;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.simulationplan.C_SimulationPlan_StepDefData;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.resource.WOProjectResourceId;
@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.I_C_Project_WO_Resource_Conflict;
 import org.compiere.model.I_C_SimulationPlan;
@@ -51,18 +52,18 @@ public class C_Project_WO_Resource_Conflict_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final ProjectId_StepDefData projectIdTable;
+	private final C_Project_StepDefData projectTable;
 	private final C_Project_WO_Resource_StepDefData woProjectResourceTable;
 	private final C_SimulationPlan_StepDefData simulationPlanTable;
 	private final C_Project_WO_Resource_Conflict_StepDefData resourceConflictTable;
 
 	public C_Project_WO_Resource_Conflict_StepDef(
-			@NonNull final ProjectId_StepDefData projectIdTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Project_WO_Resource_StepDefData woProjectResourceTable,
 			@NonNull final C_SimulationPlan_StepDefData simulationPlanTable,
 			@NonNull final C_Project_WO_Resource_Conflict_StepDefData resourceConflictTable)
 	{
-		this.projectIdTable = projectIdTable;
+		this.projectTable = projectTable;
 		this.woProjectResourceTable = woProjectResourceTable;
 		this.simulationPlanTable = simulationPlanTable;
 		this.resourceConflictTable = resourceConflictTable;
@@ -123,8 +124,11 @@ public class C_Project_WO_Resource_Conflict_StepDef
 	private void findProjectWoResourceConflict(@NonNull final Map<String, String> tableRow)
 	{
 		final String project2Identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project2_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ProjectId projectId = projectIdTable.get(project2Identifier);
-		assertThat(projectId).isNotNull();
+
+		final I_C_Project project = projectTable.get(project2Identifier);
+		assertThat(project).isNotNull();
+
+		final ProjectId projectId = ProjectId.ofRepoId(project.getC_Project_ID());
 
 		final String resource2Identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource2_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_C_Project_WO_Resource woProjectResource2Record = woProjectResourceTable.get(resource2Identifier);

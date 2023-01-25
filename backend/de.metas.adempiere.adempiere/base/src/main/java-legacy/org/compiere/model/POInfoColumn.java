@@ -4,6 +4,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
@@ -11,6 +12,9 @@ import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.util.DisplayType;
 import de.metas.util.StringUtils;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -56,7 +60,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn)
+			final boolean isRestAPICustomColumn,
+			final int adSequenceID)
 	{
 		this.AD_Column_ID = AD_Column_ID;
 		ColumnName = columnName;
@@ -115,6 +120,7 @@ public final class POInfoColumn implements Serializable
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+		AD_Sequence_ID = adSequenceID;
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
 	}   // Column
@@ -147,6 +153,11 @@ public final class POInfoColumn implements Serializable
 		}
 
 		return false;
+	}
+
+	public boolean isString()
+	{
+		return isString(TableName, ColumnName, DisplayType, AD_Reference_Value_ID);
 	}
 
 	private static boolean isSearchDisplayType(final int displayType)
@@ -268,6 +279,8 @@ public final class POInfoColumn implements Serializable
 
 	private final Optional<String> _referencedTableName;
 
+	private final int AD_Sequence_ID;
+
 	/**
 	 * String representation
 	 *
@@ -372,6 +385,11 @@ public final class POInfoColumn implements Serializable
 	public boolean isRestAPICustomColumn()
 	{
 		return IsRestAPICustomColumn;
+	}
+
+	public int getAD_Sequence_ID()
+	{
+		return AD_Sequence_ID;
 	}
 
 	@Nullable

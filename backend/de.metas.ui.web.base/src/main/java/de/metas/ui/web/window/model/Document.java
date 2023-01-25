@@ -9,6 +9,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -59,7 +60,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;

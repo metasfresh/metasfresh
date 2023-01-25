@@ -43,6 +43,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
@@ -287,6 +288,8 @@ public class WorkOrderProjectRestService
 				.dateOfProvisionByBPartner(TimeUtil.asLocalDate(project.getDateOfProvisionByBPartner(), zoneId))
 				.woOwner(project.getWoOwner())
 				.poReference(project.getPoReference())
+				.specialistConsultantId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(project.getSpecialistConsultantID())))
+				.internalPriority(InternalPriority.toCode(project.getInternalPriority()))
 				.bpartnerTargetDate(TimeUtil.asLocalDate(project.getBpartnerTargetDate(), zoneId))
 				.woProjectCreatedDate(TimeUtil.asLocalDate(project.getWoProjectCreatedDate(), zoneId))
 				.steps(workOrderProjectStepRestService.getByProjectId(project.getProjectId(), project.getOrgId()))

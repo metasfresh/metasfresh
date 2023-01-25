@@ -274,9 +274,9 @@ public class ExternalSystemConfigRepo
 				result=null;
 				break;
 			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
+				result = getAllByTypeOther();
+				break;
+			case Shopware6:
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -286,7 +286,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -1046,6 +1046,21 @@ public class ExternalSystemConfigRepo
 				.create()
 				.stream()
 				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeOther()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config.COLUMNNAME_Type, ExternalSystemType.Other.getCode())
+				.create()
+				.stream()
+				.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
+				.map(ExternalSystemParentConfigId::ofRepoId)
+				.map(ExternalSystemOtherConfigId::ofExternalSystemParentConfigId)
+				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
 	}
 
