@@ -39,7 +39,6 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,6 +56,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -64,7 +64,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -445,14 +445,14 @@ public class InOutProducer implements IInOutProducer
 		//
 		// BPartner, Location & Contact
 		{
-			final int bpartnerId = receiptScheduleBL.getC_BPartner_Effective_ID(rs);
+			final BPartnerId bpartnerId = receiptScheduleBL.getBPartnerEffectiveId(rs);
 			final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs);
 			final BPartnerContactId bpartnerContactId = receiptScheduleBL.getBPartnerContactID(rs);
 
 			InOutDocumentLocationAdapterFactory
 					.locationAdapter(receiptHeader)
 					.setFrom(DocumentLocation.builder()
-							.bpartnerId(BPartnerId.ofRepoId(bpartnerId))
+							.bpartnerId(bpartnerId)
 							.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
 							.contactId(bpartnerContactId)
 							.build());
@@ -490,7 +490,7 @@ public class InOutProducer implements IInOutProducer
 		if (order != null)
 		{
 			final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-			if (order != null && propagateToMInOut)
+			if (propagateToMInOut)
 			{
 				receiptHeader.setEMail(order.getEMail());
 			}
@@ -553,8 +553,7 @@ public class InOutProducer implements IInOutProducer
 	protected final I_M_InOutLine newReceiptLine()
 	{
 		final I_M_InOut receipt = getCurrentReceipt();
-		final I_M_InOutLine line = inoutBL.newInOutLine(receipt, I_M_InOutLine.class);
-		return line;
+		return inoutBL.newInOutLine(receipt, I_M_InOutLine.class);
 	}
 
 	/**
@@ -593,7 +592,7 @@ public class InOutProducer implements IInOutProducer
 		final StockQtyAndUOMQty qtyToMove = receiptScheduleBL.getQtyToMove(rs);
 		line.setMovementQty(qtyToMove.getStockQty().toBigDecimal());
 
-		final UomId lineUomId = coalesce(
+		final UomId lineUomId = coalesceNotNull(
 				UomId.ofRepoIdOrNull(rs.getC_UOM_ID()),
 				qtyToMove.getStockQty().getUomId());
 
@@ -703,23 +702,20 @@ public class InOutProducer implements IInOutProducer
 
 	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
-		final Timestamp movementDate;
-
-		switch (this.movementDateRule)
+		return movementDateRule.map(new ReceiptMovementDateRule.CaseMapper<Timestamp>()
 		{
-			case ORDER_DATE_PROMISED:
-				movementDate = getPromisedDate(receiptSchedule, context);
-				break;
-			case EXTERNAL_DATE_IF_AVAIL:
-				movementDate = getExternalMovementDate(receiptSchedule, context);
-				break;
-			case CURRENT_DATE:
-				// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
-				movementDate = Env.getDate(context);
-				break;
-			default:
-				throw new AdempiereException("Unknown ReceiptMovementDateRule!");
-		}
-		return movementDate;
+			@Override
+			public Timestamp orderDatePromised() {return getPromisedDate(receiptSchedule, context);}
+
+			@Override
+			public Timestamp externalDateIfAvailable() {return getExternalMovementDate(receiptSchedule, context);}
+
+			// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
+			@Override
+			public Timestamp currentDate() {return Env.getDate(context);}
+
+			@Override
+			public Timestamp fixedDate(@NonNull final Instant fixedDate) {return Timestamp.from(fixedDate);}
+		});
 	}
 }
