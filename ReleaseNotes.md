@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14377](https://github.com/metasfresh/metasfresh/issues/14377) group invoices and credit memos into a single document 
   * [#14370](https://github.com/metasfresh/metasfresh/pull/14370) import Allergens for bom products
   * [#14429](https://github.com/metasfresh/metasfresh/pull/14429)  Increased Credit Limit be decreased again
   * [#14433](https://github.com/metasfresh/metasfresh/pull/14433)  Add M_SectionCode_ID to C_BPartner_Stats
