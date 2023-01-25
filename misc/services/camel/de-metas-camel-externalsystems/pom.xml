@@ -62,19 +62,6 @@
             <!-- <version>1.18.18</version> -->
             <version>1.18.24</version>
         </dependency>
-        <!-- needed for org.apache.maven.plugins:maven-surefire-plugin:3.0.0-M7:test used on github-cicd-->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.9.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-engine</artifactId>
-            <version>1.9.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
