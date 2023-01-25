@@ -45,8 +45,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 	final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
-	final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -130,7 +128,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		final Iterator<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveCompletedDeliveryInstructionLines(bpartnerId);
 
-		Money creditUsedNuDeliveryInstructions = Money.zero(currencyId);
+		Money creditUsedInDeliveryInstructions = Money.zero(currencyId);
 
 		while (shippingPackages.hasNext())
 		{
@@ -138,14 +136,16 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 			final Money creditUsedPerShippingPackageInBaseCurrency = computeCreditUsedPerShippingPackageInCurrency(shippingPackage, currencyId);
 
-			creditUsedNuDeliveryInstructions = creditUsedNuDeliveryInstructions.add(creditUsedPerShippingPackageInBaseCurrency);
+			creditUsedInDeliveryInstructions = creditUsedInDeliveryInstructions.add(creditUsedPerShippingPackageInBaseCurrency);
 		}
 
-		return creditUsedNuDeliveryInstructions;
+		return creditUsedInDeliveryInstructions;
 	}
 
 	private Money computeCreditUsedPerShippingPackageInCurrency(@NonNull final I_M_ShippingPackage shippingPackage, @NonNull final CurrencyId currencyId)
 	{
+		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
 		if (shippingPackage.getC_OrderLine_ID() <= 0)
 		{
 			return Money.zero(currencyId);
@@ -169,7 +169,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt());
 
-		final Money taxAmtInfo =Money.of(taxAmt, orderLineCurrencyId);
+		final Money taxAmtInfo = Money.of(taxAmt, orderLineCurrencyId);
 
 		final CurrencyConversionContext currencyConversionContext = extractShippingPackageCurrencyConversionContext(shippingPackage);
 
