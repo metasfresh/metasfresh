@@ -37,6 +37,7 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -118,13 +119,13 @@ public class C_Payment
 		paymentBL.validateDocTypeIsInSync(record);
 	}
 
-	@ModelChange(timings = { ModelValidator.TIMING_BEFORE_PREPARE, ModelValidator.TIMING_BEFORE_COMPLETE })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE, ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void checkCreditLimit(@NonNull final I_C_Payment payment)
 	{
 		bPartnerStatsService.checkPaymentCreditLimit(PaymentId.ofRepoId(payment.getC_Payment_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TIMING_BEFORE_COMPLETE, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID })
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID })
 	public void updateBPartnerStats(@NonNull final I_C_Payment payment)
 	{
 		bPartnerStatisticsUpdater
