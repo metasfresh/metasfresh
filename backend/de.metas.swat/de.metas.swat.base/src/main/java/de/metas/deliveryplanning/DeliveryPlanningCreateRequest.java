@@ -36,9 +36,11 @@ import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.With;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -70,8 +72,7 @@ public class DeliveryPlanningCreateRequest
 
 	boolean isB2B;
 
-	@Nullable
-	DeliveryPlanningType deliveryPlanningType;
+	@NonNull DeliveryPlanningType deliveryPlanningType;
 
 	@Nullable
 	OrderStatus orderStatus;
@@ -98,6 +99,8 @@ public class DeliveryPlanningCreateRequest
 
 	@Nullable
 	ReceiptScheduleId receiptScheduleId;
+
+	@With @Nullable ColorId deliveryStatusColorId;
 
 	@Nullable
 	Instant plannedLoadingDate;

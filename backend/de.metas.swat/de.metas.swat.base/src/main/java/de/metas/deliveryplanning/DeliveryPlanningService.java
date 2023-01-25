@@ -34,6 +34,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -55,7 +56,10 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
+import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -70,9 +74,12 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 @Service
 public class DeliveryPlanningService
@@ -89,6 +96,9 @@ public class DeliveryPlanningService
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
+	private static final String SYSCONFIG_Delivered_ColorName = "M_DeliveryPlanning.DeliveredColorName";
+	private static final String SYSCONFIG_NotDelivered_ColorName = "M_DeliveryPlanning.NotDeliveredColorName";
+
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -100,6 +110,7 @@ public class DeliveryPlanningService
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IColorRepository colorRepository = Services.get(IColorRepository.class);
 
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
@@ -115,13 +126,15 @@ public class DeliveryPlanningService
 
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
-		final DeliveryPlanningCreateRequest deliveryPlanningRequest = receiptScheduleBL.createDeliveryPlanningRequest(receiptScheduleRecord);
+		final DeliveryPlanningCreateRequest deliveryPlanningRequest = receiptScheduleBL.createDeliveryPlanningRequest(receiptScheduleRecord)
+				.withDeliveryStatusColorId(getNotDeliveredColorId());
 		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
 	}
 
 	public void generateOutgoingDeliveryPlanning(final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final DeliveryPlanningCreateRequest deliveryPlanningRequest = shipmentScheduleBL.createDeliveryPlanningRequest(shipmentScheduleRecord);
+		final DeliveryPlanningCreateRequest deliveryPlanningRequest = shipmentScheduleBL.createDeliveryPlanningRequest(shipmentScheduleRecord)
+				.withDeliveryStatusColorId(getNotDeliveredColorId());
 		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
 	}
 
@@ -171,7 +184,7 @@ public class DeliveryPlanningService
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(deliveryPlanningRecord.getM_SectionCode_ID()))
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
-				.deliveryPlanningType(DeliveryPlanningType.ofNullableCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))
+				.deliveryPlanningType(DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord))
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.isB2B(deliveryPlanningRecord.isB2B())
@@ -324,7 +337,7 @@ public class DeliveryPlanningService
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
 		final BPartnerLocationId warehouseBPLocationId = warehouseBL.getBPartnerLocationId(warehouseId);
-		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningType.ofCode(deliveryPlanningRecord.getM_Delivery_Planning_Type());
+		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.ShipperTransportation)
@@ -356,13 +369,13 @@ public class DeliveryPlanningService
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.loadingPartnerLocationId(isIncoming
-												  ? warehouseBPLocationId
-												  : deliveryPlanningLocationId)
+						? warehouseBPLocationId
+						: deliveryPlanningLocationId)
 				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
 				.loadingTime(deliveryPlanningRecord.getLoadingTime())
 				.deliveryPartnerLocationId(isIncoming
-												   ? deliveryPlanningLocationId
-												   : warehouseBPLocationId)
+						? deliveryPlanningLocationId
+						: warehouseBPLocationId)
 				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
 				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 
@@ -394,5 +407,54 @@ public class DeliveryPlanningService
 	public void unlinkDeliveryPlannings(@NonNull final String releaseNo)
 	{
 		deliveryPlanningRepository.unlinkDeliveryPlannings(releaseNo);
+	}
+
+	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getReceiptInfoIfIncomingType(deliveryPlanningId);
+	}
+
+	public void updateReceiptInfoById(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
+	{
+		deliveryPlanningRepository.updateReceiptInfoById(
+				deliveryPlanningId,
+				receiptInfo -> {
+					updater.accept(receiptInfo);
+					receiptInfo.setReceivedStatusColorId(receiptInfo.isReceived() ? getDeliveredColorId() : getNotDeliveredColorId());
+				});
+	}
+
+	public void updateReceiptInfoByInOutId(
+			@NonNull final InOutId inoutId,
+			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
+	{
+		final DeliveryPlanningId deliveryPlanningId = deliveryPlanningRepository.getDeliveryPlanningIdByInOutId(inoutId).orElse(null);
+		if (deliveryPlanningId == null)
+		{
+			return;
+		}
+
+		updateReceiptInfoById(deliveryPlanningId, updater);
+	}
+
+	private ColorId getDeliveredColorId() {return getColorIdFromSysconfig(SYSCONFIG_Delivered_ColorName, "Gruen");}
+
+	private ColorId getNotDeliveredColorId() {return getColorIdFromSysconfig(SYSCONFIG_NotDelivered_ColorName, "Rot");}
+
+	@Nullable
+	private ColorId getColorIdFromSysconfig(
+			@NonNull final String sysconfigName,
+			@NonNull final String defaultColorName)
+	{
+		String colorName = StringUtils.trimBlankToOptional(sysConfigBL.getValue(sysconfigName))
+				.orElse(defaultColorName);
+		if ("-".equals(colorName))
+		{
+			return null;
+		}
+
+		return colorRepository.getColorIdByName(colorName);
 	}
 }

@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
 import de.metas.incoterms.IncotermsId;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.location.CountryId;
@@ -37,10 +38,13 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Delivery_Instructions_V;
@@ -49,6 +53,8 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -66,6 +72,68 @@ public class DeliveryPlanningRepository
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
 	}
 
+	protected Optional<DeliveryPlanningId> getDeliveryPlanningIdByInOutId(@NonNull final InOutId inoutId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID, inoutId)
+				.create()
+				.firstIdOnlyOptional(DeliveryPlanningId::ofRepoIdOrNull);
+	}
+
+	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		return deliveryPlanningType.isIncoming()
+				? Optional.of(toDeliveryPlanningReceiptInfo(record))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private static DeliveryPlanningReceiptInfo toDeliveryPlanningReceiptInfo(final I_M_Delivery_Planning record)
+	{
+		assertIncoming(record);
+		return DeliveryPlanningReceiptInfo.builder()
+				.receiptScheduleId(ReceiptScheduleId.ofRepoId(record.getM_ReceiptSchedule_ID()))
+				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
+				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
+				.build();
+	}
+
+	private static void updateRecordFromDeliveryPlanningReceiptInfo(final I_M_Delivery_Planning record, final DeliveryPlanningReceiptInfo from)
+	{
+		assertIncoming(record);
+		record.setM_InOut_ID(InOutId.toRepoId(from.getReceiptId()));
+		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getReceivedStatusColorId()));
+	}
+
+	@NonNull
+	static DeliveryPlanningType extractDeliveryPlanningType(final I_M_Delivery_Planning record)
+	{
+		return DeliveryPlanningType.ofCode(record.getM_Delivery_Planning_Type());
+	}
+
+	private static void assertIncoming(final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		if (!deliveryPlanningType.isIncoming())
+		{
+			throw new AdempiereException("Expected to be an incoming delivery planning: " + record);
+		}
+	}
+
+	public void updateReceiptInfoById(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final DeliveryPlanningReceiptInfo receiptInfo = toDeliveryPlanningReceiptInfo(record);
+		updater.accept(receiptInfo);
+		updateRecordFromDeliveryPlanningReceiptInfo(record, receiptInfo);
+		InterfaceWrapperHelper.save(record);
+	}
+
 	public void generateDeliveryPlanning(@NonNull final DeliveryPlanningCreateRequest request)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = newInstance(I_M_Delivery_Planning.class);
@@ -73,6 +141,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
 		deliveryPlanningRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
+		deliveryPlanningRecord.setDeliveryStatus_Color_ID(ColorId.toRepoId(request.getDeliveryStatusColorId()));
 		deliveryPlanningRecord.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
 		deliveryPlanningRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 		deliveryPlanningRecord.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
@@ -297,7 +366,7 @@ public class DeliveryPlanningRepository
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-			@NonNull final I_M_ShipperTransportation deliveryInstruction)
+													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
