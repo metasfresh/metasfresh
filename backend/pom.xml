@@ -153,6 +153,7 @@
         <module>de.metas.storage</module>
 
         <module>de.metas.swat</module>
+        <module>de.metas.deliveryplanning.webui</module>
 
         <module>de.metas.serviceprovider</module>
 
