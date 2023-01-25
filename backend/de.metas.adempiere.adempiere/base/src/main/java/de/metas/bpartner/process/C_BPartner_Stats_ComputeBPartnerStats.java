@@ -1,9 +1,11 @@
 package de.metas.bpartner.process;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -11,17 +13,19 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 
+
 public class C_BPartner_Stats_ComputeBPartnerStats extends JavaProcess implements IProcessPrecondition
 {
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 
 	@Override
 	protected String doIt()
 	{
 		final I_C_BPartner_Stats stats = getRecord(I_C_BPartner_Stats.class);
-		final BPartnerStats bpStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(stats.getC_BPartner());
+		final I_C_BPartner statsPartner = partnerDAO.getById(BPartnerId.ofRepoId(stats.getC_BPartner_ID()));
+		final BPartnerStats bpStats = bpartnerStatsDAO.getCreateBPartnerStats(statsPartner);
 		bpartnerStatsDAO.updateBPartnerStatistics(bpStats);
 		return "@Success@";
 	}

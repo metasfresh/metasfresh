@@ -5,9 +5,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -55,10 +57,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class BPartnerStatsDAO implements IBPartnerStatsDAO
 {
+
+	 private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	 private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	 private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+
 	@Override
 	public BPartnerStats getCreateBPartnerStats(@NonNull final I_C_BPartner partner)
 	{
-		I_C_BPartner_Stats statsRecord = Services.get(IQueryBL.class)
+		I_C_BPartner_Stats statsRecord = queryBL
 				.createQueryBuilder(I_C_BPartner_Stats.class) // using current trx, because we will save in current trx too
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
@@ -77,6 +84,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.openItems(statsRecord.getOpenItems())
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(partner.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -86,11 +94,12 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(partner.getC_BP_Group_ID());
-		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getByIdInInheritedTrx(bpGroupId);
+		final I_C_BP_Group bpGroup = bpGroupDAO.getByIdInInheritedTrx(bpGroupId);
 
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
 		stat.setC_BPartner_ID(partner.getC_BPartner_ID());
+		stat.setM_SectionCode(partner.getM_SectionCode());
 		stat.setSOCreditStatus(status);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
@@ -204,6 +213,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		updateSOCreditUsed(bpStats);
 		updateSOCreditStatus(bpStats);
 		updateCreditLimitIndicator(bpStats);
+		updateSectionCode(bpStats);
 	}
 
 	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
@@ -273,7 +283,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsBL partnerStatsBL = Services.get(IBPartnerStatsBL.class);
 
 		// load the statistics
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
@@ -302,7 +312,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		else
 		{
 			// Above Watch Limit
-			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+			final BigDecimal watchAmt = creditLimit.multiply(partnerStatsBL.getCreditWatchRatio(bpStats));
 
 			if (watchAmt.compareTo(creditUsed) < 0)
 			{
@@ -335,6 +345,16 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final String percentSring = fmt.format(percent);
 
 		stats.setCreditLimitIndicator(percentSring);
+
+		saveRecord(stats);
+	}
+
+	private void updateSectionCode(@NonNull final BPartnerStats bpStats)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		final I_C_BPartner partner = partnerDAO.getById(bpStats.getBpartnerId());
+		stats.setM_SectionCode_ID(partner.getM_SectionCode_ID());
 
 		saveRecord(stats);
 	}
