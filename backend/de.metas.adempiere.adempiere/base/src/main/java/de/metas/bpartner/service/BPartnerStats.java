@@ -39,16 +39,17 @@ import static java.math.BigDecimal.ZERO;
 @Value
 public class BPartnerStats
 {
+	int repoId;
 
+	BPartnerId bpartnerId;
 
-	@NonNull BPartnerId bpartnerId;
-	@Nullable BigDecimal openItems;
-	@Nullable BigDecimal actualLifeTimeValue;
-	@Nullable BigDecimal soCreditUsed;
-	@Nullable BigDecimal deliveryCreditUsed;
-	@Nullable String soCreditStatus;
-	@Nullable SectionCodeId sectionCodeId;
-
+	BigDecimal openItems;
+	BigDecimal actualLifeTimeValue;
+	BigDecimal soCreditUsed;
+	BigDecimal deliveryCreditUsed;
+	String soCreditStatus;
+	String deliveryCreditStatus;
+	SectionCodeId sectionCodeId;
 
 	@Builder
 	public BPartnerStats(
@@ -59,7 +60,8 @@ public class BPartnerStats
 			@Nullable final BigDecimal actualLifeTimeValue,
 			@Nullable final BigDecimal soCreditUsed,
 			@Nullable final BigDecimal deliveryCreditUsed,
-			@Nullable final String soCreditStatus)
+			@Nullable final String soCreditStatus,
+			@Nullable final String deliveryCreditStatus)
 	{
 		Check.assume(repoId > 0, "Given parameter repoId is > 0");
 
@@ -71,5 +73,6 @@ public class BPartnerStats
 		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
 		this.deliveryCreditUsed = CoalesceUtil.coalesce(deliveryCreditUsed, ZERO);
 		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		this.deliveryCreditStatus = CoalesceUtil.coalesce(deliveryCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
 	}
 }

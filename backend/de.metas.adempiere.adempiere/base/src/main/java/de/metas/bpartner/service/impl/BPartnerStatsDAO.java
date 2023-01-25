@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.X_M_ShipperTransportation;
@@ -80,6 +81,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.soCreditStatus(statsRecord.getSOCreditStatus())
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
 				.deliveryCreditUsed(statsRecord.getDelivery_CreditUsed())
+				.deliveryCreditStatus((statsRecord.getDelivery_CreditStatus()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(statsRecord.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -95,9 +98,12 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stat = newInstance(I_C_BPartner_Stats.class);
 		final String status = bpGroup.getSOCreditStatus();
 		stat.setC_BPartner_ID(partner.getC_BPartner_ID());
+		stat.setM_SectionCode(partner.getM_SectionCode());
 		stat.setSOCreditStatus(status);
-		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
+		stat.setDelivery_CreditStatus(status);
+		stat.setDelivery_CreditUsed(BigDecimal.ZERO);
+		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setOpenItems(BigDecimal.ZERO);
 
 		saveRecord(stat);

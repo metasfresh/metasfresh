@@ -30,13 +30,17 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -50,10 +54,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Tax;
@@ -76,17 +81,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BPartnerStatsService
 {
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final MoneyService moneyService;
-
 	private final BPartnerCreditLimitRepository creditLimitRepo;
 
 	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo,
@@ -110,9 +112,7 @@ public class BPartnerStatsService
 		}
 
 		// get credit limit from BPartner
-		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpStats.getBpartnerId());
-
-		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
+		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), date);
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
@@ -161,7 +161,7 @@ public class BPartnerStatsService
 	public BigDecimal getCreditWatchRatio(final BPartnerStats stats)
 	{
 		// bp group will be taken from the stats' bpartner
-		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(stats.getBpartnerId());
+		final I_C_BPartner partner = partnerDAO.getById(stats.getBpartnerId());
 
 		final I_C_BP_Group bpGroup = partner.getC_BP_Group();
 		final BigDecimal creditWatchPercent = bpGroup.getCreditWatchPercent();
@@ -322,9 +322,19 @@ public class BPartnerStatsService
 			taxAmtInfo = Money.of(taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt()), orderLineCurrencyId);
 		}
 
-		final CurrencyConversionContext currencyConversionContext = orderLineBL.extractCurrencyConversionContext(orderLine);
+		final CurrencyConversionContext currencyConversionContext = extractOrderLineCurrencyConversionContext(orderLine);
 
 		return moneyService.convertMoneyToCurrency(taxAmtInfo.add(qtyNetPriceFromOrderLine), baseCurrencyId, currencyConversionContext);
+	}
+
+	private CurrencyConversionContext extractOrderLineCurrencyConversionContext(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		return currencyBL.createCurrencyConversionContext(
+				order.getDateAcct().toInstant(),
+				(CurrencyConversionTypeId)null,
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
 	}
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
@@ -423,7 +433,6 @@ public class BPartnerStatsService
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bstats);
 		final BigDecimal creditUsed = stats.getSO_CreditUsed();
 
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
@@ -447,15 +456,14 @@ public class BPartnerStatsService
 			return;
 		}
 
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(payment.getC_BPartner_ID());
+		final BPartnerStats stats = bPartnerStatsDAO.getCreateBPartnerStats(payment.getC_BPartner_ID());
 		final String soCreditStatus = stats.getSoCreditStatus();
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
 		{
 			return;
 		}
 
-		final BigDecimal crediUsed = stats.getSoCreditUsed();
+		final BigDecimal soCreditUsed = stats.getSoCreditUsed();
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(payment.getC_BPartner_ID(), payment.getDateTrx());
 
 		if (isCreditStopSales(stats, payment.getPayAmt().negate() // because it's not receipt !
@@ -469,7 +477,7 @@ public class BPartnerStatsService
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
-												 + crediUsed
+												 + soCreditUsed
 												 + ", @SO_CreditLimit@=" + creditLimit);
 		}
 	}
