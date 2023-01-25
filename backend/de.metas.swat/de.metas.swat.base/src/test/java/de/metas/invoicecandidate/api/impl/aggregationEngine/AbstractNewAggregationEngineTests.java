@@ -57,7 +57,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.
- *
+ * <p>
  * Tests from {@link I_C_Invoice_Candidate}s to {@link IInvoiceHeader}s.
  */
 public abstract class AbstractNewAggregationEngineTests extends AbstractAggregationEngineTestBase
@@ -175,7 +175,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 			if (aggregate.getLinesFor(ic).contains(invoiceLine))
 			{
 				assertThat("This verification code can handle only one aggregate for ic=" + ic + " and invoiceLine=" + invoiceLine,
-						aggregateForLine, nullValue());
+						   aggregateForLine, nullValue());
 				aggregateForLine = aggregate;
 			}
 		}

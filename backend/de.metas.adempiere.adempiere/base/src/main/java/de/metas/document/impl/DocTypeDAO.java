@@ -86,14 +86,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
-		
+
 		if (docTypeRecord == null)
 		{
 			throw new AdempiereException("No C_DocType record found for ID!")
 					.appendParametersToMessage()
 					.setParameter("DocTypeId", docTypeId);
 		}
-		
+
 		return docTypeRecord;
 	}
 
@@ -327,7 +327,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		InterfaceWrapperHelper.save(dt);
 		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
 	}
-	
+
 	@Override
 	public void save(@NonNull final I_C_DocType docTypeRecord)
 	{

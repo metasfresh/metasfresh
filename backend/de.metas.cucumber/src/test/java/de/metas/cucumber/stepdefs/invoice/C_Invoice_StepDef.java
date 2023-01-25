@@ -28,8 +28,6 @@ import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -39,6 +37,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
@@ -65,14 +64,6 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
-import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
-import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -90,12 +81,10 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
-import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -107,15 +96,11 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.X_C_Invoice;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -123,14 +108,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
@@ -141,10 +126,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
-import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID;
-import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
-import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 
 public class C_Invoice_StepDef
 {
@@ -188,11 +169,10 @@ public class C_Invoice_StepDef
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
 			@NonNull final C_Project_StepDefData projectTable,
-			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
-			@NonNull final C_Activity_StepDefData activityTable)
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final C_DocType_StepDefData docTypeTable)
 	{
 		this.invoiceTable = invoiceTable;
-		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceLineTable = invoiceLineTable;
 		this.orderTable = orderTable;
 		this.bpartnerTable = bpartnerTable;
@@ -203,6 +183,7 @@ public class C_Invoice_StepDef
 		this.projectTable = projectTable;
 		this.activityTable = activityTable;
 		this.invoiceCandTable = invoiceCandTable;
+		this.docTypeTable = docTypeTable;
 	}
 
 	@And("validate created invoices")
@@ -463,6 +444,15 @@ public class C_Invoice_StepDef
 			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
 		}
 
+		final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(docTypeIdentifier))
+		{
+			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+			softly.assertThat(docTypeRecord).isNotNull();
+
+			softly.assertThat(invoice.getC_DocType_ID()).isEqualTo(docTypeRecord.getC_DocType_ID());
+		}
+		
 		{// payment related
 			final Boolean invoiceIsPaid = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPaid, null);
 
@@ -650,7 +640,6 @@ public class C_Invoice_StepDef
 
 		logger.error("*** Error while looking for first invoice-able invoice candidate record, see current context: \n" + message);
 	}
-
 
 	private void create_C_Invoice(@NonNull final Map<String, String> row)
 	{

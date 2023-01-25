@@ -49,18 +49,16 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.serviceIssue.S_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.document.DocTypeId;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
-import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
-import de.metas.edi.model.I_M_InOut;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
@@ -74,9 +72,6 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.serviceprovider.model.I_S_Issue;
-import de.metas.util.Loggables;
-import de.metas.logging.LogManager;
-import de.metas.rest_api.v2.invoice.impl.InvoiceService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -105,11 +100,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.logging.LogbackLoggable;
-import org.assertj.core.api.SoftAssertions;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
@@ -120,7 +110,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -129,13 +118,10 @@ import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.text.MessageFormat;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
@@ -145,6 +131,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_B
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
@@ -176,12 +163,9 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
-import static org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID;
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -209,7 +193,6 @@ public class C_Invoice_Candidate_StepDef
 	private final M_InOutLine_StepDefData inoutLineTable;
 	private final I_Invoice_Candidate_StepDefData iInvoiceCandidatetable;
 	private final AD_User_StepDefData contactTable;
-	private final C_DocType_StepDefData docTypeTable;
 	private final C_UOM_StepDefData uomTable;
 	private final AD_Org_StepDefData orgTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
@@ -227,13 +210,11 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final C_DocType_StepDefData docTypeTable)
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
 			@NonNull final I_Invoice_Candidate_StepDefData iInvoiceCandidateTable,
 			@NonNull final AD_User_StepDefData contactTable,
-			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_UOM_StepDefData uomTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
@@ -779,6 +760,14 @@ public class C_Invoice_Candidate_StepDef
 					softly.assertThat(updatedInvoiceCandidate.getDescription()).isEqualTo(description);
 				}
 
+				final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + org.compiere.model.I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(docTypeIdentifier))
+				{
+					final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+					softly.assertThat(docTypeRecord).isNotNull();
+					softly.assertThat(updatedInvoiceCandidate.getC_DocTypeInvoice_ID()).isEqualTo(docTypeRecord.getC_DocType_ID());
+				}
+
 				softly.assertAll();
 			}
 			catch (final Throwable e)
@@ -1129,7 +1118,7 @@ public class C_Invoice_Candidate_StepDef
 			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
 																						 () -> retrieveInvoiceCandidate(row, candidatesQuery));
 
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
 	}
@@ -1323,7 +1312,7 @@ public class C_Invoice_Candidate_StepDef
 
 		return true;
 	}
-	
+
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> isInvoiceCandidateProcessed(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InterfaceWrapperHelper.refresh(invoiceCandidate);
@@ -1795,8 +1784,8 @@ public class C_Invoice_Candidate_StepDef
 		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
 							+ "Error message: {}", timeoutSec, throwable.getMessage());
 
-		final String invoiceCandIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER))
-				.orElse(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER));
+		final String invoiceCandIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.orElse(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER));
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = Optional
 				.ofNullable(invoiceCandIdentifier)

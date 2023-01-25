@@ -72,7 +72,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -121,7 +120,6 @@ public final class AggregationEngine
 			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");

@@ -48,6 +48,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -59,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
@@ -130,6 +132,7 @@ public class M_HU_StepDef
 	private final M_HU_QRCode_StepDefData qrCodesTable;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private final TestContext testContext;
 
@@ -219,13 +222,13 @@ public class M_HU_StepDef
 			assertThat(hu.getHUStatus()).isEqualTo(huStatus);
 
 			final String clearanceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceStatus);
-			if(Check.isNotBlank(clearanceStatus))
+			if (Check.isNotBlank(clearanceStatus))
 			{
 				assertThat(hu.getClearanceStatus()).isEqualTo(clearanceStatus);
 			}
 
 			final String clearanceNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ClearanceNote);
-			if(Check.isNotBlank(clearanceNote))
+			if (Check.isNotBlank(clearanceNote))
 			{
 				assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
 			}
@@ -265,7 +268,7 @@ public class M_HU_StepDef
 			returnHUFromCustomer(tableRow);
 		}
 	}
-	
+
 	@And("^after not more than (.*)s, M_HUs should have$")
 	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -584,7 +587,7 @@ public class M_HU_StepDef
 			assertThat(huId).isPresent();
 			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
 
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." +TABLECOLUMN_IDENTIFIER);
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huTable.putOrReplace(huIdentifier, newHU);
 		}
 	}

@@ -263,14 +263,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
-			if(getInvoicingParams().isCompleteInvoices())
+			if (getInvoicingParams().isCompleteInvoices())
 			{
 				// Complete the invoice and assume its status is COmpleted.
 				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			}
-			else 
+			else
 			{
-				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);	
+				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
 			}
 
 			//

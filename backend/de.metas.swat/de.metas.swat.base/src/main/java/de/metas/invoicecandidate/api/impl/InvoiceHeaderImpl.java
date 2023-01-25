@@ -3,10 +3,8 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.impex.InputDataSourceId;
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -20,7 +18,6 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
@@ -29,8 +26,6 @@ import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -310,7 +305,7 @@ import java.util.Optional;
 	{
 		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
 	}
-	
+
 	@Override
 	public boolean isTaxIncluded()
 	{
@@ -423,9 +418,15 @@ import java.util.Optional;
 	}
 
 	@Override
-	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
+	public InputDataSourceId getAD_InputDataSource_ID()
+	{
+		return inputDataSourceId;
+	}
 
-	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId)
+	{
+		this.inputDataSourceId = inputDataSourceId;
+	}
 
 	@Override
 	public SectionCodeId getM_SectionCode_ID()

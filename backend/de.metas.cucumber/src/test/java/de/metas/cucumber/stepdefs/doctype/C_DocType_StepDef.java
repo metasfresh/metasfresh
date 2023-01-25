@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.doctype;
+package de.metas.cucumber.stepdefs.docType;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Check;
@@ -29,6 +29,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
@@ -40,7 +41,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
-import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_Name;
 
 public class C_DocType_StepDef
 {
@@ -79,15 +79,39 @@ public class C_DocType_StepDef
 
 	private void loadDocType(@NonNull final Map<String, String> tableRow)
 	{
-		final String name = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Name);
-		final I_C_DocType docTypeRecord = queryBL.createQueryBuilder(I_C_DocType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, name)
-				.create()
-				.firstOnlyNotNull(I_C_DocType.class);
+		final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addOnlyActiveRecordsFilter();
 
-		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		docTypeTable.put(identifier, docTypeRecord);
+		final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_DocBaseType);
+		if (Check.isNotBlank(docBaseType))
+		{
+			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+		}
+
+		final Boolean isDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_DocType.COLUMNNAME_IsDefault, null);
+		if (isDefault != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, isDefault);
+		}
+
+		final String docSubType = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
+		if (Check.isNotBlank(docSubType))
+		{
+			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, DataTableUtil.nullToken2Null(docSubType));
+		}
+
+		final String name = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_Name);
+		if (Check.isNotBlank(name))
+		{
+			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, name);
+		}
+		
+		final I_C_DocType docType = queryBuilder.create().firstOnlyOrNull(I_C_DocType.class);
+
+		assertThat(docType).isNotNull();
+
+		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_DocType.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+		docTypeTable.putOrReplace(docTypeIdentifier, docType);
 	}
 
 	private void updateDocType(@NonNull final Map<String, String> tableRow)

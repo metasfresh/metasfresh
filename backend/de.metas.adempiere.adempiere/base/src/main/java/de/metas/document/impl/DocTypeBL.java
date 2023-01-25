@@ -22,8 +22,8 @@
 
 package de.metas.document.impl;
 
-import de.metas.document.DocBaseType;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -53,7 +53,7 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		return docTypesRepo.getByIdInTrx(docTypeId);
 	}
-	
+
 	@Override
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery docTypeQuery)
 	{
@@ -66,7 +66,7 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);
 	}
-	
+
 	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{
@@ -176,7 +176,7 @@ public class DocTypeBL implements IDocTypeBL
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_InternalVendorInvoice.equals(dt.getDocSubType());
 	}
-	
+
 	@Override
 	public void save(@NonNull final I_C_DocType dt)
 	{

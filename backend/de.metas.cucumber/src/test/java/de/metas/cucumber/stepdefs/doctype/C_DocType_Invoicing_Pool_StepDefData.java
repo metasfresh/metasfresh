@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.doctype;
+package de.metas.cucumber.stepdefs.docType;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;

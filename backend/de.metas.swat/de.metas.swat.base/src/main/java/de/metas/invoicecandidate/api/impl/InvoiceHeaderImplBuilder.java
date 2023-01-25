@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.impex.InputDataSourceId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -21,8 +21,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-import org.adempiere.util.lang.ObjectUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -100,7 +98,9 @@ public class InvoiceHeaderImplBuilder
 
 	@Nullable private BigDecimal currencyRate;
 
-	InvoiceHeaderImplBuilder() {}
+	InvoiceHeaderImplBuilder()
+	{
+	}
 
 	public InvoiceHeaderImpl build()
 	{
@@ -208,7 +208,7 @@ public class InvoiceHeaderImplBuilder
 					.setParameter("this.docTypeInvoicingPoolId", this.docTypeInvoicingPoolId)
 					.setParameter("docTypeInvoicingPoolId", docTypeInvoicingPoolId);
 		}
-		
+
 		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
 	}
 
@@ -321,8 +321,7 @@ public class InvoiceHeaderImplBuilder
 			}
 		}
 
-
-		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+		if (this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
 		{
 			this.billTo = billTo.withContactId(null);
 		}
@@ -477,8 +476,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + value
-					+ "\n New value: " + valueNew);
+												 + "\n Current value: " + value
+												 + "\n New value: " + valueNew);
 		}
 	}
 
@@ -499,8 +498,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + id
-					+ "\n New value: " + idNew);
+												 + "\n Current value: " + id
+												 + "\n New value: " + idNew);
 		}
 	}
 
@@ -533,8 +532,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-					+ "\n Model: " + model
-					+ "\n Model new: " + modelNew);
+													+ "\n Model: " + model
+													+ "\n Model new: " + modelNew);
 		}
 	}
 
@@ -551,8 +550,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + value
-				+ "\n New value: " + valueNew);
+											 + "\n Current value: " + value
+											 + "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(@Nullable final String externalIdStr)

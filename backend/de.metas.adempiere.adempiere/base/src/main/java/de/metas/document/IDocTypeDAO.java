@@ -22,8 +22,8 @@ package de.metas.document;
  * #L%
  */
 
-import de.metas.acct.GLCategoryId;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.ISingletonService;
@@ -80,7 +80,7 @@ public interface IDocTypeDAO extends ISingletonService
 	Optional<DocBaseType> getDocBaseTypeCounter(DocBaseType docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
-	
+
 	void save(@NonNull I_C_DocType dt);
 
 	@Value
