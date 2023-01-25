@@ -25,7 +25,6 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 
@@ -43,8 +42,12 @@ public class C_Order
 	// }
 
 	final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
+
+	final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 	final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)
@@ -55,18 +58,17 @@ public class C_Order
 		}
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
-		final BigDecimal creditUsed = stats.getSoCreditUsed();
+		final BigDecimal soCreditUsed = stats.getSoCreditUsed();
 		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
 
 		if (CreditStatus.CreditStop.equals(soCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
 												 .appendADElement("BPartnerCreditStop").append(":")
-												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
 												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
 												 .build());
 		}
@@ -74,7 +76,7 @@ public class C_Order
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
 												 .appendADElement("BPartnerCreditHold").append(":")
-												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
 												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
 												 .build());
 		}
@@ -98,7 +100,7 @@ public class C_Order
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
 												 .appendADElement("BPartnerOverOCreditHold").append(":")
-												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
+												 .append(" ").appendADElement("SO_CreditUsed").append("=").append(soCreditUsed, DisplayType.Amount)
 												 .append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)
 												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
 												 .build());
@@ -112,15 +114,14 @@ public class C_Order
 			return false;
 		}
 
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSoCreditStatus()))
+		if (CreditStatus.NoCreditCheck.equals(stats.getSoCreditStatus()))
 		{
 			return false;
 		}
 
-		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final I_C_DocType dt = docTypeDAO.getById(order.getC_DocTypeTarget_ID());
+
 		final PaymentRule paymentRule = PaymentRule.ofCode(order.getPaymentRule());
 		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
 				&& paymentRule.isCash()
