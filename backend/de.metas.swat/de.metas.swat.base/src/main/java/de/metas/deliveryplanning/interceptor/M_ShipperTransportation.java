@@ -1,5 +1,6 @@
 package de.metas.deliveryplanning.interceptor;
 
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.deliveryplanning.DeliveryInstructionUserNotificationsProducer;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.event.IEventBusFactory;
@@ -20,7 +21,10 @@ public class M_ShipperTransportation
 {
 	private final DeliveryPlanningService deliveryPlanningService;
 
+	private final IBPartnerStatisticsUpdater bpartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
+
 	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
+
 	@Init
 	public void onInit()
 	{
@@ -37,6 +41,15 @@ public class M_ShipperTransportation
 	public void unlinkDeliveryPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		deliveryPlanningService.unlinkDeliveryPlannings(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void updateBPartnerStatistics(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		bpartnerStatisticsUpdater.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
+																   .bpartnerId(shipperTransportation.getShipper_BPartner_ID())
+																   .build());
 
 	}
 }
