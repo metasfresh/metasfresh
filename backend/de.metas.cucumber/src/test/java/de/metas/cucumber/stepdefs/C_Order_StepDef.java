@@ -328,7 +328,6 @@ public class C_Order_StepDef
 		assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
 
 		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
-		assertThat(docType).isNotNull();
 		assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
 	}
 

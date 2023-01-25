@@ -22,12 +22,19 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.StringUtils;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.assertj.core.api.Assertions;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @UtilityClass
 public class StepDefUtil
@@ -90,6 +97,31 @@ public class StepDefUtil
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
+	}
+
+	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
+	{
+		if (Check.isNotBlank(errorMessage))
+		{
+			assertThat(e.getMessage()).contains(errorMessage);
+		}
+		else
+		{
+			throw e;
+		}
+	}
+
+	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
+	{
+		return Arrays.stream(identifier.split(","))
+				.map(StringUtils::trim)
+				.collect(ImmutableList.toImmutableList());
+	}
+	
 	private long computeDeadLineMillis(final long maxWaitSeconds)
 	{
 		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
