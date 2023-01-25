@@ -391,6 +391,34 @@ public class DeliveryPlanningService
 		}
 	}
 
+	public void regenerateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningsSuitableForDeliveryInstruction(selectedDeliveryPlanningsFilter);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+
+			// first void the existent delivery instructions
+			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
+			voidLinkedDeliveryInstructions(deliveryPlanningId);
+
+			// then generate a new one
+			generateCompleteDeliveryInstruction(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+		}
+	}
+
+	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryPlanningRepository.retrieveForDeliveryPlanning(deliveryPlanningId);
+		while (deliveryInstructionsIterator.hasNext())
+		{
+			final I_M_ShipperTransportation deliveryInstructionRecord = deliveryInstructionsIterator.next();
+
+			docActionBL.processEx(deliveryInstructionRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+		}
+	}
+
 	public void unlinkDeliveryPlannings(@NonNull final String releaseNo)
 	{
 		deliveryPlanningRepository.unlinkDeliveryPlannings(releaseNo);

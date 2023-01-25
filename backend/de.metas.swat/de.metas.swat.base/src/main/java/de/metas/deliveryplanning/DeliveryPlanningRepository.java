@@ -334,4 +334,12 @@ public class DeliveryPlanningRepository
 			saveRecord(deliveryPlanningRecord);
 		}
 	}
+
+	public Iterator<I_M_ShipperTransportation> retrieveForDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.create()
+				.iterate(I_M_ShipperTransportation.class);
+	}
 }
