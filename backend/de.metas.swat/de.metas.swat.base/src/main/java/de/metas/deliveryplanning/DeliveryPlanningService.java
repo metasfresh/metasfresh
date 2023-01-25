@@ -34,7 +34,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
-import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -414,6 +413,12 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.getReceiptInfoIfIncomingType(deliveryPlanningId);
 	}
 
+	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getReceiptInfoIfIncomingType(deliveryPlanningId)
+				.orElseThrow(() -> new AdempiereException("Expected to be an incoming delivery planning"));
+	}
+
 	public void updateReceiptInfoById(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
@@ -426,17 +431,27 @@ public class DeliveryPlanningService
 				});
 	}
 
-	public void updateReceiptInfoByInOutId(
-			@NonNull final InOutId inoutId,
-			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
+	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final DeliveryPlanningId deliveryPlanningId = deliveryPlanningRepository.getDeliveryPlanningIdByInOutId(inoutId).orElse(null);
-		if (deliveryPlanningId == null)
-		{
-			return;
-		}
+		return deliveryPlanningRepository.getShipmentInfoIfOutgoingType(deliveryPlanningId);
+	}
 
-		updateReceiptInfoById(deliveryPlanningId, updater);
+	public DeliveryPlanningShipmentInfo getShipmentInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getShipmentInfoIfOutgoingType(deliveryPlanningId)
+				.orElseThrow(() -> new AdempiereException("Expected to be an outgoing delivery planning"));
+	}
+
+	public void updateShipmentInfoById(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Consumer<DeliveryPlanningShipmentInfo> updater)
+	{
+		deliveryPlanningRepository.updateShipmentInfoById(
+				deliveryPlanningId,
+				shipmentInfo -> {
+					updater.accept(shipmentInfo);
+					shipmentInfo.setShippedStatusColorId(shipmentInfo.isShipped() ? getDeliveredColorId() : getNotDeliveredColorId());
+				});
 	}
 
 	private ColorId getDeliveredColorId() {return getColorIdFromSysconfig(SYSCONFIG_Delivered_ColorName, "Gruen");}

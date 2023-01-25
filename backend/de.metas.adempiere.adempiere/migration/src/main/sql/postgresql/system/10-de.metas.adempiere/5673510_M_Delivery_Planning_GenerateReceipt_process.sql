@@ -35,3 +35,21 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585192,542259,541340,TO_TIMESTAMP('2023-01-25 17:02:53','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2023-01-25 17:02:53','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;
 
+-- 2023-01-25T21:14:21.016Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581961,0,'ReceiptDate',TO_TIMESTAMP('2023-01-25 23:14:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Receipt Date','Receipt Date',TO_TIMESTAMP('2023-01-25 23:14:20','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-01-25T21:14:21.018Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581961 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Process: M_Delivery_Planning_GenerateReceipt(de.metas.deliveryplanning.webui.process.M_Delivery_Planning_GenerateReceipt)
+-- ParameterName: ReceiptDate
+-- 2023-01-25T21:14:32.215Z
+UPDATE AD_Process_Para SET AD_Element_ID=581961, ColumnName='ReceiptDate', Description=NULL, Help=NULL, Name='Receipt Date',Updated=TO_TIMESTAMP('2023-01-25 23:14:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542465
+;
+
+-- 2023-01-25T21:14:32.216Z
+UPDATE AD_Process_Para_Trl trl SET Description=NULL,Help=NULL,Name='Receipt Date' WHERE AD_Process_Para_ID=542465 AND AD_Language='en_US'
+;
+

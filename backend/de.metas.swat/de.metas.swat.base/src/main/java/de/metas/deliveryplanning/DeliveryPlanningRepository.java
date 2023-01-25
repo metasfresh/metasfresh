@@ -72,13 +72,28 @@ public class DeliveryPlanningRepository
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
 	}
 
-	protected Optional<DeliveryPlanningId> getDeliveryPlanningIdByInOutId(@NonNull final InOutId inoutId)
+	@NonNull
+	static DeliveryPlanningType extractDeliveryPlanningType(final I_M_Delivery_Planning record)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID, inoutId)
-				.create()
-				.firstIdOnlyOptional(DeliveryPlanningId::ofRepoIdOrNull);
+		return DeliveryPlanningType.ofCode(record.getM_Delivery_Planning_Type());
+	}
+
+	private static void assertIncoming(final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		if (!deliveryPlanningType.isIncoming())
+		{
+			throw new AdempiereException("Expected to be an incoming delivery planning: " + record);
+		}
+	}
+
+	private static void assertOutgoing(final I_M_Delivery_Planning record)
+	{
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		if (!deliveryPlanningType.isOutgoing())
+		{
+			throw new AdempiereException("Expected to be an outgoing delivery planning: " + record);
+		}
 	}
 
 	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -101,26 +116,11 @@ public class DeliveryPlanningRepository
 				.build();
 	}
 
-	private static void updateRecordFromDeliveryPlanningReceiptInfo(final I_M_Delivery_Planning record, final DeliveryPlanningReceiptInfo from)
+	private static void updateRecordFromReceiptInfo(final I_M_Delivery_Planning record, final DeliveryPlanningReceiptInfo from)
 	{
 		assertIncoming(record);
 		record.setM_InOut_ID(InOutId.toRepoId(from.getReceiptId()));
 		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getReceivedStatusColorId()));
-	}
-
-	@NonNull
-	static DeliveryPlanningType extractDeliveryPlanningType(final I_M_Delivery_Planning record)
-	{
-		return DeliveryPlanningType.ofCode(record.getM_Delivery_Planning_Type());
-	}
-
-	private static void assertIncoming(final I_M_Delivery_Planning record)
-	{
-		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
-		if (!deliveryPlanningType.isIncoming())
-		{
-			throw new AdempiereException("Expected to be an incoming delivery planning: " + record);
-		}
 	}
 
 	public void updateReceiptInfoById(
@@ -130,7 +130,44 @@ public class DeliveryPlanningRepository
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final DeliveryPlanningReceiptInfo receiptInfo = toDeliveryPlanningReceiptInfo(record);
 		updater.accept(receiptInfo);
-		updateRecordFromDeliveryPlanningReceiptInfo(record, receiptInfo);
+		updateRecordFromReceiptInfo(record, receiptInfo);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		return deliveryPlanningType.isOutgoing()
+				? Optional.of(toDeliveryPlanningShipmentInfo(record))
+				: Optional.empty();
+	}
+
+	private static DeliveryPlanningShipmentInfo toDeliveryPlanningShipmentInfo(final I_M_Delivery_Planning record)
+	{
+		assertOutgoing(record);
+		return DeliveryPlanningShipmentInfo.builder()
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.shipmentId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
+				.shippedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
+				.build();
+	}
+
+	private static void updateRecordFromShipmentInfo(final I_M_Delivery_Planning record, final DeliveryPlanningShipmentInfo from)
+	{
+		assertOutgoing(record);
+		record.setM_InOut_ID(InOutId.toRepoId(from.getShipmentId()));
+		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getShippedStatusColorId()));
+	}
+
+	public void updateShipmentInfoById(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Consumer<DeliveryPlanningShipmentInfo> updater)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final DeliveryPlanningShipmentInfo shipmentInfo = toDeliveryPlanningShipmentInfo(record);
+		updater.accept(shipmentInfo);
+		updateRecordFromShipmentInfo(record, shipmentInfo);
 		InterfaceWrapperHelper.save(record);
 	}
 

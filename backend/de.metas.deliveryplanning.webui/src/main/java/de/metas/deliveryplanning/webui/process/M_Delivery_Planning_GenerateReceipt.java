@@ -8,7 +8,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
-import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
@@ -35,8 +34,8 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess implements 
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
-	@Param(parameterName = "MovementDate", mandatory = true)
-	private Instant p_MovementDate;
+	@Param(parameterName = "ReceiptDate", mandatory = true)
+	private Instant p_ReceiptDate;
 
 	private static final String PARAM_Qty = "Qty";
 	@Param(parameterName = PARAM_Qty, mandatory = true)
@@ -70,22 +69,20 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess implements 
 	protected String doIt()
 	{
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(getRecord_ID());
+		final DeliveryPlanningReceiptInfo receiptInfo = deliveryPlanningService.getReceiptInfo(deliveryPlanningId);
+		if (receiptInfo.isReceived())
+		{
+			throw new AdempiereException("Already received");
+		}
 
-		deliveryPlanningService.updateReceiptInfoById(
-				deliveryPlanningId,
-				deliveryPlanningReceiptInfo -> {
-					if (deliveryPlanningReceiptInfo.isReceived())
-					{
-						throw new AdempiereException("Already received");
-					}
-					final InOutId receiptId = createReceipt(deliveryPlanningReceiptInfo.getReceiptScheduleId());
-					deliveryPlanningReceiptInfo.setReceiptId(receiptId);
-				});
+		createReceipt(receiptInfo.getReceiptScheduleId(), deliveryPlanningId);
 
 		return MSG_OK;
 	}
 
-	private InOutId createReceipt(final ReceiptScheduleId receiptScheduleId)
+	private void createReceipt(
+			@NonNull final ReceiptScheduleId receiptScheduleId,
+			@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(receiptScheduleId);
 		final Quantity qty = Quantitys.create(p_QtyBD, extractUomId(receiptSchedule));
@@ -103,15 +100,16 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess implements 
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(
 				CreateReceiptsParameters.builder()
 						.commitEachReceiptIndividually(false)
-						.movementDateRule(ReceiptMovementDateRule.fixedDate(p_MovementDate))
+						.movementDateRule(ReceiptMovementDateRule.fixedDate(p_ReceiptDate))
 						.ctx(getCtx())
 						.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 						.printReceiptLabels(true)
 						.receiptSchedule(receiptSchedule)
 						.selectedHuId(HuId.ofRepoId(vhu.getM_HU_ID()))
+						.deliveryPlanningId(deliveryPlanningId)
 						.build());
 
-		return result.getSingleInOutId();
+		result.getSingleInOutId();
 	}
 
 	private static UomId extractUomId(@NonNull I_M_ReceiptSchedule rs)

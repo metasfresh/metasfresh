@@ -141,7 +141,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				true, // complete=true
 				parameters.getMovementDateRule(),
 				parameters.getExternalInfoByReceiptScheduleId(),
-				parameters.getForexContractId());
+				parameters.getForexContractId(),
+				parameters.getDeliveryPlanningId());
 
 		this.selectedHUIds = parameters.getSelectedHuIds();
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
@@ -713,9 +714,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	 * @param hu top level HU (LU, TU, VHU)
 	 */
 	private void transferHandlingUnit(final IHUContext huContext,
-			final I_M_ReceiptSchedule rs,
-			final I_M_HU hu,
-			final I_M_InOutLine receiptLine)
+									  final I_M_ReceiptSchedule rs,
+									  final I_M_HU hu,
+									  final I_M_InOutLine receiptLine)
 	{
 		//
 		// Assign it to Receipt Line

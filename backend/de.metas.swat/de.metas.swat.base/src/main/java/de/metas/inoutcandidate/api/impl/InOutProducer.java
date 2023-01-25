@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -123,6 +124,7 @@ public class InOutProducer implements IInOutProducer
 	@NonNull
 	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 	@Nullable private final ForexContractId forexContractId;
+	@Nullable private final DeliveryPlanningId deliveryPlanningId;
 
 	private I_M_InOut _currentReceipt = null;
 	private int _currentReceiptLinesCount = 0;
@@ -132,7 +134,7 @@ public class InOutProducer implements IInOutProducer
 
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
-		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null, null);
+		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null, null, null);
 	}
 
 	/**
@@ -145,13 +147,15 @@ public class InOutProducer implements IInOutProducer
 			final boolean complete,
 			@NonNull final ReceiptMovementDateRule movementDateRule,
 			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId,
-			@Nullable final ForexContractId forexContractId)
+			@Nullable final ForexContractId forexContractId,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.result = result;
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
 		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap::of);
 		this.forexContractId = forexContractId;
+		this.deliveryPlanningId = deliveryPlanningId;
 	}
 
 	@Override
@@ -516,6 +520,7 @@ public class InOutProducer implements IInOutProducer
 		}
 
 		receiptHeader.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		receiptHeader.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
 		//
 		// Save & Return

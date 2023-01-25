@@ -72,4 +72,10 @@ public enum DeliveryPlanningType implements ReferenceListAwareEnum
 	{
 		return this == Incoming;
 	}
+
+	public boolean isOutgoing()
+	{
+		return this == Outgoing;
+	}
+
 }

@@ -3,6 +3,7 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -133,6 +134,9 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 		@Nullable
 		ForexContractId forexContractId;
+
+		@Nullable
+		DeliveryPlanningId deliveryPlanningId;
 	}
 
 	/**

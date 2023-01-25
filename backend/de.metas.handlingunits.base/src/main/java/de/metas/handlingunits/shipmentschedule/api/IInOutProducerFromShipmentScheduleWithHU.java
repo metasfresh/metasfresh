@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
@@ -39,4 +40,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 
 	IInOutProducerFromShipmentScheduleWithHU setForexContractId(ForexContractId forexContractId);
+
+	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(DeliveryPlanningId deliveryPlanningId);
 }

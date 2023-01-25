@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -91,11 +92,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -155,7 +154,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private boolean createPackingLines = false;
 
-	private CalculateShippingDateRule calculateShippingDateRule = CalculateShippingDateRule.NONE;
+	private CalculateShippingDateRule calculateShippingDateRule = CalculateShippingDateRule.DELIVERY_DATE_OR_TODAY;
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -168,7 +167,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
-	private ForexContractId forexContractId;
+	@Nullable private ForexContractId forexContractId;
+	@Nullable private DeliveryPlanningId deliveryPlanningId;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -291,33 +291,42 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, @NonNull final CalculateShippingDateRule calculateShippingDateType)
+	LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, @NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
-		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
-
-		if (FORCE_SHIPMENT_DATE_TODAY.equals(calculateShippingDateType))
+		return calculateShippingDateType.map(new CalculateShippingDateRule.CaseMapper<LocalDate>()
 		{
-			return today;
-		}
+			@Override
+			public LocalDate today()
+			{
+				return SystemTime.asLocalDate();
+			}
 
-		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
+			@Override
+			public LocalDate deliveryDate()
+			{
+				return getDeliveryDateAsLocalDate(schedule).orElseGet(SystemTime::asLocalDate);
+			}
 
-		if (deliveryDateEffective == null)
-		{
-			return today;
-		}
+			@Override
+			public LocalDate deliveryDateOrToday()
+			{
+				final LocalDate today = SystemTime.asLocalDate();
+				final LocalDate deliveryDate = getDeliveryDateAsLocalDate(schedule).orElse(today);
+				return TimeUtil.max(deliveryDate, today);
+			}
 
-		if (FORCE_SHIPMENT_DATE_DELIVERY_DATE.equals(calculateShippingDateType))
-		{
-			return deliveryDateEffective.toLocalDate();
-		}
+			@Override
+			public LocalDate fixedDate(@NonNull final LocalDate fixedDate)
+			{
+				return fixedDate;
+			}
+		});
+	}
 
-		if (deliveryDateEffective.toLocalDate().isBefore(today))
-		{
-			return today;
-		}
-
-		return deliveryDateEffective.toLocalDate();
+	private Optional<LocalDate> getDeliveryDateAsLocalDate(final @NonNull I_M_ShipmentSchedule schedule)
+	{
+		return Optional.ofNullable(shipmentScheduleEffectiveValuesBL.getDeliveryDate(schedule))
+				.map(ZonedDateTime::toLocalDate);
 	}
 
 	/**
@@ -382,7 +391,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 
-
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
 					shipment.setEMail(order.getEMail());
@@ -414,6 +422,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		}
 
 		shipment.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		shipment.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
 		//
 		// Save Shipment Header
@@ -725,9 +734,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU setForexContractId(final ForexContractId forexContractId)
+	public IInOutProducerFromShipmentScheduleWithHU setForexContractId(@Nullable final ForexContractId forexContractId)
 	{
 		this.forexContractId = forexContractId;
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		this.deliveryPlanningId = deliveryPlanningId;
 		return this;
 	}
 
