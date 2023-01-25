@@ -63,4 +63,4 @@ public class StepDefConstants
 	public static final String CURRENCY_CODE = "currencyCode";
 	public static final String EXTENDED_PROPS = "ExtendedProps";
 }
-}
+

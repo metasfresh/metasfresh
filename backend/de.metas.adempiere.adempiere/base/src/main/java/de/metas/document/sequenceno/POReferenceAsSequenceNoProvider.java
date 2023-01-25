@@ -1,6 +1,5 @@
 package de.metas.document.sequenceno;
 
-import de.metas.document.DocumentSequenceInfo;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;

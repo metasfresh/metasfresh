@@ -19,10 +19,10 @@
 package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,7 +49,6 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

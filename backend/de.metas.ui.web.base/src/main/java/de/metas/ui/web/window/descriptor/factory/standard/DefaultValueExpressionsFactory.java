@@ -1,14 +1,14 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
-import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
-import de.metas.document.sequence.DocSequenceId;
 import de.metas.ui.web.window.descriptor.sql.DocSequenceAwareFieldStringExpression;
+import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
