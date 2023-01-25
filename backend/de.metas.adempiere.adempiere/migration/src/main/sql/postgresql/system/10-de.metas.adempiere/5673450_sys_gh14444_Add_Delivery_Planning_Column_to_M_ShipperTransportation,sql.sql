@@ -11,3 +11,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581677) 
 ;
 
+-- 2023-01-25T12:50:43.690Z
+/* DDL */ SELECT public.db_alter_table('M_ShipperTransportation','ALTER TABLE public.M_ShipperTransportation ADD COLUMN M_Delivery_Planning_ID NUMERIC(10)')
+;
+
+-- 2023-01-25T12:50:43.759Z
+ALTER TABLE M_ShipperTransportation ADD CONSTRAINT MDeliveryPlanning_MShipperTransportation FOREIGN KEY (M_Delivery_Planning_ID) REFERENCES public.M_Delivery_Planning DEFERRABLE INITIALLY DEFERRED
+;
