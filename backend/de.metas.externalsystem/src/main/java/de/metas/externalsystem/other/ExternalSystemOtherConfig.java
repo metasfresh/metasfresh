@@ -23,12 +23,14 @@
 package de.metas.externalsystem.other;
 
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
+import java.util.Optional;
 
 @Value
 public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
@@ -59,5 +61,29 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	public String getValue()
 	{
 		return value.getStringValue();
+	}
+
+	public boolean isSyncBudgetProjectsEnabled()
+	{
+		return getParameterByName(ExternalSystemOtherKnownParams.EXPORT_BUDGET_PROJECT.getDbName())
+				.map(ExternalSystemOtherConfigParameter::getValue)
+				.map(value -> StringUtils.toBoolean(value, false))
+				.orElse(false);
+	}
+
+	public boolean isSyncWOProjectsEnabled()
+	{
+		return getParameterByName(ExternalSystemOtherKnownParams.EXPORT_WO_PROJECT.getDbName())
+				.map(ExternalSystemOtherConfigParameter::getValue)
+				.map(value -> StringUtils.toBoolean(value, false))
+				.orElse(false);
+	}
+
+	@NonNull
+	private Optional<ExternalSystemOtherConfigParameter> getParameterByName(@NonNull final String name)
+	{
+		return parameters.stream()
+				.filter(parameter -> parameter.getName().equals(name))
+				.findFirst();
 	}
 }

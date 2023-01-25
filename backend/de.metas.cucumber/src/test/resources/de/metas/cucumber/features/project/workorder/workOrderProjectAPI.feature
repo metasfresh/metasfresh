@@ -14,12 +14,22 @@ Feature: WorkOrder Project API Test
   2nd we update the created project setting all available fields in API
   _Then we retrieve the updated project to validate all fields
 
-  3rd we update only one random field
+  3rd we update parent and check that the required values are propagated
   _Then we retrieve the updated project once again to validate that only that field has been changed
 
-    Given metasfresh contains C_Project
-      | C_Project_ID | Name       | C_Currency_ID.ISO_Code |
-      | 210001       | testName_1 | EUR                    |
+    Given load C_ProjectType:
+      | C_ProjectType_ID.Identifier | ProjectCategory |
+      | parentProjectType           | B               |
+
+    And metasfresh contains AD_Users:
+      | AD_User_ID.Identifier      | OPT.AD_User_ID | Name                       |
+      | parentSpecialistConsultant | 222            | parentSpecialistConsultant |
+      | parentSalesRep             | 333            | parentSalesRep             |
+
+    And metasfresh contains C_Project
+      | C_Project_ID | Name       | C_Currency_ID.ISO_Code | OPT.Value     | OPT.ProjectCategory | OPT.C_ProjectType_ID.Identifier | OPT.C_Project_Reference_Ext | OPT.InternalPriority | OPT.Specialist_Consultant_ID.Identifier | OPT.BPartnerDepartment   | OPT.SalesRep_ID.Identifier |
+      | 210001       | testName_1 | EUR                    | parentProject | B                   | parentProjectType               | parentExternalRef           | 3                    | parentSpecialistConsultant              | parentBPartnerDepartment | parentSalesRep             |
+
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
     """
 {
@@ -119,12 +129,12 @@ Feature: WorkOrder Project API Test
     "projectTypeId": 540009,
     "priceListVersionId": 2002141,
     "currencyCode": "EUR",
-    "salesRepId": 100,
+    "salesRepId": 333,
     "description": "testDescription",
     "dateContract": "2022-06-07",
     "dateFinish": "2022-06-08",
     "bpartnerId": 2156423,
-    "projectReferenceExt": "woReferenceExt",
+    "projectReferenceExt": "parentExternalRef",
     "externalId": "woExternalId",
     "projectParentId": 210001,
     "orgCode": "001",
@@ -132,9 +142,11 @@ Feature: WorkOrder Project API Test
     "dateOfProvisionByBPartner": "2022-06-07",
     "woOwner": "woOwnerTest",
     "poReference": "RDCBCO212ABN",
-    "bpartnerDepartment": "bpartnerDepartmentTest",
+    "bpartnerDepartment": "parentBPartnerDepartment",
     "bpartnerTargetDate": "2022-06-08",
     "woProjectCreatedDate": "2022-06-07",
+    "specialistConsultantId": 222,
+    "internalPriority": "3",
     "steps": [
       {
         "stepId": 1000001,
@@ -187,9 +199,15 @@ Feature: WorkOrder Project API Test
 }
   """
 
+
+    And metasfresh contains AD_Users:
+      | AD_User_ID.Identifier         | OPT.AD_User_ID | Name                          |
+      | newParentSpecialistConsultant | 444            | newParentSpecialistConsultant |
+      | newParentSalesRep             | 555            | newParentSalesRep             |
     And metasfresh contains C_Project
-      | C_Project_ID | Name       | C_Currency_ID.ISO_Code |
-      | 3000001      | new_parent | EUR                    |
+      | C_Project_ID | Name       | C_Currency_ID.ISO_Code | OPT.Value        | OPT.ProjectCategory | OPT.C_ProjectType_ID.Identifier | OPT.C_Project_Reference_Ext | OPT.InternalPriority | OPT.Specialist_Consultant_ID.Identifier | OPT.BPartnerDepartment      | OPT.SalesRep_ID.Identifier |
+      | 3000001      | new_parent | EUR                    | newParentProject | B                   | parentProjectType               | newParentExternalRef        | 7                    | newParentSpecialistConsultant           | newParentBPartnerDepartment | newParentSalesRep          |
+
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
   """
 {
@@ -280,12 +298,12 @@ Feature: WorkOrder Project API Test
     "projectTypeId": 540009,
     "priceListVersionId": 2002139,
     "currencyCode": "CHF",
-    "salesRepId": 2188223,
+    "salesRepId": 555,
     "description": "testDescription_2",
     "dateContract": "2022-06-15",
     "dateFinish": "2022-06-16",
     "bpartnerId": 2156425,
-    "projectReferenceExt": "woReferenceExt",
+    "projectReferenceExt": "newParentExternalRef",
     "externalId": "woExternalId",
     "projectParentId": 3000001,
     "orgCode": "001",
@@ -293,9 +311,11 @@ Feature: WorkOrder Project API Test
     "dateOfProvisionByBPartner": "2022-06-22",
     "woOwner": "woOwnerTest_2",
     "poReference": "RDCBCO212ABN_2",
-    "bpartnerDepartment": "bpartnerDepartmentTest_2",
+    "bpartnerDepartment": "newParentBPartnerDepartment",
     "bpartnerTargetDate": "2022-06-21",
     "woProjectCreatedDate": "2022-06-20",
+    "specialistConsultantId": 444,
+    "internalPriority": "7",
     "steps": [
       {
         "stepId": 1000000,
@@ -348,9 +368,13 @@ Feature: WorkOrder Project API Test
 }
   """
 
+    And metasfresh contains AD_Users:
+      | AD_User_ID.Identifier          | OPT.AD_User_ID | Name                           |
+      | newParentSpecialistConsultant2 | 666            | newParentSpecialistConsultant2 |
+      | newParentSalesRep2             | 777            | newParentSalesRep2             |
     And metasfresh contains C_Project
-      | C_Project_ID | Name         | C_Currency_ID.ISO_Code |
-      | 3000002      | new_parent_2 | EUR                    |
+      | C_Project_ID | Name         | C_Currency_ID.ISO_Code | OPT.Value         | OPT.ProjectCategory | OPT.C_ProjectType_ID.Identifier | OPT.C_Project_Reference_Ext | OPT.InternalPriority | OPT.Specialist_Consultant_ID.Identifier | OPT.BPartnerDepartment       | OPT.SalesRep_ID.Identifier |
+      | 3000002      | new_parent_2 | EUR                    | newParentProject2 | B                   | parentProjectType               | newParentExternalRef2       | 1                    | newParentSpecialistConsultant2          | newParentBPartnerDepartment2 | newParentSalesRep2         |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
   """
@@ -380,12 +404,12 @@ Feature: WorkOrder Project API Test
     "projectTypeId": 540009,
     "priceListVersionId": 2002139,
     "currencyCode": "CHF",
-    "salesRepId": 2188223,
+    "salesRepId": 777,
     "description": "testDescription_2",
     "dateContract": "2022-06-15",
     "dateFinish": "2022-06-16",
     "bpartnerId": 2156425,
-    "projectReferenceExt": "woReferenceExt",
+    "projectReferenceExt": "newParentExternalRef2",
     "externalId": "woExternalId",
     "projectParentId": 3000002,
     "orgCode": "001",
@@ -393,9 +417,11 @@ Feature: WorkOrder Project API Test
     "dateOfProvisionByBPartner": "2022-06-22",
     "woOwner": "woOwnerTest_2",
     "poReference": "RDCBCO212ABN_2",
-    "bpartnerDepartment": "bpartnerDepartmentTest_2",
+    "bpartnerDepartment": "newParentBPartnerDepartment2",
     "bpartnerTargetDate": "2022-06-21",
     "woProjectCreatedDate": "2022-06-20",
+    "specialistConsultantId": 666,
+    "internalPriority": "1",
     "steps": [
       {
         "stepId": 1000000,

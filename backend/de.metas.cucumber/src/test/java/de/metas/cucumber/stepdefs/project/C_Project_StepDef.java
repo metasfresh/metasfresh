@@ -27,10 +27,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.R_Status_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.projectType.C_ProjectType_StepDefData;
 import de.metas.currency.Currency;
@@ -48,6 +48,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -56,8 +57,9 @@ import org.compiere.model.I_R_Status;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class C_Project_StepDef
 {
@@ -70,19 +72,22 @@ public class C_Project_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_ProjectType_StepDefData projectTypeTable;
 	private final R_Status_StepDefData rStatusTable;
+	private final AD_User_StepDefData userTable;
 
 	public C_Project_StepDef(
 			@NonNull final TestContext testContext,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_ProjectType_StepDefData projectTypeTable,
-			@NonNull final R_Status_StepDefData rStatusTable)
+			@NonNull final R_Status_StepDefData rStatusTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.testContext = testContext;
 		this.projectTable = projectTable;
 		this.bpartnerTable = bpartnerTable;
 		this.projectTypeTable = projectTypeTable;
 		this.rStatusTable = rStatusTable;
+		this.userTable = userTable;
 	}
 
 	@Given("metasfresh contains C_Project")
@@ -124,7 +129,7 @@ public class C_Project_StepDef
 
 	private void metasfreshContainsProject(@NonNull final Map<String, String> tableRow)
 	{
-		final int projectId = DataTableUtil.extractIntForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID);
+		final Integer projectId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_Name);
 		final String currencyIsoCode = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Currency_ID + ".ISO_Code");
 
@@ -133,16 +138,83 @@ public class C_Project_StepDef
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
-		projectRecord.setC_Project_ID(projectId);
 		projectRecord.setName(name);
 		projectRecord.setC_Currency_ID(currency.getId().getRepoId());
 
+		if (projectId != null)
+		{
+			projectRecord.setC_Project_ID(projectId);
+		}
+
+		final String projectCategory = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_ProjectCategory);
+		if (Check.isNotBlank(projectCategory))
+		{
+			projectRecord.setProjectCategory(projectCategory);
+		}
+
+		final String value = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_Value);
+		if (Check.isNotBlank(value))
+		{
+			projectRecord.setValue(value);
+		}
+
+		final String projectTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_ProjectType_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectTypeIdentifier))
+		{
+			final I_C_ProjectType projectType = projectTypeTable.get(projectTypeIdentifier);
+			assertThat(projectType).isNotNull();
+
+			projectRecord.setC_ProjectType_ID(projectType.getC_ProjectType_ID());
+		}
+
+		final String projectRefExt = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_Project_Reference_Ext);
+		if (Check.isNotBlank(projectRefExt))
+		{
+			projectRecord.setC_Project_Reference_Ext(projectRefExt);
+		}
+
+		final String bpartnerDepartment = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_BPartnerDepartment);
+		if (Check.isNotBlank(bpartnerDepartment))
+		{
+			projectRecord.setBPartnerDepartment(bpartnerDepartment);
+		}
+
+		final String specialistConsultantIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_Specialist_Consultant_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(specialistConsultantIdentifier))
+		{
+			final I_AD_User specialistConsultant = userTable.get(specialistConsultantIdentifier);
+			assertThat(specialistConsultant).isNotNull();
+
+			projectRecord.setSpecialist_Consultant_ID(specialistConsultant.getAD_User_ID());
+		}
+
+		final String salesRepIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_SalesRep_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(salesRepIdentifier))
+		{
+			final I_AD_User salesRep = userTable.get(salesRepIdentifier);
+			assertThat(salesRep).isNotNull();
+
+			projectRecord.setSalesRep_ID(salesRep.getAD_User_ID());
+		}
+
+		final String internalPriority = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_InternalPriority);
+		if (Check.isNotBlank(internalPriority))
+		{
+			projectRecord.setInternalPriority(internalPriority);
+		}
+
 		saveRecord(projectRecord);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			projectTable.putOrReplace(projectIdentifier, projectRecord);
+		}
 	}
 
 	private void validateProject(@NonNull final Map<String, String> tableRow)
 	{
-		final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_C_Project projectRecord = projectTable.get(projectIdentifier);
 
@@ -167,7 +239,7 @@ public class C_Project_StepDef
 			assertThat(projectRecord.getDescription()).isEqualTo(description);
 		}
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(bpartnerIdentifier))
 		{
@@ -186,7 +258,7 @@ public class C_Project_StepDef
 			assertThat(projectRecord.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
 		}
 
-		final String projectTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_ProjectType_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_ProjectType_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(projectTypeIdentifier))
 		{
@@ -197,7 +269,7 @@ public class C_Project_StepDef
 			assertThat(projectRecord.getC_ProjectType_ID()).isEqualTo(projectTypeId);
 		}
 
-		final String rStatusIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_R_Project_Status_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String rStatusIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_R_Project_Status_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(rStatusIdentifier))
 		{
@@ -217,7 +289,7 @@ public class C_Project_StepDef
 			@NonNull final Map<String, String> tableRow,
 			@NonNull final JsonResponseProjectUpsertItem jsonResponseProjectUpsertItem)
 	{
-		final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_C_Project projectRecord = projectRepository.getRecordById(ProjectId.ofRepoId(jsonResponseProjectUpsertItem.getMetasfreshId().getValue()));
 

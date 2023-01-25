@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.project;
+package de.metas.cucumber.stepdefs.project.budget;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.project.ProjectId;
+import org.compiere.model.I_C_Project_Resource_Budget;
 
-public class ProjectId_StepDefData extends StepDefData<ProjectId>
+public class C_Project_Resource_Budget_StepDefData extends StepDefData<I_C_Project_Resource_Budget>
 {
-	public ProjectId_StepDefData()
+	public C_Project_Resource_Budget_StepDefData()
 	{
-		super(ProjectId.class);
+		super(I_C_Project_Resource_Budget.class);
 	}
 }

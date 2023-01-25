@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Project
  *  @author metasfresh (generated) 
@@ -620,6 +621,27 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_GenerateTo = new ModelColumn<>(I_C_Project.class, "GenerateTo", null);
 	String COLUMNNAME_GenerateTo = "GenerateTo";
+
+	/**
+	 * Set Internal Priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalPriority (@Nullable java.lang.String InternalPriority);
+
+	/**
+	 * Get Internal Priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalPriority();
+
+	ModelColumn<I_C_Project, Object> COLUMN_InternalPriority = new ModelColumn<>(I_C_Project.class, "InternalPriority", null);
+	String COLUMNNAME_InternalPriority = "InternalPriority";
 
 	/**
 	 * Set Invoiced Amount.

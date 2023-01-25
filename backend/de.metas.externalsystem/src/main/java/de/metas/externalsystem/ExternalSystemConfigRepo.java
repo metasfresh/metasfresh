@@ -70,7 +70,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
@@ -217,11 +216,10 @@ public class ExternalSystemConfigRepo
 			case LeichUndMehl:
 				result = getAllByTypeLeichMehl();
 				break;
-			case Shopware6:
 			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
+				result = getAllByTypeOther();
+				break;
+			case Shopware6:
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -902,6 +900,21 @@ public class ExternalSystemConfigRepo
 				.create()
 				.stream()
 				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeOther()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config.COLUMNNAME_Type, ExternalSystemType.Other.getCode())
+				.create()
+				.stream()
+				.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
+				.map(ExternalSystemParentConfigId::ofRepoId)
+				.map(ExternalSystemOtherConfigId::ofExternalSystemParentConfigId)
+				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
 	}
 
