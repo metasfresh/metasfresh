@@ -5,7 +5,6 @@ import java.util.List;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.organization.ClientAndOrgId;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -14,9 +13,7 @@ import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -52,6 +49,8 @@ import de.metas.util.Services;
  */
 /* package */ abstract class WEBUI_M_ReceiptSchedule_ReceiveHUs_Base extends ReceiptScheduleBasedProcess
 {
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+
 	protected abstract I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template);
 
 	protected abstract boolean isUpdateReceiptScheduleDefaultConfiguration();
@@ -79,31 +78,9 @@ import de.metas.util.Services;
 		return checkEligibleForReceivingHUs(receiptSchedule);
 	}
 
-	/**
-	 * @return true if given receipt schedule is eligible for receiving HUs
-	 */
-	public static ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	protected I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		// Receipt schedule shall not be already closed
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-		if (receiptScheduleBL.isClosed(receiptSchedule))
-		{
-			return ProcessPreconditionsResolution.reject("receipt schedule closed");
-		}
-
-		// Receipt schedule shall not be about packing materials
-		if (receiptSchedule.isPackagingMaterial())
-		{
-			return ProcessPreconditionsResolution.reject("not applying for packing materials");
-		}
-
-		return ProcessPreconditionsResolution.accept();
-
-	}
-
-	protected static I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
-	{
-		final I_M_HU_LUTU_Configuration lutuConfig = Services.get(IHUReceiptScheduleBL.class)
+		final I_M_HU_LUTU_Configuration lutuConfig = huReceiptScheduleBL
 				.createLUTUConfigurationManager(receiptSchedule)
 				.getCreateLUTUConfiguration();
 
@@ -118,10 +95,10 @@ import de.metas.util.Services;
 
 	@Override
 	@RunOutOfTrx
-	protected final String doIt() throws Exception
+	protected final String doIt()
 	{
 		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
+		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
 
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
 				.addM_ReceiptSchedule(receiptSchedule)
@@ -151,9 +128,7 @@ import de.metas.util.Services;
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 
-		hus.forEach(hu -> {
-			updateAttributes(hu, receiptSchedule);
-		});
+		hus.forEach(hu -> huReceiptScheduleBL.updateHUAttributesFromReceiptSchedule(hu, receiptSchedule));
 		openHUsToReceive(hus);
 
 		return MSG_OK;

@@ -7,9 +7,9 @@ import de.metas.forex.ForexContractId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -18,6 +18,8 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleExternalInfo;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -77,6 +79,17 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	@NonNull
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
 
+	void updateHUAttributesFromReceiptSchedule(
+			@NonNull I_M_HU hu,
+			@NonNull I_M_ReceiptSchedule receiptSchedule);
+
+	@Nullable
+	I_M_HU createPlanningVHU(
+			@NonNull I_M_ReceiptSchedule receiptSchedule,
+			@Nullable Quantity qtyToReceive);
+
+	StockQtyAndUOMQty getQtyToMove(I_M_ReceiptSchedule receiptSchedule);
+
 	@Value
 	@Builder
 	class CreateReceiptsParameters
@@ -132,8 +145,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	void destroyHandlingUnits(List<I_M_ReceiptSchedule_Alloc> allocations, String trxName);
 
 	IProductStorage createProductStorage(de.metas.inoutcandidate.model.I_M_ReceiptSchedule rs);
-
-	IAllocationSource createAllocationSource(I_M_ReceiptSchedule receiptSchedule);
 
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_ReceiptSchedule receiptSchedule);
 
