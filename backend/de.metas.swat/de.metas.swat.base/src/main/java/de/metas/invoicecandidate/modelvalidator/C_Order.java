@@ -5,7 +5,7 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
-import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
@@ -89,7 +89,7 @@ public class C_Order
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+		final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 				.stat(stats)
 				.additionalAmt(grandTotal) // null is threated like zero
 				.date(dateOrdered)

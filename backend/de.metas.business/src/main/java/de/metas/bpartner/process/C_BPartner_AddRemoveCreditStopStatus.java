@@ -5,7 +5,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
-import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.IProcessPrecondition;
@@ -17,7 +17,6 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_BPartner_Stats;
 
 /**
  * This process set credit status to Credit Stop or removes it, in function by parameter <code>IsSetCreditStop</code> <br>
@@ -52,7 +51,7 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		}
 		else if (SetCreditStatusEnum.Calculate.equals(setCreditStatus))
 		{
-			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+			final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 					.stat(stats)
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())

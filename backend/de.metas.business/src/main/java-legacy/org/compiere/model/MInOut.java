@@ -25,7 +25,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
-import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
@@ -1280,7 +1280,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(getC_BPartner_ID());
 		final BigDecimal notInvoicedAmt = Services.get(IOrderDAO.class).getNotInvoicedAmt(bpartnerId);
 
-		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+		final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 				.stat(stats)
 				.additionalAmt(notInvoicedAmt)
 				.date(getMovementDate())

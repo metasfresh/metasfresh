@@ -3,6 +3,7 @@ package de.metas.deliveryplanning.interceptor;
 import de.metas.deliveryplanning.DeliveryInstructionUserNotificationsProducer;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.event.IEventBusFactory;
+import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 public class M_ShipperTransportation
 {
 	private final DeliveryPlanningService deliveryPlanningService;
+
+	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	@Init
 	public void onInit()
 	{

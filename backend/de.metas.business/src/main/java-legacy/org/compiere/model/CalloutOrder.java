@@ -26,6 +26,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
@@ -676,8 +677,9 @@ public class CalloutOrder extends CalloutEngine
 			@NonNull final ICalloutField calloutField,
 			@NonNull final I_C_Order order)
 	{
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartnerId);
+		final BPartnerStats bPartnerStats = bPartnerStatsService.getCreateBPartnerStats(bpartnerId);
 
 		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 				.bpartnerId(bpartnerId.getRepoId())

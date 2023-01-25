@@ -26,7 +26,7 @@ import de.metas.bpartner.process.SetCreditStatusEnum;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
-import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
@@ -125,7 +125,7 @@ public class C_BPartner_Stats_StepDef
 	{
 		if (SetCreditStatusEnum.Calculate.getCode().equals(creditStatusCode))
 		{
-			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+			final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 					.stat(stats)
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())

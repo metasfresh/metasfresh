@@ -188,19 +188,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 	}
-
-	@Override
-	public Iterator<I_M_ShippingPackage> retrieveCompletedDeliveryInstructionLines(@NonNull final BPartnerStats bpStats)
-	{
-		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, bpStats.getBpartnerId())
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Completed)
-				.andCollectChildren(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, I_M_ShippingPackage.class)
-				.create()
-				.iterate(I_M_ShippingPackage.class);
-
-	}
-
 	@Override
 	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus soCreditStatus)
 	{

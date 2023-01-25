@@ -78,5 +78,4 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	@Nullable
 	abstract BigDecimal computeActualLifeTimeValue(@NonNull BPartnerId partnerId);
 
-	Iterator<I_M_ShippingPackage> retrieveCompletedDeliveryInstructionLines(BPartnerStats bpStats);
 }

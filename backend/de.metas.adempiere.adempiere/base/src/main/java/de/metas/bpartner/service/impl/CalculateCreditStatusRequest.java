@@ -34,7 +34,7 @@ import java.sql.Timestamp;
 import static java.math.BigDecimal.ZERO;
 
 @Value
-public class CalculateSOCreditStatusRequest
+public class CalculateCreditStatusRequest
 {
 	BPartnerStats stat;
 	BigDecimal additionalAmt;
@@ -42,7 +42,7 @@ public class CalculateSOCreditStatusRequest
 	boolean forceCheckCreditStatus;
 
 	@Builder
-	private CalculateSOCreditStatusRequest(
+	private CalculateCreditStatusRequest(
 			@NonNull BPartnerStats stat,
 			@NonNull Timestamp date,
 			BigDecimal additionalAmt,

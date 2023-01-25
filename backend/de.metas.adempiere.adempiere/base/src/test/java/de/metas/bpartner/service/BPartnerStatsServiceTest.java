@@ -1,7 +1,7 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.common.util.time.SystemTime;
 import org.junit.Test;
 
@@ -41,13 +41,13 @@ public class BPartnerStatsServiceTest
 				.bpartnerId(BPartnerId.ofRepoId(10))
 				.build();
 
-		final CalculateSOCreditStatusRequest calculateSOCreditStatusRequest = CalculateSOCreditStatusRequest.builder()
+		final CalculateCreditStatusRequest calculateCreditStatusRequest = CalculateCreditStatusRequest.builder()
 				.date(SystemTime.asTimestamp())
 				.additionalAmt(null)
 				.stat(stat)
 				.build();
 
-		assertThat(calculateSOCreditStatusRequest.getAdditionalAmt()).isEqualByComparingTo(ZERO);
+		assertThat(calculateCreditStatusRequest.getAdditionalAmt()).isEqualByComparingTo(ZERO);
 	}
 
 }

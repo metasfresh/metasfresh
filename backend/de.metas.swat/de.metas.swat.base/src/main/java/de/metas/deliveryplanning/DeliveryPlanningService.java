@@ -24,8 +24,15 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -41,6 +48,12 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -51,8 +64,10 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.tax.api.ITaxBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -65,9 +80,13 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.MTax;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -96,6 +115,8 @@ public class DeliveryPlanningService
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
+	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
+
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -104,9 +125,25 @@ public class DeliveryPlanningService
 
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
-	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
+	private final BPartnerStatsService bPartnerStatsService;
+
+	final MoneyService moneyService;
+
+	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
+	final ITaxBL taxBL = Services.get(ITaxBL.class);
+
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
+			@NonNull final BPartnerStatsService bPartnerStatsService,
+			@NonNull MoneyService moneyService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
+		this.bPartnerStatsService = bPartnerStatsService;
+		this.moneyService = moneyService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -296,21 +333,111 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.isExistNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
-	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest)
 	{
-		final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
+		final DeliveryInstructionUserNotificationsProducer deliveryInstructionUserNotificationsProducer = DeliveryInstructionUserNotificationsProducer.newInstance();
+
+		if (!creditLimitAllowsDeliveryInstruction(deliveryInstructionRequest))
+		{
+			deliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError();
+			return;
+		}
+
+		final DeliveryPlanningId deliveryPlanningId = deliveryInstructionRequest.getDeliveryPlanningId();
 
 		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
 
 		docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		DeliveryInstructionUserNotificationsProducer.newInstance()
+		deliveryInstructionUserNotificationsProducer
 				.notifyGenerated(deliveryInstruction);
 
 		deliveryPlanningRepository.updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstruction);
 
 		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
 
+	}
+
+	public boolean creditLimitAllowsDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest)
+	{
+
+		final BPartnerStats stats = bPartnerStatsService.getCreateBPartnerStats(deliveryInstructionRequest.getShipperBPartnerId());
+		final CreditStatus deliveryCreditStatus = stats.getDeliveryCreditStatus();
+
+		if (CreditStatus.CreditStop.equals(deliveryCreditStatus) || CreditStatus.CreditHold.equals(deliveryCreditStatus))
+		{
+			return false;
+		}
+
+		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(deliveryInstructionRequest.getClientId(),
+																	   deliveryInstructionRequest.getOrgId());
+
+		final Money creditUsedByDeliveryInstruction = computeCreditUsedByDeliveryInstruction(deliveryInstructionRequest, baseCurrencyId);
+
+		final CalculateCreditStatusRequest calculateCreditStatusRequest = CalculateCreditStatusRequest.builder()
+				.stat(stats)
+				.additionalAmt(creditUsedByDeliveryInstruction.toBigDecimal())
+				.date(TimeUtil.asTimestamp(deliveryInstructionRequest.getDateDoc()))
+				.build();
+
+		final CreditStatus calculatedDeliveryCreditStatus = bPartnerStatsService.calculateProjectedDeliveryCreditStatus(calculateCreditStatusRequest);
+
+		if (CreditStatus.CreditHold.equals(calculatedDeliveryCreditStatus))
+		{
+			return false;
+		}
+
+		return true;
+
+	}
+
+	private Money computeCreditUsedByDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request,
+			@NonNull final CurrencyId currencyId)
+	{
+		if (request.getOrderLineId() == null)
+		{
+			return Money.zero(currencyId);
+		}
+
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(request.getOrderLineId());
+
+		final Quantity actualLoadQty = request.getQtyLoaded();
+
+		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
+														orderLineCurrencyId);
+
+		final int taxId = orderLine.getC_Tax_ID();
+
+		final Money taxAmtInfo;
+		if (taxId <= 0)
+		{
+			taxAmtInfo = Money.zero(orderLineCurrencyId);
+		}
+
+		else
+		{
+			final boolean taxIncluded = orderLineBL.isTaxIncluded(orderLine);
+
+			final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
+
+			final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
+
+			taxAmtInfo = Money.of(taxBL.calculateTax(tax, qtyNetPriceFromOrderLine.toBigDecimal(), taxIncluded, taxPrecision.toInt()), orderLineCurrencyId);
+		}
+
+		final CurrencyConversionContext currencyConversionContext = extractDeliveryInstructionConversionContext(request);
+
+		return moneyService.convertMoneyToCurrency(taxAmtInfo.add(qtyNetPriceFromOrderLine), currencyId, currencyConversionContext);
+	}
+
+	private CurrencyConversionContext extractDeliveryInstructionConversionContext(final DeliveryInstructionCreateRequest request)
+	{
+		return currencyBL.createCurrencyConversionContext(
+				request.getDateDoc(),
+				(CurrencyConversionTypeId)null,
+				request.getClientId(),
+				request.getOrgId());
 	}
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -390,7 +517,10 @@ public class DeliveryPlanningService
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
-			generateCompleteDeliveryInstruction(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+
+			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+
+			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
 		}
 	}
 
@@ -398,4 +528,5 @@ public class DeliveryPlanningService
 	{
 		deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId);
 	}
+
 }
