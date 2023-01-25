@@ -78,10 +78,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				.bpartnerId(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))
 				.actualLifeTimeValue(statsRecord.getActualLifeTimeValue())
 				.openItems(statsRecord.getOpenItems())
-				.soCreditStatus(statsRecord.getSOCreditStatus())
+				.soCreditStatus(CreditStatus.ofNullableCode(statsRecord.getSOCreditStatus()))
 				.soCreditUsed(statsRecord.getSO_CreditUsed())
 				.deliveryCreditUsed(statsRecord.getDelivery_CreditUsed())
-				.deliveryCreditStatus((statsRecord.getDelivery_CreditStatus()))
+				.deliveryCreditStatus(CreditStatus.ofNullableCode(statsRecord.getDelivery_CreditStatus()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(statsRecord.getM_SectionCode_ID()))
 				.build();
 	}
@@ -202,11 +202,11 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final String soCreditStatus)
+	public void setSOCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus soCreditStatus)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
-		stats.setSOCreditStatus(soCreditStatus);
+		stats.setSOCreditStatus(CreditStatus.toCodeOrNull(soCreditStatus));
 
 		saveRecord(stats);
 

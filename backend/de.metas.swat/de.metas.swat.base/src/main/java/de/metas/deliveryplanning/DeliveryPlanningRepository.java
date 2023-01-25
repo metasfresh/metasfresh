@@ -268,6 +268,8 @@ public class DeliveryPlanningRepository
 		deliveryInstructionRecord.setC_BPartner_Location_Delivery_ID(request.getDeliveryPartnerLocationId().getRepoId());
 		deliveryInstructionRecord.setC_BPartner_Location_Loading_ID(request.getLoadingPartnerLocationId().getRepoId());
 
+		deliveryInstructionRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
+
 		save(deliveryInstructionRecord);
 
 		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
@@ -294,7 +296,6 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
 
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
-		shippingPackageRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
 
 		saveRecord(shippingPackageRecord);
 
@@ -349,7 +350,6 @@ public class DeliveryPlanningRepository
 
 	private void unlinkShippingPackage(@NonNull final I_M_ShippingPackage shippingPackage)
 	{
-		shippingPackage.setM_Delivery_Planning_ID(-1);
 		shippingPackage.setC_OrderLine_ID(-1);
 		save(shippingPackage);
 	}

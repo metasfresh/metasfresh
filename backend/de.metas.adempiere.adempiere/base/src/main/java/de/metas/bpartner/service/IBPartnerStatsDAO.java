@@ -1,6 +1,7 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -68,7 +69,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
 	 */
-	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
+	void setSOCreditStatus(BPartnerStats stats, CreditStatus soCreditStatus);
 
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 

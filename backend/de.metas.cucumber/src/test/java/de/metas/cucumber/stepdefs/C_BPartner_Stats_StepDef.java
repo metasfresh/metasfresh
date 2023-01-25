@@ -27,6 +27,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -113,14 +114,14 @@ public class C_BPartner_Stats_StepDef
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 
-		final String creditStatus = getCreditStatus(creditStatusCode, stats);
+		final CreditStatus creditStatus = getCreditStatus(creditStatusCode, stats);
 
 		assertThat(creditStatus).isNotNull();
 		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
 	}
 
 	@NonNull
-	private String getCreditStatus(@NonNull final String creditStatusCode, @NonNull final BPartnerStats stats)
+	private CreditStatus getCreditStatus(@NonNull final String creditStatusCode, @NonNull final BPartnerStats stats)
 	{
 		if (SetCreditStatusEnum.Calculate.getCode().equals(creditStatusCode))
 		{
@@ -133,6 +134,6 @@ public class C_BPartner_Stats_StepDef
 			return bPartnerStatsService.calculateProjectedSOCreditStatus(request);
 		}
 
-		return creditStatusCode;
+		return CreditStatus.ofCode(creditStatusCode);
 	}
 }

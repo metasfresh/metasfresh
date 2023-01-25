@@ -6,6 +6,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -40,14 +41,14 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		final I_C_BPartner bPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(getRecord_ID()));
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
-		final String creditStatus;
+		final CreditStatus creditStatus;
 
 		if (SetCreditStatusEnum.CreditOK.equals(setCreditStatus)) {
-			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+			creditStatus = CreditStatus.CreditOK;
 		}
 		else if (SetCreditStatusEnum.CreditStop.equals(setCreditStatus))
 		{
-			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop;
+			creditStatus = CreditStatus.CreditStop;
 		}
 		else if (SetCreditStatusEnum.Calculate.equals(setCreditStatus))
 		{

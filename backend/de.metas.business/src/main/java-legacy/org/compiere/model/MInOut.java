@@ -26,6 +26,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
@@ -1258,18 +1259,18 @@ public class MInOut extends X_M_InOut implements IDocument
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
-		final String soCreditStatus = stats.getSoCreditStatus();
+		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
 		final BigDecimal creditUsed = stats.getSoCreditUsed();
 
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getMovementDate());
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		if (CreditStatus.CreditStop.equals(soCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
 												 + creditUsed
 												 + ", @SO_CreditLimit@=" + creditLimit);
 		}
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		if (CreditStatus.CreditHold.equals(soCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
 												 + creditUsed
@@ -1284,8 +1285,8 @@ public class MInOut extends X_M_InOut implements IDocument
 				.additionalAmt(notInvoicedAmt)
 				.date(getMovementDate())
 				.build();
-		final String calculatedCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
+		final CreditStatus calculatedCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
+		if (CreditStatus.CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
 												 + creditUsed + ", @NotInvoicedAmt@=" + notInvoicedAmt

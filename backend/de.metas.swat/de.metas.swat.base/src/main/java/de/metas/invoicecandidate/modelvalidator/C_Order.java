@@ -6,6 +6,7 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
@@ -55,13 +56,13 @@ public class C_Order
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(order.getBill_BPartner_ID());
 		final BigDecimal creditUsed = stats.getSoCreditUsed();
-		final String soCreditStatus = stats.getSoCreditStatus();
+		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getBill_BPartner_ID(), dateOrdered);
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		if (CreditStatus.CreditStop.equals(soCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
 												 .appendADElement("BPartnerCreditStop").append(":")
@@ -69,7 +70,7 @@ public class C_Order
 												 .append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
 												 .build());
 		}
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		if (CreditStatus.CreditHold.equals(soCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
 												 .appendADElement("BPartnerCreditHold").append(":")
@@ -91,9 +92,9 @@ public class C_Order
 				.additionalAmt(grandTotal) // null is threated like zero
 				.date(dateOrdered)
 				.build();
-		final String calculatedSOCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
+		final CreditStatus calculatedSOCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
+		if (CreditStatus.CreditHold.equals(calculatedSOCreditStatus))
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
 												 .appendADElement("BPartnerOverOCreditHold").append(":")

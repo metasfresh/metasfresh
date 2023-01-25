@@ -98,13 +98,13 @@ public class BPartnerStatsService
 		this.moneyService = moneyService;
 	}
 
-	public String calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
+	public CreditStatus calculateProjectedSOCreditStatus(@NonNull final CalculateSOCreditStatusRequest request)
 	{
 		final BPartnerStats bpStats = request.getStat();
 		final BigDecimal additionalAmt = request.getAdditionalAmt();
 		final Timestamp date = request.getDate();
 
-		final String initialCreditStatus = bpStats.getSoCreditStatus();
+		final CreditStatus initialCreditStatus = bpStats.getSoCreditStatus();
 
 		if (!request.isForceCheckCreditStatus() && additionalAmt.signum() == 0)
 		{
@@ -115,8 +115,8 @@ public class BPartnerStatsService
 		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), date);
 
 		// Nothing to do
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
-				|| (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus) && !request.isForceCheckCreditStatus())
+		if (CreditStatus.NoCreditCheck.equals(initialCreditStatus)
+				|| (CreditStatus.CreditStop.equals(initialCreditStatus) && !request.isForceCheckCreditStatus())
 				|| creditLimit.signum() == 0)
 		{
 			return initialCreditStatus;
@@ -127,18 +127,18 @@ public class BPartnerStatsService
 		final BigDecimal so_creditUsed = bpStats.getSoCreditUsed();
 		if (creditLimit.compareTo(so_creditUsed) < 0)
 		{
-			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
+			return CreditStatus.CreditHold;
 		}
 
 		// Above Watch Limit
 		final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
 		if (watchAmt.compareTo(so_creditUsed) < 0)
 		{
-			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
+			return CreditStatus.CreditWatch;
 		}
 
 		// is OK
-		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+		return CreditStatus.CreditOK;
 	}
 
 	public boolean isCreditStopSales(@NonNull final BPartnerStats stat, @NonNull final BigDecimal grandTotal, @NonNull final Timestamp date)
@@ -148,9 +148,10 @@ public class BPartnerStatsService
 				.additionalAmt(grandTotal)
 				.date(date)
 				.build();
-		final String futureCreditStatus = calculateProjectedSOCreditStatus(request);
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(futureCreditStatus))
+		final CreditStatus futureCreditStatus = calculateProjectedSOCreditStatus(request);
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(CreditStatus.toCodeOrNull(futureCreditStatus)))
 		{
 			return true;
 		}
@@ -194,12 +195,12 @@ public class BPartnerStatsService
 	{
 		final BPartnerStats bPartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bPartnerId);
 
-		if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(bPartnerStats.getSoCreditStatus()))
+		if (!CreditStatus.NoCreditCheck.equals(bPartnerStats.getSoCreditStatus()))
 		{
 			return;
 		}
 
-		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch);
+		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, CreditStatus.CreditWatch);
 	}
 
 	public void updateBPartnerStatistics(BPartnerStats bpStats)
@@ -345,13 +346,13 @@ public class BPartnerStatsService
 
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
 
-		final String initialCreditStatus = bpStats.getSoCreditStatus();
+		final CreditStatus initialCreditStatus = bpStats.getSoCreditStatus();
 
 		String creditStatusToSet;
 
 		// Nothing to do
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
-				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+		if (CreditStatus.NoCreditCheck.equals(initialCreditStatus)
+				|| CreditStatus.CreditStop.equals(initialCreditStatus)
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 		{
 			return;
@@ -384,13 +385,13 @@ public class BPartnerStatsService
 
 	private void updateDeliveryCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-		final String initialCreditStatus = bpStats.getSoCreditStatus();
+		final CreditStatus initialCreditStatus = bpStats.getSoCreditStatus();
 
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
 
 		// Nothing to do
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
-				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
+		if (CreditStatus.NoCreditCheck.equals(initialCreditStatus)
+				|| CreditStatus.CreditStop.equals(initialCreditStatus)
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 		{
 			return;
@@ -457,8 +458,8 @@ public class BPartnerStatsService
 		}
 
 		final BPartnerStats stats = bPartnerStatsDAO.getCreateBPartnerStats(payment.getC_BPartner_ID());
-		final String soCreditStatus = stats.getSoCreditStatus();
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
+		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
+		if (CreditStatus.NoCreditCheck.equals(soCreditStatus))
 		{
 			return;
 		}
@@ -474,7 +475,7 @@ public class BPartnerStatsService
 												 + ", @SO_CreditLimit@=" + creditLimit);
 		}
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		if (CreditStatus.CreditHold.equals(soCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
 												 + soCreditUsed

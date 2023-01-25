@@ -1,13 +1,13 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.X_C_BPartner_Stats;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -47,8 +47,8 @@ public class BPartnerStats
 	BigDecimal actualLifeTimeValue;
 	BigDecimal soCreditUsed;
 	BigDecimal deliveryCreditUsed;
-	String soCreditStatus;
-	String deliveryCreditStatus;
+	CreditStatus soCreditStatus;
+	CreditStatus deliveryCreditStatus;
 	SectionCodeId sectionCodeId;
 
 	@Builder
@@ -60,8 +60,8 @@ public class BPartnerStats
 			@Nullable final BigDecimal actualLifeTimeValue,
 			@Nullable final BigDecimal soCreditUsed,
 			@Nullable final BigDecimal deliveryCreditUsed,
-			@Nullable final String soCreditStatus,
-			@Nullable final String deliveryCreditStatus)
+			@Nullable final CreditStatus soCreditStatus,
+			@Nullable final CreditStatus deliveryCreditStatus)
 	{
 		Check.assume(repoId > 0, "Given parameter repoId is > 0");
 
@@ -72,7 +72,7 @@ public class BPartnerStats
 		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
 		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
 		this.deliveryCreditUsed = CoalesceUtil.coalesce(deliveryCreditUsed, ZERO);
-		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
-		this.deliveryCreditStatus = CoalesceUtil.coalesce(deliveryCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, CreditStatus.NoCreditCheck);
+		this.deliveryCreditStatus = CoalesceUtil.coalesce(deliveryCreditStatus, CreditStatus.NoCreditCheck);
 	}
 }
