@@ -1,12 +1,18 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
+import de.metas.invoicecandidate.api.IInvoiceHeader;
+import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -17,16 +23,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.impl.AggregationEngine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -87,6 +88,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 
 		final AggregationEngine engine = AggregationEngine.builder()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -110,6 +112,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final AggregationEngine engine = AggregationEngine.builder()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
+				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -137,6 +140,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 
 		final AggregationEngine engine = AggregationEngine.builder()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);

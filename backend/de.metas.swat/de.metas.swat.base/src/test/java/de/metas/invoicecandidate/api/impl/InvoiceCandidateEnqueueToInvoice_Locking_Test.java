@@ -22,29 +22,29 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.costing.impl.ChargeRepository;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.greeting.GreetingRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_BPartner;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.async.api.NOPWorkpackageLogsRepository;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
-import de.metas.currency.CurrencyRepository;
-import de.metas.email.MailService;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
-import de.metas.util.Services;
+import java.util.List;
 
 /**
  * Makes sure the invoice candidates get the right locks along the "enqueue to invoice" process.
@@ -64,6 +64,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		NOPWorkpackageLogsRepository.registerToSpringContext();
+		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
 	}
 
 	@Override

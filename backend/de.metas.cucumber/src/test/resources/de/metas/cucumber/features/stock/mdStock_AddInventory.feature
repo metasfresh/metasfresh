@@ -17,9 +17,9 @@ Feature: stock changes accordingly
       | 11                        | 2021-07-12T00:00:00Z | 1111       |
       | 12                        | 2021-07-12T00:00:00Z | 2222       |
     And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID | QtyBook | QtyCount |
-      | 11                        | 21                            | 222          | 0       | 10       |
-      | 12                        | 22                            | 222          | 10      | 16       |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | OPT.M_Product_ID | M_Product_ID.Identifier | QtyBook | QtyCount |
+      | 11                        | 21                            | 222              | 222                     | 0       | 10       |
+      | 12                        | 22                            | 222              | 222                     | 10      | 16       |
     When complete inventory with inventoryIdentifier '11'
     Then after not more than 10 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |

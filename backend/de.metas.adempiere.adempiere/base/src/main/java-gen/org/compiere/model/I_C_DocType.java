@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -122,6 +123,31 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_C_DocType_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_ID", null);
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Invoicing Pool.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocType_Invoicing_Pool_ID (int C_DocType_Invoicing_Pool_ID);
+
+	/**
+	 * Get Invoicing Pool.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocType_Invoicing_Pool_ID();
+
+	@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool();
+
+	void setC_DocType_Invoicing_Pool(@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
 
 	/**
 	 * Set Difference Document.
@@ -636,7 +662,8 @@ public interface I_C_DocType
 	String COLUMNNAME_IsDocNoControlled = "IsDocNoControlled";
 
 	/**
-	 * Set Exclude From Commission.
+	 * Set Exclude from commission.
+	 * When activated, no commission instances will be created for the respective document types.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -645,7 +672,8 @@ public interface I_C_DocType
 	void setIsExcludeFromCommision (boolean IsExcludeFromCommision);
 
 	/**
-	 * Get Exclude From Commission.
+	 * Get Exclude from commission.
+	 * When activated, no commission instances will be created for the respective document types.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
