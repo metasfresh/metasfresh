@@ -105,7 +105,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		 * {@link de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc} will be assigned to the inOut.
 		 */
 		@Nullable
-		Set<HuId> selectedHuIds;
+		@Singular Set<HuId> selectedHuIds;
 
 		/**
 		 * If this is {@code true}, and if more than one receipt is created, then successfully created receipts won't be rolled back if other receipts fail.
@@ -115,7 +115,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 		boolean printReceiptLabels;
 
-		List<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules;
+		@Singular List<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules;
 
 		/**
 		 * If the receipt was created and the good were not automatically moved to the quarantine warehouse,
