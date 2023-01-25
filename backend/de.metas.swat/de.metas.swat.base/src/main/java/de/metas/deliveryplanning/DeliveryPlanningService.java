@@ -349,6 +349,7 @@ public class DeliveryPlanningService
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
+				.deliveryPlanningId(deliveryPlanningId)
 
 				.shipperBPartnerId(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()))
 				.shipperLocationId(deliveryPlanningLocationId)
@@ -393,7 +394,7 @@ public class DeliveryPlanningService
 
 	public void regenerateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningsSuitableForDeliveryInstruction(selectedDeliveryPlanningsFilter);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningsSuitableForRegenerateDeliveryInstruction(selectedDeliveryPlanningsFilter);
 
 		while (deliveryPlanningIterator.hasNext())
 		{
