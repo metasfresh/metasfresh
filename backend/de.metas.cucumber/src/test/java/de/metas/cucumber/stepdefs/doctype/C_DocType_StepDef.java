@@ -57,6 +57,16 @@ public class C_DocType_StepDef
 		this.docTypeTable = docTypeTable;
 	}
 
+	@And("load C_DocType:")
+	public void load_C_DocType(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadDocType(tableRow);
+		}
+	}
+
 	@And("update C_DocType:")
 	public void update_C_DocType(@NonNull final DataTable dataTable)
 	{
@@ -67,15 +77,6 @@ public class C_DocType_StepDef
 		}
 	}
 
-	@And("load C_DocType:")
-	public void load_C_DocType(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			loadDocType(tableRow);
-		}
-	}
 
 	private void loadDocType(@NonNull final Map<String, String> tableRow)
 	{
