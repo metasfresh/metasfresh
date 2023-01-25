@@ -13,6 +13,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#14370](https://github.com/metasfresh/metasfresh/pull/14370) import Allergens for bom products
+  * [#14429](https://github.com/metasfresh/metasfresh/pull/14429)  Increased Credit Limit be decreased again
   * [#14433](https://github.com/metasfresh/metasfresh/pull/14433)  Add M_SectionCode_ID to C_BPartner_Stats
   * [#14354](https://github.com/metasfresh/metasfresh/issues/14354) Automatically update PP Orders when a new BOM Version is imported
   * [#14414](https://github.com/metasfresh/metasfresh/issues/14414) Add Department Data Structures
