@@ -53,4 +53,8 @@ public class StepDefConstants
 	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);
 	public static final String HU_ATTR_LOT_NUMBER = "Lot-Nummer";
 	public static final int MANAGEMENT_CREDIT_LIMIT_TYPE_ID = 540001;
+
+	public static final String ORG_CODE = "orgCode";
+	public static final String CURRENCY_CODE = "currencyCode";
+	public static final String EXTENDED_PROPS = "ExtendedProps";
 }
