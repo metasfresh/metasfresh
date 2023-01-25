@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPartner_Stats, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 912483041L;
+	private static final long serialVersionUID = 357566475L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (final Properties ctx, final int C_BPartner_Stats_ID, @Nullable final String trxName)
@@ -99,6 +99,18 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	public java.lang.String getCreditLimitIndicator() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	@Override
+	public void setDeliveryCreditLimitIndicator (final @Nullable java.lang.String DeliveryCreditLimitIndicator)
+	{
+		set_Value (COLUMNNAME_DeliveryCreditLimitIndicator, DeliveryCreditLimitIndicator);
+	}
+
+	@Override
+	public java.lang.String getDeliveryCreditLimitIndicator() 
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryCreditLimitIndicator);
 	}
 
 	/** 
