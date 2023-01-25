@@ -83,7 +83,7 @@ public class C_DocType_StepDef
 		final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
 				.addOnlyActiveRecordsFilter();
 
-		final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_DocBaseType);
+		final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_DocBaseType);
 		if (Check.isNotBlank(docBaseType))
 		{
 			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
@@ -104,7 +104,7 @@ public class C_DocType_StepDef
 		final String name = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_DocType.COLUMNNAME_Name);
 		if (Check.isNotBlank(name))
 		{
-			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, name);
+			queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, DataTableUtil.nullToken2Null(name));
 		}
 
 		final I_C_DocType docType = queryBuilder.create().firstOnlyOrNull(I_C_DocType.class);
