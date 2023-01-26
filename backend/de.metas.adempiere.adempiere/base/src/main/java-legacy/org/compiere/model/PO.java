@@ -3614,6 +3614,10 @@ public abstract class PO
 				}
 			}
 		}
+		{
+			p_info.getColumnNames()
+					.forEach(this::handleEmptyDocSequenceAwareColumns);
+		}
 
 		lobReset();
 
@@ -5407,6 +5411,35 @@ public abstract class PO
 	public final int getLoadCount()
 	{
 		return m_loadCount;
+	}
+
+	private void handleEmptyDocSequenceAwareColumns(@NonNull final String columnName)
+	{
+		final int columnIndex = p_info.getColumnIndex(columnName);
+		final POInfoColumn poInfoColumn = p_info.getColumn(columnIndex);
+
+		Check.assumeNotNull(poInfoColumn, "POInfoColumn cannot be missing at this stage!");
+
+		if (!poInfoColumn.isString())
+		{
+			return;
+		}
+
+		final String value = (String)get_Value(columnIndex);
+		if (Check.isNotBlank(value))
+		{
+			return;
+		}
+
+		final String computedValue = SequenceUtil.computeColumnValueBasedOnSequenceIdIfProvided(poInfoColumn, getAD_Client_ID())
+				.orElse(null);
+
+		if (computedValue == null)
+		{
+			return;
+		}
+
+		set_ValueNoCheck(columnIndex, computedValue);
 	}
 
 	// metas: end

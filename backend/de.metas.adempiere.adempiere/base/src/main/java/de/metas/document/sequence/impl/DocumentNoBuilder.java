@@ -90,7 +90,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARYEAR}.
 	 */
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
-	
+
 	/**
 	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARMONTH}.
 	 */
@@ -301,25 +301,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 						.setParameter("context", evalContext);
 			}
 
-			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
-			{
-				logger.debug("getSequenceNoToUse - The customSequenceNoProvider.isUseIncrementSeqNoAsPrefix()=true; -> going to prepend an incremental sequence number to it");
-				if (!docSeqInfo.isAutoSequence())
-				{
-
-					throw new AdempiereException("The current customSequenceNoProvider requires this sequence to be configured as auto-sequence")
-							.appendParametersToMessage()
-							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
-							.setParameter("docSeqInfo", docSeqInfo);
-				}
-				result = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo,retrieveAndIncrementSeqNo(docSeqInfo) );
-			}
-			else
-			{
-				final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo, null);
-				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
-				result = customSequenceNumber;
-			}
+			result = customSequenceNoProvider.provideSeqNo(() -> getIncrementalSeqNo(docSeqInfo),
+														   evalContext,
+														   docSeqInfo);
 		}
 		else
 		{
@@ -627,5 +611,18 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private boolean isUsePreliminaryDocumentNo()
 	{
 		return _usePreliminaryDocumentNo;
+	}
+
+	@NonNull
+	private String getIncrementalSeqNo(@NonNull final DocumentSequenceInfo docSeqInfo) throws AdempiereException
+	{
+		if (!docSeqInfo.isAutoSequence())
+		{
+			throw new AdempiereException("getIncrementalSeqNo called for a non incremental sequence.")
+					.appendParametersToMessage()
+					.setParameter("docSeqInfo", docSeqInfo);
+		}
+
+		return retrieveAndIncrementSeqNo(docSeqInfo);
 	}
 }

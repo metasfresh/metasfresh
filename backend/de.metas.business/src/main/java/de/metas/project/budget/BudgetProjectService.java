@@ -45,9 +45,9 @@ public class BudgetProjectService
 	private final BudgetProjectResourceRepository resourceBudgetRepository;
 
 	public BudgetProjectService(
-			final ResourceService resourceService,
-			final BudgetProjectRepository projectRepository,
-			final BudgetProjectResourceRepository resourceBudgetRepository)
+			@NonNull final ResourceService resourceService,
+			@NonNull final BudgetProjectRepository projectRepository,
+			@NonNull final BudgetProjectResourceRepository resourceBudgetRepository)
 	{
 		this.resourceService = resourceService;
 		this.projectRepository = projectRepository;

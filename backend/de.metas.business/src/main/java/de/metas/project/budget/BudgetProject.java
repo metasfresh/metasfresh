@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
@@ -88,4 +89,13 @@ public class BudgetProject
 
 	@Nullable
 	LocalDate dateFinish;
+
+	@Nullable
+	String bpartnerDepartment;
+
+	@Nullable
+	UserId specialistConsultantID;
+
+	@Nullable
+	InternalPriority internalPriority;
 }

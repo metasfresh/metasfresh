@@ -41,12 +41,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static de.metas.rest_api.v2.project.budget.BudgetProjectRestController.BUDGET_PROJECT_REST_CONTROLLER_PATH_V2;
+
 @RestController
-@RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/project/budget" })
+@RequestMapping(value = { BUDGET_PROJECT_REST_CONTROLLER_PATH_V2 })
 @Profile(Profiles.PROFILE_App)
 public class BudgetProjectRestController
 {
+	public static final String BUDGET_PROJECT_REST_CONTROLLER_PATH_V2 = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/project/budget";
+
 	final BudgetProjectRestService projectRestService;
 
 	public BudgetProjectRestController(@NonNull final BudgetProjectRestService projectRestService)
