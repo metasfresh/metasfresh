@@ -63,12 +63,12 @@ SELECT
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
 	c.cursymbol, 
 	p.value AS p_value,
-	p.description AS p_description,
-	p.documentnote AS p_documentnote,
+    COALESCE(pt.description, p.description) AS p_description,
+    COALESCE(pt.documentnote, p.documentnote) AS p_documentnote,
 	o.description AS order_description,
 	(CASE WHEN pl.priceprecision <= 1
     THEN '#,##0.0'
-   ELSE Substring('#,##0.0000' FROM 0 FOR 7 + pl.priceprecision :: integer) END) AS price_pattern,
+   ELSE Substring('#,##0.0000' FROM 0 FOR 7 + pl.priceprecision :: integer) END) AS price_pattern
 
 FROM
 	C_OrderLine ol
