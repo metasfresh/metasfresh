@@ -178,3 +178,58 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=561919
 
 
 
+-- Element: Delivery_CreditUsed
+-- 2023-01-26T21:06:24.636Z
+UPDATE AD_Element_Trl SET Description='Specifies the amount of money that was already spent from the credit for completed delivery instructions. ',Updated=TO_TIMESTAMP('2023-01-26 23:06:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581934 AND AD_Language='de_CH'
+;
+
+-- 2023-01-26T21:06:24.652Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581934,'de_CH') 
+;
+
+-- Element: Delivery_CreditUsed
+-- 2023-01-26T21:06:32.066Z
+UPDATE AD_Element_Trl SET Description='Specifies the amount of money that was already spent from the credit for completed delivery instructions. ',Updated=TO_TIMESTAMP('2023-01-26 23:06:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581934 AND AD_Language='de_DE'
+;
+
+-- 2023-01-26T21:06:32.068Z
+UPDATE AD_Element SET Description='Specifies the amount of money that was already spent from the credit for completed delivery instructions. ' WHERE AD_Element_ID=581934
+;
+
+-- 2023-01-26T21:06:32.703Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581934,'de_DE') 
+;
+
+-- 2023-01-26T21:06:32.706Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581934,'de_DE') 
+;
+
+-- Element: Delivery_CreditUsed
+-- 2023-01-26T21:06:35.363Z
+UPDATE AD_Element_Trl SET Description='Specifies the amount of money that was already spent from the credit for completed delivery instructions. ',Updated=TO_TIMESTAMP('2023-01-26 23:06:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581934 AND AD_Language='en_US'
+;
+
+-- 2023-01-26T21:06:35.365Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581934,'en_US') 
+;
+
+-- Element: Delivery_CreditUsed
+-- 2023-01-26T21:06:37.727Z
+UPDATE AD_Element_Trl SET Description='Specifies the amount of money that was already spent from the credit for completed delivery instructions. ',Updated=TO_TIMESTAMP('2023-01-26 23:06:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581934 AND AD_Language='fr_CH'
+;
+
+-- 2023-01-26T21:06:37.730Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581934,'fr_CH') 
+;
+
+-- Element: Delivery_CreditUsed
+-- 2023-01-26T21:06:41.417Z
+UPDATE AD_Element_Trl SET Description='Specifies the amount of money that was already spent from the credit for completed delivery instructions. ',Updated=TO_TIMESTAMP('2023-01-26 23:06:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581934 AND AD_Language='nl_NL'
+;
+
+-- 2023-01-26T21:06:41.419Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581934,'nl_NL') 
+;
+
+
+
