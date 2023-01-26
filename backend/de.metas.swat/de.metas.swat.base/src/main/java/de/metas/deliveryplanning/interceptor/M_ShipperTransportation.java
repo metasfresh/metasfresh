@@ -44,7 +44,7 @@ public class M_ShipperTransportation
 
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID})
 	public void updateBPartnerStatistics(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		bpartnerStatisticsUpdater.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()

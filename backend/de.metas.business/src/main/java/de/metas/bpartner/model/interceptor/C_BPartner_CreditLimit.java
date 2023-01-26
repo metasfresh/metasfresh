@@ -80,14 +80,14 @@ public class C_BPartner_CreditLimit
 	}
 
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner_CreditLimit.COLUMNNAME_IsActive)
 	public void disapproveOnDeactivation(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		if(!bpCreditLimit.isActive())
 		{
 			bpCreditLimit.setApprovedBy_ID(-1);
-			save(bpCreditLimit);
+			bpCreditLimit.setProcessed(false);
 		}
 	}
 }
