@@ -117,7 +117,6 @@ public class PaymentBL implements IPaymentBL
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
 	{
@@ -935,6 +934,4 @@ public class PaymentBL implements IPaymentBL
 
 		return Optional.ofNullable(singleSectionCodeId);
 	}
-
-
 }
