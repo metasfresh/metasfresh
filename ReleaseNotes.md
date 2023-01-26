@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14210](https://github.com/metasfresh/metasfresh/issues/14210) ExternalSys-Other: Send project info from MF to ES - Part II (=> C_Project.ExternalId) 
+  * [#14104](https://github.com/metasfresh/metasfresh/issues/14104) ExternalSys-Other: Send project info from MF to ES (=>C_Project_WO_Step data) 
   * [#14377](https://github.com/metasfresh/metasfresh/issues/14377) group invoices and credit memos into a single document 
   * [#14370](https://github.com/metasfresh/metasfresh/pull/14370) import Allergens for bom products
   * [#14429](https://github.com/metasfresh/metasfresh/pull/14429)  Increased Credit Limit be decreased again
