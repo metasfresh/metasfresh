@@ -11,8 +11,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;

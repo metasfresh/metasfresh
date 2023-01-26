@@ -47,7 +47,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.GridRowCtx;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;

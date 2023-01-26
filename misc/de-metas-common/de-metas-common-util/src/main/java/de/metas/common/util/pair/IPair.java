@@ -1,10 +1,8 @@
-package org.adempiere.util.lang;
-
 /*
  * #%L
- * de.metas.util
+ * de-metas-common-util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package org.adempiere.util.lang;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.common.util.pair;
 
 /**
  * A pair consisting of two elements.
