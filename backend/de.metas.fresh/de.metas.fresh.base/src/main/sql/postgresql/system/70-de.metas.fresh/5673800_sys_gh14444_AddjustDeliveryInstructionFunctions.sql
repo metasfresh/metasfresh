@@ -143,3 +143,124 @@ $BODY$
     LANGUAGE sql
     STABLE
 ;
+
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_Forwarder(p_m_shippertransportation_id numeric)
+    RETURNS
+        Table
+        (
+            address          text,
+            transportdetails text
+        )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT (COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')) AS address, dp.transportdetails
+FROM M_ShipperTransportation st
+         JOIN M_shipper sh ON st.m_shipper_id = sh.m_shipper_id
+         JOIN c_bpartner bp ON sh.c_bpartner_id = bp.c_bpartner_id
+         JOIN C_BPartner_location bpl ON bpl.C_BPartner_location_id = st.shipper_location_id
+         JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = st.m_delivery_planning_id
+WHERE st.m_shippertransportation_id = p_m_shippertransportation_id
+$$
+;
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_Description(p_m_shippertransportation_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_Description(p_m_shippertransportation_id numeric)
+    RETURNS
+        Table
+        (
+            Forwarderaddress     text,
+            transportdetails     text,
+            deliveryaddress      text,
+            deliverycontactname  varchar,
+            deliverycontactphone varchar,
+            LoadingAddress       text,
+            loadingdate          timestamp,
+            loadingtime          varchar,
+            deliverydate         timestamp,
+            documentno           varchar,
+            Creator              varchar,
+            CreatorPhone         varchar,
+            CreatorFax           varchar,
+            CreatorEmail         varchar,
+            orderno              varchar,
+            referenceno          varchar,
+            incoterms            varchar,
+            incotermlocation     varchar,
+            meansoftransport     text
+        )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT f.*,
+       d.*,
+       l.*,
+       st.loadingdate,
+       st.loadingtime,
+       st.deliverydate,
+       st.documentno,
+       u.name        AS Creator,
+       u.phone       AS CreatorPhone,
+       u.fax         AS CreatorFax,
+       u.email       AS CreatorEmail,
+       o.documentno  AS orderno,
+       o.poreference AS referenceno,
+       ic.name       AS incoterms,
+       st.incotermlocation,
+       mt.name       AS meansoftransport
+
+FROM de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_LoadingAddress(p_m_shippertransportation_id) AS l,
+     de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_Forwarder(p_m_shippertransportation_id) AS f,
+     de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_DeliveryAddress(p_m_shippertransportation_id) AS d,
+     M_ShipperTransportation st
+         JOIN ad_user u ON st.createdby = u.ad_user_id
+         JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = st.m_delivery_planning_id
+         JOIN C_order o ON o.c_order_id = dp.c_order_id
+         JOIN c_incoterms ic ON ic.c_incoterms_id = st.c_incoterms_id
+         LEFT JOIN m_meansoftransportation mt ON mt.m_meansoftransportation_id = st.m_meansoftransportation_id
+WHERE st.m_shippertransportation_id = p_m_shippertransportation_id
+$$
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_ProductDetails(p_m_shippertransportation_id numeric, p_ad_language varchar)
+    RETURNS
+        Table
+        (
+            warehouseName             varchar,
+            plannedloadedquantity     numeric,
+            qtyordered                numeric,
+            productValue              varchar,
+            productName               varchar,
+            grade                     varchar,
+            uom                       varchar
+        )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT wh.name                                  AS warehouseName,
+       dp.plannedloadedquantity,
+       dp.qtyordered,
+       p.value                                  AS productValue,
+       p.name                                   AS productName,
+       p.grade,
+       COALESCE(uomt.uomsymbol, uomt.uomsymbol) AS uom
+FROM M_ShipperTransportation st
+         JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = st.m_delivery_planning_id
+         JOIN m_warehouse wh ON dp.m_warehouse_id = wh.m_warehouse_id
+         JOIN M_product p ON dp.m_product_id = p.m_product_id
+         JOIN C_UOM uom ON dp.c_uom_id = uom.c_uom_id
+         JOIN C_UOM_trl uomt ON dp.c_uom_id = uomt.c_uom_id and uomt.ad_language=p_ad_language
+WHERE st.m_shippertransportation_id = p_m_shippertransportation_id
+$$
+;
+
+
+
+

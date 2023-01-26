@@ -373,6 +373,7 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setOrderStatus(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
 			deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
 			deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
+			deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
 			save(deliveryPlanningRecord);
 		}
 	}
