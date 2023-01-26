@@ -527,7 +527,7 @@ public class DeliveryPlanningService
 			final BigDecimal creditLimitDifference = bPartnerStatsService.getDeliveryOpenBalance(bPartnerStats, deliveryInstructionRequest.getDateDoc());
 
 			final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(deliveryInstructionRequest.getClientId(), deliveryInstructionRequest.getOrgId()));
-			final ITranslatableString creditLimitDifferenceMessage = moneyService.toTranslatableString(Money.of(creditLimitDifference, baseCurrencyId));
+			final String creditLimitDifferenceMessage = moneyService.toTranslatableString(Money.of(creditLimitDifference, baseCurrencyId)).getDefaultValue();
 			deliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError(partnerName, creditLimitDifferenceMessage);
 			return false;
 		}

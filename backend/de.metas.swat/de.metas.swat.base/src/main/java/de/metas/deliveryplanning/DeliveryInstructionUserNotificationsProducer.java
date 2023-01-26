@@ -142,7 +142,7 @@ public class DeliveryInstructionUserNotificationsProducer
 		notificationBL.sendAfterCommit(notifications);
 	}
 
-	public DeliveryInstructionUserNotificationsProducer notifyDeliveryInstructionError(@NonNull String partnerName, @NonNull ITranslatableString creditLimitDifference)
+	public DeliveryInstructionUserNotificationsProducer notifyDeliveryInstructionError(@NonNull String partnerName, @NonNull String creditLimitDifference)
 	{
 		// don't send after commit, because the trx will very probably be rolled back if an error happened
 		notificationBL.send(newUserNotificationRequest()
