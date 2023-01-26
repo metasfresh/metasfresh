@@ -29,3 +29,14 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Table_Process SET AD_Window_ID=541632,Updated=TO_TIMESTAMP('2023-01-25 15:25:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541339
 ;
 
+
+-- Value: M_Delivery_Planning_ReGenerateDeliveryInstruction
+-- Classname: de.metas.deliveryplanning.process.M_Delivery_Planning_ReGenerateDeliveryInstruction
+-- 2023-01-26T13:12:40.643Z
+UPDATE AD_Process SET Name='Delivery Instruction Adjustment',Updated=TO_TIMESTAMP('2023-01-26 15:12:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585191
+;
+
+-- 2023-01-26T13:12:40.644Z
+UPDATE AD_Process_Trl trl SET Name='Delivery Instruction Adjustment' WHERE AD_Process_ID=585191 AND AD_Language='de_DE'
+;
+
