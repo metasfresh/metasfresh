@@ -120,7 +120,6 @@ public class PaymentBL implements IPaymentBL
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -940,40 +939,5 @@ public class PaymentBL implements IPaymentBL
 		return Optional.ofNullable(singleSectionCodeId);
 	}
 
-	@Override
-	public Money getCreditGainedByPaymentsInCurrency(final BPartnerId bpartnerId, final CurrencyId currencyId)
-	{
-		final Iterator<PaymentId> paymentIdIterator = getPaymentIds(PaymentQuery.builder()
-																			.docStatus(DocStatus.Completed)
-																			.bpartnerId(bpartnerId)
-																			.direction(PaymentDirection.INBOUND)
-																			.build())
-				.stream().iterator();
-
-		Money creditGainesInPayments = Money.zero(currencyId);
-
-		while (paymentIdIterator.hasNext())
-		{
-			final PaymentId paymentId = paymentIdIterator.next();
-			final Money creditGainedByPaymentInCurrency = computeCreditGainedByPaymentInCurrency(paymentId,currencyId);
-
-			creditGainesInPayments = creditGainesInPayments.add(creditGainedByPaymentInCurrency);
-		}
-
-		return creditGainesInPayments;
-	}
-
-
-	private Money computeCreditGainedByPaymentInCurrency(@NonNull final PaymentId paymentId, @NonNull final CurrencyId baseCurrencyId )
-	{
-		final I_C_Payment payment = getById(paymentId);
-
-		final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
-
-		final CurrencyConversionContext currencyConversionContext = extractCurrencyConversionContext(payment);
-
-		return moneyService.convertMoneyToCurrency(creditUsageGainedByPayment, baseCurrencyId, currencyConversionContext);
-
-	}
 
 }

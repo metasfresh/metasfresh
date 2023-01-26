@@ -28,12 +28,17 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentQuery;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -51,6 +56,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
+import java.util.Iterator;
 import java.util.Locale;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -64,13 +70,16 @@ public class BPartnerStatsService
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final BPartnerCreditLimitRepository creditLimitRepo;
 
-	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
+	private final MoneyService moneyService;
+
+	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo,
+			@NonNull final MoneyService moneyService)
 	{
 		this.creditLimitRepo = creditLimitRepo;
+		this.moneyService = moneyService;
 	}
 
 	public CreditStatus calculateProjectedSOCreditStatus(@NonNull final CalculateCreditStatusRequest request)
@@ -243,7 +252,7 @@ public class BPartnerStatsService
 
 		deliveryCreditUsed = deliveryCreditUsed.add(creditUsedPerShippingPackageInBaseCurrency);
 
-		final Money creditGainedByPayments = paymentBL.getCreditGainedByPaymentsInCurrency(bpStats.getBpartnerId(), baseCurrencyId);
+		final Money creditGainedByPayments = getCreditGainedByPaymentsInCurrency(bpStats.getBpartnerId(), baseCurrencyId);
 
 		deliveryCreditUsed = deliveryCreditUsed.subtract(creditGainedByPayments);
 
@@ -419,6 +428,40 @@ public class BPartnerStatsService
 	public BPartnerStats getCreateBPartnerStats(final BPartnerId bPartnerId)
 	{
 		return bPartnerStatsDAO.getCreateBPartnerStats(bPartnerId);
+	}
+
+	public Money getCreditGainedByPaymentsInCurrency(final BPartnerId bpartnerId, final CurrencyId currencyId)
+	{
+		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
+																					  .docStatus(DocStatus.Completed)
+																					  .bpartnerId(bpartnerId)
+																					  .direction(PaymentDirection.INBOUND)
+																					  .build())
+				.stream().iterator();
+
+		Money creditGainesInPayments = Money.zero(currencyId);
+
+		while (paymentIdIterator.hasNext())
+		{
+			final PaymentId paymentId = paymentIdIterator.next();
+			final Money creditGainedByPaymentInCurrency = computeCreditGainedByPaymentInCurrency(paymentId, currencyId);
+
+			creditGainesInPayments = creditGainesInPayments.add(creditGainedByPaymentInCurrency);
+		}
+
+		return creditGainesInPayments;
+	}
+
+	private Money computeCreditGainedByPaymentInCurrency(@NonNull final PaymentId paymentId, @NonNull final CurrencyId baseCurrencyId)
+	{
+		final I_C_Payment payment = paymentBL.getById(paymentId);
+
+		final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+
+		final CurrencyConversionContext currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
+
+		return moneyService.convertMoneyToCurrency(creditUsageGainedByPayment, baseCurrencyId, currencyConversionContext);
+
 	}
 
 }

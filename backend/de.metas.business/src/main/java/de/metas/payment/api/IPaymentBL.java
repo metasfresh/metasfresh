@@ -155,6 +155,4 @@ public interface IPaymentBL extends ISingletonService
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
 
 	Optional<SectionCodeId> determineSectionCodeId(I_C_Payment payment);
-
-	Money getCreditGainedByPaymentsInCurrency(BPartnerId bpartnerId, CurrencyId baseCurrencyId);
 }
