@@ -25,7 +25,7 @@ public class M_InOut
 	public void afterComplete(final I_M_InOut inout)
 	{
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(inout.getM_Delivery_Planning_ID());
-		if (deliveryPlanningId != null)
+		if (deliveryPlanningId != null && inout.getReversal_ID() <= 0)
 		{
 			final InOutId inoutId = InOutId.ofRepoId(inout.getM_InOut_ID());
 			if (inout.isSOTrx())
@@ -64,7 +64,7 @@ public class M_InOut
 						receiptInfo -> {
 							if (InOutId.equals(receiptInfo.getReceiptId(), inoutId))
 							{
-								receiptInfo.setReceiptId(inoutId);
+								receiptInfo.setReceiptId(null);
 							}
 						});
 			}
