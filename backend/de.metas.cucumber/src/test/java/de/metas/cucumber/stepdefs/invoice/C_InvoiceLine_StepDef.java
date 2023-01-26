@@ -39,6 +39,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -161,36 +162,38 @@ public class C_InvoiceLine_StepDef
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
-		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
-		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
+		softly.assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
+		softly.assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
 
 		final BigDecimal priceEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_PriceEntered);
 
 		if (priceEntered != null)
 		{
-			assertThat(invoiceLine.getPriceEntered()).isEqualTo(priceEntered);
+			softly.assertThat(invoiceLine.getPriceEntered()).isEqualByComparingTo(priceEntered);
 		}
 
 		final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_PriceActual);
 
 		if (priceActual != null)
 		{
-			assertThat(invoiceLine.getPriceActual()).isEqualTo(priceActual);
+			softly.assertThat(invoiceLine.getPriceActual()).isEqualByComparingTo(priceActual);
 		}
 
 		final BigDecimal lineNetAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_LineNetAmt);
 
 		if (lineNetAmt != null)
 		{
-			assertThat(invoiceLine.getLineNetAmt()).isEqualTo(lineNetAmt);
+			softly.assertThat(invoiceLine.getLineNetAmt()).isEqualByComparingTo(lineNetAmt);
 		}
 
 		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Discount);
 
 		if (discount != null)
 		{
-			assertThat(invoiceLine.getDiscount()).isEqualTo(discount);
+			softly.assertThat(invoiceLine.getDiscount()).isEqualByComparingTo(discount);
 		}
 
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -198,9 +201,24 @@ public class C_InvoiceLine_StepDef
 		if (taxIdentifier != null)
 		{
 			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
-			assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
+			softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
 		}
 
+		final Integer line = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Line);
+		if (line != null)
+		{
+			softly.assertThat(invoiceLine.getLine()).isEqualTo(line);
+		}
+
+		final BigDecimal taxAmtInfo = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_TaxAmtInfo);
+
+		if (taxAmtInfo != null)
+		{
+			softly.assertThat(invoiceLine.getTaxAmtInfo()).isEqualByComparingTo(taxAmtInfo);
+		}
+		
+		softly.assertAll();
+		
 		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 	}

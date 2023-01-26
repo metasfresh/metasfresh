@@ -151,6 +151,36 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return getAcctSchemasMap().getByChartOfAccountsId(chartOfAccountsId);
 	}
 
+	@Override
+	@NonNull
+	public AcctSchema getByClientAndName(
+			@NonNull final ClientId clientId,
+			@NonNull final String name)
+	{
+		final ImmutableList<AcctSchema> schemas = getAllByClient(clientId)
+				.stream()
+				.filter(schema -> name.equals(schema.getName()))
+				.collect(ImmutableList.toImmutableList());
+
+		if (schemas.isEmpty())
+		{
+			throw new AdempiereException("No AcctSchema record found for ClientID and Name!")
+					.appendParametersToMessage()
+					.setParameter("ClientID", clientId)
+					.setParameter("Name", name);
+		}
+
+		if (schemas.size() > 1)
+		{
+			throw new AdempiereException("Multiple AcctSchema records found for ClientID and Name!")
+					.appendParametersToMessage()
+					.setParameter("ClientID", clientId)
+					.setParameter("Name", name);
+		}
+
+		return schemas.get(0);
+	}
+	
 	private AcctSchemasMap getAcctSchemasMap()
 	{
 		return acctSchemasCache.getOrLoad(0, this::retrieveAcctSchemasMap);
