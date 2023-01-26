@@ -106,6 +106,11 @@ public class DeliveryPlanningService
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
 	}
 
+	public I_M_Delivery_Planning getRecordById(@NonNull final DeliveryPlanningId id)
+	{
+		return deliveryPlanningRepository.getById(id);
+	}
+
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_M_Delivery_Planning_CreateAutomatically, false, clientAndOrgId);
