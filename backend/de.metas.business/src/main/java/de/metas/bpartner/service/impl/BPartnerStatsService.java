@@ -208,6 +208,7 @@ public class BPartnerStatsService
 		updateDeliveryCreditStatus(bpStats);
 		updateSOCreditLimitIndicator(bpStats);
 		updateDeliveryCreditLimitIndicator(bpStats);
+		updateSectionCode(bpStats);
 	}
 
 	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
@@ -386,6 +387,17 @@ public class BPartnerStatsService
 		final String percentSring = fmt.format(percent);
 
 		stats.setDeliveryCreditLimitIndicator(percentSring);
+
+		saveRecord(stats);
+	}
+
+
+	private void updateSectionCode(@NonNull final BPartnerStats bpStats)
+	{
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+
+		final I_C_BPartner partner = partnerDAO.getById(bpStats.getBpartnerId());
+		stats.setM_SectionCode_ID(partner.getM_SectionCode_ID());
 
 		saveRecord(stats);
 	}
