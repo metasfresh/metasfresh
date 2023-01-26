@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -95,11 +96,14 @@ public class ExportBPartnerToOtherService extends ExportBPartnerToExternalSystem
 	@NonNull
 	protected Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final BPartnerId bPartnerId)
 	{
-		final boolean isAnyDefaultShippingAddressConfigured = bPartnerDAO.retrieveBPartnerLocations(bPartnerId)
-				.stream()
-				.anyMatch(I_C_BPartner_Location::isShipToDefault);
+		final IBPartnerDAO.BPartnerLocationQuery bPartnerLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(bPartnerId)
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+				.build();
 
-		if (!isAnyDefaultShippingAddressConfigured)
+		final I_C_BPartner_Location partnerLocationId = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
+
+		if (partnerLocationId == null)
 		{
 			return Optional.empty();
 		}
