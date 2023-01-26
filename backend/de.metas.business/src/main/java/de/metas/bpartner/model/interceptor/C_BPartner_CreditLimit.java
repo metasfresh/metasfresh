@@ -14,8 +14,6 @@ import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
