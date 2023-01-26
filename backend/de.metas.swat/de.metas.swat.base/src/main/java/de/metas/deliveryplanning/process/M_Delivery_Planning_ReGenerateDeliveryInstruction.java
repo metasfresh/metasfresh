@@ -51,6 +51,13 @@ public class M_Delivery_Planning_ReGenerateDeliveryInstruction extends JavaProce
 
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
 
+		final boolean isExistsNoShipperDeliveryPlannings = deliveryPlanningService.isExistsNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
+
+		if (isExistsNoShipperDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
+		}
+
 		final boolean isExistsOpenDeliveryPlannings = deliveryPlanningService.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		if (!isExistsOpenDeliveryPlannings)
