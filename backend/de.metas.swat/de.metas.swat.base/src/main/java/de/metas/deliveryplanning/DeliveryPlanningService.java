@@ -411,7 +411,7 @@ public class DeliveryPlanningService
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
 				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinOr()
+				.setJoinAnd()
 				.addFilter(selectedDeliveryPlanningsFilter)
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
