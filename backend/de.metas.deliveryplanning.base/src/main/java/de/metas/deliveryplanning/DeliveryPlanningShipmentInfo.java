@@ -2,6 +2,8 @@ package de.metas.deliveryplanning;
 
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +15,14 @@ import javax.annotation.Nullable;
 @Builder
 public class DeliveryPlanningShipmentInfo
 {
+	@Nullable private final OrderAndLineId salesOrderAndLineId;
 	@NonNull private final ShipmentScheduleId shipmentScheduleId;
 	@Nullable private InOutId shipmentId;
 
 	@Nullable private ColorId shippedStatusColorId;
+
+	@Nullable
+	public OrderId getSalesOrderId() {return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;}
 
 	public boolean isShipped()
 	{

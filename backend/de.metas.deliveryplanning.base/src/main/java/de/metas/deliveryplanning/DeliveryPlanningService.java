@@ -73,6 +73,7 @@ import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Service
 public class DeliveryPlanningService
@@ -104,11 +105,6 @@ public class DeliveryPlanningService
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
-	}
-
-	public I_M_Delivery_Planning getRecordById(@NonNull final DeliveryPlanningId id)
-	{
-		return deliveryPlanningRepository.getById(id);
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -456,4 +452,13 @@ public class DeliveryPlanningService
 					shipmentInfo.updateShippedStatusColor(colorPalette);
 				});
 	}
+
+	public <T> T getShipmentOrReceiptInfo(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
+			@NonNull Function<DeliveryPlanningShipmentInfo, T> shipmentInfoMapper)
+	{
+		return deliveryPlanningRepository.getShipmentOrReceiptInfo(deliveryPlanningId, receiptInfoMapper, shipmentInfoMapper);
+	}
+
 }

@@ -2,7 +2,9 @@ package de.metas.deliveryplanning.related_documents;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
 import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.DeliveryPlanningShipmentInfo;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
@@ -60,18 +62,44 @@ public class DeliveryPlanningRelatedDocumentsProvider implements IRelatedDocumen
 
 	private List<RelatedDocumentsCandidateGroup> getForDeliveryPlanning(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
-			@Nullable final AdWindowId targetWindowId)
+			@Nullable final AdWindowId expectedWindowId)
+	{
+		return deliveryPlanningService.getShipmentOrReceiptInfo(
+				deliveryPlanningId,
+				receiptInfo -> getForReceiptInfo(receiptInfo, expectedWindowId),
+				shipmentInfo -> getForShipmentInfo(shipmentInfo, expectedWindowId)
+		);
+	}
+
+	private List<RelatedDocumentsCandidateGroup> getForReceiptInfo(
+			final @NonNull DeliveryPlanningReceiptInfo receiptInfo,
+			final @Nullable AdWindowId expectedWindowId)
 	{
 		final ArrayList<RelatedDocumentsCandidateGroup> result = new ArrayList<>();
 
-		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningService.getRecordById(deliveryPlanningId);
-
-		OrderId.optionalOfRepoId(deliveryPlanning.getC_Order_ID())
-				.flatMap(orderId -> toRelatedDocumentsCandidate(orderId, targetWindowId))
+		Optional.ofNullable(receiptInfo.getPurchaseOrderId())
+				.flatMap(purchaseOrderId -> toRelatedDocumentsCandidate(purchaseOrderId, expectedWindowId))
 				.ifPresent(result::add);
 
-		InOutId.optionalOfRepoId(deliveryPlanning.getM_InOut_ID())
-				.flatMap(inoutId -> toRelatedDocumentsCandidate(inoutId, targetWindowId))
+		Optional.ofNullable(receiptInfo.getReceiptId())
+				.flatMap(receiptId -> toRelatedDocumentsCandidate(receiptId, expectedWindowId))
+				.ifPresent(result::add);
+
+		return result;
+	}
+
+	private List<RelatedDocumentsCandidateGroup> getForShipmentInfo(
+			final @NonNull DeliveryPlanningShipmentInfo shipmentInfo,
+			final @Nullable AdWindowId expectedWindowId)
+	{
+		final ArrayList<RelatedDocumentsCandidateGroup> result = new ArrayList<>();
+
+		Optional.ofNullable(shipmentInfo.getSalesOrderId())
+				.flatMap(salesOrderId -> toRelatedDocumentsCandidate(salesOrderId, expectedWindowId))
+				.ifPresent(result::add);
+
+		Optional.ofNullable(shipmentInfo.getShipmentId())
+				.flatMap(shipmentId -> toRelatedDocumentsCandidate(shipmentId, expectedWindowId))
 				.ifPresent(result::add);
 
 		return result;

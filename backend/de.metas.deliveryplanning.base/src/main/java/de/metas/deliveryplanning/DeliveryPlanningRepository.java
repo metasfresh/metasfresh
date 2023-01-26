@@ -30,6 +30,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.location.CountryId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -55,6 +56,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -110,6 +112,7 @@ public class DeliveryPlanningRepository
 	{
 		assertIncoming(record);
 		return DeliveryPlanningReceiptInfo.builder()
+				.purchaseOrderAndLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(record.getM_ReceiptSchedule_ID()))
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
@@ -147,6 +150,7 @@ public class DeliveryPlanningRepository
 	{
 		assertOutgoing(record);
 		return DeliveryPlanningShipmentInfo.builder()
+				.salesOrderAndLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.shipmentId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.shippedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
@@ -169,6 +173,27 @@ public class DeliveryPlanningRepository
 		updater.accept(shipmentInfo);
 		updateRecordFromShipmentInfo(record, shipmentInfo);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	public <T> T getShipmentOrReceiptInfo(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
+			@NonNull Function<DeliveryPlanningShipmentInfo, T> shipmentInfoMapper)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
+		final DeliveryPlanningType deliveryPlanningType = extractDeliveryPlanningType(record);
+		if (deliveryPlanningType.isIncoming())
+		{
+			return receiptInfoMapper.apply(toDeliveryPlanningReceiptInfo(record));
+		}
+		else if (deliveryPlanningType.isOutgoing())
+		{
+			return shipmentInfoMapper.apply(toDeliveryPlanningShipmentInfo(record));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + deliveryPlanningType);
+		}
 	}
 
 	public void generateDeliveryPlanning(@NonNull final DeliveryPlanningCreateRequest request)
