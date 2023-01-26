@@ -30,36 +30,15 @@ public final class ThreadLocalCacheController
 {
 	public static final ThreadLocalCacheController instance = new ThreadLocalCacheController();
 
-	@NonNull
-	private final ThreadLocal<Boolean> noCacheRef = new ThreadLocal<>();
-
-	private ThreadLocalCacheController()
-	{
-	}
-
-	public static boolean computeAllowDisablingCache(final String cacheName, final ImmutableSet<CacheLabel> labels)
+	public static boolean computeAllowDisablingCache(@NonNull final String cacheName, @NonNull final ImmutableSet<CacheLabel> labels)
 	{
 		return !isApplicationDictionaryCache(cacheName, labels);
 	}
 
-	private static boolean isApplicationDictionaryCache(final String cacheName, final ImmutableSet<CacheLabel> labels)
-	{
-		final boolean anyApplicationDictionaryTableNames = labels.stream().anyMatch(CacheLabel::isApplicationDictionaryTableName);
-		if (!anyApplicationDictionaryTableNames)
-		{
-			return false;
-		}
+	@NonNull
+	private final ThreadLocal<Boolean> noCacheRef = new ThreadLocal<>();
 
-		final boolean anyNonApplicationDictionaryTableNames = labels.stream().anyMatch(label -> isNonApplicationDictionaryTableName(label, cacheName));
-		return !anyNonApplicationDictionaryTableNames;
-	}
-
-	private static boolean isNonApplicationDictionaryTableName(final CacheLabel label, final String cacheName)
-	{
-		return label.equalsByName(cacheName) //ignore the label created from this.cacheName as it's not necessary a table name
-				&& !label.containsNoTableNameMarker()
-				&& !label.isApplicationDictionaryTableName();
-	}
+	private ThreadLocalCacheController() {}
 
 	public boolean isNoCache()
 	{
@@ -92,4 +71,22 @@ public final class ThreadLocalCacheController
 		};
 	}
 
+	private static boolean isApplicationDictionaryCache(@NonNull final String cacheName, @NonNull final ImmutableSet<CacheLabel> labels)
+	{
+		final boolean anyApplicationDictionaryTableNames = labels.stream().anyMatch(CacheLabel::isApplicationDictionaryTableName);
+		if (!anyApplicationDictionaryTableNames)
+		{
+			return false;
+		}
+
+		final boolean anyNonApplicationDictionaryTableNames = labels.stream().anyMatch(label -> isNonApplicationDictionaryTableName(label, cacheName));
+		return !anyNonApplicationDictionaryTableNames;
+	}
+
+	private static boolean isNonApplicationDictionaryTableName(@NonNull final CacheLabel label, @NonNull final String cacheName)
+	{
+		return !label.equalsByName(cacheName) //ignore the label created from this.cacheName as it's not necessary a table name
+				&& !label.containsNoTableNameMarker()
+				&& !label.isApplicationDictionaryTableName();
+	}
 }

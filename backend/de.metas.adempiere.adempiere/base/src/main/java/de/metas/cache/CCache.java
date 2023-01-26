@@ -301,6 +301,7 @@ public class CCache<K, V> implements CacheInterface
 		return tableName;
 	}
 
+	@NonNull
 	private static ImmutableSet<CacheLabel> buildCacheLabels(@NonNull final String tableName, final Set<String> additionalTableNamesToResetFor)
 	{
 		final ImmutableSet.Builder<CacheLabel> builder = ImmutableSet.<CacheLabel> builder();

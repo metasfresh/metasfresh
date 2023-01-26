@@ -3,6 +3,8 @@ package de.metas.cache;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -42,7 +44,7 @@ public class CacheLabel
 		this.name = name;
 	}
 
-	public boolean equalsByName(final String otherName)
+	public boolean equalsByName(@Nullable final String otherName)
 	{
 		return this.name.equals(otherName);
 	}
