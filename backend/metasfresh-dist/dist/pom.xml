@@ -623,6 +623,7 @@
             <artifactId>de.metas.deliveryplanning.base</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
         </dependency>
 
         <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
