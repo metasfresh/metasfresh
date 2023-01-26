@@ -22,4 +22,9 @@ public class DeliveryPlanningReceiptInfo
 	{
 		return getReceiptId() != null;
 	}
+
+	public void updateReceivedStatusColor(@NonNull final DeliveryStatusColorPalette colorPalette)
+	{
+		setReceivedStatusColorId(isReceived() ? colorPalette.getDeliveredColorId() : colorPalette.getNotDeliveredColorId());
+	}
 }

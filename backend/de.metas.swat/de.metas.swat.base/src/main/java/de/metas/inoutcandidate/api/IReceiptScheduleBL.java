@@ -24,7 +24,6 @@ package de.metas.inoutcandidate.api;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -232,5 +231,4 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
 
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
-	DeliveryPlanningCreateRequest createDeliveryPlanningRequest(@NonNull I_M_ReceiptSchedule receiptScheduleRecord);
 }

@@ -36,8 +36,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.CountryId;
@@ -55,10 +53,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.ColorId;
-import de.metas.util.IColorRepository;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,7 +68,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
@@ -95,27 +89,21 @@ public class DeliveryPlanningService
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
-	private static final String SYSCONFIG_Delivered_ColorName = "M_DeliveryPlanning.DeliveredColorName";
-	private static final String SYSCONFIG_NotDelivered_ColorName = "M_DeliveryPlanning.NotDeliveredColorName";
-
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IColorRepository colorRepository = Services.get(IColorRepository.class);
-
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
+	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
 
-	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
+	public DeliveryPlanningService(
+			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
+			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
+		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -123,18 +111,26 @@ public class DeliveryPlanningService
 		return sysConfigBL.getBooleanValue(SYSCONFIG_M_Delivery_Planning_CreateAutomatically, false, clientAndOrgId);
 	}
 
+	private DeliveryStatusColorPalette getColorPalette() {return deliveryStatusColorPaletteService.get();}
+
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
-		final DeliveryPlanningCreateRequest deliveryPlanningRequest = receiptScheduleBL.createDeliveryPlanningRequest(receiptScheduleRecord)
-				.withDeliveryStatusColorId(getNotDeliveredColorId());
-		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
+		GenerateIncomingDeliveryPlanningCommand.builder()
+				.deliveryPlanningRepository(deliveryPlanningRepository)
+				.receiptSchedule(receiptScheduleRecord)
+				.colorPalette(getColorPalette())
+				.build()
+				.execute();
 	}
 
 	public void generateOutgoingDeliveryPlanning(final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final DeliveryPlanningCreateRequest deliveryPlanningRequest = shipmentScheduleBL.createDeliveryPlanningRequest(shipmentScheduleRecord)
-				.withDeliveryStatusColorId(getNotDeliveredColorId());
-		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
+		GenerateOutgoingDeliveryPlanningCommand.builder()
+				.deliveryPlanningRepository(deliveryPlanningRepository)
+				.shipmentSchedule(shipmentScheduleRecord)
+				.colorPalette(getColorPalette())
+				.build()
+				.execute();
 	}
 
 	public void validateDeletion(final I_M_Delivery_Planning deliveryPlanning)
@@ -423,11 +419,12 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
 	{
+		final DeliveryStatusColorPalette colorPalette = getColorPalette();
 		deliveryPlanningRepository.updateReceiptInfoById(
 				deliveryPlanningId,
 				receiptInfo -> {
 					updater.accept(receiptInfo);
-					receiptInfo.setReceivedStatusColorId(receiptInfo.isReceived() ? getDeliveredColorId() : getNotDeliveredColorId());
+					receiptInfo.updateReceivedStatusColor(colorPalette);
 				});
 	}
 
@@ -446,30 +443,12 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningShipmentInfo> updater)
 	{
+		final DeliveryStatusColorPalette colorPalette = getColorPalette();
 		deliveryPlanningRepository.updateShipmentInfoById(
 				deliveryPlanningId,
 				shipmentInfo -> {
 					updater.accept(shipmentInfo);
-					shipmentInfo.setShippedStatusColorId(shipmentInfo.isShipped() ? getDeliveredColorId() : getNotDeliveredColorId());
+					shipmentInfo.updateShippedStatusColor(colorPalette);
 				});
-	}
-
-	private ColorId getDeliveredColorId() {return getColorIdFromSysconfig(SYSCONFIG_Delivered_ColorName, "Gruen");}
-
-	private ColorId getNotDeliveredColorId() {return getColorIdFromSysconfig(SYSCONFIG_NotDelivered_ColorName, "Rot");}
-
-	@Nullable
-	private ColorId getColorIdFromSysconfig(
-			@NonNull final String sysconfigName,
-			@NonNull final String defaultColorName)
-	{
-		String colorName = StringUtils.trimBlankToOptional(sysConfigBL.getValue(sysconfigName))
-				.orElse(defaultColorName);
-		if ("-".equals(colorName))
-		{
-			return null;
-		}
-
-		return colorRepository.getColorIdByName(colorName);
 	}
 }

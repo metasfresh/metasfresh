@@ -353,6 +353,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.deliveryplanning</groupId>
+			<artifactId>de.metas.deliveryplanning.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>

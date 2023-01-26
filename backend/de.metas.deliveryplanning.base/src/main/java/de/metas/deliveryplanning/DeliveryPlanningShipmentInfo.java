@@ -22,4 +22,10 @@ public class DeliveryPlanningShipmentInfo
 	{
 		return getShipmentId() != null;
 	}
+
+	public void updateShippedStatusColor(@NonNull final DeliveryStatusColorPalette colorPalette)
+	{
+		setShippedStatusColorId(isShipped() ? colorPalette.getDeliveredColorId() : colorPalette.getNotDeliveredColorId());
+	}
+
 }

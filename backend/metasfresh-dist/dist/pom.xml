@@ -618,6 +618,13 @@
             <type>zip</type>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.deliveryplanning</groupId>
+            <artifactId>de.metas.deliveryplanning.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+        </dependency>
+
         <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
         <dependency>
             <groupId>jp.osdn.ocra</groupId>

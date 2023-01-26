@@ -9,7 +9,7 @@
 	</parent>
 
 	<groupId>de.metas.deliveryplanning</groupId>
-	<artifactId>de.metas.deliveryplanning.webui</artifactId>
+	<artifactId>de.metas.deliveryplanning.base</artifactId>
 
 	<properties>
 		<migration-sql-basedir/>
@@ -18,13 +18,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>de.metas.deliveryplanning</groupId>
-			<artifactId>de.metas.deliveryplanning.base</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.ui.web</groupId>
-			<artifactId>de.metas.ui.web.base</artifactId>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 		
