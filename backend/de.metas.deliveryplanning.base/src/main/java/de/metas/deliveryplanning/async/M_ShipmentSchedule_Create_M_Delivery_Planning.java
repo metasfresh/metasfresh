@@ -20,12 +20,13 @@
  * #L%
  */
 
-package de.metas.deliveryplanning;
+package de.metas.deliveryplanning.async;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import lombok.NonNull;

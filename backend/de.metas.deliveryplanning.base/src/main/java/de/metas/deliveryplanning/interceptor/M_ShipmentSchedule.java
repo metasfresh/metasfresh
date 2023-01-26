@@ -1,7 +1,7 @@
 package de.metas.deliveryplanning.interceptor;
 
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.M_ShipmentSchedule_Create_M_Delivery_Planning;
+import de.metas.deliveryplanning.async.M_ShipmentSchedule_Create_M_Delivery_Planning;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.ClientAndOrgId;
