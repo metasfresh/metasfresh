@@ -8,6 +8,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -43,6 +44,11 @@ public class InOutId implements RepoIdAware
 	public static InOutId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new InOutId(repoId) : null;
+	}
+
+	public static Optional<InOutId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(@Nullable final InOutId id)
