@@ -194,6 +194,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(215) 
 ;
 
+COMMIT
+;
 -- 2023-01-16T19:19:39.777Z
 /* DDL */ SELECT public.db_alter_table('M_ShippingPackage','ALTER TABLE public.M_ShippingPackage ADD COLUMN C_UOM_ID NUMERIC(10)')
 ;
