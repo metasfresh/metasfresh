@@ -51,11 +51,14 @@ import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -146,12 +149,7 @@ public class BPartnerStatsService
 
 		final CreditStatus futureCreditStatus = calculateProjectedSOCreditStatus(request);
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(CreditStatus.toCodeOrNull(futureCreditStatus)))
-		{
-			return true;
-		}
-
-		return false;
+		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(CreditStatus.toCodeOrNull(futureCreditStatus));
 	}
 
 	public BigDecimal getCreditWatchRatio(final BPartnerStats stats)
@@ -164,10 +162,10 @@ public class BPartnerStatsService
 
 		if (creditWatchPercent.signum() == 0)
 		{
-			return new BigDecimal(0.90);
+			return new BigDecimal("0.90");
 		}
 
-		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
+		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
 	}
 
 	public void resetCreditStatusFromBPGroup(@NonNull final I_C_BPartner bpartner)
@@ -198,7 +196,7 @@ public class BPartnerStatsService
 		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, CreditStatus.CreditWatch);
 	}
 
-	public void updateBPartnerStatistics(BPartnerStats bpStats)
+	public void updateBPartnerStatistics(@NonNull final BPartnerStats bpStats)
 	{
 		updateOpenItems(bpStats);
 		updateActualLifeTimeValue(bpStats);
@@ -225,16 +223,16 @@ public class BPartnerStatsService
 		saveRecord(stats);
 	}
 
-	private void updateActualLifeTimeValue(final BPartnerStats bpStats)
+	private void updateActualLifeTimeValue(@NonNull final BPartnerStats bpStats)
 	{
-		BigDecimal actualLifeTimeValue = bPartnerStatsDAO.computeActualLifeTimeValue(bpStats.getBpartnerId());
+		final BigDecimal actualLifeTimeValue = bPartnerStatsDAO.computeActualLifeTimeValue(bpStats.getBpartnerId());
 
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
 		stats.setActualLifeTimeValue(actualLifeTimeValue);
 		saveRecord(stats);
 	}
 
-	private void updateSOCreditUsed(final BPartnerStats bpStats)
+	private void updateSOCreditUsed(@NonNull final BPartnerStats bpStats)
 	{
 		final BigDecimal SO_CreditUsed = bPartnerStatsDAO.retrieveSOCreditUsed(bpStats);
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
@@ -263,46 +261,13 @@ public class BPartnerStatsService
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-		// load the statistics
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
-		final BigDecimal creditUsed = stats.getSO_CreditUsed();
-
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
 
 		final CreditStatus initialCreditStatus = bpStats.getSoCreditStatus();
 
-		String creditStatusToSet;
+		final CreditStatus creditStatusToSet = computeCreditStatus(bpStats, initialCreditStatus, bpStats.getSoCreditUsed());
 
-		// Nothing to do
-		if (CreditStatus.NoCreditCheck.equals(initialCreditStatus)
-				|| CreditStatus.CreditStop.equals(initialCreditStatus)
-				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
-		{
-			return;
-		}
-
-		// Above Credit Limit
-		if (creditLimit.compareTo(creditUsed) < 0)
-		{
-			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
-		}
-		else
-		{
-			// Above Watch Limit
-			final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
-
-			if (watchAmt.compareTo(creditUsed) < 0)
-			{
-				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
-			}
-			else
-			{
-				// is OK
-				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
-			}
-		}
-
-		stats.setSOCreditStatus(creditStatusToSet);
+		stats.setSOCreditStatus(CreditStatus.toCodeOrNull(creditStatusToSet));
 		saveRecord(stats);
 	}
 
@@ -310,6 +275,16 @@ public class BPartnerStatsService
 	{
 		final CreditStatus initialCreditStatus = bpStats.getSoCreditStatus();
 
+		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
+
+		final CreditStatus creditStatusToSet = computeCreditStatus(bpStats, initialCreditStatus, bpStats.getDeliveryCreditUsed());
+
+		stats.setDelivery_CreditStatus(CreditStatus.toCodeOrNull(creditStatusToSet));
+		saveRecord(stats);
+	}
+
+	private CreditStatus computeCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus initialCreditStatus, final BigDecimal creditUsed)
+	{
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpStats.getBpartnerId().getRepoId(), SystemTime.asDayTimestamp());
 
 		// Nothing to do
@@ -317,15 +292,10 @@ public class BPartnerStatsService
 				|| CreditStatus.CreditStop.equals(initialCreditStatus)
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 		{
-			return;
+			return initialCreditStatus;
 		}
 
-		String creditStatusToSet;
-
-		// load the statistics
-		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
-		final BigDecimal creditUsed = stats.getDelivery_CreditUsed();
-
+		final String creditStatusToSet;
 		// Above Credit Limit
 		if (creditLimit.compareTo(creditUsed) < 0)
 		{
@@ -347,26 +317,18 @@ public class BPartnerStatsService
 			}
 		}
 
-		stats.setDelivery_CreditStatus(creditStatusToSet);
-		saveRecord(stats);
+		return CreditStatus.ofCode(creditStatusToSet);
 	}
 
 	private void updateSOCreditLimitIndicator(@NonNull final BPartnerStats bstats)
 	{
 		// load the statistics
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bstats);
-		final BigDecimal creditUsed = stats.getSO_CreditUsed();
+		final BigDecimal soCreditUsed = stats.getSO_CreditUsed();
 
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final String percentString = computeCreditLimitIndicator(soCreditUsed, stats.getC_BPartner_ID());
 
-		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
-		final Locale locale = Locale.getDefault();
-		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
-		fmt.setMinimumFractionDigits(1);
-		fmt.setMaximumFractionDigits(1);
-		final String percentSring = fmt.format(percent);
-
-		stats.setCreditLimitIndicator(percentSring);
+		stats.setCreditLimitIndicator(percentString);
 
 		saveRecord(stats);
 	}
@@ -377,20 +339,24 @@ public class BPartnerStatsService
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bstats);
 		final BigDecimal deliveryCreditUsed = stats.getDelivery_CreditUsed();
 
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+		final String percentString = computeCreditLimitIndicator(deliveryCreditUsed, stats.getC_BPartner_ID());
 
-		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : deliveryCreditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
-		final Locale locale = Locale.getDefault();
-		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
-		fmt.setMinimumFractionDigits(1);
-		fmt.setMaximumFractionDigits(1);
-		final String percentSring = fmt.format(percent);
-
-		stats.setDeliveryCreditLimitIndicator(percentSring);
+		stats.setDeliveryCreditLimitIndicator(percentString);
 
 		saveRecord(stats);
 	}
 
+	private String computeCreditLimitIndicator(@NonNull final BigDecimal creditUsed, final int bpartnerId)
+	{
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId, SystemTime.asDayTimestamp());
+
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, RoundingMode.HALF_UP);
+		final Locale locale = Locale.getDefault();
+		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
+		fmt.setMinimumFractionDigits(1);
+		fmt.setMaximumFractionDigits(1);
+		return fmt.format(percent);
+	}
 
 	private void updateSectionCode(@NonNull final BPartnerStats bpStats)
 	{
@@ -474,6 +440,12 @@ public class BPartnerStatsService
 
 		return moneyService.convertMoneyToCurrency(creditUsageGainedByPayment, baseCurrencyId, currencyConversionContext);
 
+	}
+
+	public BigDecimal getDeliveryOpenBalance(@NonNull final BPartnerStats bPartnerStats, @NonNull final Instant date)
+	{
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartnerStats.getBpartnerId().getRepoId(), TimeUtil.asTimestamp(date));
+		return creditLimit.subtract(bPartnerStats.getDeliveryCreditUsed());
 	}
 
 }

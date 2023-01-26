@@ -14,6 +14,8 @@ import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -75,5 +77,17 @@ public class C_BPartner_CreditLimit
 		}
 
 		bpartnerStatsService.enableCreditLimitCheck(BPartnerId.ofRepoId(bpCreditLimit.getC_BPartner_ID()));
+	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = I_C_BPartner_CreditLimit.COLUMNNAME_IsActive)
+	public void disapproveOnDeactivation(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
+	{
+		if(!bpCreditLimit.isActive())
+		{
+			bpCreditLimit.setApprovedBy_ID(-1);
+			save(bpCreditLimit);
+		}
 	}
 }

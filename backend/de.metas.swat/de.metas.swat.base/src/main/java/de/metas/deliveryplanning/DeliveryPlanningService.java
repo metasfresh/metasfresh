@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
@@ -40,6 +41,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -131,6 +133,8 @@ public class DeliveryPlanningService
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final BPartnerStatsService bPartnerStatsService,
@@ -332,12 +336,6 @@ public class DeliveryPlanningService
 	{
 		final DeliveryInstructionUserNotificationsProducer deliveryInstructionUserNotificationsProducer = DeliveryInstructionUserNotificationsProducer.newInstance();
 
-		if (!creditLimitAllowsDeliveryInstruction(deliveryInstructionRequest))
-		{
-			deliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError();
-			return;
-		}
-
 		final DeliveryPlanningId deliveryPlanningId = deliveryInstructionRequest.getDeliveryPlanningId();
 
 		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
@@ -508,8 +506,34 @@ public class DeliveryPlanningService
 
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 
-			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
+			final boolean creditLimitAllowsDeliveryInstruction = validateCreditLimit(deliveryInstructionRequest);
+
+			if (creditLimitAllowsDeliveryInstruction)
+			{
+				generateCompleteDeliveryInstruction(deliveryInstructionRequest);
+			}
 		}
+	}
+
+	private boolean validateCreditLimit(final DeliveryInstructionCreateRequest deliveryInstructionRequest)
+	{
+		if (!creditLimitAllowsDeliveryInstruction(deliveryInstructionRequest))
+		{
+			final BPartnerStats bPartnerStats = bPartnerStatsService.getCreateBPartnerStats(deliveryInstructionRequest.getShipperBPartnerId());
+
+			final DeliveryInstructionUserNotificationsProducer deliveryInstructionUserNotificationsProducer = DeliveryInstructionUserNotificationsProducer.newInstance();
+
+			final String partnerName = partnerBL.getBPartnerName(deliveryInstructionRequest.getShipperBPartnerId());
+			final BigDecimal creditLimitDifference = bPartnerStatsService.getDeliveryOpenBalance(bPartnerStats, deliveryInstructionRequest.getDateDoc());
+
+			final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(deliveryInstructionRequest.getClientId(), deliveryInstructionRequest.getOrgId()));
+			final ITranslatableString creditLimitDifferenceMessage = moneyService.toTranslatableString(Money.of(creditLimitDifference, baseCurrencyId));
+			deliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError(partnerName, creditLimitDifferenceMessage);
+			return false;
+		}
+
+		return true;
+
 	}
 
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
