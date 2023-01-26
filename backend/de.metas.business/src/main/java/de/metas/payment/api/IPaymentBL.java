@@ -23,7 +23,9 @@
 package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -153,4 +155,6 @@ public interface IPaymentBL extends ISingletonService
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
 
 	Optional<SectionCodeId> determineSectionCodeId(I_C_Payment payment);
+
+	Money getCreditGainedByPaymentsInCurrency(BPartnerId bpartnerId, CurrencyId baseCurrencyId);
 }

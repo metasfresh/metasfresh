@@ -32,6 +32,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -49,11 +50,13 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
@@ -116,6 +119,8 @@ public class PaymentBL implements IPaymentBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -933,6 +938,42 @@ public class PaymentBL implements IPaymentBL
 		final SectionCodeId singleSectionCodeId = SectionCodeId.ofRepoIdOrNull(sectionCodeIds.iterator().next());
 
 		return Optional.ofNullable(singleSectionCodeId);
+	}
+
+	@Override
+	public Money getCreditGainedByPaymentsInCurrency(final BPartnerId bpartnerId, final CurrencyId currencyId)
+	{
+		final Iterator<PaymentId> paymentIdIterator = getPaymentIds(PaymentQuery.builder()
+																			.docStatus(DocStatus.Completed)
+																			.bpartnerId(bpartnerId)
+																			.direction(PaymentDirection.INBOUND)
+																			.build())
+				.stream().iterator();
+
+		Money creditGainesInPayments = Money.zero(currencyId);
+
+		while (paymentIdIterator.hasNext())
+		{
+			final PaymentId paymentId = paymentIdIterator.next();
+			final Money creditGainedByPaymentInCurrency = computeCreditGainedByPaymentInCurrency(paymentId,currencyId);
+
+			creditGainesInPayments = creditGainesInPayments.add(creditGainedByPaymentInCurrency);
+		}
+
+		return creditGainesInPayments;
+	}
+
+
+	private Money computeCreditGainedByPaymentInCurrency(@NonNull final PaymentId paymentId, @NonNull final CurrencyId baseCurrencyId )
+	{
+		final I_C_Payment payment = getById(paymentId);
+
+		final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+
+		final CurrencyConversionContext currencyConversionContext = extractCurrencyConversionContext(payment);
+
+		return moneyService.convertMoneyToCurrency(creditUsageGainedByPayment, baseCurrencyId, currencyConversionContext);
+
 	}
 
 }

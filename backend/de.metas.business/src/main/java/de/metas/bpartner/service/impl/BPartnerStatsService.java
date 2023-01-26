@@ -28,25 +28,18 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.money.MoneyService;
-import de.metas.order.IOrderDAO;
-import de.metas.order.IOrderLineBL;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.payment.PaymentDirection;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.PaymentQuery;
 import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -58,7 +51,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.NumberFormat;
-import java.util.Iterator;
 import java.util.Locale;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -69,23 +61,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BPartnerStatsService
 {
 	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-
 	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
-	private IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
-	private final MoneyService moneyService;
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final BPartnerCreditLimitRepository creditLimitRepo;
 
-	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo,
-			@NonNull final MoneyService moneyService)
+	private BPartnerStatsService(@NonNull final BPartnerCreditLimitRepository creditLimitRepo)
 	{
 		this.creditLimitRepo = creditLimitRepo;
-		this.moneyService = moneyService;
 	}
 
 	public CreditStatus calculateProjectedSOCreditStatus(@NonNull final CalculateCreditStatusRequest request)
@@ -251,42 +236,19 @@ public class BPartnerStatsService
 	{
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
 
-		final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(stats.getAD_Client_ID(), stats.getAD_Org_ID()));
+		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(ClientId.ofRepoId(stats.getAD_Client_ID()), OrgId.ofRepoId(stats.getAD_Org_ID()));
 		Money deliveryCreditUsed = Money.zero(baseCurrencyId);
 
 		final Money creditUsedPerShippingPackageInBaseCurrency = shipperTransportationBL.getCreditUsedByDeliveryInstructionsInCurrency(bpStats.getBpartnerId(), baseCurrencyId);
 
 		deliveryCreditUsed = deliveryCreditUsed.add(creditUsedPerShippingPackageInBaseCurrency);
 
-		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
-																					  .docStatus(DocStatus.Completed)
-																					  .bpartnerId(bpStats.getBpartnerId())
-																					  .direction(PaymentDirection.INBOUND)
-																					  .build())
-				.stream().iterator();
-		while (paymentIdIterator.hasNext())
-		{
-			final PaymentId paymentId = paymentIdIterator.next();
-			final Money creditGainedByPaymentInBaseCurrency = computeCreditGainedByPaymentInBaseCurrency(baseCurrencyId, paymentId);
+		final Money creditGainedByPayments = paymentBL.getCreditGainedByPaymentsInCurrency(bpStats.getBpartnerId(), baseCurrencyId);
 
-			deliveryCreditUsed = deliveryCreditUsed.subtract(creditGainedByPaymentInBaseCurrency);
-
-		}
+		deliveryCreditUsed = deliveryCreditUsed.subtract(creditGainedByPayments);
 
 		stats.setDelivery_CreditUsed(deliveryCreditUsed.toBigDecimal());
 		saveRecord(stats);
-	}
-
-	private Money computeCreditGainedByPaymentInBaseCurrency(final CurrencyId baseCurrencyId, final PaymentId paymentId)
-	{
-		final I_C_Payment payment = paymentBL.getById(paymentId);
-
-		final Money creditUsageGainedByPayment = Money.of(payment.getPayAmt(), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
-
-		final CurrencyConversionContext currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
-
-		return moneyService.convertMoneyToCurrency(creditUsageGainedByPayment, baseCurrencyId, currencyConversionContext);
-
 	}
 
 	private void updateSOCreditStatus(@NonNull final BPartnerStats bpStats)
@@ -399,7 +361,6 @@ public class BPartnerStatsService
 		saveRecord(stats);
 	}
 
-
 	private void updateDeliveryCreditLimitIndicator(@NonNull final BPartnerStats bstats)
 	{
 		// load the statistics
@@ -419,6 +380,7 @@ public class BPartnerStatsService
 
 		saveRecord(stats);
 	}
+
 	public void checkPaymentCreditLimit(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment payment = paymentBL.getById(paymentId);
