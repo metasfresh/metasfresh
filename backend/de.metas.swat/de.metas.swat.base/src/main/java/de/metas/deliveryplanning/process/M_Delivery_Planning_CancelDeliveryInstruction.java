@@ -33,7 +33,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
-public class M_Delivery_Planning_ReGenerateDeliveryInstruction extends JavaProcess implements IProcessPrecondition
+public class M_Delivery_Planning_CancelDeliveryInstruction extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
@@ -46,12 +46,6 @@ public class M_Delivery_Planning_ReGenerateDeliveryInstruction extends JavaProce
 
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
 
-		final boolean isExistsNoShipperDeliveryPlannings = deliveryPlanningService.isExistsNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
-
-		if (isExistsNoShipperDeliveryPlannings)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
-		}
 		final boolean isExistsOpenDeliveryPlannings = deliveryPlanningService.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		if (!isExistsOpenDeliveryPlannings)
@@ -73,7 +67,7 @@ public class M_Delivery_Planning_ReGenerateDeliveryInstruction extends JavaProce
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.regenerateDeliveryInstructions(selectedDeliveryPlanningsFilter);
+		deliveryPlanningService.cancelDelivery(selectedDeliveryPlanningsFilter);
 
 		return MSG_OK;
 

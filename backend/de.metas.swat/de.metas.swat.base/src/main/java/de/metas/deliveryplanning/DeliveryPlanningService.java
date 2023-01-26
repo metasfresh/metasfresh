@@ -57,6 +57,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -85,11 +87,13 @@ public class DeliveryPlanningService
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
+	public static final AdMessageKey MSG_M_Delivery_Planning_WhithOutReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.WhithOutReleaseNo");
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -316,6 +320,10 @@ public class DeliveryPlanningService
 	{
 		return deliveryPlanningRepository.isExistDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
 	}
+	public boolean isExistDeliveryPlanningsWithReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return deliveryPlanningRepository.isExistDeliveryPlanningsWithReleaseNo(selectedDeliveryPlanningsFilter);
+	}
 
 	private DeliveryInstructionCreateRequest createDeliveryInstructionRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -384,7 +392,14 @@ public class DeliveryPlanningService
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningsSuitableForDeliveryInstruction(selectedDeliveryPlanningsFilter);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.setJoinOr()
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
@@ -394,8 +409,14 @@ public class DeliveryPlanningService
 
 	public void regenerateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlanningsSuitableForRegenerateDeliveryInstruction(selectedDeliveryPlanningsFilter);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.setJoinOr()
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
 
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
@@ -417,6 +438,31 @@ public class DeliveryPlanningService
 			final I_M_ShipperTransportation deliveryInstructionRecord = deliveryInstructionsIterator.next();
 
 			docActionBL.processEx(deliveryInstructionRecord, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+		}
+	}
+
+
+	public void cancelDelivery(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.setJoinOr()
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(selectedDeliveryPlanningsFilter);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+
+			// first void the existent delivery instructions
+			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
+			voidLinkedDeliveryInstructions(deliveryPlanningId);
+
+			// then cancel delivery planning
+			deliveryPlanningRepository.cancelSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 		}
 	}
 
