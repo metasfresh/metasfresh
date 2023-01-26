@@ -31,7 +31,9 @@ import lombok.NonNull;
 public enum ExternalSystemOtherKnownParams
 {
 	EXPORT_BUDGET_PROJECT("ExportBudgetProject"),
-	EXPORT_WO_PROJECT("ExportWOProject");
+	EXPORT_WO_PROJECT("ExportWOProject"),
+	EXPORT_BPARTNER("ExportBPartner"),
+	AUTO_EXPORT_DEFAULT_SHIPPING_ADDRESS("AutoExportDefaultShippingAddress");
 
 	@NonNull
 	private final String dbName;

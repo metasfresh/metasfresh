@@ -59,6 +59,7 @@ public class BPartnerRecordsUtil
 {
 
 	public static final String C_COUNTRY_RECORD_COUNTRY_CODE = "countryRecord.countryCode";
+	public static final String C_COUNTRY_RECORD_COUNTRY_NAME = "countryRecord.name";
 
 	public static final int C_BP_GROUP_ID = 15;
 	public static final String BP_GROUP_RECORD_NAME = "bpGroupRecord.name";
@@ -144,6 +145,7 @@ public class BPartnerRecordsUtil
 
 			final I_C_Country countryRecord = newInstance(I_C_Country.class);
 			countryRecord.setCountryCode(C_COUNTRY_RECORD_COUNTRY_CODE);
+			countryRecord.setName(C_COUNTRY_RECORD_COUNTRY_NAME);
 			saveRecord(countryRecord);
 
 			final I_C_Postal postalRecord = newInstance(I_C_Postal.class);

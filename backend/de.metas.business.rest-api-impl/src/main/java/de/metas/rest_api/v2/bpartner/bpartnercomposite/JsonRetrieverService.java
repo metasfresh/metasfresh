@@ -215,6 +215,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
 			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
 			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
+			.put(BPartnerLocation.COUNTRY_NAME, JsonResponseLocation.COUNTRY_NAME)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
@@ -532,6 +533,7 @@ public class JsonRetrieverService
 					.phone(location.getPhone())
 					.email(location.getEmail())
 					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
+					.countryName(location.getCountryName())
 					.build();
 		}
 		catch (final RuntimeException rte)

@@ -41,6 +41,7 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 
 import java.util.List;
 import java.util.Map;
@@ -139,6 +140,7 @@ public class CreateBPartnerV2_StepDef
 			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
 			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
 			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
+			final Boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, null);
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -154,6 +156,11 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedLocation.getCity()).isEqualTo(city);
 			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
 			assertThat(persistedLocation.getGln()).isEqualTo(gln);
+
+			if (isShipToDefault != null)
+			{
+				assertThat(persistedLocation.isShipToDefault()).isEqualTo(isShipToDefault);
+			}
 		}
 	}
 

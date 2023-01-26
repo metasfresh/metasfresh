@@ -70,6 +70,7 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String COUNTRY_NAME = "countryName";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -142,6 +143,9 @@ public class BPartnerLocation
 	@Nullable
 	final String setupPlaceNo;
 
+	@Nullable
+	private String countryName;
+
 	final boolean remitTo;
 	final boolean handOverLocation;
 	final boolean replicationLookupDefault;
@@ -185,6 +189,7 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
+			@Nullable final String countryName,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
@@ -228,6 +233,8 @@ public class BPartnerLocation
 		this.email = email;
 
 		this.setupPlaceNo = setupPlaceNo;
+
+		this.countryName = countryName;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 
@@ -308,6 +315,7 @@ public class BPartnerLocation
 				.region(getRegion())
 				.district(getDistrict())
 				.countryCode(getCountryCode())
+				.countryName(getCountryName())
 				.build();
 	}
 
@@ -324,6 +332,7 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+		setCountryName(address.getCountryName());
 	}
 
 	/**

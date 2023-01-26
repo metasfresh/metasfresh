@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,58 +20,58 @@
  * #L%
  */
 
-package de.metas.externalsystem.grssignum.export.bpartner;
+package de.metas.externalsystem.other.export.bpartner;
 
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.bpartner.C_BPartner_SyncTo_ExternalSystem;
-import de.metas.externalsystem.grssignum.ExportBPartnerToGRSService;
-import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
-import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.externalsystem.other.ExternalSystemOtherConfig;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.process.Param;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-public class C_BPartner_SyncTo_GRS_HTTP extends C_BPartner_SyncTo_ExternalSystem
+public class C_BPartner_SyncTo_Other extends C_BPartner_SyncTo_ExternalSystem
 {
-	private final ExportBPartnerToGRSService exportToGRSService = SpringContextHolder.instance.getBean(ExportBPartnerToGRSService.class);
+	private final ExportBPartnerToOtherService exportBPartnerToOtherService = SpringContextHolder.instance.getBean(ExportBPartnerToOtherService.class);
 
-	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_GRSSIGNUM_ID = I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystem_Config_GRSSignum_ID;
-	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_GRSSIGNUM_ID)
-	private int externalSystemConfigGRSSignumId;
+	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_OTHER_ID = I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
+	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_OTHER_ID)
+	private int externalSystemConfigOtherId;
 
 	@Override
 	protected ExternalSystemType getExternalSystemType()
 	{
-		return ExternalSystemType.GRSSignum;
+		return ExternalSystemType.Other;
 	}
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalSystemChildConfigId()
 	{
-		return ExternalSystemGRSSignumConfigId.ofRepoId(externalSystemConfigGRSSignumId);
+		return ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigOtherId));
 	}
 
 	@Override
 	protected String getExternalSystemParam()
 	{
-		return PARAM_EXTERNAL_SYSTEM_CONFIG_GRSSIGNUM_ID;
+		return PARAM_EXTERNAL_SYSTEM_CONFIG_OTHER_ID;
 	}
 
 	@Override
 	protected ExportToExternalSystemService getExportToBPartnerExternalSystem()
 	{
-		return exportToGRSService;
+		return exportBPartnerToOtherService;
 	}
 
 	@Override
 	protected boolean isExportAllowed(@NonNull final IExternalSystemChildConfig childConfig)
 	{
-		final ExternalSystemGRSSignumConfig grsSignumConfig = ExternalSystemGRSSignumConfig.cast(childConfig);
+		final ExternalSystemOtherConfig otherConfig = ExternalSystemOtherConfig.cast(childConfig);
 
-		return grsSignumConfig.isSyncBPartnersToRestEndpoint();
+		return otherConfig.isSyncBPartnerEnabled();
 	}
 }

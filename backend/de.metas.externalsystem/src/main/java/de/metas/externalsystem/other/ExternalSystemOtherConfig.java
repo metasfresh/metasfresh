@@ -65,18 +65,22 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 
 	public boolean isSyncBudgetProjectsEnabled()
 	{
-		return getParameterByName(ExternalSystemOtherKnownParams.EXPORT_BUDGET_PROJECT.getDbName())
-				.map(ExternalSystemOtherConfigParameter::getValue)
-				.map(value -> StringUtils.toBoolean(value, false))
-				.orElse(false);
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_BUDGET_PROJECT.getDbName());
 	}
 
 	public boolean isSyncWOProjectsEnabled()
 	{
-		return getParameterByName(ExternalSystemOtherKnownParams.EXPORT_WO_PROJECT.getDbName())
-				.map(ExternalSystemOtherConfigParameter::getValue)
-				.map(value -> StringUtils.toBoolean(value, false))
-				.orElse(false);
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_WO_PROJECT.getDbName());
+	}
+
+	public boolean isSyncBPartnerEnabled()
+	{
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.EXPORT_BPARTNER.getDbName());
+	}
+
+	public boolean isAutoSendDefaultShippingAddress()
+	{
+		return getBooleanValueForParam(ExternalSystemOtherKnownParams.AUTO_EXPORT_DEFAULT_SHIPPING_ADDRESS.getDbName());
 	}
 
 	@NonNull
@@ -85,5 +89,13 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 		return parameters.stream()
 				.filter(parameter -> parameter.getName().equals(name))
 				.findFirst();
+	}
+
+	private boolean getBooleanValueForParam(@NonNull final String paramName)
+	{
+		return getParameterByName(paramName)
+				.map(ExternalSystemOtherConfigParameter::getValue)
+				.map(value -> StringUtils.toBoolean(value, false))
+				.orElse(false);
 	}
 }
