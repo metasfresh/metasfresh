@@ -388,7 +388,7 @@ Feature: create invoices using invoice API
 }
 """
 
-    And validate api response error message
+    And validate invoice api response error message
       | JsonErrorItem.message                |
       | Produkt ist nicht auf der Preisliste |
     

@@ -393,7 +393,7 @@ public class C_Invoice_StepDef
 		invoiceTable.put(invoiceIdentifier, invoiceRecords.get(0));
 	}
 
-	@Then("validate api response error message")
+	@Then("validate invoice api response error message")
 	public void validate_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
