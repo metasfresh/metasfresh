@@ -85,10 +85,13 @@ import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartner;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_ProductCategory;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 public class S_ExternalReference_StepDef
@@ -229,6 +232,28 @@ public class S_ExternalReference_StepDef
 				assertThat(shipper).isNotNull();
 
 				externalReferenceRecord.setRecord_ID(shipper.getM_Shipper_ID());
+			}
+			else if (type.getCode().equals(BPartnerExternalReferenceType.BPARTNER.getCode()))
+			{
+				final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				final I_C_BPartner bPartnerRecord = bpartnerTable.get(bPartnerIdentifier);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bPartnerRecord.getC_BPartner_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bPartnerRecord.getC_BPartner_ID());
+			}
+			else if (type.getCode().equals(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode()))
+			{
+				final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerLocationIdentifier).isNotNull();
+
+				final I_C_BPartner_Location bpartnerLocationRecord = bpartnerLocationTable.get(bPartnerLocationIdentifier);
+				assertThat(bpartnerLocationRecord).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
 			}
 			else if (ProductExternalReferenceType.PRODUCT.getCode().equals(type.getCode()))
 			{
