@@ -317,7 +317,7 @@ public class DeliveryPlanningRepository
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
+			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
@@ -393,5 +393,23 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
 			save(deliveryPlanningRecord);
 		}
+	}
+
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeUnsuitableForInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+	}
+
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeUnsuitableForReGeneration(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
 	}
 }

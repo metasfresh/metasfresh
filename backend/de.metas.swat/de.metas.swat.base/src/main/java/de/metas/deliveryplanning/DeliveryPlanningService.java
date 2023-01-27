@@ -507,14 +507,9 @@ public class DeliveryPlanningService
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository.excludeUnsuitableForInstruction (selectedDeliveryPlanningsFilter);
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(deliveryPlanningsSuitableForInstruction);
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
@@ -557,12 +552,8 @@ public class DeliveryPlanningService
 	}
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeUnsuitableForReGeneration(selectedDeliveryPlanningsFilter);
+
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
@@ -590,7 +581,6 @@ public class DeliveryPlanningService
 		}
 	}
 
-
 	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
@@ -600,7 +590,7 @@ public class DeliveryPlanningService
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
 		{
