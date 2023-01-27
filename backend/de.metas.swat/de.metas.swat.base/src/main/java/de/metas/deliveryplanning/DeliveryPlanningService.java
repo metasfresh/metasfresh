@@ -390,7 +390,7 @@ public class DeliveryPlanningService
 				.build();
 	}
 
-	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void generateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
 				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
@@ -407,7 +407,7 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public void regenerateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
 				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
@@ -442,7 +442,7 @@ public class DeliveryPlanningService
 	}
 
 
-	public void cancelDelivery(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
 				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
