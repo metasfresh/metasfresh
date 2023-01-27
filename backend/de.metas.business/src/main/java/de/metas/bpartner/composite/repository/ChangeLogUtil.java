@@ -11,6 +11,8 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -22,8 +24,6 @@ import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -198,6 +198,7 @@ final class ChangeLogUtil
 	private static final ImmutableMap<String, String> C_COUNTRY_COLUMN_MAP = ImmutableMap
 			.<String, String>builder()
 			.put(I_C_Country.COLUMNNAME_CountryCode, BPartnerLocation.COUNTRYCODE)
+			.put(I_C_Country.COLUMNNAME_Name, BPartnerLocation.COUNTRY_NAME)
 			.build();
 
 	@VisibleForTesting

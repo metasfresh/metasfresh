@@ -77,6 +77,7 @@ public class BPartnerLocation
 	public static final String VAT_TAX_ID = "vatTaxId";
 	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
 	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+	public static final String COUNTRY_NAME = "countryName";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -163,6 +164,9 @@ public class BPartnerLocation
 	@Nullable
 	private String sapBPartnerCode;
 
+	@Nullable
+	private String countryName;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -202,6 +206,7 @@ public class BPartnerLocation
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
 			@Nullable final String vatTaxId,
+			@Nullable final String countryName,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
@@ -248,6 +253,8 @@ public class BPartnerLocation
 
 		this.setupPlaceNo = setupPlaceNo;
 		this.vatTaxId = vatTaxId;
+
+		this.countryName = countryName;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 
@@ -331,6 +338,7 @@ public class BPartnerLocation
 				.region(getRegion())
 				.district(getDistrict())
 				.countryCode(getCountryCode())
+				.countryName(getCountryName())
 				.build();
 	}
 
@@ -347,6 +355,7 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+		setCountryName(address.getCountryName());
 	}
 
 	/**

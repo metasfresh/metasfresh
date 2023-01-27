@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.util
+ * de-metas-common-util
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.adempiere.util.lang;
+package de.metas.common.util.pair;
 
 import javax.annotation.Nullable;
 
