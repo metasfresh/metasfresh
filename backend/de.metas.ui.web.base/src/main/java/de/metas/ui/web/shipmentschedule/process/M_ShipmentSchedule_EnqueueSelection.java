@@ -22,11 +22,13 @@ package de.metas.ui.web.shipmentschedule.process;
  * #L%
  */
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.forex.ForexContractId;
-import de.metas.forex.ForexContractRef;
 import de.metas.forex.ForexContractService;
+import de.metas.forex.process.utils.ForexContractParameters;
+import de.metas.forex.process.utils.ForexContracts;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -34,9 +36,12 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Resu
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -53,11 +58,13 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ForeignExchangeContract;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
@@ -67,9 +74,10 @@ import javax.annotation.Nullable;
  */
 public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
-		implements IProcessPrecondition, IProcessDefaultParametersProvider
+		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
@@ -83,15 +91,49 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Param(parameterName = "IsShipToday", mandatory = true)
 	private boolean isShipToday; // introduced in task #2940
 
-	private static final String PARAM_IsFEC = "IsFEC";
-	@Param(parameterName = PARAM_IsFEC)
-	private boolean isForexContract;
+	//
+	// FEC Parameters
+	@Param(parameterName = ForexContractParameters.PARAM_IsFEC)
+	private boolean p_IsForexContract;
 
-	private static final String PARAM_C_ForeignExchangeContract_ID = I_C_ForeignExchangeContract.COLUMNNAME_C_ForeignExchangeContract_ID;
-	@Param(parameterName = PARAM_C_ForeignExchangeContract_ID)
-	private ForexContractId forexContractId;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_Order_Currency_ID)
+	private CurrencyId p_FEC_Order_Currency_ID;
 
-	private ImmutableSet<ForexContractId> _eligibleForexContractIds;
+	@Param(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID)
+	private ForexContractId p_forexContractId;
+
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_From_Currency_ID)
+	private CurrencyId p_FEC_From_Currency_ID;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_To_Currency_ID)
+	private CurrencyId p_FEC_To_Currency_ID;
+
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_CurrencyRate)
+	private BigDecimal p_FEC_CurrencyRate;
+
+	private final Supplier<ForexContracts> forexContractsSupplier = Suppliers.memoize(this::retrieveContracts);
+
+	@Nullable
+	private ForexContracts getContracts()
+	{
+		return forexContractsSupplier.get();
+	}
+
+	@Nullable
+	private ForexContracts retrieveContracts()
+	{
+		final ImmutableSet<OrderId> salesOrderIds = shipmentScheduleBL.getOrderIds(getShipmentSchedulesQueryFilters());
+		if (salesOrderIds.size() != 1)
+		{
+			return null;
+		}
+
+		final OrderId salesOrderId = salesOrderIds.iterator().next();
+
+		return ForexContracts.builder()
+				.orderCurrencyId(orderBL.getCurrencyId(salesOrderId))
+				.forexContracts(forexContractService.getContractsByOrderId(salesOrderId))
+				.build();
+	}
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -112,35 +154,51 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_IsFEC.equals(parameter.getColumnName()))
-		{
-			return !getEligibleForexContractIds().isEmpty();
-		}
-		else if (PARAM_C_ForeignExchangeContract_ID.equals(parameter.getColumnName()))
-		{
-			final ImmutableSet<ForexContractId> forexContractIds = getEligibleForexContractIds();
-			return forexContractIds.size() == 1 ? forexContractIds.iterator().next() : null;
-		}
-		else
-		{
-			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-		}
+		return getForexContractParameters().getParameterDefaultValue(parameter.getColumnName(), getContracts());
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	public LookupValuesList getEligibleForexContracts()
+	@Override
+	public void onParameterChanged(final String parameterName)
 	{
-		return forexContractLookup.findByIdsOrdered(getEligibleForexContractIds());
+		updateForexContractParameters(params -> params.updateOnParameterChanged(parameterName, getContracts()));
+	}
+
+	private ForexContractParameters getForexContractParameters()
+	{
+		return ForexContractParameters.builder()
+				.isFEC(p_IsForexContract)
+				.orderCurrencyId(p_FEC_Order_Currency_ID)
+				.forexContractId(p_forexContractId)
+				.fromCurrencyId(p_FEC_From_Currency_ID)
+				.toCurrencyId(p_FEC_To_Currency_ID)
+				.currencyRate(p_FEC_CurrencyRate)
+				.build();
+	}
+
+	private void updateForexContractParameters(@NonNull final Consumer<ForexContractParameters> updater)
+	{
+		final ForexContractParameters params = getForexContractParameters();
+		updater.accept(params);
+		this.p_IsForexContract = params.isFEC();
+		this.p_FEC_Order_Currency_ID = params.getOrderCurrencyId();
+		this.p_forexContractId = params.getForexContractId();
+		this.p_FEC_From_Currency_ID = params.getFromCurrencyId();
+		this.p_FEC_To_Currency_ID = params.getToCurrencyId();
+		this.p_FEC_CurrencyRate = params.getCurrencyRate();
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	public LookupValuesList getAvailableForexContracts()
+	{
+		final ForexContracts contracts = getContracts();
+		return contracts != null
+				? forexContractLookup.findByIdsOrdered(contracts.getForexContractIds())
+				: LookupValuesList.EMPTY;
 	}
 
 	@Override
 	protected String doIt()
 	{
-		if (isForexContract && forexContractId == null)
-		{
-			throw new FillMandatoryException(PARAM_C_ForeignExchangeContract_ID);
-		}
-
 		final Result result = new ShipmentScheduleEnqueuer()
 				.setContext(getCtx(), getTrxName())
 				.createWorkpackages(
@@ -150,7 +208,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 								.quantityType(quantityType)
 								.completeShipments(isCompleteShipments)
 								.isShipmentDateToday(isShipToday)
-								.forexContractRef(isForexContract ? ForexContractRef.ofNullableForexContractId(forexContractId) : null)
+								.forexContractRef(getForexContractParameters().getForexContractRef())
 								.build());
 
 		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
@@ -177,26 +235,4 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 		return filters;
 	}
-
-	private ImmutableSet<ForexContractId> getEligibleForexContractIds()
-	{
-		ImmutableSet<ForexContractId> eligibleForexContractIds = this._eligibleForexContractIds;
-		if (eligibleForexContractIds == null)
-		{
-			eligibleForexContractIds = this._eligibleForexContractIds = retrieveEligibleForexContractIds();
-		}
-		return eligibleForexContractIds;
-	}
-
-	private ImmutableSet<ForexContractId> retrieveEligibleForexContractIds()
-	{
-		final ImmutableSet<OrderId> orderIds = shipmentScheduleBL.getOrderIds(getShipmentSchedulesQueryFilters());
-		if (orderIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return forexContractService.getContractIdsByOrderIds(orderIds);
-	}
-
 }
