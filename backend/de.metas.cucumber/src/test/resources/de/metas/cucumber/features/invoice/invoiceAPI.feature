@@ -101,7 +101,7 @@ Feature: create invoices using invoice API
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-19       | 2022-01-18   | 2022-01-17      | docType                     | docType                           | true        |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
@@ -219,7 +219,7 @@ Feature: create invoices using invoice API
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-19       | 2022-01-18   | 2022-01-17      | docType                     | docType                           | true        |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-20       | 2022-01-19   | 2022-01-18      | docType                     | docType                           | true        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
@@ -307,7 +307,7 @@ Feature: create invoices using invoice API
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-24       | 2022-01-23   | 2022-01-22      | docType                     | docType                           | true        |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference     | 30 Tage netto | true      | CO        | EUR                     | 2022-01-25       | 2022-01-24   | 2022-01-23      | docType                     | docType                           | true        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Tax_ID.Identifier | OPT.Line | OPT.TaxAmtInfo | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 | OPT.IsManualPrice | OPT.QtyInvoicedInPriceUOM |
