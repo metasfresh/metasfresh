@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14235](https://github.com/metasfresh/metasfresh/issues/14235) Enhance REST-API with cache control
   * [#14402](https://github.com/metasfresh/metasfresh/issues/14402) ExternalSys-Other: Send Address MF to ES (=> C__BPartner_Location) 
   * [#14437](https://github.com/metasfresh/metasfresh/issues/14437) Allow setting manual tax rate for PO lines created via SO to PO process
   * [#14210](https://github.com/metasfresh/metasfresh/issues/14210) ExternalSys-Other: Send project info from MF to ES - Part II (=> C_Project.ExternalId) 
