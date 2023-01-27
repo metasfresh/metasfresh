@@ -70,6 +70,10 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	@RabbitListener(queues = {
 			RabbitMQEventBusConfiguration.DefaultQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.AccountingQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.ManageSchedulerQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.AsyncBatchQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.EffortControlQueueConfiguration.QUEUE_NAME_SPEL
 	})
 	public void onGenericRemoteEvent(
 			@Payload final Event event,
