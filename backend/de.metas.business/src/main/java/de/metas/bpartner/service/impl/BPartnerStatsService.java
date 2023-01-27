@@ -168,7 +168,7 @@ public class BPartnerStatsService
 		return creditWatchPercent.divide(Env.ONEHUNDRED, 2, RoundingMode.HALF_UP);
 	}
 
-	public void resetCreditStatusFromBPGroup(@NonNull final I_C_BPartner bpartner)
+	public void resetSOCreditStatusFromBPGroup(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerStats bpartnerStats = bPartnerStatsDAO.getCreateBPartnerStats(bpartner);
 		final I_C_BP_Group bpGroup = bpartner.getC_BP_Group();
@@ -193,7 +193,13 @@ public class BPartnerStatsService
 			return;
 		}
 
+		if (!CreditStatus.NoCreditCheck.equals(bPartnerStats.getDeliveryCreditStatus()))
+		{
+			return;
+		}
+
 		bPartnerStatsDAO.setSOCreditStatus(bPartnerStats, CreditStatus.CreditWatch);
+		bPartnerStatsDAO.setDeliveryCreditStatus(bPartnerStats, CreditStatus.CreditWatch);
 	}
 
 	public void updateBPartnerStatistics(@NonNull final BPartnerStats bpStats)

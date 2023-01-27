@@ -71,6 +71,8 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 */
 	void setSOCreditStatus(BPartnerStats stats, CreditStatus soCreditStatus);
 
+	void setDeliveryCreditStatus(BPartnerStats stats, CreditStatus deliveryCreditStatus);
+
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	I_C_BPartner_Stats loadDataRecord(@NonNull BPartnerStats bpStats);

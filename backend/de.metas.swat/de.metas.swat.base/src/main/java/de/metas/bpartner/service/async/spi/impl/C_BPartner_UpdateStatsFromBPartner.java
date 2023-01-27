@@ -111,7 +111,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		{
 			if (alsoSetCreditStatusBaseOnBPGroup)
 			{
-				bPartnerStatsService.resetCreditStatusFromBPGroup(bpartner);
+				bPartnerStatsService.resetSOCreditStatusFromBPGroup(bpartner);
 			}
 
 			final BPartnerStats stats = bPartnerStatsService.getCreateBPartnerStats(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));

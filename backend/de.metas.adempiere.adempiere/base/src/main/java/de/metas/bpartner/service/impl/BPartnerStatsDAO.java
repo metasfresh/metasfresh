@@ -200,6 +200,17 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
+	public void setDeliveryCreditStatus(@NonNull final BPartnerStats bpStats, final CreditStatus deliveryCreditStatus)
+	{
+		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
+
+		stats.setDelivery_CreditStatus(CreditStatus.toCodeOrNull(deliveryCreditStatus));
+
+		saveRecord(stats);
+
+	}
+
+	@Override
 	public I_C_BPartner_Stats loadDataRecord(@NonNull final BPartnerStats bpStats)
 	{
 		return load(bpStats.getRepoId(), I_C_BPartner_Stats.class);

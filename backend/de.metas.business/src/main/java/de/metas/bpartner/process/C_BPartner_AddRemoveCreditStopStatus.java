@@ -41,13 +41,16 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 		final CreditStatus creditStatus;
+		final CreditStatus deliveryCreditStatus;
 
 		if (SetCreditStatusEnum.CreditOK.equals(setCreditStatus)) {
 			creditStatus = CreditStatus.CreditOK;
+			deliveryCreditStatus = CreditStatus.CreditOK;
 		}
 		else if (SetCreditStatusEnum.CreditStop.equals(setCreditStatus))
 		{
 			creditStatus = CreditStatus.CreditStop;
+			deliveryCreditStatus = CreditStatus.CreditStop;
 		}
 		else if (SetCreditStatusEnum.Calculate.equals(setCreditStatus))
 		{
@@ -57,6 +60,7 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 					.date(SystemTime.asDayTimestamp())
 					.build();
 			creditStatus = bpartnerStatsService.calculateProjectedSOCreditStatus(request);
+			deliveryCreditStatus = bpartnerStatsService.calculateProjectedDeliveryCreditStatus(request);
 		}
 		else
 		{
@@ -64,6 +68,7 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		}
 
 		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
+		bpartnerStatsDAO.setDeliveryCreditStatus(stats, deliveryCreditStatus);
 
 		return "@Success@";
 	}
