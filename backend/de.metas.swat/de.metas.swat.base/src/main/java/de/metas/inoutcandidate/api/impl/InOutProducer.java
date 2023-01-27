@@ -15,9 +15,10 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
-import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.impl.InOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -123,7 +124,7 @@ public class InOutProducer implements IInOutProducer
 
 	@NonNull
 	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
-	@Nullable private final ForexContractId forexContractId;
+	@Nullable private final ForexContractRef forexContractRef;
 	@Nullable private final DeliveryPlanningId deliveryPlanningId;
 
 	private I_M_InOut _currentReceipt = null;
@@ -147,14 +148,14 @@ public class InOutProducer implements IInOutProducer
 			final boolean complete,
 			@NonNull final ReceiptMovementDateRule movementDateRule,
 			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId,
-			@Nullable final ForexContractId forexContractId,
+			@Nullable final ForexContractRef forexContractRef,
 			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.result = result;
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
 		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap::of);
-		this.forexContractId = forexContractId;
+		this.forexContractRef = forexContractRef;
 		this.deliveryPlanningId = deliveryPlanningId;
 	}
 
@@ -519,7 +520,7 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
 
-		receiptHeader.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		InOutDAO.updateRecordFromForeignContractRef(receiptHeader, forexContractRef);
 		receiptHeader.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
 		//

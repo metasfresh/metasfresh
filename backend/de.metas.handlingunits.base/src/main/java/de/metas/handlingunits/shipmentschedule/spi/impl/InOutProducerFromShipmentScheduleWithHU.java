@@ -33,7 +33,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -48,6 +48,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.impl.InOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -167,7 +168,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
-	@Nullable private ForexContractId forexContractId;
+	@Nullable private ForexContractRef forexContractRef;
 	@Nullable private DeliveryPlanningId deliveryPlanningId;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
@@ -421,7 +422,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());
 		}
 
-		shipment.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		InOutDAO.updateRecordFromForeignContractRef(shipment, forexContractRef);
 		shipment.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
 		//
@@ -734,9 +735,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU setForexContractId(@Nullable final ForexContractId forexContractId)
+	public IInOutProducerFromShipmentScheduleWithHU setForexContractRef(@Nullable final ForexContractRef forexContractRef)
 	{
-		this.forexContractId = forexContractId;
+		this.forexContractRef = forexContractRef;
 		return this;
 	}
 

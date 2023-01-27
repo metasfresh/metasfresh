@@ -4,7 +4,7 @@
 package de.metas.handlingunits.receiptschedule;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
-import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -133,7 +133,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 
 		@Nullable
-		ForexContractId forexContractId;
+		ForexContractRef forexContractRef;
 
 		@Nullable
 		DeliveryPlanningId deliveryPlanningId;

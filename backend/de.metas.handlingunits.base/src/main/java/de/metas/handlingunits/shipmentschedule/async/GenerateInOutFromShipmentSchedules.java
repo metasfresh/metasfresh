@@ -3,12 +3,13 @@ package de.metas.handlingunits.shipmentschedule.async;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.deliveryplanning.DeliveryPlanningId;
-import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -97,7 +98,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		}
 
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-		final ForexContractId forexContractId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_C_ForeignExchangeContract_ID, ForexContractId.class);
+		final ForexContractRef forexContractRef = JsonObjectMapperHolder.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef), ForexContractRef.class);
 		final DeliveryPlanningId deliveryPlanningId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, DeliveryPlanningId.class);
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters
@@ -118,7 +119,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.setCreatePackingLines(isCreatePackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
-				.setForexContractId(forexContractId)
+				.setForexContractRef(forexContractRef)
 				.setDeliveryPlanningId(deliveryPlanningId)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.

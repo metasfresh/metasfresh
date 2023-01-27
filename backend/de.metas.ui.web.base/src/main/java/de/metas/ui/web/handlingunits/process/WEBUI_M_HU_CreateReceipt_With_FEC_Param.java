@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.forex.ForexContractService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.order.OrderId;
@@ -102,7 +103,7 @@ public class WEBUI_M_HU_CreateReceipt_With_FEC_Param
 			{
 				throw new FillMandatoryException(PARAM_C_ForeignExchangeContract_ID);
 			}
-			parametersBuilder.forexContractId(forexContractId);
+			parametersBuilder.forexContractRef(ForexContractRef.ofNullableForexContractId(forexContractId));
 		}
 	}
 }

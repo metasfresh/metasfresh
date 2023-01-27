@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1700107567L;
+	private static final long serialVersionUID = -2100972193L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -758,6 +758,64 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public void setFEC_CurrencyRate (final @Nullable BigDecimal FEC_CurrencyRate)
+	{
+		set_Value (COLUMNNAME_FEC_CurrencyRate, FEC_CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getFEC_CurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FEC_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setFEC_From_Currency_ID (final int FEC_From_Currency_ID)
+	{
+		if (FEC_From_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_From_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_From_Currency_ID, FEC_From_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_From_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_From_Currency_ID);
+	}
+
+	@Override
+	public void setFEC_Order_Currency_ID (final int FEC_Order_Currency_ID)
+	{
+		if (FEC_Order_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_Order_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_Order_Currency_ID, FEC_Order_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_Order_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_Order_Currency_ID);
+	}
+
+	@Override
+	public void setFEC_To_Currency_ID (final int FEC_To_Currency_ID)
+	{
+		if (FEC_To_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_To_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_To_Currency_ID, FEC_To_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_To_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_To_Currency_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final @Nullable BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -867,6 +925,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public boolean isExportedToCustomsInvoice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExportedToCustomsInvoice);
+	}
+
+	@Override
+	public void setIsFEC (final boolean IsFEC)
+	{
+		set_Value (COLUMNNAME_IsFEC, IsFEC);
+	}
+
+	@Override
+	public boolean isFEC() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFEC);
 	}
 
 	@Override

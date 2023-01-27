@@ -25,6 +25,7 @@ package de.metas.ui.web.shipmentschedule.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.forex.ForexContractService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -149,7 +150,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 								.quantityType(quantityType)
 								.completeShipments(isCompleteShipments)
 								.isShipmentDateToday(isShipToday)
-								.forexContractId(isForexContract ? forexContractId : null)
+								.forexContractRef(isForexContract ? ForexContractRef.ofNullableForexContractId(forexContractId) : null)
 								.build());
 
 		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();

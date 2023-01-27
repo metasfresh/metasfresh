@@ -141,7 +141,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				true, // complete=true
 				parameters.getMovementDateRule(),
 				parameters.getExternalInfoByReceiptScheduleId(),
-				parameters.getForexContractId(),
+				parameters.getForexContractRef(),
 				parameters.getDeliveryPlanningId());
 
 		this.selectedHUIds = parameters.getSelectedHuIds();
