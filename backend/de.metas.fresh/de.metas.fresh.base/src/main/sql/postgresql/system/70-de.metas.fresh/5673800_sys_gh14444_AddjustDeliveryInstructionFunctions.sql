@@ -66,6 +66,7 @@ SELECT x.org_name,
            WHEN p_doctype = 'ci'
                THEN ci.BPartnerAddress
 		   WHEN p_doctype = 'di' -- Delivery Instructions 
+		       THEN ''
                ELSE 'Incompatible Parameter!'
        END || E'\n' AS addressblock
 FROM (
