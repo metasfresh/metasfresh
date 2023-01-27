@@ -25,6 +25,7 @@ package de.metas.invoice.request;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -91,17 +92,17 @@ public class CreateInvoiceRequestHeader
 	Map<String, Object> extendedProps;
 
 	@NonNull
-	public Optional<Money> getTaxTotal()
+	public Optional<Money> getTaxTotal(@NonNull final CurrencyPrecision precision)
 	{
 		return Optional.ofNullable(taxTotal)
-				.map(tax -> Money.of(tax, currencyId));
+				.map(tax -> Money.of(tax, currencyId).round(precision));
 	}
 
 	@NonNull
-	public Optional<Money> getGrandTotal()
+	public Optional<Money> getGrandTotal(@NonNull final CurrencyPrecision precision)
 	{
 		return Optional.ofNullable(grandTotal)
-				.map(total -> Money.of(total, currencyId));
+				.map(total -> Money.of(total, currencyId).round(precision));
 	}
 	
 	@NonNull

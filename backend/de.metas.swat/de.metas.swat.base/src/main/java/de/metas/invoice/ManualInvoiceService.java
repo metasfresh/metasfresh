@@ -26,9 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.acct.AccountTypeName;
@@ -42,6 +44,7 @@ import de.metas.invoice.request.CreateInvoiceRequestLine;
 import de.metas.invoice.request.CreateManualInvoiceLineRequest;
 import de.metas.invoice.request.CreateManualInvoiceRequest;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.po.CustomColumnService;
@@ -66,6 +69,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -75,11 +79,11 @@ public class ManualInvoiceService
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final InvoiceAcctService invoiceAcctService;
 	private final CustomColumnService customColumnService;
@@ -106,10 +110,12 @@ public class ManualInvoiceService
 
 		saveCustomColumns(request, invoice);
 
-		requestHeader.getGrandTotal()
+		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(invoice.getCurrencyId());
+
+		requestHeader.getGrandTotal(currencyPrecision)
 				.ifPresent(invoice::validateGrandTotal);
 
-		requestHeader.getTaxTotal()
+		requestHeader.getTaxTotal(currencyPrecision)
 				.ifPresent(invoice::validateTaxTotal);
 
 		handleAcctData(request, invoice);
@@ -186,7 +192,10 @@ public class ManualInvoiceService
 	private CreateManualInvoiceRequest buildCreateManualInvoiceRequest(@NonNull final CreateInvoiceRequest request)
 	{
 		final CreateInvoiceRequestHeader requestHeader = request.getHeader();
-		final PriceListId priceListId = getPriceListId(requestHeader);
+		final CountryId countryId = bPartnerDAO.getCountryId(requestHeader.getBillBPartnerLocationId());
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
+		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
+		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
@@ -204,7 +213,12 @@ public class ManualInvoiceService
 
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()
-				.map(requestLine -> buildManualInvoiceLine(request, requestLine, priceListId))
+				.map(requestLine -> buildManualInvoiceLine(request,
+														   requestLine,
+														   priceListId,
+														   countryId,
+														   bPartnerLocationAndCaptureId,
+														   zoneId))
 				.collect(ImmutableList.toImmutableList());
 
 		return createManualInvoiceRequestBuilder
@@ -216,9 +230,16 @@ public class ManualInvoiceService
 	private CreateManualInvoiceLineRequest buildManualInvoiceLine(
 			@NonNull final CreateInvoiceRequest request,
 			@NonNull final CreateInvoiceRequestLine requestLine,
-			@NonNull final PriceListId priceListId)
+			@NonNull final PriceListId priceListId,
+			@NonNull final CountryId countryId,
+			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId,
+			@NonNull final ZoneId zoneId)
 	{
-		final IPricingResult pricingResult = getPricingResult(request.getHeader(), requestLine, priceListId);
+		final IPricingResult pricingResult = getPricingResult(request.getHeader(),
+															  requestLine,
+															  priceListId,
+															  countryId,
+															  zoneId);
 
 		final ProductPrice manualPrice = request.getPriceEntered(requestLine).orElse(null);
 
@@ -229,7 +250,11 @@ public class ManualInvoiceService
 
 				.productId(requestLine.getProductId())
 				.qtyToInvoice(requestLine.getQtyToInvoice())
-				.taxId(getTaxId(request.getHeader(), requestLine, pricingResult));
+				.taxId(getTaxId(request.getHeader(),
+								requestLine,
+								pricingResult,
+								countryId,
+								bPartnerLocationAndCaptureId));
 
 		if (manualPrice != null)
 		{
@@ -257,17 +282,14 @@ public class ManualInvoiceService
 	private TaxId getTaxId(
 			@NonNull final CreateInvoiceRequestHeader header,
 			@NonNull final CreateInvoiceRequestLine requestLine,
-			@NonNull final IPricingResult pricingResult)
+			@NonNull final IPricingResult pricingResult,
+			@NonNull final CountryId countryId,
+			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
 	{
-		final CountryId countryId = bPartnerBL.getCountryId(BPartnerInfo.builder()
-																	.bpartnerId(header.getBillBPartnerId())
-																	.bpartnerLocationId(header.getBillBPartnerLocationId())
-																	.build());
-
 		return Optional.ofNullable(taxDAO.getBy(TaxQuery.builder()
 														.fromCountryId(countryId)
 														.orgId(header.getOrgId())
-														.bPartnerLocationId(bPartnerDAO.getBPartnerLocationAndCaptureIdInTrx(header.getBillBPartnerLocationId()))
+														.bPartnerLocationId(bPartnerLocationAndCaptureId)
 														.dateOfInterest(TimeUtil.asTimestamp(header.getDateInvoiced()))
 														.taxCategoryId(pricingResult.getTaxCategoryId())
 														.soTrx(header.getSoTrx())
@@ -285,7 +307,9 @@ public class ManualInvoiceService
 	private IPricingResult getPricingResult(
 			@NonNull final CreateInvoiceRequestHeader header,
 			@NonNull final CreateInvoiceRequestLine requestLine,
-			@NonNull final PriceListId priceListId)
+			@NonNull final PriceListId priceListId,
+			@NonNull final CountryId countryId,
+			@NonNull final ZoneId zoneId)
 	{
 		final IEditablePricingContext editablePricingContext = pricingBL.createInitialContext(header.getOrgId(),
 																							  requestLine.getProductId(),
@@ -295,30 +319,26 @@ public class ManualInvoiceService
 
 		editablePricingContext.setPriceListId(priceListId);
 
-		final LocalDate dateInvoiced = header.getDateInvoiced().atZone(orgDAO.getTimeZone(header.getOrgId())).toLocalDate();
+		final LocalDate dateInvoiced = header.getDateInvoiced().atZone(zoneId).toLocalDate();
 
 		editablePricingContext.setPriceDate(dateInvoiced);
-
-		final CountryId countryId = bPartnerBL.getCountryId(BPartnerInfo.builder()
-																	.bpartnerId(header.getBillBPartnerId())
-																	.bpartnerLocationId(header.getBillBPartnerLocationId())
-																	.build());
-
 		editablePricingContext.setCountryId(countryId);
 
 		return pricingBL.calculatePrice(editablePricingContext);
 	}
 
 	@NonNull
-	private PriceListId getPriceListId(@NonNull final CreateInvoiceRequestHeader header)
+	private PriceListId getPriceListId(
+			@NonNull final CreateInvoiceRequestHeader header,
+			@NonNull final CountryId countryId,
+			@NonNull final ZoneId zoneId)
 	{
 		final PricingSystemId pricingSystemId = Optional.ofNullable(bPartnerDAO.retrievePricingSystemIdOrNull(header.getBillBPartnerId(), header.getSoTrx()))
 				.orElseThrow(() -> new AdempiereException("No PricingSystem found for billBPartner!")
 						.appendParametersToMessage()
 						.setParameter("BillBPartnerId", header.getBillBPartnerId()));
 
-		final CountryId countryId = bPartnerDAO.getCountryId(header.getBillBPartnerLocationId());
-		final ZonedDateTime dateInvoiced = header.getDateInvoiced().atZone(orgDAO.getTimeZone(header.getOrgId()));
+		final ZonedDateTime dateInvoiced = header.getDateInvoiced().atZone(zoneId);
 
 		final I_M_PriceList priceListRecord = Optional.ofNullable(priceListBL.getCurrentPricelistOrNull(
 						pricingSystemId,
@@ -353,5 +373,12 @@ public class ManualInvoiceService
 														  .orElse(null))
 								 .build())
 				.build();
+	}
+
+	@NonNull
+	private BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId(@NonNull final BPartnerLocationId billBPartnerLocationId)
+	{
+		final LocationId locationId = bPartnerDAO.getLocationId(billBPartnerLocationId);
+		return BPartnerLocationAndCaptureId.of(billBPartnerLocationId, locationId);
 	}
 }

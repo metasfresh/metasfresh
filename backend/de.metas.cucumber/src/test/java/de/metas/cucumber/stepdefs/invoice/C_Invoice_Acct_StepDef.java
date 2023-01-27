@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.util.Check;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Invoice_Acct;
@@ -50,17 +52,20 @@ public class C_Invoice_Acct_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final C_Invoice_Acct_StepDefData invoiceAcctTable;
+	private final C_ElementValue_StepDefData elementValueTable;
 
 	public C_Invoice_Acct_StepDef(
 			@NonNull final C_AcctSchema_StepDefData acctSchemaTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
-			@NonNull final C_Invoice_Acct_StepDefData invoiceAcctTable)
+			@NonNull final C_Invoice_Acct_StepDefData invoiceAcctTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable)
 	{
 		this.acctSchemaTable = acctSchemaTable;
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
 		this.invoiceAcctTable = invoiceAcctTable;
+		this.elementValueTable = elementValueTable;
 	}
 
 	@And("C_Invoice_Acct is found:")
@@ -104,11 +109,19 @@ public class C_Invoice_Acct_StepDef
 
 			queryBuilder.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_InvoiceLine_ID, invoiceLineRecord.getC_InvoiceLine_ID());
 		}
-		
+
 		final String accountName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Acct.COLUMNNAME_AccountName);
 		if (Check.isNotBlank(accountName))
 		{
 			queryBuilder.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_AccountName, accountName);
+		}
+
+		final String elementValueIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Acct.COLUMNNAME_C_ElementValue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(elementValueIdentifier))
+		{
+			final I_C_ElementValue elementValueRecord = elementValueTable.get(elementValueIdentifier);
+
+			queryBuilder.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_ElementValue_ID, elementValueRecord.getC_ElementValue_ID());
 		}
 
 		final I_C_Invoice_Acct invoiceAcctRecord = queryBuilder.create()
