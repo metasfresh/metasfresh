@@ -76,7 +76,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -112,7 +111,6 @@ public class DeliveryPlanningService
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -552,7 +550,7 @@ public class DeliveryPlanningService
 	}
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeUnsuitableForReGeneration(selectedDeliveryPlanningsFilter);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
 
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
@@ -583,12 +581,7 @@ public class DeliveryPlanningService
 
 	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter  = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 

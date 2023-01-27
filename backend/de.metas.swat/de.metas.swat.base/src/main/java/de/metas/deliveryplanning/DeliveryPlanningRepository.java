@@ -404,7 +404,7 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
 	}
 
-	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeUnsuitableForReGeneration(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL
 				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
