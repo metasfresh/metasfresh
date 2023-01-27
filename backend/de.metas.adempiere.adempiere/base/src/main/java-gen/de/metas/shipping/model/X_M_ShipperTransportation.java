@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.shipping.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipperTransportation
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 510905355L;
+	private static final long serialVersionUID = 1950052061L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -353,6 +353,33 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public java.lang.String getLoadingTime() 
 	{
 		return get_ValueAsString(COLUMNNAME_LoadingTime);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class);
+	}
+
+	@Override
+	public void setM_Delivery_Planning(final org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class, M_Delivery_Planning);
+	}
+
+	@Override
+	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
+	{
+		if (M_Delivery_Planning_ID < 1) 
+			set_Value (COLUMNNAME_M_Delivery_Planning_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Delivery_Planning_ID, M_Delivery_Planning_ID);
+	}
+
+	@Override
+	public int getM_Delivery_Planning_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
 	}
 
 	@Override
