@@ -100,4 +100,6 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull I_C_UOM uom;
 
+	@NonNull DeliveryPlanningId deliveryPlanningId;
+
 }

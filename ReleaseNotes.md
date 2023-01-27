@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14437](https://github.com/metasfresh/metasfresh/issues/14437) Allow setting manual tax rate for PO lines created via SO to PO process
   * [#14210](https://github.com/metasfresh/metasfresh/issues/14210) ExternalSys-Other: Send project info from MF to ES - Part II (=> C_Project.ExternalId) 
   * [#14104](https://github.com/metasfresh/metasfresh/issues/14104) ExternalSys-Other: Send project info from MF to ES (=>C_Project_WO_Step data) 
   * [#14377](https://github.com/metasfresh/metasfresh/issues/14377) group invoices and credit memos into a single document 
