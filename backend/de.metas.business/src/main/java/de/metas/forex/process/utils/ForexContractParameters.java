@@ -70,22 +70,22 @@ public class ForexContractParameters
 	@Nullable
 	public Object getParameterDefaultValue(
 			@NonNull final String parameterName,
-			@NonNull final ForexContracts contracts)
+			@Nullable final ForexContracts contracts)
 	{
 		switch (parameterName)
 		{
 			case ForexContractParameters.PARAM_IsFEC:
-				return !contracts.isEmpty();
+				return contracts != null && !contracts.isEmpty();
 			case ForexContractParameters.PARAM_FEC_Order_Currency_ID:
-				return contracts.getOrderCurrencyId();
+				return contracts != null ? contracts.getOrderCurrencyId() : null;
 			case ForexContractParameters.PARAM_C_ForeignExchangeContract_ID:
-				return contracts.getSingleForexContractIdOrNull();
+				return contracts != null ? contracts.getSingleForexContractIdOrNull() : null;
 			case ForexContractParameters.PARAM_FEC_From_Currency_ID:
-				return contracts.suggestFromCurrencyId();
+				return contracts != null ? contracts.suggestFromCurrencyId() : null;
 			case ForexContractParameters.PARAM_FEC_To_Currency_ID:
-				return contracts.suggestToCurrencyId();
+				return contracts != null ? contracts.suggestToCurrencyId() : null;
 			case ForexContractParameters.PARAM_FEC_CurrencyRate:
-				return contracts.suggestCurrencyRate();
+				return contracts != null ? contracts.suggestCurrencyRate() : null;
 			default:
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 		}
@@ -93,8 +93,13 @@ public class ForexContractParameters
 
 	public void updateOnParameterChanged(
 			@NonNull final String parameterName,
-			@NonNull final ForexContracts contracts)
+			@Nullable final ForexContracts contracts)
 	{
+		if (contracts == null)
+		{
+			return;
+		}
+
 		if (ForexContractParameters.PARAM_C_ForeignExchangeContract_ID.equals(parameterName))
 		{
 			this.fromCurrencyId = CoalesceUtil.coalesce(
