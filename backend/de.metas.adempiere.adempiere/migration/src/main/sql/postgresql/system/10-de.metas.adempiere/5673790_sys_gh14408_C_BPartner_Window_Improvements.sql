@@ -233,3 +233,9 @@ UPDATE AD_Element_Trl SET Description='Specifies the amount of money that was al
 
 
 
+-- UI Element: Business Partner_OLD(123,D) -> Statistics(540739,D) -> main -> 10 -> default.Delivery Credit Status
+-- Column: C_BPartner_Stats.Delivery_CreditStatus
+-- 2023-01-27T14:45:22.762Z
+UPDATE AD_UI_Element SET SeqNo=34,Updated=TO_TIMESTAMP('2023-01-27 16:45:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614859
+;
+
