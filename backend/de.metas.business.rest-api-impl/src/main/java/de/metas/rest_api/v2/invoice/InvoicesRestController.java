@@ -39,7 +39,6 @@ import de.metas.rest_api.invoicecandidates.v2.request.JsonCheckInvoiceCandidates
 import de.metas.rest_api.invoicecandidates.v2.request.JsonCloseInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.v2.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.v2.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;

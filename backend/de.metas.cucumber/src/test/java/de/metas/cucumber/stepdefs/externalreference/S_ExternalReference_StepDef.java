@@ -85,13 +85,12 @@ import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartner;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_ProductCategory;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
-import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 public class S_ExternalReference_StepDef
@@ -249,7 +248,7 @@ public class S_ExternalReference_StepDef
 				final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 				assertThat(bPartnerLocationIdentifier).isNotNull();
 
-				final I_C_BPartner_Location bpartnerLocationRecord = bpartnerLocationTable.get(bPartnerLocationIdentifier);
+				final I_C_BPartner_Location bpartnerLocationRecord = bpLocationTable.get(bPartnerLocationIdentifier);
 				assertThat(bpartnerLocationRecord).isNotNull();
 
 				externalReferenceRecord.setRecord_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
@@ -306,9 +305,9 @@ public class S_ExternalReference_StepDef
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceItem item = Check.singleElement(referenceItems
-					.stream()
-					.filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
-					.collect(ImmutableList.toImmutableList()));
+																			   .stream()
+																			   .filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
+																			   .collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 

@@ -45,6 +45,7 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BP
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Location_StepDef
 {
@@ -114,7 +115,7 @@ public class C_BPartner_Location_StepDef
 
 		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+						.addEqualsFilter(COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
 						.create()
 						.firstOnlyOrNull(I_C_BPartner_Location.class),

@@ -29,8 +29,8 @@ Feature: create invoices using invoice API
       | tax_1               | 1000023      |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.IsDefault |
-      | docType                 | ARI         | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |
@@ -132,8 +132,8 @@ Feature: create invoices using invoice API
       | tax_1               | 1000022      |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.IsDefault |
-      | docType                 | ARI         | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |
@@ -254,8 +254,8 @@ Feature: create invoices using invoice API
       | tax_1               | 1000023      |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.IsDefault |
-      | docType                 | ARI         | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
 
     And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type             | ExternalReference          | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Product_ID.Identifier |
@@ -337,8 +337,8 @@ Feature: create invoices using invoice API
       | tax_1               | 10        |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.IsDefault |
-      | docType                 | ARI         | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.IsDefault |
+      | docType                 | ARI             | true          |
 
     And load C_AcctSchema:
       | C_AcctSchema_ID.Identifier | OPT.Name              |

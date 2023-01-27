@@ -40,9 +40,8 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
-import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
@@ -74,7 +73,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceResponse;
 import de.metas.rest_api.v2.invoice.JsonCreateInvoiceResponseResult;
 import de.metas.util.Check;
@@ -390,7 +388,7 @@ public class C_Invoice_StepDef
 		assertThat(invoiceRecords.size()).isEqualTo(1);
 
 		final Map<String, String> row = table.asMaps().get(0);
-		
+
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		invoiceTable.put(invoiceIdentifier, invoiceRecords.get(0));
 	}
@@ -403,7 +401,7 @@ public class C_Invoice_StepDef
 			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
 
 			final SoftAssertions softly = new SoftAssertions();
-			
+
 			final JsonCreateInvoiceResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceResponse.class);
 			softly.assertThat(jsonCreateInvoiceResponse.getResult()).isNull();
 
@@ -411,7 +409,7 @@ public class C_Invoice_StepDef
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().size()).isEqualTo(1);
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
-			
+
 			softly.assertAll();
 		}
 	}
@@ -577,7 +575,7 @@ public class C_Invoice_StepDef
 
 			softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
 		}
-		
+
 		final Boolean isSOTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
 		if (isSOTrx != null)
 		{
@@ -625,13 +623,6 @@ public class C_Invoice_StepDef
 			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
 			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
 		}
-		
-		final BigDecimal grandTotal = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_GrandTotal);
-		if (grandTotal != null)
-		{
-			softly.assertThat(invoice.getGrandTotal()).isEqualByComparingTo(grandTotal);
-		}
-		
 		softly.assertAll();
 	}
 

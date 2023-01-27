@@ -47,7 +47,6 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.impl.DocTypeService;
@@ -195,14 +194,14 @@ public class JsonInvoiceService
 			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
-					.lineNumber(line.getLine())
-					.productName(productName)
-					.qtyInvoiced(line.getQtyEntered())
-					.price(line.getPriceEntered())
-					.taxRate(taxRate)
-					.lineNetAmt(line.getLineNetAmt())
-					.currency(currency)
-					.build());
+									.lineNumber(line.getLine())
+									.productName(productName)
+									.qtyInvoiced(line.getQtyEntered())
+									.price(line.getPriceEntered())
+									.taxRate(taxRate)
+									.lineNetAmt(line.getLineNetAmt())
+									.currency(currency)
+									.build());
 		}
 
 		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));
