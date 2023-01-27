@@ -257,14 +257,15 @@ public class S_ExternalReference_StepDef
 			else if (ProductExternalReferenceType.PRODUCT.getCode().equals(type.getCode()))
 			{
 				final String externalSystemConfigIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
-				assertThat(externalSystemConfigIdentifier).isNotNull();
+				if (Check.isNotBlank(externalSystemConfigIdentifier))
+				{
+					final int externalSystemConfigId = externalSystemConfigTable.getOptional(externalSystemConfigIdentifier)
+							.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
+							.orElseGet((() -> Integer.parseInt(externalSystemConfigIdentifier)));
 
-				final int externalSystemConfigId = externalSystemConfigTable.getOptional(externalSystemConfigIdentifier)
-						.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
-						.orElseGet((() -> Integer.parseInt(externalSystemConfigIdentifier)));
-
-				externalReferenceRecord.setExternalSystem_Config_ID(externalSystemConfigId);
-
+					externalReferenceRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+				}
+				
 				final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 				assertThat(productIdentifier).isNotNull();
 
