@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
@@ -40,8 +41,9 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class C_BPartner_Location_StepDef
 {
@@ -51,6 +53,7 @@ public class C_BPartner_Location_StepDef
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -92,6 +95,16 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationTable.putOrReplace(bpLocationIdentifier, bPartnerLocation);
 		}
 
+	}
+
+	@And("load C_BPartner_Location:")
+	public void load_C_BPartner_Location(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadBPartnerLocation(tableRow);
+		}
 	}
 
 	private void createC_BPartner_Location(@NonNull final Map<String, String> tableRow)
@@ -171,5 +184,17 @@ public class C_BPartner_Location_StepDef
 
 		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
 		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+	}
+
+	private void loadBPartnerLocation(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_Location_ID);
+
+		if (id != null)
+		{
+			bPartnerLocationTable.putOrReplace(identifier, InterfaceWrapperHelper.load(id, I_C_BPartner_Location.class));
+		}
 	}
 }

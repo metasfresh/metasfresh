@@ -1,9 +1,13 @@
 package de.metas.acct.accounts;
 
+import de.metas.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product_Acct;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -57,4 +61,22 @@ public enum ProductAcctType
 	;
 
 	@Getter @NonNull private final String columnName;
+
+	@Nullable
+	public static ProductAcctType ofName(@Nullable final String name)
+	{
+		if (Check.isBlank(name))
+		{
+			return null;
+		}
+
+		try
+		{
+			return valueOf(name);
+		}
+		catch (final Exception exception)
+		{
+			throw new AdempiereException("No " + ProductAcctType.class + " found for name: " + name);
+		}
+	}
 }
