@@ -18,7 +18,9 @@ de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.getById=[
         "value" : "value2"
       }
     ],
-    "syncBudgetProjectsEnabled": false,
-    "syncWOProjectsEnabled": false
+    "syncBPartnerEnabled" : false,
+    "autoSendDefaultShippingAddress" : false,
+    "syncBudgetProjectsEnabled" : false,
+    "syncWOProjectsEnabled" : false
   }
 ]
