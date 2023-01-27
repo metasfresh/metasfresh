@@ -12,10 +12,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import de.metas.util.GuavaCollectors;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
