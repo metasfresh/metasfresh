@@ -21,7 +21,6 @@ import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -501,19 +500,19 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Nullable
-	public static ForexContractRef extractForeignContractRef(final I_M_InOut inout)
+	public static ForexContractRef extractForeignContractRef(final I_M_InOut record)
 	{
-		if(!inout.isFEC())
+		if(!record.isFEC())
 		{
 			return null;
 		}
 
 		return ForexContractRef.builder()
-				.forexContractId(ForexContractId.ofRepoIdOrNull(inout.getC_ForeignExchangeContract_ID()))
-				.orderCurrencyId(CurrencyId.ofRepoId(inout.getFEC_Order_Currency_ID()))
-				.fromCurrencyId(CurrencyId.ofRepoId(inout.getFEC_From_Currency_ID()))
-				.toCurrencyId(CurrencyId.ofRepoId(inout.getFEC_To_Currency_ID()))
-				.currencyRate(NumberUtils.zeroToNull(inout.getFEC_CurrencyRate()))
+				.forexContractId(ForexContractId.ofRepoIdOrNull(record.getC_ForeignExchangeContract_ID()))
+				.orderCurrencyId(CurrencyId.ofRepoId(record.getFEC_Order_Currency_ID()))
+				.fromCurrencyId(CurrencyId.ofRepoId(record.getFEC_From_Currency_ID()))
+				.toCurrencyId(CurrencyId.ofRepoId(record.getFEC_To_Currency_ID()))
+				.currencyRate(record.getFEC_CurrencyRate())
 				.build();
 	}
 
