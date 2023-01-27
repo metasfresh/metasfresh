@@ -33,5 +33,5 @@ public interface SAPConstants
 
 	String BPARTNER_DEFAULT_LANGUAGE = "en_US";
 
-	String DEFAULT_PRODUCT_CATEGORY_ID = "sap.material-import.default-material-type";
+	String DEFAULT_PRODUCT_CATEGORY_ID = "sap.material-import.default-product-category";
 }

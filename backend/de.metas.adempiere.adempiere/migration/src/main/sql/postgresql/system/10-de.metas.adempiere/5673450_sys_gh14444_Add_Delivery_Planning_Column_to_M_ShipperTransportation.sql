@@ -18,3 +18,5 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2023-01-25T12:50:43.759Z
 ALTER TABLE M_ShipperTransportation ADD CONSTRAINT MDeliveryPlanning_MShipperTransportation FOREIGN KEY (M_Delivery_Planning_ID) REFERENCES public.M_Delivery_Planning DEFERRABLE INITIALLY DEFERRED
 ;
+
+CREATE INDEX idx_M_ShipperTransportation_m_delivery_planning_id ON M_ShipperTransportation(m_delivery_planning_id);
