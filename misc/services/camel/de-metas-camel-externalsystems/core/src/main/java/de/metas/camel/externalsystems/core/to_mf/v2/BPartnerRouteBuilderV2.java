@@ -32,6 +32,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
@@ -39,6 +40,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
+import static de.metas.common.rest_api.v2.APIConstants.CACHE_CONTROL_NO_CACHE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -103,6 +105,11 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 					if (retrieveCamelRequest.getAdPInstanceId() != null)
 					{
 						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, retrieveCamelRequest.getAdPInstanceId().getValue());
+					}
+
+					if (retrieveCamelRequest.isNoCache())
+					{
+						exchange.getIn().setHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_NO_CACHE);
 					}
 				}).id(RETRIEVE_BPARTNER_PROCESSOR_ID)
 
