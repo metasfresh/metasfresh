@@ -77,7 +77,6 @@ public class C_DocType_StepDef
 		}
 	}
 
-
 	private void loadDocType(@NonNull final Map<String, String> tableRow)
 	{
 		final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
