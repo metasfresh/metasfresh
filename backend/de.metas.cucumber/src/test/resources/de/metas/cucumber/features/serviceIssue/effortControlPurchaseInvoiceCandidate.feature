@@ -2,7 +2,8 @@
 Feature: Create vendor invoice candidates from effort control
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has current date and time
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -25,7 +26,7 @@ Feature: Create vendor invoice candidates from effort control
       | pp_SO      | plv_SO                            | invoiceableProduct      | 10.0     | PCE               | Normal                        |
       | pp_PO      | plv_PO                            | invoiceableProduct      | 5.0      | PCE               | Normal                        |
 
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier  | Name                 | Value                | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier |
       | customer_SO | customer_SO_24102022 | customer_SO_24102022 | Y              | N            | ps_24102022                   |
       | vendor_PO   | vendor_PO_24102022   | vendor_PO_24102022   | N              | Y            | ps_24102022                   |
