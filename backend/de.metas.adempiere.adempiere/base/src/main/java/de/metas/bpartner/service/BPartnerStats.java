@@ -68,11 +68,11 @@ public class BPartnerStats
 		this.repoId = repoId;
 		this.bpartnerId = bpartnerId;
 		this.sectionCodeId = sectionCodeId;
-		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
-		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
-		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
-		this.deliveryCreditUsed = CoalesceUtil.coalesce(deliveryCreditUsed, ZERO);
-		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, CreditStatus.NoCreditCheck);
-		this.deliveryCreditStatus = CoalesceUtil.coalesce(deliveryCreditStatus, CreditStatus.NoCreditCheck);
+		this.openItems = CoalesceUtil.coalesceNotNull(openItems, ZERO);
+		this.actualLifeTimeValue = CoalesceUtil.coalesceNotNull(actualLifeTimeValue, ZERO);
+		this.soCreditUsed = CoalesceUtil.coalesceNotNull(soCreditUsed, ZERO);
+		this.deliveryCreditUsed = CoalesceUtil.coalesceNotNull(deliveryCreditUsed, ZERO);
+		this.soCreditStatus = CoalesceUtil.coalesceNotNull(soCreditStatus, CreditStatus.NoCreditCheck);
+		this.deliveryCreditStatus = CoalesceUtil.coalesceNotNull(deliveryCreditStatus, CreditStatus.NoCreditCheck);
 	}
 }
