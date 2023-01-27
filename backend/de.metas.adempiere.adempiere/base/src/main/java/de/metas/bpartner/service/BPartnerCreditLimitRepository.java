@@ -20,9 +20,6 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.bpartner.service;
 
 import com.google.common.collect.ImmutableList;
@@ -48,6 +45,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -72,7 +70,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Repository
 public class BPartnerCreditLimitRepository
@@ -253,13 +250,29 @@ public class BPartnerCreditLimitRepository
 	@NonNull
 	private List<I_C_BPartner_CreditLimit> retrieveCreditLimitsToEnforceByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
+		@NonNull
+		final IQueryFilter<I_C_BPartner_CreditLimit> deactivatedButNotApproved = queryBL.createCompositeQueryFilter(I_C_BPartner_CreditLimit.class)
+				.setJoinAnd()
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, false)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, false);
+
+		@NonNull
+		final IQueryFilter<I_C_BPartner_CreditLimit> activatedAndApproved = queryBL.createCompositeQueryFilter(I_C_BPartner_CreditLimit.class)
+				.setJoinAnd()
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, true)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true);
+
+		final @NonNull IQueryFilter<I_C_BPartner_CreditLimit> activeFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_CreditLimit.class)
+				.setJoinOr()
+				.addFilter(activatedAndApproved)
+				.addFilter(deactivatedButNotApproved);
+
 		return queryBL
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addFilter(activeFilter)
+
 				.create()
 				.list();
 	}

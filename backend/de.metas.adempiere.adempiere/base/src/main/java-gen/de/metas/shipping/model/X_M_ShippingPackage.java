@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_ShippingPackage, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1356199036L;
+	private static final long serialVersionUID = 1778894926L;
 
     /** Standard Constructor */
     public X_M_ShippingPackage (final Properties ctx, final int M_ShippingPackage_ID, @Nullable final String trxName)
@@ -128,6 +128,33 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine(final org.compiere.model.I_C_OrderLine C_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
+	}
+
+	@Override
+	public void setC_OrderLine_ID (final int C_OrderLine_ID)
+	{
+		if (C_OrderLine_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
+	}
+
+	@Override
+	public int getC_OrderLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
 
 	@Override

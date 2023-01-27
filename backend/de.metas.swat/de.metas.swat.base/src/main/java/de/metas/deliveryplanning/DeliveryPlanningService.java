@@ -24,8 +24,16 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -41,6 +49,12 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -52,13 +66,16 @@ import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -66,6 +83,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.X_C_DocType;
@@ -93,7 +111,6 @@ public class DeliveryPlanningService
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -107,9 +124,27 @@ public class DeliveryPlanningService
 
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
-	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
+	private final BPartnerStatsService bPartnerStatsService;
+
+	final MoneyService moneyService;
+
+	final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
+	final ITaxBL taxBL = Services.get(ITaxBL.class);
+
+	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+	final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+
+	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
+			@NonNull final BPartnerStatsService bPartnerStatsService,
+			@NonNull final MoneyService moneyService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
+		this.bPartnerStatsService = bPartnerStatsService;
+		this.moneyService = moneyService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -299,21 +334,98 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.isExistNoShipperDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
-	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public void generateCompleteDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest)
 	{
-		final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
+		final DeliveryInstructionUserNotificationsProducer deliveryInstructionUserNotificationsProducer = DeliveryInstructionUserNotificationsProducer.newInstance();
+
+		final DeliveryPlanningId deliveryPlanningId = deliveryInstructionRequest.getDeliveryPlanningId();
 
 		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
 
 		docActionBL.processEx(deliveryInstruction, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
-		DeliveryInstructionUserNotificationsProducer.newInstance()
+		deliveryInstructionUserNotificationsProducer
 				.notifyGenerated(deliveryInstruction);
 
 		deliveryPlanningRepository.updateDeliveryPlanningFromInstruction(deliveryPlanningId, deliveryInstruction);
 
 		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
 
+	}
+
+	public boolean creditLimitAllowsDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest deliveryInstructionRequest)
+	{
+
+		final BPartnerStats stats = bPartnerStatsService.getCreateBPartnerStats(deliveryInstructionRequest.getShipperBPartnerId());
+		final CreditStatus deliveryCreditStatus = stats.getDeliveryCreditStatus();
+
+		if (CreditStatus.CreditStop.equals(deliveryCreditStatus) || CreditStatus.CreditHold.equals(deliveryCreditStatus))
+		{
+			return false;
+		}
+
+		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(deliveryInstructionRequest.getClientId(),
+																	   deliveryInstructionRequest.getOrgId());
+
+		final Money creditUsedByDeliveryInstruction = computeCreditUsedByDeliveryInstruction(deliveryInstructionRequest, baseCurrencyId);
+
+		final CalculateCreditStatusRequest calculateCreditStatusRequest = CalculateCreditStatusRequest.builder()
+				.stat(stats)
+				.additionalAmt(creditUsedByDeliveryInstruction.toBigDecimal())
+				.date(TimeUtil.asTimestamp(deliveryInstructionRequest.getDateDoc()))
+				.build();
+
+		final CreditStatus calculatedDeliveryCreditStatus = bPartnerStatsService.calculateProjectedDeliveryCreditStatus(calculateCreditStatusRequest);
+
+		if (CreditStatus.CreditHold.equals(calculatedDeliveryCreditStatus))
+		{
+			return false;
+		}
+
+		return true;
+
+	}
+
+	private Money computeCreditUsedByDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request,
+			@NonNull final CurrencyId currencyId)
+	{
+		if (request.getOrderLineId() == null)
+		{
+			return Money.zero(currencyId);
+		}
+
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(request.getOrderLineId());
+
+		final Quantity actualLoadQty = request.getQtyLoaded();
+
+		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
+														orderLineCurrencyId);
+
+		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
+
+		final boolean isTaxIncluded = orderLineBL.isTaxIncluded(orderLine);
+
+		final CurrencyPrecision taxPrecision = orderLineBL.getTaxPrecision(orderLine);
+
+		final Tax tax = taxBL.getTaxById(taxId);
+
+		final BigDecimal taxAmt = tax.calculateTax(qtyNetPriceFromOrderLine.toBigDecimal(), isTaxIncluded, taxPrecision.toInt());
+
+		final Money taxAmtInfo = Money.of(taxAmt, orderLineCurrencyId);
+
+		final CurrencyConversionContext currencyConversionContext = extractDeliveryInstructionConversionContext(request);
+
+		return moneyService.convertMoneyToCurrency(taxAmtInfo.add(qtyNetPriceFromOrderLine), currencyId, currencyConversionContext);
+	}
+
+	private CurrencyConversionContext extractDeliveryInstructionConversionContext(final DeliveryInstructionCreateRequest request)
+	{
+		return currencyBL.createCurrencyConversionContext(
+				request.getDateDoc(),
+				(CurrencyConversionTypeId)null,
+				request.getClientId(),
+				request.getOrgId());
 	}
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -357,7 +469,6 @@ public class DeliveryPlanningService
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
-				.deliveryPlanningId(deliveryPlanningId)
 
 				.shipperBPartnerId(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()))
 				.shipperLocationId(deliveryPlanningLocationId)
@@ -387,34 +498,60 @@ public class DeliveryPlanningService
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
 				.uom(uomToUse)
+				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+				.deliveryPlanningId(deliveryPlanningId)
 				.build();
 	}
 
-	public void generateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository.excludeUnsuitableForInstruction (selectedDeliveryPlanningsFilter);
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(deliveryPlanningsSuitableForInstruction);
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
-			generateCompleteDeliveryInstruction(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+
+			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+
+			final boolean creditLimitAllowsDeliveryInstruction = validateCreditLimit(deliveryInstructionRequest);
+
+			if (creditLimitAllowsDeliveryInstruction)
+			{
+				generateCompleteDeliveryInstruction(deliveryInstructionRequest);
+			}
 		}
 	}
 
+	private boolean validateCreditLimit(final DeliveryInstructionCreateRequest deliveryInstructionRequest)
+	{
+		if (!creditLimitAllowsDeliveryInstruction(deliveryInstructionRequest))
+		{
+			final BPartnerStats bPartnerStats = bPartnerStatsService.getCreateBPartnerStats(deliveryInstructionRequest.getShipperBPartnerId());
+
+			final DeliveryInstructionUserNotificationsProducer deliveryInstructionUserNotificationsProducer = DeliveryInstructionUserNotificationsProducer.newInstance();
+
+			final String partnerName = partnerBL.getBPartnerName(deliveryInstructionRequest.getShipperBPartnerId());
+			final BigDecimal creditLimitDifference = bPartnerStatsService.getDeliveryOpenBalance(bPartnerStats, deliveryInstructionRequest.getDateDoc());
+
+			final CurrencyId baseCurrencyId = moneyService.getBaseCurrencyId(ClientAndOrgId.ofClientAndOrg(deliveryInstructionRequest.getClientId(), deliveryInstructionRequest.getOrgId()));
+			final String creditLimitDifferenceMessage = moneyService.toTranslatableString(Money.of(creditLimitDifference, baseCurrencyId)).getDefaultValue();
+			deliveryInstructionUserNotificationsProducer.notifyDeliveryInstructionError(partnerName, creditLimitDifferenceMessage);
+			return false;
+		}
+
+		return true;
+
+	}
+
+	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId);
+	}
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
+
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
@@ -426,7 +563,8 @@ public class DeliveryPlanningService
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
 			// then generate a new one
-			generateCompleteDeliveryInstruction(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(deliveryPlanningId);
+			generateCompleteDeliveryInstruction(deliveryInstructionRequest);
 		}
 	}
 
@@ -441,17 +579,11 @@ public class DeliveryPlanningService
 		}
 	}
 
-
 	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
-				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
-				.setJoinAnd()
-				.addFilter(selectedDeliveryPlanningsFilter)
-				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter  = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
 		{
@@ -466,8 +598,4 @@ public class DeliveryPlanningService
 		}
 	}
 
-	public void unlinkDeliveryPlannings(@NonNull final String releaseNo)
-	{
-		deliveryPlanningRepository.unlinkDeliveryPlannings(releaseNo);
-	}
 }

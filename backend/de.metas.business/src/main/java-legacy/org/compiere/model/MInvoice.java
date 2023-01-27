@@ -21,8 +21,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
@@ -64,7 +64,6 @@ import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -394,7 +393,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setIncotermLocation(order.getIncotermLocation());
 
 			final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
-			if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID())))
+			if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID())))
 			{
 				setEMail(order.getEMail());
 			}
@@ -843,6 +842,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public String prepareIt()
 	{
+		// Services
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
+
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
@@ -885,17 +889,15 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		if (isSOTrx() && !isReversal())
 		{
 			// task FRESH-152
-			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
+			if (!X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSoCreditStatus()))
 			{
-				final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
-				if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true), getDateInvoiced()))
+				if (bPartnerStatsService.isCreditStopSales(stats, getGrandTotal(true), getDateInvoiced()))
 				{
 					throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-														 + stats.getSOCreditUsed()
+														 + stats.getSoCreditUsed()
 														 + ", @SO_CreditLimit@=" + creditLimit);
 				}
 			}
