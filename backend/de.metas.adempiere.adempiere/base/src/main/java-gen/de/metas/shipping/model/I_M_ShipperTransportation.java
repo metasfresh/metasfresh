@@ -1,9 +1,8 @@
 package de.metas.shipping.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipperTransportation
  *  @author metasfresh (generated) 
@@ -136,29 +135,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Sammelrechnung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
-
-	/**
-	 * Get Sammelrechnung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getCollectiveBillReport();
-
-	/** Column definition for CollectiveBillReport */
-	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
-	/** Column name CollectiveBillReport */
-	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
-
-	/**
 	 * Set Incoterms.
 	 *
 	 * <br>Type: Search
@@ -182,6 +158,29 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
+	 * Set Sammelrechnung erstellen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
+
+	/**
+	 * Get Sammelrechnung erstellen.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCollectiveBillReport();
+
+	/** Column definition for CollectiveBillReport */
+	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
+	/** Column name CollectiveBillReport */
+	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
 
 	/**
 	 * Get Created.
@@ -513,6 +512,31 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingTime", null);
 	String COLUMNNAME_LoadingTime = "LoadingTime";
+
+	/**
+	 * Set Delivery Planning.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
+
+	/**
+	 * Get Delivery Planning.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Delivery_Planning_ID();
+
+	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
+
+	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
+	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
 	 * Set Means of Transportation.

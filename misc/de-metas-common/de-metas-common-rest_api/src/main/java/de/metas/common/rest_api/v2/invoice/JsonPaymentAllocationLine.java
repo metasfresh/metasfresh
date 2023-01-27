@@ -22,58 +22,45 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = JsonPaymentAllocationLine.JsonPaymentAllocationLineBuilder.class)
-public class JsonPaymentAllocationLine
-{
-	@NonNull
-	@ApiModelProperty(required = true,
-			dataType = "java.lang.String",
-			value = "Identifier of the Invoice in question. Can be\n"
-					+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-					+ "* or something like `doc-<C_Invoice.documentNo>`"
-					+ "* or something like `ext-<C_Invoice.ExternalId>`")
-	String invoiceIdentifier;
+@Jacksonized
+public class JsonPaymentAllocationLine {
+    @NonNull
+    @ApiModelProperty(position = 10, required = true,
+            dataType = "java.lang.String",
+            value = "Identifier of the Invoice in question. Can be\n"
+                    + "* a plain `<C_Invoice.C_Invoice_ID>`\n"
+                    + "* or something like `doc-<C_Invoice.documentNo>`"
+                    + "* or something like `ext-<C_Invoice.ExternalId>`")
+    String invoiceIdentifier;
 
-	@ApiModelProperty(position = 10)
-	@Nullable
-	String docBaseType;
+    @ApiModelProperty(position = 20)
+    @Nullable
+    String docBaseType;
 
-	@ApiModelProperty(position = 20)
-	@Nullable
-	String docSubType;
+    @ApiModelProperty(position = 30)
+    @Nullable
+    String docSubType;
 
-	@ApiModelProperty(position = 30)
-	@Nullable
-	BigDecimal amount;
+    @ApiModelProperty(position = 40)
+    @Nullable
+    BigDecimal amount;
 
-	@ApiModelProperty(position = 40)
-	@Nullable
-	BigDecimal discountAmt;
+    @ApiModelProperty(position = 50)
+    @Nullable
+    BigDecimal discountAmt;
 
-	@ApiModelProperty(position = 50)
-	@Nullable
-	BigDecimal writeOffAmt;
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonPaymentAllocationLineBuilder
-	{
-	}
+    @ApiModelProperty(position = 60)
+    @Nullable
+    BigDecimal writeOffAmt;
 }

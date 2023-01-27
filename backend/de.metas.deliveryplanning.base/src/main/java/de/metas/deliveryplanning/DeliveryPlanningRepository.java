@@ -42,6 +42,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,9 +51,11 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Delivery_Instructions_V;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -365,6 +368,15 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
+	public boolean isExistDeliveryPlanningsWithReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
+				.create()
+				.anyMatch();
+	}
+
 	public I_M_ShipperTransportation generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request)
 	{
 		final I_M_ShipperTransportation deliveryInstructionRecord = newInstance(I_M_ShipperTransportation.class);
@@ -394,6 +406,8 @@ public class DeliveryPlanningRepository
 
 		deliveryInstructionRecord.setC_BPartner_Location_Delivery_ID(request.getDeliveryPartnerLocationId().getRepoId());
 		deliveryInstructionRecord.setC_BPartner_Location_Loading_ID(request.getLoadingPartnerLocationId().getRepoId());
+
+		deliveryInstructionRecord.setM_Delivery_Planning_ID(request.getDeliveryPlanningId().getRepoId());
 
 		save(deliveryInstructionRecord);
 
@@ -436,12 +450,10 @@ public class DeliveryPlanningRepository
 		saveRecord(deliveryPlanningRecord);
 	}
 
-	public Iterator<I_M_Delivery_Planning> extractDeliveryPlanningsSuitableForDeliveryInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public Iterator<I_M_Delivery_Planning> extractDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
 	}
@@ -463,6 +475,37 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setReleaseNo(null);
 			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
 			saveRecord(deliveryPlanningRecord);
+		}
+	}
+
+	public Iterator<I_M_ShipperTransportation> retrieveForDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.create()
+				.iterate(I_M_ShipperTransportation.class);
+	}
+
+	public void cancelSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.setJoinAnd()
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = extractDeliveryPlannings(dpFilter);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setIsClosed(true);
+			deliveryPlanningRecord.setProcessed(true);
+			deliveryPlanningRecord.setOrderStatus(X_M_Delivery_Planning.ORDERSTATUS_Canceled);
+			deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
+			deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
+			deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
+			save(deliveryPlanningRecord);
 		}
 	}
 }

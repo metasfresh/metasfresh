@@ -22,7 +22,7 @@ SELECT wh.name                                  AS warehouseName,
        p.grade,
        COALESCE(uomt.uomsymbol, uomt.uomsymbol) AS uom
 FROM M_ShipperTransportation st
-         JOIN m_delivery_planning dp ON dp.releaseno = st.documentno
+         JOIN m_delivery_planning dp ON dp.m_delivery_planning_id = st.m_delivery_planning_id
          JOIN m_warehouse wh ON dp.m_warehouse_id = wh.m_warehouse_id
          JOIN M_product p ON dp.m_product_id = p.m_product_id
          JOIN C_UOM uom ON dp.c_uom_id = uom.c_uom_id
