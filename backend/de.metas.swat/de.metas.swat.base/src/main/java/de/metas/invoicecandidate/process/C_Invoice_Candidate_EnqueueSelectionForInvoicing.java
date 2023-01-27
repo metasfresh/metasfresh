@@ -29,7 +29,6 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.IProcessPrecondition;
@@ -49,7 +48,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
@@ -65,8 +63,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	// Services
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
-	// Parameters
-	private IInvoicingParams invoicingParams;
+
+	//
 	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	private int selectionCount = 0;
@@ -94,9 +92,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		// and no popup shall be displayed.
 		setShowProcessLogs(ShowProcessLogs.OnError);
 
-		final IParams params = getParameterAsIParams();
-		this.invoicingParams = new InvoicingParams(params);
-
 		//
 		// Create and check invoice candidate selection
 		selectionCount = createSelection();
@@ -113,8 +108,9 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	/**
 	 * Before enqueuing the candidates, check how many partners they have.
 	 * In case there are more that one partner, ask the user if he really wants to invoice for so many partners.
-	 * @implSpec task 08961
+	 *
 	 * @throws ProcessCanceledException if user canceled
+	 * @implSpec task 08961
 	 */
 	private void checkPerformEnqueuing() throws ProcessCanceledException
 	{
@@ -144,14 +140,16 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		}
 	}
 
+	private InvoicingParams getInvoicingParams() {return new InvoicingParams(getParameterAsIParams());}
+
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
-				.setInvoicingParams(invoicingParams)
+				.setInvoicingParams(getInvoicingParams())
 				.setFailIfNothingEnqueued(true) // If no workpackages were created, display error message that no selection was made (07666)
 				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
 				// .setFailOnChanges(true) // NOTE: use the standard settings (which will fallback on SysConfig)
@@ -231,7 +229,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		//
 		// Consider only approved invoices (if we were asked to do so)
-		if (invoicingParams != null && invoicingParams.isOnlyApprovedForInvoicing())
+		final InvoicingParams invoicingParams = getInvoicingParams();
+		if (invoicingParams.isOnlyApprovedForInvoicing())
 		{
 			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing, true);
 		}

@@ -22,13 +22,15 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import de.metas.JsonObjectMapperHolder;
+import de.metas.forex.ForexContractRef;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 
 /**
  * Invoicing Enqueueing & generating parameters (wrapped from {@link IParams}).
@@ -111,13 +113,10 @@ public class InvoicingParams implements IInvoicingParams
 		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
 	}
 
-	@Override
-	public Optional<BigDecimal> getCurrencyRate()
+	@Nullable
+	public ForexContractRef getForexContractRef()
 	{
-		final BigDecimal currencyRate = params.getParameterAsBigDecimal(PARA_CurrencyRate);
-		return currencyRate != null && currencyRate.signum() != 0
-				? Optional.of(currencyRate)
-				: Optional.empty();
+		return JsonObjectMapperHolder.fromJson(params.getParameterAsString(PARA_ForexContractRef), ForexContractRef.class);
 	}
 
 	/**

@@ -22,19 +22,19 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import de.metas.forex.ForexContractRef;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 
 @ToString
 @SuppressWarnings("UnusedReturnValue")
 public class PlainInvoicingParams implements IInvoicingParams
 {
-	private final IInvoicingParams defaults;
+	@Nullable private final IInvoicingParams defaults;
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
@@ -307,9 +307,9 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return completeInvoices;
 	}
 
-	@Override
-	public Optional<BigDecimal> getCurrencyRate()
+	@Nullable
+	public ForexContractRef getForexContractRef()
 	{
-		return Optional.empty();
+		return defaults != null ? defaults.getForexContractRef() : null;
 	}
 }

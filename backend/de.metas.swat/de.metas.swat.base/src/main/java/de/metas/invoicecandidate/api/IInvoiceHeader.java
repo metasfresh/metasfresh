@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -13,10 +14,8 @@ import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface IInvoiceHeader
 {
@@ -90,5 +89,6 @@ public interface IInvoiceHeader
 	@Nullable
 	SectionCodeId getM_SectionCode_ID();
 
-	@Nullable BigDecimal getCurrencyRate();
+	@Nullable
+	ForexContractRef getForexContractRef();
 }

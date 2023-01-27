@@ -8,12 +8,9 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.forex.ForexContract;
 import de.metas.forex.ForexContractRef;
-import de.metas.forex.ForexContractService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -53,7 +50,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -667,32 +663,9 @@ public class InOutBL implements IInOutBL
 		final ForexContractRef forexContractRef = InOutDAO.extractForeignContractRef(inout);
 		if (forexContractRef != null)
 		{
-			conversionCtx = conversionCtx.withFixedConversionRate(getFixedConversionRate(forexContractRef));
+			conversionCtx = conversionCtx.withFixedConversionRate(forexContractRef.toFixedConversionRate());
 		}
 
 		return conversionCtx;
-	}
-
-	private FixedConversionRate getFixedConversionRate(@NonNull ForexContractRef forexContractRef)
-	{
-		if (forexContractRef.getCurrencyRate() != null)
-		{
-			return FixedConversionRate.builder()
-					.fromCurrencyId(forexContractRef.getFromCurrencyId())
-					.toCurrencyId(forexContractRef.getToCurrencyId())
-					.multiplyRate(forexContractRef.getCurrencyRate())
-					.build();
-		}
-		else if (forexContractRef.getForexContractId() != null)
-		{
-			final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
-			final ForexContract forexContract = forexContractService.getById(forexContractRef.getForexContractId());
-			return forexContract.toFixedConversionRate();
-		}
-		else
-		{
-			// shall not happen
-			throw new AdempiereException("Failed determining fixed conversion rate from " + forexContractRef);
-		}
 	}
 }

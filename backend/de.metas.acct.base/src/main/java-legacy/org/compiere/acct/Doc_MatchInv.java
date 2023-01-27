@@ -60,7 +60,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -109,7 +108,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private I_M_InOutLine _receiptLine = null;
 	private I_M_InOut _receipt = null;
 
-	private final HashMap<CurrencyId, CurrencyConversionContext> invoiceCurrencyConversionCtxByAcctCurrencyId = new HashMap<>();
+	private CurrencyConversionContext _invoiceCurrencyConversionCtx = null;
 	private CurrencyConversionContext _inoutCurrencyConversionCtx = null;
 
 	public Doc_MatchInv(final AcctDocContext ctx)
@@ -267,7 +266,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final FactLine cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyId(getInvoiceCurrencyId())
-				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx(as))
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
 				.setAmtSource(null, getInvoiceLineMatchedAmt())
 				.setQty(getQty().negate())
 				.buildAndAdd();
@@ -482,15 +481,14 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getReceiptLine().getMovementQty();
 	}
 
-	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx(final AcctSchema acctSchema)
+	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
-		return invoiceCurrencyConversionCtxByAcctCurrencyId.computeIfAbsent(acctSchema.getCurrencyId(), this::createInvoiceCurrencyConversionCtx);
-	}
-
-	private CurrencyConversionContext createInvoiceCurrencyConversionCtx(final CurrencyId acctCurrencyId)
-	{
-		final I_C_Invoice invoice = getInvoice();
-		return invoiceBL.getCurrencyConversionCtx(invoice, acctCurrencyId);
+		CurrencyConversionContext invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx;
+		if (invoiceCurrencyConversionCtx == null)
+		{
+			invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx = invoiceBL.getCurrencyConversionCtx(getInvoice());
+		}
+		return invoiceCurrencyConversionCtx;
 	}
 
 	public final CurrencyConversionContext getInOutCurrencyConversionCtx()

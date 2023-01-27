@@ -24,13 +24,15 @@ package de.metas.invoicecandidate.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.forex.ForexContractRef;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Invoicing Enqueueing & generating parameters.
@@ -50,7 +52,7 @@ public interface IInvoicingParams
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
 
-	String PARA_CurrencyRate = "CurrencyRate";
+	String PARA_ForexContractRef = "ForexContractRef";
 
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
@@ -124,7 +126,8 @@ public interface IInvoicingParams
 	 */
 	boolean isCompleteInvoices();
 
-	Optional<BigDecimal> getCurrencyRate();
+	@Nullable
+	ForexContractRef getForexContractRef();
 
 	default Map<String, ?> asMap()
 	{
@@ -153,7 +156,11 @@ public interface IInvoicingParams
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
 		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
-		getCurrencyRate().ifPresent(currencyRate -> result.put(PARA_CurrencyRate, currencyRate));
+		final String forexContractRefAsJson = JsonObjectMapperHolder.toJson(getForexContractRef());
+		if (forexContractRefAsJson != null)
+		{
+			result.put(InvoicingParams.PARA_ForexContractRef, forexContractRefAsJson);
+		}
 
 		return result.build();
 	}

@@ -1,5 +1,6 @@
 package de.metas.forex;
 
+import de.metas.currency.FixedConversionRate;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,4 +44,14 @@ public class ForexContractRef
 		this.toCurrencyId = toCurrencyId;
 		this.currencyRate = currencyRate;
 	}
+
+	public FixedConversionRate toFixedConversionRate()
+	{
+		return FixedConversionRate.builder()
+				.fromCurrencyId(fromCurrencyId)
+				.toCurrencyId(toCurrencyId)
+				.multiplyRate(currencyRate)
+				.build();
+	}
+
 }
