@@ -27,8 +27,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;

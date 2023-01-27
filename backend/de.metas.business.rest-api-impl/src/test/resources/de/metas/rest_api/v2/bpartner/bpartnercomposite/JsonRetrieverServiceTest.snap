@@ -109,6 +109,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     },
     "city" : "locationRecord.city",
     "countryCode" : "countryRecord.countryCode",
+    "countryName" : "countryRecord.name",
     "district" : "postalRecord.district",
     "ephemeral" : false,
     "existingLocationId" : 100011,

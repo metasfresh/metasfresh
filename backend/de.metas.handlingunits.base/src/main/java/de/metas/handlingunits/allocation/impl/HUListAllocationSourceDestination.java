@@ -30,8 +30,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 

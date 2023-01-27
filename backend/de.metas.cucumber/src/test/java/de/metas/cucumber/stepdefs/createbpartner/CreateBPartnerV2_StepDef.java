@@ -38,9 +38,14 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
 
 import java.util.List;
 import java.util.Map;
@@ -139,21 +144,31 @@ public class CreateBPartnerV2_StepDef
 			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
 			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
 			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
+			final Boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, null);
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
 					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
 			final JsonResponseLocation persistedLocation = persistedResult.get();
 
-			assertThat(persistedLocation.getAddress1()).isEqualTo(address1);
-			assertThat(persistedLocation.getAddress2()).isEqualTo(address2);
-			assertThat(persistedLocation.getPostal()).isEqualTo(postal);
-			assertThat(persistedLocation.getPoBox()).isEqualTo(poBox);
-			assertThat(persistedLocation.getRegion()).isEqualTo(region);
-			assertThat(persistedLocation.getCountryCode()).isEqualTo(countryCode);
-			assertThat(persistedLocation.getCity()).isEqualTo(city);
-			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
-			assertThat(persistedLocation.getGln()).isEqualTo(gln);
+			final SoftAssertions softly = new SoftAssertions();
+
+			softly.assertThat(persistedLocation.getAddress1()).as(I_C_Location.COLUMNNAME_Address1).isEqualTo(address1);
+			softly.assertThat(persistedLocation.getAddress2()).as(I_C_Location.COLUMNNAME_Address2).isEqualTo(address2);
+			softly.assertThat(persistedLocation.getPostal()).as(I_C_Location.COLUMNNAME_Postal).isEqualTo(postal);
+			softly.assertThat(persistedLocation.getPoBox()).as(I_C_Location.COLUMNNAME_POBox).isEqualTo(poBox);
+			softly.assertThat(persistedLocation.getRegion()).as(I_C_Location.COLUMNNAME_RegionName).isEqualTo(region);
+			softly.assertThat(persistedLocation.getCountryCode()).as(I_C_Country.COLUMNNAME_CountryCode).isEqualTo(countryCode);
+			softly.assertThat(persistedLocation.getCity()).as(I_C_Location.COLUMNNAME_City).isEqualTo(city);
+			softly.assertThat(persistedLocation.getDistrict()).as(I_C_Postal.COLUMNNAME_District).isEqualTo(DataTableUtil.extractValueOrNull(district));
+			softly.assertThat(persistedLocation.getGln()).as(I_C_BPartner_Location.COLUMNNAME_GLN).isEqualTo(gln);
+
+			if (isShipToDefault != null)
+			{
+				softly.assertThat(persistedLocation.isShipToDefault()).as(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).isEqualTo(isShipToDefault);
+			}
+
+			softly.assertAll();
 		}
 	}
 

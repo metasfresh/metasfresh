@@ -70,6 +70,8 @@ public class JsonResponseLocation
 
 	public static final String EPHEMERAL = "ephemeral";
 
+	public static final String COUNTRY_NAME = "countryName";
+
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
 
@@ -117,6 +119,8 @@ public class JsonResponseLocation
 
 	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
+
+	String countryName;
 
 	@ApiModelProperty()
 	boolean shipTo;
@@ -171,6 +175,7 @@ public class JsonResponseLocation
 			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
 			@JsonProperty(PHONE) @Nullable final String phone,
 			@JsonProperty(EMAIL) @Nullable final String email,
+			@JsonProperty(COUNTRY_NAME) @Nullable final String countryName,
 			@JsonProperty(SHIP_TO) final boolean shipTo,
 			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
 			@JsonProperty(BILL_TO) final boolean billTo,
@@ -207,6 +212,7 @@ public class JsonResponseLocation
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
 		this.phone = phone;
 		this.email = email;
+		this.countryName = countryName;
 
 		this.billToDefault = billToDefault;
 		this.billTo = billTo;

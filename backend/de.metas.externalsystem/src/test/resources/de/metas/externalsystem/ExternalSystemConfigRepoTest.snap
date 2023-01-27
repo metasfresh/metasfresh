@@ -581,28 +581,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
   ]
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
-  {
-    "id" : 100001,
-    "type" : "LeichUndMehl",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "LeichMehl",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
   {
@@ -653,8 +631,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ],
-      "syncBudgetProjectsEnabled": false,
-      "syncWOProjectsEnabled": false
+      "syncBPartnerEnabled" : false,
+      "autoSendDefaultShippingAddress" : false,
+      "syncBudgetProjectsEnabled" : false,
+      "syncWOProjectsEnabled" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
