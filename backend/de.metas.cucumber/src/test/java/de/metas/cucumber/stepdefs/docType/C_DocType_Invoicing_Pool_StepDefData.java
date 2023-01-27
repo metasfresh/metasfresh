@@ -20,18 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.doctype;
+package de.metas.cucumber.stepdefs.docType;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_DocType_StepDefData extends StepDefData<I_C_DocType>
+public class C_DocType_Invoicing_Pool_StepDefData extends StepDefData<I_C_DocType_Invoicing_Pool>
 {
-	public C_DocType_StepDefData()
+	public C_DocType_Invoicing_Pool_StepDefData()
 	{
-		super(I_C_DocType.class);
+		super(I_C_DocType_Invoicing_Pool.class);
 	}
 }

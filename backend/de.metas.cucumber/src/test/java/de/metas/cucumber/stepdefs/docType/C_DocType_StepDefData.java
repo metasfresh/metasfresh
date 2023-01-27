@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.docType;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_C_DocType;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_DocType_StepDefData extends StepDefData<I_C_DocType>
 {
 	public C_DocType_StepDefData()

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.doctype;
+package de.metas.cucumber.stepdefs.docType;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import io.cucumber.datatable.DataTable;
