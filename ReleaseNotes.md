@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14458](https://github.com/metasfresh/metasfresh/issues/14458) Implement invoice API
   * [#14444] (https://github.com/metasfresh/metasfresh/issues/14444) Delivery Planning - Delivery Instructions Amendment
   * [#14235](https://github.com/metasfresh/metasfresh/issues/14235) Enhance REST-API with cache control
   * [#14402](https://github.com/metasfresh/metasfresh/issues/14402) ExternalSys-Other: Send Address MF to ES (=> C__BPartner_Location) 
