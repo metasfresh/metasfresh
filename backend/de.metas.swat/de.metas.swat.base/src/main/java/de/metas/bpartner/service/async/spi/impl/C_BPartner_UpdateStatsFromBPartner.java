@@ -29,22 +29,10 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.util.Services;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -59,7 +47,6 @@ import java.util.Properties;
  * Update BPartner's TotalOpenBalance and SO_CreditUsed fields.
  *
  * @author tsa
- *
  */
 public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdapter
 {
@@ -72,9 +59,9 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		for (final int bpartnerId : request.getBpartnerIds())
 		{
 			SCHEDULER.schedule(BPartnerToUpdate.builder()
-					.bpartnerId(bpartnerId)
-					.alsoResetCreditStatusFromBPGroup(request.isAlsoResetCreditStatusFromBPGroup())
-					.build());
+									   .bpartnerId(bpartnerId)
+									   .alsoResetCreditStatusFromBPGroup(request.isAlsoResetCreditStatusFromBPGroup())
+									   .build());
 		}
 	}
 

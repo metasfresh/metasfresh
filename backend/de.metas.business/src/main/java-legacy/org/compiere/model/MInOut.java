@@ -24,10 +24,10 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.bpartner.service.impl.CreditStatus;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
@@ -118,20 +118,20 @@ public class MInOut extends X_M_InOut implements IDocument
 	private static final long serialVersionUID = 132321718005732306L;
 
 	private static final Logger logger = LogManager.getLogger(MInOut.class);
-	
+
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	/**
 	 * Create new Shipment by copying
 	 *
-	 * @param from shipment
-	 * @param dateDoc date of the document date
+	 * @param from         shipment
+	 * @param dateDoc      date of the document date
 	 * @param C_DocType_ID doc type
-	 * @param isSOTrx sales order
-	 * @param counter create counter links
-	 * @param trxName trx
-	 * @param setOrder set the order link
+	 * @param isSOTrx      sales order
+	 * @param counter      create counter links
+	 * @param trxName      trx
+	 * @param setOrder     set the order link
 	 * @return Shipment
 	 */
 	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc, final Timestamp dateAcct,
@@ -251,15 +251,15 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // copyHeader
 
 	/**
-	 * @deprecated Create new Shipment by copying
-	 * @param from shipment
-	 * @param dateDoc date of the document date
+	 * @param from         shipment
+	 * @param dateDoc      date of the document date
 	 * @param C_DocType_ID doc type
-	 * @param isSOTrx sales order
-	 * @param counter create counter links
-	 * @param trxName trx
-	 * @param setOrder set the order link
+	 * @param isSOTrx      sales order
+	 * @param counter      create counter links
+	 * @param trxName      trx
+	 * @param setOrder     set the order link
 	 * @return Shipment
+	 * @deprecated Create new Shipment by copying
 	 */
 	@Deprecated
 	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc,
@@ -314,8 +314,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx context
-	 * @param rs result set record
+	 * @param ctx     context
+	 * @param rs      result set record
 	 * @param trxName transaction
 	 */
 	public MInOut(final Properties ctx, final ResultSet rs, final String trxName)
@@ -326,8 +326,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Order Constructor - create header only
 	 *
-	 * @param order order
-	 * @param movementDate optional movement date (default today)
+	 * @param order                order
+	 * @param movementDate         optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
 	 */
 	public MInOut(final MOrder order, final int C_DocTypeShipment_ID, final Timestamp movementDate)
@@ -464,10 +464,10 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Invoice Constructor - create header only
 	 *
-	 * @param invoice invoice
+	 * @param invoice              invoice
 	 * @param C_DocTypeShipment_ID document type or 0
-	 * @param movementDate optional movement date (default today)
-	 * @param M_Warehouse_ID warehouse
+	 * @param movementDate         optional movement date (default today)
+	 * @param M_Warehouse_ID       warehouse
 	 */
 	public MInOut(final MInvoice invoice, final int C_DocTypeShipment_ID, final Timestamp movementDate, final int M_Warehouse_ID)
 	{
@@ -550,8 +550,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Copy Constructor - create header only
 	 *
-	 * @param original original
-	 * @param movementDate optional movement date (default today)
+	 * @param original             original
+	 * @param movementDate         optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
 	 */
 	public MInOut(final MInOut original, final int C_DocTypeShipment_ID, final Timestamp movementDate)
@@ -616,9 +616,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		// metas end
 	} // MInOut
 
-	/** Lines */
+	/**
+	 * Lines
+	 */
 	private MInOutLine[] m_lines = null;
-	/** Confirmations */
+	/**
+	 * Confirmations
+	 */
 	private MInOutConfirm[] m_confirms = null;
 
 	/**
@@ -730,8 +734,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * Copy Lines From other Shipment
 	 *
 	 * @param otherShipment shipment
-	 * @param counter set counter info
-	 * @param setOrder set order link
+	 * @param counter       set counter info
+	 * @param setOrder      set order link
 	 * @return number of lines copied
 	 */
 	public int copyLinesFrom(final MInOut otherShipment, final boolean counter, final boolean setOrder)
@@ -822,7 +826,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		return count;
 	} // copyLinesFrom
 
-	/** Reversal Flag */
+	/**
+	 * Reversal Flag
+	 */
 	private boolean m_reversal = false;
 
 	/**
@@ -1110,7 +1116,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * After Save
 	 *
 	 * @param newRecord new
-	 * @param success success
+	 * @param success   success
 	 * @return success
 	 */
 	@Override
@@ -1146,9 +1152,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
 
-	/** Process Message */
+	/**
+	 * Process Message
+	 */
 	private String m_processMsg = null;
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	/**
@@ -1253,15 +1263,14 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // prepareIt
 
 	/**
-	  * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
-	  */
+	 * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
+	 */
 	private BigDecimal getProductWeight(final @NonNull MProduct product, final @NonNull MInOutLine line)
 	{
 		return CoalesceUtil.firstGreaterThanZeroBigDecimalSupplier(
 				() -> product.getWeight().multiply(line.getMovementQty()),
 				() -> uomConversionBL.convertFromProductUOM(ProductId.ofRepoIdOrNull(product.getM_Product_ID()), uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM), line.getMovementQty()));
 	}
-
 
 	private void checkCreditLimit()
 	{
