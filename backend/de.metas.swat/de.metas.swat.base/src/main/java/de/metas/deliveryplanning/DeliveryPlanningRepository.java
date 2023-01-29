@@ -35,8 +35,10 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -63,6 +65,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class DeliveryPlanningRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -303,6 +307,8 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
 		shippingPackageRecord.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
 
+		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
+
 		saveRecord(shippingPackageRecord);
 
 		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID());
@@ -311,7 +317,7 @@ public class DeliveryPlanningRepository
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
+			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
@@ -327,24 +333,35 @@ public class DeliveryPlanningRepository
 				.iterate(I_M_Delivery_Planning.class);
 	}
 
-	private Iterator<I_M_Delivery_Planning> retrieveForReleaseNo(@NonNull final String releaseNo)
+	private Iterator<I_M_Delivery_Planning> retrieveForDeliveryInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, releaseNo)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
 	}
 
-	public void unlinkDeliveryPlannings(final String documentNo)
+	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForReleaseNo(documentNo);
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
 		while (deliveryPlanningIterator.hasNext())
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			deliveryPlanningRecord.setReleaseNo(null);
 			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
 			saveRecord(deliveryPlanningRecord);
+
+			shipperTransportationDAO.retrieveShippingPackages(deliveryInstructionId)
+					.stream()
+					.forEach(this::unlinkShippingPackage);
+
 		}
+	}
+
+	private void unlinkShippingPackage(@NonNull final I_M_ShippingPackage shippingPackage)
+	{
+		shippingPackage.setC_OrderLine_ID(-1);
+		save(shippingPackage);
 	}
 
 	public Iterator<I_M_ShipperTransportation> retrieveForDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -376,5 +393,23 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setActualLoadQty(BigDecimal.ZERO);
 			save(deliveryPlanningRecord);
 		}
+	}
+
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeUnsuitableForInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+	}
+
+	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeDeliveryPlanningsWithoutInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL
+				.createCompositeQueryFilter(I_M_Delivery_Planning.class)
+				.addFilter(selectedDeliveryPlanningsFilter)
+				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
 	}
 }

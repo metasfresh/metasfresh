@@ -1,12 +1,13 @@
 package de.metas.shipping.api;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
-import de.metas.shipping.model.MMShipperTransportation;
-import org.compiere.model.I_M_Package;
-
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_Package;
 
 public interface IShipperTransportationBL extends ISingletonService
 {
@@ -27,4 +28,7 @@ public interface IShipperTransportationBL extends ISingletonService
 	void setC_DocType(I_M_ShipperTransportation shipperTransportation);
 
 	boolean isDeliveryInstruction(DocTypeId docTypeId);
+
+	Money getCreditUsedByDeliveryInstructionsInCurrency(BPartnerId bpartnerId, CurrencyId currencyId);
 }
+

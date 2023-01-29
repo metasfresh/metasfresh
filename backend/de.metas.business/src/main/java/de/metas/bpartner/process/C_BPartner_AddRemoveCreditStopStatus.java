@@ -3,9 +3,10 @@ package de.metas.bpartner.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -14,8 +15,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_BPartner_Stats;
 
 /**
  * This process set credit status to Credit Stop or removes it, in function by parameter <code>IsSetCreditStop</code> <br>
@@ -26,7 +27,7 @@ import org.compiere.model.X_C_BPartner_Stats;
  */
 public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements IProcessPrecondition
 {
-	private  final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private  final BPartnerStatsService bpartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 	private  final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -39,23 +40,27 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		final I_C_BPartner bPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(getRecord_ID()));
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
-		final String creditStatus;
+		final CreditStatus creditStatus;
+		final CreditStatus deliveryCreditStatus;
 
 		if (SetCreditStatusEnum.CreditOK.equals(setCreditStatus)) {
-			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+			creditStatus = CreditStatus.CreditOK;
+			deliveryCreditStatus = CreditStatus.CreditOK;
 		}
 		else if (SetCreditStatusEnum.CreditStop.equals(setCreditStatus))
 		{
-			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop;
+			creditStatus = CreditStatus.CreditStop;
+			deliveryCreditStatus = CreditStatus.CreditStop;
 		}
 		else if (SetCreditStatusEnum.Calculate.equals(setCreditStatus))
 		{
-			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+			final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 					.stat(stats)
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())
 					.build();
-			creditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+			creditStatus = bpartnerStatsService.calculateProjectedSOCreditStatus(request);
+			deliveryCreditStatus = bpartnerStatsService.calculateProjectedDeliveryCreditStatus(request);
 		}
 		else
 		{
@@ -63,6 +68,7 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		}
 
 		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
+		bpartnerStatsDAO.setDeliveryCreditStatus(stats, deliveryCreditStatus);
 
 		return "@Success@";
 	}

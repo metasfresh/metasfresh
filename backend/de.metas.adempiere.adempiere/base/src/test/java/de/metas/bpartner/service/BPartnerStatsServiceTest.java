@@ -1,13 +1,13 @@
 package de.metas.bpartner.service;
 
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
 import de.metas.common.util.time.SystemTime;
 import org.junit.Test;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -31,9 +31,8 @@ import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest
  * #L%
  */
 
-public class IBPartnerStatsBLTest
+public class BPartnerStatsServiceTest
 {
-
 	@Test
 	public void build_CalculateSOCreditStatusRequest()
 	{
@@ -42,13 +41,13 @@ public class IBPartnerStatsBLTest
 				.bpartnerId(BPartnerId.ofRepoId(10))
 				.build();
 
-		final CalculateSOCreditStatusRequest calculateSOCreditStatusRequest = CalculateSOCreditStatusRequest.builder()
+		final CalculateCreditStatusRequest calculateCreditStatusRequest = CalculateCreditStatusRequest.builder()
 				.date(SystemTime.asTimestamp())
 				.additionalAmt(null)
 				.stat(stat)
 				.build();
 
-		assertThat(calculateSOCreditStatusRequest.getAdditionalAmt()).isEqualByComparingTo(ZERO);
+		assertThat(calculateCreditStatusRequest.getAdditionalAmt()).isEqualByComparingTo(ZERO);
 	}
 
 }

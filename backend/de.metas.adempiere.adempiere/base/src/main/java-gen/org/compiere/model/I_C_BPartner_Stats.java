@@ -188,6 +188,71 @@ public interface I_C_BPartner_Stats
 	String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
+	 * Set Delivery credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryCreditLimitIndicator (@Nullable java.lang.String DeliveryCreditLimitIndicator);
+
+	/**
+	 * Get Delivery credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryCreditLimitIndicator();
+
+	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_DeliveryCreditLimitIndicator = new ModelColumn<>(I_C_BPartner_Stats.class, "DeliveryCreditLimitIndicator", null);
+	String COLUMNNAME_DeliveryCreditLimitIndicator = "DeliveryCreditLimitIndicator";
+
+	/**
+	 * Set Delivery Credit Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDelivery_CreditStatus (@Nullable java.lang.String Delivery_CreditStatus);
+
+	/**
+	 * Get Delivery Credit Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDelivery_CreditStatus();
+
+	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Delivery_CreditStatus = new ModelColumn<>(I_C_BPartner_Stats.class, "Delivery_CreditStatus", null);
+	String COLUMNNAME_Delivery_CreditStatus = "Delivery_CreditStatus";
+
+	/**
+	 * Set Delivery Credit Used.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDelivery_CreditUsed (@Nullable BigDecimal Delivery_CreditUsed);
+
+	/**
+	 * Get Delivery Credit Used.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDelivery_CreditUsed();
+
+	ModelColumn<I_C_BPartner_Stats, Object> COLUMN_Delivery_CreditUsed = new ModelColumn<>(I_C_BPartner_Stats.class, "Delivery_CreditUsed", null);
+	String COLUMNNAME_Delivery_CreditUsed = "Delivery_CreditUsed";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

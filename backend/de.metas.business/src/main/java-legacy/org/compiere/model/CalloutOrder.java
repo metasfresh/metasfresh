@@ -26,6 +26,8 @@ import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
@@ -675,12 +677,13 @@ public class CalloutOrder extends CalloutEngine
 			@NonNull final ICalloutField calloutField,
 			@NonNull final I_C_Order order)
 	{
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartnerId);
+		final BPartnerStats bPartnerStats = bPartnerStatsService.getCreateBPartnerStats(bpartnerId);
 
 		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 				.bpartnerId(bpartnerId.getRepoId())
-				.creditStatus(bPartnerStats.getSOCreditStatus())
+				.creditStatus(bPartnerStats.getSoCreditStatus())
 				.evalCreditstatus(true)
 				.evaluationDate(order.getDateOrdered())
 				.build();
@@ -693,7 +696,7 @@ public class CalloutOrder extends CalloutEngine
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId.getRepoId(), order.getDateOrdered());
 
-		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
+		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSoCreditUsed());
 		if (CreditAvailable.signum() < 0)
 		{
 			calloutField.fireDataStatusEEvent(
@@ -826,7 +829,7 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					final String creditStatus = rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus);
+					final CreditStatus creditStatus = CreditStatus.ofCode(rs.getString(I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus));
 					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
 							.bpartnerId(bill_BPartner_ID)
 							.creditStatus(creditStatus)
@@ -1473,7 +1476,7 @@ public class CalloutOrder extends CalloutEngine
 	private static class CreditLimitRequest
 	{
 		final int bpartnerId;
-		@NonNull final String creditStatus;
+		@NonNull final CreditStatus creditStatus;
 		final boolean evalCreditstatus;
 		@NonNull final Timestamp evaluationDate;
 	}
@@ -1484,7 +1487,7 @@ public class CalloutOrder extends CalloutEngine
 	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest)
 	{
 		final int bpartnerId = creditlimitrequest.getBpartnerId();
-		final String creditStatus = creditlimitrequest.getCreditStatus();
+		final CreditStatus creditStatus = creditlimitrequest.getCreditStatus();
 		final boolean evalCreditstatus = creditlimitrequest.isEvalCreditstatus();
 		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
 
@@ -1493,7 +1496,7 @@ public class CalloutOrder extends CalloutEngine
 		boolean dontCheck = true;
 		if (evalCreditstatus)
 		{
-			dontCheck = creditLimit.signum() == 0 || X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(creditStatus);
+			dontCheck = creditLimit.signum() == 0 || CreditStatus.NoCreditCheck.equals(creditStatus);
 		}
 		else
 		{

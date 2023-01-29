@@ -24,8 +24,10 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.bpartner.process.SetCreditStatusEnum;
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -34,6 +36,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
@@ -50,7 +53,7 @@ public class C_BPartner_Stats_StepDef
 {
 	private final C_BPartner_StepDefData bPartnerTable;
 
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -111,26 +114,26 @@ public class C_BPartner_Stats_StepDef
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 
-		final String creditStatus = getCreditStatus(creditStatusCode, stats);
+		final CreditStatus creditStatus = getCreditStatus(creditStatusCode, stats);
 
 		assertThat(creditStatus).isNotNull();
 		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
 	}
 
 	@NonNull
-	private String getCreditStatus(@NonNull final String creditStatusCode, @NonNull final BPartnerStats stats)
+	private CreditStatus getCreditStatus(@NonNull final String creditStatusCode, @NonNull final BPartnerStats stats)
 	{
 		if (SetCreditStatusEnum.Calculate.getCode().equals(creditStatusCode))
 		{
-			final IBPartnerStatsBL.CalculateSOCreditStatusRequest request = IBPartnerStatsBL.CalculateSOCreditStatusRequest.builder()
+			final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 					.stat(stats)
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())
 					.build();
 
-			return bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+			return bPartnerStatsService.calculateProjectedSOCreditStatus(request);
 		}
 
-		return creditStatusCode;
+		return CreditStatus.ofCode(creditStatusCode);
 	}
 }

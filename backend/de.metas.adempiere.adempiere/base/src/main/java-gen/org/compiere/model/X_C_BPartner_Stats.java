@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPartner_Stats, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1130814617L;
+	private static final long serialVersionUID = 357566475L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (final Properties ctx, final int C_BPartner_Stats_ID, @Nullable final String trxName)
@@ -99,6 +99,60 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	public java.lang.String getCreditLimitIndicator() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditLimitIndicator);
+	}
+
+	@Override
+	public void setDeliveryCreditLimitIndicator (final @Nullable java.lang.String DeliveryCreditLimitIndicator)
+	{
+		set_Value (COLUMNNAME_DeliveryCreditLimitIndicator, DeliveryCreditLimitIndicator);
+	}
+
+	@Override
+	public java.lang.String getDeliveryCreditLimitIndicator() 
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryCreditLimitIndicator);
+	}
+
+	/** 
+	 * Delivery_CreditStatus AD_Reference_ID=289
+	 * Reference name: C_BPartner SOCreditStatus
+	 */
+	public static final int DELIVERY_CREDITSTATUS_AD_Reference_ID=289;
+	/** CreditStop = S */
+	public static final String DELIVERY_CREDITSTATUS_CreditStop = "S";
+	/** CreditHold = H */
+	public static final String DELIVERY_CREDITSTATUS_CreditHold = "H";
+	/** CreditWatch = W */
+	public static final String DELIVERY_CREDITSTATUS_CreditWatch = "W";
+	/** NoCreditCheck = X */
+	public static final String DELIVERY_CREDITSTATUS_NoCreditCheck = "X";
+	/** CreditOK = O */
+	public static final String DELIVERY_CREDITSTATUS_CreditOK = "O";
+	/** NurEineRechnung = I */
+	public static final String DELIVERY_CREDITSTATUS_NurEineRechnung = "I";
+	@Override
+	public void setDelivery_CreditStatus (final @Nullable java.lang.String Delivery_CreditStatus)
+	{
+		set_Value (COLUMNNAME_Delivery_CreditStatus, Delivery_CreditStatus);
+	}
+
+	@Override
+	public java.lang.String getDelivery_CreditStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_Delivery_CreditStatus);
+	}
+
+	@Override
+	public void setDelivery_CreditUsed (final @Nullable BigDecimal Delivery_CreditUsed)
+	{
+		set_Value (COLUMNNAME_Delivery_CreditUsed, Delivery_CreditUsed);
+	}
+
+	@Override
+	public BigDecimal getDelivery_CreditUsed() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Delivery_CreditUsed);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
