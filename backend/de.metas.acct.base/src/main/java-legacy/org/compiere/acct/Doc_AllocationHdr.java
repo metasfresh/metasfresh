@@ -127,6 +127,13 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return BigDecimal.ZERO;
 	}
 
+	@Override
+	protected void checkConvertible(final AcctSchema acctSchema)
+	{
+		// do nothing because in case of custom currency rates (i.e. FEC), the standard checking will fail.
+		// Also, in case we will have some conversion issues, we will fail later.
+	}
+
 	/**
 	 * Create Facts (the accounting logic) for CMA.
 	 *
