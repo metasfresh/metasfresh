@@ -39,8 +39,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.process.params.IInvoicingParams;
-import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
@@ -68,7 +67,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
 
@@ -146,9 +145,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
-		return InvoicingParamsFactory.wrap(getParameters());
+		return InvoicingParams.ofParams(getParameters());
 	}
 
 	private void updateInvalid(

@@ -36,8 +36,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.process.params.IInvoicingParams;
-import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -268,7 +267,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		}
 	}
 
-	private IInvoicingParams getInvoicingParams() {return InvoicingParamsFactory.wrap(getParameterAsIParams());}
+	private InvoicingParams getInvoicingParams() {return InvoicingParams.ofParams(getParameterAsIParams());}
 
 	@Override
 	protected String doIt()
@@ -334,7 +333,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 			}
 		}
 
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 
 		return createICQueryBuilder(userSelectionFilter, invoicingParams.isOnlyApprovedForInvoicing());
 	}

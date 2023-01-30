@@ -13,115 +13,108 @@ package de.metas.invoicecandidate.process.params;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.forex.ForexContractRef;
 import de.metas.forex.process.utils.ForexContractParameters;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.util.api.IParams;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Invoicing Enqueueing & generating parameters (wrapped from {@link IParams}).
- */
-class InvoicingParams implements IInvoicingParams
+@Value
+@Builder
+public class InvoicingParams
 {
-	private final IParams params;
+	public static String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
+	public static String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
+	public static String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
+	public static String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
+	public static String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
+	public static String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
+	public static String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
+	public static String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
+	public static String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
+	public static String PARA_IsCompleteInvoices = "IsCompleteInvoices";
 
-	InvoicingParams(@NonNull final IParams params)
+	boolean onlyApprovedForInvoicing;
+	boolean consolidateApprovedICs;
+	boolean ignoreInvoiceSchedule;
+	boolean supplementMissingPaymentTermIds;
+	boolean storeInvoicesInResult;
+	boolean assumeOneInvoice;
+	LocalDate dateInvoiced;
+	LocalDate dateAcct;
+	String poReference;
+	BigDecimal check_NetAmtToInvoice;
+	boolean updateLocationAndContactForInvoice;
+	@Builder.Default boolean completeInvoices = true; // default=true for backwards-compatibility
+	ForexContractParameters forexContractParameters;
+
+	@Nullable
+	public ForexContractRef getForexContractRef() {return getForexContractParameters().getForexContractRef();}
+
+	public static InvoicingParams ofParams(@NonNull final IParams params)
 	{
-		this.params = params;
+		return builder()
+				.onlyApprovedForInvoicing(params.getParameterAsBool(PARA_OnlyApprovedForInvoicing))
+				.consolidateApprovedICs(params.getParameterAsBool(PARA_IsConsolidateApprovedICs))
+				.ignoreInvoiceSchedule(params.getParameterAsBool(PARA_IgnoreInvoiceSchedule))
+				.dateInvoiced(params.getParameterAsLocalDate(PARA_DateInvoiced))
+				.supplementMissingPaymentTermIds(params.getParameterAsBool(PARA_SupplementMissingPaymentTermIds))
+				.dateAcct(params.getParameterAsLocalDate(PARA_DateAcct))
+				.poReference(params.getParameterAsString(PARA_POReference))
+				.check_NetAmtToInvoice(params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice))
+				.updateLocationAndContactForInvoice(params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice))
+				.completeInvoices(params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/))
+				.forexContractParameters(ForexContractParameters.ofParams(params))
+				.build();
 	}
 
-	@Override
-	public boolean isOnlyApprovedForInvoicing()
+	public Map<String, ?> toMap()
 	{
-		return params.getParameterAsBool(PARA_OnlyApprovedForInvoicing);
+		final HashMap<String, Object> map = new HashMap<>();
+
+		if (getCheck_NetAmtToInvoice() != null)
+		{
+			map.put(PARA_Check_NetAmtToInvoice, getCheck_NetAmtToInvoice()); // during enqueuing this map might be overwritten by a specific value
+		}
+		if (getDateAcct() != null)
+		{
+			map.put(PARA_DateAcct, getDateAcct());
+		}
+		if (getDateInvoiced() != null)
+		{
+			map.put(PARA_DateInvoiced, getDateInvoiced());
+		}
+		if (getPoReference() != null)
+		{
+			map.put(PARA_POReference, getPoReference());
+		}
+
+		map.put(PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
+		map.put(PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
+		map.put(PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
+		map.put(PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
+		map.put(PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		map.put(PARA_IsCompleteInvoices, isCompleteInvoices());
+		map.putAll(getForexContractParameters().toMap());
+
+		return map;
 	}
 
-	@Override
-	public boolean isConsolidateApprovedICs()
-	{
-		return params.getParameterAsBool(PARA_IsConsolidateApprovedICs);
-	}
-
-	@Override
-	public boolean isIgnoreInvoiceSchedule()
-	{
-		return params.getParameterAsBool(PARA_IgnoreInvoiceSchedule);
-	}
-
-	@Override
-	public boolean isUpdateLocationAndContactForInvoice()
-	{
-		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
-	}
-
-	@Override
-	public LocalDate getDateInvoiced()
-	{
-		return params.getParameterAsLocalDate(PARA_DateInvoiced);
-	}
-
-	@Override
-	public LocalDate getDateAcct()
-	{
-		return params.getParameterAsLocalDate(PARA_DateAcct);
-	}
-
-	@Override
-	public String getPOReference()
-	{
-		return params.getParameterAsString(PARA_POReference);
-	}
-
-	@Override
-	public boolean isSupplementMissingPaymentTermIds()
-	{
-		return params.getParameterAsBool(PARA_SupplementMissingPaymentTermIds);
-	}
-
-	@Override
-	public BigDecimal getCheck_NetAmtToInvoice()
-	{
-		return params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice);
-	}
-
-	/**
-	 * Always returns {@code false}.
-	 */
-	@Override
-	public boolean isAssumeOneInvoice()
-	{
-		return false;
-	}
-
-	@Override
-	public boolean isCompleteInvoices()
-	{
-		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
-	}
-
-	@Override
-	public ForexContractParameters getForexContractParameters()
-	{
-		return ForexContractParameters.ofParams(params);
-	}
-
-	/**
-	 * Always returns {@code false}.
-	 */
-	@Override
-	public boolean isStoreInvoicesInResult()
-	{
-		return false;
-	}
 }

@@ -60,9 +60,8 @@ import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
-import de.metas.invoicecandidate.process.params.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -118,7 +117,7 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
@@ -309,9 +308,10 @@ public class C_Invoice_StepDef
 		//enqueue invoice candidate
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
 
-		final PlainInvoicingParams invoicingParams = InvoicingParamsFactory.newPlain();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
+		final InvoicingParams invoicingParams = InvoicingParams.builder()
+				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
+				.build();
 
 		invoiceCandBL.enqueueForInvoicing()
 				.setContext(Env.getCtx())
@@ -404,7 +404,7 @@ public class C_Invoice_StepDef
 		assertThat(invoiceRecords.size()).isEqualTo(1);
 
 		final Map<String, String> row = table.asMaps().get(0);
-		
+
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		invoiceTable.put(invoiceIdentifier, invoiceRecords.get(0));
 	}
@@ -417,7 +417,7 @@ public class C_Invoice_StepDef
 			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
 
 			final SoftAssertions softly = new SoftAssertions();
-			
+
 			final JsonCreateInvoiceResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceResponse.class);
 			softly.assertThat(jsonCreateInvoiceResponse.getResult()).isNull();
 
@@ -425,7 +425,7 @@ public class C_Invoice_StepDef
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().size()).isEqualTo(1);
 
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
-			
+
 			softly.assertAll();
 		}
 	}
@@ -593,7 +593,7 @@ public class C_Invoice_StepDef
 
 			softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
 		}
-		
+
 		final Boolean isSOTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
 		if (isSOTrx != null)
 		{
@@ -614,9 +614,9 @@ public class C_Invoice_StepDef
 			{
 				final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
 						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-															.evaluationDate(ZonedDateTime.now())
-															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-															.build()).get(0);
+								.evaluationDate(ZonedDateTime.now())
+								.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+								.build()).get(0);
 				softly.assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).as("OpenAmountConverted").isEqualByComparingTo(invoiceOpenAmt);
 			}
 		}
