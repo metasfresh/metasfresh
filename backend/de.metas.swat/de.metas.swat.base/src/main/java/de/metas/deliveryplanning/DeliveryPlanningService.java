@@ -478,12 +478,12 @@ public class DeliveryPlanningService
 				.loadingPartnerLocationId(isIncoming
 												  ? warehouseBPLocationId
 												  : deliveryPlanningLocationId)
-				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
+				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedLoadingDate()))
 				.loadingTime(deliveryPlanningRecord.getLoadingTime())
 				.deliveryPartnerLocationId(isIncoming
 												   ? deliveryPlanningLocationId
 												   : warehouseBPLocationId)
-				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
+				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
 				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 
 				.dateDoc(SystemTime.asInstant())
@@ -495,8 +495,8 @@ public class DeliveryPlanningService
 				.isToBeFetched(isIncoming)
 				//.locatorId() : Not yet decided where to take it from. TODO in a future CR
 				.batchNo(deliveryPlanningRecord.getBatch())
-				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
-				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
+				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
 				.uom(uomToUse)
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.deliveryPlanningId(deliveryPlanningId)
