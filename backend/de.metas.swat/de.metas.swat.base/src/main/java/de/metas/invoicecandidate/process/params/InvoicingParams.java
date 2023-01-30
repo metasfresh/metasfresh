@@ -57,16 +57,19 @@ public class InvoicingParams
 	boolean supplementMissingPaymentTermIds;
 	boolean storeInvoicesInResult;
 	boolean assumeOneInvoice;
-	LocalDate dateInvoiced;
-	LocalDate dateAcct;
-	String poReference;
-	BigDecimal check_NetAmtToInvoice;
+	@Nullable LocalDate dateInvoiced;
+	@Nullable LocalDate dateAcct;
+	@Nullable String poReference;
+	@Nullable BigDecimal check_NetAmtToInvoice;
 	boolean updateLocationAndContactForInvoice;
 	@Builder.Default boolean completeInvoices = true; // default=true for backwards-compatibility
-	ForexContractParameters forexContractParameters;
+	@Nullable ForexContractParameters forexContractParameters;
 
 	@Nullable
-	public ForexContractRef getForexContractRef() {return getForexContractParameters().getForexContractRef();}
+	public ForexContractRef getForexContractRef()
+	{
+		return forexContractParameters != null ? forexContractParameters.getForexContractRef() : null;
+	}
 
 	public static InvoicingParams ofParams(@NonNull final IParams params)
 	{
@@ -112,7 +115,12 @@ public class InvoicingParams
 		map.put(PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		map.put(PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
 		map.put(PARA_IsCompleteInvoices, isCompleteInvoices());
-		map.putAll(getForexContractParameters().toMap());
+
+		final ForexContractParameters forexContractParameters = getForexContractParameters();
+		if (forexContractParameters != null)
+		{
+			map.putAll(forexContractParameters.toMap());
+		}
 
 		return map;
 	}
