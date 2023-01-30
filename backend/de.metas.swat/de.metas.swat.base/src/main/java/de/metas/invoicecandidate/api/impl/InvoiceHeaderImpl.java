@@ -1,16 +1,10 @@
 package de.metas.invoicecandidate.api.impl;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.payment.paymentterm.PaymentTermId;
-import org.compiere.model.I_C_DocType;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -18,11 +12,17 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
@@ -72,7 +72,11 @@ import javax.annotation.Nullable;
 	// 06630
 	private int M_InOut_ID = -1;
 
+	@Nullable
 	private I_C_DocType docTypeInvoice;
+
+	@Nullable
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId;
 
 	private boolean taxIncluded;
 	private String  externalId;
@@ -98,6 +102,7 @@ import javax.annotation.Nullable;
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
+				+ ", docTypeInvoicingPoolId=" + docTypeInvoicingPoolId
 				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
@@ -234,16 +239,25 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
+	@Nullable
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
 	}
 
-	public void setC_DocTypeInvoice(final I_C_DocType docType)
+	@Override
+	@NonNull
+	public Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId()
 	{
-		this.docTypeInvoice = docType;
+		return Optional.ofNullable(docTypeInvoicingPoolId);
 	}
 
+	@Override
+	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+	
 	@Override
 	public boolean isTaxIncluded()
 	{
@@ -320,5 +334,10 @@ import javax.annotation.Nullable;
 	public String setExternalId(String externalId)
 	{
 		return this.externalId = externalId;
+	}
+
+	void setC_DocTypeInvoice(@Nullable final I_C_DocType docType)
+	{
+		this.docTypeInvoice = docType;
 	}
 }

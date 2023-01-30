@@ -441,10 +441,6 @@ public class OrderBL implements IOrderBL
 		}
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
-		if (docType == null)
-		{
-			return;
-		}
 
 		if (!docType.isCopyDescriptionToDocument())
 		{
@@ -1075,21 +1071,20 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@Nullable
 	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
-		return docTypeId != null
-				? docTypeBL.getById(docTypeId)
-				: null;
+		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
 	}
 
 	@Nullable
 	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeId != null
-				? docTypeBL.getById(docTypeId)
-				: null;
+		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
 	}
 
 	@Override

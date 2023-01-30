@@ -22,30 +22,39 @@ package de.metas.document;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.compiere.model.I_C_DocType;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.compiere.model.I_C_DocType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IDocTypeDAO extends ISingletonService
 {
+	@NonNull
 	I_C_DocType getById(int docTypeId);
 
-	I_C_DocType getById(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
 	 */
 	DocTypeId getDocTypeIdOrNull(final DocTypeQuery query);
+
+	@NonNull
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	DocTypeId getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
@@ -71,6 +80,8 @@ public interface IDocTypeDAO extends ISingletonService
 	Optional<String> getDocBaseTypeCounter(String docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
+	
+	void save(@NonNull I_C_DocType dt);
 
 	@Value
 	@Builder

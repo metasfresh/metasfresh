@@ -10,33 +10,37 @@ package de.metas.invoicecandidate.agg.key.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.model.I_C_DocType;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * AggregationKey value handler for Invoice Candidates in Material Tracking
@@ -46,6 +50,9 @@ import de.metas.util.Services;
 public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
 	public static final transient ICHeaderAggregationKeyBuilder_OLD instance = new ICHeaderAggregationKeyBuilder_OLD();
+
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private static final List<String> columnNames = Arrays.asList(
 			I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID,
@@ -94,19 +101,25 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 
 	private List<Object> getValues(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		final List<Object> values = new ArrayList<>();
 
-		final int invoiceDocTypeId = ic.getC_DocTypeInvoice_ID();
-		final int currencyId = ic.getC_Currency_ID();
+		final I_C_DocType invoiceDocType = Optional.ofNullable(DocTypeId.ofRepoIdOrNull(ic.getC_DocTypeInvoice_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
 
-		values.add(invoiceDocTypeId <= 0 ? 0 : invoiceDocTypeId);
+		final DocTypeId docTypeIdToBeUsed = Optional.ofNullable(invoiceDocType)
+				.filter(docType -> docType.getC_DocType_Invoicing_Pool_ID() <= 0)
+				.map(I_C_DocType::getC_DocType_ID)
+				.map(DocTypeId::ofRepoId)
+				.orElse(null);
+
+		values.add(docTypeIdToBeUsed);
 		values.add(ic.getAD_Org_ID());
 
 		values.add(ic.getBill_BPartner_ID());
 		values.add(ic.getBill_Location_ID());
 
+		final int currencyId = ic.getC_Currency_ID();
 		values.add(currencyId <= 0 ? 0 : currencyId);
 
 		// Dates
@@ -120,12 +133,19 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		// Pricing System
 		final int pricingSystemId = IPriceListDAO.M_PricingSystem_ID_None; // 08511 workaround
 		values.add(pricingSystemId);
-		
+
 		values.add(invoiceCandBL.isTaxIncluded(ic)); // task 08451
 
 		final Boolean compact = true;
 		values.add(compact ? toHashcode(ic.getDescriptionHeader()) : ic.getDescriptionHeader());
 		values.add(compact ? toHashcode(ic.getDescriptionBottom()) : ic.getDescriptionBottom());
+
+		final DocTypeInvoicingPoolId docTypeInvoicingPoolId = Optional.ofNullable(invoiceDocType)
+				.filter(docType -> docType.getC_DocType_Invoicing_Pool_ID() > 0)
+				.map(I_C_DocType::getC_DocType_Invoicing_Pool_ID)
+				.map(DocTypeInvoicingPoolId::ofRepoId)
+				.orElse(null);
+		values.add(docTypeInvoicingPoolId);
 
 		return values;
 	}
