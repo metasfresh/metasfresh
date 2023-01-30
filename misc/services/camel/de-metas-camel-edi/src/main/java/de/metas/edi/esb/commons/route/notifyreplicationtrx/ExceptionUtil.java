@@ -22,7 +22,6 @@
 
 package de.metas.edi.esb.commons.route.notifyreplicationtrx;
 
-import com.sun.istack.Nullable;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
@@ -39,12 +38,6 @@ public class ExceptionUtil
 	{
 		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 
-		return "Error Message: " + errorContent(exception);
-	}
-
-	@NonNull
-	private String errorContent(@Nullable final Exception exception)
-	{
 		return Optional.ofNullable(exception)
 				.map(ex -> {
 					final StringWriter sw = new StringWriter();
@@ -53,6 +46,6 @@ public class ExceptionUtil
 
 					return ex.getMessage() + "\n" + " Error Stacktrace: " + sw;
 				})
-				.orElse("No info available!");
+				.orElse("No error info available!");
 	}
 }

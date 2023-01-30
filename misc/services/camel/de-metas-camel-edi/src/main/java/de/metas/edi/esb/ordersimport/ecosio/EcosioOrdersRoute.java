@@ -24,7 +24,9 @@ package de.metas.edi.esb.ordersimport.ecosio;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import com.sun.istack.Nullable;
+import de.metas.common.util.Check;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
@@ -49,7 +51,7 @@ import org.springframework.stereotype.Component;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.Collection;
 
 import static de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute.NOTIFY_REPLICATION_TRX_UPDATE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -92,12 +94,11 @@ public class EcosioOrdersRoute
 		}
 
 		// @formatter:off
-
 		from("{{" + INPUT_ORDERS_LOCAL + "}}")
 				.routeId("ecosio-XML-Orders-To-MF-OLCand")
-				.doTry()
-					.process(this::initRouteContext)
-					.split(xpath("/EDI_Message/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
+				.process(this::initRouteContext)
+				.split(xpath("/EDI_Message/EDI_Imp_C_OLCands/EDI_Imp_C_OLCand"))
+					.doTry()
 						.unmarshal(dataFormat)
 						.process(exchange -> {
 							final EDIImpCOLCandType olCandXML = exchange.getIn().getBody(EDIImpCOLCandType.class);
@@ -111,6 +112,10 @@ public class EcosioOrdersRoute
 							// there might be multiple orders in one file. so we compose the replication-name like this to make sure one order is one replication-trx
 							final String trxNameAttr = olCandXML.getPOReference() + "_" + exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
 							olCandXML.setTrxNameAttr(trxNameAttr);
+
+							// add the current trx to context
+							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+							context.setCurrentTrx(olCandXML.getTrxNameAttr());
 
 							olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 							olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
@@ -130,38 +135,29 @@ public class EcosioOrdersRoute
 									Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
 															  Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
 							olCandXML.setADDataDestinationID(dataDestinationLookup);
-
-							addEDIImpCOLCandTypeToContext(olCandXML, exchange);
 						})
 						.marshal(dataFormat)
 
 						.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
-						.process(this::updateContext)
+						.process(exchange -> {
+							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+							context.setCurrentTrxStatus(EcosioOrdersRouteContext.TrxStatus.ok());
+						})
+					.endDoTry()
+					.doCatch(Exception.class)
+						.process(exchange -> {
+							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+							final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
+							context.setCurrentTrxStatus(EcosioOrdersRouteContext.TrxStatus.error(errorMsg));
+						})
 					.end()
-					.process(this::prepareNotifyReplicationTrxDone)
-					.choice()
-						.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
-							.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
-						.otherwise()
-							.split(body())
-								.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
-						.endChoice()
-					.end()
-				.endDoTry()
-				.doCatch(Exception.class)
-					.process(this::prepareNotifyReplicationTrxError)
-					.choice()
-						.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
-							.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
-						.otherwise()
-							.split(body())
-								.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
-						.endChoice()
-					.end()
+				.end()
+				.process(this::prepareNotifyReplicationTrxDone)
+				.split(body())
+					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
 				.end();
-
 		// @formatter:on
 	}
 
@@ -200,50 +196,47 @@ public class EcosioOrdersRoute
 	{
 		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
 
-		final List<NotifyReplicationTrxRequest> requests = context.getTransactionDetails()
-				.stream()
-				.filter(EcosioOrdersRouteContext.TransactionDetails::isImported)
-				.map(details -> NotifyReplicationTrxRequest.finished()
+		final ImmutableList.Builder<NotifyReplicationTrxRequest> requestCollector = ImmutableList.builder();
+
+		final Multimap<String, EcosioOrdersRouteContext.TrxStatus> importedTrxName2TrxStatus = context.getImportedTrxName2TrxStatus();
+
+		for (final String entryTrxName : importedTrxName2TrxStatus.keySet())
+		{
+			final Collection<EcosioOrdersRouteContext.TrxStatus> valueTrxStatus = importedTrxName2TrxStatus.get(entryTrxName);
+
+			//dev-note: no update is required when there is no C_OLCand imported in this batch
+			final boolean allNotOk = valueTrxStatus.stream().noneMatch(EcosioOrdersRouteContext.TrxStatus::isOk);
+			if (allNotOk)
+			{
+				continue;
+			}
+
+			final boolean allOk = valueTrxStatus.stream().allMatch(EcosioOrdersRouteContext.TrxStatus::isOk);
+			if (allOk)
+			{
+				final NotifyReplicationTrxRequest finishedRequest = NotifyReplicationTrxRequest.finished()
 						.clientValue(context.getClientValue())
-						.trxName(details.getTrxName())
-						.build())
-				.collect(ImmutableList.toImmutableList());
+						.trxName(entryTrxName)
+						.build();
 
-		final Object body = requests.isEmpty() ? null : requests;
-		exchange.getIn().setBody(body);
-	}
+				requestCollector.add(finishedRequest);
+				continue;
+			}
 
-	private void addEDIImpCOLCandTypeToContext(@NonNull final EDIImpCOLCandType olcand, @NonNull final Exchange exchange)
-	{
-		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+			final StringBuilder errorMessages = new StringBuilder();
+			valueTrxStatus.stream()
+					.map(EcosioOrdersRouteContext.TrxStatus::getErrorMessage)
+					.filter(Check::isNotBlank)
+					.forEach(errorMessages::append);
 
-		context.setCurrentTrxName(olcand.getTrxNameAttr());
-		context.addTransactionDetails(EcosioOrdersRouteContext.TransactionDetails.builder().trxName(olcand.getTrxNameAttr()).build());
-	}
+			final NotifyReplicationTrxRequest errorRequest = NotifyReplicationTrxRequest.error(errorMessages.toString())
+					.clientValue(context.getClientValue())
+					.trxName(entryTrxName)
+					.build();
 
-	private void updateContext(@NonNull final Exchange exchange)
-	{
-		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+			requestCollector.add(errorRequest);
+		}
 
-		context.transactionDetailsImported();
-	}
-
-	private void prepareNotifyReplicationTrxError(@NonNull final Exchange exchange)
-	{
-		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
-
-		final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
-
-		final List<NotifyReplicationTrxRequest> requests = context.getTransactionDetails()
-				.stream()
-				.filter(EcosioOrdersRouteContext.TransactionDetails::isImported)
-				.map(details -> NotifyReplicationTrxRequest.error(errorMsg)
-						.clientValue(context.getClientValue())
-						.trxName(details.getTrxName())
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
-		final Object body = requests.isEmpty() ? null : requests;
-		exchange.getIn().setBody(body);
+		exchange.getIn().setBody(requestCollector.build());
 	}
 }

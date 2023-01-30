@@ -22,15 +22,11 @@
 
 package de.metas.edi.esb.ordersimport.stepcom;
 
-import de.metas.common.util.Check;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
-import de.metas.edi.esb.commons.route.notifyreplicationtrx.ExceptionUtil;
-import de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRequest;
 import de.metas.edi.esb.jaxb.stepcom.orders.ObjectFactory;
 import de.metas.edi.esb.ordersimport.AbstractEDIOrdersBean;
-import de.metas.edi.esb.ordersimport.compudata.CompuDataOrdersRoute;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -124,65 +120,13 @@ public class StepComXMLOrdersRoute
 						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
 					.end()
-					.process(this::prepareNotifyReplicationTrxDone)
-					.choice()
-						.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
-							.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
-						.otherwise()
-							.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
-						.endChoice()
-					.end()
+					.process(StepComXMLOrdersBean::prepareNotifyReplicationTrxDone)
+					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
 				.endDoTry()
 				.doCatch(Exception.class)
-					.choice()
-						.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
-							.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
-						.otherwise()
-							.process(this::prepareNotifyReplicationTrxError)
-							.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
-						.endChoice()
-					.end()
+					.process(StepComXMLOrdersBean::prepareNotifyReplicationTrxError)
+					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
 				.end();
-
 		// @formatter:on
-	}
-
-	private void prepareNotifyReplicationTrxDone(final Exchange exchange)
-	{
-		final String trxName = exchange.getProperty(Exchange.FILE_NAME, String.class);
-		final String clientValue = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
-		if (Check.isBlank(trxName))
-		{
-			exchange.getIn().setBody(null);
-			return;
-		}
-
-		final NotifyReplicationTrxRequest request = NotifyReplicationTrxRequest.finished()
-				.clientValue(clientValue)
-				.trxName(trxName)
-				.build();
-
-		exchange.getIn().setBody(request);
-	}
-
-	private void prepareNotifyReplicationTrxError(final Exchange exchange)
-	{
-		final String trxName = exchange.getProperty(Exchange.FILE_NAME, String.class);
-		final String clientValue = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
-
-		if (Check.isBlank(trxName) || Check.isBlank(clientValue))
-		{
-			exchange.getIn().setBody(null);
-			return;
-		}
-
-		final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
-
-		final NotifyReplicationTrxRequest request = NotifyReplicationTrxRequest.error(errorMsg)
-				.clientValue(clientValue)
-				.trxName(trxName)
-				.build();
-
-		exchange.getIn().setBody(request);
 	}
 }

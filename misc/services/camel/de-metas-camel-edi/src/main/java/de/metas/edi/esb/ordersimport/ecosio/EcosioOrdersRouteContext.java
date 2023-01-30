@@ -22,7 +22,7 @@
 
 package de.metas.edi.esb.ordersimport.ecosio;
 
-import de.metas.common.util.Check;
+import com.google.common.collect.ArrayListMultimap;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,8 +31,6 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Set;
 
 @Value
 @Builder
@@ -47,51 +45,40 @@ public class EcosioOrdersRouteContext
 	String currentTrxName;
 
 	@NonNull
-	@Setter(AccessLevel.NONE)
-	Set<TransactionDetails> transactionDetails = new HashSet<>();
+	ArrayListMultimap<String, TrxStatus> importedTrxName2TrxStatus = ArrayListMultimap.create();
 
-	public void addTransactionDetails(@NonNull final TransactionDetails details)
-	{
-		transactionDetails.add(details);
-	}
-
-	public void transactionDetailsImported()
-	{
-		if (Check.isBlank(currentTrxName))
-		{
-			return;
-		}
-
-		final TransactionDetails foundDetails = transactionDetails.stream()
-				.filter(detail -> detail.getTrxName().equals(currentTrxName))
-				.findFirst()
-				.orElse(null);
-
-		if (foundDetails == null)
-		{
-			return;
-		}
-
-		final TransactionDetails importedDetails = foundDetails.toBuilder()
-				.imported(true)
-				.build();
-
-		transactionDetails.remove(foundDetails);
-		transactionDetails.add(importedDetails);
-	}
-
-	public void setCurrentTrxName(@NonNull final String currentTrxName)
+	public void setCurrentTrx(@NonNull final String currentTrxName)
 	{
 		this.currentTrxName = currentTrxName;
 	}
 
-	@Value
-	@Builder(toBuilder = true)
-	public static class TransactionDetails
+	public void setCurrentTrxStatus(@NonNull final TrxStatus currentTrxStatus)
 	{
-		@NonNull
-		String trxName;
+		importedTrxName2TrxStatus.put(currentTrxName, currentTrxStatus);
+	}
 
-		boolean imported;
+	@Value
+	@Builder
+	public static class TrxStatus
+	{
+		boolean ok;
+
+		@Nullable
+		String errorMessage;
+
+		public static TrxStatus ok()
+		{
+			return TrxStatus.builder()
+					.ok(true)
+					.build();
+		}
+
+		public static TrxStatus error(@NonNull final String errorMessage)
+		{
+			return TrxStatus.builder()
+					.ok(false)
+					.errorMessage(errorMessage)
+					.build();
+		}
 	}
 }

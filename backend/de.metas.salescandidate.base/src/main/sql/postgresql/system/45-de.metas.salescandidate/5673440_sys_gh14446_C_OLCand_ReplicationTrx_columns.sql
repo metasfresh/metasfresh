@@ -187,3 +187,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,710533,0,540282,614856,550255,'F',TO_TIMESTAMP('2023-01-25 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Replication trx error message',30,0,0,TO_TIMESTAMP('2023-01-25 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- Field: Auftragsdisposition(540095,de.metas.ordercandidate) -> Kandidat(540282,de.metas.ordercandidate) -> Replication trx error message
+-- Column: C_OLCand.ReplicationTrxErrorMsg
+-- 2023-01-30T10:12:39.607Z
+UPDATE AD_Field SET DisplayLogic='@IsReplicationTrxError/N@=''Y''',Updated=TO_TIMESTAMP('2023-01-30 12:12:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710533
+;
+

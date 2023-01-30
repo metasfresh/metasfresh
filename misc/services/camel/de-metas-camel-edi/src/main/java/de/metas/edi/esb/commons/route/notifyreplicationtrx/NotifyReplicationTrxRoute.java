@@ -36,7 +36,6 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
 
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -45,8 +44,6 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class NotifyReplicationTrxRoute extends RouteBuilder
 {
 	public static final String NOTIFY_REPLICATION_TRX_UPDATE = "notify-replication-trx-update";
-
-	private final static QName _EXPReplicationTrxUpdate_QNAME = new QName("", "EXP_ReplicationTrx_Update");
 
 	private static final ObjectFactory factory = Constants.JAXB_ObjectFactory;
 
@@ -59,12 +56,18 @@ public class NotifyReplicationTrxRoute extends RouteBuilder
 
 		// @formatter:off
 		from(direct(NOTIFY_REPLICATION_TRX_UPDATE))
-				.process(this::notifyReplicationTrxUpdateProcessor)
-				.marshal(dataFormat)
+				.choice()
+					.when(bodyAs(NotifyReplicationTrxRequest.class).isNull())
+						.log(LoggingLevel.INFO, "Nothing to do! NotifyReplicationTrxRequest is null!")
+					.otherwise()
+						.process(this::notifyReplicationTrxUpdateProcessor)
+						.marshal(dataFormat)
 
-				.log(LoggingLevel.INFO, "EDI: Sending EXPReplicationTrxUpdate document to metasfresh...")
+						.log(LoggingLevel.INFO, "EDI: Sending EDI_ReplicationTrx_UpdateType document to metasfresh...")
 
-				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
+					.endChoice()
+				.end();
 		// @formatter:on
 	}
 
