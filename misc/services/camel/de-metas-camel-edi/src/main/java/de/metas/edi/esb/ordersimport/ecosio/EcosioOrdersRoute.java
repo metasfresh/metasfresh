@@ -24,9 +24,7 @@ package de.metas.edi.esb.ordersimport.ecosio;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 import com.sun.istack.Nullable;
-import de.metas.common.util.Check;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
@@ -51,7 +49,8 @@ import org.springframework.stereotype.Component;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 import static de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute.NOTIFY_REPLICATION_TRX_UPDATE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -115,7 +114,7 @@ public class EcosioOrdersRoute
 
 							// add the current trx to context
 							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
-							context.setCurrentTrx(olCandXML.getTrxNameAttr());
+							context.setCurrentReplicationTrx(olCandXML.getTrxNameAttr());
 
 							olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 							olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
@@ -141,20 +140,13 @@ public class EcosioOrdersRoute
 						.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
-						.process(exchange -> {
-							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
-							context.setCurrentTrxStatus(EcosioOrdersRouteContext.TrxStatus.ok());
-						})
+						.process(EcosioOrdersRoute::setImportStatusOk)
 					.endDoTry()
 					.doCatch(Exception.class)
-						.process(exchange -> {
-							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
-							final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
-							context.setCurrentTrxStatus(EcosioOrdersRouteContext.TrxStatus.error(errorMsg));
-						})
+						.process(EcosioOrdersRoute::setImportStatusError)
 					.end()
 				.end()
-				.process(this::prepareNotifyReplicationTrxDone)
+				.process(EcosioOrdersRoute::prepareNotifyReplicationTrxDone)
 				.split(body())
 					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
 				.end();
@@ -192,51 +184,31 @@ public class EcosioOrdersRoute
 		exchange.setProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, context);
 	}
 
-	private void prepareNotifyReplicationTrxDone(@NonNull final Exchange exchange)
+	private static void prepareNotifyReplicationTrxDone(@NonNull final Exchange exchange)
 	{
 		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
 
-		final ImmutableList.Builder<NotifyReplicationTrxRequest> requestCollector = ImmutableList.builder();
+		final List<NotifyReplicationTrxRequest> trxUpdateList = context.getImportedTrxName2TrxStatus()
+				.keySet()
+				.stream()
+				.map(context::getStatusRequestFor)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
 
-		final Multimap<String, EcosioOrdersRouteContext.TrxStatus> importedTrxName2TrxStatus = context.getImportedTrxName2TrxStatus();
+		exchange.getIn().setBody(trxUpdateList);
+	}
 
-		for (final String entryTrxName : importedTrxName2TrxStatus.keySet())
-		{
-			final Collection<EcosioOrdersRouteContext.TrxStatus> valueTrxStatus = importedTrxName2TrxStatus.get(entryTrxName);
+	private static void setImportStatusOk(@NonNull final Exchange exchange)
+	{
+		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+		context.setCurrentReplicationTrxStatus(EcosioOrdersRouteContext.TrxImportStatus.ok());
+	}
 
-			//dev-note: no update is required when there is no C_OLCand imported in this batch
-			final boolean allNotOk = valueTrxStatus.stream().noneMatch(EcosioOrdersRouteContext.TrxStatus::isOk);
-			if (allNotOk)
-			{
-				continue;
-			}
-
-			final boolean allOk = valueTrxStatus.stream().allMatch(EcosioOrdersRouteContext.TrxStatus::isOk);
-			if (allOk)
-			{
-				final NotifyReplicationTrxRequest finishedRequest = NotifyReplicationTrxRequest.finished()
-						.clientValue(context.getClientValue())
-						.trxName(entryTrxName)
-						.build();
-
-				requestCollector.add(finishedRequest);
-				continue;
-			}
-
-			final StringBuilder errorMessages = new StringBuilder();
-			valueTrxStatus.stream()
-					.map(EcosioOrdersRouteContext.TrxStatus::getErrorMessage)
-					.filter(Check::isNotBlank)
-					.forEach(errorMessages::append);
-
-			final NotifyReplicationTrxRequest errorRequest = NotifyReplicationTrxRequest.error(errorMessages.toString())
-					.clientValue(context.getClientValue())
-					.trxName(entryTrxName)
-					.build();
-
-			requestCollector.add(errorRequest);
-		}
-
-		exchange.getIn().setBody(requestCollector.build());
+	private static void setImportStatusError(@NonNull final Exchange exchange)
+	{
+		final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
+		final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
+		context.setCurrentReplicationTrxStatus(EcosioOrdersRouteContext.TrxImportStatus.error(errorMsg));
 	}
 }

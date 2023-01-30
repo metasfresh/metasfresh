@@ -23,6 +23,8 @@
 package de.metas.edi.esb.ordersimport.ecosio;
 
 import com.google.common.collect.ArrayListMultimap;
+import de.metas.common.util.Check;
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,6 +33,9 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Value
 @Builder
@@ -42,40 +47,84 @@ public class EcosioOrdersRouteContext
 	@Nullable
 	@NonFinal
 	@Setter(AccessLevel.NONE)
-	String currentTrxName;
+	String currentReplicationTrxName;
 
 	@NonNull
-	ArrayListMultimap<String, TrxStatus> importedTrxName2TrxStatus = ArrayListMultimap.create();
+	ArrayListMultimap<String, TrxImportStatus> importedTrxName2TrxStatus = ArrayListMultimap.create();
 
-	public void setCurrentTrx(@NonNull final String currentTrxName)
+	public void setCurrentReplicationTrx(@NonNull final String currentTrxName)
 	{
-		this.currentTrxName = currentTrxName;
+		this.currentReplicationTrxName = currentTrxName;
 	}
 
-	public void setCurrentTrxStatus(@NonNull final TrxStatus currentTrxStatus)
+	public void setCurrentReplicationTrxStatus(@NonNull final EcosioOrdersRouteContext.TrxImportStatus currentTrxStatus)
 	{
-		importedTrxName2TrxStatus.put(currentTrxName, currentTrxStatus);
+		importedTrxName2TrxStatus.put(currentReplicationTrxName, currentTrxStatus);
+	}
+
+	@NonNull
+	public Optional<NotifyReplicationTrxRequest> getStatusRequestFor(@NonNull final String trxName)
+	{
+		final Collection<TrxImportStatus> progress = importedTrxName2TrxStatus.get(trxName);
+		if (Check.isEmpty(progress))
+		{
+			return Optional.empty();
+		}
+
+		final boolean allNotOk = progress.stream().noneMatch(EcosioOrdersRouteContext.TrxImportStatus::isOk);
+		if (allNotOk)
+		{
+			//dev-note: no update is required when there is no C_OLCand imported in this replication trx
+			return Optional.empty();
+		}
+
+		final boolean allOk = progress.stream().allMatch(EcosioOrdersRouteContext.TrxImportStatus::isOk);
+		if (allOk)
+		{
+			final NotifyReplicationTrxRequest finishedRequest = NotifyReplicationTrxRequest.finished()
+					.clientValue(clientValue)
+					.trxName(trxName)
+					.build();
+
+			return Optional.ofNullable(finishedRequest);
+
+		}
+
+		return Optional.of(NotifyReplicationTrxRequest.error(getErrorMessage(progress))
+								   .clientValue(clientValue)
+								   .trxName(trxName)
+								   .build());
+	}
+
+	@NonNull
+	private static String getErrorMessage(@NonNull final Collection<TrxImportStatus> progress)
+	{
+		return progress.stream()
+				.map(TrxImportStatus::getErrorMessage)
+				.collect(Collectors.joining("\n"));
 	}
 
 	@Value
 	@Builder
-	public static class TrxStatus
+	public static class TrxImportStatus
 	{
 		boolean ok;
 
 		@Nullable
 		String errorMessage;
 
-		public static TrxStatus ok()
+		@NonNull
+		public static EcosioOrdersRouteContext.TrxImportStatus ok()
 		{
-			return TrxStatus.builder()
+			return TrxImportStatus.builder()
 					.ok(true)
 					.build();
 		}
 
-		public static TrxStatus error(@NonNull final String errorMessage)
+		@NonNull
+		public static EcosioOrdersRouteContext.TrxImportStatus error(@NonNull final String errorMessage)
 		{
-			return TrxStatus.builder()
+			return TrxImportStatus.builder()
 					.ok(false)
 					.errorMessage(errorMessage)
 					.build();

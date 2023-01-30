@@ -77,8 +77,8 @@ public class NotifyReplicationTrxRoute extends RouteBuilder
 
 		final EDIReplicationTrxUpdateType document = factory.createEDIReplicationTrxUpdateType();
 		document.setName(request.getTrxName());
-		document.setIsReplicationTrxFinished(StringUtils.ofBoolean(request.isFinished()));
-		document.setIsError(StringUtils.ofBoolean(request.isError()));
+		document.setIsReplicationTrxFinished(StringUtils.ofBooleanNonNull(request.isFinished()));
+		document.setIsError(StringUtils.ofBooleanNonNull(request.isError()));
 
 		document.setErrorMsg(request.getErrorMsg());
 
