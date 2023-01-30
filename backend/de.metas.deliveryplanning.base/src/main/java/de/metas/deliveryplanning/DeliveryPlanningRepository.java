@@ -40,8 +40,8 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.util.ColorId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -483,7 +483,6 @@ public class DeliveryPlanningRepository
 			saveRecord(deliveryPlanningRecord);
 
 			shipperTransportationDAO.retrieveShippingPackages(deliveryInstructionId)
-					.stream()
 					.forEach(this::unlinkShippingPackage);
 
 		}
