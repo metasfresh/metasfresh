@@ -1,16 +1,17 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
+import de.metas.invoicecandidate.process.params.PlainInvoicingParams;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -42,8 +43,8 @@ public class PlainInvoicingParamsTest
 	@Test
 	public void testOverrides()
 	{
-		defaults = new PlainInvoicingParams();
-		params = new PlainInvoicingParams(defaults);
+		defaults = InvoicingParamsFactory.newPlain();
+		params = InvoicingParamsFactory.overriding(defaults);
 
 		testBoolean(params::isOnlyApprovedForInvoicing, defaults::setOnlyApprovedForInvoicing);
 		testBoolean(params::isConsolidateApprovedICs, defaults::setConsolidateApprovedICs);
@@ -55,25 +56,25 @@ public class PlainInvoicingParamsTest
 
 		testValue(
 				PlainInvoicingParams::getDateInvoiced,
-				(params, value) -> params.setDateInvoiced(value),
-				LocalDate.of(2019, Month.SEPTEMBER, 01),
-				LocalDate.of(2019, Month.SEPTEMBER, 02));
+				PlainInvoicingParams::setDateInvoiced,
+				LocalDate.parse("2019-09-01"),
+				LocalDate.parse("2019-09-02"));
 
 		testValue(
 				PlainInvoicingParams::getDateAcct,
-				(params, value) -> params.setDateAcct(value),
-				LocalDate.of(2019, Month.SEPTEMBER, 01),
-				LocalDate.of(2019, Month.SEPTEMBER, 02));
+				PlainInvoicingParams::setDateAcct,
+				LocalDate.parse("2019-09-01"),
+				LocalDate.parse("2019-09-02"));
 
 		testValue(
 				PlainInvoicingParams::getPOReference,
-				(params, value) -> params.setPOReference(value),
+				PlainInvoicingParams::setPOReference,
 				"poReference1",
 				"poReference2");
 
 		testValue(
 				PlainInvoicingParams::getCheck_NetAmtToInvoice,
-				(params, value) -> params.setCheck_NetAmtToInvoice(value),
+				PlainInvoicingParams::setCheck_NetAmtToInvoice,
 				new BigDecimal("123.45"),
 				new BigDecimal("123.46"));
 	}

@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.api.impl;
+package de.metas.invoicecandidate.process.params;
 
 /*
  * #%L
@@ -22,24 +22,21 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import de.metas.JsonObjectMapperHolder;
-import de.metas.forex.ForexContractRef;
-import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.forex.process.utils.ForexContractParameters;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
  * Invoicing Enqueueing & generating parameters (wrapped from {@link IParams}).
  */
-public class InvoicingParams implements IInvoicingParams
+class InvoicingParams implements IInvoicingParams
 {
 	private final IParams params;
 
-	public InvoicingParams(@NonNull final IParams params)
+	InvoicingParams(@NonNull final IParams params)
 	{
 		this.params = params;
 	}
@@ -113,10 +110,10 @@ public class InvoicingParams implements IInvoicingParams
 		return params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/);
 	}
 
-	@Nullable
-	public ForexContractRef getForexContractRef()
+	@Override
+	public ForexContractParameters getForexContractParameters()
 	{
-		return JsonObjectMapperHolder.fromJson(params.getParameterAsString(PARA_ForexContractRef), ForexContractRef.class);
+		return ForexContractParameters.ofParams(params);
 	}
 
 	/**

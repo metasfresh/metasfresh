@@ -3,10 +3,11 @@ package de.metas.rest_api.invoicecandidates.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
 import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
@@ -67,7 +68,7 @@ final class InvoiceJsonConverters
 
 	public static PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		final PlainInvoicingParams invoicingParams = InvoicingParamsFactory.newPlain();
 		invoicingParams.setDateAcct(request.getDateAcct());
 		invoicingParams.setDateInvoiced(request.getDateInvoiced());
 		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());

@@ -12,8 +12,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.IInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
+import de.metas.invoicecandidate.process.params.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -163,7 +164,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	@NonNull
 	private IInvoicingParams getIInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		final PlainInvoicingParams invoicingParams = InvoicingParamsFactory.newPlain();
 		invoicingParams.setUpdateLocationAndContactForInvoice(true);
 		invoicingParams.setIgnoreInvoiceSchedule(false);
 		invoicingParams.setSupplementMissingPaymentTermIds(true);

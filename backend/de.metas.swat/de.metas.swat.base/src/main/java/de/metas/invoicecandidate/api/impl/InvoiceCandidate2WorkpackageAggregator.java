@@ -32,7 +32,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.invoicecandidate.api.IAggregationBL;
-import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.process.params.IInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;

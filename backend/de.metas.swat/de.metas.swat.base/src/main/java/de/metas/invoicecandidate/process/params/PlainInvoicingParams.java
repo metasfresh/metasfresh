@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.api.impl;
+package de.metas.invoicecandidate.process.params;
 
 /*
  * #%L
@@ -22,8 +22,7 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import de.metas.forex.ForexContractRef;
-import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.forex.process.utils.ForexContractParameters;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -51,16 +50,16 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean updateLocationAndContactForInvoice = false;
 	private boolean completeInvoices = true; // default=true for backwards-compatibility
 
-	public PlainInvoicingParams()
+	PlainInvoicingParams()
 	{
-		this(null);
+		this.defaults = null;
 	}
 
 	/**
 	 * @param defaults defaults to fallback in case a parameter is not set on this
 	 *                 level
 	 */
-	public PlainInvoicingParams(@Nullable final IInvoicingParams defaults)
+	PlainInvoicingParams(@Nullable final IInvoicingParams defaults)
 	{
 		this.defaults = defaults;
 	}
@@ -307,9 +306,9 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return completeInvoices;
 	}
 
-	@Nullable
-	public ForexContractRef getForexContractRef()
+	@Override
+	public ForexContractParameters getForexContractParameters()
 	{
-		return defaults != null ? defaults.getForexContractRef() : null;
+		return defaults != null ? defaults.getForexContractParameters() : ForexContractParameters.builder().build();
 	}
 }

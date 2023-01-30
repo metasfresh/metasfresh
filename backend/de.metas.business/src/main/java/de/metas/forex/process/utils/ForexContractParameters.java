@@ -9,9 +9,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.api.IParams;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Builder
@@ -31,15 +34,36 @@ public class ForexContractParameters
 	@Nullable private CurrencyId toCurrencyId;
 	@Nullable private BigDecimal currencyRate;
 
+	public static ForexContractParameters ofParams(@NonNull final IParams params)
+	{
+		return builder()
+				.isFEC(params.getParameterAsBool(PARAM_IsFEC))
+				.orderCurrencyId(params.getParameterAsId(PARAM_FEC_Order_Currency_ID, CurrencyId.class))
+				.forexContractId(params.getParameterAsId(PARAM_C_ForeignExchangeContract_ID, ForexContractId.class))
+				.fromCurrencyId(params.getParameterAsId(PARAM_FEC_From_Currency_ID, CurrencyId.class))
+				.toCurrencyId(params.getParameterAsId(PARAM_FEC_To_Currency_ID, CurrencyId.class))
+				.currencyRate(params.getParameterAsBigDecimal(PARAM_FEC_CurrencyRate))
+				.build();
+	}
+
+	public Map<String, Object> toMap()
+	{
+		final HashMap<String, Object> params = new HashMap<>();
+		params.put(PARAM_IsFEC, isFEC);
+		params.put(PARAM_FEC_Order_Currency_ID, orderCurrencyId);
+		params.put(PARAM_C_ForeignExchangeContract_ID, forexContractId);
+		params.put(PARAM_FEC_From_Currency_ID, fromCurrencyId);
+		params.put(PARAM_FEC_To_Currency_ID, toCurrencyId);
+		params.put(PARAM_FEC_CurrencyRate, currencyRate);
+
+		return params;
+	}
+
 	@Nullable
 	public ForexContractRef getForexContractRef()
 	{
 		if (isFEC)
 		{
-			if (forexContractId == null && currencyRate == null)
-			{
-				throw new FillMandatoryException(PARAM_C_ForeignExchangeContract_ID, PARAM_FEC_CurrencyRate);
-			}
 			if (orderCurrencyId == null)
 			{
 				throw new FillMandatoryException(PARAM_FEC_Order_Currency_ID);
@@ -51,6 +75,10 @@ public class ForexContractParameters
 			if (toCurrencyId == null)
 			{
 				throw new FillMandatoryException(PARAM_FEC_To_Currency_ID);
+			}
+			if (currencyRate == null || currencyRate.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_FEC_CurrencyRate);
 			}
 
 			return ForexContractRef.builder()

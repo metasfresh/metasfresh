@@ -32,6 +32,7 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.IInvoicingParams;
 import de.metas.process.PInstanceId;
 
 /**

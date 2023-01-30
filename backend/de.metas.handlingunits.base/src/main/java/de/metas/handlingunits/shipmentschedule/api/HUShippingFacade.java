@@ -17,7 +17,8 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
+import de.metas.invoicecandidate.process.params.PlainInvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
@@ -232,7 +233,7 @@ public class HUShippingFacade
 					.setParameter("shipments", shipments);
 		}
 
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		final PlainInvoicingParams invoicingParams = InvoicingParamsFactory.newPlain();
 
 		final boolean adhereToInvoiceSchedule = invoiceMode == BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS;
 		invoicingParams.setIgnoreInvoiceSchedule(!adhereToInvoiceSchedule);

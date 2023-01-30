@@ -25,45 +25,95 @@ package de.metas.invoicecandidate.process;
  * #L%
  */
 
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
+import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractService;
+import de.metas.forex.process.utils.ForexContractParameters;
+import de.metas.forex.process.utils.ForexContracts;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.IInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
+import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.ProcessPreconditionsResolution.ProcessCaptionMapper;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess implements IProcessPrecondition
+public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
+		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
+
 	//
 	// Services
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
+	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
 
+	//
+	// FEC Parameters
+	@Param(parameterName = ForexContractParameters.PARAM_IsFEC)
+	private boolean p_IsForexContract;
+
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_Order_Currency_ID)
+	private CurrencyId p_FEC_Order_Currency_ID;
+
+	@Param(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID)
+	private ForexContractId p_forexContractId;
+
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_From_Currency_ID)
+	private CurrencyId p_FEC_From_Currency_ID;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_To_Currency_ID)
+	private CurrencyId p_FEC_To_Currency_ID;
+
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_CurrencyRate)
+	private BigDecimal p_FEC_CurrencyRate;
+
+	private final Supplier<ForexContracts> forexContractsSupplier = Suppliers.memoize(this::retrieveContracts);
+
+	//
 	//
 	private BigDecimal totalNetAmtToInvoiceChecksum;
 
@@ -81,6 +131,84 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		return ProcessPreconditionsResolution.accept()
 				.withCaptionMapper(processCaptionMapper(selectionFilter));
+	}
+
+	@Nullable
+	private ForexContracts getContracts()
+	{
+		return forexContractsSupplier.get();
+	}
+
+	@Nullable
+	private ForexContracts retrieveContracts()
+	{
+		final OrderId singleOrderId = getSingleOrderId();
+		if (singleOrderId == null)
+		{
+			return null;
+		}
+
+		return ForexContracts.builder()
+				.orderCurrencyId(orderBL.getCurrencyId(singleOrderId))
+				.forexContracts(forexContractService.getContractsByOrderId(singleOrderId))
+				.build();
+	}
+
+	@Nullable
+	private OrderId getSingleOrderId()
+	{
+		final ImmutableList<OrderId> firstOrderIds = createICQueryBuilder()
+				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
+				.create()
+				.setLimit(QueryLimit.TWO)
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, OrderId.class);
+		return firstOrderIds.size() == 1 ? firstOrderIds.get(0) : null;
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		return getForexContractParameters().getParameterDefaultValue(parameter.getColumnName(), getContracts());
+	}
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		updateForexContractParameters(params -> params.updateOnParameterChanged(parameterName, getContracts()));
+	}
+
+	private ForexContractParameters getForexContractParameters()
+	{
+		return ForexContractParameters.builder()
+				.isFEC(p_IsForexContract)
+				.orderCurrencyId(p_FEC_Order_Currency_ID)
+				.forexContractId(p_forexContractId)
+				.fromCurrencyId(p_FEC_From_Currency_ID)
+				.toCurrencyId(p_FEC_To_Currency_ID)
+				.currencyRate(p_FEC_CurrencyRate)
+				.build();
+	}
+
+	private void updateForexContractParameters(@NonNull final Consumer<ForexContractParameters> updater)
+	{
+		final ForexContractParameters params = getForexContractParameters();
+		updater.accept(params);
+		this.p_IsForexContract = params.isFEC();
+		this.p_FEC_Order_Currency_ID = params.getOrderCurrencyId();
+		this.p_forexContractId = params.getForexContractId();
+		this.p_FEC_From_Currency_ID = params.getFromCurrencyId();
+		this.p_FEC_To_Currency_ID = params.getToCurrencyId();
+		this.p_FEC_CurrencyRate = params.getCurrencyRate();
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	public LookupValuesList getAvailableForexContracts()
+	{
+		final ForexContracts contracts = getContracts();
+		return contracts != null
+				? forexContractLookup.findByIdsOrdered(contracts.getForexContractIds())
+				: LookupValuesList.EMPTY;
 	}
 
 	@Override
@@ -140,7 +268,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		}
 	}
 
-	private InvoicingParams getInvoicingParams() {return new InvoicingParams(getParameterAsIParams());}
+	private IInvoicingParams getInvoicingParams() {return InvoicingParamsFactory.wrap(getParameterAsIParams());}
 
 	@Override
 	protected String doIt()
@@ -206,10 +334,14 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 			}
 		}
 
-		return createICQueryBuilder(userSelectionFilter);
+		final IInvoicingParams invoicingParams = getInvoicingParams();
+
+		return createICQueryBuilder(userSelectionFilter, invoicingParams.isOnlyApprovedForInvoicing());
 	}
 
-	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder(final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter)
+	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder(
+			final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter,
+			final boolean onlyApprovedForInvoicing)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
@@ -229,8 +361,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		//
 		// Consider only approved invoices (if we were asked to do so)
-		final InvoicingParams invoicingParams = getInvoicingParams();
-		if (invoicingParams.isOnlyApprovedForInvoicing())
+		if (onlyApprovedForInvoicing)
 		{
 			queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing, true);
 		}
@@ -247,7 +378,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 	private IQuery<I_C_Invoice_Candidate> prepareNetAmountsToInvoiceForSelectionQuery(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
-		return createICQueryBuilder(selectionFilter)
+		return createICQueryBuilder(selectionFilter, false)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
 	}

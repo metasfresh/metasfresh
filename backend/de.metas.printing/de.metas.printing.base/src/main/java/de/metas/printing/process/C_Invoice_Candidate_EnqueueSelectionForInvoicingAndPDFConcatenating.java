@@ -32,8 +32,9 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.IInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParamsFactory;
 import de.metas.organization.OrgId;
 import de.metas.printing.async.spi.impl.InvoiceEnqueueingWorkpackageProcessor;
 import de.metas.process.JavaProcess;
@@ -95,7 +96,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
-	private InvoicingParams getInvoicingParams() {return new InvoicingParams(getParameterAsIParams());}
+	private IInvoicingParams getInvoicingParams() {return InvoicingParamsFactory.wrap(getParameterAsIParams());}
 
 	@Override
 	protected String doIt()

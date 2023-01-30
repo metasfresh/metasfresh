@@ -29,6 +29,7 @@ import java.util.Properties;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.IInvoicingParams;
 
 /**
  * Generates from {@link I_C_Invoice}s from {@link I_C_Invoice_Candidate}s

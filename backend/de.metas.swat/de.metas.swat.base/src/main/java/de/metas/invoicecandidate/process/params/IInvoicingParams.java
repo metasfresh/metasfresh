@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.api;
+package de.metas.invoicecandidate.process.params;
 
 /*
  * #%L
@@ -22,16 +22,14 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import de.metas.JsonObjectMapperHolder;
 import de.metas.forex.ForexContractRef;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
+import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -51,8 +49,6 @@ public interface IInvoicingParams
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
-
-	String PARA_ForexContractRef = "ForexContractRef";
 
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
@@ -126,42 +122,40 @@ public interface IInvoicingParams
 	 */
 	boolean isCompleteInvoices();
 
+	ForexContractParameters getForexContractParameters();
+
 	@Nullable
-	ForexContractRef getForexContractRef();
+	default ForexContractRef getForexContractRef() {return getForexContractParameters().getForexContractRef();}
 
 	default Map<String, ?> asMap()
 	{
-		final Builder<String, Object> result = ImmutableMap.builder();
+		final HashMap<String, Object> map = new HashMap<>();
 
 		if (getCheck_NetAmtToInvoice() != null)
 		{
-			result.put(InvoicingParams.PARA_Check_NetAmtToInvoice, getCheck_NetAmtToInvoice()); // during enqueuing this result might be overwritten by a specific value
+			map.put(InvoicingParams.PARA_Check_NetAmtToInvoice, getCheck_NetAmtToInvoice()); // during enqueuing this map might be overwritten by a specific value
 		}
 		if (getDateAcct() != null)
 		{
-			result.put(InvoicingParams.PARA_DateAcct, getDateAcct());
+			map.put(InvoicingParams.PARA_DateAcct, getDateAcct());
 		}
 		if (getDateInvoiced() != null)
 		{
-			result.put(InvoicingParams.PARA_DateInvoiced, getDateInvoiced());
+			map.put(InvoicingParams.PARA_DateInvoiced, getDateInvoiced());
 		}
 		if (getPOReference() != null)
 		{
-			result.put(InvoicingParams.PARA_POReference, getPOReference());
+			map.put(InvoicingParams.PARA_POReference, getPOReference());
 		}
 
-		result.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
-		result.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
-		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
-		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
-		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
-		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
-		final String forexContractRefAsJson = JsonObjectMapperHolder.toJson(getForexContractRef());
-		if (forexContractRefAsJson != null)
-		{
-			result.put(InvoicingParams.PARA_ForexContractRef, forexContractRefAsJson);
-		}
+		map.put(InvoicingParams.PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());
+		map.put(InvoicingParams.PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
+		map.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
+		map.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
+		map.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		map.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
+		map.putAll(getForexContractParameters().toMap());
 
-		return result.build();
+		return map;
 	}
 }
