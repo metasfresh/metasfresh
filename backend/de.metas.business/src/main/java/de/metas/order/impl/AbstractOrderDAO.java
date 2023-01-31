@@ -433,13 +433,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	@Override
 	public void allocatePOLineToSOLine(
-			@NonNull final OrderLineId purchaseOrderLineId,
-			@NonNull final OrderLineId salesOrderLineId)
+			@NonNull final OrderAndLineId purchaseOrderLineId,
+			@NonNull final OrderAndLineId salesOrderLineId)
 	{
 		final I_C_PO_OrderLine_Alloc poLineAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
-		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getRepoId());
-		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getRepoId());
-
+		poLineAllocation.setC_OrderPO_ID(purchaseOrderLineId.getOrderRepoId());
+		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getOrderLineRepoId());
+		poLineAllocation.setC_OrderSO_ID(salesOrderLineId.getOrderRepoId());
+		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getOrderLineRepoId());
 		InterfaceWrapperHelper.save(poLineAllocation);
 	}
 
