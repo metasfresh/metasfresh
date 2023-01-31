@@ -101,6 +101,7 @@ public class EcosioOrdersRouteContext
 	{
 		return progress.stream()
 				.map(TrxImportStatus::getErrorMessage)
+				.filter(Check::isNotBlank)
 				.collect(Collectors.joining("\n"));
 	}
 
