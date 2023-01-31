@@ -417,6 +417,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Delivery Status.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryStatus_Color_ID (int DeliveryStatus_Color_ID);
+
+	/**
+	 * Get Delivery Status.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDeliveryStatus_Color_ID();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_DeliveryStatus_Color_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "DeliveryStatus_Color_ID", null);
+	String COLUMNNAME_DeliveryStatus_Color_ID = "DeliveryStatus_Color_ID";
+
+	/**
 	 * Set Delivery Time.
 	 *
 	 * <br>Type: String
@@ -463,8 +484,8 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_Grade = "Grade";
 
 	/**
-	 * Set IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Set Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -473,8 +494,8 @@ public interface I_M_Delivery_Planning
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Get Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -596,22 +617,49 @@ public interface I_M_Delivery_Planning
 	 * Set Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Delivery_Planning_Type (@Nullable java.lang.String M_Delivery_Planning_Type);
+	void setM_Delivery_Planning_Type (java.lang.String M_Delivery_Planning_Type);
 
 	/**
 	 * Get Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getM_Delivery_Planning_Type();
+	java.lang.String getM_Delivery_Planning_Type();
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_Delivery_Planning_Type = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Delivery_Planning_Type", null);
 	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
+
+	/**
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_InOut_ID (int M_InOut_ID);
+
+	/**
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_InOut_ID();
+
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
+
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
 	 * Set Means of Transportation.

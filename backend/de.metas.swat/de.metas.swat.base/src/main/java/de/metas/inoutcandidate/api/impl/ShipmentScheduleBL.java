@@ -7,20 +7,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
-import de.metas.deliveryplanning.DeliveryPlanningType;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.incoterms.IncotermsId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
@@ -38,8 +33,6 @@ import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -47,15 +40,12 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.shipping.ShipperId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -101,7 +91,6 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -192,8 +181,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
@@ -981,83 +968,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		shipmentSchedule.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 
 		shipmentSchedulePA.save(shipmentSchedule);
-	}
-
-	@Override
-	public DeliveryPlanningCreateRequest createDeliveryPlanningRequest(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
-	{
-		final OrderId orderId = OrderId.ofRepoIdOrNull(shipmentScheduleRecord.getC_Order_ID());
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentScheduleRecord.getC_OrderLine_ID());
-
-		final I_C_UOM uomOfProduct = getUomOfProduct(shipmentScheduleRecord);
-
-		final Quantity qtyOrdered = Quantity.of(shipmentScheduleRecord.getQtyOrdered(), uomOfProduct);
-		final OrgId orgId = OrgId.ofRepoId(shipmentScheduleRecord.getAD_Org_ID());
-
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentScheduleRecord.getM_AttributeSetInstance_ID());
-
-		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
-		final CountryId countryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
-		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
-
-		final Timestamp deliveryDate_effective = CoalesceUtil.coalesce(shipmentScheduleRecord.getDeliveryDate_Override(), shipmentScheduleRecord.getDeliveryDate());
-
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID(), shipmentScheduleRecord.getC_BPartner_Location_ID());
-
-		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
-				.orgId(orgId)
-				.clientId(ClientId.ofRepoId(shipmentScheduleRecord.getAD_Client_ID()))
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
-				.deliveryPlanningType(DeliveryPlanningType.Outgoing)
-				.orderId(orderId)
-				.orderLineId(orderLineId)
-				.warehouseId(WarehouseId.ofRepoId(shipmentScheduleRecord.getM_Warehouse_ID()))
-				.productId(ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID()))
-				.partnerId(BPartnerId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID()))
-				.bPartnerLocationId(
-						bPartnerLocationId)
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(shipmentScheduleRecord.getM_SectionCode_ID()))
-				.qtyOrdered(qtyOrdered)
-				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
-				.actualLoadedQty(Quantity.zero(uomOfProduct))
-				.actualDeliveredQty(Quantity.zero(uomOfProduct))
-				.plannedLoadedQty(Quantity.zero(uomOfProduct))
-				.plannedDischargeQty(Quantity.zero(uomOfProduct))
-				.actualDischargeQty(Quantity.zero(uomOfProduct))
-				.uom(uomOfProduct)
-				.plannedDeliveryDate(TimeUtil.asInstant(deliveryDate_effective))
-				.batch(huBatchNo)
-				.originCountryId(countryId);
-
-		if (orderId != null)
-		{
-			final I_C_Order order = orderDAO.getById(orderId);
-
-			requestBuilder.isB2B(order.isDropShip())
-					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
-					.incotermLocation(order.getIncotermLocation());
-
-			final BPartnerLocationAndCaptureId bpartnerLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureId();
-			final CountryId destinationCountryId = bPartnerBL.getCountryId(bpartnerLocationId);
-
-			requestBuilder.destinationCountryId(destinationCountryId);
-		}
-
-		if (orderLineId != null)
-		{
-			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-
-			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
-
-			if (deliveryDate_effective == null)
-			{
-				requestBuilder.plannedDeliveryDate(TimeUtil.asInstant(orderLine.getDatePromised()));
-			}
-
-			requestBuilder.shipperId(ShipperId.ofRepoIdOrNull(orderLine.getM_Shipper_ID()));
-		}
-
-		return requestBuilder.build();
 	}
 
 	@Override

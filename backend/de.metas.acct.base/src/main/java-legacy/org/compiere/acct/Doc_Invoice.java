@@ -37,7 +37,6 @@ import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.money.CurrencyId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,7 +59,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +101,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private boolean m_allLinesItem = true;
 	private Optional<InvoiceAcct> _invoiceAccounts = null; // lazy
 
-	private final HashMap<CurrencyId, CurrencyConversionContext> invoiceCurrencyConversionCtxByAcctCurrencyId = new HashMap<>();
+	private CurrencyConversionContext _invoiceCurrencyConversionCtx = null;
 
 	public Doc_Invoice(final AcctDocContext ctx)
 	{
@@ -860,15 +858,15 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	}
 
 	@Override
-	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
 	{
-		return invoiceCurrencyConversionCtxByAcctCurrencyId.computeIfAbsent(acctSchema.getCurrencyId(), this::createCurrencyConversionCtx);
-	}
-
-	private CurrencyConversionContext createCurrencyConversionCtx(final CurrencyId acctCurrencyId)
-	{
-		final I_C_Invoice invoice = getModel(I_C_Invoice.class);
-		return invoiceBL.getCurrencyConversionCtx(invoice, acctCurrencyId);
+		CurrencyConversionContext invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx;
+		if (invoiceCurrencyConversionCtx == null)
+		{
+			final I_C_Invoice invoice = getModel(I_C_Invoice.class);
+			invoiceCurrencyConversionCtx = this._invoiceCurrencyConversionCtx = invoiceBL.getCurrencyConversionCtx(invoice);
+		}
+		return invoiceCurrencyConversionCtx;
 	}
 
 	@Override

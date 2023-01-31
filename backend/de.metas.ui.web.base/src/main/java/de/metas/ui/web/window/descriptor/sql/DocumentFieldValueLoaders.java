@@ -10,6 +10,7 @@ import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
 import de.metas.util.NumberUtils;
@@ -562,8 +563,8 @@ public final class DocumentFieldValueLoaders
 				final String adLanguage_NOTUSED,
 				final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
-			final int adColorId = rs.getInt(sqlColumnName);
-			if (adColorId <= 0)
+			final ColorId adColorId = ColorId.ofRepoIdOrNull(rs.getInt(sqlColumnName));
+			if (adColorId == null)
 			{
 				return null;
 			}

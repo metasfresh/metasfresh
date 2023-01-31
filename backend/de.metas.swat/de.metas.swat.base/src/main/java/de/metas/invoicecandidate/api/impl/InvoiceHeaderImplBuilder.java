@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -18,7 +19,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -87,7 +87,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int M_SectionCode_ID;
 
-	@Nullable private BigDecimal currencyRate;
+	@Nullable private ForexContractRef forexContractRef;
 
 	InvoiceHeaderImplBuilder() {}
 
@@ -103,7 +103,7 @@ public class InvoiceHeaderImplBuilder
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
-		invoiceHeader.setCurrencyRate(currencyRate);
+		invoiceHeader.setForexContractRef(forexContractRef);
 		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
 
 		// Tax
@@ -540,8 +540,8 @@ public class InvoiceHeaderImplBuilder
 		M_SectionCode_ID = checkOverrideID("M_SectionCode_ID", M_SectionCode_ID, sectionCodeId);
 	}
 
-	public void setCurrencyRate(@Nullable final BigDecimal currencyRate)
+	public void setForexContractRef(@Nullable final ForexContractRef forexContractRef)
 	{
-		this.currencyRate = currencyRate;
+		this.forexContractRef = forexContractRef;
 	}
 }

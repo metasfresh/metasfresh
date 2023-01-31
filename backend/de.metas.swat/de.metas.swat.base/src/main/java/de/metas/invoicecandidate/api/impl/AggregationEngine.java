@@ -21,6 +21,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
@@ -71,7 +72,6 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -98,7 +98,7 @@ public final class AggregationEngine
 
 	//
 	// services
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
@@ -121,7 +121,7 @@ public final class AggregationEngine
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
-	@Nullable private final BigDecimal currencyRate;
+	@Nullable private final ForexContractRef forexContractRef;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -136,7 +136,7 @@ public final class AggregationEngine
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
-			@Nullable final BigDecimal currencyRate)
+			@Nullable final ForexContractRef forexContractRef)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 
@@ -147,7 +147,7 @@ public final class AggregationEngine
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
 		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
-		this.currencyRate = currencyRate;
+		this.forexContractRef = forexContractRef;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
@@ -374,7 +374,7 @@ public final class AggregationEngine
 	private InvoiceHeaderAndLineAggregators createInvoiceHeaderAndLineAggregators(@NonNull final AggregationKey headerAggregationKey)
 	{
 		final InvoiceHeaderAndLineAggregators invoiceHeaderAndLineAggregators = new InvoiceHeaderAndLineAggregators(headerAggregationKey);
-		invoiceHeaderAndLineAggregators.getInvoiceHeader().setCurrencyRate(currencyRate);
+		invoiceHeaderAndLineAggregators.getInvoiceHeader().setForexContractRef(forexContractRef);
 		return invoiceHeaderAndLineAggregators;
 	}
 

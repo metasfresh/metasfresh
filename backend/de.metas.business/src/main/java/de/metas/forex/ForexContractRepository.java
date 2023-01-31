@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ForeignExchangeContract;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @Repository
@@ -38,26 +40,46 @@ public class ForexContractRepository
 		return InterfaceWrapperHelper.load(id, I_C_ForeignExchangeContract.class);
 	}
 
+	public ImmutableList<ForexContract> getByIds(@NonNull Set<ForexContractId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		final List<I_C_ForeignExchangeContract> records = InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_ForeignExchangeContract.class);
+		return records.stream()
+				.map(ForexContractRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public static ForexContract fromRecord(final I_C_ForeignExchangeContract record)
 	{
-		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-
-		return ForexContract.builder()
-				.id(extractId(record))
-				.documentNo(record.getDocumentNo())
-				.created(record.getCreated().toInstant())
-				.createdBy(UserId.ofRepoId(record.getCreatedBy()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.docStatus(DocStatus.ofCode(record.getDocStatus()))
-				.validityDate(record.getFEC_ValidityDate().toInstant())
-				.maturityDate(record.getFEC_MaturityDate().toInstant())
-				.currencyId(currencyId)
-				.toCurrencyId(CurrencyId.ofRepoId(record.getTo_Currency_ID()))
-				.currencyRate(record.getCurrencyRate())
-				.amount(Money.of(record.getFEC_Amount(), currencyId))
-				.allocatedAmount(Money.of(record.getFEC_Amount_Alloc(), currencyId))
-				.openAmount(Money.of(record.getFEC_Amount_Open(), currencyId))
-				.build();
+		try
+		{
+			final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+			return ForexContract.builder()
+					.id(extractId(record))
+					.documentNo(record.getDocumentNo())
+					.created(record.getCreated().toInstant())
+					.createdBy(UserId.ofRepoId(record.getCreatedBy()))
+					.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+					.docStatus(DocStatus.ofCode(record.getDocStatus()))
+					.validityDate(record.getFEC_ValidityDate().toInstant())
+					.maturityDate(record.getFEC_MaturityDate().toInstant())
+					.currencyId(currencyId)
+					.toCurrencyId(CurrencyId.ofRepoId(record.getTo_Currency_ID()))
+					.currencyRate(record.getCurrencyRate())
+					.amount(Money.of(record.getFEC_Amount(), currencyId))
+					.allocatedAmount(Money.of(record.getFEC_Amount_Alloc(), currencyId))
+					.openAmount(Money.of(record.getFEC_Amount_Open(), currencyId))
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("ID", record.getC_ForeignExchangeContract_ID())
+					.appendParametersToMessage();
+		}
 	}
 
 	@NonNull

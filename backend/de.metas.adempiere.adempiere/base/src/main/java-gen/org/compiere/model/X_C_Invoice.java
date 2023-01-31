@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -498678351L;
+	private static final long serialVersionUID = -2677555L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -381,6 +381,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_ForeignExchangeContract getC_ForeignExchangeContract()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ForeignExchangeContract_ID, org.compiere.model.I_C_ForeignExchangeContract.class);
+	}
+
+	@Override
+	public void setC_ForeignExchangeContract(final org.compiere.model.I_C_ForeignExchangeContract C_ForeignExchangeContract)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ForeignExchangeContract_ID, org.compiere.model.I_C_ForeignExchangeContract.class, C_ForeignExchangeContract);
+	}
+
+	@Override
+	public void setC_ForeignExchangeContract_ID (final int C_ForeignExchangeContract_ID)
+	{
+		if (C_ForeignExchangeContract_ID < 1) 
+			set_Value (COLUMNNAME_C_ForeignExchangeContract_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ForeignExchangeContract_ID, C_ForeignExchangeContract_ID);
+	}
+
+	@Override
+	public int getC_ForeignExchangeContract_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_ForeignExchangeContract_ID);
+	}
+
+	@Override
 	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
 	{
 		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
@@ -586,19 +613,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getCreditMemoReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditMemoReason);
-	}
-
-	@Override
-	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
-	{
-		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
-	}
-
-	@Override
-	public BigDecimal getCurrencyRate() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -833,6 +847,64 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setFEC_CurrencyRate (final @Nullable BigDecimal FEC_CurrencyRate)
+	{
+		set_Value (COLUMNNAME_FEC_CurrencyRate, FEC_CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getFEC_CurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FEC_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setFEC_From_Currency_ID (final int FEC_From_Currency_ID)
+	{
+		if (FEC_From_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_From_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_From_Currency_ID, FEC_From_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_From_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_From_Currency_ID);
+	}
+
+	@Override
+	public void setFEC_Order_Currency_ID (final int FEC_Order_Currency_ID)
+	{
+		if (FEC_Order_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_Order_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_Order_Currency_ID, FEC_Order_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_Order_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_Order_Currency_ID);
+	}
+
+	@Override
+	public void setFEC_To_Currency_ID (final int FEC_To_Currency_ID)
+	{
+		if (FEC_To_Currency_ID < 1) 
+			set_Value (COLUMNNAME_FEC_To_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_FEC_To_Currency_ID, FEC_To_Currency_ID);
+	}
+
+	@Override
+	public int getFEC_To_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FEC_To_Currency_ID);
+	}
+
+	@Override
 	public void setGenerateTo (final @Nullable java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
@@ -928,6 +1000,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isDiscountPrinted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDiscountPrinted);
+	}
+
+	@Override
+	public void setIsFEC (final boolean IsFEC)
+	{
+		set_Value (COLUMNNAME_IsFEC, IsFEC);
+	}
+
+	@Override
+	public boolean isFEC() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFEC);
 	}
 
 	@Override

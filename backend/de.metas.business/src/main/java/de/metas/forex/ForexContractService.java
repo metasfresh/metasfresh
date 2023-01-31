@@ -44,6 +44,12 @@ public class ForexContractService
 		return forexContractRepository.getById(id);
 	}
 
+	public ImmutableList<ForexContract> getContractsByOrderId(@NonNull final OrderId orderId)
+	{
+		final ImmutableSet<ForexContractId> forexContractIds = forexContractAllocationRepository.getContractIdsByOrderIds(ImmutableSet.of(orderId));
+		return forexContractRepository.getByIds(forexContractIds);
+	}
+
 	public ImmutableSet<ForexContractId> getContractIdsByOrderId(@NonNull final OrderId orderId)
 	{
 		return forexContractAllocationRepository.getContractIdsByOrderIds(ImmutableSet.of(orderId));

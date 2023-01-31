@@ -976,6 +976,87 @@ public interface I_M_InOut
 	String COLUMNNAME_ExternalResourceURL = "ExternalResourceURL";
 
 	/**
+	 * Set FEC Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_CurrencyRate (@Nullable BigDecimal FEC_CurrencyRate);
+
+	/**
+	 * Get FEC Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getFEC_CurrencyRate();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_FEC_CurrencyRate = new ModelColumn<>(I_M_InOut.class, "FEC_CurrencyRate", null);
+	String COLUMNNAME_FEC_CurrencyRate = "FEC_CurrencyRate";
+
+	/**
+	 * Set FEC Currency From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_From_Currency_ID (int FEC_From_Currency_ID);
+
+	/**
+	 * Get FEC Currency From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_From_Currency_ID();
+
+	String COLUMNNAME_FEC_From_Currency_ID = "FEC_From_Currency_ID";
+
+	/**
+	 * Set Order Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_Order_Currency_ID (int FEC_Order_Currency_ID);
+
+	/**
+	 * Get Order Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_Order_Currency_ID();
+
+	String COLUMNNAME_FEC_Order_Currency_ID = "FEC_Order_Currency_ID";
+
+	/**
+	 * Set FEC Currency To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_To_Currency_ID (int FEC_To_Currency_ID);
+
+	/**
+	 * Get FEC Currency To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_To_Currency_ID();
+
+	String COLUMNNAME_FEC_To_Currency_ID = "FEC_To_Currency_ID";
+
+	/**
 	 * Set Freight Amount.
 	 * Freight Amount
 	 *
@@ -1179,6 +1260,27 @@ public interface I_M_InOut
 	String COLUMNNAME_IsExportedToCustomsInvoice = "IsExportedToCustomsInvoice";
 
 	/**
+	 * Set FEC.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFEC (boolean IsFEC);
+
+	/**
+	 * Get FEC.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFEC();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_IsFEC = new ModelColumn<>(I_M_InOut.class, "IsFEC", null);
+	String COLUMNNAME_IsFEC = "IsFEC";
+
+	/**
 	 * Set Fill up Spare Parts.
 	 *
 	 * <br>Type: YesNo
@@ -1330,6 +1432,31 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_IsUseBPartnerAddress = new ModelColumn<>(I_M_InOut.class, "IsUseBPartnerAddress", null);
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+
+	/**
+	 * Set Delivery Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
+
+	/**
+	 * Get Delivery Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Delivery_Planning_ID();
+
+	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
+
+	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_InOut.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
+	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
 	 * Set Shipment/ Receipt.

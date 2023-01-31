@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1856430891L;
+	private static final long serialVersionUID = -724891020L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -302,6 +302,21 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setDeliveryStatus_Color_ID (final int DeliveryStatus_Color_ID)
+	{
+		if (DeliveryStatus_Color_ID < 1) 
+			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, null);
+		else 
+			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, DeliveryStatus_Color_ID);
+	}
+
+	@Override
+	public int getDeliveryStatus_Color_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DeliveryStatus_Color_ID);
+	}
+
+	@Override
 	public void setDeliveryTime (final @Nullable java.lang.String DeliveryTime)
 	{
 		set_Value (COLUMNNAME_DeliveryTime, DeliveryTime);
@@ -397,7 +412,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	/** Outgoing = Outgoing */
 	public static final String M_DELIVERY_PLANNING_TYPE_Outgoing = "Outgoing";
 	@Override
-	public void setM_Delivery_Planning_Type (final @Nullable java.lang.String M_Delivery_Planning_Type)
+	public void setM_Delivery_Planning_Type (final java.lang.String M_Delivery_Planning_Type)
 	{
 		set_Value (COLUMNNAME_M_Delivery_Planning_Type, M_Delivery_Planning_Type);
 	}
@@ -406,6 +421,33 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getM_Delivery_Planning_Type() 
 	{
 		return get_ValueAsString(COLUMNNAME_M_Delivery_Planning_Type);
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	@Override
+	public void setM_InOut_ID (final int M_InOut_ID)
+	{
+		if (M_InOut_ID < 1) 
+			set_Value (COLUMNNAME_M_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_InOut_ID, M_InOut_ID);
+	}
+
+	@Override
+	public int getM_InOut_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
