@@ -11,6 +11,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -77,7 +78,6 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 	@Param(parameterName = PARAM_Qty, mandatory = true)
 	private BigDecimal p_qty;
 
-	private HUMovementGeneratorResult movementResult = null;
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
@@ -140,16 +140,9 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 	}
 
 
-	@Override
-	protected void postProcess(final boolean success)
-	{
-		if (movementResult != null)
-		{
-			getView().invalidateAll();
-		}
-	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		// build parameters
