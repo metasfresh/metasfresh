@@ -23,10 +23,13 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.BPartnerStats;
 import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.money.Money;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -59,6 +62,8 @@ public class DeliveryInstructionUserNotificationsProducer
 
 	private static final AdWindowId WINDOW_DELIVERY_INSTRUCTION = AdWindowId.ofRepoId(541657); // FIXME: HARDCODED
 	private static final AdMessageKey MSG_Event_DeliveryInstructionGenerated = AdMessageKey.of("de.metas.deliveryplanning.Event_DeliveryInstructionGenerated");
+
+	private static final AdMessageKey MSG_DeliveryInstruction_CreditLimitNotSufficient = AdMessageKey.of("de.metas.deliveryplanning.Event_CreditLimitNotSufficient");
 
 	private DeliveryInstructionUserNotificationsProducer()
 	{
@@ -135,6 +140,19 @@ public class DeliveryInstructionUserNotificationsProducer
 	{
 
 		notificationBL.sendAfterCommit(notifications);
+	}
+
+	public DeliveryInstructionUserNotificationsProducer notifyDeliveryInstructionError(@NonNull String partnerName, @NonNull String creditLimitDifference)
+	{
+		// don't send after commit, because the trx will very probably be rolled back if an error happened
+		notificationBL.send(newUserNotificationRequest()
+									.recipientUserId(Env.getLoggedUserId())
+									.contentADMessage(MSG_DeliveryInstruction_CreditLimitNotSufficient)
+									.contentADMessageParam(partnerName)
+									.contentADMessageParam(creditLimitDifference)
+									.build());
+
+		return this;
 	}
 
 }

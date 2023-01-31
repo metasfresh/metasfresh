@@ -457,7 +457,7 @@ final class BPartnerCompositesLoader
 			@NonNull final ICountryDAO countryDAO)
 	{
 		final CountryId countryId = CountryId.ofRepoId(locationRecord.getC_Country_ID());
-		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(countryId);
+		final I_C_Country country = countryDAO.getById(countryId);
 
 		final PostalId postalId = PostalId.ofRepoIdOrNull(locationRecord.getC_Postal_ID());
 		final String district;
@@ -479,11 +479,12 @@ final class BPartnerCompositesLoader
 				.address3(trimBlankToNull(locationRecord.getAddress3()))
 				.address4(trimBlankToNull(locationRecord.getAddress4()))
 				.city(trimBlankToNull(locationRecord.getCity()))
-				.countryCode(countryCode)
+				.countryCode(country.getCountryCode())
 				.poBox(trimBlankToNull(locationRecord.getPOBox()))
 				.postal(trimBlankToNull(locationRecord.getPostal()))
 				.region(trimBlankToNull(locationRecord.getRegionName()))
 				.district(district)
+				.countryName(country.getName())
 				.build();
 	}
 

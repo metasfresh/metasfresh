@@ -56,7 +56,7 @@ public class C_BPartner_Location
 
 	/**
 	 * Update {@link I_C_BPartner_Location#COLUMNNAME_Address} field right before new. Updating on TYPE_BEFORE_CHANGE is not needed because C_Location_ID is not changing and if user edits the address,
-	 * then {@link org.adempiere.bpartner.callout.BPartnerLocation#evalInput(GridTab)} is managing the case.
+	 * then {@link de.metas.bpartner.callout.C_BPartner_Location#updateAddressString(I_C_BPartner_Location)} is managing the case.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void updateAddressString(final I_C_BPartner_Location bpLocation)
@@ -88,7 +88,7 @@ public class C_BPartner_Location
 		final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
 		final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
-		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
+		final LocationId oldLocationId = LocationId.ofRepoId(bpLocationOld.getC_Location_ID());
 
 		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
 	}

@@ -1,15 +1,25 @@
 package de.metas.rest_api.v2.invoice.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
+import de.metas.acct.accounts.ProductAcctType;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
 import de.metas.common.util.CoalesceUtil;
@@ -17,22 +27,36 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueService;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceService;
+import de.metas.invoice.ManualInvoice;
+import de.metas.invoice.ManualInvoiceService;
+import de.metas.invoice.request.CreateInvoiceRequest;
+import de.metas.invoice.request.CreateInvoiceRequestHeader;
+import de.metas.invoice.request.CreateInvoiceRequestLine;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.impl.DocTypeService;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.CurrencyService;
@@ -40,9 +64,19 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest;
+import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequest;
+import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequestItem;
+import de.metas.rest_api.v2.invoice.JsonCreateInvoiceRequestItemHeader;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
+import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider;
 import de.metas.rest_api.v2.payment.PaymentService;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -53,6 +87,7 @@ import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -62,10 +97,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+
+import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 /*
  * #%L
@@ -102,22 +142,35 @@ public class JsonInvoiceService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final CurrencyService currencyService;
 	private final PaymentService paymentService;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final InvoiceService invoiceService;
+	private final ManualInvoiceService manualInvoiceService;
+	private final DocTypeService docTypeService;
+	private final ElementValueService elementValueService;
 
 	public JsonInvoiceService(
 			@NonNull final CurrencyService currencyService,
 			@NonNull final PaymentService paymentService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final InvoiceService invoiceService)
+			@NonNull final InvoiceService invoiceService,
+			@NonNull final ManualInvoiceService manualInvoiceService,
+			@NonNull final DocTypeService docTypeService,
+			@NonNull final ElementValueService elementValueService)
 	{
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.invoiceService = invoiceService;
+		this.manualInvoiceService = manualInvoiceService;
+		this.docTypeService = docTypeService;
+		this.elementValueService = elementValueService;
 	}
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
@@ -141,14 +194,14 @@ public class JsonInvoiceService
 			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
-					.lineNumber(line.getLine())
-					.productName(productName)
-					.qtyInvoiced(line.getQtyEntered())
-					.price(line.getPriceEntered())
-					.taxRate(taxRate)
-					.lineNetAmt(line.getLineNetAmt())
-					.currency(currency)
-					.build());
+									.lineNumber(line.getLine())
+									.productName(productName)
+									.qtyInvoiced(line.getQtyEntered())
+									.price(line.getPriceEntered())
+									.taxRate(taxRate)
+									.lineNetAmt(line.getLineNetAmt())
+									.currency(currency)
+									.build());
 		}
 
 		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));
@@ -251,6 +304,14 @@ public class JsonInvoiceService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
+	public ManualInvoice createInvoice(
+			@NonNull final JsonCreateInvoiceRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> createInvoiceWithinTrx(request, masterdataProvider));
+	}
+
 	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		return JsonInvoiceCandidatesResponseItem
@@ -342,5 +403,200 @@ public class JsonInvoiceService
 	private Optional<AdArchive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+	}
+
+	@NonNull
+	private ManualInvoice createInvoiceWithinTrx(
+			@NonNull final JsonCreateInvoiceRequest request,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final CreateInvoiceRequest createInvoiceRequest = buildCreateInvoiceRequest(request.getInvoice(),
+																					masterdataProvider);
+
+		return manualInvoiceService.createInvoice(createInvoiceRequest);
+	}
+
+	@NonNull
+	private CreateInvoiceRequest buildCreateInvoiceRequest(
+			@NonNull final JsonCreateInvoiceRequestItem createInvoiceRequest,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final ClientAndOrgId clientAndOrgId = getClientAndOrgId(createInvoiceRequest.getHeader().getOrgCode());
+		final AcctSchema acctSchema = getAcctSchema(clientAndOrgId, createInvoiceRequest.getHeader().getAcctSchemaCode());
+
+		final CreateInvoiceRequestHeader createHeaderRequest = buildCreateInvoiceRequestHeader(createInvoiceRequest.getHeader(), masterdataProvider);
+
+		final ImmutableMap<String, CreateInvoiceRequestLine> externalLineId2Line = createInvoiceRequest.getLines().stream()
+				.map(jsonLine -> buildCreateInvoiceRequestLine(clientAndOrgId.getOrgId(), acctSchema.getChartOfAccountsId(), jsonLine, masterdataProvider))
+				.collect(ImmutableMap.toImmutableMap(
+						CreateInvoiceRequestLine::getExternalLineId,
+						Function.identity()));
+
+		return CreateInvoiceRequest.builder()
+				.completeIt(createInvoiceRequest.getCompleteIt())
+				.acctSchema(acctSchema)
+				.header(createHeaderRequest)
+				.externalLineId2Line(externalLineId2Line)
+				.build();
+	}
+
+	@NonNull
+	private CreateInvoiceRequestLine buildCreateInvoiceRequestLine(
+			@NonNull final OrgId orgId,
+			@NonNull final ChartOfAccountsId accountsId,
+			@NonNull final JsonCreateInvoiceLineItemRequest jsonLine,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider
+				.getProductInfo(ExternalIdentifier.of(jsonLine.getProductIdentifier()), orgId);
+
+		final UomId uomId = getUomId(jsonLine.getUomCode()).orElseGet(productInfo::getUomId);
+
+		return CreateInvoiceRequestLine.builder()
+				.externalLineId(jsonLine.getExternalLineId())
+
+				.line(jsonLine.getLine())
+				.lineDescription(jsonLine.getLineDescription())
+
+				.productId(productInfo.getProductId())
+				.vatCodeId(getVatCodeId(jsonLine.getTaxCode(), orgId))
+				.priceEntered(jsonLine.getPriceEntered())
+				.priceUomId(getUomId(jsonLine.getPriceUomCode()).orElse(null))
+				.qtyToInvoice(Quantitys.create(jsonLine.getQtyToInvoice(), uomId))
+
+				.elementValueId(getElementValueId(jsonLine.getAcctCode(), accountsId))
+				.productAcctType(ProductAcctType.ofName(jsonLine.getAccountName()))
+				.extendedProps(jsonLine.getExtendedProps())
+				.build();
+	}
+
+	@Nullable
+	private ElementValueId getElementValueId(
+			@Nullable final String acctCode,
+			@NonNull final ChartOfAccountsId chartOfAccountsId)
+	{
+		if (acctCode == null)
+		{
+			return null;
+		}
+
+		return elementValueService.getByAccountNo(acctCode, chartOfAccountsId)
+				.map(ElementValue::getId)
+				.orElseThrow(() -> new AdempiereException("No ElementValue found for the specified line.acctCode!")
+						.appendParametersToMessage()
+						.setParameter("line.acctCode", acctCode));
+	}
+
+	@Nullable
+	private VatCodeId getVatCodeId(
+			@Nullable final String vatCode,
+			@NonNull final OrgId orgId)
+	{
+		return Optional.ofNullable(vatCode)
+				.map(taxCode -> vatCodeDAO.getIdByCodeAndOrgId(taxCode, orgId))
+				.orElse(null);
+	}
+
+	@NonNull
+	private CreateInvoiceRequestHeader buildCreateInvoiceRequestHeader(
+			@NonNull final JsonCreateInvoiceRequestItemHeader invoiceHeader,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final ClientAndOrgId clientAndOrgId = getClientAndOrgId(invoiceHeader.getOrgCode());
+
+		final ZoneId zoneId = orgDAO.getTimeZone(clientAndOrgId.getOrgId());
+
+		final Instant dateInvoiced = invoiceHeader.getDateInvoicedAsInstant(zoneId).orElse(SystemTime.asInstant());
+
+		final BPartnerInfo bPartnerInfo = getBPartnerInfo(invoiceHeader, masterdataProvider, clientAndOrgId.getOrgId());
+
+		final DocTypeId docTypeId = getDocTypeId(invoiceHeader.getInvoiceDocType(), clientAndOrgId);
+
+		return CreateInvoiceRequestHeader.builder()
+				.externalHeaderId(invoiceHeader.getExternalHeaderId())
+				.orgId(clientAndOrgId.getOrgId())
+				.billBPartnerLocationId(bPartnerInfo.getBPartnerLocationIdOrError())
+				.billContactId(bPartnerInfo.getContactId())
+				.dateInvoiced(dateInvoiced)
+				.dateAcct(invoiceHeader.getDateAcctAsInstant(zoneId)
+								  .orElse(dateInvoiced))
+				.dateOrdered(invoiceHeader.getDateOrderedAsInstant(zoneId)
+									 .orElse(dateInvoiced))
+				.docTypeId(docTypeId)
+				.poReference(invoiceHeader.getPoReference())
+				.soTrx(SOTrx.ofNameNotNull(invoiceHeader.getSoTrx()))
+				.currencyId(getCurrencyId(invoiceHeader.getCurrencyCode()))
+				.grandTotal(invoiceHeader.getGrandTotal())
+				.taxTotal(invoiceHeader.getTaxTotal())
+				.extendedProps(invoiceHeader.getExtendedProps())
+				.build();
+	}
+
+	@NonNull
+	private ClientAndOrgId getClientAndOrgId(@NonNull final String orgCode)
+	{
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+		final ClientId clientId = orgDAO.getOrgInfoById(orgId).getClientId();
+
+		return ClientAndOrgId.ofClientAndOrg(clientId, orgId);
+	}
+
+	@NonNull
+	private static BPartnerInfo getBPartnerInfo(
+			@NonNull final JsonCreateInvoiceRequestItemHeader invoiceHeader,
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final OrgId orgId)
+	{
+		final JsonRequestBPartnerLocationAndContact jsonRequestBPartnerLocationAndContact = JsonRequestBPartnerLocationAndContact.builder()
+				.bPartnerIdentifier(invoiceHeader.getBillPartnerIdentifier())
+				.bPartnerLocationIdentifier(invoiceHeader.getBillLocationIdentifier())
+				.contactIdentifier(invoiceHeader.getBillContactIdentifier())
+				.build();
+
+		return masterdataProvider.getBPartnerInfoNotNull(jsonRequestBPartnerLocationAndContact, orgId);
+	}
+
+	@NonNull
+	private CurrencyId getCurrencyId(@NonNull final String currencyCode)
+	{
+		return Optional.ofNullable(currencyService.getCurrencyId(currencyCode))
+				.orElseThrow(() -> new AdempiereException("Wrong currency: " + currencyCode));
+	}
+
+	@NonNull
+	private AcctSchema getAcctSchema(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@Nullable final String acctSchemaCode)
+	{
+		return Optional.ofNullable(acctSchemaCode)
+				.map(schemaCode -> acctSchemaDAO.getByClientAndName(clientAndOrgId.getClientId(), schemaCode))
+				.orElseGet(() -> acctSchemaDAO.getByClientAndOrg(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId()));
+	}
+
+	@NonNull
+	private DocTypeId getDocTypeId(
+			@NonNull final JsonDocTypeInfo invoiceDocType,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final DocTypeId docTypeId = docTypeService.getInvoiceDocTypeId(
+				DocBaseType.ofCode(invoiceDocType.getDocBaseType()),
+				invoiceDocType.getDocSubType(),
+				clientAndOrgId.getOrgId());
+
+		return Optional.ofNullable(docTypeId)
+				.orElseThrow(() -> new AdempiereException("No DocumentType found!")
+						.appendParametersToMessage()
+						.setParameter("ClientId", clientAndOrgId.getClientId())
+						.setParameter("OrgId", clientAndOrgId.getOrgId())
+						.setParameter("DocBaseType", invoiceDocType.getDocBaseType())
+						.setParameter("DocSubType", invoiceDocType.getDocSubType()));
+	}
+
+	@NonNull
+	private Optional<UomId> getUomId(@Nullable final String uomCode)
+	{
+		return Optional.ofNullable(uomCode)
+				.map(X12DE355::ofCode)
+				.map(uomDAO::getUomIdByX12DE355);
 	}
 }

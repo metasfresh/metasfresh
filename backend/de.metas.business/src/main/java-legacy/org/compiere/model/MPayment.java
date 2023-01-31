@@ -24,13 +24,7 @@ package org.compiere.model;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
@@ -233,7 +227,7 @@ public final class MPayment extends X_C_Payment
 				setTenderType(TenderType.Cash.getCode());
 			}
 		}
-		
+
 		// metas: tsa: us025b: end
 		// @Trifon - CashPayments
 		// if ( getTenderType().equals("X") ) {
@@ -284,8 +278,8 @@ public final class MPayment extends X_C_Payment
 				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID"))
 		{
 			setIsPrepayment(getC_Charge_ID() == 0
-					&& getC_BPartner_ID() != 0
-					&& (getC_Order_ID() != 0
+									&& getC_BPartner_ID() != 0
+									&& (getC_Order_ID() != 0
 					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
 			// metas: commented - Write off amount must not be set to 0.
 			/*
@@ -326,15 +320,15 @@ public final class MPayment extends X_C_Payment
 			{
 				final I_C_Invoice inv = getC_Invoice();
 				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
+							  "Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
+							  this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
 			}
 			if (getC_Order_ID() != 0)
 			{
 				final I_C_Order ord = getC_Order();
 				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
-						"Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
-						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
+							  "Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
+							  this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
 			}
 		}
 
@@ -689,7 +683,7 @@ public final class MPayment extends X_C_Payment
 	 * Set Payment Amount
 	 *
 	 * @param currencyId currency (optional, may be <= 0)
-	 * @param payAmt        amount
+	 * @param payAmt     amount
 	 * @deprecated Will be deleted because it's used only by legacy API
 	 */
 	@Deprecated
@@ -768,10 +762,10 @@ public final class MPayment extends X_C_Payment
 
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.APPayment)
-				.adClientId(getAD_Client_ID())
-				.adOrgId(getAD_Org_ID())
-				.build());
+																	  .docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.APPayment)
+																	  .adClientId(getAD_Client_ID())
+																	  .adOrgId(getAD_Org_ID())
+																	  .build());
 		setC_DocType_ID(docTypeId.getRepoId());
 	}
 
@@ -1134,7 +1128,7 @@ public final class MPayment extends X_C_Payment
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
-				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
+							isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocStatus.Invalid.getCode();
@@ -1213,9 +1207,6 @@ public final class MPayment extends X_C_Payment
 			return DocStatus.Invalid.getCode();
 		}
 
-		// Do not pay when Credit Stop/Hold
-		checkCreditLimit();
-
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
@@ -1229,40 +1220,6 @@ public final class MPayment extends X_C_Payment
 		}
 		return DocStatus.InProgress.getCode();
 	}    // prepareIt
-
-	private void checkCreditLimit()
-	{
-		if (isReceipt())
-		{
-			return;
-		}
-
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-		final String soCreditStatus = stats.getSOCreditStatus();
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(soCreditStatus))
-		{
-			return;
-		}
-
-		final BigDecimal crediUsed = stats.getSOCreditUsed();
-		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
-
-		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true), getDateTrx()))
-		{
-			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-					+ stats.getSOCreditUsed()
-					+ ", @SO_CreditLimit@=" + creditLimit);
-		}
-
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
-		{
-			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
-					+ crediUsed
-					+ ", @SO_CreditLimit@=" + creditLimit);
-		}
-	}
 
 	@Override
 	public boolean approveIt()
@@ -1319,15 +1276,6 @@ public final class MPayment extends X_C_Payment
 		if (getC_Project_ID() != 0)
 		{
 			// MProject project = new MProject(getCtx(), getC_Project_ID());
-		}
-		// Update BP for Prepayments
-		if (getC_BPartner_ID() != 0 && getC_Invoice_ID() == 0 && getC_Charge_ID() == 0)
-		{
-			// task FRESH-152. Update bpartner stats
-			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-							.bpartnerId(getC_BPartner_ID())
-							.build());
 		}
 
 		// Counter Doc
@@ -1555,9 +1503,9 @@ public final class MPayment extends X_C_Payment
 		}
 
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				getDateTrx(), getC_Currency_ID(),
-				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo(),
-				get_TrxName());
+														getDateTrx(), getC_Currency_ID(),
+														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo(),
+														get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
 		{
@@ -1571,12 +1519,12 @@ public final class MPayment extends X_C_Payment
 			if (isReceipt())
 			{
 				aLine = new MAllocationLine(alloc, pa.getAmount(),
-						pa.getDiscountAmt(), pa.getWriteOffAmt(), pa.getOverUnderAmt());
+											pa.getDiscountAmt(), pa.getWriteOffAmt(), pa.getOverUnderAmt());
 			}
 			else
 			{
 				aLine = new MAllocationLine(alloc, pa.getAmount().negate(),
-						pa.getDiscountAmt().negate(), pa.getWriteOffAmt().negate(), pa.getOverUnderAmt().negate());
+											pa.getDiscountAmt().negate(), pa.getWriteOffAmt().negate(), pa.getOverUnderAmt().negate());
 			}
 			aLine.setDocInfo(pa.getC_BPartner_ID(), 0, pa.getC_Invoice_ID());
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
@@ -1645,8 +1593,8 @@ public final class MPayment extends X_C_Payment
 //		// @formatter:on
 		//
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				getDateTrx(), getC_Currency_ID(),
-				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
+														getDateTrx(), getC_Currency_ID(),
+														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
 
 		// task 09643
 		// When the Allocation has both invoice and payment, allocation's accounting date must e the max between the invoice date and payment date
@@ -1684,12 +1632,12 @@ public final class MPayment extends X_C_Payment
 		if (isReceipt())
 		{
 			aLine = new MAllocationLine(alloc, allocationAmt,
-					getDiscountAmt(), getWriteOffAmt(), getOverUnderAmt());
+										getDiscountAmt(), getWriteOffAmt(), getOverUnderAmt());
 		}
 		else
 		{
 			aLine = new MAllocationLine(alloc, allocationAmt.negate(),
-					getDiscountAmt().negate(), getWriteOffAmt().negate(), getOverUnderAmt().negate());
+										getDiscountAmt().negate(), getWriteOffAmt().negate(), getOverUnderAmt().negate());
 		}
 		aLine.setDocInfo(getC_BPartner_ID(), 0, getC_Invoice_ID());
 		aLine.setC_Payment_ID(getC_Payment_ID());
@@ -1701,7 +1649,7 @@ public final class MPayment extends X_C_Payment
 
 		// Get Project from Invoice
 		final int C_Project_ID = DB.getSQLValue(get_TrxName(),
-				"SELECT MAX(C_Project_ID) FROM C_Invoice WHERE C_Invoice_ID=?", getC_Invoice_ID());
+												"SELECT MAX(C_Project_ID) FROM C_Invoice WHERE C_Invoice_ID=?", getC_Invoice_ID());
 		if (C_Project_ID > 0 && getC_Project_ID() == 0)
 		{
 			setC_Project_ID(C_Project_ID);
@@ -1709,7 +1657,7 @@ public final class MPayment extends X_C_Payment
 		else if (C_Project_ID > 0 && getC_Project_ID() > 0 && C_Project_ID != getC_Project_ID())
 		{
 			log.warn("Invoice C_Project_ID=" + C_Project_ID
-					+ " <> Payment C_Project_ID=" + getC_Project_ID());
+							 + " <> Payment C_Project_ID=" + getC_Project_ID());
 		}
 		return true;
 	}    // allocateInvoice
@@ -1727,7 +1675,7 @@ public final class MPayment extends X_C_Payment
 		// return;
 		// De-Allocate all
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(getCtx(),
-				getC_Payment_ID(), get_TrxName());
+																		 getC_Payment_ID(), get_TrxName());
 		for (MAllocationHdr allocation : allocations)
 		{
 			final DocStatus allocDocStatus = DocStatus.ofCode(allocation.getDocStatus());
@@ -1755,7 +1703,7 @@ public final class MPayment extends X_C_Payment
 					+ "SET C_Payment_ID = NULL "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
-						int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
+			int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (no != 0)
 			{
 				CacheMgt.get().reset(I_C_Invoice.Table_Name, getC_Invoice_ID());
@@ -1881,7 +1829,7 @@ public final class MPayment extends X_C_Payment
 		// Std Period open?
 		Timestamp dateAcct = getDateAcct();
 		if (!MPeriod.isOpen(getCtx(), dateAcct,
-				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
+							isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
 		{
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}
@@ -1952,8 +1900,8 @@ public final class MPayment extends X_C_Payment
 
 		// Create automatic Allocation
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-				getDateTrx(), getC_Currency_ID(),
-				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
+														getDateTrx(), getC_Currency_ID(),
+														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
 		{
@@ -1963,7 +1911,7 @@ public final class MPayment extends X_C_Payment
 		{
 			// Original Allocation
 			MAllocationLine aLine = new MAllocationLine(alloc, getPayAmt(true),
-					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+														BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
@@ -1972,7 +1920,7 @@ public final class MPayment extends X_C_Payment
 			}
 			// Reversal Allocation
 			aLine = new MAllocationLine(alloc, reversal.getPayAmt(true),
-					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+										BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(reversal.getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(reversal.getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
@@ -1986,15 +1934,6 @@ public final class MPayment extends X_C_Payment
 		final StringBuffer info = new StringBuffer(reversal.getDocumentNo());
 		info.append(" - @C_AllocationHdr_ID@: ").append(alloc.getDocumentNo());
 
-		// FRESH-152 Update BPartner stats
-		if (getC_BPartner_ID() > 0)
-		{
-			Services.get(IBPartnerStatisticsUpdater.class)
-					.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-							.bpartnerId(getC_BPartner_ID())
-							.build());
-
-		}
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -2220,8 +2159,8 @@ public final class MPayment extends X_C_Payment
 
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(
 				firstGreaterThanZero( // if the order and payment are linked from the order's model interceptor, we might need to fall back to the order's target-doctype
-						order.getC_DocType_ID(),
-						order.getC_DocTypeTarget_ID()));
+									  order.getC_DocType_ID(),
+									  order.getC_DocTypeTarget_ID()));
 		if (orderDocTypeId == null)
 		{
 			return; // shall not happen

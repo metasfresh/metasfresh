@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -12,12 +13,14 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface IInvoiceHeader
 {
@@ -68,7 +71,13 @@ public interface IInvoiceHeader
 
 	int getM_InOut_ID();
 
+	@Nullable
 	I_C_DocType getC_DocTypeInvoice();
+
+	@NonNull
+	Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId();
+
+	void setDocTypeInvoicingPoolId(@Nullable DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	boolean isTaxIncluded();
 
@@ -97,5 +106,6 @@ public interface IInvoiceHeader
 	@Nullable
 	ActivityId getActivityId();
 
-	@Nullable BigDecimal getCurrencyRate();
+	@Nullable
+	BigDecimal getCurrencyRate();
 }

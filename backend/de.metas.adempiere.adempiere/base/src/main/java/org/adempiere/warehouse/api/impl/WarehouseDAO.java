@@ -844,7 +844,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	public BPartnerLocationAndCaptureId getWarehouseLocationById(final WarehouseId warehouseId)
 	{
 		final I_M_Warehouse warehouse = getById(warehouseId);
-		return BPartnerLocationAndCaptureId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID(), warehouse.getC_Location_ID());
+		return BPartnerLocationAndCaptureId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID(), -1);
 	}
 
 	@Override

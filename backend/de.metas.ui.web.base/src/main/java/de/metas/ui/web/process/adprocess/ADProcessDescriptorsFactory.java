@@ -333,8 +333,8 @@ import java.util.stream.Stream;
 				widgetType,
 				valueClass,
 				mandatoryLogic.isConstantTrue(),
-				false // don't allow using auto sequence
-		);
+				false, // don't allow using auto sequence
+				null/*DocSequenceId*/);
 
 		final DocumentFieldDescriptor.Builder paramDescriptorBuilder = DocumentFieldDescriptor.builder(parameterName);
 		extractAndSetTranslatableValues(adProcessParam, paramDescriptorBuilder);

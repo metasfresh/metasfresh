@@ -22,10 +22,13 @@
 
 package de.metas.rest_api.v2.invoice;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.ManualInvoice;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
@@ -36,13 +39,20 @@ import de.metas.rest_api.invoicecandidates.v2.request.JsonCheckInvoiceCandidates
 import de.metas.rest_api.invoicecandidates.v2.request.JsonCloseInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.v2.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.v2.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CloseInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CreateInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.EnqueueForInvoicingService;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
+import de.metas.sectionCode.SectionCodeService;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -77,18 +87,33 @@ public class InvoicesRestController
 	private final EnqueueForInvoicingService enqueueForInvoicingService;
 	private final CloseInvoiceCandidatesService closeInvoiceCandidatesService;
 
+	private final PermissionServiceFactory permissionServiceFactory;
+	private final BpartnerRestController bpartnerRestController;
+	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final JsonRetrieverService jsonRetrieverService;
+	private final SectionCodeService sectionCodeService;
+
 	public InvoicesRestController(
 			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
 			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
 			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService,
-			@NonNull final JsonInvoiceService jsonInvoiceService)
+			@NonNull final JsonInvoiceService jsonInvoiceService,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final SectionCodeService sectionCodeService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
 		this.enqueueForInvoicingService = enqueueForInvoicingService;
 		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
 		this.jsonInvoiceService = jsonInvoiceService;
+		this.bpartnerRestController = bpartnerRestController;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.sectionCodeService = sectionCodeService;
+		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
 	@ApiOperation("Create new invoice candidates")
@@ -249,5 +274,46 @@ public class InvoicesRestController
 					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
 
+	}
+
+	@ApiOperation("Create new invoice")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created new invoice"),
+			@ApiResponse(code = 401, message = "You are not authorized to create a new invoice"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
+	})
+	@PostMapping("/new")
+	public ResponseEntity<JsonCreateInvoiceResponse> createInvoice(@NonNull @RequestBody final JsonCreateInvoiceRequest request)
+	{
+		try
+		{
+			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
+					.permissionService(permissionServiceFactory.createPermissionService())
+					.bpartnerRestController(bpartnerRestController)
+					.externalReferenceRestControllerService(externalReferenceRestControllerService)
+					.jsonRetrieverService(jsonRetrieverService)
+					.sectionCodeService(sectionCodeService)
+					.build();
+
+			final ManualInvoice invoice = jsonInvoiceService.createInvoice(request, masterdataProvider);
+
+			return ResponseEntity.ok().body(JsonCreateInvoiceResponse.builder()
+													.result(JsonCreateInvoiceResponseResult.builder()
+																	.documentNo(invoice.getDocNumber())
+																	.build())
+													.build());
+		}
+		catch (final Exception ex)
+		{
+			logger.error(ex.getMessage(), ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+			return ResponseEntity.unprocessableEntity()
+					.body(JsonCreateInvoiceResponse.builder()
+								  .errors(ImmutableList.of(JsonErrors.ofThrowable(ex, adLanguage)))
+								  .build());
+		}
 	}
 }

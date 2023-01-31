@@ -30,7 +30,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

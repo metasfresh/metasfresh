@@ -2,7 +2,8 @@
 Feature: Import Invoice Candidates via DataImportRestController
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has current date and time
     And  metasfresh initially has no I_Invoice_Candidate data
@@ -52,8 +53,8 @@ Feature: Import Invoice Candidates via DataImportRestController
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
     Then load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.DocSubType |
-      | docType                 | ARI         | EA             |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.DocSubType |
+      | docType                 | ARI             | EA             |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | UOM                 | PCE      |
@@ -105,8 +106,8 @@ Feature: Import Invoice Candidates via DataImportRestController
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
     Then load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.DocSubType | OPT.IsDefault |
-      | docType                 | ARI         | null           | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.DocSubType | OPT.IsDefault |
+      | docType                 | ARI             | null           | true          |
     And load C_UOM for product:
       | C_UOM_ID.Identifier | M_Product_ID.Identifier |
       | UOM_2               | product_2               |
@@ -218,8 +219,8 @@ Feature: Import Invoice Candidates via DataImportRestController
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
     Then load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType | OPT.DocSubType | OPT.IsDefault |
-      | docType                 | ARI         | null           | true          |
+      | C_DocType_ID.Identifier | OPT.DocBaseType | OPT.DocSubType | OPT.IsDefault |
+      | docType                 | ARI             | null           | true          |
     And load C_UOM for product:
       | C_UOM_ID.Identifier | M_Product_ID.Identifier |
       | UOM_5               | product_5               |

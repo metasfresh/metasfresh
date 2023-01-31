@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.incoterms.IncotermsId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -59,7 +60,8 @@ public class DeliveryInstructionCreateRequest
 	@Nullable
 	IncotermsId incotermsId;
 
-	@Nullable String incotermLocation;
+	@Nullable
+	String incotermLocation;
 
 	@Nullable
 	Instant loadingDate;
@@ -90,14 +92,21 @@ public class DeliveryInstructionCreateRequest
 
 	@NonNull ProductId productId;
 
-	@Nullable String batchNo;
+	@Nullable
+	String batchNo;
 
-	@Nullable LocatorId locatorId;
+	@Nullable
+	LocatorId locatorId;
 
 	@NonNull Quantity qtyLoaded;
 
 	@NonNull Quantity qtyDischarged;
 
 	@NonNull I_C_UOM uom;
+
+	@Nullable
+	OrderLineId orderLineId;
+
+	@NonNull DeliveryPlanningId deliveryPlanningId;
 
 }

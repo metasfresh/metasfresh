@@ -12,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -52,59 +51,5 @@ public final class InvoiceAcct
 				.filter(rule -> rule.matches(acctSchemaId, accountTypeName, invoiceLineId))
 				.findFirst()
 				.map(InvoiceAcctRule::getElementValueId);
-	}
-}
-
-@Value
-@Builder
-class InvoiceAcctRuleMatcher
-{
-	public static final Comparator<InvoiceAcctRuleMatcher> ORDER_FROM_SPECIFIC_TO_GENERIC = Comparator.comparing(InvoiceAcctRuleMatcher::getAcctSchemaId)
-			.thenComparing(InvoiceAcctRuleMatcher::getAccountTypeName, Comparator.nullsLast(Comparator.naturalOrder()))
-			.thenComparing(InvoiceAcctRuleMatcher::getInvoiceLineId, Comparator.nullsLast(Comparator.naturalOrder()));
-
-	@NonNull AcctSchemaId acctSchemaId;
-	@Nullable InvoiceLineId invoiceLineId;
-	@Nullable AccountTypeName accountTypeName;
-
-	void assertInvoiceId(@NonNull InvoiceId expectedInvoiceId)
-	{
-		if (invoiceLineId != null)
-		{
-			invoiceLineId.assertInvoiceId(expectedInvoiceId);
-		}
-	}
-
-	boolean matches(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final AccountTypeName accountTypeName,
-			@Nullable final InvoiceLineId invoiceLineId)
-	{
-		return AcctSchemaId.equals(this.acctSchemaId, acctSchemaId)
-				&& (this.accountTypeName == null || AccountTypeName.equals(this.accountTypeName, accountTypeName))
-				&& (this.invoiceLineId == null || InvoiceLineId.equals(this.invoiceLineId, invoiceLineId));
-	}
-
-}
-
-@Value
-@Builder
-class InvoiceAcctRule
-{
-	@NonNull InvoiceAcctRuleMatcher matcher;
-
-	@NonNull ElementValueId elementValueId;
-
-	void assertInvoiceId(@NonNull InvoiceId expectedInvoiceId)
-	{
-		matcher.assertInvoiceId(expectedInvoiceId);
-	}
-
-	boolean matches(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final AccountTypeName accountTypeName,
-			@Nullable final InvoiceLineId invoiceLineId)
-	{
-		return matcher.matches(acctSchemaId, accountTypeName, invoiceLineId);
 	}
 }

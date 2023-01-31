@@ -88,7 +88,9 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Produc
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
-import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 public class S_ExternalReference_StepDef
@@ -230,17 +232,40 @@ public class S_ExternalReference_StepDef
 
 				externalReferenceRecord.setRecord_ID(shipper.getM_Shipper_ID());
 			}
+			else if (type.getCode().equals(BPartnerExternalReferenceType.BPARTNER.getCode()))
+			{
+				final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				final I_C_BPartner bPartnerRecord = bpartnerTable.get(bPartnerIdentifier);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bPartnerRecord.getC_BPartner_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bPartnerRecord.getC_BPartner_ID());
+			}
+			else if (type.getCode().equals(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode()))
+			{
+				final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerLocationIdentifier).isNotNull();
+
+				final I_C_BPartner_Location bpartnerLocationRecord = bpLocationTable.get(bPartnerLocationIdentifier);
+				assertThat(bpartnerLocationRecord).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+			}
 			else if (ProductExternalReferenceType.PRODUCT.getCode().equals(type.getCode()))
 			{
 				final String externalSystemConfigIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
-				assertThat(externalSystemConfigIdentifier).isNotNull();
+				if (Check.isNotBlank(externalSystemConfigIdentifier))
+				{
+					final int externalSystemConfigId = externalSystemConfigTable.getOptional(externalSystemConfigIdentifier)
+							.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
+							.orElseGet((() -> Integer.parseInt(externalSystemConfigIdentifier)));
 
-				final int externalSystemConfigId = externalSystemConfigTable.getOptional(externalSystemConfigIdentifier)
-						.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
-						.orElseGet((() -> Integer.parseInt(externalSystemConfigIdentifier)));
-
-				externalReferenceRecord.setExternalSystem_Config_ID(externalSystemConfigId);
-
+					externalReferenceRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+				}
+				
 				final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 				assertThat(productIdentifier).isNotNull();
 
@@ -281,9 +306,9 @@ public class S_ExternalReference_StepDef
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceItem item = Check.singleElement(referenceItems
-					.stream()
-					.filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
-					.collect(ImmutableList.toImmutableList()));
+																			   .stream()
+																			   .filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
+																			   .collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 

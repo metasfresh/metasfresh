@@ -18,7 +18,7 @@ public class InvoiceAcctService
 		return invoiceAcctRepository.getById(invoiceId);
 	}
 
-	public void save(@NonNull InvoiceAcct invoiceAcct)
+	public void save(@NonNull final InvoiceAcct invoiceAcct)
 	{
 		invoiceAcctRepository.save(invoiceAcct);
 	}

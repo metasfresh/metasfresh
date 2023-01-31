@@ -12,7 +12,17 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14458](https://github.com/metasfresh/metasfresh/issues/14458) Implement invoice API
+  * [#14444] (https://github.com/metasfresh/metasfresh/issues/14444) Delivery Planning - Delivery Instructions Amendment
+  * [#14235](https://github.com/metasfresh/metasfresh/issues/14235) Enhance REST-API with cache control
+  * [#14402](https://github.com/metasfresh/metasfresh/issues/14402) ExternalSys-Other: Send Address MF to ES (=> C__BPartner_Location) 
+  * [#14437](https://github.com/metasfresh/metasfresh/issues/14437) Allow setting manual tax rate for PO lines created via SO to PO process
+  * [#14210](https://github.com/metasfresh/metasfresh/issues/14210) ExternalSys-Other: Send project info from MF to ES - Part II (=> C_Project.ExternalId) 
+  * [#14104](https://github.com/metasfresh/metasfresh/issues/14104) ExternalSys-Other: Send project info from MF to ES (=>C_Project_WO_Step data) 
+  * [#14377](https://github.com/metasfresh/metasfresh/issues/14377) group invoices and credit memos into a single document 
   * [#14370](https://github.com/metasfresh/metasfresh/pull/14370) import Allergens for bom products
+  * [#14429](https://github.com/metasfresh/metasfresh/pull/14429)  Increased Credit Limit be decreased again
+  * [#14433](https://github.com/metasfresh/metasfresh/pull/14433)  Add M_SectionCode_ID to C_BPartner_Stats
   * [#14354](https://github.com/metasfresh/metasfresh/issues/14354) Automatically update PP Orders when a new BOM Version is imported
   * [#14414](https://github.com/metasfresh/metasfresh/issues/14414) Add Department Data Structures
   * [#14368](https://github.com/metasfresh/metasfresh/issues/14368) Enhancements SAP import product

@@ -7,12 +7,15 @@ import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -20,6 +23,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /*
@@ -47,9 +51,11 @@ import java.util.Properties;
 public class VATCodeDAO implements IVATCodeDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(VATCodeDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public VATCode findVATCode(@NonNull final VATCodeMatchingRequest request)
+	@NonNull
+	public Optional<VATCode> findVATCode(@NonNull final VATCodeMatchingRequest request)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -65,12 +71,30 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			if (isMatching(matching, request))
 			{
-				return VATCode.of(matching.getVATCode());
+				return Optional.of(VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID()));
 			}
 		}
 
 		logger.debug("Nothing matched. Returning NULL");
-		return VATCode.NULL;
+		return Optional.empty();
+	}
+
+	@Override
+	@NonNull
+	public VatCodeId getIdByCodeAndOrgId(
+			@NonNull final String code,
+			@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_VAT_Code.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, code)
+				.addInArrayFilter(I_C_VAT_Code.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.create()
+				.firstIdOnlyOptional(VatCodeId::ofRepoId)
+				.orElseThrow(() -> new AdempiereException("No C_VAT_Code found for code & org")
+						.appendParametersToMessage()
+						.setParameter("OrgId", orgId.getRepoId())
+						.setParameter("code", code));
 	}
 
 	/**
@@ -122,7 +146,7 @@ public class VATCodeDAO implements IVATCodeDAO
 	@Cached(cacheName = I_C_VAT_Code.Table_Name + "#by#" + I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID)
 	public List<I_C_VAT_Code> retriveVATCodeMatchingsForSchema(@CacheCtx final Properties ctx, final int acctSchemaId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_VAT_Code.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_VAT_Code.COLUMN_C_AcctSchema_ID, acctSchemaId)

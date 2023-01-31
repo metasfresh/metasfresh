@@ -23,9 +23,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
@@ -99,38 +100,38 @@ import java.util.Properties;
  * Shipment Model
  *
  * @author Jorg Janke
- * @version $Id: MInOut.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
- *
- *          Modifications: Added the RMA functionality (Ashley Ramdass)
  * @author Karsten Thiemann, Schaeffer AG
- *         <li>Bug [ 1759431 ] Problems with VCreateFrom
+ * <li>Bug [ 1759431 ] Problems with VCreateFrom
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
- *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * <li>FR [ 1948157 ] Is necessary the reference for document reverse
+ * <li>FR [ 2520591 ] Support multiples calendar for Org
  * see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id =176962
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id =176962
+ * @version $Id: MInOut.java,v 1.4 2006/07/30 00:51:03 jjanke Exp $
+ * <p>
+ * Modifications: Added the RMA functionality (Ashley Ramdass)
  */
 public class MInOut extends X_M_InOut implements IDocument
 {
 	private static final long serialVersionUID = 132321718005732306L;
 
 	private static final Logger logger = LogManager.getLogger(MInOut.class);
-	
+
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	/**
 	 * Create new Shipment by copying
 	 *
-	 * @param from shipment
-	 * @param dateDoc date of the document date
+	 * @param from         shipment
+	 * @param dateDoc      date of the document date
 	 * @param C_DocType_ID doc type
-	 * @param isSOTrx sales order
-	 * @param counter create counter links
-	 * @param trxName trx
-	 * @param setOrder set the order link
+	 * @param isSOTrx      sales order
+	 * @param counter      create counter links
+	 * @param trxName      trx
+	 * @param setOrder     set the order link
 	 * @return Shipment
 	 */
 	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc, final Timestamp dateAcct,
@@ -250,23 +251,23 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // copyHeader
 
 	/**
-	 * @deprecated Create new Shipment by copying
-	 * @param from shipment
-	 * @param dateDoc date of the document date
+	 * @param from         shipment
+	 * @param dateDoc      date of the document date
 	 * @param C_DocType_ID doc type
-	 * @param isSOTrx sales order
-	 * @param counter create counter links
-	 * @param trxName trx
-	 * @param setOrder set the order link
+	 * @param isSOTrx      sales order
+	 * @param counter      create counter links
+	 * @param trxName      trx
+	 * @param setOrder     set the order link
 	 * @return Shipment
+	 * @deprecated Create new Shipment by copying
 	 */
 	@Deprecated
 	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc,
 			final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
 	{
 		final MInOut to = copyFrom(from, dateDoc, dateDoc,
-				C_DocType_ID, isSOTrx, counter,
-				trxName, setOrder);
+								   C_DocType_ID, isSOTrx, counter,
+								   trxName, setOrder);
 		return to;
 
 	}
@@ -289,7 +290,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// setM_Warehouse_ID (0);
 			// setC_DocType_ID (0);
 			setIsSOTrx(false);
-			setMovementDate(Env.getDate(ctx));	// use Login date (08306)
+			setMovementDate(Env.getDate(ctx));    // use Login date (08306)
 			setDateAcct(getMovementDate());
 			// setMovementType (MOVEMENTTYPE_CustomerShipment);
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
@@ -313,8 +314,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx context
-	 * @param rs result set record
+	 * @param ctx     context
+	 * @param rs      result set record
 	 * @param trxName transaction
 	 */
 	public MInOut(final Properties ctx, final ResultSet rs, final String trxName)
@@ -325,8 +326,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Order Constructor - create header only
 	 *
-	 * @param order order
-	 * @param movementDate optional movement date (default today)
+	 * @param order                order
+	 * @param movementDate         optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
 	 */
 	public MInOut(final MOrder order, final int C_DocTypeShipment_ID, final Timestamp movementDate)
@@ -349,7 +350,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			final MDocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (MDocType.DOCSUBTYPE_ReturnMaterial.equals(dt
-					.getDocSubType()))
+																  .getDocSubType()))
 			{
 				movementType = MOVEMENTTYPE_CustomerReturns;
 			}
@@ -418,7 +419,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(
 				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 
-		if(propagateToMInOut)
+		if (propagateToMInOut)
 		{
 			setEMail(order.getEMail());
 		}
@@ -463,10 +464,10 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Invoice Constructor - create header only
 	 *
-	 * @param invoice invoice
+	 * @param invoice              invoice
 	 * @param C_DocTypeShipment_ID document type or 0
-	 * @param movementDate optional movement date (default today)
-	 * @param M_Warehouse_ID warehouse
+	 * @param movementDate         optional movement date (default today)
+	 * @param M_Warehouse_ID       warehouse
 	 */
 	public MInOut(final MInvoice invoice, final int C_DocTypeShipment_ID, final Timestamp movementDate, final int M_Warehouse_ID)
 	{
@@ -486,8 +487,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		if (docTypeId == 0 && order != null)
 		{
 			docTypeId = DB.getSQLValue(null,
-					"SELECT C_DocTypeShipment_ID FROM C_DocType WHERE C_DocType_ID=?",
-					order.getC_DocType_ID());
+									   "SELECT C_DocTypeShipment_ID FROM C_DocType WHERE C_DocType_ID=?",
+									   order.getC_DocType_ID());
 		}
 		if (docTypeId != 0)
 		{
@@ -549,8 +550,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Copy Constructor - create header only
 	 *
-	 * @param original original
-	 * @param movementDate optional movement date (default today)
+	 * @param original             original
+	 * @param movementDate         optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
 	 */
 	public MInOut(final MInOut original, final int C_DocTypeShipment_ID, final Timestamp movementDate)
@@ -615,9 +616,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		// metas end
 	} // MInOut
 
-	/** Lines */
+	/**
+	 * Lines
+	 */
 	private MInOutLine[] m_lines = null;
-	/** Confirmations */
+	/**
+	 * Confirmations
+	 */
 	private MInOutConfirm[] m_confirms = null;
 
 	/**
@@ -729,8 +734,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * Copy Lines From other Shipment
 	 *
 	 * @param otherShipment shipment
-	 * @param counter set counter info
-	 * @param setOrder set order link
+	 * @param counter       set counter info
+	 * @param setOrder      set order link
 	 * @return number of lines copied
 	 */
 	public int copyLinesFrom(final MInOut otherShipment, final boolean counter, final boolean setOrder)
@@ -821,7 +826,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		return count;
 	} // copyLinesFrom
 
-	/** Reversal Flag */
+	/**
+	 * Reversal Flag
+	 */
 	private boolean m_reversal = false;
 
 	/**
@@ -1109,7 +1116,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * After Save
 	 *
 	 * @param newRecord new
-	 * @param success success
+	 * @param success   success
 	 * @return success
 	 */
 	@Override
@@ -1145,9 +1152,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
 
-	/** Process Message */
+	/**
+	 * Process Message
+	 */
 	private String m_processMsg = null;
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	/**
@@ -1252,8 +1263,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // prepareIt
 
 	/**
-	  * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
-	  */
+	 * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
+	 */
 	private BigDecimal getProductWeight(final @NonNull MProduct product, final @NonNull MInOutLine line)
 	{
 		return CoalesceUtil.firstGreaterThanZeroBigDecimalSupplier(
@@ -1261,52 +1272,53 @@ public class MInOut extends X_M_InOut implements IDocument
 				() -> uomConversionBL.convertFromProductUOM(ProductId.ofRepoIdOrNull(product.getM_Product_ID()), uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM), line.getMovementQty()));
 	}
 
-
 	private void checkCreditLimit()
 	{
+
+		// Services
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
+
 		if (!isCheckCreditLimitNeeded())
 		{
 			return;
 		}
-
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
-		final String soCreditStatus = stats.getSOCreditStatus();
-		final BigDecimal creditUsed = stats.getSOCreditUsed();
 
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(partner);
+		final CreditStatus soCreditStatus = stats.getSoCreditStatus();
+		final BigDecimal creditUsed = stats.getSoCreditUsed();
+
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getMovementDate());
 
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		if (CreditStatus.CreditStop.equals(soCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
-					+ creditUsed
-					+ ", @SO_CreditLimit@=" + creditLimit);
+												 + creditUsed
+												 + ", @SO_CreditLimit@=" + creditLimit);
 		}
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		if (CreditStatus.CreditHold.equals(soCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
-					+ creditUsed
-					+ ", @SO_CreditLimit@=" + creditLimit);
+												 + creditUsed
+												 + ", @SO_CreditLimit@=" + creditLimit);
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(getC_BPartner_ID());
 		final BigDecimal notInvoicedAmt = Services.get(IOrderDAO.class).getNotInvoicedAmt(bpartnerId);
 
-		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
+		final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 				.stat(stats)
 				.additionalAmt(notInvoicedAmt)
 				.date(getMovementDate())
 				.build();
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
+		final CreditStatus calculatedCreditStatus = bPartnerStatsService.calculateProjectedSOCreditStatus(request);
+		if (CreditStatus.CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
-					+ creditUsed + ", @NotInvoicedAmt@=" + notInvoicedAmt
-					+ ", @SO_CreditLimit@=" + creditLimit);
+												 + creditUsed + ", @NotInvoicedAmt@=" + notInvoicedAmt
+												 + ", @SO_CreditLimit@=" + creditLimit);
 		}
 	}
 
@@ -1319,7 +1331,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(getC_BPartner_ID());
-		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSOCreditStatus()))
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(stats.getSoCreditStatus()))
 		{
 			return false;
 		}
@@ -1670,7 +1682,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		// task 08921: we don't want an automatically created dropship shipment. They are created via shipmentschedule, just like all the other shipments!
-// @formatter:off
+		// @formatter:off
 //		// Drop Shipments
 //		for (final MInOut dropShipment : createDropShipment())
 //		{
@@ -1710,6 +1722,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	}
 
 	// metas us1251: ommit negative qtyReserved value
+
 	/**
 	 * Helper method to omit negative qtyreserved values Returns either ol.getQtyReserved() or iol.getMovementQty()
 	 */
@@ -1769,7 +1782,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // renumberLinesWithoutComment
 
 	// task 08921: we don't want an automatically created dropship shipment. They are created via shipmentschedule, just like all the other shipments!
-// @formatter:off
+	// @formatter:off
 //	/**
 //	 * Automatically creates a customer shipment for any drop shipment material receipt Based on createCounterDoc() by JJ
 //	 *
@@ -2026,7 +2039,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Deep Copy
 		final MInOut counter = copyFrom(this, getMovementDate(), getDateAcct(),
-				C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
+										C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
 
 		//
 		counter.setAD_Org_ID(counterAD_Org_ID.getRepoId());
@@ -2196,13 +2209,13 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Deep Copy
 		final MInOut reversal = copyFrom(this,
-				getMovementDate(),
-				getDateAcct(),
-				getC_DocType_ID(),
-				isSOTrx(),
-				false,  // counter
-				get_TrxName(),
-				true // setOrder
+										 getMovementDate(),
+										 getDateAcct(),
+										 getC_DocType_ID(),
+										 isSOTrx(),
+										 false,  // counter
+										 get_TrxName(),
+										 true // setOrder
 		);
 		if (reversal == null)
 		{
@@ -2376,7 +2389,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			{
 				final I_C_Invoice existingInvoice = existingInvoiceLine.getC_Invoice();
 				final DocStatus existingInvoiceDocStatus = DocStatus.ofCode(existingInvoice.getDocStatus());
-				if(!existingInvoiceDocStatus.isReversedOrVoided())
+				if (!existingInvoiceDocStatus.isReversedOrVoided())
 				{
 					foundInvoice = true;
 				}
@@ -2409,9 +2422,9 @@ public class MInOut extends X_M_InOut implements IDocument
 				orderLine.setQtyDelivered(orderLine.getQtyDelivered().subtract(movementQty));
 
 				Loggables.withLogger(logger, Level.DEBUG).addLog("The following qtyDelivered-movementQty is set on orderLine.qtyDelivered, orderLineId={}, qtyDelivered={}, movementQty={}",
-																orderLine.getC_OrderLine_ID(),
-																orderLine.getQtyDelivered(),
-																movementQty);
+																 orderLine.getC_OrderLine_ID(),
+																 orderLine.getQtyDelivered(),
+																 movementQty);
 
 				// NOTE: we cannot just set the DateDelivered to null because maybe this is not the only shipment/receipt for that orderline
 				// orderLine.setDateDelivered(null);

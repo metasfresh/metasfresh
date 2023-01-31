@@ -19,10 +19,10 @@
 package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -376,6 +376,10 @@ public class GridFieldVO implements Serializable
 				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_IsUseDocSequence))
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
+				}
+				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_AD_Sequence_ID))
+				{
+					vo.AD_Sequence_ID = rs.getInt(i);
 				}
 			}
 
@@ -858,6 +862,8 @@ public class GridFieldVO implements Serializable
 
 	private final boolean applyRolePermissions;
 
+	private int AD_Sequence_ID = 0;
+
 	/**
 	 * Set Context including contained elements
 	 *
@@ -1060,6 +1066,8 @@ public class GridFieldVO implements Serializable
 		clone.fieldEntityType = fieldEntityType;
 		clone.useDocSequence = useDocSequence;
 		clone.isHiddenFromUI = isHiddenFromUI;
+
+		clone.AD_Sequence_ID = AD_Sequence_ID;
 
 		return clone;
 	}    // clone
@@ -1588,5 +1596,10 @@ public class GridFieldVO implements Serializable
 	public boolean isUseDocSequence()
 	{
 		return useDocSequence;
+	}
+
+	public int getAD_Sequence_ID()
+	{
+		return AD_Sequence_ID;
 	}
 }

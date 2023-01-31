@@ -871,9 +871,17 @@ public class ProductRestService
 			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
 		}
 
+		if(jsonRequestProductUpsertItem.isCodeSet())
+		{
+			builder.productNo(jsonRequestProductUpsertItem.getCode());
+		}
+		else
+		{
+			builder.productNo(existingProduct.getProductNo());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
-				.productNo(existingProduct.getProductNo())
 				.commodityNumberId(existingProduct.getCommodityNumberId())
 				.manufacturerId(existingProduct.getManufacturerId())
 				.packageSize(existingProduct.getPackageSize())
