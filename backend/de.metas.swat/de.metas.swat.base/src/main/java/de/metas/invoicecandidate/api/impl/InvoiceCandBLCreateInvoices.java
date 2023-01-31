@@ -25,6 +25,7 @@ import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -35,12 +36,12 @@ import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
@@ -131,7 +132,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -159,7 +160,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
-	private IInvoicingParams _invoicingParams;
+	private InvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
 
 	/**
@@ -259,14 +260,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
-			if(getInvoicingParams().isCompleteInvoices())
+			if (getInvoicingParams().isCompleteInvoices())
 			{
 				// Complete the invoice and assume its status is COmpleted.
 				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			}
-			else 
+			else
 			{
-				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);	
+				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
 			}
 
 			//
@@ -399,7 +400,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					.setFrom(billTo.toDocumentLocation());
 
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
-			invoice.setCurrencyRate(invoiceHeader.getCurrencyRate());
+			InvoiceDAO.updateRecordFromForexContractRef(invoice, invoiceHeader.getForexContractRef());
 			final BPartnerId salesRepId = invoiceHeader.getSalesPartnerId();
 			if (!BPartnerId.equals(billTo.getBpartnerId(), salesRepId))
 			{
@@ -465,9 +466,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-																											 aggregate, processedLines,
-																											 errorCandidates, errorException,
-																											 trxName);
+						aggregate, processedLines,
+						errorCandidates, errorException,
+						trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
@@ -544,9 +545,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-				final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-				final String trxName)
+													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+													final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -916,7 +917,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		//
 		// Make sure we have the same net amt as expected (08610)
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		final BigDecimal expectedNetAmtToInvoice = invoicingParams == null ? null : invoicingParams.getCheck_NetAmtToInvoice();
 		if (expectedNetAmtToInvoice != null && expectedNetAmtToInvoice.signum() != 0)
 		{
@@ -932,14 +933,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	private AggregationEngine newAggregationEngine()
 	{
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 
 		return AggregationEngine.builder()
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
-				.currencyRate(invoicingParams != null ? invoicingParams.getCurrencyRate().orElse(null) : null)
+				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
 				.build();
 	}
 
@@ -953,7 +954,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
-						  aggregationResult.size(), aggregationResult);
+					aggregationResult.size(), aggregationResult);
 		}
 
 		//
@@ -1053,8 +1054,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
-												  .map(AdMessageId::getRepoId)
-												  .orElse(-1));
+							.map(AdMessageId::getRepoId)
+							.orElse(-1));
 
 					note.setAD_User_ID(userId);
 
@@ -1179,7 +1180,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			return _ignoreInvoiceSchedule;
 		}
 
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		if (invoicingParams != null)
 		{
 			return invoicingParams.isIgnoreInvoiceSchedule();
@@ -1206,13 +1207,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(final @NonNull IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
 		return _invoicingParams;
 	}

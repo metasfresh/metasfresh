@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.GLCategoryId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -68,9 +69,9 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
-import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.NONE;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.DELIVERY_DATE;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.DELIVERY_DATE_OR_TODAY;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.TODAY;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -110,6 +111,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
+		//noinspection resource
 		Loggables.temporarySetLoggable(Loggables.console());
 	}
 
@@ -202,7 +204,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final boolean isTodayBestForShipmentDate = InOutProducerFromShipmentScheduleWithHU.isShipmentDeliveryDateBetterThanMovementDate(shipment, tomorrow);
 
-			// the candidate date is better than the already existing date in shipment because the existing date is after the candidate and they are both in the future
+			// the candidate date is better than the already existing date in shipment because the existing date is after the candidate, and they are both in the future
 			assertThat(isTodayBestForShipmentDate).isTrue();
 		}
 
@@ -226,12 +228,18 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	@Nested
 	public class calculateShipmentDate
 	{
-		private I_M_ShipmentSchedule createSchedule(final LocalDate date)
+		private I_M_ShipmentSchedule createSchedule(final LocalDate deliveryDate)
 		{
 			final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
-			schedule.setDeliveryDate(TimeUtil.asTimestamp(date));
+			schedule.setDeliveryDate(TimeUtil.asTimestamp(deliveryDate));
 			InterfaceWrapperHelper.save(schedule);
 			return schedule;
+		}
+
+		@NonNull
+		private InOutProducerFromShipmentScheduleWithHU newInOutProducerFromShipmentScheduleWithHU()
+		{
+			return new InOutProducerFromShipmentScheduleWithHU(new DefaultInOutGenerateResult());
 		}
 
 		@Test
@@ -243,7 +251,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_TODAY);
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, TODAY);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
@@ -257,7 +265,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(today);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE_OR_TODAY);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
@@ -273,7 +281,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(anotherDate);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_TODAY);
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, TODAY);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
@@ -287,7 +295,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInFuture);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE_OR_TODAY);
 
 			assertThat(shipmentDate).isEqualTo(dateInFuture);
 		}
@@ -302,7 +310,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, NONE);
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE_OR_TODAY);
 
 			assertThat(shipmentDate).isEqualTo(today);
 		}
@@ -317,9 +325,22 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
 
-			final LocalDate shipmentDate = InOutProducerFromShipmentScheduleWithHU.calculateShipmentDate(schedule, FORCE_SHIPMENT_DATE_DELIVERY_DATE);
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE);
 
 			assertThat(shipmentDate).isEqualTo(dateInPast);
+		}
+
+		@Test
+		public void fixedDate()
+		{
+			de.metas.common.util.time.SystemTime.setFixedTimeSource("2017-11-10T01:02:30+01:00");
+
+			final I_M_ShipmentSchedule schedule = createSchedule(LocalDate.parse("2018-11-03"));
+			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(
+					schedule,
+					CalculateShippingDateRule.fixedDate(LocalDate.parse("2010-02-03")));
+
+			assertThat(shipmentDate).isEqualTo("2010-02-03");
 		}
 	}
 
@@ -376,6 +397,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			}
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private I_C_UOM uom(final String name)
 		{
 			final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -387,6 +409,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private ProductId product(final String name, final I_C_UOM uom)
 		{
 			final I_M_Product product = newInstance(I_M_Product.class);
@@ -397,6 +420,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			return ProductId.ofRepoId(product.getM_Product_ID());
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private BPartnerLocationId bpartnerAndLocation(final String name)
 		{
 			final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
@@ -411,6 +435,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			return BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private WarehouseId warehouse(String name)
 		{
 			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
@@ -526,7 +551,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 					.orderId(order())
 					.productId(product("product", uom("uom")));
 
-			final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
+			final List<ShipmentScheduleWithHU> candidates = ImmutableList.of(
 					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build() //
 			);
 

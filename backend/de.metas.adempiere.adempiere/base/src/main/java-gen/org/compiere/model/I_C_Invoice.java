@@ -490,6 +490,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
+	 * Set Foreign Exchange Contract.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ForeignExchangeContract_ID (int C_ForeignExchangeContract_ID);
+
+	/**
+	 * Get Foreign Exchange Contract.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ForeignExchangeContract_ID();
+
+	@Nullable org.compiere.model.I_C_ForeignExchangeContract getC_ForeignExchangeContract();
+
+	void setC_ForeignExchangeContract(@Nullable org.compiere.model.I_C_ForeignExchangeContract C_ForeignExchangeContract);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ForeignExchangeContract> COLUMN_C_ForeignExchangeContract_ID = new ModelColumn<>(I_C_Invoice.class, "C_ForeignExchangeContract_ID", org.compiere.model.I_C_ForeignExchangeContract.class);
+	String COLUMNNAME_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
+
+	/**
 	 * Set Charge amount.
 	 * Charge Amount
 	 *
@@ -807,27 +832,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreditMemoReason = "CreditMemoReason";
 
 	/**
-	 * Set Currency Rate.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCurrencyRate (@Nullable BigDecimal CurrencyRate);
-
-	/**
-	 * Get Currency Rate.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCurrencyRate();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_C_Invoice.class, "CurrencyRate", null);
-	String COLUMNNAME_CurrencyRate = "CurrencyRate";
-
-	/**
 	 * Set Accounting Date.
 	 * Accounting Date
 	 *
@@ -1140,6 +1144,87 @@ public interface I_C_Invoice
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set FEC Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_CurrencyRate (@Nullable BigDecimal FEC_CurrencyRate);
+
+	/**
+	 * Get FEC Currency Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getFEC_CurrencyRate();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_FEC_CurrencyRate = new ModelColumn<>(I_C_Invoice.class, "FEC_CurrencyRate", null);
+	String COLUMNNAME_FEC_CurrencyRate = "FEC_CurrencyRate";
+
+	/**
+	 * Set FEC Currency From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_From_Currency_ID (int FEC_From_Currency_ID);
+
+	/**
+	 * Get FEC Currency From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_From_Currency_ID();
+
+	String COLUMNNAME_FEC_From_Currency_ID = "FEC_From_Currency_ID";
+
+	/**
+	 * Set Order Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_Order_Currency_ID (int FEC_Order_Currency_ID);
+
+	/**
+	 * Get Order Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_Order_Currency_ID();
+
+	String COLUMNNAME_FEC_Order_Currency_ID = "FEC_Order_Currency_ID";
+
+	/**
+	 * Set FEC Currency To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_To_Currency_ID (int FEC_To_Currency_ID);
+
+	/**
+	 * Get FEC Currency To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_To_Currency_ID();
+
+	String COLUMNNAME_FEC_To_Currency_ID = "FEC_To_Currency_ID";
+
+	/**
 	 * Set Generate Invoice from Receipt.
 	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
@@ -1320,6 +1405,27 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsDiscountPrinted = new ModelColumn<>(I_C_Invoice.class, "IsDiscountPrinted", null);
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
+
+	/**
+	 * Set FEC.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFEC (boolean IsFEC);
+
+	/**
+	 * Get FEC.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFEC();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsFEC = new ModelColumn<>(I_C_Invoice.class, "IsFEC", null);
+	String COLUMNNAME_IsFEC = "IsFEC";
 
 	/**
 	 * Set In Dispute.

@@ -3,13 +3,14 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
-import de.metas.forex.ForexContractId;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -18,9 +19,12 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleExternalInfo;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.warehouse.LocatorId;
@@ -61,6 +65,8 @@ import java.util.Set;
  */
 public interface IHUReceiptScheduleBL extends ISingletonService
 {
+	I_M_ReceiptSchedule getById(@NonNull ReceiptScheduleId id);
+
 	/**
 	 * @return amount of TUs which were planned to be received (i.e. amount of TUs ordered) or <code>null</code> in case there is no order line
 	 */
@@ -77,6 +83,17 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	@NonNull
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
 
+	void updateHUAttributesFromReceiptSchedule(
+			@NonNull I_M_HU hu,
+			@NonNull I_M_ReceiptSchedule receiptSchedule);
+
+	@Nullable
+	I_M_HU createPlanningVHU(
+			@NonNull I_M_ReceiptSchedule receiptSchedule,
+			@Nullable Quantity qtyToReceive);
+
+	StockQtyAndUOMQty getQtyToMove(I_M_ReceiptSchedule receiptSchedule);
+
 	@Value
 	@Builder
 	class CreateReceiptsParameters
@@ -89,7 +106,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		 * {@link de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc} will be assigned to the inOut.
 		 */
 		@Nullable
-		Set<HuId> selectedHuIds;
+		@Singular Set<HuId> selectedHuIds;
 
 		/**
 		 * If this is {@code true}, and if more than one receipt is created, then successfully created receipts won't be rolled back if other receipts fail.
@@ -99,7 +116,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 		boolean printReceiptLabels;
 
-		List<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules;
+		@Singular List<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules;
 
 		/**
 		 * If the receipt was created and the good were not automatically moved to the quarantine warehouse,
@@ -116,7 +133,10 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 
 		@Nullable
-		ForexContractId forexContractId;
+		ForexContractRef forexContractRef;
+
+		@Nullable
+		DeliveryPlanningId deliveryPlanningId;
 	}
 
 	/**
@@ -132,8 +152,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	void destroyHandlingUnits(List<I_M_ReceiptSchedule_Alloc> allocations, String trxName);
 
 	IProductStorage createProductStorage(de.metas.inoutcandidate.model.I_M_ReceiptSchedule rs);
-
-	IAllocationSource createAllocationSource(I_M_ReceiptSchedule receiptSchedule);
 
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_ReceiptSchedule receiptSchedule);
 

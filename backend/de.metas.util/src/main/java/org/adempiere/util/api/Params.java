@@ -25,6 +25,7 @@ package org.adempiere.util.api;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -195,8 +196,33 @@ public final class Params implements IParams
 	@Override
 	public Timestamp getParameterAsTimestamp(final String parameterName)
 	{
-		final Object value = getParameterAsObject(parameterName);
-		return (Timestamp)value;
+		final Object valueObj = getParameterAsObject(parameterName);
+		if (valueObj == null)
+		{
+			return null;
+		}
+		else if (valueObj instanceof Timestamp)
+		{
+			return (Timestamp)valueObj;
+		}
+		else if (valueObj instanceof Instant)
+		{
+			return Timestamp.from((Instant)valueObj);
+		}
+		else if (valueObj instanceof ZonedDateTime)
+		{
+			return Timestamp.from(((ZonedDateTime)valueObj).toInstant());
+		}
+		else if (valueObj instanceof LocalDate)
+		{
+			final LocalDate localDate = (LocalDate)valueObj;
+			final Instant instant = localDate.atStartOfDay(SystemTime.zoneId()).toInstant();
+			return Timestamp.from(instant);
+		}
+		else
+		{
+			throw Check.mkEx("Cannot convert `" + valueObj + "` (" + valueObj.getClass().getSimpleName() + ") to Timestamp");
+		}
 	}
 
 	@Nullable
@@ -245,8 +271,6 @@ public final class Params implements IParams
 		return StringUtils.toBoolean(value, defaultValue);
 	}
 
-	
-	
 	@SuppressWarnings("unused")
 	public Params withParameter(@NonNull final String parameterName, final Object value)
 	{

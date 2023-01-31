@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -21,7 +22,6 @@ import lombok.Setter;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -103,7 +103,7 @@ import java.util.List;
 	@Setter
 	private SectionCodeId sectionCodeId;
 
-	@Setter @Getter @Nullable BigDecimal currencyRate;
+	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
 	/* package */ InvoiceHeaderImpl()
 	{

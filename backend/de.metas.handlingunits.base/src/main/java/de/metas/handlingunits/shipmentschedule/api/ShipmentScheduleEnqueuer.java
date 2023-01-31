@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
@@ -34,7 +35,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.common.util.EmptyUtil;
-import de.metas.forex.ForexContractId;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
@@ -73,6 +75,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -221,7 +224,10 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday())
-							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_C_ForeignExchangeContract_ID, workPackageParameters.getForexContractId());
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate, workPackageParameters.getFixedShipmentDate())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef, JsonObjectMapperHolder.toJson(workPackageParameters.getForexContractRef()))
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, workPackageParameters.getDeliveryPlanningId())
+					;
 
 					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
 					// and it will move them to a new owner which is created per workpackage
@@ -377,9 +383,11 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
+		public static final String PARAM_FixedShipmentDate = "FixedShipmentDate";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
-		public static final String PARAM_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
+		public static final String PARAM_ForexContractRef = "ForexContractRef";
+		public static final String PARAM_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -398,9 +406,10 @@ public class ShipmentScheduleEnqueuer
 		 */
 		@Builder.Default
 		boolean onTheFlyPickToPackingInstructions = false;
-		
+
 		boolean completeShipments;
 		boolean isShipmentDateToday;
+		@Nullable LocalDate fixedShipmentDate;
 
 		/**
 		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
@@ -412,7 +421,8 @@ public class ShipmentScheduleEnqueuer
 		@Nullable
 		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
 
-		@Nullable ForexContractId forexContractId;
+		@Nullable ForexContractRef forexContractRef;
+		@Nullable DeliveryPlanningId deliveryPlanningId;
 	}
 
 }

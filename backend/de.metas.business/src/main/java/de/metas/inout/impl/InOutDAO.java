@@ -6,12 +6,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
+import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -126,7 +129,6 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
-
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
 	{
@@ -151,7 +153,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
 	{
-		if(inoutIds.isEmpty())
+		if (inoutIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
@@ -496,4 +498,39 @@ public class InOutDAO implements IInOutDAO
 
 		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
 	}
+
+	@Nullable
+	public static ForexContractRef extractForeignContractRef(final I_M_InOut record)
+	{
+		if(!record.isFEC())
+		{
+			return null;
+		}
+
+		return ForexContractRef.builder()
+				.forexContractId(ForexContractId.ofRepoIdOrNull(record.getC_ForeignExchangeContract_ID()))
+				.orderCurrencyId(CurrencyId.ofRepoId(record.getFEC_Order_Currency_ID()))
+				.fromCurrencyId(CurrencyId.ofRepoId(record.getFEC_From_Currency_ID()))
+				.toCurrencyId(CurrencyId.ofRepoId(record.getFEC_To_Currency_ID()))
+				.currencyRate(record.getFEC_CurrencyRate())
+				.build();
+	}
+
+	public static void updateRecordFromForeignContractRef(@NonNull I_M_InOut record, @Nullable ForexContractRef from)
+	{
+		final boolean isFEC = from != null;
+		final ForexContractId forexContractId = isFEC ? from.getForexContractId() : null;
+		final BigDecimal currencyRate = isFEC ? from.getCurrencyRate() : null;
+		final CurrencyId orderCurrencyId = isFEC ? from.getOrderCurrencyId() : null;
+		final CurrencyId fromCurrencyId = isFEC ? from.getFromCurrencyId() : null;
+		final CurrencyId toCurrencyId = isFEC ? from.getToCurrencyId() : null;
+
+		record.setIsFEC(isFEC);
+		record.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		record.setFEC_Order_Currency_ID(CurrencyId.toRepoId(orderCurrencyId));
+		record.setFEC_From_Currency_ID(CurrencyId.toRepoId(fromCurrencyId));
+		record.setFEC_To_Currency_ID(CurrencyId.toRepoId(toCurrencyId));
+		record.setFEC_CurrencyRate(currencyRate);
+	}
+
 }

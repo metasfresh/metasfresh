@@ -10,9 +10,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.forex.ForexContract;
-import de.metas.forex.ForexContractId;
-import de.metas.forex.ForexContractService;
+import de.metas.forex.ForexContractRef;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -52,7 +50,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -648,29 +645,27 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public CurrencyConversionContext getCurrencyConversionContext(final InOutId inoutId)
+	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final InOutId inoutId)
 	{
 		final I_M_InOut inout = inOutDAO.getById(inoutId);
 		return getCurrencyConversionContext(inout);
 	}
 
 	@Override
-	public CurrencyConversionContext getCurrencyConversionContext(final I_M_InOut inout)
+	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_InOut inout)
 	{
-		CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
+		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
 				inout.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(inout.getAD_Client_ID()),
 				OrgId.ofRepoId(inout.getAD_Org_ID()));
 
-		final ForexContractId forexContractId = ForexContractId.ofRepoIdOrNull(inout.getC_ForeignExchangeContract_ID());
-		if (forexContractId != null)
+		final ForexContractRef forexContractRef = InOutDAO.extractForeignContractRef(inout);
+		if (forexContractRef != null)
 		{
-			final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
-			final ForexContract forexContract = forexContractService.getById(forexContractId);
-			currencyConversionContext = currencyConversionContext.withFixedConversionRate(forexContract.toFixedConversionRate());
+			conversionCtx = conversionCtx.withFixedConversionRate(forexContractRef.toFixedConversionRate());
 		}
 
-		return currencyConversionContext;
+		return conversionCtx;
 	}
 }
