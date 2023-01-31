@@ -54,6 +54,11 @@ public class JsonInvoicePaymentCreateRequest
 			dataType = "java.lang.String")
 	@NonNull
 	String currencyCode;
+	
+	@NonNull
+	@ApiModelProperty(required = true, //
+			value = "Specifies the direction of the payment: Inbound or Outbound.")
+	JsonPaymentDirection type;
 
 	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
@@ -103,6 +108,8 @@ public class JsonInvoicePaymentCreateRequest
 	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
 	{
 		final List<JsonPaymentAllocationLine> lines = getLines();
-		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+		return lines == null 
+				? BigDecimal.ZERO 
+				: lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

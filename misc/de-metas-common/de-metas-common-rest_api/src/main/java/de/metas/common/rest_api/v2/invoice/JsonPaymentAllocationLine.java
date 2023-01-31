@@ -22,6 +22,7 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -63,4 +64,33 @@ public class JsonPaymentAllocationLine {
     @ApiModelProperty(position = 60)
     @Nullable
     BigDecimal writeOffAmt;
+
+    @JsonIgnore
+    public boolean isAtLeastOneAmtSet()
+    {
+        return amount != null || discountAmt != null || writeOffAmt != null;
+    }
+
+    @JsonIgnore
+    @NonNull
+    public BigDecimal getTotalAmt()
+    {
+        BigDecimal totalAmt = BigDecimal.ZERO;
+        if (amount != null)
+        {
+            totalAmt = totalAmt.add(amount);
+        }
+        
+        if (discountAmt != null)
+        {
+            totalAmt = totalAmt.add(discountAmt);
+        }
+        
+        if (writeOffAmt != null)
+        {
+            totalAmt = totalAmt.add(writeOffAmt);
+        }
+        
+        return totalAmt;
+    }
 }
