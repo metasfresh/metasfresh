@@ -71,3 +71,9 @@ UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-01-31 16:2
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585206,540516,541346,TO_TIMESTAMP('2023-01-31 16:26:01','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.ui.web','Y',TO_TIMESTAMP('2023-01-31 16:26:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;
 
+-- Process: WEBUI_M_HU_MoveCUQtyToAnotherLocator(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_MoveCUQtyToAnotherLocator)
+-- ParameterName: M_Warehouse_ID
+-- 2023-01-31T15:57:39.604Z
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2023-01-31 16:57:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542512
+;
+
