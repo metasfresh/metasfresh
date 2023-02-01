@@ -1,19 +1,20 @@
 
-DROP FUNCTION IF EXISTS getDeliveryCreditUsedForSectionGroupPartner(p_section_group_partner_id numeric)
+
+DROP FUNCTION IF EXISTS getDeliveryCreditUsedForSectionGroupPartner(p_section_group_partner_id numeric, p_m_department_ID numeric)
 ;
 
 
-CREATE FUNCTION getDeliveryCreditUsedForSectionGroupPartner(p_section_group_partner_id numeric) RETURNS numeric
+CREATE FUNCTION getDeliveryCreditUsedForSectionGroupPartner(p_section_group_partner_id numeric,  p_m_department_ID numeric) RETURNS numeric
     STABLE
     LANGUAGE sql
 AS
 $$
 
 SELECT COALESCE(SUM(currencyBase(sp.actualloadqty * ol.priceactual + CASE
-                                                     WHEN (o.istaxincluded = 'N' AND t.isWholeTax = 'N') THEN
-                                                         ROUND((ol.linenetamt * ROUND(t.rate / 100, 12)), c.StdPrecision)
-                                                                                                         ELSE 0
-                                                 END, o.C_Currency_ID, ol.DateOrdered, ol.AD_Client_ID, ol.AD_Org_ID)), 0)
+                                                                         WHEN (o.istaxincluded = 'N' AND t.isWholeTax = 'N') THEN
+                                                                             ROUND((ol.linenetamt * ROUND(t.rate / 100, 12)), c.StdPrecision)
+                                                                                                                             ELSE 0
+                                                                     END, o.C_Currency_ID, ol.DateOrdered, ol.AD_Client_ID, ol.AD_Org_ID)), 0)
 
 
 FROM C_BPartner sectionGroupPartner
@@ -34,9 +35,10 @@ FROM C_BPartner sectionGroupPartner
          LEFT JOIN C_Currency c ON c.C_Currency_ID = ol.C_Currency_ID
 
 WHERE sectionGroupPartner.c_bpartner_id = p_section_group_partner_id
+and dep.m_department_id = p_m_department_ID
 
 
-GROUP BY sectionPartner.section_group_partner_id
+GROUP BY sectionPartner.section_group_partner_id, dep.m_department_id
 
 $$
 ;
