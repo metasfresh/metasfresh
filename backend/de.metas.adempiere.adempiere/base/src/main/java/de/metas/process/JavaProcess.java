@@ -1,54 +1,11 @@
 package de.metas.process;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.api.RangeAwareParams;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutableReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_Process;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.context.annotation.Profile;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -63,10 +20,44 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ImmutableReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.context.annotation.Profile;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Java Process base class.
- *
+ * <p>
  * Also see
  * <ul>
  * <li>{@link IProcessPrecondition} if you need to dynamically decide whenever a process shall be available in the Gear.
@@ -75,10 +66,10 @@ import lombok.NonNull;
  * <li>{@link RunOutOfTrx} which is an annotation for the {@link #prepare()} and {@link #doIt()} method
  * <li>{@link Process} annotation if you add more info or constraints about how the process shall be executed
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
+ * <li>{@link NestedParams} annotation if to use a POJO which has fields annotated with {@link Param}
  * <li>{@link Profile} annotation if you want want to show/hide this process to/from Gear based on spring profiles
  * <li>{@link ClientOnlyProcess} annotation if you want to mark the process as client only
  * </ul>
- *
  *
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
  * @author metas-dev <dev@metasfresh.com>
@@ -87,7 +78,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 {
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	private static final transient Logger slogger = LogManager.getLogger(JavaProcess.class);
+	private static final Logger slogger = LogManager.getLogger(JavaProcess.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -100,12 +91,16 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	//
 	// Transaction management
-	/** Process Main transaction */
+	/**
+	 * Process Main transaction
+	 */
 	@Nullable private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
 	@Nullable private ImmutableReference<String> m_trxNameThreadInheritedBackup;
 	private boolean m_dbConstraintsChanged = false;
-	/** Transaction name prefix (in case of local transaction) */
+	/**
+	 * Transaction name prefix (in case of local transaction)
+	 */
 	private static final String TRXNAME_Prefix = "JavaProcess";
 
 	// Common Return Messages
@@ -114,18 +109,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	public static final String MSG_OK = "OK";
 	/**
 	 * Process failed error message. To be returned from {@link #doIt()}.
-	 *
+	 * <p>
 	 * In case it's returned the process will be rolled back.
 	 */
 	protected static final String MSG_Error = "@Error@";
 
-	/** Internal cache for ProcessClassInfo */
-	private final transient ImmutableMap<ArrayKey, Field> _fieldsIndexedByFieldKey;
-
 	protected JavaProcess()
 	{
 		parametersCallout = this instanceof IProcessParametersCallout ? (IProcessParametersCallout)this : null;
-		_fieldsIndexedByFieldKey = ProcessClassInfo.retrieveParameterFieldsIndexedByFieldKey(getClass());
 	}
 
 	@Override
@@ -141,8 +132,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public static <T extends JavaProcess> T currentInstance()
 	{
-		@SuppressWarnings("unchecked")
-		final T currentInstances = (T)currentInstanceHolder.get();
+		@SuppressWarnings("unchecked") final T currentInstances = (T)currentInstanceHolder.get();
 		if (currentInstances == null)
 		{
 			throw new AdempiereException("No active process found in this thread");
@@ -169,7 +159,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 *
 	 * @param overrideCurrentInstance of {@code false} and there is already an instance set, then throw an exception.
 	 */
 	private static IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
@@ -233,7 +222,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Note: This method shall be called by the framework.
 	 *
-	 * @param pi Process Info
+	 * @param pi  Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
@@ -257,7 +246,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			{
 				//
 				// Prepare out of transaction, if needed
-				final ProcessClassInfo processClassInfo = getProcessInfo().getProcessClassInfo();
+				final ProcessClassInfo processClassInfo = getProcessClassInfo();
 				boolean prepareExecuted = false;
 				if (processClassInfo.isRunPrepareOutOfTransaction())
 				{
@@ -326,7 +315,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Initialize this process from given process instance info.
-	 *
+	 * <p>
 	 * NOTE: don't call this method directly. Only the API is allowed to call it.
 	 *
 	 * @param pi process instance info
@@ -358,7 +347,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Initialize this process from given preconditions context.
-	 *
+	 * <p>
 	 * NOTE: don't call this method directly. Only the API is allowed to call it.
 	 *
 	 * @param context preconditions context
@@ -369,20 +358,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		// nothing at this level
 	}
 
-	private Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
-	{
-		final ArrayKey fieldKey = paramInfo.getFieldKey();
-		return ((Map<ArrayKey, Field>)_fieldsIndexedByFieldKey).get(fieldKey);
-	}
-
 	/**
 	 * Load "@Param" annotated parameters from {@link ProcessInfo}.
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void loadParametersFromContext(final boolean failIfNotValid)
 	{
-		final ProcessInfo pi = getProcessInfo();
-		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
+		final ProcessClassInfo processClassInfo = getProcessClassInfo();
 
 		// No parameters => nothing to do
 		final Collection<ProcessClassParamInfo> parameterInfos = processClassInfo.getParameterInfos();
@@ -393,31 +375,18 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 		//
 		// Iterate all process class info parameters and try to update the corresponding field
-		final IRangeAwareParams source = pi.getParameterAsIParams();
-		parameterInfos.forEach(paramInfo -> {
-			final Field processField = getAnnotatedParamField(paramInfo);
-			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-		});
+		final IRangeAwareParams source = getProcessInfo().getParameterAsIParams();
+		parameterInfos.forEach(paramInfo -> paramInfo.loadParameterValue(this, source, failIfNotValid));
 	}
 
 	/**
 	 * Load process autowired parameter from given <code>source</code>.
-	 *
 	 * If the parameter value is not valid (e.g. mandatory required but was null),
 	 * this method won't fail but will simply not set the value.
 	 */
 	public final void loadParameterValueNoFail(final String parameterName, final IRangeAwareParams source)
 	{
-		final Collection<ProcessClassParamInfo> parameterInfos = getParameterInfos(parameterName);
-
-		final boolean failIfNotValid = false;
-
-		// Iterate all process class info parameters and try to update the corresponding field
-		// No parameters => nothing to do
-		parameterInfos.forEach(paramInfo -> {
-			final Field processField = getAnnotatedParamField(paramInfo);
-			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-		});
+		getProcessClassInfo().loadParameterValueNoFail(this, parameterName, source);
 
 		//
 		// Fire parameters callout if any
@@ -432,60 +401,19 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return parametersCallout != null;
 	}
 
-	private Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
+	private ProcessClassInfo getProcessClassInfo()
 	{
-		final ProcessInfo pi = getProcessInfo();
-		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
-
-		return processClassInfo.getParameterInfos(parameterName);
+		return getProcessInfo().getProcessClassInfo();
 	}
 
 	public final IRangeAwareParams getParametersFromAnnotatedFields()
 	{
-		final HashMap<String, Object> values = new HashMap<>();
-		final HashMap<String, Object> valuesTo = new HashMap<>();
-
-		final ProcessInfo pi = getProcessInfo();
-		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
-		for (final ProcessClassParamInfo paramInfo : processClassInfo.getParameterInfos())
-		{
-			final Object fieldValue = getAnnotatedParamFieldValue(paramInfo);
-			if (paramInfo.isParameterTo())
-			{
-				valuesTo.put(paramInfo.getParameterName(), fieldValue);
-			}
-			else
-			{
-				values.put(paramInfo.getParameterName(), fieldValue);
-			}
-		}
-
-		return RangeAwareParams.ofMaps(values, valuesTo);
+		return getProcessClassInfo().extractRangeAwareParams(this);
 	}
 
-	@Nullable
-	private Object getAnnotatedParamFieldValue(final ProcessClassParamInfo paramInfo)
+	protected final String toInternalParameterName(@NonNull final String externalParameterName)
 	{
-		final Field field = getAnnotatedParamField(paramInfo);
-		if (field == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			if(!field.isAccessible())
-			{
-				field.setAccessible(true);
-			}
-
-			return field.get(this);
-		}
-		catch (final Exception ex)
-		{
-			log.warn("Cannot get field's value: {}", field, ex);
-			return null;
-		}
+		return getProcessClassInfo().toInternalParameterName(externalParameterName);
 	}
 
 	/**
@@ -559,7 +487,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Ends current transaction, if a local transaction.
-	 *
 	 * This method can be called as many times as possible and even if the transaction was not started before.
 	 */
 	private void endTrx(final boolean success)
@@ -693,7 +620,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * <b>Important:</b> This method is also run out of transaction of only the {@link #doIt()} method is annotated like this.
 	 *
 	 * @throws ProcessCanceledException in case there is a cancel request on prepare
-	 * @throws RuntimeException in case of any failure
+	 * @throws RuntimeException         in case of any failure
 	 */
 	protected void prepare()
 	{
@@ -702,15 +629,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Actual process business logic to be executed.
-	 *
 	 * This method is called after {@link #prepare()}.
-	 *
 	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}.
 	 * By default, this method is executed in transaction.
 	 *
 	 * @return Message (variables are parsed)
 	 * @throws ProcessCanceledException in case there is a cancel request on doIt
-	 * @throws Exception if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
+	 * @throws Exception                if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
 	 */
 	abstract protected String doIt() throws Exception;
 
@@ -750,7 +675,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		{
 			trxManager.commit(m_trx.getTrxName());
 		}
-	}	// commit
+	}    // commit
 
 	/**
 	 * Commit and throw exception if error
@@ -885,7 +810,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
 
-	/** @return selected included row IDs of current single selected document */
+	/**
+	 * @return selected included row IDs of current single selected document
+	 */
 	protected final <T> Set<Integer> getSelectedIncludedRecordIds(final Class<T> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
@@ -895,7 +822,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** @return selected included rows of current single selected document */
+	/**
+	 * @return selected included rows of current single selected document
+	 */
 	protected final <T> List<T> getSelectedIncludedRecords(final Class<T> modelClass)
 	{
 		final Set<Integer> recordIds = getSelectedIncludedRecordIds(modelClass);
@@ -970,7 +899,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Gets parameters as array.
-	 *
 	 * Please consider using {@link #getParameters()}.
 	 *
 	 * @return parameters array
@@ -978,7 +906,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final ProcessInfoParameter[] getParametersAsArray()
 	{
 		final List<ProcessInfoParameter> parameters = getProcessInfo().getParameter();
-		return parameters.toArray(new ProcessInfoParameter[parameters.size()]);
+		return parameters.toArray(new ProcessInfoParameter[0]);
 	}
 
 	/**
@@ -1008,7 +936,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
 		getResult().addLog(id, date, number, msg);
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Add Log, if the given <code>msg<code> is not <code>null</code>
@@ -1023,7 +951,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
 		}
 		return this;
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Return the main transaction of the current process.
@@ -1098,7 +1026,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
-	 *
 	 * If this exception is thrown:
 	 * <ul>
 	 * <li>the process will be terminated right away
