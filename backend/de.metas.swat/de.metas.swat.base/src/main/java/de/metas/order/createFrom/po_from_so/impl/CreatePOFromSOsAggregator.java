@@ -8,6 +8,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
@@ -17,6 +18,7 @@ import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
@@ -35,6 +37,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static de.metas.order.createFrom.po_from_so.impl.CreatePOLineFromSOLinesAggregationKeyBuilder.SYSCONFIG_GROUP_LINES_BY_PROMISED_DATE;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
 /*
@@ -83,6 +86,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
@@ -332,7 +336,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		purchaseOrder.setUser1_ID(salesOrder.getUser1_ID());
 		purchaseOrder.setUser2_ID(salesOrder.getUser2_ID());
 		purchaseOrder.setC_Currency_ID(salesOrder.getC_Currency_ID());
-		purchaseOrder.setDatePromised(salesOrder.getDatePromised());
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_GROUP_LINES_BY_PROMISED_DATE, false, ClientAndOrgId.ofClientAndOrg(salesOrder.getAD_Client_ID(), salesOrder.getAD_Org_ID())))
+		{
+			purchaseOrder.setDatePromised(salesOrder.getDatePromised());
+		}
 		//
 
 		InterfaceWrapperHelper.save(purchaseOrder);
