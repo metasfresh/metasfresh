@@ -332,6 +332,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		purchaseOrder.setUser1_ID(salesOrder.getUser1_ID());
 		purchaseOrder.setUser2_ID(salesOrder.getUser2_ID());
 		purchaseOrder.setC_Currency_ID(salesOrder.getC_Currency_ID());
+		purchaseOrder.setDatePromised(salesOrder.getDatePromised());
 		//
 
 		InterfaceWrapperHelper.save(purchaseOrder);
