@@ -508,54 +508,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		}
 	}
 
-	/**
-	 * @implSpec <a href="https://github.com/metasfresh/metasfresh-webui/issues/209">task</a>
-	 */
-	private void printReceiptLabel(@Nullable final HUToReport hu, final int vendorBPartnerId)
-	{
-		if (hu == null)
-		{
-			logger.debug("Param 'hu'==null; nothing to do");
-			return;
-		}
-
-		final HUReportService huReportService = HUReportService.get();
-		if (!huReportService.isReceiptLabelAutoPrintEnabled(vendorBPartnerId))
-		{
-			logger.debug("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
-			return;
-		}
-
-		if (!hu.isTopLevel())
-		{
-			logger.debug("We only print top level HUs; nothing to do; hu={}", hu);
-			return;
-		}
-
-		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
-		if (adProcessId == null)
-		{
-			logger.debug("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
-			return;
-		}
-
-		final List<HUToReport> husToProcess = huReportService
-				.getHUsToProcess(hu, adProcessId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-		if (husToProcess.isEmpty())
-		{
-			logger.debug("The selected hu does not match process {}; nothing to do; hu={}", adProcessId, hu);
-			return;
-		}
-
-		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
-
-		HUReportExecutor.newInstance(Env.getCtx())
-				.numberOfCopies(copies)
-				.executeHUReportAfterCommit(adProcessId, husToProcess);
-	}
-
 	@Override
 	public IAllocationRequest setInitialAttributeValueDefaults(final IAllocationRequest request,
 															   final Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules)
