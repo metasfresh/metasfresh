@@ -79,6 +79,13 @@ public class SAPContentSourceLocalFile
 	@Nullable
 	UserId approvedBy;
 
+	// conversion rate
+	@Nullable
+	String targetDirectoryConversionRate;
+
+	@Nullable
+	String fileNamePatternConversionRate;
+
 	@Builder
 	public SAPContentSourceLocalFile(
 			@NonNull final String rootLocation,
@@ -91,7 +98,9 @@ public class SAPContentSourceLocalFile
 			@Nullable final String fileNamePatternBPartner,
 			@Nullable final String targetDirectoryCreditLimit,
 			@Nullable final String fileNamePatternCreditLimit,
-			@Nullable final UserId approvedBy)
+			@Nullable final UserId approvedBy,
+			@Nullable final String targetDirectoryConversionRate,
+			@Nullable final String fileNamePatternConversionRate)
 	{
 		this.rootLocation = rootLocation;
 		this.processedDirectory = processedDirectory;
@@ -104,6 +113,8 @@ public class SAPContentSourceLocalFile
 		this.targetDirectoryCreditLimit = targetDirectoryCreditLimit;
 		this.fileNamePatternCreditLimit = fileNamePatternCreditLimit;
 		this.approvedBy = approvedBy;
+		this.targetDirectoryConversionRate = targetDirectoryConversionRate;
+		this.fileNamePatternConversionRate = fileNamePatternConversionRate;
 	}
 
 	@NonNull
@@ -126,17 +137,23 @@ public class SAPContentSourceLocalFile
 		final String creditLimitFileLookupInfo = Strings.nullToEmpty(targetDirectoryCreditLimit)
 				.concat(Strings.nullToEmpty(fileNamePatternCreditLimit));
 
+		final String conversionRateFileLookupInfo = Strings.nullToEmpty(targetDirectoryConversionRate)
+				.concat(Strings.nullToEmpty(fileNamePatternConversionRate));
+
 		final boolean isFileLookupInfoDuplicated;
 		switch (sapExternalRequest)
 		{
 			case START_BPARTNER_SYNC_LOCAL_FILE:
-				isFileLookupInfoDuplicated = bpartnerFileLookupInfo.equals(productFileLookupInfo) || bpartnerFileLookupInfo.equals(creditLimitFileLookupInfo);
+				isFileLookupInfoDuplicated = bpartnerFileLookupInfo.equals(productFileLookupInfo) || bpartnerFileLookupInfo.equals(creditLimitFileLookupInfo) || bpartnerFileLookupInfo.equals(conversionRateFileLookupInfo);
 				break;
 			case START_PRODUCT_SYNC_LOCAL_FILE:
-				isFileLookupInfoDuplicated = productFileLookupInfo.equals(bpartnerFileLookupInfo) || productFileLookupInfo.equals(creditLimitFileLookupInfo);
+				isFileLookupInfoDuplicated = productFileLookupInfo.equals(bpartnerFileLookupInfo) || productFileLookupInfo.equals(creditLimitFileLookupInfo) || productFileLookupInfo.equals(conversionRateFileLookupInfo);
 				break;
 			case START_CREDIT_LIMIT_SYNC_LOCAL_FILE:
-				isFileLookupInfoDuplicated = creditLimitFileLookupInfo.equals(productFileLookupInfo) || creditLimitFileLookupInfo.equals(bpartnerFileLookupInfo);
+				isFileLookupInfoDuplicated = creditLimitFileLookupInfo.equals(productFileLookupInfo) || creditLimitFileLookupInfo.equals(bpartnerFileLookupInfo) || creditLimitFileLookupInfo.equals(conversionRateFileLookupInfo);
+				break;
+			case START_CONVERSION_RATE_SYNC_LOCAL_FILE:
+				isFileLookupInfoDuplicated = conversionRateFileLookupInfo.equals(productFileLookupInfo) || conversionRateFileLookupInfo.equals(bpartnerFileLookupInfo) || conversionRateFileLookupInfo.equals(creditLimitFileLookupInfo);
 				break;
 			default:
 				throw new AdempiereException("Unexpected sapExternalRequest=" + sapExternalRequest.getCode());

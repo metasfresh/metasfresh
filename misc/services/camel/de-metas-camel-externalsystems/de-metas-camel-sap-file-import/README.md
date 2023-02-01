@@ -7,6 +7,7 @@
 * `Product`
 * `BPartner`
 * `CreditLimit`
+* `ConversionRate`
 
 ## Values computed in metasfresh
 
@@ -22,6 +23,8 @@
 * `JsonExternalSystemRequest.parameters.SFTPBPartnerFileNamePattern`
 * `JsonExternalSystemRequest.parameters.SFTP_CreditLimit_Target_Directory`
 * `JsonExternalSystemRequest.parameters.SFTPCreditLimitFileNamePattern`
+* `JsonExternalSystemRequest.parameters.SFTP_ConversionRate_Target_Directory`
+* `JsonExternalSystemRequest.parameters.SFTPConversionRateFileNamePattern`
 * `JsonExternalSystemRequest.parameters.SFTPProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPErroredDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPPollingFrequencyInMs`
@@ -36,6 +39,8 @@
 * `JsonExternalSystemRequest.parameters.LocalFileBPartnerFileNamePattern`
 * `JsonExternalSystemRequest.parameters.LocalFile_CreditLimit_Target_Directory`
 * `JsonExternalSystemRequest.parameters.LocalFileCreditLimitFileNamePattern`
+* `JsonExternalSystemRequest.parameters.LocalFile_ConversionRate_Target_Directory`
+* `JsonExternalSystemRequest.parameters.LocalFileConversionRateFileNamePattern`
 * `JsonExternalSystemRequest.parameters.LocalFileProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFileErroredDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFilePollingFrequencyInMs`
@@ -244,7 +249,6 @@ Configs available in `Externalsystem_Config_SAP_LocalFile`:
 | Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
 | Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                   |
 
-
 1. CreditLimit - all `metasfresh-column` values refer to `C_BPartner_CreditLimit` columns
 
 | SAP                              | metasfresh-column                       | mandatory in mf   | metasfresh-json                                        | note                                                                                                                                                                                                              |
@@ -260,3 +264,53 @@ Configs available in `Externalsystem_Config_SAP_LocalFile`:
 | ----                             | ----                                    | N                 | JsonRequestCreditLimitUpsert.syncAdvise                | default value `CREATE_OR_MERGE`                                                                                                                                                                                   |
 | CreditLimitRow.DeleteFlag        | `IsActive`                              | Y                 | ----                                                   | if `CreditLimitRow.DeleteFlag` = `Y` => `isActive` = `N` ELSE check `CreditLimitRow.EffectiveDateFrom` and `CreditLimitRow.EffectiveDateTo`                                                                       |
 | CreditLimitRow.CreditType        | ----                                    | N                 | ----                                                   | ----                                                                                                                                                                                                              |
+
+## **SAP => metasfresh conversion_rate**
+
+* `ConversionRate` - pulled via an SFTP camel route
+
+First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startConversionRateSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopConversionRateSyncSFTP` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_SFTP`:
+
+| Column name                         | Accepted values | Description                                                                                                                    |
+|-------------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------|
+| Hostname                            | string          | sftp server hostname                                                                                                           |
+| Port                                | number          | sftp server port                                                                                                               |
+| Username                            | string          | sftp server authentication username                                                                                            |
+| Password                            | string          | sftp server authentication password                                                                                            | 
+| Conversion Rate Target Directory    | string          | the location used to pull conversion rate files from the sftp server                                                           |
+| Conversion Rate Filename Pattern    | string          | regex used to identify ConversionRate-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory                 | string          | the location where the processed files will be moved                                                                           | 
+| Errored Directory                   | string          | the location where the files will be moved in case of error while processing                                                   |
+| Polling Frequency In Milliseconds   | number          | the frequency used to poll files from the sftp server (in milliseconds)                                                        |
+
+* `ConversionRate` - pulled via a local file camel route
+
+First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startConversionRateSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopConversionRateSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_LocalFile`:
+
+| Column name                       | Accepted values | Description                                                                                                                 |
+|-----------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                       |
+| Conversion Rate Target Directory  | string          | the location used to pull conversion rate files from the local machine                                                         |
+| Conversion Rate Filename Pattern  | string          | regex used to identify ConversionRate-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                        | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                   |
+
+1. ConversionRate - all `metasfresh-column` values refer to `C_Conversion_Rate` columns
+
+| SAP                         | metasfresh-column                        | mandatory in mf | metasfresh-json                                    | note                                                                                                                                   |
+|-----------------------------|------------------------------------------|-----------------|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| ConversionRateRow.ExRT      |                                          |                 |                                                    | if `ConversionRateRow.ExRT` == `EURX` => JsonRequestConversionRateUpsertItem.ConversionType = `Company`, else `default conversionType` |
+| ConversionRateRow.From      | `C_Currency_ID`                          | Y               | JsonRequestConversionRateUpsertItem.CurrencyFrom   |                                                                                                                                        |
+| ConversionRateRow.To        | `C_Currency_ID_To`                       | Y               | JsonRequestConversionRateUpsertItem.CurrencyTo     |                                                                                                                                        |
+| ----                        | `C_ConversionRate.C_ConversionType.Name` | Y               | JsonRequestConversionRateUpsertItem.ConversionType | computed based on `ConversionRateRow.ExRT`                                                                                               |
+| ConversionRateRow.ValidFrom | `C_ConversionRate.ValidFrom`             | Y               | JsonRequestConversionRateUpsertItem.ValidFrom      |                                                                                                                                        |
+| ConversionRateRow.IndirQuot | `C_ConversionRate.DivideRate`            | Y               | JsonRequestConversionRateUpsertItem.DivideRate     | computed based on `ConversionRateRow.IndirQuot`                                                                                          |
