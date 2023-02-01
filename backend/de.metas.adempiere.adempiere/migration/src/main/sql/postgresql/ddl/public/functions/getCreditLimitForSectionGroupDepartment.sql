@@ -24,11 +24,11 @@ FROM C_BPartner sectionGroupPartner
 WHERE sectionGroupPartner.c_bpartner_id = p_section_group_partner_id
   AND dep.m_department_id = p_m_department_ID
   AND ((lim.processed = 'Y' and lim.isactive = 'Y') OR (lim.processed = 'N' and lim.isactive = 'N'))
-  AND lim.datefrom < p_date
+  AND lim.datefrom <= p_date
   AND NOT EXISTS(SELECT 1
                  FROM c_bpartner_creditlimit lim2
-                 WHERE lim2.datefrom > lim.datefrom
-                   AND lim2.datefrom < p_Date
+                 WHERE lim2.datefrom >= lim.datefrom
+                   AND lim2.datefrom <= p_Date
                    AND ((lim2.processed = 'Y' and lim2.isactive = 'Y') OR (lim2.processed = 'N' and lim2.isactive = 'N')))
 
 GROUP BY sectionPartner.section_group_partner_id, dep.m_department_id
