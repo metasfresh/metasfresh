@@ -68,7 +68,6 @@ import java.util.Set;
  * <li>{@link Param} annotation if you want to avoid implementing the {@link #prepare()} method
  * <li>{@link NestedParams} annotation if to use a POJO which has fields annotated with {@link Param}
  * <li>{@link Profile} annotation if you want want to show/hide this process to/from Gear based on spring profiles
- * <li>{@link ClientOnlyProcess} annotation if you want to mark the process as client only
  * </ul>
  *
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
