@@ -130,15 +130,9 @@ public class ForexContractParameters
 
 		if (ForexContractParameters.PARAM_C_ForeignExchangeContract_ID.equals(parameterName))
 		{
-			this.fromCurrencyId = CoalesceUtil.coalesce(
-					contracts.suggestFromCurrencyId(forexContractId),
-					this.fromCurrencyId);
-			this.toCurrencyId = CoalesceUtil.coalesce(
-					contracts.suggestToCurrencyId(forexContractId),
-					this.toCurrencyId);
-			this.currencyRate = CoalesceUtil.coalesce(
-					contracts.suggestCurrencyRate(forexContractId),
-					this.currencyRate);
+			this.fromCurrencyId = CoalesceUtil.coalesce(contracts.suggestFromCurrencyId(forexContractId), this.fromCurrencyId);
+			this.toCurrencyId = CoalesceUtil.coalesce(contracts.suggestToCurrencyId(forexContractId), this.toCurrencyId);
+			this.currencyRate = CoalesceUtil.coalesce(contracts.suggestCurrencyRate(forexContractId), this.currencyRate);
 		}
 		else if (ForexContractParameters.PARAM_FEC_Order_Currency_ID.equals(parameterName)
 				|| ForexContractParameters.PARAM_FEC_From_Currency_ID.equals(parameterName)
