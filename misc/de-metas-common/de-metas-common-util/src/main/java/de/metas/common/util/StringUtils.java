@@ -229,6 +229,12 @@ public final class StringUtils
 		{
 			return null;
 		}
+		return ofBooleanNonNull(value);
+	}
+
+	@NonNull
+	public static String ofBooleanNonNull(@NonNull final Boolean value)
+	{
 		return value ? "Y" : "N";
 	}
 
