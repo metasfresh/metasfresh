@@ -38,7 +38,7 @@ Feature: reversed shipment
     When the inventory identified by inv_1 is completed
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | inv_1                         | hu_1               |
+      | inv_l_1                       | hu_1               |
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
