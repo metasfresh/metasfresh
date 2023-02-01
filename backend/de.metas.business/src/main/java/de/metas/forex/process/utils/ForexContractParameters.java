@@ -1,10 +1,10 @@
 package de.metas.forex.process.utils;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
 import de.metas.money.CurrencyId;
 import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.Param;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -20,6 +20,8 @@ import java.util.Map;
 @Builder
 public class ForexContractParameters
 {
+	public static ForexContractParameters newInstance() {return builder().build();}
+
 	public static final String PARAM_IsFEC = "IsFEC";
 	public static final String PARAM_FEC_Order_Currency_ID = "FEC_Order_Currency_ID";
 	public static final String PARAM_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
@@ -27,11 +29,17 @@ public class ForexContractParameters
 	public static final String PARAM_FEC_To_Currency_ID = "FEC_To_Currency_ID";
 	public static final String PARAM_FEC_CurrencyRate = "FEC_CurrencyRate";
 
-	private boolean isFEC;
-	@Nullable private CurrencyId orderCurrencyId;
+	@Param(parameterName = ForexContractParameters.PARAM_IsFEC)
+	private final boolean isFEC;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_Order_Currency_ID)
+	@Nullable private final CurrencyId orderCurrencyId;
+	@Param(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID)
 	@Nullable private ForexContractId forexContractId;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_From_Currency_ID)
 	@Nullable private CurrencyId fromCurrencyId;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_To_Currency_ID)
 	@Nullable private CurrencyId toCurrencyId;
+	@Param(parameterName = ForexContractParameters.PARAM_FEC_CurrencyRate)
 	@Nullable private BigDecimal currencyRate;
 
 	public static ForexContractParameters ofParams(@NonNull final IParams params)
@@ -130,15 +138,12 @@ public class ForexContractParameters
 
 		if (ForexContractParameters.PARAM_C_ForeignExchangeContract_ID.equals(parameterName))
 		{
-			this.fromCurrencyId = CoalesceUtil.coalesce(
-					contracts.suggestFromCurrencyId(forexContractId),
-					this.fromCurrencyId);
-			this.toCurrencyId = CoalesceUtil.coalesce(
-					contracts.suggestToCurrencyId(forexContractId),
-					this.toCurrencyId);
-			this.currencyRate = CoalesceUtil.coalesce(
-					contracts.suggestCurrencyRate(forexContractId),
-					this.currencyRate);
+			if(forexContractId != null)
+			{
+				this.fromCurrencyId = contracts.suggestFromCurrencyId(forexContractId);
+				this.toCurrencyId = contracts.suggestToCurrencyId(forexContractId);
+				this.currencyRate = contracts.suggestCurrencyRate(forexContractId);
+			}
 		}
 		else if (ForexContractParameters.PARAM_FEC_Order_Currency_ID.equals(parameterName)
 				|| ForexContractParameters.PARAM_FEC_From_Currency_ID.equals(parameterName)

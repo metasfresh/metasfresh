@@ -28,7 +28,6 @@ package de.metas.invoicecandidate.process;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
-import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractService;
 import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
@@ -37,7 +36,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessDefaultParameter;
@@ -46,8 +44,8 @@ import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.NestedParams;
 import de.metas.process.PInstanceId;
-import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.ProcessPreconditionsResolution.ProcessCaptionMapper;
@@ -75,7 +73,6 @@ import org.compiere.util.Ini;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
@@ -91,24 +88,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
 
-	//
-	// FEC Parameters
-	@Param(parameterName = ForexContractParameters.PARAM_IsFEC)
-	private boolean p_IsForexContract;
-
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_Order_Currency_ID)
-	private CurrencyId p_FEC_Order_Currency_ID;
-
-	@Param(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID)
-	private ForexContractId p_forexContractId;
-
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_From_Currency_ID)
-	private CurrencyId p_FEC_From_Currency_ID;
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_To_Currency_ID)
-	private CurrencyId p_FEC_To_Currency_ID;
-
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_CurrencyRate)
-	private BigDecimal p_FEC_CurrencyRate;
+	@NestedParams
+	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
 
 	private final Supplier<ForexContracts> forexContractsSupplier = Suppliers.memoize(this::retrieveContracts);
 
@@ -168,37 +149,13 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		return getForexContractParameters().getParameterDefaultValue(parameter.getColumnName(), getContracts());
+		return p_FECParams.getParameterDefaultValue(parameter.getColumnName(), getContracts());
 	}
 
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		updateForexContractParameters(params -> params.updateOnParameterChanged(parameterName, getContracts()));
-	}
-
-	private ForexContractParameters getForexContractParameters()
-	{
-		return ForexContractParameters.builder()
-				.isFEC(p_IsForexContract)
-				.orderCurrencyId(p_FEC_Order_Currency_ID)
-				.forexContractId(p_forexContractId)
-				.fromCurrencyId(p_FEC_From_Currency_ID)
-				.toCurrencyId(p_FEC_To_Currency_ID)
-				.currencyRate(p_FEC_CurrencyRate)
-				.build();
-	}
-
-	private void updateForexContractParameters(@NonNull final Consumer<ForexContractParameters> updater)
-	{
-		final ForexContractParameters params = getForexContractParameters();
-		updater.accept(params);
-		this.p_IsForexContract = params.isFEC();
-		this.p_FEC_Order_Currency_ID = params.getOrderCurrencyId();
-		this.p_forexContractId = params.getForexContractId();
-		this.p_FEC_From_Currency_ID = params.getFromCurrencyId();
-		this.p_FEC_To_Currency_ID = params.getToCurrencyId();
-		this.p_FEC_CurrencyRate = params.getCurrencyRate();
+		p_FECParams.updateOnParameterChanged(parameterName, getContracts());
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
