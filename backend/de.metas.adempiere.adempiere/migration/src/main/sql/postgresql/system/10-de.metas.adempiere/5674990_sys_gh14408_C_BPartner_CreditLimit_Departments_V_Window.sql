@@ -1119,3 +1119,379 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710809,0,546755,550265,614935,'F',TO_TIMESTAMP('2023-02-01 23:10:43','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','N','N','Sektion',140,0,0,TO_TIMESTAMP('2023-02-01 23:10:43','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+
+
+-- 2023-02-01T21:41:52.239Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581987,0,TO_TIMESTAMP('2023-02-01 23:41:52','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Credit Usage','Credit Usage',TO_TIMESTAMP('2023-02-01 23:41:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-01T21:41:52.240Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581987 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Tab: Credit Limit (Departments)(541667,D) -> Credit Usage
+-- Table: C_BPartner_CreditLimit_Departments_V
+-- 2023-02-01T21:42:20.388Z
+UPDATE AD_Tab SET AD_Element_ID=581987, CommitWarning=NULL, Description=NULL, Help=NULL, Name='Credit Usage',Updated=TO_TIMESTAMP('2023-02-01 23:42:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546755
+;
+
+-- 2023-02-01T21:42:20.389Z
+UPDATE AD_Tab_Trl trl SET Name='Credit Usage' WHERE AD_Tab_ID=546755 AND AD_Language='de_DE'
+;
+
+-- 2023-02-01T21:42:20.391Z
+/* DDL */  select update_tab_translation_from_ad_element(581987) 
+;
+
+-- 2023-02-01T21:42:20.396Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(546755)
+;
+
+
+
+
+
+-- Name: Credit Limit (Departments)
+-- Action Type: W
+-- Window: Credit Limit (Departments)(541667,D)
+-- 2023-02-01T21:12:48.469Z
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,581986,542045,0,541667,TO_TIMESTAMP('2023-02-01 23:12:48','YYYY-MM-DD HH24:MI:SS'),100,'D','C_BPartner_CreditLimit_Departments_V','Y','N','N','N','N','Credit Limit (Departments)',TO_TIMESTAMP('2023-02-01 23:12:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-01T21:12:48.471Z
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Menu_ID=542045 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2023-02-01T21:12:48.472Z
+INSERT INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 542045, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=542045)
+;
+
+-- 2023-02-01T21:12:48.484Z
+/* DDL */  select update_menu_translation_from_ad_element(581986) 
+;
+
+-- Reordering children of `Logistics`
+-- Node name: `Tour (M_Tour)`
+-- 2023-02-01T21:12:49.079Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540796 AND AD_Tree_ID=10
+;
+
+-- Node name: `Tourversion (M_TourVersion)`
+-- 2023-02-01T21:12:49.081Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540798 AND AD_Tree_ID=10
+;
+
+-- Node name: `Delivery Days (M_DeliveryDay)`
+-- 2023-02-01T21:12:49.082Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540797 AND AD_Tree_ID=10
+;
+
+-- Node name: `Distribution Order (DD_Order)`
+-- 2023-02-01T21:12:49.083Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540829 AND AD_Tree_ID=10
+;
+
+-- Node name: `Distributions Editor (DD_OrderLine)`
+-- 2023-02-01T21:12:49.083Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540973 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Instruction (M_HU_PI)`
+-- 2023-02-01T21:12:49.085Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540830 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Instruction Version (M_HU_PI_Version)`
+-- 2023-02-01T21:12:49.086Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540831 AND AD_Tree_ID=10
+;
+
+-- Node name: `CU-TU Allocation (M_HU_PI_Item_Product)`
+-- 2023-02-01T21:12:49.087Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541375 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Material (M_HU_PackingMaterial)`
+-- 2023-02-01T21:12:49.088Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540844 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit (M_HU)`
+-- 2023-02-01T21:12:49.089Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540846 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packaging code (M_HU_PackagingCode)`
+-- 2023-02-01T21:12:49.090Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541384 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Transaction (M_HU_Trx_Line)`
+-- 2023-02-01T21:12:49.091Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540977 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit (HU) Tracing (M_HU_Trace)`
+-- 2023-02-01T21:12:49.092Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540900 AND AD_Tree_ID=10
+;
+
+-- Node name: `Delivery Planning (M_Delivery_Planning)`
+-- 2023-02-01T21:12:49.093Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542021 AND AD_Tree_ID=10
+;
+
+-- Node name: `Delivery Instruction (M_ShipperTransportation)`
+-- 2023-02-01T21:12:49.094Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542032 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transport Disposition (M_Tour_Instance)`
+-- 2023-02-01T21:12:49.095Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540856 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transport Delivery (M_DeliveryDay_Alloc)`
+-- 2023-02-01T21:12:49.096Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540857 AND AD_Tree_ID=10
+;
+
+-- Node name: `Material Transactions (M_Transaction)`
+-- 2023-02-01T21:12:49.096Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=17, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540860 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transportation Order (M_ShipperTransportation)`
+-- 2023-02-01T21:12:49.097Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540866 AND AD_Tree_ID=10
+;
+
+-- Node name: `Package (M_Package)`
+-- 2023-02-01T21:12:49.098Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=19, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541057 AND AD_Tree_ID=10
+;
+
+-- Node name: `Internal Use (M_Inventory)`
+-- 2023-02-01T21:12:49.099Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=20, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540918 AND AD_Tree_ID=10
+;
+
+-- Node name: `GO! Delivery Orders (GO_DeliveryOrder)`
+-- 2023-02-01T21:12:49.100Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=21, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541011 AND AD_Tree_ID=10
+;
+
+-- Node name: `Der Kurier Delivery Orders (DerKurier_DeliveryOrder)`
+-- 2023-02-01T21:12:49.101Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=22, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541083 AND AD_Tree_ID=10
+;
+
+-- Node name: `DHL Delivery Order (DHL_ShipmentOrder)`
+-- 2023-02-01T21:12:49.102Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=23, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541388 AND AD_Tree_ID=10
+;
+
+-- Node name: `DPD Delivery Order (DPD_StoreOrder)`
+-- 2023-02-01T21:12:49.103Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=24, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541394 AND AD_Tree_ID=10
+;
+
+-- Node name: `Actions`
+-- 2023-02-01T21:12:49.104Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=25, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000057 AND AD_Tree_ID=10
+;
+
+-- Node name: `Reports`
+-- 2023-02-01T21:12:49.105Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=26, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000065 AND AD_Tree_ID=10
+;
+
+-- Node name: `Settings`
+-- 2023-02-01T21:12:49.106Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=27, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000075 AND AD_Tree_ID=10
+;
+
+-- Node name: `HU Reservierung (M_HU_Reservation)`
+-- 2023-02-01T21:12:49.107Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=28, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541117 AND AD_Tree_ID=10
+;
+
+-- Node name: `Service Handling Units (M_HU)`
+-- 2023-02-01T21:12:49.108Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=29, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541572 AND AD_Tree_ID=10
+;
+
+-- Node name: `HU QR Code (M_HU_QRCode)`
+-- 2023-02-01T21:12:49.108Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=30, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541905 AND AD_Tree_ID=10
+;
+
+-- Node name: `Means of Transportation (M_MeansOfTransportation)`
+-- 2023-02-01T21:12:49.109Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=31, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542024 AND AD_Tree_ID=10
+;
+
+-- Node name: `Department (M_Department)`
+-- 2023-02-01T21:12:49.110Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=32, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542041 AND AD_Tree_ID=10
+;
+
+-- Node name: `Credit Limit (Departments)`
+-- 2023-02-01T21:12:49.111Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=33, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542045 AND AD_Tree_ID=10
+;
+
+-- Table: C_BPartner_CreditLimit_Departments_V
+-- 2023-02-01T21:13:11.886Z
+UPDATE AD_Table SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2023-02-01 23:13:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542288
+;
+
+-- Name: Credit Limit (Departments)
+-- Action Type: W
+-- Window: Credit Limit (Departments)(541667,D)
+-- 2023-02-01T21:13:30.885Z
+UPDATE AD_Menu SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-02-01 23:13:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=542045
+;
+
+-- Window: Credit Limit (Departments), InternalName=null
+-- 2023-02-01T21:13:43.131Z
+UPDATE AD_Window SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2023-02-01 23:13:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=541667
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-01T21:15:38.843Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585714,581322,0,30,541640,542288,'Section_Group_Partner_ID',TO_TIMESTAMP('2023-02-01 23:15:38','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N',0,'Section Group Partner',0,0,TO_TIMESTAMP('2023-02-01 23:15:38','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2023-02-01T21:15:38.846Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585714 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-02-01T21:15:38.852Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581322) 
+;
+
+-- Table: C_BPartner_CreditLimit_Departments_V
+-- 2023-02-01T21:16:10.157Z
+UPDATE AD_Table SET AD_Window_ID=541667,Updated=TO_TIMESTAMP('2023-02-01 23:16:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542288
+;
+
+-- Field: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> Section Group Partner
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-01T21:16:24.790Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585714,710810,0,546755,TO_TIMESTAMP('2023-02-01 23:16:24','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Section Group Partner',TO_TIMESTAMP('2023-02-01 23:16:24','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-01T21:16:24.791Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710810 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-02-01T21:16:24.794Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581322) 
+;
+
+-- 2023-02-01T21:16:24.798Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710810
+;
+
+-- 2023-02-01T21:16:24.799Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710810)
+;
+
+-- Field: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> Section Group Partner
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-01T21:16:32.906Z
+UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-02-01 23:16:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710810
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Section Group Partner
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-01T21:17:03.470Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710810,0,546755,550265,614936,'F',TO_TIMESTAMP('2023-02-01 23:17:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Section Group Partner',5,0,0,TO_TIMESTAMP('2023-02-01 23:17:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Section Group Partner
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-01T21:20:24.455Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614936
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Geschäftspartner
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_ID
+-- 2023-02-01T21:20:24.462Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614922
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Department
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_ID
+-- 2023-02-01T21:20:24.468Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614924
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Kredit gewährt
+-- Column: C_BPartner_CreditLimit_Departments_V.SO_CreditUsed
+-- 2023-02-01T21:20:24.475Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614926
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Order Open Amount (Department)
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_Order_OpenAmt
+-- 2023-02-01T21:20:24.482Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614927
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Delivery Credit Used
+-- Column: C_BPartner_CreditLimit_Departments_V.Delivery_CreditUsed
+-- 2023-02-01T21:20:24.491Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614928
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Total Order Value
+-- Column: C_BPartner_CreditLimit_Departments_V.TotalOrderValue
+-- 2023-02-01T21:20:24.499Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614929
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Offene Posten
+-- Column: C_BPartner_CreditLimit_Departments_V.OpenItems
+-- 2023-02-01T21:20:24.507Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614930
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Credit limit
+-- Column: C_BPartner_CreditLimit_Departments_V.CreditLimit
+-- 2023-02-01T21:20:24.514Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614931
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Departments)(546755,D) -> main -> 10 -> default.Währung
+-- Column: C_BPartner_CreditLimit_Departments_V.C_Currency_ID
+-- 2023-02-01T21:20:24.519Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-02-01 23:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614925
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
