@@ -12,8 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14446](https://github.com/metasfresh/metasfresh/issues/14446) Order dispo shall show complete transaction 
   * [#14458](https://github.com/metasfresh/metasfresh/issues/14458) Implement invoice API
-  * [#14444] (https://github.com/metasfresh/metasfresh/issues/14444) Delivery Planning - Delivery Instructions Amendment
+  * [#14444](https://github.com/metasfresh/metasfresh/issues/14444) Delivery Planning - Delivery Instructions Amendment
   * [#14235](https://github.com/metasfresh/metasfresh/issues/14235) Enhance REST-API with cache control
   * [#14402](https://github.com/metasfresh/metasfresh/issues/14402) ExternalSys-Other: Send Address MF to ES (=> C__BPartner_Location) 
   * [#14437](https://github.com/metasfresh/metasfresh/issues/14437) Allow setting manual tax rate for PO lines created via SO to PO process
