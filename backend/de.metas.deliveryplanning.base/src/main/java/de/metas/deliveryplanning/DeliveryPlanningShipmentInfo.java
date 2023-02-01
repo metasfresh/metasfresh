@@ -1,5 +1,6 @@
 package de.metas.deliveryplanning;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -15,8 +16,10 @@ import javax.annotation.Nullable;
 @Builder
 public class DeliveryPlanningShipmentInfo
 {
+	@NonNull private final DeliveryPlanningId deliveryPlanningId;
 	@Nullable private final OrderAndLineId salesOrderAndLineId;
 	@NonNull private final ShipmentScheduleId shipmentScheduleId;
+	@NonNull private final BPartnerId customerId;
 	@Nullable private InOutId shipmentId;
 
 	@Nullable private ColorId shippedStatusColorId;
