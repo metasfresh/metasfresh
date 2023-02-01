@@ -13,23 +13,27 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for EDI_Invoice_FeedbackType complex type.
+ * <p>Java class for EDI_Exp_C_LocationType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="EDI_Invoice_FeedbackType"&gt;
+ * &lt;complexType name="EDI_Exp_C_LocationType"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="C_Invoice_ID" type="{http://www.w3.org/2001/XMLSchema}integer"/&gt;
- *         &lt;element name="EDI_ExportStatus" type="{}EDI_ExportStatusEnum"/&gt;
- *         &lt;element name="EDIErrorMsg" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="Address1" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="Address2" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="Address3" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="Address4" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="C_Country_ID" type="{}Fresh_C_COUNTRY_LOOKUP_COUNTRYCODEType" minOccurs="0"/&gt;
+ *         &lt;element name="City" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="Postal" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="RegionName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *       &lt;attribute ref="{}AD_Client_Value"/&gt;
  *       &lt;attribute ref="{}ReplicationEvent"/&gt;
@@ -47,20 +51,34 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EDI_Invoice_FeedbackType", propOrder = {
-    "cInvoiceID",
-    "ediExportStatus",
-    "ediErrorMsg"
+@XmlType(name = "EDI_Exp_C_LocationType", propOrder = {
+    "address1",
+    "address2",
+    "address3",
+    "address4",
+    "cCountryID",
+    "city",
+    "postal",
+    "regionName"
 })
-public class EDIInvoiceFeedbackType {
+public class EDIExpCLocationType {
 
-    @XmlElement(name = "C_Invoice_ID", required = true)
-    protected BigInteger cInvoiceID;
-    @XmlElement(name = "EDI_ExportStatus", required = true)
-    @XmlSchemaType(name = "string")
-    protected EDIExportStatusEnum ediExportStatus;
-    @XmlElement(name = "EDIErrorMsg")
-    protected String ediErrorMsg;
+    @XmlElement(name = "Address1")
+    protected String address1;
+    @XmlElement(name = "Address2")
+    protected String address2;
+    @XmlElement(name = "Address3")
+    protected String address3;
+    @XmlElement(name = "Address4")
+    protected String address4;
+    @XmlElement(name = "C_Country_ID")
+    protected FreshCCOUNTRYLOOKUPCOUNTRYCODEType cCountryID;
+    @XmlElement(name = "City")
+    protected String city;
+    @XmlElement(name = "Postal")
+    protected String postal;
+    @XmlElement(name = "RegionName")
+    protected String regionName;
     @XmlAttribute(name = "AD_Client_Value")
     protected String adClientValueAttr;
     @XmlAttribute(name = "ReplicationEvent")
@@ -79,75 +97,195 @@ public class EDIInvoiceFeedbackType {
     protected BigInteger adSessionIDAttr;
 
     /**
-     * Gets the value of the cInvoiceID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getCInvoiceID() {
-        return cInvoiceID;
-    }
-
-    /**
-     * Sets the value of the cInvoiceID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setCInvoiceID(BigInteger value) {
-        this.cInvoiceID = value;
-    }
-
-    /**
-     * Gets the value of the ediExportStatus property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EDIExportStatusEnum }
-     *     
-     */
-    public EDIExportStatusEnum getEDIExportStatus() {
-        return ediExportStatus;
-    }
-
-    /**
-     * Sets the value of the ediExportStatus property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EDIExportStatusEnum }
-     *     
-     */
-    public void setEDIExportStatus(EDIExportStatusEnum value) {
-        this.ediExportStatus = value;
-    }
-
-    /**
-     * Gets the value of the ediErrorMsg property.
+     * Gets the value of the address1 property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getEDIErrorMsg() {
-        return ediErrorMsg;
+    public String getAddress1() {
+        return address1;
     }
 
     /**
-     * Sets the value of the ediErrorMsg property.
+     * Sets the value of the address1 property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setEDIErrorMsg(String value) {
-        this.ediErrorMsg = value;
+    public void setAddress1(String value) {
+        this.address1 = value;
+    }
+
+    /**
+     * Gets the value of the address2 property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAddress2() {
+        return address2;
+    }
+
+    /**
+     * Sets the value of the address2 property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAddress2(String value) {
+        this.address2 = value;
+    }
+
+    /**
+     * Gets the value of the address3 property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAddress3() {
+        return address3;
+    }
+
+    /**
+     * Sets the value of the address3 property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAddress3(String value) {
+        this.address3 = value;
+    }
+
+    /**
+     * Gets the value of the address4 property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAddress4() {
+        return address4;
+    }
+
+    /**
+     * Sets the value of the address4 property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAddress4(String value) {
+        this.address4 = value;
+    }
+
+    /**
+     * Gets the value of the cCountryID property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link FreshCCOUNTRYLOOKUPCOUNTRYCODEType }
+     *     
+     */
+    public FreshCCOUNTRYLOOKUPCOUNTRYCODEType getCCountryID() {
+        return cCountryID;
+    }
+
+    /**
+     * Sets the value of the cCountryID property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link FreshCCOUNTRYLOOKUPCOUNTRYCODEType }
+     *     
+     */
+    public void setCCountryID(FreshCCOUNTRYLOOKUPCOUNTRYCODEType value) {
+        this.cCountryID = value;
+    }
+
+    /**
+     * Gets the value of the city property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getCity() {
+        return city;
+    }
+
+    /**
+     * Sets the value of the city property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setCity(String value) {
+        this.city = value;
+    }
+
+    /**
+     * Gets the value of the postal property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPostal() {
+        return postal;
+    }
+
+    /**
+     * Sets the value of the postal property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPostal(String value) {
+        this.postal = value;
+    }
+
+    /**
+     * Gets the value of the regionName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRegionName() {
+        return regionName;
+    }
+
+    /**
+     * Sets the value of the regionName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRegionName(String value) {
+        this.regionName = value;
     }
 
     /**
