@@ -51,6 +51,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -1228,5 +1229,11 @@ public class OrderBL implements IOrderBL
 	public void save(final I_C_Order order)
 	{
 		orderDAO.save(order);
+	}
+
+	@Override
+	public CurrencyId getCurrencyId(final OrderId orderId)
+	{
+		return CurrencyId.ofRepoId(getById(orderId).getC_Currency_ID());
 	}
 }

@@ -204,7 +204,7 @@ public final class CollectionUtils
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	@Nullable
-	public static <T> T singleElementOrDefault(final Collection<T> collection, @Nullable final T defaultValue)
+	public static <T> T singleElementOrDefault(@Nullable final Collection<T> collection, @Nullable final T defaultValue)
 	{
 		if (collection == null)
 		{
@@ -243,6 +243,11 @@ public final class CollectionUtils
 			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
+		if(collection.isEmpty())
+		{
+			return defaultValue;
+		}
+
 		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElementOrDefault(extractedElements, defaultValue);
 	}
@@ -264,6 +269,11 @@ public final class CollectionUtils
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFunction)
 	{
+		if(collection.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return collection
 				.stream()
 				.map(extractFunction)

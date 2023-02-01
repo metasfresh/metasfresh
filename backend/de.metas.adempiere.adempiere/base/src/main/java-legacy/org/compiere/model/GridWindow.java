@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.swing.Icon;
 
+import de.metas.util.ColorId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -70,10 +71,6 @@ public class GridWindow implements Serializable
 	private static final long serialVersionUID = 3342733142743698614L;
 
 	/**
-	 * 	Get Grid Window
-	 *  @param ctx context
-	 *  @param WindowNo window no for ctx
-	 *  @param AD_Window_ID window id
 	 *	@return window or null if not found
 	 */
 	public static GridWindow get (Properties ctx, int WindowNo, AdWindowId adWindowId)
@@ -82,11 +79,6 @@ public class GridWindow implements Serializable
 	}
 	
 	/**
-	 * 	Get Grid Window
-	 *  @param ctx context
-	 *  @param WindowNo window no for ctx
-	 *  @param AD_Window_ID window id
-	 *  @param virtual
 	 *	@return window or null if not found
 	 */
 	public static GridWindow get (Properties ctx, int WindowNo, AdWindowId adWindowId, boolean virtual)
@@ -109,11 +101,6 @@ public class GridWindow implements Serializable
 		this(vo, false);
 	}
 	
-	/**************************************************************************
-	 *	Constructor
-	 *  @param vo value object
-	 *  @param virtual
-	 */
 	public GridWindow (GridWindowVO vo, boolean virtual)
 	{
 		m_vo = vo;
@@ -125,9 +112,9 @@ public class GridWindow implements Serializable
 	}	//	MWindow
 
 	/** Value Object                */
-	private GridWindowVO   	m_vo;
+	private final GridWindowVO m_vo;
 	/** use virtual table			*/
-	private boolean m_virtual;
+	private final boolean m_virtual;
 	/**	Tabs						*/
 	private ArrayList<GridTab>	m_tabs = new ArrayList<>();
 	/** Model last updated			*/
@@ -136,7 +123,7 @@ public class GridWindow implements Serializable
 	/**
 	 * Set of {@link GridTab}s which were already initialized by {@link #initTab(int)} methods.
 	 */
-	private Set<GridTab> initTabs = new IdentityHashSet<>();
+	private final Set<GridTab> initTabs = new IdentityHashSet<>();
 	
 	/**	Logger			*/
 	private static final Logger log = LogManager.getLogger(GridWindow.class);
@@ -181,11 +168,6 @@ public class GridWindow implements Serializable
 		return true;
 	}	//	loadTabData
 
-	/**
-	 * Is tab initialize
-	 * @param index
-	 * @return boolean
-	 */
 	public boolean isTabInitialized(int index)
 	{
 		GridTab mTab = m_tabs.get(index);
@@ -194,7 +176,6 @@ public class GridWindow implements Serializable
 	
 	/**
 	 * Initialise tab and all it's included tabs.
-	 * 
 	 * If tab was already initialized (see {@link #isTabInitialized(int)}), it won't be initialized again.
 	 * 
 	 * @param index tab index
@@ -329,8 +310,8 @@ public class GridWindow implements Serializable
 	 */
 	public MFColor getColor()
 	{
-		final int adColorId = m_vo.getAD_Color_ID();
-		return adColorId > 0 ? Services.get(IColorRepository.class).getColorById(adColorId) : null;
+		final ColorId adColorId = ColorId.ofRepoIdOrNull(m_vo.getAD_Color_ID());
+		return adColorId != null ? Services.get(IColorRepository.class).getColorById(adColorId) : null;
 	}   //  getColor
 
 	/**

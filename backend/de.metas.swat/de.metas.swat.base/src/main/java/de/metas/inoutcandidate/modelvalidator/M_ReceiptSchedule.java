@@ -22,13 +22,9 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
-import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.M_ReceiptSchedule_Create_M_Delivery_Planning;
-import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -50,12 +46,6 @@ import java.math.BigDecimal;
 public class M_ReceiptSchedule
 {
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final DeliveryPlanningService deliveryPlanningService;
-
-	public M_ReceiptSchedule(final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-	}
 
 	@Init
 	public void init()
@@ -186,25 +176,5 @@ public class M_ReceiptSchedule
 	public void updateCanBeExportedAfter(@NonNull final I_M_ReceiptSchedule sched)
 	{
 		receiptScheduleBL.updateCanBeExportedFrom(sched);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void createDeliveryPlanning(@NonNull final I_M_ReceiptSchedule sched)
-	{
-		final boolean autoCreateEnabled = deliveryPlanningService.isAutoCreateEnabled(ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()));
-
-		if (!autoCreateEnabled)
-		{
-			// nothing to do
-
-			return;
-		}
-		M_ReceiptSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void deleteDeliveryPlannings(@NonNull final I_M_ReceiptSchedule receiptSchedule)
-	{
-		deliveryPlanningService.deleteForReceiptSchedule(ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()));
 	}
 }

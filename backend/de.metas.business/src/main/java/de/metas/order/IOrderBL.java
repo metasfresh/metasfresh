@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -277,4 +278,6 @@ public interface IOrderBL extends ISingletonService
 	DocStatus getDocStatus(OrderId orderId);
 
 	void save(I_C_Order order);
+
+	CurrencyId getCurrencyId(final OrderId orderId);
 }

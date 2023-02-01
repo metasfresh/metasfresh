@@ -1,12 +1,13 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.forex.ForexContractId;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
@@ -38,5 +39,7 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 
-	IInOutProducerFromShipmentScheduleWithHU setForexContractId(ForexContractId forexContractId);
+	IInOutProducerFromShipmentScheduleWithHU setForexContractRef(ForexContractRef forexContractRef);
+
+	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(DeliveryPlanningId deliveryPlanningId);
 }

@@ -26,7 +26,6 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
-import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
@@ -39,6 +38,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -1947,27 +1947,18 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CurrencyConversionContext getCurrencyConversionCtx(
-			@NonNull final org.compiere.model.I_C_Invoice invoice,
-			@NonNull final CurrencyId acctCurrencyId)
+	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-
 		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
 				invoice.getDateAcct().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 				ClientId.ofRepoId(invoice.getAD_Client_ID()),
 				OrgId.ofRepoId(invoice.getAD_Org_ID()));
 
-		final BigDecimal currencyRate = invoice.getCurrencyRate();
-		if (currencyRate != null && currencyRate.signum() != 0)
+		final ForexContractRef forexContractRef = InvoiceDAO.extractForeignContractRef(invoice);
+		if (forexContractRef != null)
 		{
-			final FixedConversionRate fixedCurrencyRate = FixedConversionRate.builder()
-					.fromCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
-					.toCurrencyId(acctCurrencyId)
-					.multiplyRate(currencyRate)
-					.build();
-			conversionCtx = conversionCtx.withFixedConversionRate(fixedCurrencyRate);
+			conversionCtx = conversionCtx.withFixedConversionRate(forexContractRef.toFixedConversionRate());
 		}
 
 		return conversionCtx;

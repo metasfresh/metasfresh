@@ -314,4 +314,16 @@ public final class NumberUtils
 
 		return formatter.format(value);
 	}
+
+	@Nullable
+	public static BigDecimal zeroToNull(@Nullable final BigDecimal value)
+	{
+		return value != null && value.signum() != 0 ? value : null;
+	}
+
+	public static boolean equalsByCompareTo(@Nullable final BigDecimal value1, @Nullable final BigDecimal value2)
+	{
+		//noinspection NumberEquality
+		return (value1 == value2) || (value1 != null && value1.compareTo(value2) == 0);
+	}
 }

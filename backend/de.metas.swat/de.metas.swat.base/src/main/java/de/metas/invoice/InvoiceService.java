@@ -34,9 +34,8 @@ import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
@@ -65,7 +64,7 @@ import static org.compiere.util.Env.getCtx;
 @Service
 public class InvoiceService
 {
-	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
+	private final static Logger logger = LogManager.getLogger(InvoiceService.class);
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -183,13 +182,12 @@ public class InvoiceService
 	}
 
 	@NonNull
-	private IInvoicingParams createDefaultIInvoicingParams()
+	private InvoicingParams createDefaultIInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-		invoicingParams.setDateInvoiced(LocalDate.now());
-
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
+				.dateInvoiced(LocalDate.now())
+				.build();
 	}
 }

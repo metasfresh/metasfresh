@@ -17,7 +17,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
@@ -232,11 +232,12 @@ public class HUShippingFacade
 					.setParameter("shipments", shipments);
 		}
 
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-
 		final boolean adhereToInvoiceSchedule = invoiceMode == BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS;
-		invoicingParams.setIgnoreInvoiceSchedule(!adhereToInvoiceSchedule);
-		invoicingParams.setSupplementMissingPaymentTermIds(true); // e.g. "packaging" ICs from shipments might lack the order's payment term, but we still want them to be in the same invoice, unless they explicitly have a different payment term.
+
+		final InvoicingParams invoicingParams = InvoicingParams.builder()
+				.ignoreInvoiceSchedule(!adhereToInvoiceSchedule)
+				.supplementMissingPaymentTermIds(true) // e.g. "packaging" ICs from shipments might lack the order's payment term, but we still want them to be in the same invoice, unless they explicitly have a different payment term.
+				.build();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setFailOnChanges(false)

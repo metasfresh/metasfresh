@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -14,9 +15,10 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
-import de.metas.forex.ForexContractId;
+import de.metas.forex.ForexContractRef;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.impl.InOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -42,7 +44,6 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -60,6 +61,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.HashSet;
@@ -127,7 +129,8 @@ public class InOutProducer implements IInOutProducer
 
 	@NonNull
 	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
-	@Nullable private final ForexContractId forexContractId;
+	@Nullable private final ForexContractRef forexContractRef;
+	@Nullable private final DeliveryPlanningId deliveryPlanningId;
 
 	@Nullable // can be null between two InOuts
 	private I_M_InOut _currentReceipt = null;
@@ -138,7 +141,7 @@ public class InOutProducer implements IInOutProducer
 
 	public InOutProducer(final InOutGenerateResult result, final boolean complete)
 	{
-		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null, null);
+		this(result, complete, ReceiptMovementDateRule.CURRENT_DATE, null, null, null);
 	}
 
 	/**
@@ -151,13 +154,15 @@ public class InOutProducer implements IInOutProducer
 			final boolean complete,
 			@NonNull final ReceiptMovementDateRule movementDateRule,
 			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId,
-			@Nullable final ForexContractId forexContractId)
+			@Nullable final ForexContractRef forexContractRef,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.result = result;
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
 		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap::of);
-		this.forexContractId = forexContractId;
+		this.forexContractRef = forexContractRef;
+		this.deliveryPlanningId = deliveryPlanningId;
 	}
 
 	@Override
@@ -474,14 +479,14 @@ public class InOutProducer implements IInOutProducer
 		//
 		// BPartner, Location & Contact
 		{
-			final int bpartnerId = receiptScheduleBL.getC_BPartner_Effective_ID(rs);
+			final BPartnerId bpartnerId = receiptScheduleBL.getBPartnerEffectiveId(rs);
 			final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs);
 			final BPartnerContactId bpartnerContactId = receiptScheduleBL.getBPartnerContactID(rs);
 
 			InOutDocumentLocationAdapterFactory
 					.locationAdapter(receiptHeader)
 					.setFrom(DocumentLocation.builder()
-							.bpartnerId(BPartnerId.ofRepoId(bpartnerId))
+							.bpartnerId(bpartnerId)
 							.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
 							.contactId(bpartnerContactId)
 							.build());
@@ -518,7 +523,7 @@ public class InOutProducer implements IInOutProducer
 		final I_C_Order order = rs.getC_Order();
 
 		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-		if (order != null && propagateToMInOut)
+		if (propagateToMInOut)
 		{
 			receiptHeader.setEMail(order.getEMail());
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
@@ -542,7 +547,8 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setExternalResourceURL(getExternalResourceURL(rs));
 		}
 
-		receiptHeader.setC_ForeignExchangeContract_ID(ForexContractId.toRepoId(forexContractId));
+		InOutDAO.updateRecordFromForeignContractRef(receiptHeader, forexContractRef);
+		receiptHeader.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
 		//
 		// Save & Return
@@ -729,23 +735,20 @@ public class InOutProducer implements IInOutProducer
 
 	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
-		final Timestamp movementDate;
-
-		switch (this.movementDateRule)
+		return movementDateRule.map(new ReceiptMovementDateRule.CaseMapper<Timestamp>()
 		{
-			case ORDER_DATE_PROMISED:
-				movementDate = getPromisedDate(receiptSchedule, context);
-				break;
-			case EXTERNAL_DATE_IF_AVAIL:
-				movementDate = getExternalMovementDate(receiptSchedule, context);
-				break;
-			case CURRENT_DATE:
-				// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
-				movementDate = Env.getDate(context);
-				break;
-			default:
-				throw new AdempiereException("Unknown ReceiptMovementDateRule!");
-		}
-		return movementDate;
+			@Override
+			public Timestamp orderDatePromised() {return getPromisedDate(receiptSchedule, context);}
+
+			@Override
+			public Timestamp externalDateIfAvailable() {return getExternalMovementDate(receiptSchedule, context);}
+
+			// Use Login Date as movement date because some roles will rely on the fact that they can override it (08247)
+			@Override
+			public Timestamp currentDate() {return Env.getDate(context);}
+
+			@Override
+			public Timestamp fixedDate(@NonNull final Instant fixedDate) {return Timestamp.from(fixedDate);}
+		});
 	}
 }
