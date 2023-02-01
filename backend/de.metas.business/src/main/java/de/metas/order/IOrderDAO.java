@@ -137,4 +137,6 @@ public interface IOrderDAO extends ISingletonService
 	void allocatePOLineToSOLine(OrderAndLineId purchaseOrderLineId, OrderAndLineId salesOrderLineId);
 
 	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
+
+	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 }

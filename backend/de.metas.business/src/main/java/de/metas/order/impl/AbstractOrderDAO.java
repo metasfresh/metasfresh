@@ -444,6 +444,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		InterfaceWrapperHelper.save(poLineAllocation);
 	}
 
+	@Override
+	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull final OrderAndLineId purchaseOrderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, purchaseOrderLineId.getOrderLineId())
+				.create()
+				.stream()
+				.map(allocRecord -> OrderAndLineId.ofRepoIds(allocRecord.getC_OrderSO_ID(), allocRecord.getC_SO_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@NonNull
 	private IQueryBuilder<I_C_Order> createQueryBuilder(@NonNull final GetOrdersQuery query)
 	{
