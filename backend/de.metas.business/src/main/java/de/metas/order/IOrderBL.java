@@ -46,6 +46,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -277,4 +278,6 @@ public interface IOrderBL extends ISingletonService
 	void save(I_C_Order order);
 
 	CurrencyId getCurrencyId(final OrderId orderId);
+
+	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 }

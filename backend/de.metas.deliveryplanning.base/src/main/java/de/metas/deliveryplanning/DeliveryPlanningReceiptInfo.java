@@ -15,10 +15,12 @@ import javax.annotation.Nullable;
 @Builder
 public class DeliveryPlanningReceiptInfo
 {
+	@NonNull private final DeliveryPlanningId deliveryPlanningId;
 	@Nullable private final OrderAndLineId purchaseOrderAndLineId;
 	@NonNull private final ReceiptScheduleId receiptScheduleId;
-	@Nullable private InOutId receiptId;
+	boolean isB2B;
 
+	@Nullable private InOutId receiptId;
 	@Nullable private ColorId receivedStatusColorId;
 
 	@Nullable

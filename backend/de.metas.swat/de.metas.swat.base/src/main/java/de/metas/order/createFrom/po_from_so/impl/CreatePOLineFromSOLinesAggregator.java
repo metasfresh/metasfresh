@@ -10,8 +10,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -94,7 +93,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@Nullable
 	private final TaxId taxId;
 
-	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
+	private final IdentityHashMap<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
 	/**
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
@@ -235,8 +234,8 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
 			orderDAO.allocatePOLineToSOLine(
-					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()),
-					OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+					OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()),
+					OrderAndLineId.ofRepoIds(salesOrderLine.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()));
 
 			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
 		}
