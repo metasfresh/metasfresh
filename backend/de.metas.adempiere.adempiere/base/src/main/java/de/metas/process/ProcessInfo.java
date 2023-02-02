@@ -883,9 +883,10 @@ public final class ProcessInfo implements Serializable
 			// Allow using the where clause in expressions.
 			// For example, in a report that exports data, the SQL-Expression could be 
 			// "SELECT DocumentNo, DateOrdered FROM C_Order WHERE @SELECTION_WHERECLAUSE/false@;"
-			if (EmptyUtil.isNotBlank(getWhereClause()))
+			final String whereClause = getWhereClause();
+			if (EmptyUtil.isNotBlank(whereClause))
 			{
-				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause.get());
+				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause);
 			}
 			
 			//
