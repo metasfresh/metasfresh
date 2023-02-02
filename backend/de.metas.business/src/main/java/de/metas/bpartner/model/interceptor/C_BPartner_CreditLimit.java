@@ -4,17 +4,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
-import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_CreditLimit;
-import org.compiere.model.I_C_BPartner_CreditLimit_Department_Lines_V;
-import org.compiere.model.I_C_BPartner_CreditLimit_Departments_V;
 import org.compiere.model.I_C_CreditLimit_Type;
-import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
