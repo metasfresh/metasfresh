@@ -609,3 +609,69 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710816
 ;
 
 
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Usage(546755,D) -> main -> 10 -> default.Credit Limit (Departments)
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_CreditLimit_Departments_v_ID
+-- 2023-02-02T16:28:15.355Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2023-02-02 18:28:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614932
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Geschäftspartner
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.C_BPartner_ID
+-- 2023-02-02T16:28:49.839Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710817,0,546756,550266,615513,'F',TO_TIMESTAMP('2023-02-02 18:28:48','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnet einen Geschäftspartner','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','N','Y','N','N','N',0,'Geschäftspartner',80,0,0,TO_TIMESTAMP('2023-02-02 18:28:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Geschäftspartner
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.C_BPartner_ID
+-- 2023-02-02T16:29:08.036Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615513
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Credit Limit Type
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.C_CreditLimit_Type_ID
+-- 2023-02-02T16:29:08.043Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614938
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Department
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.M_Department_ID
+-- 2023-02-02T16:29:08.050Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614939
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Betrag
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.Amount
+-- 2023-02-02T16:29:08.059Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614940
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Währung
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.C_Currency_ID
+-- 2023-02-02T16:29:08.066Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614941
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Datum von
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.DateFrom
+-- 2023-02-02T16:29:08.073Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614942
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Erstellt durch
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.CreatedBy
+-- 2023-02-02T16:29:08.080Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614937
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Verarbeitet
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.Processed
+-- 2023-02-02T16:29:08.088Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614943
+;
+
+-- UI Element: Credit Limit (Departments)(541667,D) -> Credit Limit (Department)(546756,D) -> main -> 10 -> default.Approved By
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.ApprovedBy_ID
+-- 2023-02-02T16:29:08.096Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614944
+;
+
