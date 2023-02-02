@@ -6,7 +6,6 @@
         "bpartnerIdentifier":"ext-SAP-DIFF_PARTNER_CODE00",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
@@ -94,7 +93,6 @@
         "bpartnerIdentifier":"ext-SAP-DIFF_PARTNER_CODE00_SCOD",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
@@ -179,7 +177,6 @@
               {
                 "locationIdentifier":"ext-SAP-DIFF_PARTNER_CODE01_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
@@ -243,7 +240,6 @@
               {
                 "locationIdentifier":"ext-SAP-DIFF_PARTNER_CODE02_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,

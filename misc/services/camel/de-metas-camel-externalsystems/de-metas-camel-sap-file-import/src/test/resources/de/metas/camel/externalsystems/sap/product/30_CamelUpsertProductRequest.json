@@ -6,7 +6,6 @@
         "productIdentifier": "ext-SAP-PRODUCT_CODE1",
         "externalVersion": null,
         "externalReferenceUrl": null,
-        "isReadOnlyInMetasfresh": true,
         "externalSystemConfigId": 1,
         "requestProduct": {
           "code": "PRODUCT_CODE1 (SCOD)",
