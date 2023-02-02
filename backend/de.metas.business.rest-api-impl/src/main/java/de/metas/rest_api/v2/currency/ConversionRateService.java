@@ -103,42 +103,41 @@ public class ConversionRateService
 			@NonNull final CurrencyId currencyIdFrom,
 			@NonNull final JsonCurrencyRateCreateRequestItem conversionRateUpsertItem)
 	{
-		final ConversionRateCreateRequest.ConversionRateCreateRequestBuilder createRequest = ConversionRateCreateRequest.builder();
-
-		createRequest.orgId(orgId);
-		createRequest.currencyId(currencyIdFrom);
+		final ConversionRateCreateRequest.ConversionRateCreateRequestBuilder createRequestBuilder = ConversionRateCreateRequest.builder()
+				.orgId(orgId)
+				.currencyId(currencyIdFrom);
 
 		//currencyTo
 		if (conversionRateUpsertItem.isCurrencyCodeToSet())
 		{
 			if (conversionRateUpsertItem.getCurrencyCodeTo() == null)
 			{
-				throw new AdempiereException(I_C_Conversion_Rate.Table_Name + ".C_Currency_To_ID cannot be null!");
+				throw new AdempiereException(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To + " cannot be null!");
 			}
 
 			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(conversionRateUpsertItem.getCurrencyCodeTo());
 			final CurrencyId currencyToId = currencyBL.getByCurrencyCode(currencyCode).getId();
 
-			createRequest.currencyToId(currencyToId);
+			createRequestBuilder.currencyToId(currencyToId);
 		}
 
 		// conversionType
 		final CurrencyConversionTypeId conversionTypeId = currencyBL.getCurrencyConversionTypeIdOrDefault(orgId, conversionRateUpsertItem.getConversionType());
 
-		createRequest.conversionTypeId(conversionTypeId);
+		createRequestBuilder.conversionTypeId(conversionTypeId);
 
 		//validFrom
 		if (conversionRateUpsertItem.isValidFromSet())
 		{
 			if (conversionRateUpsertItem.getValidFrom() == null)
 			{
-				throw new AdempiereException(I_C_Conversion_Rate.Table_Name + ".ValidFrom cannot be null!");
+				throw new AdempiereException(I_C_Conversion_Rate.COLUMNNAME_ValidFrom + " cannot be null!");
 			}
 
 			final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 			final Instant validFrom = conversionRateUpsertItem.getValidFrom().atStartOfDay(timeZone).toInstant();
 
-			createRequest.validFrom(validFrom);
+			createRequestBuilder.validFrom(validFrom);
 		}
 
 		//divideRate
@@ -146,27 +145,26 @@ public class ConversionRateService
 		{
 			if (conversionRateUpsertItem.getDivideRate() == null)
 			{
-				throw new AdempiereException(I_C_Conversion_Rate.Table_Name + "I.DivideRate cannot be null!");
+				throw new AdempiereException(I_C_Conversion_Rate.COLUMNNAME_DivideRate + " cannot be null!");
 			}
 
-			createRequest.divideRate(conversionRateUpsertItem.getDivideRate());
-			createRequest.multiplyRate(BigDecimal.ONE.divide(conversionRateUpsertItem.getDivideRate(), 12, RoundingMode.HALF_UP));
+			createRequestBuilder.divideRate(conversionRateUpsertItem.getDivideRate());
+			createRequestBuilder.multiplyRate(BigDecimal.ONE.divide(conversionRateUpsertItem.getDivideRate(), 12, RoundingMode.HALF_UP));
 		}
 
 		//validTo
 		if (conversionRateUpsertItem.isValidToSet())
 		{
-			Instant validTo = null;
 			if (conversionRateUpsertItem.getValidTo() != null)
 			{
 				final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-				validTo = conversionRateUpsertItem.getValidTo().atStartOfDay(timeZone).toInstant();
-			}
+				final Instant validTo = conversionRateUpsertItem.getValidTo().atStartOfDay(timeZone).toInstant();
 
-			createRequest.validTo(validTo);
+				createRequestBuilder.validTo(validTo);
+			}
 		}
 
-		return createRequest.build();
+		return createRequestBuilder.build();
 	}
 
 	@NonNull

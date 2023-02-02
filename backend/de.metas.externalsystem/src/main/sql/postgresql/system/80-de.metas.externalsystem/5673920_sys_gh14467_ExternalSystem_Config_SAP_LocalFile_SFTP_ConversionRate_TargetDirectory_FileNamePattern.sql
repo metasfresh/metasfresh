@@ -223,7 +223,7 @@ UPDATE AD_Element SET Name='Konversionsrate-Zielverzeichnis', PrintName='Konvers
 
 -- Element: SFTP_ConversionRate_TargetDirectory
 -- 2023-01-27T12:15:13.384Z
-UPDATE AD_Element_Trl SET Description='Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird.(Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',Updated=TO_TIMESTAMP('2023-01-27 14:15:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581971 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird. (Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',Updated=TO_TIMESTAMP('2023-01-27 14:15:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581971 AND AD_Language='de_CH'
 ;
 
 -- 2023-01-27T12:15:13.385Z
@@ -232,11 +232,11 @@ UPDATE AD_Element_Trl SET Description='Verzeichnis, das zum Abrufen der Konverti
 
 -- Element: SFTP_ConversionRate_TargetDirectory
 -- 2023-01-27T12:37:17.106Z
-UPDATE AD_Element_Trl SET Description='Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird.(Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',Updated=TO_TIMESTAMP('2023-01-27 14:37:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581971 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird. (Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',Updated=TO_TIMESTAMP('2023-01-27 14:37:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581971 AND AD_Language='de_DE'
 ;
 
 -- 2023-01-27T12:37:17.107Z
-UPDATE AD_Element SET Description='Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird.(Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).' WHERE AD_Element_ID=581971
+UPDATE AD_Element SET Description='Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird. (Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).' WHERE AD_Element_ID=581971
 ;
 
 -- 2023-01-27T12:37:17.570Z
@@ -249,7 +249,7 @@ UPDATE AD_Element SET Description='Verzeichnis, das zum Abrufen der Konvertierun
 
 -- Column: ExternalSystem_Config_SAP_SFTP.SFTP_ConversionRate_TargetDirectory
 -- 2023-01-27T12:37:44.751Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585660,581971,0,10,542257,'SFTP_ConversionRate_TargetDirectory',TO_TIMESTAMP('2023-01-27 14:37:44','YYYY-MM-DD HH24:MI:SS'),100,'N','Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird.(Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).','de.metas.externalsystem',0,255,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Konversionsrate-Zielverzeichnis',0,0,TO_TIMESTAMP('2023-01-27 14:37:44','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585660,581971,0,10,542257,'SFTP_ConversionRate_TargetDirectory',TO_TIMESTAMP('2023-01-27 14:37:44','YYYY-MM-DD HH24:MI:SS'),100,'N','Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird. (Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).','de.metas.externalsystem',0,255,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Konversionsrate-Zielverzeichnis',0,0,TO_TIMESTAMP('2023-01-27 14:37:44','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-01-27T12:37:44.755Z
@@ -323,7 +323,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710686
 -- Field: External system config SAP(541631,de.metas.externalsystem) -> SFTP(546672,de.metas.externalsystem) -> Konversionsrate-Zielverzeichnis
 -- Column: ExternalSystem_Config_SAP_SFTP.SFTP_ConversionRate_TargetDirectory
 -- 2023-01-27T12:41:51.652Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585660,710687,0,546672,0,TO_TIMESTAMP('2023-01-27 14:41:51','YYYY-MM-DD HH24:MI:SS'),100,'Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird.(Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',0,'de.metas.externalsystem',0,'Y','Y','Y','N','N','N','N','N','Konversionsrate-Zielverzeichnis',0,200,0,1,1,TO_TIMESTAMP('2023-01-27 14:41:51','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585660,710687,0,546672,0,TO_TIMESTAMP('2023-01-27 14:41:51','YYYY-MM-DD HH24:MI:SS'),100,'Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird. (Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',0,'de.metas.externalsystem',0,'Y','Y','Y','N','N','N','N','N','Konversionsrate-Zielverzeichnis',0,200,0,1,1,TO_TIMESTAMP('2023-01-27 14:41:51','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-01-27T12:41:51.657Z
@@ -419,7 +419,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- UI Element: External system config SAP(541631,de.metas.externalsystem) -> SFTP(546672,de.metas.externalsystem) -> main -> 10 -> ConversionRate.Konversionsrate-Zielverzeichnis
 -- Column: ExternalSystem_Config_SAP_SFTP.SFTP_ConversionRate_TargetDirectory
 -- 2023-01-27T12:44:50.388Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,710687,0,546672,614888,550259,'F',TO_TIMESTAMP('2023-01-27 14:44:50','YYYY-MM-DD HH24:MI:SS'),100,'Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird.(Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).','Y','N','N','Y','N','N','N',0,'Konversionsrate-Zielverzeichnis',20,0,0,TO_TIMESTAMP('2023-01-27 14:44:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,710687,0,546672,614888,550259,'F',TO_TIMESTAMP('2023-01-27 14:44:50','YYYY-MM-DD HH24:MI:SS'),100,'Verzeichnis, das zum Abrufen der Konvertierungsraten vom sftp-Server verwendet wird. (Wird hier kein Wert angegeben, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).','Y','N','N','Y','N','N','N',0,'Konversionsrate-Zielverzeichnis',20,0,0,TO_TIMESTAMP('2023-01-27 14:44:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- Reference: SAP accepted operations
@@ -484,7 +484,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- Reference Item: SAP accepted operations -> startConversionRateSyncSFTP_import
 -- 2023-01-27T12:59:24.766Z
-UPDATE AD_Ref_List_Trl SET Description='Starts the echange rate sychronization with SAP external system. The conversion rate files are fetched from the configured sftp server.', Name='SFTP - Conversion Rates-Import - Start',Updated=TO_TIMESTAMP('2023-01-27 14:59:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543397
+UPDATE AD_Ref_List_Trl SET Description='Starts the conversion rates sychronization with SAP external system. The conversion rate files are fetched from the configured sftp server.', Name='SFTP - Conversion Rates-Import - Start',Updated=TO_TIMESTAMP('2023-01-27 14:59:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543397
 ;
 
 -- Reference: SAP accepted operations

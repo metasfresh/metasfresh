@@ -59,7 +59,7 @@ public class ConversionRateRepository
 	}
 
 	@NonNull
-	public static ConversionRate ofRecord(@NonNull final I_C_Conversion_Rate conversionRate)
+	private static ConversionRate ofRecord(@NonNull final I_C_Conversion_Rate conversionRate)
 	{
 		return ConversionRate.builder()
 				.conversionRateId(ConversionRateId.ofRepoId(conversionRate.getC_Conversion_Rate_ID()))

@@ -38,6 +38,9 @@ import java.time.Instant;
 public class ConversionRateCreateRequest
 {
 	@NonNull
+	OrgId orgId;
+
+	@NonNull
 	CurrencyId currencyId;
 
 	@NonNull
@@ -57,7 +60,4 @@ public class ConversionRateCreateRequest
 
 	@Nullable
 	Instant validTo;
-
-	@NonNull
-	OrgId orgId;
 }
