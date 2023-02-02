@@ -976,3 +976,21 @@ UPDATE AD_Column SET SeqNo=1,Updated=TO_TIMESTAMP('2023-02-02 02:16:24','YYYY-MM
 
 
 
+
+
+
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-02T10:13:45.444Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-02-02 12:13:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585714
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_ID
+-- 2023-02-02T10:14:09.382Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-02-02 12:14:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585696
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_ID
+-- 2023-02-02T10:14:21.944Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-02-02 12:14:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585698
+;
+
