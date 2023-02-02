@@ -120,4 +120,25 @@ public class NumberUtils
 		}
 	}
 
+	@Nullable
+	public static BigDecimal sumNullSafe(@Nullable final BigDecimal ag1, @Nullable final BigDecimal ag2)
+	{
+		if (ag1 == null && ag2 == null)
+		{
+			return null;
+		}
+		else if (ag1 == null)
+		{
+			return ag2;
+		}
+		else if (ag2 == null)
+		{
+			return ag1;
+		}
+		else
+		{
+			return ag1.add(ag2);
+		}
+	}
+
 }

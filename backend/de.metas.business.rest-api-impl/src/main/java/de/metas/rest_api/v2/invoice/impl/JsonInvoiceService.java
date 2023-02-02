@@ -15,11 +15,10 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.payment.paymentallocation.PaymentToAllocate;
-import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -30,7 +29,6 @@ import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
 import de.metas.common.rest_api.v2.invoice.JsonPaymentDirection;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -67,8 +65,6 @@ import de.metas.order.impl.DocTypeService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.payment.PaymentAmtMultiplier;
-import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.product.IProductBL;
@@ -99,7 +95,9 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import de.metas.util.web.exception.MissingResourceException;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -110,19 +108,22 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.elasticsearch.common.collect.Tuple;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
@@ -177,6 +178,7 @@ public class JsonInvoiceService
 	private final PaymentAllocationRepository paymentAllocationRepository;
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	private final PaymentAllocationService paymentAllocationService;
 
 	public JsonInvoiceService(
 			@NonNull final CurrencyService currencyService,
@@ -188,7 +190,8 @@ public class JsonInvoiceService
 			@NonNull final ElementValueService elementValueService,
 			@NonNull final PaymentAllocationRepository paymentAllocationRepository,
 			@NonNull final MoneyService moneyService,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
+			@NonNull final PaymentAllocationService paymentAllocationService)
 	{
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
@@ -200,6 +203,7 @@ public class JsonInvoiceService
 		this.paymentAllocationRepository = paymentAllocationRepository;
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
+		this.paymentAllocationService = paymentAllocationService;
 	}
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
@@ -267,21 +271,16 @@ public class JsonInvoiceService
 
 	private void createPaymentWithinTrx(@NonNull final JsonInvoicePaymentCreateRequest request)
 	{
-		final List<JsonPaymentAllocationLine> lines = request.getLines();
-		validateAllocationLineAmounts(lines);
+		validateAllocationLineAmounts(request.getLines());
 
 		final OrgId orgId = getOrgId(request.getOrgCode());
 		final CurrencyId currencyId = getCurrencyId(request.getCurrencyCode());
 
-		final ZonedDateTime dateTrx = getDateTrx(request, orgId);
+		final LocalDate transactionDate = request.getTransactionDateOr(SystemTime.asLocalDate());
 
-		final PaymentId paymentId = createPayment(request, orgId, currencyId, dateTrx);
+		final PaymentDocument paymentDocument = createPayment(request, orgId, currencyId, transactionDate);
 
-		createAllocationsForPayment(paymentId,
-									orgId,
-									currencyId,
-									dateTrx,
-									request);
+		allocatePayment(paymentDocument, orgId, currencyId, transactionDate, request);
 	}
 
 	@NonNull
@@ -319,11 +318,11 @@ public class JsonInvoiceService
 				.build();
 	}
 
-	private void createAllocationsForPayment(
-			@NonNull final PaymentId paymentId,
+	private void allocatePayment(
+			@NonNull final PaymentDocument paymentDocument,
 			@NonNull final OrgId orgId,
 			@NonNull final CurrencyId currencyId,
-			@NonNull final ZonedDateTime dateTrx,
+			@NonNull final LocalDate transactionDate,
 			@NonNull final JsonInvoicePaymentCreateRequest request)
 	{
 		final List<JsonPaymentAllocationLine> allocationLines = request.getLines();
@@ -332,30 +331,24 @@ public class JsonInvoiceService
 			return;
 		}
 
-		final ImmutableList.Builder<PayableDocument> payableDocumentsCollector = ImmutableList.builder();
+		final Map<JsonPaymentAllocationLine.InvoiceIdentifier, JsonPaymentAllocationLine> identifier2Line = request.getAggregatedLines();
+		final Map<JsonPaymentAllocationLine.InvoiceIdentifier, InvoiceToAllocate> identifier2Invoice = getInvoiceLoader(orgId, transactionDate)
+				.load(identifier2Line.keySet());
 
-		final Map<IdentifierString, InvoiceToAllocate> identifier2InvoiceToAllocate = new HashMap<>();
+		final ImmutableList<PayableDocument> payableDocuments = identifier2Invoice.entrySet()
+				.stream()
+				.peek(identifier2InvoiceEntry -> validateInvoices(identifier2InvoiceEntry.getValue(), identifier2InvoiceEntry.getKey(), request.getType()))
+				.map(identifier2InvoiceEntry -> buildPayableDocument(identifier2InvoiceEntry.getValue(),
+																	 transactionDate,
+																	 currencyId,
+																	 identifier2Line.get(identifier2InvoiceEntry.getKey())))
+				.collect(ImmutableList.toImmutableList());
 
-		allocationLines
-				.forEach(line -> {
-					final IdentifierString invoiceIdentifier = IdentifierString.of(line.getInvoiceIdentifier());
-
-					final InvoiceToAllocate invoiceToAllocate = Optional.ofNullable(identifier2InvoiceToAllocate.get(invoiceIdentifier))
-							.orElseGet(() -> getInvoiceToAllocate(invoiceIdentifier, orgId, dateTrx, getDocType(line)));
-
-					validateInvoice(invoiceToAllocate, invoiceIdentifier, request.getType());
-
-					payableDocumentsCollector.add(buildPayableDocument(invoiceToAllocate, dateTrx, currencyId, line));
-
-					identifier2InvoiceToAllocate.putIfAbsent(invoiceIdentifier, invoiceToAllocate);
-				});
-
-		final ImmutableList<PayableDocument> payableDocuments = payableDocumentsCollector.build();
-		final ImmutableList<PaymentDocument> paymentDocuments = ImmutableList.of(buildPaymentDocument(paymentId, dateTrx));
+		final ImmutableList<PaymentDocument> paymentDocuments = ImmutableList.of(paymentDocument);
 
 		PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
-				.defaultDateTrx(dateTrx.toLocalDate())
+				.defaultDateTrx(transactionDate)
 				.paymentDocuments(paymentDocuments)
 				.payableDocuments(payableDocuments)
 				.allowPartialAllocations(true)
@@ -364,24 +357,9 @@ public class JsonInvoiceService
 	}
 
 	@NonNull
-	private InvoiceToAllocate getInvoiceToAllocate(
-			@NonNull final IdentifierString invoiceIdentifier,
-			@NonNull final OrgId orgId,
-			@NonNull final ZonedDateTime dateTrx,
-			@Nullable final DocBaseAndSubType docType)
-	{
-		final InvoiceId invoiceId = retrieveInvoiceId(invoiceIdentifier, orgId, docType)
-				.orElseThrow(() -> new AdempiereException("Cannot find invoice for identifier!")
-						.appendParametersToMessage()
-						.setParameter("Identifier", invoiceIdentifier.getRawIdentifierString()));
-
-		return getInvoiceToAllocate(invoiceId, dateTrx);
-	}
-
-	@NonNull
 	private PayableDocument buildPayableDocument(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
-			@NonNull final ZonedDateTime dateTrx,
+			@NonNull final LocalDate dateTrx,
 			@NonNull final CurrencyId currencyId,
 			@NonNull final JsonPaymentAllocationLine allocationLine)
 	{
@@ -435,13 +413,17 @@ public class JsonInvoiceService
 	@Nullable
 	private Money getInvoiceProcessingFee(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
-			@NonNull final ZonedDateTime dateTrx)
+			@NonNull final LocalDate transactionDate)
 	{
 		Check.assumeNotNull(invoiceToAllocate.getInvoiceId(), "InvoiceId cannot be null at this point!");
 
+		final ZoneId zoneId = orgDAO.getTimeZone(invoiceToAllocate.getClientAndOrgId().getOrgId());
+
+		final ZonedDateTime transactionDateAndTime = TimeUtil.asZonedDateTime(transactionDate, zoneId);
+
 		return invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
 																		 .orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
-																		 .evaluationDate(dateTrx)
+																		 .evaluationDate(transactionDateAndTime)
 																		 .customerId(invoiceToAllocate.getBpartnerId())
 																		 .docTypeId(invoiceToAllocate.getDocTypeId())
 																		 .invoiceId(invoiceToAllocate.getInvoiceId())
@@ -463,80 +445,6 @@ public class JsonInvoiceService
 				.build();
 
 		return paymentAllocationRepository.retrieveInvoicesToAllocate(invoiceToAllocateQuery).get(0);
-	}
-
-	@NonNull
-	private PaymentDocument buildPaymentDocument(
-			@NonNull final PaymentId paymentId,
-			@NonNull final ZonedDateTime dateTrx)
-	{
-		final PaymentToAllocate paymentToAllocate = getPaymentToAllocate(paymentId, dateTrx);
-
-		final PaymentAmtMultiplier amtMultiplier = paymentToAllocate.getPaymentAmtMultiplier();
-
-		final Money openAmt = amtMultiplier.convertToRealValue(paymentToAllocate.getOpenAmt())
-				.toMoney(moneyService::getCurrencyIdByCurrencyCode);
-
-		return PaymentDocument.builder()
-				.paymentId(paymentToAllocate.getPaymentId())
-				.bpartnerId(paymentToAllocate.getBpartnerId())
-				.documentNo(paymentToAllocate.getDocumentNo())
-				.paymentDirection(paymentToAllocate.getPaymentDirection())
-				.openAmt(openAmt)
-				.amountToAllocate(openAmt)
-				.dateTrx(paymentToAllocate.getDateTrx())
-				.clientAndOrgId(paymentToAllocate.getClientAndOrgId())
-				.paymentCurrencyContext(paymentToAllocate.getPaymentCurrencyContext())
-				.build();
-	}
-
-	@NonNull
-	private PaymentToAllocate getPaymentToAllocate(
-			@NonNull final PaymentId paymentId,
-			@NonNull final ZonedDateTime dateTrx)
-	{
-		final PaymentToAllocateQuery query = PaymentToAllocateQuery.builder()
-				.evaluationDate(dateTrx)
-				.additionalPaymentIdToInclude(paymentId)
-				.build();
-
-		return paymentAllocationRepository.retrievePaymentsToAllocate(query).get(0);
-	}
-
-	@NonNull
-	private Optional<InvoiceId> retrieveInvoiceId(
-			@NonNull final IdentifierString invoiceIdentifier,
-			@NonNull final OrgId orgId,
-			@Nullable final DocBaseAndSubType docType)
-	{
-		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier, orgId, docType);
-		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
-	}
-
-	private InvoiceQuery createInvoiceQuery(
-			@NonNull final IdentifierString identifierString,
-			@NonNull final OrgId orgId,
-			@Nullable final DocBaseAndSubType docType)
-	{
-		final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
-				.orgId(orgId)
-				.docType(docType);
-
-		switch (identifierString.getType())
-		{
-			case METASFRESH_ID:
-				invoiceQueryBuilder.invoiceId(identifierString.asMetasfreshId().getValue());
-				break;
-			case EXTERNAL_ID:
-				invoiceQueryBuilder.externalId(identifierString.asExternalId());
-				break;
-			case DOC:
-				invoiceQueryBuilder.documentNo(identifierString.asDoc());
-				break;
-			default:
-				throw new AdempiereException("Invalid identifierString: " + identifierString);
-		}
-		return invoiceQueryBuilder.build();
 	}
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
@@ -681,6 +589,20 @@ public class JsonInvoiceService
 	}
 
 	@NonNull
+	private InvoiceLoader getInvoiceLoader(@NonNull final OrgId orgId, @NonNull final LocalDate transactionDate)
+	{
+		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
+
+		return InvoiceLoader.builder()
+				.paymentAllocationRepository(paymentAllocationRepository)
+				.invoiceDAO(invoiceDAO)
+				.orgId(orgId)
+				.transactionDate(transactionDate)
+				.orgZoneId(orgZoneId)
+				.build();
+	}
+
+	@NonNull
 	private static BPartnerInfo getBPartnerInfo(
 			@NonNull final JsonCreateInvoiceRequestItemHeader invoiceHeader,
 			@NonNull final MasterdataProvider masterdataProvider,
@@ -752,50 +674,41 @@ public class JsonInvoiceService
 	}
 
 	@NonNull
-	private PaymentId createPayment(
+	private PaymentDocument createPayment(
 			@NonNull final JsonInvoicePaymentCreateRequest request,
 			@NonNull final OrgId orgId,
 			@NonNull final CurrencyId currencyId,
-			@NonNull final ZonedDateTime dateTrx)
+			@NonNull final LocalDate transactionDate)
 	{
-		final BankAccountId bankAccountId = paymentService.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
-				.orElseThrow(() -> new AdempiereException(String.format(
-						"Cannot find Bank Account for org-id: %s, currency: %s and iban: %s", orgId, currencyId, request.getTargetIBAN())));
+		final BankAccountId bankAccountId = paymentService
+				.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
+				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for org-id: %s, currency: %s and iban: %s",
+																		orgId, currencyId, request.getTargetIBAN())));
 
 		final DefaultPaymentBuilder paymentBuilder = JsonPaymentDirection.INBOUND == request.getType()
 				? paymentService.newInboundReceiptBuilder()
 				: paymentService.newOutboundPaymentBuilder();
 
 		final I_C_Payment paymentRecord = paymentBuilder
+				.adOrgId(orgId)
 				.bpartnerId(getBPartnerId(request.getBpartnerIdentifier(), orgId))
+				.orgBankAccountId(bankAccountId)
+				.currencyId(currencyId)
 				.payAmt(request.getAmount())
 				.discountAmt(request.getDiscountAmt())
 				.writeoffAmt(request.getWriteOffAmt())
-				.currencyId(currencyId)
-				.orgBankAccountId(bankAccountId)
-				.adOrgId(orgId)
 				.tenderType(TenderType.DirectDeposit)
-				.dateAcct(dateTrx.toLocalDate())
-				.dateTrx(dateTrx.toLocalDate())
+				.dateAcct(transactionDate)
+				.dateTrx(transactionDate)
 				.externalId(ExternalId.ofOrNull(request.getExternalPaymentId()))
-				.isAutoAllocateAvailableAmt(true)
 				.createAndProcess();
 
-		return PaymentId.ofRepoId(paymentRecord.getC_Payment_ID());
+		return paymentAllocationService.toPaymentDocument(paymentRecord);
 	}
 
-	@NonNull
-	private ZonedDateTime getDateTrx(
-			@NonNull final JsonInvoicePaymentCreateRequest request,
-			@NonNull final OrgId orgId)
-	{
-		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-		return CoalesceUtil.coalesceNotNull(request.getTransactionDate(), SystemTime.asLocalDate()).atStartOfDay(zoneId);
-	}
-
-	private static void validateInvoice(
+	private static void validateInvoices(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
-			@NonNull final IdentifierString invoiceIdentifier,
+			@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier,
 			@NonNull final JsonPaymentDirection type)
 	{
 		final boolean requestSoTrx = JsonPaymentDirection.INBOUND == type;
@@ -804,20 +717,11 @@ public class JsonInvoiceService
 		{
 			throw new AdempiereException("The referenced invoice does not match the payment type!")
 					.appendParametersToMessage()
-					.setParameter("Identifier", invoiceIdentifier.getRawIdentifierString())
+					.setParameter("Identifier", invoiceIdentifier)
 					.setParameter("Type", type)
 					.setParameter("Invoice.SOTrx", invoiceSoTrx)
 					.setParameter("Invoice.C_Invoice_ID", invoiceToAllocate.getInvoiceId());
 		}
-	}
-
-	@Nullable
-	private static DocBaseAndSubType getDocType(@NonNull final JsonPaymentAllocationLine line)
-	{
-		return Optional.ofNullable(line.getDocBaseType())
-				.filter(Check::isNotBlank)
-				.map(baseType -> DocBaseAndSubType.of(baseType, line.getDocSubType()))
-				.orElse(null);
 	}
 
 	private static void validateAllocationLineAmounts(@Nullable final List<JsonPaymentAllocationLine> lines)
@@ -856,5 +760,114 @@ public class JsonInvoiceService
 		return Optional.ofNullable(invoiceProcessingFee)
 				.map(payAmt::subtract)
 				.orElse(payAmt);
+	}
+
+	@Value
+	@Builder
+	private static class InvoiceLoader
+	{
+		@NonNull
+		PaymentAllocationRepository paymentAllocationRepository;
+
+		@NonNull
+		IInvoiceDAO invoiceDAO;
+
+		@NonNull
+		OrgId orgId;
+
+		@NonNull
+		LocalDate transactionDate;
+
+		@NonNull
+		ZoneId orgZoneId;
+
+		@NonNull
+		public ImmutableMap<JsonPaymentAllocationLine.InvoiceIdentifier, InvoiceToAllocate> load(@NonNull final Set<JsonPaymentAllocationLine.InvoiceIdentifier> invoiceIdentifiers)
+		{
+			final Map<InvoiceId, JsonPaymentAllocationLine.InvoiceIdentifier> id2Identifier = invoiceIdentifiers
+					.stream()
+					.map(this::getInvoiceId)
+					.collect(ImmutableMap.toImmutableMap(Tuple::v1, Tuple::v2));
+
+			return getInvoiceToAllocate(id2Identifier.keySet()).stream()
+					.map(invoiceToAllocate -> Tuple.tuple(id2Identifier.get(invoiceToAllocate.getInvoiceId()), invoiceToAllocate))
+					.collect(ImmutableMap.toImmutableMap(Tuple::v1, Tuple::v2));
+		}
+
+		@NonNull
+		private Tuple<InvoiceId, JsonPaymentAllocationLine.InvoiceIdentifier> getInvoiceId(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier identifier)
+		{
+			final InvoiceQuery invoiceQuery = createInvoiceQuery(identifier);
+			final InvoiceId invoiceId = invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery)
+					.orElseThrow(() -> new AdempiereException("No Invoice found for query=" + invoiceQuery));
+
+			return Tuple.tuple(invoiceId, identifier);
+		}
+
+		@NonNull
+		private InvoiceQuery createInvoiceQuery(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
+		{
+			final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
+					.orgId(orgId)
+					.docType(getDocType(invoiceIdentifier));
+
+			final IdentifierString identifierString = IdentifierString.of(invoiceIdentifier.getInvoiceIdentifier());
+
+			switch (identifierString.getType())
+			{
+				case METASFRESH_ID:
+					invoiceQueryBuilder.invoiceId(identifierString.asMetasfreshId().getValue());
+					break;
+				case EXTERNAL_ID:
+					invoiceQueryBuilder.externalId(identifierString.asExternalId());
+					break;
+				case DOC:
+					invoiceQueryBuilder.documentNo(identifierString.asDoc());
+					break;
+				default:
+					throw new AdempiereException("Invalid identifierString: " + identifierString);
+			}
+			return invoiceQueryBuilder.build();
+		}
+
+		@NonNull
+		private List<InvoiceToAllocate> getInvoiceToAllocate(@NonNull final Set<InvoiceId> invoiceIds)
+		{
+			final InvoiceToAllocateQuery invoiceToAllocateQuery = InvoiceToAllocateQuery.builder()
+					.evaluationDate(getTransactionDateAndTime())
+					.onlyInvoiceIds(invoiceIds)
+					.build();
+
+			final List<InvoiceToAllocate> invoiceToAllocateList = paymentAllocationRepository.retrieveInvoicesToAllocate(invoiceToAllocateQuery);
+
+			if (invoiceToAllocateList.size() != invoiceIds.size())
+			{
+				throw new AdempiereException("Not all invoices were found!")
+						.appendParametersToMessage()
+						.setParameter("InvoiceIds to be loaded", invoiceIds)
+						.setParameter("InvoiceIds loaded", invoiceToAllocateList.stream()
+								.map(InvoiceToAllocate::getInvoiceId)
+								.map(InvoiceId::toRepoId)
+								.map(String::valueOf)
+								.collect(Collectors.joining(",")));
+			}
+
+			return invoiceToAllocateList;
+		}
+
+		@NonNull
+		private ZonedDateTime getTransactionDateAndTime()
+		{
+			return TimeUtil.asZonedDateTime(transactionDate, orgZoneId);
+		}
+
+		@Nullable
+		private static DocBaseAndSubType getDocType(@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier)
+		{
+			return Optional.ofNullable(invoiceIdentifier.getDocBaseType())
+					.filter(Check::isNotBlank)
+					.map(baseType -> DocBaseAndSubType.of(baseType, invoiceIdentifier.getDocSubType()))
+					.orElse(null);
+		}
 	}
 }
