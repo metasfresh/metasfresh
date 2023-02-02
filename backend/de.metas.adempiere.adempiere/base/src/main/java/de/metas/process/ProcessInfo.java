@@ -816,7 +816,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private Properties createTemporaryCtx(final Properties ctx)
+		private Properties createTemporaryCtx(@NonNull final Properties ctx)
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
@@ -1070,7 +1070,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
+		public ProcessInfoBuilder setAD_PInstance(@NonNull final I_AD_PInstance adPInstance)
 		{
 			this._adPInstance = adPInstance;
 			setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
