@@ -994,3 +994,11 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-02-02 12:14:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585698
 ;
 
+
+
+
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_Order_OpenAmt
+-- 2023-02-02T11:33:23.468Z
+UPDATE AD_Column SET AD_Reference_ID=22,Updated=TO_TIMESTAMP('2023-02-02 13:33:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585701
+;
+
