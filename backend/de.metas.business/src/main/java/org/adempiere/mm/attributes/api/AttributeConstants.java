@@ -75,4 +75,7 @@ public class AttributeConstants
 
 	public static final AttributeCode CountryOfOrigin = AttributeCode.ofString("1000001");
 	public static final AttributeCode HU_BatchNo = AttributeCode.ofString("HU_BatchNo");
+
+	public static final AttributeCode OnConsignment = AttributeCode.ofString("OnConsignment");
+
 }

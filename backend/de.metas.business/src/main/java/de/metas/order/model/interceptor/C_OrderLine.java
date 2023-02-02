@@ -21,6 +21,7 @@ import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.pricing.attributebased.impl.AttributePricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -39,15 +40,24 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeRepository;
+import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -88,6 +98,7 @@ public class C_OrderLine
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
@@ -95,7 +106,8 @@ public class C_OrderLine
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService
+			)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
@@ -445,4 +457,14 @@ public class C_OrderLine
 			orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		}
 	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
+	public void updateIsOnConsignment(final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderLine.getC_Order();
+		orderBL.setIsOnConsignmentOrder(order, orderBL.isOnConsignmentOrder(order));
+	}
+
 }

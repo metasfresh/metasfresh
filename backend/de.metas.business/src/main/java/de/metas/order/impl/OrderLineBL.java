@@ -62,8 +62,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
@@ -72,6 +74,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -998,4 +1001,13 @@ public class OrderLineBL implements IOrderLineBL
 		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 
+	@Override
+	public boolean isOnConsignmentOrderLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		final OnConsignmentAttributeRepository onConsignmentAttributeRepository = SpringContextHolder.instance.getBean(OnConsignmentAttributeRepository.class);
+
+		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
+		final Boolean isOnConsignment = onConsignmentAttributeRepository.isOnConsignment(productSI);
+		return BooleanUtils.toBoolean(isOnConsignment);
+	}
 }

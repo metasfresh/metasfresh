@@ -219,4 +219,6 @@ public interface IOrderLineBL extends ISingletonService
 	CurrencyPrecision extractPricePrecision(org.compiere.model.I_C_OrderLine olRecord);
 
 	void setBPLocation(I_C_OrderLine orderLine);
+
+	boolean isOnConsignmentOrderLine(final I_C_OrderLine orderLine);
 }
