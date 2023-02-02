@@ -675,3 +675,40 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-02-02 18:29:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614944
 ;
 
+
+
+
+
+
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-02T18:35:36.169Z
+UPDATE AD_Column SET IsSelectionColumn='N',Updated=TO_TIMESTAMP('2023-02-02 20:35:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585714
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-02T18:35:40.792Z
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2023-02-02 20:35:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585714
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-02T18:35:48.638Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=10,Updated=TO_TIMESTAMP('2023-02-02 20:35:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585714
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_ID
+-- 2023-02-02T18:35:49.012Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,Updated=TO_TIMESTAMP('2023-02-02 20:35:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585696
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_ID
+-- 2023-02-02T18:35:49.380Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30,Updated=TO_TIMESTAMP('2023-02-02 20:35:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585698
+;
+
+-- Reference: C_BPartner section group
+-- Table: C_BPartner
+-- Key: C_BPartner.C_BPartner_ID
+-- 2023-02-02T18:41:51.414Z
+UPDATE AD_Ref_Table SET AD_Display=2902, IsValueDisplayed='Y',Updated=TO_TIMESTAMP('2023-02-02 20:41:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541640
+;
+
