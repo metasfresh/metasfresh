@@ -22,6 +22,8 @@
 
 package de.metas.deliveryplanning;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
@@ -59,7 +61,9 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -79,6 +83,23 @@ public class DeliveryPlanningRepository
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
+	}
+
+	protected List<DeliveryPlanningShipmentInfo> getShipmentInfosByOrderLineIds(@NonNull final Set<OrderAndLineId> salesOrderAndLineId)
+	{
+		if (salesOrderAndLineId.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableSet<OrderLineId> salesOrderLineIds = salesOrderAndLineId.stream().map(OrderAndLineId::getOrderLineId).collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, salesOrderLineIds)
+				.stream()
+				.map(DeliveryPlanningRepository::toDeliveryPlanningShipmentInfo)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -119,10 +140,14 @@ public class DeliveryPlanningRepository
 	{
 		assertIncoming(record);
 		return DeliveryPlanningReceiptInfo.builder()
+				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.purchaseOrderAndLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(record.getM_ReceiptSchedule_ID()))
+				.isB2B(record.isB2B())
+				//
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
+				//
 				.build();
 	}
 
@@ -157,10 +182,14 @@ public class DeliveryPlanningRepository
 	{
 		assertOutgoing(record);
 		return DeliveryPlanningShipmentInfo.builder()
+				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
+				.customerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				//
 				.shipmentId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.shippedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
+				//
 				.build();
 	}
 
@@ -448,7 +477,7 @@ public class DeliveryPlanningRepository
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-			@NonNull final I_M_ShipperTransportation deliveryInstruction)
+													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
