@@ -22,6 +22,7 @@ FROM C_BPartner sectionGroupPartner
 WHERE sectionGroupPartner.c_bpartner_id = p_section_group_partner_id
   AND dep.m_department_id = p_m_department_ID
   AND o.docstatus IN ('CO', 'CL')
+  AND o.IsSOTrx = 'Y'
 
 GROUP BY sectionPartner.section_group_partner_id, dep.m_department_id
 
