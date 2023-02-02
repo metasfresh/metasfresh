@@ -1,4 +1,4 @@
-DROP VIEW IF EXISTS C_BPartner_CreditLimit_Departments_V;
+-- DROP VIEW IF EXISTS C_BPartner_CreditLimit_Departments_V;
 
 
 CREATE OR REPLACE VIEW C_BPartner_CreditLimit_Departments_V
@@ -9,12 +9,12 @@ SELECT sectionGroupPartner.c_bpartner_id                                        
        dep.m_department_id,
        ac.C_Currency_ID                                                                                        AS C_Currency_ID,
 
-       getSOCreditUsedForSectionGroupPartnerDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)      AS SO_CreditUsed,
-       getOpenOrderAmtForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)             AS M_Department_Order_OpenAmt,
-       getDeliveryCreditUsedForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)       AS Delivery_CreditUsed,
-       getTotalOrderValueForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)          AS TotalOrderValue,
-       getOpenBalanceForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)              AS OpenItems,
-       getCreditLimitForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id, NOW()::date) AS CreditLimit,
+	   getSOCreditUsedForSectionGroupPartnerDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)                   AS SO_CreditUsed,
+       getOpenOrderAmtForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)                          AS M_Department_Order_OpenAmt,
+       getDeliveryCreditUsedForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)                    AS Delivery_CreditUsed,
+       COALESCE(getTotalOrderValueForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id), 0)          AS TotalOrderValue,
+       getOpenBalanceForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)                           AS OpenItems,
+       COALESCE(getCreditLimitForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id, NOW()::date), 0) AS CreditLimit,
 
        sectionPartner.c_bpartner_id as C_BPartner_CreditLimit_Departments_V_ID,
        now() as Created,
