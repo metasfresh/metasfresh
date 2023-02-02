@@ -105,5 +105,6 @@ public class C_BPartner_CreditLimit_Departments_V_CacheInvalidateDispatcher impl
 		}
 		cacheMgt.reset(CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_BPartner_CreditLimit_Departments_V.Table_Name, ids));
 		cacheMgt.reset(CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_BPartner_CreditLimit_Department_Lines_V.Table_Name, ids));
+		cacheMgt.reset(CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_BPartner.Table_Name, ids));
 	}
 }
