@@ -97,9 +97,16 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private ForexContracts getReceiptContracts() {return helper.getReceiptContracts(getDeliveryPlanningId());}
+	@NonNull
+	private DeliveryPlanningId getDeliveryPlanningId() {return DeliveryPlanningId.ofRepoId(getRecord_ID());}
 
-	private Optional<ForexContracts> getB2BShipmentContracts() {return helper.getB2BShipmentContracts(getReceiptInfo());}
+	private DeliveryPlanningReceiptInfo getReceiptInfo() {return helper.getReceiptInfo(getDeliveryPlanningId());}
+
+	private Optional<DeliveryPlanningShipmentInfo> getB2BShipmentInfo() {return helper.getB2BShipmentInfo(getReceiptInfo());}
+
+	private ForexContracts getReceiptForexContracts() {return helper.getReceiptContracts(getDeliveryPlanningId());}
+
+	private Optional<ForexContracts> getB2BShipmentForexContracts() {return helper.getB2BShipmentContracts(getReceiptInfo());}
 
 	@Nullable
 	@Override
@@ -109,17 +116,17 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 
 		if (PARAM_IsB2B.equals(externalParameterName))
 		{
-			return getB2BShipmentContracts().isPresent();
+			return getB2BShipmentInfo().isPresent();
 		}
 		if (PARAM_IsGenerateB2BShipment.equals(externalParameterName))
 		{
-			return getB2BShipmentContracts().isPresent();
+			return getB2BShipmentInfo().isPresent();
 		}
 		else
 		{
 			return IProcessDefaultParametersProvider.firstAvailableValue(
-					() -> p_ReceiptFECParams.getParameterDefaultValue(externalParameterName, getReceiptContracts()),
-					() -> p_ShipmentFECParams.getParameterDefaultValue(toInternalParameterName(externalParameterName), getB2BShipmentContracts().orElse(null))
+					() -> p_ReceiptFECParams.getParameterDefaultValue(externalParameterName, getReceiptForexContracts()),
+					() -> p_ShipmentFECParams.getParameterDefaultValue(toInternalParameterName(externalParameterName), getB2BShipmentForexContracts().orElse(null))
 			);
 		}
 	}
@@ -127,12 +134,12 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 	@Override
 	public void onParameterChanged(final String externalParameterName)
 	{
-		p_ReceiptFECParams.updateOnParameterChanged(externalParameterName, getReceiptContracts());
-		p_ShipmentFECParams.updateOnParameterChanged(toInternalParameterName(externalParameterName), getB2BShipmentContracts().orElse(null));
+		p_ReceiptFECParams.updateOnParameterChanged(externalParameterName, getReceiptForexContracts());
+		p_ShipmentFECParams.updateOnParameterChanged(toInternalParameterName(externalParameterName), getB2BShipmentForexContracts().orElse(null));
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	public LookupValuesList getAvailableReceiptForexContracts() {return helper.toLookupValuesList(getReceiptContracts());}
+	public LookupValuesList getAvailableReceiptForexContracts() {return helper.toLookupValuesList(getReceiptForexContracts());}
 
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_FEC_Shipment_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
 	public LookupValuesList getAvailableB2BShipmentForexContracts()
@@ -140,11 +147,6 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		final ForexContracts b2bShipmentContracts = helper.getB2BShipmentContracts(getReceiptInfo()).orElse(null);
 		return helper.toLookupValuesList(b2bShipmentContracts);
 	}
-
-	@NonNull
-	private DeliveryPlanningId getDeliveryPlanningId() {return DeliveryPlanningId.ofRepoId(getRecord_ID());}
-
-	private DeliveryPlanningReceiptInfo getReceiptInfo() {return helper.getReceiptInfo(getDeliveryPlanningId());}
 
 	@Override
 	protected String doIt()
@@ -162,7 +164,7 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 
 		if (p_IsGenerateB2BShipment)
 		{
-			final DeliveryPlanningShipmentInfo b2bShipmentInfo = helper.getB2BShipmentInfo(getReceiptInfo())
+			final DeliveryPlanningShipmentInfo b2bShipmentInfo = getB2BShipmentInfo()
 					.orElseThrow(() -> new AdempiereException("No B2B shipment found")); // shall not happen
 
 			final OrderAndLineId salesOrderAndLineId = Check.assumeNotNull(b2bShipmentInfo.getSalesOrderAndLineId(), "B2B Sales Order Line is set");
