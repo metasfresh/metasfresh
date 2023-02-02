@@ -6,7 +6,6 @@
         "bpartnerIdentifier":"ext-SAP-PARTNER_CODE00",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
@@ -94,7 +93,6 @@
         "bpartnerIdentifier":"ext-SAP-PARTNER_CODE00_SCOD",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
@@ -179,7 +177,6 @@
               {
                 "locationIdentifier":"ext-SAP-PARTNER_CODE01_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
@@ -243,7 +240,6 @@
               {
                 "locationIdentifier":"ext-SAP-PARTNER_CODE02_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
@@ -307,7 +303,6 @@
               {
                 "locationIdentifier":"ext-SAP-PARTNER_CODE03_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
@@ -377,7 +372,6 @@
         "bpartnerIdentifier":"ext-SAP-PARTNER_CODE00_SCOD1",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
@@ -462,7 +456,6 @@
               {
                 "locationIdentifier":"ext-SAP-PARTNER_CODE04_SCOD1",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
