@@ -40,6 +40,7 @@ import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.lock.api.ILock;
@@ -227,6 +228,7 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_FixedShipmentDate, workPackageParameters.getFixedShipmentDate())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef, JsonObjectMapperHolder.toJson(workPackageParameters.getForexContractRef()))
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, workPackageParameters.getDeliveryPlanningId())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_B2B_Receipt_ID, workPackageParameters.getB2bReceiptId())
 					;
 
 					// Create a new locker which will grab the locked invoice candidates from 'mainLock'
@@ -388,6 +390,8 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
 		public static final String PARAM_ForexContractRef = "ForexContractRef";
 		public static final String PARAM_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
+		public static final String PARAM_B2B_Receipt_ID = "B2B_Receipt_ID";
+
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -423,6 +427,7 @@ public class ShipmentScheduleEnqueuer
 
 		@Nullable ForexContractRef forexContractRef;
 		@Nullable DeliveryPlanningId deliveryPlanningId;
+		@Nullable InOutId b2bReceiptId;
 	}
 
 }

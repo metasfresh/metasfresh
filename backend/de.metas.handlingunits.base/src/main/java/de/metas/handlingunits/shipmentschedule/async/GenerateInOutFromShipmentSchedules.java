@@ -17,6 +17,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -100,6 +101,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final ForexContractRef forexContractRef = JsonObjectMapperHolder.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef), ForexContractRef.class);
 		final DeliveryPlanningId deliveryPlanningId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, DeliveryPlanningId.class);
+		final InOutId b2bReceiptId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_B2B_Receipt_ID, InOutId.class);
 
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
@@ -121,6 +123,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
 				.setForexContractRef(forexContractRef)
 				.setDeliveryPlanningId(deliveryPlanningId)
+				.setB2BReceiptId(b2bReceiptId)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
