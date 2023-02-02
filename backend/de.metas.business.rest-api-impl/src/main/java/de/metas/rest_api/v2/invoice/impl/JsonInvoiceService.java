@@ -31,7 +31,8 @@ import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
 import de.metas.common.rest_api.v2.invoice.JsonPaymentDirection;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -114,6 +115,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -160,7 +162,7 @@ public class JsonInvoiceService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
@@ -218,7 +220,7 @@ public class JsonInvoiceService
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-		final CurrencyCode currency = currencyDAO.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		final CurrencyCode currency = currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId);
 		for (final I_C_InvoiceLine line : lines)
@@ -367,9 +369,11 @@ public class JsonInvoiceService
 
 		final Money openAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
 
-		validateRequestAmounts(allocationLine, currencyId, openAmt);
+		final CurrencyRate currencyRate = !currencyId.equals(openAmt.getCurrencyId())
+				? getCurrencyRate(currencyId, openAmt.getCurrencyId(), invoiceToAllocate)
+				: null;
 
-		final Money invoiceProcessingFee = getInvoiceProcessingFee(invoiceToAllocate, dateTrx);
+		validateRequestAmounts(allocationLine, currencyId, openAmt, currencyRate);
 
 		final SOTrx soTrx = invoiceToAllocate.getDocBaseType().getSoTrx();
 
@@ -383,31 +387,60 @@ public class JsonInvoiceService
 				.date(invoiceToAllocate.getDateInvoiced())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
-				.amountsToAllocate(AllocationAmounts.builder()
-										   .payAmt(getPayAmt(allocationLine, currencyId, invoiceProcessingFee))
-										   .discountAmt(Money.ofOrNull(allocationLine.getDiscountAmt(), currencyId))
-										   .writeOffAmt(Money.ofOrNull(allocationLine.getWriteOffAmt(), currencyId))
-										   .invoiceProcessingFee(invoiceProcessingFee)
-										   .build()
-										   .convertToRealAmounts(invoiceToAllocate.getMultiplier()))
+				.amountsToAllocate(getAmountsToAllocate(invoiceToAllocate,
+														dateTrx,
+														allocationLine,
+														currencyId,
+														currencyRate))
 				.build();
 	}
 
-	private void validateRequestAmounts(
+	@NonNull
+	private AllocationAmounts getAmountsToAllocate(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final LocalDate dateTrx,
 			@NonNull final JsonPaymentAllocationLine allocationLine,
 			@NonNull final CurrencyId currencyId,
-			@NonNull final Money openAmt)
+			@Nullable final CurrencyRate currencyRate)
 	{
-		final Money requestTotalAmt = Money.of(allocationLine.getTotalAmt(), currencyId);
+		final Money invoiceProcessingFee = getInvoiceProcessingFee(invoiceToAllocate, dateTrx);
+		final Money payAmt = getPayAmt(allocationLine, currencyId, invoiceProcessingFee, currencyRate);
 
-		if (requestTotalAmt.isGreaterThan(openAmt))
-		{
-			throw new AdempiereException("Line's total amount cannot be greater than invoice's open amount!")
-					.appendParametersToMessage()
-					.setParameter("InvoiceIdentifier", allocationLine.getInvoiceIdentifier())
-					.setParameter("Invoice.OpenAmt", openAmt.toBigDecimal())
-					.setParameter("Line.TotalAmt", requestTotalAmt.toBigDecimal());
-		}
+		final Money discountAmt = Optional.ofNullable(allocationLine.getDiscountAmt())
+				.map(discount -> Optional.ofNullable(currencyRate)
+						.map(rate -> Money.of(rate.convertAmount(discount), rate.getToCurrencyId()))
+						.orElseGet(() -> Money.of(discount, currencyId)))
+				.orElse(null);
+
+		final Money writeOffAmt = Optional.ofNullable(allocationLine.getWriteOffAmt())
+				.map(writeOff -> Optional.ofNullable(currencyRate)
+						.map(rate -> Money.of(rate.convertAmount(writeOff), rate.getToCurrencyId()))
+						.orElseGet(() -> Money.of(writeOff, currencyId)))
+				.orElse(null);
+
+		return AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.invoiceProcessingFee(invoiceProcessingFee)
+				.build()
+				.convertToRealAmounts(invoiceToAllocate.getMultiplier());
+	}
+
+	@NonNull
+	private CurrencyRate getCurrencyRate(
+			@NonNull final CurrencyId currencyFromId,
+			@NonNull final CurrencyId currencyToId,
+			@NonNull final InvoiceToAllocate invoiceToAllocate)
+	{
+		final ClientAndOrgId clientAndOrgId = invoiceToAllocate.getClientAndOrgId();
+		return currencyBL.getCurrencyRate(currencyFromId,
+										  currencyToId,
+										  invoiceToAllocate.getEvaluationDate().toInstant(),
+										  invoiceToAllocate.getCurrencyConversionTypeId(),
+										  clientAndOrgId.getClientId(),
+										  clientAndOrgId.getOrgId());
+
 	}
 
 	@Nullable
@@ -706,6 +739,26 @@ public class JsonInvoiceService
 		return paymentAllocationService.toPaymentDocument(paymentRecord);
 	}
 
+	private static void validateRequestAmounts(
+			@NonNull final JsonPaymentAllocationLine allocationLine,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final Money openAmt,
+			@Nullable final CurrencyRate currencyRate)
+	{
+		final Money requestTotalAmt = Optional.ofNullable(currencyRate)
+				.map(rate -> Money.of(rate.convertAmount(allocationLine.getTotalAmt()), rate.getToCurrencyId()))
+				.orElseGet(() -> Money.of(allocationLine.getTotalAmt(), currencyId));
+
+		if (requestTotalAmt.isGreaterThan(openAmt))
+		{
+			throw new AdempiereException("Line's total amount cannot be greater than invoice's open amount!")
+					.appendParametersToMessage()
+					.setParameter("InvoiceIdentifier", allocationLine.getInvoiceIdentifier())
+					.setParameter("Invoice.OpenAmt", openAmt.toBigDecimal())
+					.setParameter("Line.TotalAmt", requestTotalAmt.toBigDecimal());
+		}
+	}
+
 	private static void validateInvoices(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
 			@NonNull final JsonPaymentAllocationLine.InvoiceIdentifier invoiceIdentifier,
@@ -748,14 +801,18 @@ public class JsonInvoiceService
 	private static Money getPayAmt(
 			@NonNull final JsonPaymentAllocationLine allocationLine,
 			@NonNull final CurrencyId currencyId,
-			@Nullable final Money invoiceProcessingFee)
+			@Nullable final Money invoiceProcessingFee,
+			@Nullable final CurrencyRate currencyRate)
 	{
-		final Money payAmt = Money.ofOrNull(allocationLine.getAmount(), currencyId);
-
-		if (payAmt == null)
+		final BigDecimal amount = allocationLine.getAmount();
+		if (amount == null)
 		{
 			return null;
 		}
+
+		final Money payAmt = Optional.ofNullable(currencyRate)
+				.map(rate -> Money.of(rate.convertAmount(amount), rate.getToCurrencyId()))
+				.orElseGet(() -> Money.of(amount, currencyId));
 
 		return Optional.ofNullable(invoiceProcessingFee)
 				.map(payAmt::subtract)
