@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.cache.CacheMgt;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +38,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit_Department_Lines_V;
+import org.compiere.model.I_C_BPartner_CreditLimit_Departments_V;
 import org.compiere.util.Env;
 
 import java.util.List;
@@ -116,6 +119,9 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 
 			final BPartnerStats stats = bPartnerStatsService.getCreateBPartnerStats(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
 			bPartnerStatsService.updateBPartnerStatistics(stats);
+
+			CacheMgt.get().reset(I_C_BPartner_CreditLimit_Departments_V.Table_Name, bpartner.getC_BPartner_ID());
+			CacheMgt.get().reset(I_C_BPartner_CreditLimit_Department_Lines_V.Table_Name, bpartner.getC_BPartner_ID());
 		}
 
 		return Result.SUCCESS;

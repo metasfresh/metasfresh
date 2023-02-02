@@ -16,7 +16,7 @@ SELECT sectionGroupPartner.c_bpartner_id                                        
        getOpenBalanceForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id)              AS OpenItems,
        getCreditLimitForSectionGroupDepartment(sectionGroupPartner.c_bpartner_id, dep.m_department_id, NOW()::date) AS CreditLimit,
 
-       sectionPartner.c_bpartner_id as C_BPartner_CreditLimit_Departments_V,
+       sectionPartner.c_bpartner_id as C_BPartner_CreditLimit_Departments_V_ID,
        now() as Created,
        now() as Updated,
        1000000 as CreatedBy,

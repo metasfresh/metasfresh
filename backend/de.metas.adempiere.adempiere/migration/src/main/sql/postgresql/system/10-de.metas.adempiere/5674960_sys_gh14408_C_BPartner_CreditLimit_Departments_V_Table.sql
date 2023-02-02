@@ -917,3 +917,62 @@ UPDATE AD_Element_Trl SET Name='Credit Limit (Departments)', PrintName='Credit L
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581986,'nl_NL') 
 ;
 
+
+
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_CreditLimit_Departments_v
+-- 2023-02-01T23:39:26.783Z
+UPDATE AD_Column SET IsKey='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2023-02-02 01:39:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585706
+;
+
+
+
+-- 2023-02-01T23:45:14.374Z
+UPDATE AD_Element SET ColumnName='C_BPartner_CreditLimit_Departments_v_ID',Updated=TO_TIMESTAMP('2023-02-02 01:45:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581986
+;
+
+-- 2023-02-01T23:45:14.375Z
+UPDATE AD_Column SET ColumnName='C_BPartner_CreditLimit_Departments_v_ID' WHERE AD_Element_ID=581986
+;
+
+-- 2023-02-01T23:45:14.377Z
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_CreditLimit_Departments_v_ID' WHERE AD_Element_ID=581986
+;
+
+-- 2023-02-01T23:45:14.407Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581986,'de_DE') 
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_CreditLimit_Departments_v_ID
+-- 2023-02-01T23:46:57.277Z
+UPDATE AD_Column SET AD_Reference_ID=13, IsUpdateable='N',Updated=TO_TIMESTAMP('2023-02-02 01:46:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585706
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.C_BPartner_CreditLimit_Departments_v_ID
+-- 2023-02-01T23:47:00.906Z
+UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2023-02-02 01:47:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585706
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.IsActive
+-- 2023-02-01T23:53:21.743Z
+UPDATE AD_Column SET AD_Reference_ID=20, DefaultValue='Y', FieldLength=1, IsMandatory='Y',Updated=TO_TIMESTAMP('2023-02-02 01:53:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585711
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_ID
+-- 2023-02-02T00:15:58.288Z
+UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2023-02-02 02:15:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585698
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.Section_Group_Partner_ID
+-- 2023-02-02T00:16:10.544Z
+UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2023-02-02 02:16:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585714
+;
+
+-- Column: C_BPartner_CreditLimit_Departments_V.M_Department_ID
+-- 2023-02-02T00:16:24.367Z
+UPDATE AD_Column SET SeqNo=1,Updated=TO_TIMESTAMP('2023-02-02 02:16:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585698
+;
+
+
+
+
+
