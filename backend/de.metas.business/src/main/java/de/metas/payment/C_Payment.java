@@ -58,8 +58,8 @@ public class C_Payment
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
+	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 	private final CurrencyRepository currencyRepository;
 
 	private final BPartnerStatsService bPartnerStatsService;
@@ -125,7 +125,7 @@ public class C_Payment
 		bPartnerStatsService.checkPaymentCreditLimit(PaymentId.ofRepoId(payment.getC_Payment_ID()));
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_VOID })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_VOID })
 	public void updateBPartnerStats(@NonNull final I_C_Payment payment)
 	{
 		bPartnerStatisticsUpdater
