@@ -1,10 +1,12 @@
 package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -24,6 +26,8 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -65,6 +69,7 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@Autowired private DocumentCollection documentsCollection;
 
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
@@ -77,6 +82,7 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 	@Param(parameterName = PARAM_Qty, mandatory = true)
 	private BigDecimal p_qty;
 
+	private HUMovementGeneratorResult movementResult = null;
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
@@ -139,31 +145,61 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
-
-
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		// build parameters
-		final WebuiHUTransformParameters parameters = WebuiHUTransformParameters.builder()
-				.actionType(WebuiHUTransformCommand.ActionType.CU_To_NewCU)
-				.qtyCU(p_qty)
-				.build();
+		final HUEditorRow huEditorRow = getSingleSelectedRow();
+		final BigDecimal huQty = huEditorRow.getQtyCU() != null
+				? huEditorRow.getQtyCU()
+				: BigDecimal.ZERO;
 
-		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
-				.selectedRow(getSingleSelectedRow())
-				.contextDocumentLines(getContextDocumentLines())
-				.parameters(parameters)
-				.build();
+		if (p_qty.signum() <= 0 || huQty.compareTo(p_qty) < 0)
+		{
+			throw new AdempiereException("Not Valid Qty");
+		}
 
-		final WebuiHUTransformCommandResult result = command.execute();
+		// split HU
+		if (huQty.compareTo(p_qty) > 0)
+		{
+			final WebuiHUTransformParameters parameters = WebuiHUTransformParameters.builder()
+					.actionType(WebuiHUTransformCommand.ActionType.CU_To_NewCU)
+					.qtyCU(p_qty)
+					.build();
 
-		moveToLocator(result);
+			final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
+					.selectedRow(huEditorRow)
+					.contextDocumentLines(getContextDocumentLines())
+					.parameters(parameters)
+					.build();
 
-		updateViewFromResult(result);
+			final WebuiHUTransformCommandResult result = command.execute();
+			moveToLocator(result);
+			updateViewFromResult(result);
+		}
+
+		// In case of full Qty, move the top level HU
+		if (huQty.compareTo(p_qty) == 0)
+		{
+			final I_M_HU cuHU = huEditorRow.getM_HU();
+			final I_M_HU huMove = getTopLevelHU(cuHU);
+			if (huMove != null)
+			{
+				final LocatorId toLocatorId = LocatorId.ofRepoId(p_WarehouseId, p_LocatorId);
+				movementResult = huMovementBL.moveHUsToLocator(ImmutableList.of(huMove), toLocatorId);
+			}
+		}
 
 		return MSG_OK;
+	}
+
+	private I_M_HU getTopLevelHU(@NonNull final I_M_HU cuHU)
+	{
+		final boolean isTopLevel = handlingUnitsBL.isTopLevel(cuHU);
+		return (isTopLevel)
+				? cuHU
+				: handlingUnitsBL.getTopLevelParent(cuHU);
+
 	}
 
 	private List<TableRecordReference> getContextDocumentLines()
@@ -174,7 +210,7 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private void moveToLocator(final WebuiHUTransformCommandResult result)
+	private void moveToLocator(@NonNull final WebuiHUTransformCommandResult result)
 	{
 		final ImmutableList<I_M_HU> createdHUs = result.getHuIdsCreated()
 				.stream()
@@ -184,6 +220,14 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 		huMovementBL.moveHUsToLocator(createdHUs, LocatorId.ofRepoId(p_WarehouseId, p_LocatorId));
 	}
 
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (movementResult != null)
+		{
+			getView().invalidateAll();
+		}
+	}
 
 	private void updateViewFromResult(final WebuiHUTransformCommandResult result)
 	{
@@ -204,4 +248,5 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 			view.invalidateAll();
 		}
 	}
+
 }
