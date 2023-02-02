@@ -746,7 +746,7 @@ public class JsonInvoiceService
 		{
 			throw new AdempiereException("Line's total amount cannot be greater than invoice's open amount!")
 					.appendParametersToMessage()
-					.setParameter("InvoiceIdentifier", allocationLine.getInvoiceIdentifier())
+					.setParameter("InvoiceIdentifier", allocationLine.getInvIdentifier())
 					.setParameter("Invoice.OpenAmt", openAmt.toBigDecimal())
 					.setParameter("Line.TotalAmt", requestTotalAmt.toBigDecimal());
 		}

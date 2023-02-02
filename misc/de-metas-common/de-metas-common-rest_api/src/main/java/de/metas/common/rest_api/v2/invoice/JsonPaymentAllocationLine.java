@@ -98,7 +98,7 @@ public class JsonPaymentAllocationLine
 
 	@JsonIgnore
 	@NonNull
-	public InvoiceIdentifier getInvoiceIdentifier()
+	public InvoiceIdentifier getInvIdentifier()
 	{
 		return InvoiceIdentifier.builder()
 				.invoiceIdentifier(invoiceIdentifier)
@@ -111,11 +111,11 @@ public class JsonPaymentAllocationLine
 	@NonNull
 	public JsonPaymentAllocationLine aggregate(@NonNull final JsonPaymentAllocationLine line)
 	{
-		if (!getInvoiceIdentifier().equals(line.getInvoiceIdentifier()))
+		if (!getInvIdentifier().equals(line.getInvIdentifier()))
 		{
 			throw new RuntimeException("JsonPaymentAllocationLines must share the same InvoiceIdentifier in order to be able to aggregate!"
-											   + " this.InvoiceIdentifier=" + this.getInvoiceIdentifier()
-											   + " lineToAggregate.InvoiceIdentifier=" + line.getInvoiceIdentifier());
+											   + " this.InvoiceIdentifier=" + this.getInvIdentifier()
+											   + " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
 		}
 
 		return JsonPaymentAllocationLine.builder()

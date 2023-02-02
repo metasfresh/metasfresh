@@ -133,7 +133,7 @@ public class JsonInvoicePaymentCreateRequest
 		}
 
 		final ImmutableListMultimap<JsonPaymentAllocationLine.InvoiceIdentifier, JsonPaymentAllocationLine> invoiceIdentifier2Allocation = lines.stream()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(JsonPaymentAllocationLine::getInvoiceIdentifier, Function.identity()));
+				.collect(ImmutableListMultimap.toImmutableListMultimap(JsonPaymentAllocationLine::getInvIdentifier, Function.identity()));
 
 		return invoiceIdentifier2Allocation.keySet()
 				.stream()
@@ -143,6 +143,6 @@ public class JsonInvoicePaymentCreateRequest
 					return lines.stream().reduce(JsonPaymentAllocationLine::aggregate).orElse(null);
 				})
 				.filter(Objects::nonNull)
-				.collect(ImmutableMap.toImmutableMap(JsonPaymentAllocationLine::getInvoiceIdentifier, Function.identity()));
+				.collect(ImmutableMap.toImmutableMap(JsonPaymentAllocationLine::getInvIdentifier, Function.identity()));
 	}
 }
