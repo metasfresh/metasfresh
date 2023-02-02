@@ -172,7 +172,6 @@ public class UpsertBPartnerRequestBuilder
 				.bpartnerComposite(jsonRequestComposite)
 				.bpartnerIdentifier(getBPartnerExternalIdentifier(lastRowOfTheGroup))
 				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
@@ -260,7 +259,6 @@ public class UpsertBPartnerRequestBuilder
 				.location(jsonRequestLocation)
 				.locationIdentifier(getLocationExternalIdentifier(bPartnerRow))
 				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
@@ -303,7 +301,6 @@ public class UpsertBPartnerRequestBuilder
 				.bpartnerComposite(jsonRequestCompositeBuilder.build())
 				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerRow.getPartnerCode().getPartnerCode()))
 				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 }
