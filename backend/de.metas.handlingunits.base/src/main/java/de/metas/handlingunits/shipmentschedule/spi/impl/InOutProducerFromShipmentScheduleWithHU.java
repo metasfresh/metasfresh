@@ -45,6 +45,7 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
@@ -170,6 +171,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	@Nullable private ForexContractRef forexContractRef;
 	@Nullable private DeliveryPlanningId deliveryPlanningId;
+	@Nullable private InOutId b2bReceiptId;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -424,6 +426,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		InOutDAO.updateRecordFromForeignContractRef(shipment, forexContractRef);
 		shipment.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
+		shipment.setB2B_InOut_ID(InOutId.toRepoId(b2bReceiptId));
 
 		//
 		// Save Shipment Header
@@ -558,6 +561,20 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 			// save the shipment schedule using current transaction
 			InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
+		}
+
+		//
+		// B2B: Link back the B2B receipt to this B2B shipment
+		final InOutId b2bReceiptId = InOutId.ofRepoIdOrNull(currentShipment.getB2B_InOut_ID());
+		if (b2bReceiptId != null)
+		{
+			final I_M_InOut b2bReceipt = inOutDAO.getById(b2bReceiptId, I_M_InOut.class);
+			if (b2bReceipt == null)
+			{
+				throw new AdempiereException("No B2B receipt found for " + b2bReceiptId);
+			}
+			b2bReceipt.setB2B_InOut_ID(currentShipment.getM_InOut_ID());
+			inOutDAO.save(b2bReceipt);
 		}
 
 		Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
@@ -745,6 +762,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this.deliveryPlanningId = deliveryPlanningId;
+		return this;
+	}
+
+	@Override
+	public InOutProducerFromShipmentScheduleWithHU setB2BReceiptId(@Nullable final InOutId b2bReceiptId)
+	{
+		this.b2bReceiptId = b2bReceiptId;
 		return this;
 	}
 

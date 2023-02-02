@@ -259,6 +259,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 										.build())
 								.forexContractRef(request.getForexContractRef())
 								.deliveryPlanningId(deliveryPlanningId)
+								.b2bReceiptId(request.getB2bReceiptId())
 								.build());
 
 		if (result.getWorkpackageEnqueuedCount() <= 0)
@@ -302,9 +303,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 						.deliveryPlanningId(deliveryPlanningId)
 						.build());
 
-		result.getSingleInOutId(); // make sure we received
-
 		return DeliveryPlanningGenerateReceiptResult.builder()
+				.receiptId(result.getSingleInOutId())
 				.receivedVHUId(vhuId)
 				.productId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()))
 				.qty(qtyToReceive)

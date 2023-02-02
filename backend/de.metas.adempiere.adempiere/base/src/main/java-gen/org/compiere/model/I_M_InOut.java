@@ -117,6 +117,31 @@ public interface I_M_InOut
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set B2B Shipment / Receipt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setB2B_InOut_ID (int B2B_InOut_ID);
+
+	/**
+	 * Get B2B Shipment / Receipt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getB2B_InOut_ID();
+
+	@Nullable org.compiere.model.I_M_InOut getB2B_InOut();
+
+	void setB2B_InOut(@Nullable org.compiere.model.I_M_InOut B2B_InOut);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_InOut> COLUMN_B2B_InOut_ID = new ModelColumn<>(I_M_InOut.class, "B2B_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_B2B_InOut_ID = "B2B_InOut_ID";
+
+	/**
 	 * Set Address.
 	 *
 	 * <br>Type: Text

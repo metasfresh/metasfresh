@@ -182,6 +182,7 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 					.deliveryDate(TimeUtil.asLocalDate(receiptDate))
 					.qtyToShipBD(qty)
 					.forexContractRef(p_ShipmentFECParams.getForexContractRef())
+					.b2bReceiptId(receiptResult.getReceiptId())
 					.build());
 		}
 
