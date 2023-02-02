@@ -10,3 +10,42 @@ UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID I
 UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL     THEN (SELECT CASE     WHEN v.Delivery_CreditUsed = 0     THEN ''0%''     ELSE round((v.Delivery_CreditUsed*100/v.CreditLimit),3 )  || ''%''     END     from C_BPartner_CreditLimit_Departments_V v)     ELSE (SELECT MAX(DeliveryCreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID)     END)',Updated=TO_TIMESTAMP('2023-02-02 01:27:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585625
 ;
 
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.Section_Group_Partner_ID
+-- 2023-02-02T00:27:04.949Z
+UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2023-02-02 02:27:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585737
+;
+
+-- Column: C_BPartner_CreditLimit_Department_Lines_V.M_Department_ID
+-- 2023-02-02T00:27:14.772Z
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=1,Updated=TO_TIMESTAMP('2023-02-02 02:27:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585723
+;
+
+-- Column: C_BPartner.CreditLimitIndicator
+-- Column SQL (old): (CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN '0%'                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || '%'                             END                             from C_BPartner_CreditLimit_Departments_V v)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)
+-- 2023-02-02T00:35:06.424Z
+UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN ''0%''                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || ''%''                             END                             from C_BPartner_CreditLimit_Departments_V v where C_BPartner.M_SectionCode_ID = v.M_SectionCode_ID)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)',Updated=TO_TIMESTAMP('2023-02-02 02:35:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- Column: C_BPartner.DeliveryCreditLimitIndicator
+-- Column SQL (old): (CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL     THEN (SELECT CASE     WHEN v.Delivery_CreditUsed = 0     THEN '0%'     ELSE round((v.Delivery_CreditUsed*100/v.CreditLimit),3 )  || '%'     END     from C_BPartner_CreditLimit_Departments_V v)     ELSE (SELECT MAX(DeliveryCreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID)     END)
+-- 2023-02-02T00:35:23.008Z
+UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL     THEN (SELECT CASE     WHEN v.Delivery_CreditUsed = 0     THEN ''0%''     ELSE round((v.Delivery_CreditUsed*100/v.CreditLimit),3 )  || ''%''     END     from C_BPartner_CreditLimit_Departments_V v where C_BPartner.M_SectionCode_ID = v.M_SectionCode_ID)     ELSE (SELECT MAX(DeliveryCreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID)     END)',Updated=TO_TIMESTAMP('2023-02-02 02:35:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585625
+;
+
+-- Column: C_BPartner.DeliveryCreditLimitIndicator
+-- Column SQL (old): (CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL     THEN (SELECT CASE     WHEN v.Delivery_CreditUsed = 0     THEN '0%'     ELSE round((v.Delivery_CreditUsed*100/v.CreditLimit),3 )  || '%'     END     from C_BPartner_CreditLimit_Departments_V v where C_BPartner.M_SectionCode_ID = v.M_SectionCode_ID)     ELSE (SELECT MAX(DeliveryCreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID)     END)
+-- 2023-02-02T00:38:29.282Z
+UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL     THEN (SELECT CASE     WHEN v.Delivery_CreditUsed = 0     THEN ''0%''     ELSE round((v.Delivery_CreditUsed*100/v.CreditLimit),3 )  || ''%''     END     from C_BPartner_CreditLimit_Departments_V v where C_BPartner.C_BPartner_ID = v.C_BPartner_CreditLimit_Departments_V_ID)     ELSE (SELECT MAX(DeliveryCreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID)     END)',Updated=TO_TIMESTAMP('2023-02-02 02:38:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585625
+;
+
+-- Column: C_BPartner.CreditLimitIndicator
+-- Column SQL (old): (CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN '0%'                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || '%'                             END                             from C_BPartner_CreditLimit_Departments_V v where C_BPartner.M_SectionCode_ID = v.M_SectionCode_ID)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)
+-- 2023-02-02T00:38:52.970Z
+UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN ''0%''                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || ''%''                             END                             from C_BPartner_CreditLimit_Departments_V v where C_BPartner.C_BPartner_ID = v.C_BPartner_CreditLimit_Departments_V_ID)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)',Updated=TO_TIMESTAMP('2023-02-02 02:38:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- Column: C_BPartner.CreditLimitIndicator
+-- Column SQL (old): (CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN '0%'                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || '%'                             END                             from C_BPartner_CreditLimit_Departments_V v where C_BPartner.C_BPartner_ID = v.C_BPartner_CreditLimit_Departments_V_ID)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)
+-- 2023-02-02T00:43:28.157Z
+UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN ''0%''                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || ''%''                             END from C_BPartner_CreditLimit_Departments_V v where C_BPartner.C_BPartner_ID = v.C_BPartner_CreditLimit_Departments_V_ID)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)',Updated=TO_TIMESTAMP('2023-02-02 02:43:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
