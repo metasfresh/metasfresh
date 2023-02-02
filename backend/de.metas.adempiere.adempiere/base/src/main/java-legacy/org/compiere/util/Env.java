@@ -280,6 +280,8 @@ public final class Env
 	public static final String CTXNAME_AcctSchemaElementPrefix = "$Element_";
 	public static final String CTXNAME_StoreCreditCardData = "#StoreCreditCardData";
 
+	public static final String CTXNAME_PROCESS_SELECTION_WHERECLAUSE = "SELECTION_WHERECLAUSE";
+	
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system. The value is loaded into the context on login.
 	 */
