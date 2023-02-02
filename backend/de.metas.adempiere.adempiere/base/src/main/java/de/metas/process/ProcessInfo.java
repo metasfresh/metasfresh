@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
@@ -815,7 +816,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		private Properties createTemporaryCtx(final Properties ctx)
+		private Properties createTemporaryCtx(@NonNull final Properties ctx)
 		{
 			final Properties processCtx = Env.newTemporaryCtx();
 
@@ -878,6 +879,15 @@ public final class ProcessInfo implements Serializable
 			final Timestamp date = SystemTime.asDayTimestamp();
 			Env.setContext(processCtx, Env.CTXNAME_Date, date);
 
+			//
+			// Allow using the where clause in expressions.
+			// For example, in a report that exports data, the SQL-Expression could be 
+			// "SELECT DocumentNo, DateOrdered FROM C_Order WHERE @SELECTION_WHERECLAUSE/false@;"
+			if (EmptyUtil.isNotBlank(getWhereClause()))
+			{
+				Env.setContext(processCtx, Env.CTXNAME_PROCESS_SELECTION_WHERECLAUSE, whereClause.get());
+			}
+			
 			//
 			// Copy relevant properties from window context
 			final int windowNo = getWindowNo();
@@ -1060,7 +1070,7 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setAD_PInstance(final I_AD_PInstance adPInstance)
+		public ProcessInfoBuilder setAD_PInstance(@NonNull final I_AD_PInstance adPInstance)
 		{
 			this._adPInstance = adPInstance;
 			setPInstanceId(PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID()));
