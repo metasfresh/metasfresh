@@ -2,6 +2,7 @@ package de.metas.deliveryplanning.webui.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.forex.ForexContractRef;
+import de.metas.inout.InOutId;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ class DeliveryPlanningGenerateShipmentRequest
 	@NonNull LocalDate deliveryDate;
 	@NonNull BigDecimal qtyToShipBD;
 	@Nullable ForexContractRef forexContractRef;
+	@Nullable InOutId b2bReceiptId;
 
 	@Builder
 	private DeliveryPlanningGenerateShipmentRequest(
@@ -27,7 +29,8 @@ class DeliveryPlanningGenerateShipmentRequest
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final LocalDate deliveryDate,
 			@NonNull final BigDecimal qtyToShipBD,
-			@Nullable final ForexContractRef forexContractRef)
+			@Nullable final ForexContractRef forexContractRef,
+			@Nullable final InOutId b2bReceiptId)
 	{
 		if (qtyToShipBD.signum() <= 0)
 		{
@@ -39,5 +42,6 @@ class DeliveryPlanningGenerateShipmentRequest
 		this.deliveryDate = deliveryDate;
 		this.qtyToShipBD = qtyToShipBD;
 		this.forexContractRef = forexContractRef;
+		this.b2bReceiptId = b2bReceiptId;
 	}
 }

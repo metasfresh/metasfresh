@@ -5,12 +5,15 @@ import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.forex.ForexContractRef;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -42,4 +45,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU setForexContractRef(ForexContractRef forexContractRef);
 
 	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(DeliveryPlanningId deliveryPlanningId);
+
+	InOutProducerFromShipmentScheduleWithHU setB2BReceiptId(@Nullable InOutId b2bReceiptId);
 }
