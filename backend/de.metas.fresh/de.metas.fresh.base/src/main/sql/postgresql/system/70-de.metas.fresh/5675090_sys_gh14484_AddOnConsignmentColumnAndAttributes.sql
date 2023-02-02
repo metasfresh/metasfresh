@@ -1,0 +1,107 @@
+-- 2023-02-02T07:56:01.637Z
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,Description,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value,ValueMax,ValueMin) VALUES (0,0,'L',TO_TIMESTAMP('2023-02-02 09:56:01','YYYY-MM-DD HH24:MI:SS'),100,'','Y','N','N','N','Y','N','N','N','N','N','N',540114,'Kommissionsware',TO_TIMESTAMP('2023-02-02 09:56:01','YYYY-MM-DD HH24:MI:SS'),100,'OnConsignment',0,0)
+;
+
+-- 2023-02-02T07:59:07.605Z
+INSERT INTO M_AttributeValue (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsNullFieldValue,M_Attribute_ID,M_AttributeValue_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2023-02-02 09:59:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N',540042,540066,'Yes',TO_TIMESTAMP('2023-02-02 09:59:07','YYYY-MM-DD HH24:MI:SS'),100,'Y')
+;
+
+update M_AttributeValue set m_attribute_id=540114 where M_AttributeValue_ID=540066;
+
+
+-- 2023-02-02T08:00:56.402Z
+INSERT INTO M_AttributeValue (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsNullFieldValue,M_Attribute_ID,M_AttributeValue_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,TO_TIMESTAMP('2023-02-02 10:00:56','YYYY-MM-DD HH24:MI:SS'),100,'Y','N',540114,540067,'No',TO_TIMESTAMP('2023-02-02 10:00:56','YYYY-MM-DD HH24:MI:SS'),100,'N')
+;
+
+-- 2023-02-02T08:19:54.630Z
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,C_UOM_ID,DescriptionPattern,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,'N',TO_TIMESTAMP('2023-02-02 10:19:54','YYYY-MM-DD HH24:MI:SS'),100,100,'','Y','N','N','N','Y','N','N','N','N','Y','N',540115,'Goods on consignment storage period',TO_TIMESTAMP('2023-02-02 10:19:54','YYYY-MM-DD HH24:MI:SS'),100,'OnConsignment_StoragePeriod')
+;
+
+-- 2023-02-02T08:20:41.572Z
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,C_UOM_ID,DescriptionPattern,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value) VALUES (0,0,'N',TO_TIMESTAMP('2023-02-02 10:20:41','YYYY-MM-DD HH24:MI:SS'),100,100,'','Y','N','N','N','Y','N','N','N','N','Y','N',540116,'Goods on consignment End Date',TO_TIMESTAMP('2023-02-02 10:20:41','YYYY-MM-DD HH24:MI:SS'),100,'OnConsignment_EndDate ')
+;
+
+-- 2023-02-02T08:21:30.757Z
+UPDATE M_Attribute SET AttributeValueType='D', C_UOM_ID=NULL,Updated=TO_TIMESTAMP('2023-02-02 10:21:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540116
+;
+
+-- 2023-02-02T08:21:50.231Z
+UPDATE M_Attribute SET IsStorageRelevant='Y',Updated=TO_TIMESTAMP('2023-02-02 10:21:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540114
+;
+
+-- 2023-02-02T08:23:26.427Z
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value,ValueMax,ValueMin) VALUES (0,0,'S',TO_TIMESTAMP('2023-02-02 10:23:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','N','N','N','N','N',540117,'Vendor Reference',TO_TIMESTAMP('2023-02-02 10:23:26','YYYY-MM-DD HH24:MI:SS'),100,'VendorReference',0,0)
+;
+
+-- 2023-02-02T08:23:39.485Z
+INSERT INTO M_Attribute (AD_Client_ID,AD_Org_ID,AttributeValueType,Created,CreatedBy,IsActive,IsAlwaysUpdateable,IsAttrDocumentRelevant,IsHighVolume,IsInstanceAttribute,IsMandatory,IsPricingRelevant,IsPrintedInDocument,IsReadOnlyValues,IsStorageRelevant,IsTransferWhenNull,M_Attribute_ID,Name,Updated,UpdatedBy,Value,ValueMax,ValueMin) VALUES (0,0,'S',TO_TIMESTAMP('2023-02-02 10:23:39','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','N','N','N','N','N',540118,'Internal Reference',TO_TIMESTAMP('2023-02-02 10:23:39','YYYY-MM-DD HH24:MI:SS'),100,'InternalReference',0,0)
+;
+
+-- 2023-02-02T08:28:36.754Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581995,0,'IsOnConsignment',TO_TIMESTAMP('2023-02-02 10:28:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','On Consignment','On Consignment',TO_TIMESTAMP('2023-02-02 10:28:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-02T08:28:36.755Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581995 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: IsOnConsignment
+-- 2023-02-02T08:29:03.282Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Goods on consignment', PrintName='Goods on consignment',Updated=TO_TIMESTAMP('2023-02-02 10:29:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581995 AND AD_Language='en_US'
+;
+
+-- 2023-02-02T08:29:03.308Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581995,'en_US') 
+;
+
+-- Element: IsOnConsignment
+-- 2023-02-02T08:29:09.015Z
+UPDATE AD_Element_Trl SET Name='Goods on consignment', PrintName='Goods on consignment',Updated=TO_TIMESTAMP('2023-02-02 10:29:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581995 AND AD_Language='fr_CH'
+;
+
+-- 2023-02-02T08:29:09.017Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581995,'fr_CH') 
+;
+
+-- Element: IsOnConsignment
+-- 2023-02-02T08:29:19.457Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kommissionsware', PrintName='Kommissionsware',Updated=TO_TIMESTAMP('2023-02-02 10:29:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581995 AND AD_Language='de_CH'
+;
+
+-- 2023-02-02T08:29:19.460Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581995,'de_CH') 
+;
+
+-- Element: IsOnConsignment
+-- 2023-02-02T08:29:23.390Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kommissionsware', PrintName='Kommissionsware',Updated=TO_TIMESTAMP('2023-02-02 10:29:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581995 AND AD_Language='de_DE'
+;
+
+-- 2023-02-02T08:29:23.391Z
+UPDATE AD_Element SET Name='Kommissionsware', PrintName='Kommissionsware' WHERE AD_Element_ID=581995
+;
+
+-- 2023-02-02T08:29:23.677Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581995,'de_DE') 
+;
+
+-- 2023-02-02T08:29:23.678Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581995,'de_DE') 
+;
+
+-- Column: C_Order.IsOnConsignment
+-- 2023-02-02T08:29:36.182Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585740,581995,0,20,259,'IsOnConsignment',TO_TIMESTAMP('2023-02-02 10:29:36','YYYY-MM-DD HH24:MI:SS'),100,'N','N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Kommissionsware',0,0,TO_TIMESTAMP('2023-02-02 10:29:36','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2023-02-02T08:29:36.184Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585740 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-02-02T08:29:36.186Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581995) 
+;
+
+-- 2023-02-02T08:29:39.507Z
+/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN IsOnConsignment CHAR(1) DEFAULT ''N'' CHECK (IsOnConsignment IN (''Y'',''N'')) NOT NULL')
+;
