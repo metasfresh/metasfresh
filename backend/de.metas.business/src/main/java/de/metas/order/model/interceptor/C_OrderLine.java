@@ -459,7 +459,7 @@ public class C_OrderLine
 	}
 
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
 	public void updateIsOnConsignment(final I_C_OrderLine orderLine)
 	{
