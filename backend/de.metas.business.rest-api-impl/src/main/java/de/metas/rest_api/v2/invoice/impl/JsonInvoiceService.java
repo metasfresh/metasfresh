@@ -372,7 +372,7 @@ public class JsonInvoiceService
 				? getCurrencyRate(requestCurrencyId, openAmt.getCurrencyId(), invoiceToAllocate)
 				: null;
 
-		final Function<Money,Money> convertToInvoiceCurrency = (requestAmt) -> Optional.ofNullable(currencyRate)
+		final Function<Money, Money> convertToInvoiceCurrency = (requestAmt) -> Optional.ofNullable(currencyRate)
 				.map(rate -> rate.convertAmount(requestAmt.toBigDecimal()))
 				.map(convertedAmt -> Money.of(convertedAmt, currencyRate.getToCurrencyId()))
 				.orElse(requestAmt);
@@ -380,6 +380,9 @@ public class JsonInvoiceService
 		validateRequestAmounts(allocationLine, requestCurrencyId, openAmt, convertToInvoiceCurrency);
 
 		final SOTrx soTrx = invoiceToAllocate.getDocBaseType().getSoTrx();
+
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = getInvoiceProcessingFeeCalculation(invoiceToAllocate, dateTrx)
+				.orElse(null);
 
 		return PayableDocument.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -392,22 +395,26 @@ public class JsonInvoiceService
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(getAmountsToAllocate(invoiceToAllocate,
-														dateTrx,
 														allocationLine,
 														requestCurrencyId,
-														convertToInvoiceCurrency))
+														convertToInvoiceCurrency,
+														invoiceProcessingFeeCalculation))
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
 	}
 
 	@NonNull
 	private AllocationAmounts getAmountsToAllocate(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
-			@NonNull final LocalDate dateTrx,
 			@NonNull final JsonPaymentAllocationLine allocationLine,
 			@NonNull final CurrencyId requestCurrencyId,
-			@NonNull final Function<Money, Money> convertToInvoiceCurrency)
+			@NonNull final Function<Money, Money> convertToInvoiceCurrency,
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
 	{
-		final Money invoiceProcessingFee = getInvoiceProcessingFee(invoiceToAllocate, dateTrx).orElse(null);
+		final Money invoiceProcessingFee = Optional.ofNullable(invoiceProcessingFeeCalculation)
+				.map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax)
+				.map(moneyService::toMoney)
+				.orElse(null);
 
 		final Money payAmt = Optional.ofNullable(allocationLine.getAmount())
 				.map(amt -> convertToInvoiceCurrency.apply(Money.of(amt, requestCurrencyId)))
@@ -448,7 +455,7 @@ public class JsonInvoiceService
 	}
 
 	@NonNull
-	private Optional<Money> getInvoiceProcessingFee(
+	private Optional<InvoiceProcessingFeeCalculation> getInvoiceProcessingFeeCalculation(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
 			@NonNull final LocalDate transactionDate)
 	{
@@ -465,9 +472,7 @@ public class JsonInvoiceService
 																		 .docTypeId(invoiceToAllocate.getDocTypeId())
 																		 .invoiceId(invoiceToAllocate.getInvoiceId())
 																		 .invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
-																		 .build())
-				.map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax)
-				.map(moneyService::toMoney);
+																		 .build());
 	}
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
@@ -733,7 +738,7 @@ public class JsonInvoiceService
 			@NonNull final JsonPaymentAllocationLine allocationLine,
 			@NonNull final CurrencyId requestCurrencyId,
 			@NonNull final Money openAmt,
-			@NonNull final Function<Money,Money> convertToInvoiceCurrency)
+			@NonNull final Function<Money, Money> convertToInvoiceCurrency)
 	{
 		final Money requestTotalAmt = convertToInvoiceCurrency.apply(Money.of(allocationLine.getTotalAmt(), requestCurrencyId));
 
