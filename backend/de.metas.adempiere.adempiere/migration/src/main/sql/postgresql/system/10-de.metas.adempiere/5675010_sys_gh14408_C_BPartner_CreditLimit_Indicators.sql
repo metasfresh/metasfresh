@@ -49,3 +49,12 @@ UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID I
 -- 2023-02-02T00:43:28.157Z
 UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_BPartner.Section_Group_Partner_ID IS NOT NULL               THEN (SELECT CASE                             WHEN v.SO_CreditUsed = 0                             THEN ''0%''                             ELSE round((v.SO_CreditUsed*100/v.CreditLimit),3 )  || ''%''                             END from C_BPartner_CreditLimit_Departments_V v where C_BPartner.C_BPartner_ID = v.C_BPartner_CreditLimit_Departments_V_ID)                             ELSE (SELECT MAX(CreditLimitIndicator) from C_BPartner_Stats S where S.C_BPartner_ID = C_BPartner.C_BPartner_ID) END)',Updated=TO_TIMESTAMP('2023-02-02 02:43:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
 ;
+
+
+
+-- Column: C_BPartner.CreditLimitIndicator
+-- Source Table: C_BPartner
+-- 2023-02-02T19:04:51.152Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,558986,0,540117,291,TO_TIMESTAMP('2023-02-02 21:04:50','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',584076,291,TO_TIMESTAMP('2023-02-02 21:04:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
