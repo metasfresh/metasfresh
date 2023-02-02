@@ -179,3 +179,60 @@ UPDATE M_AttributeSet mas SET IsInstanceAttribute='Y' WHERE M_AttributeSet_ID=54
 UPDATE M_AttributeSet mas SET IsInstanceAttribute='N' WHERE M_AttributeSet_ID=540014 AND IsInstanceAttribute='Y'	AND IsSerNo='N' AND IsLot='N' AND IsGuaranteeDate='N' AND NOT EXISTS (SELECT * FROM M_AttributeUse mau INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID AND mau.IsActive='Y' AND ma.IsActive='Y' AND ma.IsInstanceAttribute='Y')
 ;
 
+
+-- 2023-02-02T08:52:56.750Z
+UPDATE M_AttributeSet SET Name='Goods on consignment',Updated=TO_TIMESTAMP('2023-02-02 10:52:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_AttributeSet_ID=540014
+;
+
+-- 2023-02-02T08:52:56.751Z
+UPDATE M_AttributeSet mas SET IsInstanceAttribute='N' WHERE M_AttributeSet_ID=540014 AND IsInstanceAttribute='Y'	AND IsSerNo='N' AND IsLot='N' AND IsGuaranteeDate='N' AND NOT EXISTS (SELECT * FROM M_AttributeUse mau INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID AND mau.IsActive='Y' AND ma.IsActive='Y' AND ma.IsInstanceAttribute='Y')
+;
+
+-- 2023-02-02T08:53:13.487Z
+UPDATE M_Attribute SET Name='Goods on consignment',Updated=TO_TIMESTAMP('2023-02-02 10:53:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540114
+;
+
+
+
+
+
+-- 2023-02-02T08:56:15.422Z
+UPDATE M_Attribute SET Description='Is this a Goods on consignment Order.Retailer agrees to pay the seller a provision for this merchandise, after the item sells.',Updated=TO_TIMESTAMP('2023-02-02 10:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540114
+;
+
+-- 2023-02-02T08:56:42.175Z
+UPDATE M_Attribute SET Description='Shows the Goods on consignment storage period in months',Updated=TO_TIMESTAMP('2023-02-02 10:56:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540115
+;
+
+-- 2023-02-02T08:57:04.662Z
+UPDATE M_Attribute SET Description='Shows the Goods on consignment end date',Updated=TO_TIMESTAMP('2023-02-02 10:57:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540116
+;
+
+-- 2023-02-02T09:21:23.391Z
+UPDATE M_Attribute SET IsInstanceAttribute='Y', IsStorageRelevant='Y',Updated=TO_TIMESTAMP('2023-02-02 11:21:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540117
+;
+
+-- 2023-02-02T09:21:23.394Z
+UPDATE M_AttributeSet mas SET IsInstanceAttribute='Y' WHERE IsInstanceAttribute='N' AND EXISTS (SELECT * FROM M_AttributeUse mau WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID AND mau.M_Attribute_ID=540117)
+;
+
+-- 2023-02-02T09:21:39.559Z
+UPDATE M_Attribute SET IsInstanceAttribute='Y', IsStorageRelevant='Y',Updated=TO_TIMESTAMP('2023-02-02 11:21:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540118
+;
+
+-- 2023-02-02T09:21:39.560Z
+UPDATE M_AttributeSet mas SET IsInstanceAttribute='Y' WHERE IsInstanceAttribute='N' AND EXISTS (SELECT * FROM M_AttributeUse mau WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID AND mau.M_Attribute_ID=540118)
+;
+
+-- 2023-02-02T09:22:08.631Z
+UPDATE M_Attribute SET DescriptionPattern='N', IsMandatory='Y',Updated=TO_TIMESTAMP('2023-02-02 11:22:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540114
+;
+
+-- 2023-02-02T09:22:31.246Z
+UPDATE M_Attribute SET Name='Storage period',Updated=TO_TIMESTAMP('2023-02-02 11:22:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540115
+;
+
+-- 2023-02-02T09:22:39.775Z
+UPDATE M_Attribute SET Name='End Date',Updated=TO_TIMESTAMP('2023-02-02 11:22:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540116
+;
+
