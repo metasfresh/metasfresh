@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14408](https://github.com/metasfresh/metasfresh/issues/14408) Delivery Based Credit Limit 
   * [#14469](https://github.com/metasfresh/metasfresh/issues/14469) SAP: mark only imported fields as read-only
   * [#14477](https://github.com/metasfresh/metasfresh/issues/14477) Drop stepDef `all the hu data is reset` 
   * [#14446](https://github.com/metasfresh/metasfresh/issues/14446) Order dispo shall show complete transaction 
