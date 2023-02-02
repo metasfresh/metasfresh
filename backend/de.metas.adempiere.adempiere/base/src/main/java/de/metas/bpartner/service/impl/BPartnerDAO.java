@@ -942,8 +942,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-														final String bpValue,
-														final String bpValueSuffixToFallback)
+			final String bpValue,
+			final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1340,7 +1340,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
-				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
+												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
 	private static BPartnerLocationId createLocationIdOrNull(
@@ -1438,10 +1438,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
 			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
-							+ " Searched via the following properties one-after-one (list may be empty): {};"
-							+ " The search was restricted to the following orgIds (empty means no restriction): {}",
-					searchedByInfo.toString(),
-					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
+																 + " Searched via the following properties one-after-one (list may be empty): {};"
+																 + " The search was restricted to the following orgIds (empty means no restriction): {}",
+														 searchedByInfo.toString(),
+														 query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 
@@ -1835,7 +1835,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (record.getC_DocType_ID() <= 0 || record.getAD_PrintFormat_ID() <= 0)
 		{
 			logger.debug("getPrintFormats - C_BP_PrintFormat_ID={} has C_DocType_ID={} and AD_PrintFormat_ID={}; -> skipping it",
-					record.getC_BP_PrintFormat_ID(), record.getC_DocType_ID(), record.getAD_PrintFormat_ID());
+						 record.getC_BP_PrintFormat_ID(), record.getC_DocType_ID(), record.getAD_PrintFormat_ID());
 			return null;
 		}
 		return BPartnerPrintFormat.builder()
@@ -1952,4 +1952,16 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner.class);
 	}
+
+	@Override
+	public Set<Integer> retrieveForSectionGroupPartner(@NonNull final BPartnerId sectionGroupPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, sectionGroupPartnerId)
+				.create()
+				.listIds()
+				.stream().collect(ImmutableSet.toImmutableSet());
+	}
+
 }

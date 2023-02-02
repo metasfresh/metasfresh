@@ -333,6 +333,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_C_BPartner> retrieveBusinessPartners();
 
+	Set<Integer> retrieveForSectionGroupPartner(BPartnerId sectionGroupPartnerId);
+
 	@Value
 	@Builder
 	class BPartnerLocationQuery
