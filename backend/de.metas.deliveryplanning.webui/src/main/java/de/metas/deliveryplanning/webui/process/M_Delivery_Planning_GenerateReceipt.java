@@ -2,88 +2,72 @@ package de.metas.deliveryplanning.webui.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
-import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.forex.ForexContractId;
-import de.metas.forex.ForexContractRef;
-import de.metas.forex.ForexContractService;
+import de.metas.deliveryplanning.DeliveryPlanningShipmentInfo;
 import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
-import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
-import de.metas.money.CurrencyId;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.order.OrderAndLineId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.NestedParams;
+import de.metas.process.NestedParams.ParamMapping;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_ForeignExchangeContract;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
-	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
+	private final DeliveryPlanningGenerateProcessesHelper helper = DeliveryPlanningGenerateProcessesHelper.newInstance();
 
-	@Param(parameterName = "ReceiptDate", mandatory = true)
+	private static final String PARAM_ReceiptDate = "ReceiptDate";
+	@Param(parameterName = PARAM_ReceiptDate, mandatory = true)
 	private Instant p_ReceiptDate;
 
 	private static final String PARAM_Qty = "Qty";
 	@Param(parameterName = PARAM_Qty, mandatory = true)
 	private BigDecimal p_QtyBD;
 
-	//
-	// FEC Parameters
-	@Param(parameterName = ForexContractParameters.PARAM_IsFEC)
-	private boolean p_IsForexContract;
+	@NestedParams
+	private final ForexContractParameters p_ReceiptFECParams = ForexContractParameters.newInstance();
 
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_Order_Currency_ID)
-	private CurrencyId p_FEC_Order_Currency_ID;
+	public static final String PARAM_IsB2B = "IsB2B";
+	// @Param(parameterName = PARAM_IsB2B)
+	// private boolean p_IsB2B;
 
-	@Param(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID)
-	private ForexContractId p_forexContractId;
+	public static final String PARAM_IsGenerateB2BShipment = "IsGenerateB2BShipment";
+	@Param(parameterName = PARAM_IsGenerateB2BShipment)
+	private boolean p_IsGenerateB2BShipment;
 
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_From_Currency_ID)
-	private CurrencyId p_FEC_From_Currency_ID;
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_To_Currency_ID)
-	private CurrencyId p_FEC_To_Currency_ID;
-
-	@Param(parameterName = ForexContractParameters.PARAM_FEC_CurrencyRate)
-	private BigDecimal p_FEC_CurrencyRate;
-
-	private ForexContracts _forexContracts = null; // lazy
+	public static final String PARAM_FEC_Shipment_ForeignExchangeContract_ID = "FEC_Shipment_ForeignExchangeContract_ID";
+	@NestedParams({
+			@ParamMapping(externalParameterName = "IsShipmentFEC", internalParameterName = ForexContractParameters.PARAM_IsFEC),
+			@ParamMapping(externalParameterName = "FEC_SalesOrder_Currency_ID", internalParameterName = ForexContractParameters.PARAM_FEC_Order_Currency_ID),
+			@ParamMapping(externalParameterName = PARAM_FEC_Shipment_ForeignExchangeContract_ID, internalParameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID),
+			@ParamMapping(externalParameterName = "FEC_Shipment_From_Currency_ID", internalParameterName = ForexContractParameters.PARAM_FEC_From_Currency_ID),
+			@ParamMapping(externalParameterName = "FEC_Shipment_To_Currency_ID", internalParameterName = ForexContractParameters.PARAM_FEC_To_Currency_ID),
+			@ParamMapping(externalParameterName = "FEC_Shipment_CurrencyRate", internalParameterName = ForexContractParameters.PARAM_FEC_CurrencyRate),
+	})
+	private final ForexContractParameters p_ShipmentFECParams = ForexContractParameters.newInstance();
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -94,7 +78,7 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		}
 
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
-		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = deliveryPlanningService.getReceiptInfoIfIncomingType(deliveryPlanningId);
+		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = helper.getReceiptInfoIfIncomingType(deliveryPlanningId);
 		if (!optionalDeliveryPlanningReceipt.isPresent())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an incoming delivery planning");
@@ -113,126 +97,97 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private ForexContracts getContracts()
-	{
-		ForexContracts forexContracts = this._forexContracts;
-		if (forexContracts == null)
-		{
-			forexContracts = this._forexContracts = retrieveContracts();
-		}
-		return forexContracts;
-	}
+	@NonNull
+	private DeliveryPlanningId getDeliveryPlanningId() {return DeliveryPlanningId.ofRepoId(getRecord_ID());}
 
-	private ForexContracts retrieveContracts()
-	{
-		final DeliveryPlanningReceiptInfo receiptInfo = deliveryPlanningService.getReceiptInfo(getDeliveryPlanningId());
-		final OrderId purchaseOrderId = receiptInfo.getPurchaseOrderId();
-		if (purchaseOrderId == null)
-		{
-			throw new AdempiereException("Not an order based delivery planning");
-		}
+	private DeliveryPlanningReceiptInfo getReceiptInfo() {return helper.getReceiptInfo(getDeliveryPlanningId());}
 
-		return ForexContracts.builder()
-				.orderCurrencyId(orderBL.getCurrencyId(purchaseOrderId))
-				.forexContracts(forexContractService.getContractsByOrderId(purchaseOrderId))
-				.build();
-	}
+	private Optional<DeliveryPlanningShipmentInfo> getB2BShipmentInfo() {return helper.getB2BShipmentInfo(getReceiptInfo());}
+
+	private ForexContracts getReceiptForexContracts() {return helper.getReceiptContracts(getDeliveryPlanningId());}
+
+	private Optional<ForexContracts> getB2BShipmentForexContracts() {return helper.getB2BShipmentContracts(getReceiptInfo());}
 
 	@Nullable
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		return getForexContractParameters().getParameterDefaultValue(parameter.getColumnName(), getContracts());
+		final String externalParameterName = parameter.getColumnName();
+
+		if (PARAM_IsB2B.equals(externalParameterName))
+		{
+			return getB2BShipmentInfo().isPresent();
+		}
+		if (PARAM_IsGenerateB2BShipment.equals(externalParameterName))
+		{
+			return getB2BShipmentInfo().isPresent();
+		}
+		else
+		{
+			return IProcessDefaultParametersProvider.firstAvailableValue(
+					() -> p_ReceiptFECParams.getParameterDefaultValue(externalParameterName, getReceiptForexContracts()),
+					() -> p_ShipmentFECParams.getParameterDefaultValue(toInternalParameterName(externalParameterName), getB2BShipmentForexContracts().orElse(null))
+			);
+		}
 	}
 
 	@Override
-	public void onParameterChanged(final String parameterName)
+	public void onParameterChanged(final String externalParameterName)
 	{
-		updateForexContractParameters(params -> params.updateOnParameterChanged(parameterName, getContracts()));
-	}
-
-	private ForexContractParameters getForexContractParameters()
-	{
-		return ForexContractParameters.builder()
-				.isFEC(p_IsForexContract)
-				.orderCurrencyId(p_FEC_Order_Currency_ID)
-				.forexContractId(p_forexContractId)
-				.fromCurrencyId(p_FEC_From_Currency_ID)
-				.toCurrencyId(p_FEC_To_Currency_ID)
-				.currencyRate(p_FEC_CurrencyRate)
-				.build();
-	}
-
-	private void updateForexContractParameters(@NonNull final Consumer<ForexContractParameters> updater)
-	{
-		final ForexContractParameters params = getForexContractParameters();
-		updater.accept(params);
-		this.p_IsForexContract = params.isFEC();
-		this.p_FEC_Order_Currency_ID = params.getOrderCurrencyId();
-		this.p_forexContractId = params.getForexContractId();
-		this.p_FEC_From_Currency_ID = params.getFromCurrencyId();
-		this.p_FEC_To_Currency_ID = params.getToCurrencyId();
-		this.p_FEC_CurrencyRate = params.getCurrencyRate();
+		p_ReceiptFECParams.updateOnParameterChanged(externalParameterName, getReceiptForexContracts());
+		p_ShipmentFECParams.updateOnParameterChanged(toInternalParameterName(externalParameterName), getB2BShipmentForexContracts().orElse(null));
 	}
 
 	@ProcessParamLookupValuesProvider(parameterName = ForexContractParameters.PARAM_C_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	public LookupValuesList getAvailableForexContracts() {return forexContractLookup.findByIdsOrdered(getContracts().getForexContractIds());}
+	public LookupValuesList getAvailableReceiptForexContracts() {return helper.toLookupValuesList(getReceiptForexContracts());}
 
-	@NonNull
-	private DeliveryPlanningId getDeliveryPlanningId() {return DeliveryPlanningId.ofRepoId(getRecord_ID());}
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_FEC_Shipment_ForeignExchangeContract_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	public LookupValuesList getAvailableB2BShipmentForexContracts()
+	{
+		final ForexContracts b2bShipmentContracts = helper.getB2BShipmentContracts(getReceiptInfo()).orElse(null);
+		return helper.toLookupValuesList(b2bShipmentContracts);
+	}
 
 	@Override
 	protected String doIt()
 	{
-		final DeliveryPlanningId deliveryPlanningId = getDeliveryPlanningId();
-		final DeliveryPlanningReceiptInfo receiptInfo = deliveryPlanningService.getReceiptInfo(deliveryPlanningId);
-		if (receiptInfo.isReceived())
-		{
-			throw new AdempiereException("Already received");
-		}
+		final Instant receiptDate = FillMandatoryException.assertNotNull(p_ReceiptDate, PARAM_ReceiptDate);
+		final BigDecimal qty = FillMandatoryException.assertPositive(p_QtyBD, PARAM_Qty);
 
-		createReceipt(receiptInfo.getReceiptScheduleId(), deliveryPlanningId);
-
-		return MSG_OK;
-	}
-
-	private void createReceipt(
-			@NonNull final ReceiptScheduleId receiptScheduleId,
-			@NonNull final DeliveryPlanningId deliveryPlanningId)
-	{
-		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(receiptScheduleId);
-		final Quantity qty = Quantitys.create(p_QtyBD, extractUomId(receiptSchedule));
-		if (!qty.isPositive())
-		{
-			throw new FillMandatoryException(PARAM_Qty);
-		}
-
-		final ForexContractRef forexContractRef = getForexContractParameters().getForexContractRef();
-
-		final I_M_HU vhu = huReceiptScheduleBL.createPlanningVHU(receiptSchedule, qty);
-		if (vhu == null)
-		{
-			throw new AdempiereException("Failed receiving"); // shall not happen
-		}
-
-		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(
-				CreateReceiptsParameters.builder()
-						.commitEachReceiptIndividually(false)
-						.movementDateRule(ReceiptMovementDateRule.fixedDate(p_ReceiptDate))
-						.ctx(getCtx())
-						.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
-						.printReceiptLabels(true)
-						.receiptSchedule(receiptSchedule)
-						.selectedHuId(HuId.ofRepoId(vhu.getM_HU_ID()))
-						.forexContractRef(forexContractRef)
-						.deliveryPlanningId(deliveryPlanningId)
+		final DeliveryPlanningGenerateReceiptResult receiptResult = helper.generateReceipt(
+				DeliveryPlanningGenerateReceiptRequest.builder()
+						.deliveryPlanningId(getDeliveryPlanningId())
+						.receiptDate(receiptDate)
+						.qtyToReceiveBD(qty)
+						.forexContractRef(p_ReceiptFECParams.getForexContractRef())
 						.build());
 
-		result.getSingleInOutId();
-	}
+		if (p_IsGenerateB2BShipment)
+		{
+			final DeliveryPlanningShipmentInfo b2bShipmentInfo = getB2BShipmentInfo()
+					.orElseThrow(() -> new AdempiereException("No B2B shipment found")); // shall not happen
 
-	private static UomId extractUomId(@NonNull I_M_ReceiptSchedule rs)
-	{
-		return UomId.ofRepoId(rs.getC_UOM_ID());
+			final OrderAndLineId salesOrderAndLineId = Check.assumeNotNull(b2bShipmentInfo.getSalesOrderAndLineId(), "B2B Sales Order Line is set");
+
+			final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
+			huReservationService.makeReservation(ReserveHUsRequest.builder()
+					.qtyToReserve(receiptResult.getQty())
+					.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderAndLineId.getOrderLineId()))
+					.productId(receiptResult.getProductId())
+					.customerId(b2bShipmentInfo.getCustomerId())
+					.huId(receiptResult.getReceivedVHUId())
+					.build());
+
+			helper.generateShipment(DeliveryPlanningGenerateShipmentRequest.builder()
+					.adPInstanceId(getPinstanceId())
+					.deliveryPlanningId(b2bShipmentInfo.getDeliveryPlanningId())
+					.deliveryDate(TimeUtil.asLocalDate(receiptDate))
+					.qtyToShipBD(qty)
+					.forexContractRef(p_ShipmentFECParams.getForexContractRef())
+					.b2bReceiptId(receiptResult.getReceiptId())
+					.build());
+		}
+
+		return MSG_OK;
 	}
 }

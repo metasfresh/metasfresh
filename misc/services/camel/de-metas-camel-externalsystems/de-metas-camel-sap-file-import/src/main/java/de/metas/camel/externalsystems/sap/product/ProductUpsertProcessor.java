@@ -97,7 +97,6 @@ public class ProductUpsertProcessor implements Processor
 						.productIdentifier(productIdentifier)
 						.requestProduct(jsonRequestProduct)
 						.externalSystemConfigId(externalSystemRequest.getExternalSystemConfigId())
-						.isReadOnlyInMetasfresh(true)
 						.build());
 	}
 

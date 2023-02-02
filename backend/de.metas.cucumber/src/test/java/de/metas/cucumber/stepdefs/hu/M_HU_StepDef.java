@@ -72,7 +72,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -82,7 +81,6 @@ import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -155,12 +153,6 @@ public class M_HU_StepDef
 		this.warehouseTable = warehouseTable;
 		this.qrCodesTable = qrCodesTable;
 		this.testContext = testContext;
-	}
-
-	@And("all the hu data is reset")
-	public void reset_data()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")
@@ -430,15 +422,6 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
-	@And("^after not more than (.*)s, M_HU are found:$")
-	public void is_HU_found(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			findHU(row, timeoutSec);
-		}
-	}
-
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
@@ -616,35 +599,6 @@ public class M_HU_StepDef
 		assertThat(huStorageRecord).isPresent();
 		assertThat(huStorageRecord.get().getM_Product_ID()).isEqualTo(productRecord.getM_Product_ID());
 		assertThat(huStorageRecord.get().getQty()).isEqualTo(qty);
-	}
-
-	private void findHU(@NonNull final Map<String, String> row, @NonNull final Integer timeoutSec) throws InterruptedException
-	{
-		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, this::isHUFound);
-
-		final Optional<I_M_HU> huOptional = getHuRecord();
-
-		assertThat(huOptional).isPresent();
-		assertThat(huOptional.get().getHUStatus()).isEqualTo(huStatus);
-		assertThat(huOptional.get().isActive()).isEqualTo(isActive);
-
-		huTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_M_HU.COLUMNNAME_M_HU_ID), huOptional.get());
-	}
-
-	private Optional<I_M_HU> getHuRecord()
-	{
-		return queryBL.createQueryBuilder(I_M_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnlyOptional(I_M_HU.class);
-	}
-
-	private boolean isHUFound()
-	{
-		return getHuRecord().isPresent();
 	}
 
 	private Optional<I_M_HU_Storage> getHuStorageRecord(@NonNull final I_M_HU huRecord)

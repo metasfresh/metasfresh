@@ -5,7 +5,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -101,7 +100,8 @@ public class WEBUI_M_HU_MoveCUQtyToAnotherLocator extends HUEditorProcessTemplat
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("HU is not CU");
 		}
-		else if (!huRow.isHUStatusActive())
+
+		if (!huRow.isHUStatusActive())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("HUStatus is not Active");
 		}

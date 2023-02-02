@@ -180,7 +180,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 		return schemas.get(0);
 	}
-	
+
 	private AcctSchemasMap getAcctSchemasMap()
 	{
 		return acctSchemasCache.getOrLoad(0, this::retrieveAcctSchemasMap);
