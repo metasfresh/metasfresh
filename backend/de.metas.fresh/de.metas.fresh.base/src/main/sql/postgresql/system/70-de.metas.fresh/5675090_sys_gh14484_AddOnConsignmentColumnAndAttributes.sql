@@ -241,3 +241,84 @@ UPDATE M_Attribute SET DescriptionPattern='',Updated=TO_TIMESTAMP('2023-02-02 16
 ;
 
 update m_attribute set value='OnConsignment_EndDate' where M_Attribute_ID=540116;
+
+
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> pricing.Mikoshi
+-- Column: C_Order.IsOnConsignment
+-- 2023-02-03T10:39:14.043Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615370
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> main.Lieferung von
+-- Column: C_Order.C_BPartner_ID
+-- 2023-02-03T10:39:14.048Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611535
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> main.Rechnung von
+-- Column: C_Order.Bill_BPartner_ID
+-- 2023-02-03T10:39:14.054Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611536
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> main.Warenannahme
+-- Column: C_Order.M_Warehouse_ID
+-- 2023-02-03T10:39:14.059Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611537
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> main.Streckengeschäft
+-- Column: C_Order.IsDropShip
+-- 2023-02-03T10:39:14.065Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611538
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> main.Streckengeschäft Partner
+-- Column: C_Order.DropShip_BPartner_ID
+-- 2023-02-03T10:39:14.070Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611539
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> main.Tour
+-- Column: C_Order.M_Tour_ID
+-- 2023-02-03T10:39:14.075Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611540
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> pricing.Preissystem
+-- Column: C_Order.M_PricingSystem_ID
+-- 2023-02-03T10:39:14.080Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611541
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 10 -> pricing.Währung
+-- Column: C_Order.C_Currency_ID
+-- 2023-02-03T10:39:14.084Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611542
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 20 -> dates.Belegstatus
+-- Column: C_Order.DocStatus
+-- 2023-02-03T10:39:14.089Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611548
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 20 -> posted.Verbucht
+-- Column: C_Order.Posted
+-- 2023-02-03T10:39:14.093Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611553
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 20 -> org.Section Code
+-- Column: C_Order.M_SectionCode_ID
+-- 2023-02-03T10:39:14.096Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611555
+;
+
+-- UI Element: Bestellung(541595,D) -> Bestellung(546550,D) -> main -> 20 -> org.Sektion
+-- Column: C_Order.AD_Org_ID
+-- 2023-02-03T10:39:14.099Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2023-02-03 12:39:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611556
+;
+
