@@ -494,4 +494,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 		return queryBuilder;
 	}
+
+	@Override
+	public boolean hasIsOnConsignmentLines(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsOnConsignment, true)
+				.anyMatch();
+	}
 }
