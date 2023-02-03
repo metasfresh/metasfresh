@@ -75,7 +75,7 @@ final class UpdateMonthsUntilEndStorageCommand extends AstractMonthsUpdateStrate
 
 	public Iterator<HuId> getAllSuitableHUs()
 	{
-		return huWithExpiryDatesRepository.getAllWithBestBeforeDate();
+		return huWithExpiryDatesRepository.getAllWithEndStorageDate();
 	}
 
 	boolean update(@NonNull final IAttributeStorage huAttributes)

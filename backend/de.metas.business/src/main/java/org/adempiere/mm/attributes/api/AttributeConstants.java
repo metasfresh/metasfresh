@@ -46,8 +46,8 @@ public class AttributeConstants
 	public final String ATTR_BestBeforeDate_String = "HU_BestBeforeDate";
 	public final AttributeCode ATTR_BestBeforeDate = AttributeCode.ofString(ATTR_BestBeforeDate_String);
 	public final AttributeCode ATTR_MonthsUntilExpiry = AttributeCode.ofString("MonthsUntilExpiry");
-	public final AttributeCode ATTR_MonthsUntilEndStorageDate = AttributeCode.ofString("OnConsignment_StoragePeriod ");
-	public final AttributeCode ATTR_endStorageDate = AttributeCode.ofString("OnConsignment_EndDate ");
+	public final AttributeCode ATTR_MonthsUntilEndStorageDate = AttributeCode.ofString("OnConsignment_StoragePeriod");
+	public final AttributeCode ATTR_endStorageDate = AttributeCode.ofString("OnConsignment_EndDate");
 
 	//
 	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
