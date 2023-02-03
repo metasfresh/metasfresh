@@ -2,7 +2,6 @@ package org.adempiere.mm.attributes.api.impl;
 
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -11,6 +10,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -50,7 +51,7 @@ public class OnConsignmentAttributeService
 		return attributesRepo.getAttributeById(attributeId);
 	}
 
-	public boolean isOnConsignment(@NonNull final I_M_AttributeSetInstance asi)
+	public boolean isOnConsignment(@Nullable final I_M_AttributeSetInstance asi)
 	{
 		final String onConsignment = getOnConsignmentValueOrNull(asi);
 
@@ -63,8 +64,13 @@ public class OnConsignmentAttributeService
 		return isOnConsignment.booleanValue();
 	}
 
-	public String getOnConsignmentValueOrNull(@NonNull final I_M_AttributeSetInstance asi)
+	public String getOnConsignmentValueOrNull(@Nullable final I_M_AttributeSetInstance asi)
 	{
+		if (asi == null)
+		{
+			return null;
+		}
+
 		final AttributeId onConsignmentAttributeId = getOnConsignmentAttributeId();
 		if (onConsignmentAttributeId == null)
 		{
