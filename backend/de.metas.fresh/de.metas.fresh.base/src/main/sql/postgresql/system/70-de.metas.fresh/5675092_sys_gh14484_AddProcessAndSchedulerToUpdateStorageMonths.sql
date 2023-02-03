@@ -22,3 +22,19 @@ UPDATE AD_Process_Trl trl SET Name='Update Months Until Storage End Date' WHERE 
 INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Scheduler_ID,Created,CreatedBy,CronPattern,Description,EntityType,Frequency,FrequencyType,IsActive,IsIgnoreProcessingTime,KeepLogDays,ManageScheduler,Name,Processing,SchedulerProcessType,ScheduleType,Status,Supervisor_ID,Updated,UpdatedBy) VALUES (0,0,541193,0,550102,TO_TIMESTAMP('2023-02-03 11:04:32','YYYY-MM-DD HH24:MI:SS'),100,'00 00 * * *','Runs at 00:00 every night to update the table Attrimute Storage End Date Attribut.','de.metas.swat',0,'D','Y','N',7,'N','Update Months Until Storage End Date','N','P','C','NEW',100,TO_TIMESTAMP('2023-02-03 11:04:32','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2023-02-03T09:09:55.942Z
+UPDATE AD_Scheduler SET Description='Runs at 00:00 every night to update the table Attribute Storage End Date Attribut.', Name='Update Months Until Storage End Date sd',Updated=TO_TIMESTAMP('2023-02-03 11:09:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550102
+;
+
+-- 2023-02-03T09:10:09.480Z
+INSERT INTO AD_Scheduler (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,AD_Scheduler_ID,Created,CreatedBy,CronPattern,Description,EntityType,Frequency,FrequencyType,IsActive,IsIgnoreProcessingTime,KeepLogDays,ManageScheduler,Name,Processing,SchedulerProcessType,ScheduleType,Status,Supervisor_ID,Updated,UpdatedBy) VALUES (0,0,585211,0,550103,TO_TIMESTAMP('2023-02-03 11:10:09','YYYY-MM-DD HH24:MI:SS'),100,'00 00 * * *','Runs at 00:00 every night to update the table Attribute Storage End Date Attribut.','de.metas.swat',0,'D','Y','N',7,'N','Update Months Until Storage End Date','N','P','C','NEW',100,TO_TIMESTAMP('2023-02-03 11:10:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-03T09:10:22.278Z
+DELETE FROM AD_Scheduler WHERE AD_Scheduler_ID=550102
+;
+
+-- 2023-02-03T09:10:25.935Z
+UPDATE AD_Scheduler SET EntityType='D',Updated=TO_TIMESTAMP('2023-02-03 11:10:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550103
+;
+
