@@ -69,7 +69,7 @@ final class UpdateMonthsUntilEndStorageCommand extends AstractMonthsUpdateStrate
 			return OptionalInt.empty();
 		}
 
-		final int monthsUntilEndStorageDate = (int)ChronoUnit.MONTHS.between(today, endStorageDate);
+		final int monthsUntilEndStorageDate = (int)ChronoUnit.MONTHS.between(endStorageDate, today);
 		return OptionalInt.of(monthsUntilEndStorageDate);
 	}
 
