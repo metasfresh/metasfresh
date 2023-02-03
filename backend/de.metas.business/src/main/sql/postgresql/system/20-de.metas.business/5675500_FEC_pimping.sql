@@ -137,5 +137,5 @@ UPDATE AD_Element SET Name='FEC Rate', PrintName='FEC Rate' WHERE AD_Element_ID=
 ;
 
 
-alter table C_ForeignExchangeContract rename column CurrencyRate to FEC_Rate;
+alter table C_ForeignExchangeContract rename column CurrencyRate to FEC_CurrencyRate;
 
