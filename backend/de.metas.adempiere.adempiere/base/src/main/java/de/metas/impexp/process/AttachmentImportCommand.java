@@ -40,7 +40,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 @Builder
-public class DataImportCommand
+public class AttachmentImportCommand
 {
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
@@ -59,7 +59,7 @@ public class DataImportCommand
 	@Default
 	private final IParams additionalParameters = IParams.NULL;
 
-	public DataImportResult importFile()
+	public DataImportResult execute()
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(attachmentEntryId);
 

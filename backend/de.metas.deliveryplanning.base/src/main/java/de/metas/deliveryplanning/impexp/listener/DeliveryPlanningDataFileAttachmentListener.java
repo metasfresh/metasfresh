@@ -28,20 +28,21 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
 import de.metas.common.util.Check;
+import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataService;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.config.DataImportConfigId;
-import de.metas.impexp.process.DataImportCommand;
+import de.metas.impexp.process.AttachmentImportCommand;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_I_DeliveryPlanning;
 import org.compiere.model.I_I_DeliveryPlanning_Data;
 import org.slf4j.Logger;
 
@@ -51,7 +52,7 @@ import org.slf4j.Logger;
 public class DeliveryPlanningDataFileAttachmentListener implements AttachmentListener
 {
 	private static final Logger logger = LogManager.getLogger(DeliveryPlanningDataFileAttachmentListener.class);
-	private static final String SYS_CONFIG_DE_METAS_DELIVERYPLANNING_IMPORT_FORMATID_ = "de.metas.DeliveryPlanning.import.formatId";
+	private static final String SYS_CONFIG_DE_METAS_DELIVERYPLANNING_IMPORT_FORMATID = "de.metas.DeliveryPlanning.import.formatId";
 	private static final int DEFAULT_DATA_IMPORT_IMPORT_FORMAT = 540022;
 
 	private final DeliveryPlanningDataService deliveryPlanningDataService = SpringContextHolder.instance.getBean(DeliveryPlanningDataService.class);
@@ -59,6 +60,7 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	@NonNull
@@ -67,14 +69,24 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 			@NonNull final TableRecordReference tableRecordReference)
 	{
 		final DeliveryPlanningDataId deliveryPlanningDataId = tableRecordReference
-				.getIdAssumingTableName(I_I_DeliveryPlanning.Table_Name, DeliveryPlanningDataId::ofRepoId);
-
-		deliveryPlanningDataService.save(deliveryPlanningDataService.getById(deliveryPlanningDataId)
-				.toBuilder()
-				.filename(attachmentEntry.getFilename())
-				.build());
-
-		tryImport(tableRecordReference, attachmentEntry);
+				.getIdAssumingTableName(I_I_DeliveryPlanning_Data.Table_Name, DeliveryPlanningDataId::ofRepoId);
+		try
+		{
+			tryImport(tableRecordReference, attachmentEntry);
+			deliveryPlanningDataService.save(deliveryPlanningDataService.getById(deliveryPlanningDataId)
+					.toBuilder()
+					.filename(attachmentEntry.getFilename())
+					.importedTimestamp(SystemTime.asTimestamp())
+					.processed(true)
+					.build());
+		}
+		catch (final Exception ex)
+		{
+			// FIXME if cannot import, remove the attachment so the user can try uploading it again
+			// trxManager.runAfterCommit(() -> attachmentEntryService.unattach(tableRecordReference, attachmentEntry));
+			// throw ex;
+			return AttachmentListenerConstants.ListenerWorkStatus.FAILURE;
+		}
 
 		return AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 	}
@@ -85,18 +97,19 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 				.value(I_I_DeliveryPlanning_Data.COLUMNNAME_I_DeliveryPlanning_Data_ID, tableRecordReference.getRecord_ID())
 				.build();
 
-		return DataImportCommand.builder()
+		final DataImportResult dataImportResult = AttachmentImportCommand.builder()
 				.attachmentEntryId(attachmentEntry.getId())
 				.dataImportConfigId(getDataImportConfigId())
 				.additionalParameters(params)
 				.build()
-				.importFile();
+				.execute();
+		return dataImportResult;
 	}
 
 	@NonNull
 	private DataImportConfigId getDataImportConfigId()
 	{
-		return DataImportConfigId.ofRepoId(sysConfigBL.getIntValue(SYS_CONFIG_DE_METAS_DELIVERYPLANNING_IMPORT_FORMATID_, DEFAULT_DATA_IMPORT_IMPORT_FORMAT));
+		return DataImportConfigId.ofRepoId(sysConfigBL.getIntValue(SYS_CONFIG_DE_METAS_DELIVERYPLANNING_IMPORT_FORMATID, DEFAULT_DATA_IMPORT_IMPORT_FORMAT));
 	}
 
 	@Override
@@ -105,7 +118,7 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final TableRecordReference tableRecordReference)
 	{
-		Check.assume(tableRecordReference.getTableName().equals(I_I_DeliveryPlanning.Table_Name), "This is only about {}}!", I_I_DeliveryPlanning.Table_Name);
+		Check.assume(tableRecordReference.getTableName().equals(I_I_DeliveryPlanning_Data.Table_Name), "This is only about {}}!", I_I_DeliveryPlanning_Data.Table_Name);
 
 		final boolean attachmentEntryMatch = attachmentEntryService.getByReferencedRecord(tableRecordReference)
 				.stream()

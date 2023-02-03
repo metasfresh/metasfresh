@@ -100,7 +100,7 @@ public interface I_I_DeliveryPlanning_Data
 	String COLUMNNAME_FileName = "FileName";
 
 	/**
-	 * Set Delivery Planning Import.
+	 * Set Delivery Planning Data Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -109,7 +109,7 @@ public interface I_I_DeliveryPlanning_Data
 	void setI_DeliveryPlanning_Data_ID (int I_DeliveryPlanning_Data_ID);
 
 	/**
-	 * Get Delivery Planning Import.
+	 * Get Delivery Planning Data Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

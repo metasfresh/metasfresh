@@ -276,7 +276,7 @@ public interface I_I_DeliveryPlanning
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Delivery Planning Import.
+	 * Set Delivery Planning Data Import.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -285,7 +285,7 @@ public interface I_I_DeliveryPlanning
 	void setI_DeliveryPlanning_Data_ID (int I_DeliveryPlanning_Data_ID);
 
 	/**
-	 * Get Delivery Planning Import.
+	 * Get Delivery Planning Data Import.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true

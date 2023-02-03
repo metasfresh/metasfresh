@@ -63,7 +63,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@RunOutOfTrx // dataImportService comes with its own trx-management
 	protected String doIt()
 	{
-		final DataImportResult result = DataImportCommand.builder()
+		final DataImportResult result = AttachmentImportCommand.builder()
 				.attachmentEntryId(getAttachmentEntryId())
 				.dataImportConfigId(getDataImportConfigId())
 				.clientId(getClientId())
@@ -71,7 +71,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 				.userId(getUserId())
 				.additionalParameters(getParameterAsIParams())
 				.build()
-				.importFile();
+				.execute();
 
 		deleteAttachmentEntry();
 

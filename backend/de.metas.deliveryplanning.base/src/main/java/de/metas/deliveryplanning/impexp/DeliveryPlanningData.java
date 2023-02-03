@@ -27,7 +27,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.sql.Timestamp;
 
 @Value
 @Builder(toBuilder = true)
@@ -43,7 +43,7 @@ public class DeliveryPlanningData
 	String filename;
 
 	@Nullable
-	Instant importedTimestamp;
+	Timestamp importedTimestamp;
 
 	boolean processed;
 }

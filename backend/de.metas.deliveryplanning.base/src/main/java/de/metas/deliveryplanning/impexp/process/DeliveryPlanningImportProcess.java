@@ -130,4 +130,9 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 		deliveryPlanning.setActualDischargeQuantity(importRecord.getActualDischargeQuantity());
 		InterfaceWrapperHelper.save(deliveryPlanning);
 	}
+
+	protected void afterImport()
+	{
+
+	}
 }

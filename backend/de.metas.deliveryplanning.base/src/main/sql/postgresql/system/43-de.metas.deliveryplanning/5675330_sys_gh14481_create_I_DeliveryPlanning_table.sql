@@ -488,3 +488,15 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.I_DeliveryPlanning (ActualDeliveryDate TIMESTAMP WITHOUT TIME ZONE, ActualDischargeQuantity NUMERIC, ActualLoadingDate TIMESTAMP WITHOUT TIME ZONE, ActualLoadQty NUMERIC, AD_Client_ID NUMERIC(10) NOT NULL, AD_Issue_ID NUMERIC(10), AD_Org_ID NUMERIC(10) NOT NULL, Batch VARCHAR(250), C_DataImport_ID NUMERIC(10), C_DataImport_Run_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, DeliveryDate TIMESTAMP WITHOUT TIME ZONE, DocumentNo VARCHAR(40) NOT NULL, I_DeliveryPlanning_Data_ID NUMERIC(10) NOT NULL, I_DeliveryPlanning_ID NUMERIC(10) NOT NULL, I_ErrorMsg VARCHAR(2000), I_IsImported CHAR(1) DEFAULT 'N' NOT NULL, I_LineContent TEXT, I_LineNo NUMERIC(10), IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Delivery_Planning_ID NUMERIC(10), OriginCountry VARCHAR(60), PlannedDeliveryDate TIMESTAMP WITHOUT TIME ZONE, PlannedDischargeQuantity NUMERIC, PlannedLoadedQuantity NUMERIC, PlannedLoadingDate TIMESTAMP WITHOUT TIME ZONE, Processed CHAR(1) DEFAULT 'N' CHECK (Processed IN ('Y','N')) NOT NULL, ProductCode VARCHAR(40), ProductName VARCHAR(600), ReleaseNo VARCHAR(250), ShipToLocation_Name VARCHAR(1024), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, WarehouseName VARCHAR(60), CONSTRAINT IDeliveryPlanningData_IDeliveryPlanning FOREIGN KEY (I_DeliveryPlanning_Data_ID) REFERENCES public.I_DeliveryPlanning_Data DEFERRABLE INITIALLY DEFERRED, CONSTRAINT I_DeliveryPlanning_Key PRIMARY KEY (I_DeliveryPlanning_ID), CONSTRAINT MDeliveryPlanning_IDeliveryPlanning FOREIGN KEY (M_Delivery_Planning_ID) REFERENCES public.M_Delivery_Planning DEFERRABLE INITIALLY DEFERRED)
 ;
 
+-- Column: I_DeliveryPlanning.I_DeliveryPlanning_Data_ID
+-- 2023-02-03T08:17:03.278Z
+UPDATE AD_Column SET IsMandatory='N', IsUpdateable='N',Updated=TO_TIMESTAMP('2023-02-03 10:17:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585783
+;
+
+-- 2023-02-03T08:17:11.048Z
+INSERT INTO t_alter_column values('i_deliveryplanning','I_DeliveryPlanning_Data_ID','NUMERIC(10)',null,null)
+;
+
+-- 2023-02-03T08:17:11.051Z
+INSERT INTO t_alter_column values('i_deliveryplanning','I_DeliveryPlanning_Data_ID',null,'NULL',null)
+;

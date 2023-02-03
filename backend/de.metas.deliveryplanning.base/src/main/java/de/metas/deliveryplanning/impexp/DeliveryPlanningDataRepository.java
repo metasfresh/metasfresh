@@ -26,7 +26,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_DeliveryPlanning_Data;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -47,7 +46,7 @@ public class DeliveryPlanningDataRepository
 
 		deliveryPlanningRecord.setProcessed(deliveryPlanningData.isProcessed());
 		deliveryPlanningRecord.setFileName(deliveryPlanningData.getFilename());
-		deliveryPlanningRecord.setImported(TimeUtil.asTimestamp(deliveryPlanningData.getImportedTimestamp()));
+		deliveryPlanningRecord.setImported(deliveryPlanningData.getImportedTimestamp());
 
 		saveRecord(deliveryPlanningRecord);
 	}
@@ -72,7 +71,7 @@ public class DeliveryPlanningDataRepository
 		return DeliveryPlanningData.builder()
 				.deliveryPlanningDataId(DeliveryPlanningDataId.ofRepoId(record.getI_DeliveryPlanning_Data_ID()))
 				.filename(record.getFileName())
-				.importedTimestamp(TimeUtil.asInstant(record.getImported()))
+				.importedTimestamp(record.getImported())
 				.processed(record.isProcessed())
 				.build();
 	}
