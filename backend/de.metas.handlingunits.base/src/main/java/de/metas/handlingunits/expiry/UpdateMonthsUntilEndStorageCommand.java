@@ -53,7 +53,7 @@ final class UpdateMonthsUntilEndStorageCommand extends AstractMonthsUpdateStrate
 		this.today = today;
 	}
 
-	public static class UpdateMonthsUntiEndStorageCommandBuilder
+	public static class UpdateMonthsUntilEndStorageCommandBuilder
 	{
 		public UpdateMonthsResult execute()
 		{
