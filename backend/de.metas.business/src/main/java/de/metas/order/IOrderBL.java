@@ -281,5 +281,6 @@ public interface IOrderBL extends ISingletonService
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
 
-	void computeIsOnConsignmentFromLines(@NonNull final I_C_Order order);
+	void updateIsOnConsignmentFromLines(OrderId orderId);
+
 }

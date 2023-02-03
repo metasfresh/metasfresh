@@ -1008,4 +1008,13 @@ public class OrderLineBL implements IOrderLineBL
 		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
 		return onConsignmentAttributeService.isOnConsignment(productSI);
 	}
+
+	@Override
+	public void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine)
+	{
+		final boolean isOnConsignment = isOnConsignmentOrderLine(orderLine);
+		orderLine.setIsOnConsignment(isOnConsignment);
+	}
+
+
 }

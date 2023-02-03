@@ -1,6 +1,7 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
@@ -38,6 +39,7 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
@@ -48,6 +50,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -448,13 +451,38 @@ public class C_OrderLine
 		}
 	}
 
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
 	public void updateIsOnConsignment(final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		orderBL.computeIsOnConsignmentFromLines(order);
+		orderLineBL.updateIsOnConsignmentNoSave(orderLine);
 	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsOnConsignment })
+	public void updateIsOnConsignmentOrder(final I_C_OrderLine orderLine)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.accumulateAndProcessAfterCommit(
+				"orderIdsToUpdateIsOnConsigment",
+				ImmutableSet.of(orderId),
+				this::updateIsOnConsignmentFromLines
+		);
+	}
+
+	private void updateIsOnConsignmentFromLines(final List<OrderId> orderIds)
+	{
+		for (final OrderId orderId : ImmutableSet.copyOf(orderIds))
+		{
+			orderBL.updateIsOnConsignmentFromLines(orderId);
+		}
+	}
+
+
+
+
 
 }
