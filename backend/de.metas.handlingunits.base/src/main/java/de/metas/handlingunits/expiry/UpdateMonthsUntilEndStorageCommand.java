@@ -1,17 +1,16 @@
 package de.metas.handlingunits.expiry;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.Iterator;
-import java.util.OptionalInt;
-
-import org.adempiere.mm.attributes.api.AttributeConstants;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Iterator;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -35,7 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class UpdateMonthsUntilExpiryCommand extends AstractMonthsUpdateStrategy
+final class UpdateMonthsUntilEndStorageCommand extends AstractMonthsUpdateStrategy
 {
 	// services
 	private final HUWithExpiryDatesRepository huWithExpiryDatesRepository;
@@ -43,7 +42,7 @@ final class UpdateMonthsUntilExpiryCommand extends AstractMonthsUpdateStrategy
 	private final LocalDate today;
 
 	@Builder
-	public UpdateMonthsUntilExpiryCommand(
+	public UpdateMonthsUntilEndStorageCommand(
 			@NonNull final HUWithExpiryDatesRepository huWithExpiryDatesRepository,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			//
@@ -54,12 +53,24 @@ final class UpdateMonthsUntilExpiryCommand extends AstractMonthsUpdateStrategy
 		this.today = today;
 	}
 
-	public static class UpdateMonthsUntilExpiryCommandBuilder
+	public static class UpdateMonthsUntiEndStorageCommandBuilder
 	{
 		public UpdateMonthsResult execute()
 		{
 			return build().execute();
 		}
+	}
+
+	static OptionalInt computeMonthsUntilEndStorageDate(@NonNull final IAttributeStorage huAttributes, @NonNull final LocalDate today)
+	{
+		final LocalDate endStorageDate = huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_endStorageDate);
+		if (endStorageDate == null)
+		{
+			return OptionalInt.empty();
+		}
+
+		final int monthsUntilEndStorageDate = (int)ChronoUnit.MONTHS.between(today, endStorageDate);
+		return OptionalInt.of(monthsUntilEndStorageDate);
 	}
 
 	public Iterator<HuId> getAllSuitableHUs()
@@ -69,43 +80,31 @@ final class UpdateMonthsUntilExpiryCommand extends AstractMonthsUpdateStrategy
 
 	boolean update(@NonNull final IAttributeStorage huAttributes)
 	{
-		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
+		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilEndStorageDate))
 		{
 			return false;
 		}
 
-		final OptionalInt monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, today);
-		final int monthsUntilExpiryOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilExpiry);
-		if (monthsUntilExpiry.orElse(0) == monthsUntilExpiryOld)
+		final OptionalInt monthsUntilEndStorageDate = computeMonthsUntilEndStorageDate(huAttributes, today);
+		final int monthsUntilEndStorageDateOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilEndStorageDate);
+		if (monthsUntilEndStorageDate.orElse(0) == monthsUntilEndStorageDateOld)
 		{
 			return false;
 		}
 
 		huAttributes.setSaveOnChange(true);
-		
-		if (monthsUntilExpiry.isPresent())
+
+		if (monthsUntilEndStorageDate.isPresent())
 		{
-			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
+			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilEndStorageDate, monthsUntilEndStorageDate.getAsInt());
 		}
 		else
 		{
-			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
+			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilEndStorageDate, null);
 		}
 
 		huAttributes.saveChangesIfNeeded();
 
 		return true;
-	}
-
-	static OptionalInt computeMonthsUntilExpiry(@NonNull final IAttributeStorage huAttributes, @NonNull final LocalDate today)
-	{
-		final LocalDate bestBeforeDate = huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
-		if (bestBeforeDate == null)
-		{
-			return OptionalInt.empty();
-		}
-
-		final int monthsUntilExpiry = (int)ChronoUnit.MONTHS.between(today, bestBeforeDate);
-		return OptionalInt.of(monthsUntilExpiry);
 	}
 }

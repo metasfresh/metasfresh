@@ -55,7 +55,7 @@ public class HUWithExpiryDatesService
 				.execute();
 	}
 
-	public UpdateMonthsUntilExpiryResult updateMonthsUntilExpiry(@NonNull final LocalDate today)
+	public UpdateMonthsResult updateMonthsUntilExpiry(@NonNull final LocalDate today)
 	{
 		return UpdateMonthsUntilExpiryCommand.builder()
 				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
