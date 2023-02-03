@@ -23,6 +23,8 @@
 package de.metas.deliveryplanning.impexp.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
+import de.metas.deliveryplanning.impexp.DeliveryPlanningDataRepository;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -35,8 +37,10 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.X_I_DeliveryPlanning;
 
 import java.sql.ResultSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Import {@link org.compiere.model.I_I_DeliveryPlanning} to {@link org.compiere.model.I_M_Delivery_Planning}.
@@ -44,6 +48,9 @@ import java.util.Properties;
 public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I_I_DeliveryPlanning>
 {
 	DeliveryPlanningRepository deliveryPlanningRepository = SpringContextHolder.instance.getBean(DeliveryPlanningRepository.class);
+	DeliveryPlanningDataRepository deliveryPlanningDataRepository = SpringContextHolder.instance.getBean(DeliveryPlanningDataRepository.class);
+
+	Set<DeliveryPlanningDataId> deliveryPlanningDataIds = new HashSet<>();
 
 	@Override
 	public Class<I_I_DeliveryPlanning> getImportModelClass()
@@ -86,6 +93,7 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 			@NonNull final I_I_DeliveryPlanning importRecord,
 			final boolean isInsertOnly_NOTUSED)
 	{
+		deliveryPlanningDataIds.add(DeliveryPlanningDataId.ofRepoId(importRecord.getI_DeliveryPlanning_Data_ID()));
 		return importDeliveryPlanning(importRecord);
 	}
 
@@ -111,11 +119,17 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 			else
 			{
 				final I_M_Delivery_Planning deliveryPlanning = deliveryPlannings.get(0);
-				updateDeliveryPlanning(importRecord, deliveryPlanning);
-				importRecord.setM_Delivery_Planning_ID(deliveryPlanning.getM_Delivery_Planning_ID());
-				importResult = ImportRecordResult.Updated;
+				if (deliveryPlanning.isProcessed())
+				{
+					importRecord.setI_ErrorMsg("Delivery planning is already processed");
+				}
+				else
+				{
+					updateDeliveryPlanning(importRecord, deliveryPlanning);
+					importRecord.setM_Delivery_Planning_ID(deliveryPlanning.getM_Delivery_Planning_ID());
+					importResult = ImportRecordResult.Updated;
+				}
 			}
-
 		}
 		InterfaceWrapperHelper.save(importRecord);
 
@@ -133,6 +147,10 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 
 	protected void afterImport()
 	{
-
+		deliveryPlanningDataIds.forEach((id) ->
+				deliveryPlanningDataRepository.save(deliveryPlanningDataRepository.getById(id)
+						.toBuilder()
+						.processed(true)
+						.build()));
 	}
 }

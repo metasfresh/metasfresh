@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning.impexp;
 
+import de.metas.impexp.DataImportRunId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -44,5 +45,10 @@ public class DeliveryPlanningDataService
 	public void save(@NonNull final DeliveryPlanningData deliveryPlanningData)
 	{
 		deliveryPlanningDataRepository.save(deliveryPlanningData);
+	}
+
+	public int assignDeliveryPlanningDataIdToDataImportRunId(@NonNull final DeliveryPlanningDataId deliveryPlanningDataId, @NonNull final DataImportRunId dataImportRunId)
+	{
+		return deliveryPlanningDataRepository.assignDeliveryPlanningDataIdToDataImportRunId(deliveryPlanningDataId, dataImportRunId);
 	}
 }

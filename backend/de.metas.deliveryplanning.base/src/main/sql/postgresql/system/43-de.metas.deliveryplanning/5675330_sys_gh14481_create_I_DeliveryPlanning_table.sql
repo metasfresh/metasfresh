@@ -500,3 +500,29 @@ INSERT INTO t_alter_column values('i_deliveryplanning','I_DeliveryPlanning_Data_
 -- 2023-02-03T08:17:11.051Z
 INSERT INTO t_alter_column values('i_deliveryplanning','I_DeliveryPlanning_Data_ID',null,'NULL',null)
 ;
+
+-- Column: I_DeliveryPlanning.Processing
+-- 2023-02-03T10:45:33.529Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585824,524,0,20,542292,'Processing',TO_TIMESTAMP('2023-02-03 12:45:33','YYYY-MM-DD HH24:MI:SS'),100,'N','N','D',0,1,'Y','N','Y','N','N','N','Y','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Process Now',0,0,TO_TIMESTAMP('2023-02-03 12:45:33','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2023-02-03T10:45:33.530Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585824 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-02-03T10:45:33.556Z
+/* DDL */  select update_Column_Translation_From_AD_Element(524) 
+;
+
+-- 2023-02-03T10:45:36.440Z
+/* DDL */ SELECT public.db_alter_table('I_DeliveryPlanning','ALTER TABLE public.I_DeliveryPlanning ADD COLUMN Processing CHAR(1) DEFAULT ''N'' CHECK (Processing IN (''Y'',''N'')) NOT NULL')
+;
+
+-- Element: I_DeliveryPlanning_ID
+-- 2023-02-03T13:10:49.193Z
+UPDATE AD_Element_Trl SET Name='Delivery Planning Import', PrintName='Delivery Planning Import',Updated=TO_TIMESTAMP('2023-02-03 15:10:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582010 AND AD_Language='en_US'
+;
+
+-- 2023-02-03T13:10:49.195Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582010,'en_US') 
+;

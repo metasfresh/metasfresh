@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_I_DeliveryPlanning_Data extends org.compiere.model.PO implements I_I_DeliveryPlanning_Data, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 937158156L;
+	private static final long serialVersionUID = 1339615192L;
 
     /** Standard Constructor */
     public X_I_DeliveryPlanning_Data (final Properties ctx, final int I_DeliveryPlanning_Data_ID, @Nullable final String trxName)
@@ -71,6 +71,18 @@ public class X_I_DeliveryPlanning_Data extends org.compiere.model.PO implements 
 	public java.sql.Timestamp getImported() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_Imported);
+	}
+
+	@Override
+	public void setIsReadyForProcessing (final boolean IsReadyForProcessing)
+	{
+		set_Value (COLUMNNAME_IsReadyForProcessing, IsReadyForProcessing);
+	}
+
+	@Override
+	public boolean isReadyForProcessing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadyForProcessing);
 	}
 
 	@Override

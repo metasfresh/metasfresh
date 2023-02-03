@@ -6,8 +6,5 @@ INSERT INTO AD_JavaClass (AD_Client_ID,AD_JavaClass_ID,AD_JavaClass_Type_ID,AD_O
 INSERT INTO AD_Table_AttachmentListener (AD_Client_ID,AD_JavaClass_ID,AD_Org_ID,AD_Table_AttachmentListener_ID,AD_Table_ID,Created,CreatedBy,IsActive,IsSendNotification,SeqNo,Updated,UpdatedBy) VALUES (0,540076,0,540010,542290,TO_TIMESTAMP('2023-02-03 10:05:16','YYYY-MM-DD HH24:MI:SS'),100,'Y','N',10,TO_TIMESTAMP('2023-02-03 10:05:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2023-02-03T08:09:18.608Z
-UPDATE AD_Table_AttachmentListener SET AD_Message_ID=545173,Updated=TO_TIMESTAMP('2023-02-03 10:09:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_AttachmentListener_ID=540010
-;
 
 

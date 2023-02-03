@@ -27,10 +27,12 @@ import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.compiere.model.I_I_DeliveryPlanning;
+import org.springframework.stereotype.Component;
 
 /**
  * Module activator
  */
+@Component
 public class Main extends AbstractModuleInterceptor
 {
 	@Override

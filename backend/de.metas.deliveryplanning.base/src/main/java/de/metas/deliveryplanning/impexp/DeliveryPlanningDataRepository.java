@@ -22,9 +22,13 @@
 
 package de.metas.deliveryplanning.impexp;
 
+import de.metas.impexp.DataImportRunId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_I_DeliveryPlanning;
 import org.compiere.model.I_I_DeliveryPlanning_Data;
 import org.springframework.stereotype.Repository;
 
@@ -33,6 +37,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class DeliveryPlanningDataRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public DeliveryPlanningData getById(@NonNull final DeliveryPlanningDataId deliveryPlanningDataId)
@@ -45,6 +50,7 @@ public class DeliveryPlanningDataRepository
 		final I_I_DeliveryPlanning_Data deliveryPlanningRecord = getRecordById(deliveryPlanningData.getDeliveryPlanningDataId());
 
 		deliveryPlanningRecord.setProcessed(deliveryPlanningData.isProcessed());
+		deliveryPlanningRecord.setIsReadyForProcessing(deliveryPlanningData.isReadyForProcessing());
 		deliveryPlanningRecord.setFileName(deliveryPlanningData.getFilename());
 		deliveryPlanningRecord.setImported(deliveryPlanningData.getImportedTimestamp());
 
@@ -73,6 +79,16 @@ public class DeliveryPlanningDataRepository
 				.filename(record.getFileName())
 				.importedTimestamp(record.getImported())
 				.processed(record.isProcessed())
+				.readyForProcessing(record.isReadyForProcessing())
 				.build();
+	}
+
+	public int assignDeliveryPlanningDataIdToDataImportRunId(@NonNull final DeliveryPlanningDataId deliveryPlanningDataId, @NonNull final DataImportRunId dataImportRunId)
+	{
+		return queryBL.createQueryBuilder(I_I_DeliveryPlanning.class)
+				.addEqualsFilter(I_I_DeliveryPlanning.COLUMNNAME_C_DataImport_Run_ID, dataImportRunId)
+				.create()
+				.updateDirectly(queryBL.createCompositeQueryUpdater(I_I_DeliveryPlanning.class)
+						.addSetColumnValue(I_I_DeliveryPlanning.COLUMNNAME_I_DeliveryPlanning_Data_ID, deliveryPlanningDataId));
 	}
 }

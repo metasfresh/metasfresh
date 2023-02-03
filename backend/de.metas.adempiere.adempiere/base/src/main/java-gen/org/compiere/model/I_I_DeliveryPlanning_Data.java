@@ -165,10 +165,33 @@ public interface I_I_DeliveryPlanning_Data
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Bereit zur Verarbeitung.
+	 * Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForProcessing (boolean IsReadyForProcessing);
+
+	/**
+	 * Get Bereit zur Verarbeitung.
+	 * Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForProcessing();
+
+	ModelColumn<I_I_DeliveryPlanning_Data, Object> COLUMN_IsReadyForProcessing = new ModelColumn<>(I_I_DeliveryPlanning_Data.class, "IsReadyForProcessing", null);
+	String COLUMNNAME_IsReadyForProcessing = "IsReadyForProcessing";
+
+	/**
 	 * Set Section Code.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_SectionCode_ID (int M_SectionCode_ID);
@@ -177,14 +200,14 @@ public interface I_I_DeliveryPlanning_Data
 	 * Get Section Code.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_SectionCode_ID();
 
-	org.compiere.model.I_M_SectionCode getM_SectionCode();
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
 
-	void setM_SectionCode(org.compiere.model.I_M_SectionCode M_SectionCode);
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
 
 	ModelColumn<I_I_DeliveryPlanning_Data, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_I_DeliveryPlanning_Data.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";

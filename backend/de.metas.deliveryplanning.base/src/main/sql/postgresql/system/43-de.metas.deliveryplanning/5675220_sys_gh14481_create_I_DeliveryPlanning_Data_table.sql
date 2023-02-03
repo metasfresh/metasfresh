@@ -221,3 +221,45 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581238) 
 ;
 
+-- Column: I_DeliveryPlanning_Data.M_SectionCode_ID
+-- 2023-02-03T13:07:14.561Z
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-02-03 15:07:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585754
+;
+
+-- 2023-02-03T13:07:17.765Z
+INSERT INTO t_alter_column values('i_deliveryplanning_data','M_SectionCode_ID','NUMERIC(10)',null,null)
+;
+
+-- 2023-02-03T13:07:17.767Z
+INSERT INTO t_alter_column values('i_deliveryplanning_data','M_SectionCode_ID',null,'NULL',null)
+;
+
+-- Column: I_DeliveryPlanning_Data.IsReadyForProcessing
+-- 2023-02-03T13:48:05.902Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585842,541909,0,20,542290,'IsReadyForProcessing',TO_TIMESTAMP('2023-02-03 15:48:05','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.','de.metas.async',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Bereit zur Verarbeitung',0,0,TO_TIMESTAMP('2023-02-03 15:48:05','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2023-02-03T13:48:05.903Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585842 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-02-03T13:48:05.905Z
+/* DDL */  select update_Column_Translation_From_AD_Element(541909) 
+;
+
+-- 2023-02-03T13:48:11.812Z
+/* DDL */ SELECT public.db_alter_table('I_DeliveryPlanning_Data','ALTER TABLE public.I_DeliveryPlanning_Data ADD COLUMN IsReadyForProcessing CHAR(1) DEFAULT ''N'' CHECK (IsReadyForProcessing IN (''Y'',''N'')) NOT NULL')
+;
+
+-- 2023-02-03T13:51:47.004Z
+INSERT INTO t_alter_column values('i_deliveryplanning_data','IsReadyForProcessing','CHAR(1)',null,'N')
+;
+
+-- 2023-02-03T13:51:47.009Z
+UPDATE I_DeliveryPlanning_Data SET IsReadyForProcessing='N' WHERE IsReadyForProcessing IS NULL
+;
+
+-- Column: I_DeliveryPlanning_Data.IsReadyForProcessing
+-- 2023-02-03T13:53:17.906Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2023-02-03 15:53:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585842
+;

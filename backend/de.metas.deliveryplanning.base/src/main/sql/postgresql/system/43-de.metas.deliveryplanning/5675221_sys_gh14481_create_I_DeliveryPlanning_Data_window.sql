@@ -688,3 +688,36 @@ UPDATE AD_Element_Trl SET Name='Delivery Planning Data Import', PrintName='Deliv
 UPDATE AD_Tab SET InternalName='I_DeliveryPlanning_Data',Updated=TO_TIMESTAMP('2023-02-02 23:49:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546796
 ;
 
+-- Field: Lieferplanung Datenimport(541671,D) -> Lieferplanung Datenimport(546796,D) -> Bereit zur Verarbeitung
+-- Column: I_DeliveryPlanning_Data.IsReadyForProcessing
+-- 2023-02-03T13:48:59.366Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585842,712128,0,546796,0,TO_TIMESTAMP('2023-02-03 15:48:59','YYYY-MM-DD HH24:MI:SS'),100,'Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.',0,'D',0,'Y','Y','Y','N','N','N','N','N','Bereit zur Verarbeitung',0,10,0,1,1,TO_TIMESTAMP('2023-02-03 15:48:59','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-02-03T13:48:59.367Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=712128 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-02-03T13:48:59.369Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541909) 
+;
+
+-- 2023-02-03T13:48:59.372Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=712128
+;
+
+-- 2023-02-03T13:48:59.372Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(712128)
+;
+
+-- Field: Lieferplanung Datenimport(541671,D) -> Lieferplanung Datenimport(546796,D) -> Bereit zur Verarbeitung
+-- Column: I_DeliveryPlanning_Data.IsReadyForProcessing
+-- 2023-02-03T13:49:08.552Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-02-03 15:49:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712128
+;
+
+-- UI Element: Lieferplanung Datenimport(541671,D) -> Lieferplanung Datenimport(546796,D) -> main -> 20 -> main.Bereit zur Verarbeitung
+-- Column: I_DeliveryPlanning_Data.IsReadyForProcessing
+-- 2023-02-03T13:49:50.350Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,712128,0,546796,550333,615561,'F',TO_TIMESTAMP('2023-02-03 15:49:50','YYYY-MM-DD HH24:MI:SS'),100,'Zeigt an, ob das Zusammentstellen eines Arbeitspakets abgeschlossen ist.','Y','N','N','Y','N','N','N',0,'Bereit zur Verarbeitung',5,0,0,TO_TIMESTAMP('2023-02-03 15:49:50','YYYY-MM-DD HH24:MI:SS'),100)
+;

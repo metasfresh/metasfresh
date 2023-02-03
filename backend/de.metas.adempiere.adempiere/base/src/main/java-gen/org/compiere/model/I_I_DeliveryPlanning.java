@@ -279,7 +279,7 @@ public interface I_I_DeliveryPlanning
 	 * Set Delivery Planning Data Import.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setI_DeliveryPlanning_Data_ID (int I_DeliveryPlanning_Data_ID);
@@ -288,14 +288,14 @@ public interface I_I_DeliveryPlanning
 	 * Get Delivery Planning Data Import.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getI_DeliveryPlanning_Data_ID();
 
-	org.compiere.model.I_I_DeliveryPlanning_Data getI_DeliveryPlanning_Data();
+	@Nullable org.compiere.model.I_I_DeliveryPlanning_Data getI_DeliveryPlanning_Data();
 
-	void setI_DeliveryPlanning_Data(org.compiere.model.I_I_DeliveryPlanning_Data I_DeliveryPlanning_Data);
+	void setI_DeliveryPlanning_Data(@Nullable org.compiere.model.I_I_DeliveryPlanning_Data I_DeliveryPlanning_Data);
 
 	ModelColumn<I_I_DeliveryPlanning, org.compiere.model.I_I_DeliveryPlanning_Data> COLUMN_I_DeliveryPlanning_Data_ID = new ModelColumn<>(I_I_DeliveryPlanning.class, "I_DeliveryPlanning_Data_ID", org.compiere.model.I_I_DeliveryPlanning_Data.class);
 	String COLUMNNAME_I_DeliveryPlanning_Data_ID = "I_DeliveryPlanning_Data_ID";
@@ -582,6 +582,27 @@ public interface I_I_DeliveryPlanning
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_Processed = new ModelColumn<>(I_I_DeliveryPlanning.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
+
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_Processing = new ModelColumn<>(I_I_DeliveryPlanning.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Product Name.

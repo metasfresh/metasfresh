@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.deliveryplanning.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,32 +20,22 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.impexp;
+package de.metas.impexp.processing;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.Getter;
+import org.compiere.model.X_I_User;
 
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-
-@Value
-@Builder(toBuilder = true)
-public class DeliveryPlanningData
+public enum IsImported
 {
-	@NonNull
-	DeliveryPlanningDataId deliveryPlanningDataId;
+	NotImported(X_I_User.I_ISIMPORTED_NotImported),
+	Imported(X_I_User.I_ISIMPORTED_Imported),
+	ImportFailed(X_I_User.I_ISIMPORTED_ImportFailed);
 
-	/**
-	 * Can be null if a file was not yet attached
-	 */
-	@Nullable
-	String filename;
+	@Getter
+	private final String value;
 
-	@Nullable
-	Timestamp importedTimestamp;
-
-	boolean processed;
-
-	boolean readyForProcessing;
+	private IsImported(final String value)
+	{
+		this.value = value;
+	}
 }
