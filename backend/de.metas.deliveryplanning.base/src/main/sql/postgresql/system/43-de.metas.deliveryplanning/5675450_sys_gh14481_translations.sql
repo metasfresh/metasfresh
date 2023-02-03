@@ -157,3 +157,21 @@ UPDATE AD_Process_Trl SET Name='Lieferplanungspositionen importieren',Updated=TO
 UPDATE AD_Process_Trl SET Name='Lieferplanungspositionen importieren',Updated=TO_TIMESTAMP('2023-02-03 16:29:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585210
 ;
 
+-- Element: IsReadyForProcessing
+-- 2023-02-03T16:28:42.741Z
+UPDATE AD_Element_Trl SET Name='Is ready for processing',Updated=TO_TIMESTAMP('2023-02-03 18:28:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541909 AND AD_Language='en_US'
+;
+
+-- 2023-02-03T16:28:42.745Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541909,'en_US') 
+;
+
+-- Element: IsReadyForProcessing
+-- 2023-02-03T16:28:53.503Z
+UPDATE AD_Element_Trl SET PrintName='Is ready for processing',Updated=TO_TIMESTAMP('2023-02-03 18:28:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541909 AND AD_Language='en_US'
+;
+
+-- 2023-02-03T16:28:53.505Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(541909,'en_US') 
+;
+

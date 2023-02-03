@@ -221,6 +221,64 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581238) 
 ;
 
+
+-- Table: I_DeliveryPlanning_Data
+-- 2023-02-02T20:38:51.595Z
+UPDATE AD_Table SET TableName='I_DeliveryPlanning_Data',Updated=TO_TIMESTAMP('2023-02-02 22:38:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542290
+;
+
+-- 2023-02-02T20:38:51.615Z
+UPDATE AD_Sequence SET Name='I_DeliveryPlanning_Data',Updated=TO_TIMESTAMP('2023-02-02 22:38:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=556203
+;
+
+-- 2023-02-02T20:38:51.619Z
+ALTER SEQUENCE I_DeliveryPlanning_SEQ RENAME TO I_DeliveryPlanning_Data_SEQ
+;
+
+-- 2023-02-02T20:39:19.482Z
+UPDATE AD_Element SET ColumnName='I_DeliveryPlanning_Data_ID',Updated=TO_TIMESTAMP('2023-02-02 22:39:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581998
+;
+
+-- 2023-02-02T20:39:19.483Z
+UPDATE AD_Column SET ColumnName='I_DeliveryPlanning_Data_ID' WHERE AD_Element_ID=581998
+;
+
+-- 2023-02-02T20:39:19.484Z
+UPDATE AD_Process_Para SET ColumnName='I_DeliveryPlanning_Data_ID' WHERE AD_Element_ID=581998
+;
+
+-- 2023-02-02T20:39:19.511Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581998,'de_DE') 
+;
+
+-- 2023-02-02T20:39:28.182Z
+/* DDL */ CREATE TABLE public.I_DeliveryPlanning_Data (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, FileName VARCHAR(1024), I_DeliveryPlanning_Data_ID NUMERIC(10) NOT NULL, Imported TIMESTAMP WITH TIME ZONE, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_SectionCode_ID NUMERIC(10) NOT NULL, Processed CHAR(1) DEFAULT 'N' CHECK (Processed IN ('Y','N')), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT I_DeliveryPlanning_Data_Key PRIMARY KEY (I_DeliveryPlanning_Data_ID), CONSTRAINT MSectionCode_IDeliveryPlanningData FOREIGN KEY (M_SectionCode_ID) REFERENCES public.M_SectionCode DEFERRABLE INITIALLY DEFERRED)
+;
+
+-- 2023-02-02T20:52:59.649Z
+UPDATE AD_Table_Trl SET Name='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 22:52:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Table_ID=542290
+;
+
+-- 2023-02-02T20:53:00.866Z
+UPDATE AD_Table_Trl SET Name='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 22:53:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Table_ID=542290
+;
+
+-- 2023-02-02T20:53:02.578Z
+UPDATE AD_Table_Trl SET Name='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 22:53:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Table_ID=542290
+;
+
+-- 2023-02-02T20:53:02.579Z
+UPDATE AD_Table SET Name='Lieferplanung Datenimport' WHERE AD_Table_ID=542290
+;
+
+-- 2023-02-02T20:53:09.724Z
+UPDATE AD_Table_Trl SET Name='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 22:53:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Table_ID=542290
+;
+
+-- 2023-02-02T20:53:12.716Z
+UPDATE AD_Table_Trl SET Name='Delivery Planning Data Import',Updated=TO_TIMESTAMP('2023-02-02 22:53:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Table_ID=542290
+;
+
 -- Column: I_DeliveryPlanning_Data.M_SectionCode_ID
 -- 2023-02-03T13:07:14.561Z
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-02-03 15:07:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585754

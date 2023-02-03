@@ -1,7 +1,3 @@
--- 2023-02-02T22:43:05.121Z
-INSERT INTO AD_ImpFormat (AD_Client_ID,AD_ImpFormat_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,FileCharset,FormatType,IsActive,IsManualImport,IsMultiLine,Name,Processing,SkipFirstNRows,Updated,UpdatedBy) VALUES (0,540078,0,542292,TO_TIMESTAMP('2023-02-03 00:43:04','YYYY-MM-DD HH24:MI:SS'),100,'utf-8','C','Y','N','N','Delivery Planning Import','N',1,TO_TIMESTAMP('2023-02-03 00:43:04','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- Value: ImportDeliveryPlanning
 -- Classname: de.metas.deliveryplanning.impexp.process.ImportDeliveryPlanning
 -- 2023-02-02T23:35:35.754Z
