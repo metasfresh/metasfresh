@@ -35,7 +35,7 @@ FROM M_Department dep
          JOIN C_BPartner bp ON sc.m_sectioncode_id = bp.m_sectioncode_id
          JOIN C_Order o ON bp.c_bpartner_id = o.c_bpartner_id
          JOIN C_OrderLine ol ON o.c_order_id = ol.c_order_id
-         JOIN M_Delivery_Planning dp ON ol.c_orderLine_id = dp.c_orderLine_id
+         LEFT JOIN M_Delivery_Planning dp ON ol.c_orderLine_id = dp.c_orderLine_id
          JOIN C_Invoice i ON bp.c_bpartner_id = i.c_bpartner_id
          JOIN C_PaymentTerm pt ON i.c_paymentterm_id = pt.c_paymentterm_id
 
