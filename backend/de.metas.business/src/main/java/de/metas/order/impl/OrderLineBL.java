@@ -62,7 +62,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeRepository;
+import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -1003,9 +1003,9 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public boolean isOnConsignmentOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		final OnConsignmentAttributeRepository onConsignmentAttributeRepository = SpringContextHolder.instance.getBean(OnConsignmentAttributeRepository.class);
+		final OnConsignmentAttributeService onConsignmentAttributeService = SpringContextHolder.instance.getBean(OnConsignmentAttributeService.class);
 
 		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
-		return onConsignmentAttributeRepository.isOnConsignment(productSI);
+		return onConsignmentAttributeService.isOnConsignment(productSI);
 	}
 }

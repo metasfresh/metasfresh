@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
-public class OnConsignmentAttributeRepository
+public class OnConsignmentAttributeService
 {
 	final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
