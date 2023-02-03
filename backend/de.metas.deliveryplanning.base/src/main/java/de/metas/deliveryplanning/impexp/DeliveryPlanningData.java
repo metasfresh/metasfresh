@@ -20,29 +20,30 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.importfile;
+package de.metas.deliveryplanning.impexp;
 
+import lombok.Builder;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.Value;
 
-@Service
-public class DeliveryPlanningDataService
+import javax.annotation.Nullable;
+import java.time.Instant;
+
+@Value
+@Builder(toBuilder = true)
+public class DeliveryPlanningData
 {
-	private final DeliveryPlanningDataRepository deliveryPlanningDataRepository;
-
-	public DeliveryPlanningDataService(@NonNull final DeliveryPlanningDataRepository deliveryPlanningDataRepository)
-	{
-		this.deliveryPlanningDataRepository = deliveryPlanningDataRepository;
-	}
-
 	@NonNull
-	public DeliveryPlanningData getById(@NonNull final DeliveryPlanningDataId deliveryPlanningDataId)
-	{
-		return deliveryPlanningDataRepository.getById(deliveryPlanningDataId);
-	}
+	DeliveryPlanningDataId deliveryPlanningDataId;
 
-	public void save(@NonNull final DeliveryPlanningData deliveryPlanningData)
-	{
-		deliveryPlanningDataRepository.save(deliveryPlanningData);
-	}
+	/**
+	 * Can be null if a file was not yet attached
+	 */
+	@Nullable
+	String filename;
+
+	@Nullable
+	Instant importedTimestamp;
+
+	boolean processed;
 }

@@ -562,8 +562,15 @@ UPDATE AD_Element_Trl SET Name='Delivery Planning Import', PrintName='Delivery P
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-02-02 19:45:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585754
 ;
 
+-- Field: Lieferplanung Datenimport(541671,D) -> Lieferplanung Datenimport(546796,D) -> Verarbeitet
+-- Column: I_DeliveryPlanning_Data.Processed
+-- 2023-02-02T21:44:22.416Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2023-02-02 23:44:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712047
+;
 
--- Rename I_DeliveryPlanning to I_DeliveryPlanning
+
+
+-- Rename I_DeliveryPlanning to I_DeliveryPlanning_Data
 
 -- Table: I_DeliveryPlanning_Data
 -- 2023-02-02T20:38:51.595Z
@@ -621,3 +628,63 @@ UPDATE AD_Table_Trl SET Name='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2
 -- 2023-02-02T20:53:12.716Z
 UPDATE AD_Table_Trl SET Name='Delivery Planning Data Import',Updated=TO_TIMESTAMP('2023-02-02 22:53:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Table_ID=542290
 ;
+
+-- Element: I_DeliveryPlanning_Data_ID
+-- 2023-02-02T21:42:48.110Z
+UPDATE AD_Element_Trl SET Name='Lieferplanung Datenimport', PrintName='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 23:42:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581998 AND AD_Language='de_CH'
+;
+
+-- 2023-02-02T21:42:48.112Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581998,'de_CH') 
+;
+
+-- Element: I_DeliveryPlanning_Data_ID
+-- 2023-02-02T21:42:50.158Z
+UPDATE AD_Element_Trl SET Name='Lieferplanung Datenimport', PrintName='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 23:42:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581998 AND AD_Language='de_DE'
+;
+
+-- 2023-02-02T21:42:50.159Z
+UPDATE AD_Element SET Name='Lieferplanung Datenimport', PrintName='Lieferplanung Datenimport' WHERE AD_Element_ID=581998
+;
+
+-- 2023-02-02T21:42:50.428Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581998,'de_DE') 
+;
+
+-- 2023-02-02T21:42:50.429Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581998,'de_DE') 
+;
+
+-- Element: I_DeliveryPlanning_Data_ID
+-- 2023-02-02T21:42:52.851Z
+UPDATE AD_Element_Trl SET Name='Lieferplanung Datenimport', PrintName='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 23:42:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581998 AND AD_Language='fr_CH'
+;
+
+-- 2023-02-02T21:42:52.852Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581998,'fr_CH') 
+;
+
+-- Element: I_DeliveryPlanning_Data_ID
+-- 2023-02-02T21:43:00.203Z
+UPDATE AD_Element_Trl SET Name='Lieferplanung Datenimport', PrintName='Lieferplanung Datenimport',Updated=TO_TIMESTAMP('2023-02-02 23:43:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581998 AND AD_Language='nl_NL'
+;
+
+-- 2023-02-02T21:43:00.205Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581998,'nl_NL') 
+;
+
+-- Element: I_DeliveryPlanning_Data_ID
+-- 2023-02-02T21:43:03.078Z
+UPDATE AD_Element_Trl SET Name='Delivery Planning Data Import', PrintName='Delivery Planning Data Import',Updated=TO_TIMESTAMP('2023-02-02 23:43:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581998 AND AD_Language='en_US'
+;
+
+-- 2023-02-02T21:43:03.079Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581998,'en_US') 
+;
+
+-- Tab: Lieferplanung Datenimport(541671,D) -> Lieferplanung Datenimport
+-- Table: I_DeliveryPlanning_Data
+-- 2023-02-02T21:49:30.764Z
+UPDATE AD_Tab SET InternalName='I_DeliveryPlanning_Data',Updated=TO_TIMESTAMP('2023-02-02 23:49:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546796
+;
+

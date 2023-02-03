@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.importfile.listener;
+package de.metas.deliveryplanning.impexp.listener;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
@@ -28,14 +28,21 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
 import de.metas.common.util.Check;
-import de.metas.deliveryplanning.importfile.DeliveryPlanningDataId;
-import de.metas.deliveryplanning.importfile.DeliveryPlanningDataService;
+import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
+import de.metas.deliveryplanning.impexp.DeliveryPlanningDataService;
+import de.metas.impexp.DataImportResult;
+import de.metas.impexp.config.DataImportConfigId;
+import de.metas.impexp.process.DataImportCommand;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.api.Params;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_DeliveryPlanning;
+import org.compiere.model.I_I_DeliveryPlanning_Data;
 import org.slf4j.Logger;
 
 /**
@@ -44,9 +51,14 @@ import org.slf4j.Logger;
 public class DeliveryPlanningDataFileAttachmentListener implements AttachmentListener
 {
 	private static final Logger logger = LogManager.getLogger(DeliveryPlanningDataFileAttachmentListener.class);
+	private static final String SYS_CONFIG_DE_METAS_DELIVERYPLANNING_IMPORT_FORMATID_ = "de.metas.DeliveryPlanning.import.formatId";
+	private static final int DEFAULT_DATA_IMPORT_IMPORT_FORMAT = 540022;
 
 	private final DeliveryPlanningDataService deliveryPlanningDataService = SpringContextHolder.instance.getBean(DeliveryPlanningDataService.class);
+
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	@NonNull
@@ -62,7 +74,29 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 				.filename(attachmentEntry.getFilename())
 				.build());
 
+		tryImport(tableRecordReference, attachmentEntry);
+
 		return AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
+	}
+
+	private DataImportResult tryImport(final @NonNull TableRecordReference tableRecordReference, final AttachmentEntry attachmentEntry)
+	{
+		final Params params = Params.builder()
+				.value(I_I_DeliveryPlanning_Data.COLUMNNAME_I_DeliveryPlanning_Data_ID, tableRecordReference.getRecord_ID())
+				.build();
+
+		return DataImportCommand.builder()
+				.attachmentEntryId(attachmentEntry.getId())
+				.dataImportConfigId(getDataImportConfigId())
+				.additionalParameters(params)
+				.build()
+				.importFile();
+	}
+
+	@NonNull
+	private DataImportConfigId getDataImportConfigId()
+	{
+		return DataImportConfigId.ofRepoId(sysConfigBL.getIntValue(SYS_CONFIG_DE_METAS_DELIVERYPLANNING_IMPORT_FORMATID_, DEFAULT_DATA_IMPORT_IMPORT_FORMAT));
 	}
 
 	@Override

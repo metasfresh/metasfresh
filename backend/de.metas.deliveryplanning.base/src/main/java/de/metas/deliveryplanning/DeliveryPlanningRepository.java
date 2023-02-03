@@ -85,6 +85,15 @@ public class DeliveryPlanningRepository
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
 	}
 
+	public List<I_M_Delivery_Planning> getByReleaseNo(@NonNull final String releaseNo)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, releaseNo)
+				.create()
+				.list();
+	}
+
 	protected List<DeliveryPlanningShipmentInfo> getShipmentInfosByOrderLineIds(@NonNull final Set<OrderAndLineId> salesOrderAndLineId)
 	{
 		if (salesOrderAndLineId.isEmpty())

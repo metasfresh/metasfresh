@@ -20,30 +20,16 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.importfile;
+package de.metas.deliveryplanning.impexp.process;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.compiere.model.I_I_DeliveryPlanning;
+import org.compiere.process.AbstractImportJavaProcess;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-@Value
-@Builder(toBuilder = true)
-public class DeliveryPlanningData
+public class ImportDeliveryPlanning extends AbstractImportJavaProcess<I_I_DeliveryPlanning>
 {
-	@NonNull
-	DeliveryPlanningDataId deliveryPlanningDataId;
 
-	/**
-	 * Can be null if a file was not yet attached
-	 */
-	@Nullable
-	String filename;
-
-	@Nullable
-	Instant importedTimestamp;
-
-	boolean processed;
+	public ImportDeliveryPlanning()
+	{
+		super(I_I_DeliveryPlanning.class);
+	}
 }

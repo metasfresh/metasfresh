@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.importfile;
+package de.metas.deliveryplanning.impexp;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

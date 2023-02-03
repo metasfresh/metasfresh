@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.deliveryplanning.importfile;
+package de.metas.deliveryplanning.impexp;
 
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
