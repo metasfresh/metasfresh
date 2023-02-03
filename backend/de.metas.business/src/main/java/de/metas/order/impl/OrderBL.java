@@ -1241,18 +1241,15 @@ public class OrderBL implements IOrderBL
 	{
 		return orderDAO.getSOLineIdsByPOLineId(purchaseOrderLineId);
 	}
-
 	@Override
-	public boolean isOnConsignmentOrder(@NonNull final I_C_Order order)
+	public void computeIsOnConsignmentFromLines(@NonNull final I_C_Order order)
 	{
-		return orderDAO.retrieveOrderLines(order)
-				.stream()
-				.anyMatch(orderLine -> orderLineBL.isOnConsignmentOrderLine(orderLine));
-	}
 
-	@Override
-	public void setIsOnConsignmentOrder(@NonNull final I_C_Order order, final boolean isOnConsignment)
-	{
+
+		final boolean isOnConsignment = orderDAO.retrieveOrderLines(order)
+			.stream()
+			.anyMatch(orderLine -> orderLineBL.isOnConsignmentOrderLine(orderLine));
+
 		order.setIsOnConsignment(isOnConsignment);
 		save(order);
 	}
