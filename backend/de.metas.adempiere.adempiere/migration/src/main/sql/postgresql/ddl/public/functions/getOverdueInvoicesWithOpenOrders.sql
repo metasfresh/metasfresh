@@ -8,10 +8,10 @@ CREATE OR REPLACE FUNCTION getOverdueInvoicesWithOpenOrders()
                 "Section code"           character varying,
                 "Business partner"       character varying,
                 "SO"                     character varying,
-                "SO date"                date,
+                "SO date"                character varying,
                 "Release number"         character varying,
-                "Planned loading date"   date,
-                "Planned discharge date" date
+                "Planned loading date"   character varying,
+                "Planned discharge date" character varying
 
             )
 AS
@@ -19,14 +19,14 @@ AS
 $BODY$
 
 
-SELECT dep.value || '_' || dep.name AS "Department",
-       sc.value || '_' || sc.name   AS "Section code",
-       bp.value || '_' || bp.name   AS "Business partner",
-       o.documentno                 AS "SO",
-       o.dateordered::date                AS "SO date",
-       dp.releaseno                 AS "Release number",
-       dp.plannedloadingdate::date        AS "Planned loading date",
-       dp.planneddeliverydate::date       AS "Planned discharge date"
+SELECT dep.value || '_' || dep.name                        AS "Department",
+       sc.value || '_' || sc.name                          AS "Section code",
+       bp.value || '_' || bp.name                          AS "Business partner",
+       o.documentno                                        AS "SO",
+       TO_CHAR(o.dateordered::date, 'MM/DD/YYYY')          AS "SO date",
+       dp.releaseno                                        AS "Release number",
+       TO_CHAR(dp.plannedloadingdate::date, 'MM/DD/YYYY')  AS "Planned loading date",
+       TO_CHAR(dp.planneddeliverydate::date, 'MM/DD/YYYY') AS "Planned discharge date"
 
 
 FROM M_Department dep
@@ -44,7 +44,7 @@ WHERE o.IsSOTrx = 'Y'
   AND i.docstatus IN ('CO', 'CL')
   AND i.ispaid = 'N'
   AND ((i.dateinvoiced + netdays)
-    < now()::date)
+    < NOW()::date)
   AND ol.qtyenteredinpriceuom
     > (SELECT COALESCE(SUM(sp.actualloadqty)
                   , 0)
