@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_ForeignExchangeContract extends org.compiere.model.PO implements I_C_ForeignExchangeContract, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1878725846L;
+	private static final long serialVersionUID = -135215652L;
 
     /** Standard Constructor */
     public X_C_ForeignExchangeContract (final Properties ctx, final int C_ForeignExchangeContract_ID, @Nullable final String trxName)
@@ -63,19 +63,6 @@ public class X_C_ForeignExchangeContract extends org.compiere.model.PO implement
 	public int getC_ForeignExchangeContract_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_ForeignExchangeContract_ID);
-	}
-
-	@Override
-	public void setCurrencyRate (final BigDecimal CurrencyRate)
-	{
-		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
-	}
-
-	@Override
-	public BigDecimal getCurrencyRate() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -226,6 +213,19 @@ public class X_C_ForeignExchangeContract extends org.compiere.model.PO implement
 	public BigDecimal getFEC_Amount_Open() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FEC_Amount_Open);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setFEC_CurrencyRate (final BigDecimal FEC_CurrencyRate)
+	{
+		set_Value (COLUMNNAME_FEC_CurrencyRate, FEC_CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getFEC_CurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FEC_CurrencyRate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
