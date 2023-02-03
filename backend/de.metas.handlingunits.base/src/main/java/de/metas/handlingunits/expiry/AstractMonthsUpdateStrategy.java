@@ -9,7 +9,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 import org.compiere.util.Env;
 
@@ -43,7 +42,6 @@ public abstract class AstractMonthsUpdateStrategy
 	final IHandlingUnitsBL handlingUnitsBL;
 	final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
-	@Builder
 	protected AstractMonthsUpdateStrategy(@NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
