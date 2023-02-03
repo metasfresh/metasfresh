@@ -65,7 +65,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
@@ -1007,7 +1006,6 @@ public class OrderLineBL implements IOrderLineBL
 		final OnConsignmentAttributeRepository onConsignmentAttributeRepository = SpringContextHolder.instance.getBean(OnConsignmentAttributeRepository.class);
 
 		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
-		final Boolean isOnConsignment = onConsignmentAttributeRepository.isOnConsignment(productSI);
-		return BooleanUtils.toBoolean(isOnConsignment);
+		return onConsignmentAttributeRepository.isOnConsignment(productSI);
 	}
 }
