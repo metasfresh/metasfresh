@@ -27,6 +27,10 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
@@ -38,10 +42,13 @@ import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.process.AttachmentImportCommand;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_I_DeliveryPlanning;
 import org.compiere.model.I_I_DeliveryPlanning_Data;
 import org.slf4j.Logger;
 
@@ -56,6 +63,8 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 	private final DeliveryPlanningDataService deliveryPlanningDataService = SpringContextHolder.instance.getBean(DeliveryPlanningDataService.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	@Override
 	@NonNull
@@ -122,6 +131,10 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 		try
 		{
 			tryImport(deliveryPlanningDataId, attachmentEntry);
+			trxManager.runAfterCommit(() -> {
+				CacheMgt.get().reset(tableRecordReference);
+				modelCacheInvalidationService.invalidate(CacheInvalidateMultiRequest.allChildRecords(I_I_DeliveryPlanning_Data.Table_Name, tableRecordReference.getRecord_ID(), I_I_DeliveryPlanning.Table_Name), ModelCacheInvalidationTiming.CHANGE);
+			});
 		}
 		catch (final Exception ex)
 		{

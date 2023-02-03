@@ -226,10 +226,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-02-03 15:07:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585754
 ;
 
--- 2023-02-03T13:07:17.765Z
-INSERT INTO t_alter_column values('i_deliveryplanning_data','M_SectionCode_ID','NUMERIC(10)',null,null)
-;
-
 -- 2023-02-03T13:07:17.767Z
 INSERT INTO t_alter_column values('i_deliveryplanning_data','M_SectionCode_ID',null,'NULL',null)
 ;
