@@ -9,11 +9,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.compiere.util.Env;
 
 import java.util.Iterator;
-import java.util.function.Function;
 
 /*
  * #%L
