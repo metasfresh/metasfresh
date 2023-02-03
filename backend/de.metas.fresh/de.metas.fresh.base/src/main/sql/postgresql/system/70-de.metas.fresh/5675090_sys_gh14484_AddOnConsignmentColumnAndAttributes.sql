@@ -342,3 +342,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_OrderLine','ALTER TABLE public.C_OrderLine ADD COLUMN IsOnConsignment CHAR(1) DEFAULT ''N'' CHECK (IsOnConsignment IN (''Y'',''N'')) NOT NULL')
 ;
 
+
+-- 2023-02-03T14:28:43.684Z
+UPDATE M_Attribute SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-02-03 16:28:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540114
+;
+
