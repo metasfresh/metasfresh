@@ -7,10 +7,13 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.compiere.util.Env;
 
 import java.util.Iterator;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -34,30 +37,23 @@ import java.util.Iterator;
  * #L%
  */
 
-public abstract class AstractMonthsUpdateStrategy
+@UtilityClass
+public final class UpdateAttributesHelper
 {
 	// services
-	final IHandlingUnitsBL handlingUnitsBL;
+	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	protected AstractMonthsUpdateStrategy(@NonNull final IHandlingUnitsBL handlingUnitsBL)
-	{
-		this.handlingUnitsBL = handlingUnitsBL;
-	}
-
-	public abstract Iterator<HuId> getAllSuitableHUs();
-
-	public UpdateMonthsResult execute()
+	static public UpdateMonthsResult execute(@NonNull final Iterator<HuId> allSuitableHUs, @NonNull final AttributeUpdater updater)
 	{
 		int countChecked = 0;
 		int countUpdated = 0;
 
-		final Iterator<HuId> allSuitableHUs = getAllSuitableHUs();
 		while (allSuitableHUs.hasNext())
 		{
 			final HuId huId = allSuitableHUs.next();
 			countChecked++;
 
-			final boolean updated = updateTopLevelHU(huId);
+			final boolean updated = updateTopLevelHU(huId, updater);
 			if (updated)
 			{
 				countUpdated++;
@@ -70,21 +66,21 @@ public abstract class AstractMonthsUpdateStrategy
 				.build();
 	}
 
-	boolean updateTopLevelHU(@NonNull final HuId topLevelHUId)
+	private boolean updateTopLevelHU(@NonNull final HuId topLevelHUId, @NonNull final AttributeUpdater updater)
 	{
 		final ClientAndOrgId clientAndOrgId = handlingUnitsBL.getClientAndOrgId(topLevelHUId);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), clientAndOrgId);
 		final IAttributeStorage huAttributes = getHUAttributes(topLevelHUId, huContext);
-		return updateRecursive(huAttributes);
+		return updateRecursive(huAttributes, updater);
 	}
 
-	private boolean updateRecursive(@NonNull final IAttributeStorage huAttributes)
+	private boolean updateRecursive(@NonNull final IAttributeStorage huAttributes, @NonNull final AttributeUpdater updater)
 	{
-		boolean updated = update(huAttributes);
+		boolean updated = updater.update(huAttributes);
 
 		for (final IAttributeStorage childHUAttributes : huAttributes.getChildAttributeStorages(true))
 		{
-			if (updateRecursive(childHUAttributes))
+			if (updateRecursive(childHUAttributes, updater))
 			{
 				updated = true;
 			}
@@ -93,7 +89,6 @@ public abstract class AstractMonthsUpdateStrategy
 		return updated;
 	}
 
-	abstract boolean update(@NonNull final IAttributeStorage huAttributes);
 
 	private IAttributeStorage getHUAttributes(@NonNull final HuId huId, @NonNull final IHUContext huContext)
 	{

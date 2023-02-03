@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.OptionalInt;
 
+import lombok.Getter;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import de.metas.handlingunits.HuId;
@@ -35,66 +36,20 @@ import lombok.NonNull;
  * #L%
  */
 
-final class UpdateMonthsUntilExpiryCommand extends AstractMonthsUpdateStrategy
+final class UpdateMonthsUntilExpiryCommand
 {
 	// services
 	private final HUWithExpiryDatesRepository huWithExpiryDatesRepository;
 
+	@Getter
 	private final LocalDate today;
 
 	@Builder
-	public UpdateMonthsUntilExpiryCommand(
-			@NonNull final HUWithExpiryDatesRepository huWithExpiryDatesRepository,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
-			//
+	public UpdateMonthsUntilExpiryCommand(@NonNull final HUWithExpiryDatesRepository huWithExpiryDatesRepository,
 			@NonNull final LocalDate today)
 	{
-		super(handlingUnitsBL);
 		this.huWithExpiryDatesRepository = huWithExpiryDatesRepository;
 		this.today = today;
-	}
-
-	public static class UpdateMonthsUntilExpiryCommandBuilder
-	{
-		public UpdateMonthsResult execute()
-		{
-			return build().execute();
-		}
-	}
-
-	public Iterator<HuId> getAllSuitableHUs()
-	{
-		return huWithExpiryDatesRepository.getAllWithBestBeforeDate();
-	}
-
-	boolean update(@NonNull final IAttributeStorage huAttributes)
-	{
-		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
-		{
-			return false;
-		}
-
-		final OptionalInt monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, today);
-		final int monthsUntilExpiryOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilExpiry);
-		if (monthsUntilExpiry.orElse(0) == monthsUntilExpiryOld)
-		{
-			return false;
-		}
-
-		huAttributes.setSaveOnChange(true);
-		
-		if (monthsUntilExpiry.isPresent())
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
-		}
-		else
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
-		}
-
-		huAttributes.saveChangesIfNeeded();
-
-		return true;
 	}
 
 	static OptionalInt computeMonthsUntilExpiry(@NonNull final IAttributeStorage huAttributes, @NonNull final LocalDate today)
@@ -107,5 +62,45 @@ final class UpdateMonthsUntilExpiryCommand extends AstractMonthsUpdateStrategy
 
 		final int monthsUntilExpiry = (int)ChronoUnit.MONTHS.between(today, bestBeforeDate);
 		return OptionalInt.of(monthsUntilExpiry);
+	}
+
+	public static class UpdateMonthsUntilExpiryCommandBuilder
+	{
+		public UpdateMonthsResult execute()
+		{
+			final UpdateMonthsUntilExpiryCommand cmd = build();
+
+			final Iterator<HuId> huIdIterator = huWithExpiryDatesRepository.getAllWithBestBeforeDate();
+
+			return UpdateAttributesHelper.execute(huIdIterator, huAttributes -> {
+				if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilExpiry))
+				{
+					return false;
+				}
+
+				final OptionalInt monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, cmd.getToday());
+				final int monthsUntilExpiryOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilExpiry);
+				if (monthsUntilExpiry.orElse(0) == monthsUntilExpiryOld)
+				{
+					return false;
+				}
+
+				huAttributes.setSaveOnChange(true);
+
+				if (monthsUntilExpiry.isPresent())
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
+				}
+				else
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
+				}
+
+				huAttributes.saveChangesIfNeeded();
+
+				return true;
+			});
+		}
+
 	}
 }

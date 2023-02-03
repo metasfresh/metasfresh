@@ -59,10 +59,7 @@ public class HUWithExpiryDatesService
 	{
 		return UpdateMonthsUntilExpiryCommand.builder()
 				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
-				.handlingUnitsBL(handlingUnitsBL)
-				//
 				.today(today)
-				//
 				.execute();
 	}
 
@@ -70,10 +67,7 @@ public class HUWithExpiryDatesService
 	{
 		return UpdateMonthsUntilEndStorageCommand.builder()
 				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
-				.handlingUnitsBL(handlingUnitsBL)
-				//
 				.today(today)
-				//
 				.execute();
 	}
 }
