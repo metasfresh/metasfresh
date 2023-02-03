@@ -70,7 +70,9 @@ final class UpdateMonthsUntilEndStorageCommand
 
 			final Iterator<HuId> huIdIterator = huWithExpiryDatesRepository.getAllWithEndStorageDate();
 
-			return UpdateAttributesHelper.execute(huIdIterator, huAttributes -> {
+			final UpdateAttributesHelper helper = new UpdateAttributesHelper();
+
+			return helper.execute(huIdIterator, huAttributes -> {
 				if (!huAttributes.hasAttribute(AttributeConstants.ATTR_MonthsUntilEndStorageDate))
 				{
 					return false;

@@ -1001,20 +1001,16 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public boolean isOnConsignmentOrderLine(@NonNull final I_C_OrderLine orderLine)
-	{
-		final OnConsignmentAttributeService onConsignmentAttributeService = SpringContextHolder.instance.getBean(OnConsignmentAttributeService.class);
-
-		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
-		return onConsignmentAttributeService.isOnConsignment(productSI);
-	}
-
-	@Override
 	public void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine)
 	{
-		final boolean isOnConsignment = isOnConsignmentOrderLine(orderLine);
+		final boolean isOnConsignment = computeIsOnConsignmentFromASI(orderLine);
 		orderLine.setIsOnConsignment(isOnConsignment);
 	}
 
-
+	private boolean computeIsOnConsignmentFromASI(@NonNull final I_C_OrderLine orderLine)
+	{
+		final OnConsignmentAttributeService onConsignmentAttributeService = SpringContextHolder.instance.getBean(OnConsignmentAttributeService.class);
+		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
+		return onConsignmentAttributeService.isOnConsignment(productSI);
+	}
 }

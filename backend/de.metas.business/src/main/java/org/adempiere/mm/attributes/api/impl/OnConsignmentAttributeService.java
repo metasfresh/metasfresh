@@ -53,18 +53,10 @@ public class OnConsignmentAttributeService
 
 	public boolean isOnConsignment(@Nullable final I_M_AttributeSetInstance asi)
 	{
-		final String onConsignment = getOnConsignmentValueOrNull(asi);
-
-		final Boolean isOnConsignment = StringUtils.toBooleanOrNull(onConsignment);
-		if (isOnConsignment == null)
-		{
-			return false;
-		}
-
-		return isOnConsignment.booleanValue();
+		return StringUtils.toBoolean(getOnConsignmentValueOrNull(asi));
 	}
 
-	public String getOnConsignmentValueOrNull(@Nullable final I_M_AttributeSetInstance asi)
+	private String getOnConsignmentValueOrNull(@Nullable final I_M_AttributeSetInstance asi)
 	{
 		if (asi == null)
 		{

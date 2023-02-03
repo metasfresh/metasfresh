@@ -221,7 +221,5 @@ public interface IOrderLineBL extends ISingletonService
 
 	void setBPLocation(I_C_OrderLine orderLine);
 
-	boolean isOnConsignmentOrderLine(final I_C_OrderLine orderLine);
-
 	void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine);
 }

@@ -37,13 +37,12 @@ import java.util.function.Function;
  * #L%
  */
 
-@UtilityClass
 public final class UpdateAttributesHelper
 {
 	// services
 	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	static public UpdateMonthsResult execute(@NonNull final Iterator<HuId> allSuitableHUs, @NonNull final AttributeUpdater updater)
+	public UpdateMonthsResult execute(@NonNull final Iterator<HuId> allSuitableHUs, @NonNull final AttributeUpdater updater)
 	{
 		int countChecked = 0;
 		int countUpdated = 0;

@@ -109,8 +109,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);

@@ -95,6 +95,7 @@ public class C_OrderLine
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
@@ -459,13 +460,12 @@ public class C_OrderLine
 	}
 
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsOnConsignment })
 	public void updateIsOnConsignmentOrder(final I_C_OrderLine orderLine)
 	{
 		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
 
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.accumulateAndProcessAfterCommit(
 				"orderIdsToUpdateIsOnConsigment",
 				ImmutableSet.of(orderId),
