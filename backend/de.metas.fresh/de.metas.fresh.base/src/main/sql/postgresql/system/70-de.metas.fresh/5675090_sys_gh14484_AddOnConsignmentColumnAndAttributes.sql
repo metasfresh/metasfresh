@@ -240,3 +240,4 @@ UPDATE M_Attribute SET Name='End Date',Updated=TO_TIMESTAMP('2023-02-02 11:22:39
 UPDATE M_Attribute SET DescriptionPattern='',Updated=TO_TIMESTAMP('2023-02-02 16:33:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Attribute_ID=540114
 ;
 
+update m_attribute set value='OnConsignment_EndDate' where M_Attribute_ID=540116;
