@@ -3,12 +3,10 @@ package de.metas.handlingunits.expiry;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.util.Env;
 
@@ -40,7 +38,6 @@ public abstract class AstractMonthsUpdateStrategy
 {
 	// services
 	final IHandlingUnitsBL handlingUnitsBL;
-	final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	protected AstractMonthsUpdateStrategy(@NonNull final IHandlingUnitsBL handlingUnitsBL)
 	{
@@ -75,7 +72,7 @@ public abstract class AstractMonthsUpdateStrategy
 
 	boolean updateTopLevelHU(@NonNull final HuId topLevelHUId)
 	{
-		final ClientAndOrgId clientAndOrgId = handlingUnitsDAO.getClientAndOrgId(topLevelHUId);
+		final ClientAndOrgId clientAndOrgId = handlingUnitsBL.getClientAndOrgId(topLevelHUId);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), clientAndOrgId);
 		final IAttributeStorage huAttributes = getHUAttributes(topLevelHUId, huContext);
 		return updateRecursive(huAttributes);

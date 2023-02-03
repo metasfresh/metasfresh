@@ -109,6 +109,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
@@ -1164,5 +1166,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
+	}
+
+	@Override
+	public ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.getClientAndOrgId(huId);
 	}
 }
