@@ -27,7 +27,7 @@ public class ForexContractAllocationRepository
 		record.setC_ForeignExchangeContract_ID(request.getForexContractId().getRepoId());
 		record.setC_Order_ID(request.getOrderId().getRepoId());
 		record.setC_Currency_ID(request.getAmountToAllocate().getCurrencyId().getRepoId());
-		record.setAmount(request.getAmountToAllocate().toBigDecimal());
+		record.setAllocatedAmt(request.getAmountToAllocate().toBigDecimal());
 		record.setGrandTotal(request.getOrderGrandTotal().toBigDecimal());
 		InterfaceWrapperHelper.save(record);
 
@@ -40,14 +40,14 @@ public class ForexContractAllocationRepository
 				.id(ForexContractAllocationId.ofRepoId(record.getC_ForeignExchangeContract_Alloc_ID()))
 				.contractId(ForexContractId.ofRepoId(record.getC_ForeignExchangeContract_ID()))
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
-				.amount(extractAmount(record))
+				.amount(extractAllocatedAmt(record))
 				.build();
 	}
 
 	@NonNull
-	private static Money extractAmount(final I_C_ForeignExchangeContract_Alloc record)
+	private static Money extractAllocatedAmt(final I_C_ForeignExchangeContract_Alloc record)
 	{
-		return Money.of(record.getAmount(), CurrencyId.ofRepoId(record.getC_Currency_ID()));
+		return Money.of(record.getAllocatedAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID()));
 	}
 
 	public Money computeAllocatedAmount(@NonNull final ForexContractId contractId, @NonNull final CurrencyId expectedCurrencyId)
@@ -58,7 +58,7 @@ public class ForexContractAllocationRepository
 				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_ForeignExchangeContract_ID, contractId)
 				.create()
 				.stream()
-				.map(ForexContractAllocationRepository::extractAmount)
+				.map(ForexContractAllocationRepository::extractAllocatedAmt)
 				.collect(Money.sumByCurrency());
 
 		return singleCurrency(amountsByCurrencyId, expectedCurrencyId);
@@ -72,7 +72,7 @@ public class ForexContractAllocationRepository
 				.addEqualsFilter(I_C_ForeignExchangeContract_Alloc.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.stream()
-				.map(ForexContractAllocationRepository::extractAmount)
+				.map(ForexContractAllocationRepository::extractAllocatedAmt)
 				.collect(Money.sumByCurrency());
 
 		return singleCurrency(amountsByCurrencyId, expectedCurrencyId);

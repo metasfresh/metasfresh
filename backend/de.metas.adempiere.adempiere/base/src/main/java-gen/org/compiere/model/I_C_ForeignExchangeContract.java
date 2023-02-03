@@ -120,27 +120,6 @@ public interface I_C_ForeignExchangeContract
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Currency Rate.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCurrencyRate (BigDecimal CurrencyRate);
-
-	/**
-	 * Get Currency Rate.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCurrencyRate();
-
-	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_C_ForeignExchangeContract.class, "CurrencyRate", null);
-	String COLUMNNAME_CurrencyRate = "CurrencyRate";
-
-	/**
 	 * Set Description.
 	 *
 	 * <br>Type: TextLong
@@ -288,6 +267,27 @@ public interface I_C_ForeignExchangeContract
 
 	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_FEC_Amount_Open = new ModelColumn<>(I_C_ForeignExchangeContract.class, "FEC_Amount_Open", null);
 	String COLUMNNAME_FEC_Amount_Open = "FEC_Amount_Open";
+
+	/**
+	 * Set FEC Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_CurrencyRate (BigDecimal FEC_CurrencyRate);
+
+	/**
+	 * Get FEC Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getFEC_CurrencyRate();
+
+	ModelColumn<I_C_ForeignExchangeContract, Object> COLUMN_FEC_CurrencyRate = new ModelColumn<>(I_C_ForeignExchangeContract.class, "FEC_CurrencyRate", null);
+	String COLUMNNAME_FEC_CurrencyRate = "FEC_CurrencyRate";
 
 	/**
 	 * Set Maturity Date.
