@@ -65,4 +65,15 @@ public class HUWithExpiryDatesService
 				//
 				.execute();
 	}
+
+	public UpdateMonthsResult updateMonthsUntilStorageEndDate(@NonNull final LocalDate today)
+	{
+		return UpdateMonthsUntilEndStorageCommand.builder()
+				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
+				.handlingUnitsBL(handlingUnitsBL)
+				//
+				.today(today)
+				//
+				.execute();
+	}
 }
