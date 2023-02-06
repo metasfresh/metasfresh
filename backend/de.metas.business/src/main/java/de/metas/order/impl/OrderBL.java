@@ -127,14 +127,15 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 public class OrderBL implements IOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(OrderBL.class);
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
+	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
+	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyDeliveredSum = new ModelDynAttributeAccessor<>("QtyDeliveredSum", BigDecimal.class);
+	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyOrderedSum = new ModelDynAttributeAccessor<>("QtyOrderedSum", BigDecimal.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
-	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
-
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -145,6 +146,16 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
+	{
+		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+	}
+
+	private static Optional<BPartnerLocationAndCaptureId> extractBPartnerLocation(final I_C_Order order)
+	{
+		return BPartnerLocationAndCaptureId.optionalOfRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID());
+	}
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -736,16 +747,6 @@ public class OrderBL implements IOrderBL
 		return true; // found it
 	}
 
-	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
-	{
-		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-	}
-
-	private static Optional<BPartnerLocationAndCaptureId> extractBPartnerLocation(final I_C_Order order)
-	{
-		return BPartnerLocationAndCaptureId.optionalOfRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID());
-	}
-
 	@Override
 	public CurrencyPrecision getPricePrecision(final I_C_Order order)
 	{
@@ -937,10 +938,6 @@ public class OrderBL implements IOrderBL
 		// we made sure that we may return this as the bill contact
 		return BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
-
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyDeliveredSum = new ModelDynAttributeAccessor<>("QtyDeliveredSum", BigDecimal.class);
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyOrderedSum = new ModelDynAttributeAccessor<>("QtyOrderedSum", BigDecimal.class);
 
 	@Override
 	public void updateOrderQtySums(final org.compiere.model.I_C_Order order)
@@ -1244,4 +1241,12 @@ public class OrderBL implements IOrderBL
 		return orderDAO.getSOLineIdsByPOLineId(purchaseOrderLineId);
 	}
 
+	@Override
+	public void updateIsOnConsignmentFromLines(OrderId orderId)
+	{
+		final boolean isOnConsignment = orderDAO.hasIsOnConsignmentLines(orderId);
+		final I_C_Order order = getById(orderId);
+		order.setIsOnConsignment(isOnConsignment);
+		save(order);
+	}
 }

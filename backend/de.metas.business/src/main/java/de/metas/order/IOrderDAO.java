@@ -139,4 +139,6 @@ public interface IOrderDAO extends ISingletonService
 	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
+
+	boolean hasIsOnConsignmentLines(@NonNull OrderId orderId);
 }

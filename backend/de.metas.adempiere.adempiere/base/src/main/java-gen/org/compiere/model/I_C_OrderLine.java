@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
@@ -1375,6 +1374,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_OrderLine.class, "IsManualPrice", null);
 	String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set Goods on consignment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOnConsignment (boolean IsOnConsignment);
+
+	/**
+	 * Get Goods on consignment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOnConsignment();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsOnConsignment = new ModelColumn<>(I_C_OrderLine.class, "IsOnConsignment", null);
+	String COLUMNNAME_IsOnConsignment = "IsOnConsignment";
 
 	/**
 	 * Set Packaging Material .

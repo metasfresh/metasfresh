@@ -283,4 +283,7 @@ public interface IOrderBL extends ISingletonService
 	CurrencyId getCurrencyId(final OrderId orderId);
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
+
+	void updateIsOnConsignmentFromLines(OrderId orderId);
+
 }
