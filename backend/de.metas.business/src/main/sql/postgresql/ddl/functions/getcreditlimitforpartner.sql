@@ -17,8 +17,7 @@ FROM C_BPartner partner
 WHERE partner.c_bpartner_id = p_c_bpartner_id
 
   -- 2.4.13 AC14 – Increased Credit Limit in Window “Business Partner” for the section partner can be decreased again https://github.com/metasfresh/me03/issues/14325#issuecomment-1406979127
-  AND ((lim.processed = 'Y' AND lim.isactive = 'Y')
-           OR (lim.processed = 'N' AND lim.isactive = 'N') -- After the credit limit was deactivated, the credit limit usage is not modified because the deactivation was not approved
+  AND ((lim.processed = 'Y' AND lim.isactive = 'Y') OR (lim.processed = 'N' AND lim.isactive = 'N')
       )
   AND lim.datefrom <= p_date
   AND NOT EXISTS(SELECT 1
