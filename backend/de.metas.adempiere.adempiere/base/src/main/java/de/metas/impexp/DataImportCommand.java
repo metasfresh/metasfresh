@@ -1,22 +1,5 @@
 package de.metas.impexp;
 
-import java.io.IOException;
-import java.net.URI;
-import java.time.Duration;
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.api.Params;
-import org.compiere.model.IQuery;
-import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
-
 import de.metas.common.util.time.SystemTime;
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImpFormat;
@@ -31,6 +14,21 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.Params;
+import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 
 /*
  * #%L
@@ -217,7 +215,7 @@ final class DataImportCommand
 
 	private InsertIntoImportTableResult readSourceAndInsertIntoImportTable()
 	{
-		final ImpDataParser sourceParser = parserFactory.createParser(importFormat);
+		final ImpDataParser sourceParser = parserFactory.createParser(importFormat, data.getFilename());
 
 		final InsertIntoImportTableRequest request = InsertIntoImportTableRequest.builder()
 				.importFormat(importFormat)

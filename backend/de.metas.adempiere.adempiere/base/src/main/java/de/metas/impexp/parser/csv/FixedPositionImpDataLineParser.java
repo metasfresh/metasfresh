@@ -1,4 +1,4 @@
-package de.metas.impexp.parser;
+package de.metas.impexp.parser.csv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.impexp.format.ImpFormat;
 import de.metas.impexp.format.ImpFormatColumn;
+import de.metas.impexp.parser.ErrorMessage;
+import de.metas.impexp.parser.ImpDataCell;
 import groovy.transform.ToString;
 import lombok.NonNull;
 
@@ -33,7 +35,7 @@ import lombok.NonNull;
  */
 
 @ToString
-final class FixedPositionImpDataLineParser implements ImpDataLineParser
+final class FixedPositionImpDataLineParser implements CsvImpDataLineParser
 {
 	private final ImmutableList<ImpFormatColumn> columns;
 
