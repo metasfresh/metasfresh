@@ -34,7 +34,7 @@ GROUP BY partner.c_bpartner_id
 $$
 ;
 
-COMMENT ON FUNCTION getcreditlimitforpartner(numeric, date) IS 'The credit limit always comes in base currency. TEST: SELECT getcreditlimitforpartner(2156017, now()::date);'
+COMMENT ON FUNCTION getcreditlimitforpartner(numeric, date) IS 'TEST: SELECT getcreditlimitforpartner(2156017, now()::date);'
 ;
 
 ALTER FUNCTION getcreditlimitforpartner(numeric, date) OWNER TO metasfresh

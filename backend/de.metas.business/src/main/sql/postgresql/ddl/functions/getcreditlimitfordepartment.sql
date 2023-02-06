@@ -33,7 +33,7 @@ GROUP BY dep.m_department_id
 $$
 ;
 
-COMMENT ON FUNCTION getcreditlimitfordepartment(numeric, date) IS 'The credit limit always comes in base currency. TEST: SELECT getcreditlimitfordepartment(2156017, now()::date);'
+COMMENT ON FUNCTION getcreditlimitfordepartment(numeric, date) IS 'TEST: SELECT getcreditlimitfordepartment(2156017, now()::date);'
 ;
 
 ALTER FUNCTION getcreditlimitfordepartment(numeric, date) OWNER TO metasfresh
