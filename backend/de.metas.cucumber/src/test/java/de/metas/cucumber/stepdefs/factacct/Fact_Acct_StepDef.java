@@ -1,26 +1,38 @@
 package de.metas.cucumber.stepdefs.factacct;
 
+import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.TableType;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.matchinv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_SectionCode;
+import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -29,18 +41,32 @@ import static org.assertj.core.api.Assertions.*;
 
 public class Fact_Acct_StepDef
 {
+	private static final String TABLE_COLUMN_ACCOUNT_FEATURE = "Account";
+	private static final String TABLE_COLUMN_DR_FEATURE = "DR";
+	private static final String TABLE_COLUMN_CR_FEATURE = "CR";
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
 
 	private final M_SectionCode_StepDefData sectionCodeTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final M_MatchInv_StepDefData matchInvTable;
+	private final Fact_Acct_StepDefData factAcctTable;
+	private final C_ElementValue_StepDefData elementValueTable;
 
 	public Fact_Acct_StepDef(
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable)
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final M_MatchInv_StepDefData matchInvTable,
+			@NonNull final Fact_Acct_StepDefData factAcctTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable)
 	{
 		this.sectionCodeTable = sectionCodeTable;
 		this.invoiceTable = invoiceTable;
+		this.matchInvTable = matchInvTable;
+		this.factAcctTable = factAcctTable;
+		this.elementValueTable = elementValueTable;
 	}
 
 	@And("^after not more than (.*)s, Fact_Acct are found$")
@@ -59,6 +85,33 @@ public class Fact_Acct_StepDef
 
 				assertThat(allFactAcctRecordsMatch).isTrue();
 			}
+		}
+	}
+
+	@And("^after not more than (.*)s, the (invoice|matchInvoice) document with identifier (.*) has the following accounting records:$")
+	public void find_Fact_Acct(
+			final int timeoutSec,
+			@NonNull final String tableType,
+			@NonNull final String identifier,
+			@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			findFactAcct(getTableRecordReference(tableType, identifier), row, timeoutSec);
+		}
+	}
+
+	@And("^fact account repost (invoice|matchInvoice) document with identifier (.*):$")
+	public void repost_document(
+			@NonNull final String documentType,
+			@NonNull final String identifier,
+			@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			repostDocument(row, documentType, identifier);
 		}
 	}
 
@@ -101,5 +154,140 @@ public class Fact_Acct_StepDef
 		}
 
 		return queryBuilder.create();
+	}
+
+	private void repostDocument(
+			@NonNull final Map<String, String> row,
+			@NonNull final String tableType,
+			@NonNull final String identifier)
+	{
+		final boolean isEnforcePosting = DataTableUtil.extractBooleanForColumnNameOr(row, "IsEnforcePosting", false);
+		final TableRecordReference tableRecordReference = getTableRecordReference(tableType, identifier);
+
+		postingService
+				.newPostingRequest()
+				.setClientId(Env.getClientId())
+				.setDocumentRef(tableRecordReference)
+				.setForce(isEnforcePosting)
+				.setPostImmediate(IPostingRequestBuilder.PostImmediate.Yes)
+				.setFailOnError(true)
+				.onErrorNotifyUser(Env.getLoggedUserId())
+				.postIt();
+	}
+
+	private void findFactAcct(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final Map<String, String> row,
+			final int timeoutSec) throws InterruptedException
+	{
+		final String accountIdentifier = DataTableUtil.extractStringForColumnName(row, TABLE_COLUMN_ACCOUNT_FEATURE);
+		final BigDecimal crAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_CR_FEATURE);
+		final BigDecimal drAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_DR_FEATURE);
+
+		final FactAcctQuery factAcctQuery = FactAcctQuery.builder()
+				.tableRecordReference(tableRecordReference)
+				.accountId(getAccountId(accountIdentifier))
+				.crAmt(crAmt)
+				.drAmt(drAmt)
+				.build();
+
+		final I_Fact_Acct factAcctRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadFactAcct(factAcctQuery), () -> getCurrentContext(factAcctQuery));
+
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_Fact_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
+		factAcctTable.putOrReplace(identifier, factAcctRecord);
+	}
+
+	@NonNull
+	private String getCurrentContext(@NonNull final FactAcctQuery factAcctQuery)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for instance with:").append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctQuery.getAD_Table_ID()).append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctQuery.getAccountId()).append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctQuery.getCrAmt()).append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctQuery.getDrAmt()).append("\n");
+
+		message.append("Fact_Acct records:").append("\n");
+
+		queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.create()
+				.stream(I_Fact_Acct.class)
+				.forEach(factAcctRecord -> message
+						.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctRecord.getAD_Table_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctRecord.getAccount_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctRecord.getAmtSourceCr()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctRecord.getAmtSourceDr()).append(" ; ")
+						.append("\n"));
+
+		return "see current context: \n" + message;
+	}
+
+	@NonNull
+	private ItemProvider.ProviderResult<I_Fact_Acct> loadFactAcct(@NonNull final FactAcctQuery factAcctQuery)
+	{
+		final I_Fact_Acct factAcctRecord = queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.getRecord_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, factAcctQuery.getAD_Table_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, factAcctQuery.getAccountId().getRepoId())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceCr, factAcctQuery.getCrAmt())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceDr, factAcctQuery.getDrAmt())
+				.create()
+				.firstOnlyOrNull(I_Fact_Acct.class);
+
+		if (factAcctRecord == null)
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("No I_Fact_Acct found for query=" + factAcctQuery);
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(factAcctRecord);
+	}
+
+	@NonNull
+	private ElementValueId getAccountId(@NonNull final String identifier)
+	{
+		return ElementValueId.ofRepoId(elementValueTable.get(identifier).getC_ElementValue_ID());
+	}
+
+	@NonNull
+	private TableRecordReference getTableRecordReference(
+			@NonNull final String tableType,
+			@NonNull final String identifier)
+	{
+		switch (TableType.valueOf(tableType))
+		{
+			case invoice:
+				return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceTable.get(identifier).getC_Invoice_ID());
+			case matchInvoice:
+				return TableRecordReference.of(I_M_MatchInv.Table_Name, matchInvTable.get(identifier).getM_MatchInv_ID());
+			default:
+				throw new AdempiereException("Invalid table type!")
+						.appendParametersToMessage()
+						.setParameter("TableType", tableType)
+						.setParameter("Valid types", TableType.values());
+		}
+	}
+
+	@Value
+	@Builder
+	private static class FactAcctQuery
+	{
+		@NonNull TableRecordReference tableRecordReference;
+
+		@NonNull ElementValueId accountId;
+
+		@NonNull BigDecimal crAmt;
+
+		@NonNull BigDecimal drAmt;
+
+		public int getRecord_ID()
+		{
+			return tableRecordReference.getRecord_ID();
+		}
+
+		public int getAD_Table_ID()
+		{
+			return tableRecordReference.getAD_Table_ID();
+		}
 	}
 }
