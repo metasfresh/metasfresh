@@ -100,14 +100,14 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 	private ImportRecordResult importDeliveryPlanning(@NonNull final I_I_DeliveryPlanning importRecord)
 	{
 		ImportRecordResult importResult = ImportRecordResult.Nothing;
-		final String releaseNo = importRecord.getReleaseNo();
-		if (Check.isBlank(releaseNo))
+		final String documentNo = importRecord.getDocumentNo();
+		if (Check.isBlank(documentNo))
 		{
 			importRecord.setI_ErrorMsg("No Delivery Instruction Document No");
 		}
 		else
 		{
-			final List<I_M_Delivery_Planning> deliveryPlannings = deliveryPlanningRepository.getByReleaseNo(releaseNo);
+			final List<I_M_Delivery_Planning> deliveryPlannings = deliveryPlanningRepository.getByReleaseNo(documentNo);
 			if (deliveryPlannings.size() == 0)
 			{
 				importRecord.setI_ErrorMsg("No Delivery Instruction Document No matching");
