@@ -103,6 +103,10 @@ import java.util.List;
 	@Setter
 	private SectionCodeId sectionCodeId;
 
+	private String invoiceAdditionalText;
+
+	private boolean notShowOriginCountry;
+
 	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
 	/* package */ InvoiceHeaderImpl()
@@ -399,5 +403,18 @@ import java.util.List;
 	public SectionCodeId getM_SectionCode_ID()
 	{
 		return sectionCodeId;
+	}
+
+	@Nullable
+	@Override
+	public String getInvoiceAdditionalText()
+	{
+		return invoiceAdditionalText;
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry()
+	{
+		return notShowOriginCountry;
 	}
 }
