@@ -1,21 +1,45 @@
+-- Insert AD_Elements
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582004, 0, 0, 'Y', '2023-02-02 20:48:07.000000 +01:00', 100, '2023-02-02 20:48:07.000000 +01:00', 100, 'creditlimit_by_department', 'D', 'creditlimit_by_department', 'creditlimit_by_department', null, null, null, null, null, null, null, null, null, null, null);
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582005, 0, 0, 'Y', '2023-02-02 20:48:08.000000 +01:00', 100, '2023-02-02 20:48:08.000000 +01:00', 100, 'creditlimit_by_sectioncode', 'D', 'creditlimit_by_sectioncode', 'creditlimit_by_sectioncode', null, null, null, null, null, null, null, null, null, null, null);
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582006, 0, 0, 'Y', '2023-02-02 20:48:09.000000 +01:00', 100, '2023-02-02 20:48:09.000000 +01:00', 100, 'cl_indicator_order', 'D', 'cl_indicator_order', 'cl_indicator_order', null, null, null, null, null, null, null, null, null, null, null);
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582007, 0, 0, 'Y', '2023-02-02 20:48:10.000000 +01:00', 100, '2023-02-02 20:48:10.000000 +01:00', 100, 'cl_indicator_delivery', 'D', 'cl_indicator_delivery', 'cl_indicator_delivery', null, null, null, null, null, null, null, null, null, null, null);
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582009, 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-03 15:15:09.000000 +01:00', 100, 'C_BPartner_Creditlimit_Usage_V_ID', 'D', 'CL Usage', 'CL Usage', null, null, null, null, null, null, null, null, null, null, null);
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582015, 0, 0, 'Y', '2023-02-03 17:07:10.000000 +01:00', 100, '2023-02-03 17:07:10.000000 +01:00', 100, 'partner_code', 'D', 'partner_code', 'partner_code', null, null, null, null, null, null, null, null, null, null, null);
+
+INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, CommitWarning, Description, Help, Name, PO_Description, PO_Help, PO_Name, PO_PrintName, PrintName, WEBUI_NameBrowse, WEBUI_NameNew, WEBUI_NameNewBreadcrumb, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
+SELECT l.AD_Language,
+       t.AD_Element_ID,
+       t.CommitWarning,
+       t.Description,
+       t.Help,
+       t.Name,
+       t.PO_Description,
+       t.PO_Help,
+       t.PO_Name,
+       t.PO_PrintName,
+       t.PrintName,
+       t.WEBUI_NameBrowse,
+       t.WEBUI_NameNew,
+       t.WEBUI_NameNewBreadcrumb,
+       'N',
+       t.AD_Client_ID,
+       t.AD_Org_ID,
+       t.Created,
+       t.Createdby,
+       t.Updated,
+       t.UpdatedBy
+FROM AD_Language l,
+     AD_Element t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
+  AND t.AD_Element_ID IN (582015, 582009, 582007, 582006,  582005, 582004)
+  AND NOT EXISTS(SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID)
+;
+
 -- Table: C_BPartner_Creditlimit_Usage_V
 -- 2023-02-03T16:06:57.039Z
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,Description,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength) VALUES ('3',0,0,0,542293,'N',TO_TIMESTAMP('2023-02-03 17:06:56','YYYY-MM-DD HH24:MI:SS'),100,'Business Partner Credit Limit Usage','U','N','Y','N','N','N','N','Y','N','N','Y',0,'Business Partner Credit Limit Usage','NP','L','C_BPartner_Creditlimit_Usage_V','DTI',TO_TIMESTAMP('2023-02-03 17:06:56','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
-
--- 2023-02-03T16:06:57.040Z
-INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Table_ID=542293 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
-;
-
-INSERT INTO public.ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (582009, 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-03 15:15:09.000000 +01:00', 100, 'C_BPartner_Creditlimit_Usage_V_ID', 'D', 'CL Usage', 'CL Usage', null, null, null, null, null, null, null, null, null, null, null);
-
-
-INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized) VALUES (582009, 'de_CH', 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-02 21:29:23.000000 +01:00', 100, 'Business Partner Credit Limit Usage', 'Business Partner Credit Limit Usage', null, null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null);
-INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized) VALUES (582009, 'de_DE', 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-02 21:29:23.000000 +01:00', 100, 'Business Partner Credit Limit Usage', 'Business Partner Credit Limit Usage', null, null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null);
-INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized) VALUES (582009, 'en_US', 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-03 19:54:45.000000 +01:00', 100, 'CL Usage', 'CL Usage', null, null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null);
-INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized) VALUES (582009, 'fr_CH', 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-02 21:29:23.000000 +01:00', 100, 'Business Partner Credit Limit Usage', 'Business Partner Credit Limit Usage', null, null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null);
-INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized) VALUES (582009, 'nl_NL', 0, 0, 'Y', '2023-02-02 21:29:23.000000 +01:00', 100, '2023-02-02 21:29:23.000000 +01:00', 100, 'Business Partner Credit Limit Usage', 'Business Partner Credit Limit Usage', null, null, null, null, null, null, 'N', null, null, null, null, 'N', null, null, null);
-
 
 -- Column: C_BPartner_Creditlimit_Usage_V.C_BPartner_Creditlimit_Usage_V_ID
 -- 2023-02-03T16:07:09.850Z
