@@ -8,6 +8,7 @@ Feature: create payments using payment API
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+  @Id:S0249_100
   Scenario: Create INBOUND payment using the payment API
   - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line (no discount, no write off)
 
@@ -93,6 +94,7 @@ Feature: create payments using payment API
       | inv_02022023_1          | bpartner_02022023_1      | bpartner_location_02022023_1      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_200
   Scenario: Create INBOUND payment using the payment API
   - allocate a portion of the invoice's open amt with a first request
   - allocate remaining open amt with a second request (with discount and write off)
@@ -215,6 +217,7 @@ Feature: create payments using payment API
       | inv_03022023_3          | bpartner_03022023_3      | bpartner_location_03022023_3      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_300
   Scenario: Create INBOUND payment using the payment API
   - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line (no discount, no write off)
   - use different currency and transaction date in the past
@@ -316,6 +319,7 @@ Feature: create payments using payment API
       | inv_03022023_1          | bpartner_03022023_1      | bpartner_location_03022023_1      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_400
   Scenario: Create INBOUND payment using the payment API
   - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line with discount (no write off)
 
@@ -402,6 +406,7 @@ Feature: create payments using payment API
       | inv_01022023_1          | bpartner_01022023_1      | bpartner_location_01022023_1      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_500
   Scenario: Create INBOUND payment using the payment API
   - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line with discount and write off
 
@@ -489,6 +494,7 @@ Feature: create payments using payment API
       | inv_02022023_3          | bpartner_02022023_3      | bpartner_location_02022023_3      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_600
   Scenario: Create INBOUND payment using the payment API
   - same invoice on multiple lines
   - lines are summing up invoice's open amount (with discount and write off amt)
@@ -581,6 +587,7 @@ Feature: create payments using payment API
       | inv_02022023_5          | bpartner_02022023_5      | bpartner_location_02022023_5      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_700
   Scenario: Create INBOUND payment using the payment API
   - 2 invoices
   - payment with two lines fully allocating both invoices' open amounts
@@ -682,6 +689,7 @@ Feature: create payments using payment API
       | inv_02022023_8          | bpartner_02022023_7      | bpartner_location_02022023_7      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_800
   Scenario: Create OUTBOUND payment using the payment API
   - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line (no discount, no write off)
 
@@ -768,6 +776,7 @@ Feature: create payments using payment API
       | inv_02022023_2          | bpartner_02022023_2      | bpartner_location_02022023_2      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_900
   Scenario: Create OUTBOUND payment using the payment API
   - allocate a portion of the invoice's open amt with a first request
   - allocate remaining open amt with a second request (with discount and write off)
@@ -891,374 +900,7 @@ Feature: create payments using payment API
       | inv_03022023_10         | bpartner_03022023_10     | bpartner_location_03022023_10     | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
-  Scenario: Create OUTBOUND payment using the payment API
-  - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line with discount (no write off)
-
-    Given metasfresh contains M_PricingSystems
-      | Identifier                           | Name                                 | Value                                |
-      | paymentAllocPricingSystem_01022023_2 | paymentAllocPricingSystem_01022023_2 | paymentAllocPricingSystem_01022023_2 |
-
-    And metasfresh contains M_PriceLists
-      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList_01022023_2 | paymentAllocPricingSystem_01022023_2 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
-      | paymentAllocPLV_01022023_2 | paymentAllocPriceList_01022023_2 | 2022-05-01 |
-
-    And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_01022023_2 | BPartnerTest_01022023_2 | BPartnerTest_01022023_2 | Y            | paymentAllocPricingSystem_01022023_2 | 1000009              |
-
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bpartner_location_01022023_2 | bpartner_01022023_2      | Y                   | Y                   |
-
-    And load C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
-      | bp_bank_account_01022023_2     | 2000257                 |
-
-    And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
-      | bp_bank_account_01022023_2     | EUR                     |
-
-    And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
-
-    And metasfresh contains M_Products:
-      | Identifier         | Name               |
-      | product_01022023_2 | product_01022023_2 |
-    And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_01022023_2 | paymentAllocPLV_01022023_2        | product_01022023_2      | 2.00     | PCE               | Normal                        |
-
-    #    GrandTotal = 23.8, Discount = 0.24
-    And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
-      | inv_01022023_2 | bpartner_01022023_2      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_01022023_2 |
-    And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
-      | invl_01022023_2 | inv_01022023_2          | product_01022023_2      | 10          | PCE               |
-    And the invoice identified by inv_01022023_2 is completed
-
-
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
-    """
-{
-    "bpartnerIdentifier": "val-BPartnerTest_01022023_2",
-    "currencyCode": "EUR",
-    "orgCode": "001",
-    "externalPaymentId": "paymentExtId_01022023_2",
-    "transactionDate": "2022-05-11",
-    "type": "OUTBOUND",
-    "lines": [
-        {
-            "invoiceIdentifier": "ext-invoiceExtId_01022023_2",
-            "amount": 23.56,
-            "discountAmt": 0.24
-        }
-    ]
-}
-"""
-
-    Then after not more than 30s, C_Payment is found
-      | C_Payment_ID.Identifier | OPT.ExternalId          |
-      | payment_01022023_2      | paymentExtId_01022023_2 |
-
-    And validate payments
-      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
-      | payment_01022023_2      | true                     | 0.00        | 23.56      | 0.24            | 0               | 2022-05-11  | bpartner_01022023_2          | bp_bank_account_01022023_2         | outboundDocType  |
-
-    And validate C_AllocationLines
-      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | inv_01022023_2              | payment_01022023_2          | -23.56     | 0                | 0               | -0.24           |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_01022023_2          | bpartner_01022023_2      | bpartner_location_01022023_2      | 10 Tage 1 % | true      | CO        | true       |
-
-  @from:cucumber
-  Scenario: Create OUTBOUND payment using the payment API
-  - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line with discount and write off
-
-    Given metasfresh contains M_PricingSystems
-      | Identifier                           | Name                                 | Value                                |
-      | paymentAllocPricingSystem_02022023_4 | paymentAllocPricingSystem_02022023_4 | paymentAllocPricingSystem_02022023_4 |
-
-    And metasfresh contains M_PriceLists
-      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList_02022023_4 | paymentAllocPricingSystem_02022023_4 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
-      | paymentAllocPLV_02022023_4 | paymentAllocPriceList_02022023_4 | 2022-05-01 |
-
-    And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_02022023_4 | BPartnerTest_02022023_4 | BPartnerTest_02022023_4 | Y            | paymentAllocPricingSystem_02022023_4 | 1000009              |
-
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bpartner_location_02022023_4 | bpartner_02022023_4      | Y                   | Y                   |
-
-    And load C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
-      | bp_bank_account_02022023_4     | 2000257                 |
-
-    And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
-      | bp_bank_account_02022023_4     | EUR                     |
-
-    And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
-
-    And metasfresh contains M_Products:
-      | Identifier         | Name               |
-      | product_02022023_4 | product_02022023_4 |
-    And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_02022023_4 | paymentAllocPLV_02022023_4        | product_02022023_4      | 2.00     | PCE               | Normal                        |
-
-    #    GrandTotal = 23.8, Discount = 1, WriteOff = 1
-    And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
-      | inv_02022023_4 | bpartner_02022023_4      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_4 |
-    And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
-      | invl_02022023_4 | inv_02022023_4          | product_02022023_4      | 10          | PCE               |
-    And the invoice identified by inv_02022023_4 is completed
-
-
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
-    """
-{
-    "bpartnerIdentifier": "val-BPartnerTest_02022023_4",
-    "currencyCode": "EUR",
-    "orgCode": "001",
-    "externalPaymentId": "paymentExtId_02022023_4",
-    "transactionDate": "2022-05-11",
-    "type": "OUTBOUND",
-    "lines": [
-        {
-            "invoiceIdentifier": "ext-invoiceExtId_02022023_4",
-            "amount": 21.8,
-            "discountAmt": 1,
-            "writeOffAmt": 1
-        }
-    ]
-}
-"""
-
-    Then after not more than 30s, C_Payment is found
-      | C_Payment_ID.Identifier | OPT.ExternalId          |
-      | payment_02022023_4      | paymentExtId_02022023_4 |
-
-    And validate payments
-      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
-      | payment_02022023_4      | true                     | 0.00        | 21.8       | 1               | 1               | 2022-05-11  | bpartner_02022023_4          | bp_bank_account_02022023_4         | outboundDocType  |
-
-    And validate C_AllocationLines
-      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | inv_02022023_4              | payment_02022023_4          | -21.8      | 0                | -1              | -1              |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_02022023_4          | bpartner_02022023_4      | bpartner_location_02022023_4      | 10 Tage 1 % | true      | CO        | true       |
-
-  @from:cucumber
-  Scenario: Create OUTBOUND payment using the payment API
-  - fully allocate invoice's open amount with multiple lines (with discount and write off)
-
-    Given metasfresh contains M_PricingSystems
-      | Identifier                           | Name                                 | Value                                |
-      | paymentAllocPricingSystem_02022023_6 | paymentAllocPricingSystem_02022023_6 | paymentAllocPricingSystem_02022023_6 |
-
-    And metasfresh contains M_PriceLists
-      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList_02022023_6 | paymentAllocPricingSystem_02022023_6 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
-      | paymentAllocPLV_02022023_6 | paymentAllocPriceList_02022023_6 | 2022-05-01 |
-
-    And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_02022023_6 | BPartnerTest_02022023_6 | BPartnerTest_02022023_6 | Y            | paymentAllocPricingSystem_02022023_6 | 1000009              |
-
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bpartner_location_02022023_6 | bpartner_02022023_6      | Y                   | Y                   |
-
-    And load C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
-      | bp_bank_account_02022023_6     | 2000257                 |
-
-    And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
-      | bp_bank_account_02022023_6     | EUR                     |
-
-    And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
-
-    And metasfresh contains M_Products:
-      | Identifier         | Name               |
-      | product_02022023_6 | product_02022023_6 |
-    And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_02022023_6 | paymentAllocPLV_02022023_6        | product_02022023_6      | 2.00     | PCE               | Normal                        |
-
-    #    GrandTotal = 23.8, Discount = 1, WriteOff = 1
-    And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
-      | inv_02022023_6 | bpartner_02022023_6      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_6 |
-    And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
-      | invl_02022023_6 | inv_02022023_6          | product_02022023_6      | 10          | PCE               |
-    And the invoice identified by inv_02022023_6 is completed
-
-
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
-    """
-{
-    "bpartnerIdentifier": "val-BPartnerTest_02022023_6",
-    "currencyCode": "EUR",
-    "orgCode": "001",
-    "externalPaymentId": "paymentExtId_02022023_6",
-    "transactionDate": "2022-05-11",
-    "type": "OUTBOUND",
-    "lines": [
-        {
-            "invoiceIdentifier": "ext-invoiceExtId_02022023_6",
-            "amount": 20.8
-        },
-        {
-            "invoiceIdentifier": "ext-invoiceExtId_02022023_6",
-            "amount": 1,
-            "discountAmt": 1,
-            "writeOffAmt": 1
-        }
-    ]
-}
-"""
-
-    Then after not more than 30s, C_Payment is found
-      | C_Payment_ID.Identifier | OPT.ExternalId          |
-      | payment_02022023_6      | paymentExtId_02022023_6 |
-
-    And validate payments
-      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
-      | payment_02022023_6      | true                     | 0.00        | 21.8       | 1               | 1               | 2022-05-11  | bpartner_02022023_6          | bp_bank_account_02022023_6         | outboundDocType  |
-
-    And validate C_AllocationLines
-      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | inv_02022023_6              | payment_02022023_6          | -21.8      | 0                | -1              | -1              |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_02022023_6          | bpartner_02022023_6      | bpartner_location_02022023_6      | 10 Tage 1 % | true      | CO        | true       |
-
-  @from:cucumber
-  Scenario: Create OUTBOUND payment using the payment API
-  - 2 invoices
-  - payment with two lines fully allocating both invoices' open amounts
-
-    Given metasfresh contains M_PricingSystems
-      | Identifier                           | Name                                 | Value                                |
-      | paymentAllocPricingSystem_02022023_9 | paymentAllocPricingSystem_02022023_9 | paymentAllocPricingSystem_02022023_9 |
-
-    And metasfresh contains M_PriceLists
-      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList_02022023_9 | paymentAllocPricingSystem_02022023_9 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
-      | paymentAllocPLV_02022023_9 | paymentAllocPriceList_02022023_9 | 2022-05-01 |
-
-    And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_02022023_9 | BPartnerTest_02022023_9 | BPartnerTest_02022023_9 | Y            | paymentAllocPricingSystem_02022023_9 | 1000009              |
-
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | bpartner_location_02022023_9 | bpartner_02022023_9      | Y                   | Y                   |
-
-    And load C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
-      | bp_bank_account_02022023_9     | 2000257                 |
-
-    And update C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
-      | bp_bank_account_02022023_9     | EUR                     |
-
-    And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
-
-    And metasfresh contains M_Products:
-      | Identifier         | Name               |
-      | product_02022023_9 | product_02022023_9 |
-    And metasfresh contains M_ProductPrices
-      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_02022023_9 | paymentAllocPLV_02022023_9        | product_02022023_9      | 2.00     | PCE               | Normal                        |
-
-    #    GrandTotal = 23.8
-    And metasfresh contains C_Invoice:
-      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
-      | inv_02022023_9 | bpartner_02022023_9      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_9 |
-    And metasfresh contains C_InvoiceLines
-      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
-      | invl_02022023_9 | inv_02022023_9          | product_02022023_9      | 10          | PCE               |
-    And the invoice identified by inv_02022023_9 is completed
-
-    And metasfresh contains C_Invoice:
-      | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId           |
-      | inv_02022023_10 | bpartner_02022023_9      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_10 |
-    And metasfresh contains C_InvoiceLines
-      | Identifier       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
-      | invl_02022023_10 | inv_02022023_10         | product_02022023_9      | 8           | PCE               |
-    And the invoice identified by inv_02022023_10 is completed
-
-
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
-    """
-{
-    "bpartnerIdentifier": "val-BPartnerTest_02022023_9",
-    "currencyCode": "EUR",
-    "orgCode": "001",
-    "externalPaymentId": "paymentExtId_02022023_9",
-    "transactionDate": "2022-05-11",
-    "type": "OUTBOUND",
-    "lines": [
-        {
-            "invoiceIdentifier": "ext-invoiceExtId_02022023_9",
-            "amount": 23.8
-        },
-        {
-            "invoiceIdentifier": "ext-invoiceExtId_02022023_10",
-            "amount": 19.04
-        }
-    ]
-}
-"""
-
-    Then after not more than 30s, C_Payment is found
-      | C_Payment_ID.Identifier | OPT.ExternalId          |
-      | payment_02022023_9      | paymentExtId_02022023_9 |
-
-    And validate payments
-      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
-      | payment_02022023_9      | true                     | 0.00        | 42.84      | 0               | 0               | 2022-05-11  | bpartner_02022023_9          | bp_bank_account_02022023_9         | outboundDocType  |
-
-    And validate C_AllocationLines
-      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | inv_02022023_9              | payment_02022023_9          | -23.8      | 0                | 0               | 0               |
-      | inv_02022023_10             | payment_02022023_9          | -19.04     | 0                | 0               | 0               |
-
-    And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
-      | inv_02022023_9          | bpartner_02022023_9      | bpartner_location_02022023_9      | 10 Tage 1 % | true      | CO        | true       |
-      | inv_02022023_10         | bpartner_02022023_9      | bpartner_location_02022023_9      | 10 Tage 1 % | true      | CO        | true       |
-
-  @from:cucumber
+  @Id:S0249_1000
   Scenario: Create OUTBOUND payment using the payment API
   - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line (no discount, no write off)
   - use different currency and transaction date in the past
@@ -1360,6 +1002,379 @@ Feature: create payments using payment API
       | inv_03022023_2          | bpartner_03022023_2      | bpartner_location_03022023_2      | 10 Tage 1 % | true      | CO        | true       |
 
   @from:cucumber
+  @Id:S0249_1100
+  Scenario: Create OUTBOUND payment using the payment API
+  - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line with discount (no write off)
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_01022023_2 | paymentAllocPricingSystem_01022023_2 | paymentAllocPricingSystem_01022023_2 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_01022023_2 | paymentAllocPricingSystem_01022023_2 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_01022023_2 | paymentAllocPriceList_01022023_2 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_01022023_2 | BPartnerTest_01022023_2 | BPartnerTest_01022023_2 | Y            | paymentAllocPricingSystem_01022023_2 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_01022023_2 | bpartner_01022023_2      | Y                   | Y                   |
+
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | bp_bank_account_01022023_2     | 2000257                 |
+
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
+      | bp_bank_account_01022023_2     | EUR                     |
+
+    And load C_DocType:
+      | C_DocType_ID.Identifier | DocBaseType |
+      | outboundDocType         | APP         |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_01022023_2 | product_01022023_2 |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_01022023_2 | paymentAllocPLV_01022023_2        | product_01022023_2      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 0.24
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
+      | inv_01022023_2 | bpartner_01022023_2      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_01022023_2 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_01022023_2 | inv_01022023_2          | product_01022023_2      | 10          | PCE               |
+    And the invoice identified by inv_01022023_2 is completed
+
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
+    """
+{
+    "bpartnerIdentifier": "val-BPartnerTest_01022023_2",
+    "currencyCode": "EUR",
+    "orgCode": "001",
+    "externalPaymentId": "paymentExtId_01022023_2",
+    "transactionDate": "2022-05-11",
+    "type": "OUTBOUND",
+    "lines": [
+        {
+            "invoiceIdentifier": "ext-invoiceExtId_01022023_2",
+            "amount": 23.56,
+            "discountAmt": 0.24
+        }
+    ]
+}
+"""
+
+    Then after not more than 30s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.ExternalId          |
+      | payment_01022023_2      | paymentExtId_01022023_2 |
+
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
+      | payment_01022023_2      | true                     | 0.00        | 23.56      | 0.24            | 0               | 2022-05-11  | bpartner_01022023_2          | bp_bank_account_01022023_2         | outboundDocType  |
+
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_01022023_2              | payment_01022023_2          | -23.56     | 0                | 0               | -0.24           |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
+      | inv_01022023_2          | bpartner_01022023_2      | bpartner_location_01022023_2      | 10 Tage 1 % | true      | CO        | true       |
+
+  @from:cucumber
+  @Id:S0249_1200
+  Scenario: Create OUTBOUND payment using the payment API
+  - fully allocate invoice's open amount with one JsonInvoicePaymentCreateRequest#line with discount and write off
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_02022023_4 | paymentAllocPricingSystem_02022023_4 | paymentAllocPricingSystem_02022023_4 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_02022023_4 | paymentAllocPricingSystem_02022023_4 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_02022023_4 | paymentAllocPriceList_02022023_4 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_02022023_4 | BPartnerTest_02022023_4 | BPartnerTest_02022023_4 | Y            | paymentAllocPricingSystem_02022023_4 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_02022023_4 | bpartner_02022023_4      | Y                   | Y                   |
+
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | bp_bank_account_02022023_4     | 2000257                 |
+
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
+      | bp_bank_account_02022023_4     | EUR                     |
+
+    And load C_DocType:
+      | C_DocType_ID.Identifier | DocBaseType |
+      | outboundDocType         | APP         |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_02022023_4 | product_02022023_4 |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_02022023_4 | paymentAllocPLV_02022023_4        | product_02022023_4      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 1, WriteOff = 1
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
+      | inv_02022023_4 | bpartner_02022023_4      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_4 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_02022023_4 | inv_02022023_4          | product_02022023_4      | 10          | PCE               |
+    And the invoice identified by inv_02022023_4 is completed
+
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
+    """
+{
+    "bpartnerIdentifier": "val-BPartnerTest_02022023_4",
+    "currencyCode": "EUR",
+    "orgCode": "001",
+    "externalPaymentId": "paymentExtId_02022023_4",
+    "transactionDate": "2022-05-11",
+    "type": "OUTBOUND",
+    "lines": [
+        {
+            "invoiceIdentifier": "ext-invoiceExtId_02022023_4",
+            "amount": 21.8,
+            "discountAmt": 1,
+            "writeOffAmt": 1
+        }
+    ]
+}
+"""
+
+    Then after not more than 30s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.ExternalId          |
+      | payment_02022023_4      | paymentExtId_02022023_4 |
+
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
+      | payment_02022023_4      | true                     | 0.00        | 21.8       | 1               | 1               | 2022-05-11  | bpartner_02022023_4          | bp_bank_account_02022023_4         | outboundDocType  |
+
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_02022023_4              | payment_02022023_4          | -21.8      | 0                | -1              | -1              |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
+      | inv_02022023_4          | bpartner_02022023_4      | bpartner_location_02022023_4      | 10 Tage 1 % | true      | CO        | true       |
+
+  @from:cucumber
+  @Id:S0249_1300
+  Scenario: Create OUTBOUND payment using the payment API
+  - fully allocate invoice's open amount with multiple lines (with discount and write off)
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_02022023_6 | paymentAllocPricingSystem_02022023_6 | paymentAllocPricingSystem_02022023_6 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_02022023_6 | paymentAllocPricingSystem_02022023_6 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_02022023_6 | paymentAllocPriceList_02022023_6 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_02022023_6 | BPartnerTest_02022023_6 | BPartnerTest_02022023_6 | Y            | paymentAllocPricingSystem_02022023_6 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_02022023_6 | bpartner_02022023_6      | Y                   | Y                   |
+
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | bp_bank_account_02022023_6     | 2000257                 |
+
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
+      | bp_bank_account_02022023_6     | EUR                     |
+
+    And load C_DocType:
+      | C_DocType_ID.Identifier | DocBaseType |
+      | outboundDocType         | APP         |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_02022023_6 | product_02022023_6 |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_02022023_6 | paymentAllocPLV_02022023_6        | product_02022023_6      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8, Discount = 1, WriteOff = 1
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
+      | inv_02022023_6 | bpartner_02022023_6      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_6 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_02022023_6 | inv_02022023_6          | product_02022023_6      | 10          | PCE               |
+    And the invoice identified by inv_02022023_6 is completed
+
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
+    """
+{
+    "bpartnerIdentifier": "val-BPartnerTest_02022023_6",
+    "currencyCode": "EUR",
+    "orgCode": "001",
+    "externalPaymentId": "paymentExtId_02022023_6",
+    "transactionDate": "2022-05-11",
+    "type": "OUTBOUND",
+    "lines": [
+        {
+            "invoiceIdentifier": "ext-invoiceExtId_02022023_6",
+            "amount": 20.8
+        },
+        {
+            "invoiceIdentifier": "ext-invoiceExtId_02022023_6",
+            "amount": 1,
+            "discountAmt": 1,
+            "writeOffAmt": 1
+        }
+    ]
+}
+"""
+
+    Then after not more than 30s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.ExternalId          |
+      | payment_02022023_6      | paymentExtId_02022023_6 |
+
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
+      | payment_02022023_6      | true                     | 0.00        | 21.8       | 1               | 1               | 2022-05-11  | bpartner_02022023_6          | bp_bank_account_02022023_6         | outboundDocType  |
+
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_02022023_6              | payment_02022023_6          | -21.8      | 0                | -1              | -1              |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
+      | inv_02022023_6          | bpartner_02022023_6      | bpartner_location_02022023_6      | 10 Tage 1 % | true      | CO        | true       |
+
+  @from:cucumber
+  @Id:S0249_1400
+  Scenario: Create OUTBOUND payment using the payment API
+  - 2 invoices
+  - payment with two lines fully allocating both invoices' open amounts
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier                           | Name                                 | Value                                |
+      | paymentAllocPricingSystem_02022023_9 | paymentAllocPricingSystem_02022023_9 | paymentAllocPricingSystem_02022023_9 |
+
+    And metasfresh contains M_PriceLists
+      | Identifier                       | M_PricingSystem_ID.Identifier        | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList_02022023_9 | paymentAllocPricingSystem_02022023_9 | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier                 | M_PriceList_ID.Identifier        | ValidFrom  |
+      | paymentAllocPLV_02022023_9 | paymentAllocPriceList_02022023_9 | 2022-05-01 |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier          | Name                    | Value                   | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
+      | bpartner_02022023_9 | BPartnerTest_02022023_9 | BPartnerTest_02022023_9 | Y            | paymentAllocPricingSystem_02022023_9 | 1000009              |
+
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | bpartner_location_02022023_9 | bpartner_02022023_9      | Y                   | Y                   |
+
+    And load C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_BP_BankAccount_ID |
+      | bp_bank_account_02022023_9     | 2000257                 |
+
+    And update C_BP_BankAccount:
+      | C_BP_BankAccount_ID.Identifier | OPT.C_Currency.ISO_Code |
+      | bp_bank_account_02022023_9     | EUR                     |
+
+    And load C_DocType:
+      | C_DocType_ID.Identifier | DocBaseType |
+      | outboundDocType         | APP         |
+
+    And metasfresh contains M_Products:
+      | Identifier         | Name               |
+      | product_02022023_9 | product_02022023_9 |
+    And metasfresh contains M_ProductPrices
+      | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_02022023_9 | paymentAllocPLV_02022023_9        | product_02022023_9      | 2.00     | PCE               | Normal                        |
+
+    #    GrandTotal = 23.8
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId          |
+      | inv_02022023_9 | bpartner_02022023_9      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_9 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_02022023_9 | inv_02022023_9          | product_02022023_9      | 10          | PCE               |
+    And the invoice identified by inv_02022023_9 is completed
+
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code | OPT.ExternalId           |
+      | inv_02022023_10 | bpartner_02022023_9      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 | invoiceExtId_02022023_10 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | invl_02022023_10 | inv_02022023_10         | product_02022023_9      | 8           | PCE               |
+    And the invoice identified by inv_02022023_10 is completed
+
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
+    """
+{
+    "bpartnerIdentifier": "val-BPartnerTest_02022023_9",
+    "currencyCode": "EUR",
+    "orgCode": "001",
+    "externalPaymentId": "paymentExtId_02022023_9",
+    "transactionDate": "2022-05-11",
+    "type": "OUTBOUND",
+    "lines": [
+        {
+            "invoiceIdentifier": "ext-invoiceExtId_02022023_9",
+            "amount": 23.8
+        },
+        {
+            "invoiceIdentifier": "ext-invoiceExtId_02022023_10",
+            "amount": 19.04
+        }
+    ]
+}
+"""
+
+    Then after not more than 30s, C_Payment is found
+      | C_Payment_ID.Identifier | OPT.ExternalId          |
+      | payment_02022023_9      | paymentExtId_02022023_9 |
+
+    And validate payments
+      | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.DiscountAmt | OPT.WriteOffAmt | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier | OPT.C_DocType_ID |
+      | payment_02022023_9      | true                     | 0.00        | 42.84      | 0               | 0               | 2022-05-11  | bpartner_02022023_9          | bp_bank_account_02022023_9         | outboundDocType  |
+
+    And validate C_AllocationLines
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
+      | inv_02022023_9              | payment_02022023_9          | -23.8      | 0                | 0               | 0               |
+      | inv_02022023_10             | payment_02022023_9          | -19.04     | 0                | 0               | 0               |
+
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
+      | inv_02022023_9          | bpartner_02022023_9      | bpartner_location_02022023_9      | 10 Tage 1 % | true      | CO        | true       |
+      | inv_02022023_10         | bpartner_02022023_9      | bpartner_location_02022023_9      | 10 Tage 1 % | true      | CO        | true       |
+
+  @from:cucumber
+  @Id:S0249_1500
   Scenario: Create OUTBOUND payment using the payment API
   - allocate more than the invoice's open amount with multiple JsonInvoicePaymentCreateRequest#lines (no discount, no write off)
   - expect error

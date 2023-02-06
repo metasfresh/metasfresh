@@ -9,6 +9,7 @@ Feature: create invoices using invoice API
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+  @Id:S0248_100
   Scenario: create invoice with 1 x line with acct and priceEntered info
   - action.completeIt = 'Y'
 
@@ -112,6 +113,7 @@ Feature: create invoices using invoice API
       | invoiceAcct_1                | acctSchema_1                   | invoice_1                   | invoiceLine_1                   | elementValue_1                   |
 
   @from:cucumber
+  @Id:S0248_200
   Scenario: create invoice with 1 x line with acct, priceEntered and taxCode info
   - action.completeIt = 'Y'
 
@@ -234,6 +236,7 @@ Feature: create invoices using invoice API
       | taxCategory_1               | false           |
 
   @from:cucumber
+  @Id:S0248_300
   Scenario: create invoice with 1 x line without acct and priceEntered info
   - action.completeIt = 'Y'
 
@@ -314,6 +317,7 @@ Feature: create invoices using invoice API
       | invoiceLine_1               | invoice_1               | product_1               | 10          | true      | 2                | 2               | 20             | tax_1                   | 10       | 1.4            | PCE                   | PCE                       | false             | 10                        |
 
   @from:cucumber
+  @Id:S0248_400
   Scenario: create invoice with 1 x line with product not found on price list => error
 
     Given load C_BPartner:
