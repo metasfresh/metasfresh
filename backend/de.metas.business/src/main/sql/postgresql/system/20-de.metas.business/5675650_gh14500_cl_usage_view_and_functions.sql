@@ -1,8 +1,3 @@
-
-DROP FUNCTION IF EXISTS getcreditlimitforpartner(p_c_bpartner_id numeric,
-                                                 p_date          date)
-;
-
 CREATE OR REPLACE FUNCTION getcreditlimitforpartner(p_c_bpartner_id numeric,
                                                     p_date          date) RETURNS numeric
     STABLE
@@ -42,8 +37,7 @@ ALTER FUNCTION getcreditlimitforpartner(numeric, date) OWNER TO metasfresh
 
 
 
-
-CREATE FUNCTION getcreditlimitfordepartment(p_m_department_id numeric,
+CREATE OR REPLACE FUNCTION getcreditlimitfordepartment(p_m_department_id numeric,
                                             p_date            date) RETURNS numeric
     STABLE
     LANGUAGE sql
@@ -83,10 +77,39 @@ ALTER FUNCTION getcreditlimitfordepartment(numeric, date) OWNER TO metasfresh
 ;
 
 
-DROP VIEW IF EXISTS c_bpartner_creditlimit_usage_v
+CREATE OR REPLACE FUNCTION getcreditlimitforsectioncode(p_m_sectiocode_id numeric, p_date date) RETURNS numeric
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT COALESCE(SUM(lim.amount), 0)
+
+FROM C_BPartner partner
+         JOIN C_BPartner_CreditLimit lim ON partner.c_bpartner_id = lim.c_bpartner_id
+
+WHERE partner.m_sectioncode_id = p_m_sectiocode_id
+  AND ((lim.processed = 'Y' AND lim.isactive = 'Y') OR (lim.processed = 'N' AND lim.isactive = 'N'))
+  AND lim.datefrom <= p_date
+  AND NOT EXISTS(SELECT 1
+                 FROM c_bpartner_creditlimit lim2
+                 WHERE lim.c_bpartner_id = lim2.c_bpartner_id
+                   AND lim2.datefrom >= lim.datefrom
+                   AND lim2.datefrom <= p_Date
+                   AND ((lim2.processed = 'Y' AND lim2.isactive = 'Y') OR (lim2.processed = 'N' AND lim2.isactive = 'N'))
+                   AND lim2.c_bpartner_creditlimit_id != lim.c_bpartner_creditlimit_id)
+
+GROUP BY partner.m_sectioncode_id
+
+$$
 ;
 
-CREATE VIEW C_BPartner_Creditlimit_Usage_V
+COMMENT ON FUNCTION getcreditlimitforsectioncode(numeric, date) IS 'TEST: SELECT getcreditlimitforsectioncode(2156017, now()::date);'
+;
+
+ALTER FUNCTION getcreditlimitforsectioncode(numeric, date) OWNER TO metasfresh
+;
+
+CREATE OR REPLACE VIEW C_BPartner_Creditlimit_Usage_V
             (
              C_BPartner_Creditlimit_Usage_V_ID,
              c_bpartner_id,
