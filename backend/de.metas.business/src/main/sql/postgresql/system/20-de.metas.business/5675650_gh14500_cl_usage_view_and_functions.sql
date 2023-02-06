@@ -109,6 +109,9 @@ COMMENT ON FUNCTION getcreditlimitforsectioncode(numeric, date) IS 'TEST: SELECT
 ALTER FUNCTION getcreditlimitforsectioncode(numeric, date) OWNER TO metasfresh
 ;
 
+
+DROP VIEW IF EXISTS  C_BPartner_Creditlimit_Usage_V;
+
 CREATE OR REPLACE VIEW C_BPartner_Creditlimit_Usage_V
             (
              C_BPartner_Creditlimit_Usage_V_ID,
