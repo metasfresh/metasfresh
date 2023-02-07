@@ -1,25 +1,7 @@
 package de.metas.impexp;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.service.ClientId;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImpFormat;
 import de.metas.impexp.format.ImpFormatColumn;
@@ -34,6 +16,21 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -242,7 +239,7 @@ final class SqlInsertIntoImportTableCommand
 
 		//
 		// I_LineContext
-		if (importTableDescriptor.getImportLineNoColumnName() != null)
+		if (importTableDescriptor.getImportLineContentColumnName() != null)
 		{
 			sqlColumns.append(", ").append(importTableDescriptor.getImportLineContentColumnName());
 			sqlValues.append(", ?");

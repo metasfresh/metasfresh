@@ -82,6 +82,10 @@ public class Excel97ImpDataParser implements ImpDataParser
 
 	private static ImpDataCell toImpDataCell(final HSSFCell cell)
 	{
+		if (cell == null)
+		{
+			return ImpDataCell.value(null);
+		}
 		try
 		{
 			switch (cell.getCellTypeEnum())
