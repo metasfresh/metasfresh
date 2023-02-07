@@ -257,26 +257,26 @@ public interface I_I_DeliveryPlanning
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_DocumentNo = new ModelColumn<>(I_I_DeliveryPlanning.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Delivery Planning Data Import.
+	 * Set Import Delivery Planning Data.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -285,7 +285,7 @@ public interface I_I_DeliveryPlanning
 	void setI_DeliveryPlanning_Data_ID (int I_DeliveryPlanning_Data_ID);
 
 	/**
-	 * Get Delivery Planning Data Import.
+	 * Get Import Delivery Planning Data.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -301,7 +301,7 @@ public interface I_I_DeliveryPlanning
 	String COLUMNNAME_I_DeliveryPlanning_Data_ID = "I_DeliveryPlanning_Data_ID";
 
 	/**
-	 * Set Lieferplanung Import.
+	 * Set Imported Delivery Planning.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -310,7 +310,7 @@ public interface I_I_DeliveryPlanning
 	void setI_DeliveryPlanning_ID (int I_DeliveryPlanning_ID);
 
 	/**
-	 * Get Lieferplanung Import.
+	 * Get Imported Delivery Planning.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -366,27 +366,6 @@ public interface I_I_DeliveryPlanning
 
 	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_I_IsImported = new ModelColumn<>(I_I_DeliveryPlanning.class, "I_IsImported", null);
 	String COLUMNNAME_I_IsImported = "I_IsImported";
-
-	/**
-	 * Set Import Line Content.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setI_LineContent (@Nullable java.lang.String I_LineContent);
-
-	/**
-	 * Get Import Line Content.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getI_LineContent();
-
-	ModelColumn<I_I_DeliveryPlanning, Object> COLUMN_I_LineContent = new ModelColumn<>(I_I_DeliveryPlanning.class, "I_LineContent", null);
-	String COLUMNNAME_I_LineContent = "I_LineContent";
 
 	/**
 	 * Set Import Line No.
