@@ -1,6 +1,7 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
@@ -38,6 +39,7 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
@@ -48,6 +50,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -88,14 +91,17 @@ public class C_OrderLine
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService
+			)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
@@ -446,4 +452,38 @@ public class C_OrderLine
 			orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
+	public void updateIsOnConsignment(final I_C_OrderLine orderLine)
+	{
+		orderLineBL.updateIsOnConsignmentNoSave(orderLine);
+	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsOnConsignment })
+	public void updateIsOnConsignmentOrder(final I_C_OrderLine orderLine)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
+
+		trxManager.accumulateAndProcessAfterCommit(
+				"orderIdsToUpdateIsOnConsigment",
+				ImmutableSet.of(orderId),
+				this::updateIsOnConsignmentFromLines
+		);
+	}
+
+	private void updateIsOnConsignmentFromLines(final List<OrderId> orderIds)
+	{
+		for (final OrderId orderId : ImmutableSet.copyOf(orderIds))
+		{
+			orderBL.updateIsOnConsignmentFromLines(orderId);
+		}
+	}
+
+
+
+
+
 }

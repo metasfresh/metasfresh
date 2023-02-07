@@ -27,7 +27,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class UpdateMonthsUntilExpiryResult
+public class UpdateMonthsResult
 {
 	int countChecked;
 	int countUpdated;

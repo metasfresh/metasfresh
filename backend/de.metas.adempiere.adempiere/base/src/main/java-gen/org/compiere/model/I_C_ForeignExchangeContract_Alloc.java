@@ -51,27 +51,27 @@ public interface I_C_ForeignExchangeContract_Alloc
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Amount.
-	 * Amount in a defined currency
+	 * Set Allocated Amount.
+	 * Amount allocated to this document
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAmount (BigDecimal Amount);
+	void setAllocatedAmt (BigDecimal AllocatedAmt);
 
 	/**
-	 * Get Amount.
-	 * Amount in a defined currency
+	 * Get Allocated Amount.
+	 * Amount allocated to this document
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAmount();
+	BigDecimal getAllocatedAmt();
 
-	ModelColumn<I_C_ForeignExchangeContract_Alloc, Object> COLUMN_Amount = new ModelColumn<>(I_C_ForeignExchangeContract_Alloc.class, "Amount", null);
-	String COLUMNNAME_Amount = "Amount";
+	ModelColumn<I_C_ForeignExchangeContract_Alloc, Object> COLUMN_AllocatedAmt = new ModelColumn<>(I_C_ForeignExchangeContract_Alloc.class, "AllocatedAmt", null);
+	String COLUMNNAME_AllocatedAmt = "AllocatedAmt";
 
 	/**
 	 * Set Currency.
