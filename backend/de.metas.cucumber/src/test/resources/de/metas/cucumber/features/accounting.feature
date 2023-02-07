@@ -9,6 +9,7 @@ Feature: accounting-override-feature
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
   @from:cucumber
+  @Id:S0250_100
   Scenario: we can override accounting info for an invoice with one line
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -163,6 +164,7 @@ Feature: accounting-override-feature
       | factAcct_6              | elementValue_6 | 113 | 0   |
 
   @from:cucumber
+  @Id:S0250_200
   Scenario: we can override accounting info for an invoice with two lines
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -355,6 +357,7 @@ Feature: accounting-override-feature
       | factAcct_10             | elementValue_4 | 0     | 0  |
 
   @from:cucumber
+  @Id:S0250_300
   Scenario: we can override accounting info for only one line of an invoice with two lines
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
