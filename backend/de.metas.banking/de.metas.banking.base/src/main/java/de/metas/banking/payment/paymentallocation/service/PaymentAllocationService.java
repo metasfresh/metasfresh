@@ -165,8 +165,7 @@ public class PaymentAllocationService
 		return Optional.of(builder);
 	}
 
-	@VisibleForTesting
-	PaymentDocument toPaymentDocument(@NonNull final I_C_Payment payment)
+	public PaymentDocument toPaymentDocument(@NonNull final I_C_Payment payment)
 	{
 		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
 
