@@ -65,12 +65,9 @@ Feature: accounting-override-feature
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_04022023_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
-      | invoice_candidate_1               | ol_1                      |
-    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier |
-      | invoice_candidate_1               |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoice_candidate_1               | ol_1                      | 10           |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
@@ -228,14 +225,10 @@ Feature: accounting-override-feature
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU_1   | receiptSchedule_07022023_1      | inOut_210320222_1     |
       | processedTopHU_2   | receiptSchedule_07022023_2      | inOut_210320222_2     |
-    And after not more than 30s locate invoice candidates by order line:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
-      | invoice_candidate_1               | ol_1                      |
-      | invoice_candidate_2               | ol_2                      |
-    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier |
-      | invoice_candidate_1               |
-      | invoice_candidate_2               |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoice_candidate_1               | ol_1                      | 10           |
+      | invoice_candidate_2               | ol_2                      | 10           |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier       |
       | invoice_candidate_1,invoice_candidate_2 |
@@ -424,14 +417,10 @@ Feature: accounting-override-feature
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU_1   | receiptSchedule_06022023_1      | inOut_210320222_1     |
       | processedTopHU_2   | receiptSchedule_06022023_2      | inOut_210320222_2     |
-    And after not more than 30s locate invoice candidates by order line:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
-      | invoice_candidate_1               | ol_1                      |
-      | invoice_candidate_2               | ol_2                      |
-    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
-      | C_Invoice_Candidate_ID.Identifier |
-      | invoice_candidate_1               |
-      | invoice_candidate_2               |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoice_candidate_1               | ol_1                      | 10           |
+      | invoice_candidate_2               | ol_2                      | 10           |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier       |
       | invoice_candidate_1,invoice_candidate_2 |
