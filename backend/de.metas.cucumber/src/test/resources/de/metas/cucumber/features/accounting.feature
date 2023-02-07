@@ -68,6 +68,9 @@ Feature: accounting-override-feature
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
@@ -229,6 +232,10 @@ Feature: accounting-override-feature
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+      | invoice_candidate_2               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier       |
       | invoice_candidate_1,invoice_candidate_2 |
@@ -421,6 +428,10 @@ Feature: accounting-override-feature
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
       | invoice_candidate_2               | ol_2                      |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+      | invoice_candidate_2               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier       |
       | invoice_candidate_1,invoice_candidate_2 |
