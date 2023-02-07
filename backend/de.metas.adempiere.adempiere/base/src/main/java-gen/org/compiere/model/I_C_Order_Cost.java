@@ -1,6 +1,7 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order_Cost
@@ -167,6 +168,27 @@ public interface I_C_Order_Cost
 	String COLUMNNAME_CostAmount = "CostAmount";
 
 	/**
+	 * Set Fixed Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCostCalculation_FixedAmount (@Nullable BigDecimal CostCalculation_FixedAmount);
+
+	/**
+	 * Get Fixed Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostCalculation_FixedAmount();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_CostCalculation_FixedAmount = new ModelColumn<>(I_C_Order_Cost.class, "CostCalculation_FixedAmount", null);
+	String COLUMNNAME_CostCalculation_FixedAmount = "CostCalculation_FixedAmount";
+
+	/**
 	 * Set Calculation Method.
 	 *
 	 * <br>Type: List
@@ -186,6 +208,27 @@ public interface I_C_Order_Cost
 
 	ModelColumn<I_C_Order_Cost, Object> COLUMN_CostCalculationMethod = new ModelColumn<>(I_C_Order_Cost.class, "CostCalculationMethod", null);
 	String COLUMNNAME_CostCalculationMethod = "CostCalculationMethod";
+
+	/**
+	 * Set Percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCostCalculation_Percentage (@Nullable BigDecimal CostCalculation_Percentage);
+
+	/**
+	 * Get Percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostCalculation_Percentage();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_CostCalculation_Percentage = new ModelColumn<>(I_C_Order_Cost.class, "CostCalculation_Percentage", null);
+	String COLUMNNAME_CostCalculation_Percentage = "CostCalculation_Percentage";
 
 	/**
 	 * Set Distribution.

@@ -256,6 +256,13 @@ public class Money
 				: this;
 	}
 
+	public Money divide(@NonNull final Money divisor, @NonNull final CurrencyPrecision precision)
+	{
+		assertCurrencyIdMatching(divisor);
+		final BigDecimal resultingValue = this.value.divide(divisor.value, precision.toInt(), precision.getRoundingMode());
+		return of(resultingValue, this.currencyId);
+	}
+
 	public Money min(@NonNull final Money other)
 	{
 		assertCurrencyIdMatching(other);
@@ -273,6 +280,14 @@ public class Money
 		if (!Objects.equals(currencyId, amt.currencyId))
 		{
 			throw new AdempiereException("Amount has invalid currencyId: " + amt + ". Expected: " + currencyId);
+		}
+	}
+
+	public void assertCurrencyId(@NonNull final CurrencyId expectedCurrencyId)
+	{
+		if (!Objects.equals(currencyId, expectedCurrencyId))
+		{
+			throw new AdempiereException("Amount has invalid currencyId: " + this + ". Expected: " + expectedCurrencyId);
 		}
 	}
 

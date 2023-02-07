@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.PriceListId;
@@ -298,4 +299,6 @@ public interface IOrderBL extends ISingletonService
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		return Quantitys.create(orderLine.getQtyEntered(), uomId);
 	}
+
+	DocStatus getDocStatus(OrderId orderId);
 }

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_Cost_Detail extends org.compiere.model.PO implements I_C_Order_Cost_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 116054090L;
+	private static final long serialVersionUID = -1375708045L;
 
     /** Standard Constructor */
     public X_C_Order_Cost_Detail (final Properties ctx, final int C_Order_Cost_Detail_ID, @Nullable final String trxName)
@@ -117,6 +117,19 @@ public class X_C_Order_Cost_Detail extends org.compiere.model.PO implements I_C_
 	public int getC_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
+	public void setCostAmount (final BigDecimal CostAmount)
+	{
+		set_Value (COLUMNNAME_CostAmount, CostAmount);
+	}
+
+	@Override
+	public BigDecimal getCostAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

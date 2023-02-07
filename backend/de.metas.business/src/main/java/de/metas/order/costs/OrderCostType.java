@@ -1,5 +1,6 @@
 package de.metas.order.costs;
 
+import de.metas.order.costs.calculation_methods.CostCalculationMethod;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

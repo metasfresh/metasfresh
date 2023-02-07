@@ -144,6 +144,27 @@ public interface I_C_Order_Cost_Detail
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmount (BigDecimal CostAmount);
+
+	/**
+	 * Get Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmount();
+
+	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_CostAmount = new ModelColumn<>(I_C_Order_Cost_Detail.class, "CostAmount", null);
+	String COLUMNNAME_CostAmount = "CostAmount";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

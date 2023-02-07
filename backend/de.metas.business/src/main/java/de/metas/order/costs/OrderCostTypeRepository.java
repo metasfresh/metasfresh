@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.order.costs.calculation_methods.CostCalculationMethod;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

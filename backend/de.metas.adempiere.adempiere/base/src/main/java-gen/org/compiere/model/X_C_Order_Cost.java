@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -352753958L;
+	private static final long serialVersionUID = -414886524L;
 
     /** Standard Constructor */
     public X_C_Order_Cost (final Properties ctx, final int C_Order_Cost_ID, @Nullable final String trxName)
@@ -132,6 +132,19 @@ public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_C
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	@Override
+	public void setCostCalculation_FixedAmount (final @Nullable BigDecimal CostCalculation_FixedAmount)
+	{
+		set_Value (COLUMNNAME_CostCalculation_FixedAmount, CostCalculation_FixedAmount);
+	}
+
+	@Override
+	public BigDecimal getCostCalculation_FixedAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostCalculation_FixedAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	/** 
 	 * CostCalculationMethod AD_Reference_ID=541713
 	 * Reference name: CostCalculationMethod
@@ -151,6 +164,19 @@ public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_C
 	public java.lang.String getCostCalculationMethod() 
 	{
 		return get_ValueAsString(COLUMNNAME_CostCalculationMethod);
+	}
+
+	@Override
+	public void setCostCalculation_Percentage (final @Nullable BigDecimal CostCalculation_Percentage)
+	{
+		set_Value (COLUMNNAME_CostCalculation_Percentage, CostCalculation_Percentage);
+	}
+
+	@Override
+	public BigDecimal getCostCalculation_Percentage() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostCalculation_Percentage);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 

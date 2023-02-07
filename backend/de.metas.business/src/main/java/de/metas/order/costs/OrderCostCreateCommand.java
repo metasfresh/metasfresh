@@ -2,9 +2,7 @@ package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
-import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -12,12 +10,13 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+
+import java.util.Comparator;
 
 class OrderCostCreateCommand
 {
@@ -49,39 +48,6 @@ class OrderCostCreateCommand
 		final ImmutableList<OrderCostDetail> details = createOrderCostDetails();
 
 		final OrderCostType costType = costTypeRepository.getById(request.getCostTypeId());
-		final CostCalculationMethod calculationMethod = costType.getCalculationMethod();
-		final Money costAmount;
-		if (calculationMethod == CostCalculationMethod.FixedAmount)
-		{
-			final Money fixedAmount = request.getFixedAmount();
-			if (fixedAmount == null || fixedAmount.signum() <= 0)
-			{
-				throw new AdempiereException("Fixed amount shall be provided");
-			}
-
-			costAmount = fixedAmount;
-		}
-		else if (calculationMethod == CostCalculationMethod.PercentageOfAmount)
-		{
-			final Percent percentageOfAmount = request.getPercentageOfAmount();
-			if (percentageOfAmount == null || percentageOfAmount.signum() <= 0)
-			{
-				throw new AdempiereException("Percentage of Amount shall be provided");
-			}
-
-			final Money linesNetAmt = details.stream()
-					.map(OrderCostDetail::getOrderLineNetAmt)
-					.reduce(Money::add)
-					.orElseThrow(() -> new AdempiereException("No lines"));// shall not happen
-
-			final CurrencyPrecision precision = currencyBL.getStdPrecision(linesNetAmt.getCurrencyId());
-
-			costAmount = linesNetAmt.multiply(percentageOfAmount, precision);
-		}
-		else
-		{
-			throw new AdempiereException("Unknown calculation method: " + costType.getCalculationMethod());
-		}
 
 		final OrderId orderId = request.getOrderId();
 		final I_C_Order order = orderBL.getById(orderId);
@@ -90,11 +56,13 @@ class OrderCostCreateCommand
 				.orderId(orderId)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.costTypeId(costType.getId())
-				.calculationMethod(calculationMethod)
+				.calculationMethod(costType.getCalculationMethod())
+				.calculationMethodParams(request.getCostCalculationMethodParams())
 				.distributionMethod(costType.getDistributionMethod())
-				.costAmount(costAmount)
 				.details(details)
 				.build();
+
+		orderCost.updateCostAmount(currencyBL::getStdPrecision);
 
 		orderCostRepository.save(orderCost);
 
@@ -115,6 +83,7 @@ class OrderCostCreateCommand
 		return orderBL.getLinesByIds(orderAndLineIds)
 				.values()
 				.stream()
+				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
 				.map(OrderCostCreateCommand::toOrderCostDetail)
 				.collect(ImmutableList.toImmutableList());
 	}

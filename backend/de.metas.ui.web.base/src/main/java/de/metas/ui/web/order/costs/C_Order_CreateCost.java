@@ -8,11 +8,14 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.costs.CostCalculationMethod;
+import de.metas.order.costs.calculation_methods.CostCalculationMethod;
+import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
+import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
 import de.metas.order.costs.OrderCostCreateRequest;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.OrderCostType;
 import de.metas.order.costs.OrderCostTypeId;
+import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -89,17 +92,27 @@ public class C_Order_CreateCost extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		final OrderCostCreateRequest.OrderCostCreateRequestBuilder requestBuilder = OrderCostCreateRequest.builder()
-				.costTypeId(p_costTypeId)
-				.orderAndLineIds(getSelectedOrderAndLineIds());
+		orderCostService.createOrderCost(
+				OrderCostCreateRequest.builder()
+						.costTypeId(p_costTypeId)
+						.orderAndLineIds(getSelectedOrderAndLineIds())
+						.costCalculationMethodParams(getCostCalculationMethodParams())
+						.build());
 
+		return MSG_OK;
+	}
+
+	private CostCalculationMethodParams getCostCalculationMethodParams()
+	{
 		if (CostCalculationMethod.FixedAmount.equals(p_CostCalculationMethod))
 		{
 			if (p_amountBD == null || p_amountBD.signum() <= 0)
 			{
 				throw new FillMandatoryException(PARAM_Amount);
 			}
-			requestBuilder.fixedAmount(Money.of(p_amountBD, getOrderCurrencyId()));
+			return FixedAmountCostCalculationMethodParams.builder()
+					.fixedAmount(Money.of(p_amountBD, getOrderCurrencyId()))
+					.build();
 		}
 		else if (CostCalculationMethod.PercentageOfAmount.equals(p_CostCalculationMethod))
 		{
@@ -107,16 +120,15 @@ public class C_Order_CreateCost extends JavaProcess
 			{
 				throw new FillMandatoryException(PARAM_Percentage);
 			}
-			requestBuilder.percentageOfAmount(Percent.of(p_percentageBD));
+			return PercentageCostCalculationMethodParams.builder()
+					.percentage(Percent.of(p_percentageBD))
+					.build();
 		}
 		else
 		{
 			throw new AdempiereException("Method not handled: " + p_CostCalculationMethod);
 		}
 
-		orderCostService.createOrderCost(requestBuilder.build());
-
-		return MSG_OK;
 	}
 
 	private ImmutableSet<OrderAndLineId> getSelectedOrderAndLineIds()

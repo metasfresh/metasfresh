@@ -1,17 +1,27 @@
 package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.costs.calculation_methods.CostCalculationMethod;
+import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
+import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
+import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.organization.OrgId;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.Function;
 
 @EqualsAndHashCode
 @ToString
@@ -22,9 +32,11 @@ public class OrderCost
 	@Getter @NonNull private final OrgId orgId;
 	@Getter @NonNull private final OrderCostTypeId costTypeId;
 	@Getter @NonNull private final CostCalculationMethod calculationMethod;
+	@Getter @Nullable private final CostCalculationMethodParams calculationMethodParams;
+
 	@Getter @NonNull private final CostDistributionMethod distributionMethod;
 
-	@Getter @NonNull private final Money costAmount;
+	@Getter @NonNull private Money costAmount;
 
 	@Getter @NonNull private final ImmutableList<OrderCostDetail> details;
 
@@ -35,17 +47,116 @@ public class OrderCost
 			final @NonNull OrgId orgId,
 			final @NonNull OrderCostTypeId costTypeId,
 			final @NonNull CostCalculationMethod calculationMethod,
+			final @Nullable CostCalculationMethodParams calculationMethodParams,
 			final @NonNull CostDistributionMethod distributionMethod,
-			final @NonNull Money costAmount,
+			final @Nullable Money costAmount,
 			final @NonNull ImmutableList<OrderCostDetail> details)
 	{
+		if (details.isEmpty())
+		{
+			throw new AdempiereException("No details");
+		}
+
+		final CurrencyId detailsCurrencyId = CollectionUtils.extractSingleElement(details, OrderCostDetail::getCurrencyId);
+		if (costAmount != null && !CurrencyId.equals(costAmount.getCurrencyId(), detailsCurrencyId))
+		{
+			throw new AdempiereException("Header and details shall have the same currency");
+		}
+
 		this.id = id;
 		this.orderId = orderId;
 		this.orgId = orgId;
 		this.costTypeId = costTypeId;
 		this.calculationMethod = calculationMethod;
+		this.calculationMethodParams = calculationMethodParams;
 		this.distributionMethod = distributionMethod;
-		this.costAmount = costAmount;
+		this.costAmount = costAmount != null ? costAmount : Money.zero(detailsCurrencyId);
 		this.details = details;
 	}
+
+	public CurrencyId getCurrencyId() {return costAmount.getCurrencyId();}
+
+	public Money getOrderLinesNetAmt()
+	{
+		return details.stream()
+				.map(OrderCostDetail::getOrderLineNetAmt)
+				.reduce(Money::add)
+				.orElseThrow(() -> new AdempiereException("No lines"));// shall not happen
+	}
+
+	public void updateCostAmount(
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+	{
+		this.costAmount = computeCostAmount(currencyPrecisionProvider);
+		distributeCostAmountToDetails(currencyPrecisionProvider);
+	}
+
+	private Money computeCostAmount(
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+	{
+		return this.calculationMethod.mapOnParams(
+				this.calculationMethodParams,
+				new CostCalculationMethod.ParamsMapper<Money>()
+				{
+					@Override
+					public Money fixedAmount(final FixedAmountCostCalculationMethodParams params)
+					{
+						return params.getFixedAmount();
+					}
+
+					@Override
+					public Money percentageOfAmount(final PercentageCostCalculationMethodParams params)
+					{
+						final Percent percentageOfAmount = params.getPercentage();
+
+						final Money linesNetAmt = getOrderLinesNetAmt();
+						final CurrencyPrecision precision = currencyPrecisionProvider.apply(linesNetAmt.getCurrencyId());
+						return linesNetAmt.multiply(percentageOfAmount, precision);
+					}
+				});
+	}
+
+	private void distributeCostAmountToDetails(
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+	{
+		distributionMethod.apply(new CostDistributionMethod.CaseConsumer()
+		{
+			@Override
+			public void amount()
+			{
+				final Money amtToDistribute = getCostAmount();
+
+				final CurrencyId currencyId = amtToDistribute.getCurrencyId();
+				final CurrencyPrecision precision = currencyPrecisionProvider.apply(currencyId);
+
+				final Money totalOrderNetAmount = getOrderLinesNetAmt();
+				Money distributedAmt = Money.zero(currencyId);
+				for (int i = 0, lastIndex = details.size() - 1; i <= lastIndex; i++)
+				{
+					final OrderCostDetail detail = details.get(i);
+					final Money lineCostAmount;
+					if (i < lastIndex)
+					{
+						final Percent percent = Percent.of(detail.getOrderLineNetAmt().toBigDecimal(), totalOrderNetAmount.toBigDecimal());
+						lineCostAmount = amtToDistribute.multiply(percent, precision);
+					}
+					else
+					{
+						lineCostAmount = amtToDistribute.subtract(distributedAmt);
+					}
+
+					detail.setCostAmount(lineCostAmount);
+
+					distributedAmt = distributedAmt.add(lineCostAmount);
+				}
+			}
+
+			@Override
+			public void quantity()
+			{
+				throw new AdempiereException("Quantity based distribution is not supported"); // TODO
+			}
+		});
+	}
+
 }
