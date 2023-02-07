@@ -1,0 +1,283 @@
+package org.compiere.model;
+
+import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
+
+/** Generated Interface for C_Order_Cost
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public interface I_C_Order_Cost 
+{
+
+	String Table_Name = "C_Order_Cost";
+
+//	/** AD_Table_ID=542296 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
+
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Cost_Type_ID (int C_Cost_Type_ID);
+
+	/**
+	 * Get Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Cost_Type_ID();
+
+	org.compiere.model.I_C_Cost_Type getC_Cost_Type();
+
+	void setC_Cost_Type(org.compiere.model.I_C_Cost_Type C_Cost_Type);
+
+	ModelColumn<I_C_Order_Cost, org.compiere.model.I_C_Cost_Type> COLUMN_C_Cost_Type_ID = new ModelColumn<>(I_C_Order_Cost.class, "C_Cost_Type_ID", org.compiere.model.I_C_Cost_Type.class);
+	String COLUMNNAME_C_Cost_Type_ID = "C_Cost_Type_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Order Cost.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_Cost_ID (int C_Order_Cost_ID);
+
+	/**
+	 * Get Order Cost.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_Cost_ID();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_C_Order_Cost_ID = new ModelColumn<>(I_C_Order_Cost.class, "C_Order_Cost_ID", null);
+	String COLUMNNAME_C_Order_Cost_ID = "C_Order_Cost_ID";
+
+	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_C_Order_Cost, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_C_Order_Cost.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmount (BigDecimal CostAmount);
+
+	/**
+	 * Get Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmount();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_CostAmount = new ModelColumn<>(I_C_Order_Cost.class, "CostAmount", null);
+	String COLUMNNAME_CostAmount = "CostAmount";
+
+	/**
+	 * Set Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCostCalculationMethod (java.lang.String CostCalculationMethod);
+
+	/**
+	 * Get Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCostCalculationMethod();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_CostCalculationMethod = new ModelColumn<>(I_C_Order_Cost.class, "CostCalculationMethod", null);
+	String COLUMNNAME_CostCalculationMethod = "CostCalculationMethod";
+
+	/**
+	 * Set Distribution.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCostDistributionMethod (java.lang.String CostDistributionMethod);
+
+	/**
+	 * Get Distribution.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCostDistributionMethod();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_CostDistributionMethod = new ModelColumn<>(I_C_Order_Cost.class, "CostDistributionMethod", null);
+	String COLUMNNAME_CostDistributionMethod = "CostDistributionMethod";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_Created = new ModelColumn<>(I_C_Order_Cost.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Order_Cost.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_Updated = new ModelColumn<>(I_C_Order_Cost.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+}
