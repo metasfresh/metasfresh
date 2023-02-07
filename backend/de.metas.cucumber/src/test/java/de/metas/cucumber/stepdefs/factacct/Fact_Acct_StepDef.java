@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.factacct;
 import de.metas.acct.api.IPostingRequestBuilder;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
@@ -11,6 +12,7 @@ import de.metas.cucumber.stepdefs.TableType;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.matchinv.M_MatchInv_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -26,15 +28,18 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
@@ -54,19 +59,22 @@ public class Fact_Acct_StepDef
 	private final M_MatchInv_StepDefData matchInvTable;
 	private final Fact_Acct_StepDefData factAcctTable;
 	private final C_ElementValue_StepDefData elementValueTable;
+	private final C_Currency_StepDefData currencyTable;
 
 	public Fact_Acct_StepDef(
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final M_MatchInv_StepDefData matchInvTable,
 			@NonNull final Fact_Acct_StepDefData factAcctTable,
-			@NonNull final C_ElementValue_StepDefData elementValueTable)
+			@NonNull final C_ElementValue_StepDefData elementValueTable,
+			@NonNull final C_Currency_StepDefData currencyTable)
 	{
 		this.sectionCodeTable = sectionCodeTable;
 		this.invoiceTable = invoiceTable;
 		this.matchInvTable = matchInvTable;
 		this.factAcctTable = factAcctTable;
 		this.elementValueTable = elementValueTable;
+		this.currencyTable = currencyTable;
 	}
 
 	@And("^after not more than (.*)s, Fact_Acct are found$")
@@ -180,21 +188,38 @@ public class Fact_Acct_StepDef
 			@NonNull final Map<String, String> row,
 			final int timeoutSec) throws InterruptedException
 	{
-		final String accountIdentifier = DataTableUtil.extractStringForColumnName(row, TABLE_COLUMN_ACCOUNT_FEATURE);
-		final BigDecimal crAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_CR_FEATURE);
-		final BigDecimal drAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_DR_FEATURE);
-
-		final FactAcctQuery factAcctQuery = FactAcctQuery.builder()
-				.tableRecordReference(tableRecordReference)
-				.accountId(getAccountId(accountIdentifier))
-				.crAmt(crAmt)
-				.drAmt(drAmt)
-				.build();
+		final FactAcctQuery factAcctQuery = buildFactAcctQuery(tableRecordReference, row);
 
 		final I_Fact_Acct factAcctRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> loadFactAcct(factAcctQuery), () -> getCurrentContext(factAcctQuery));
 
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_Fact_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
 		factAcctTable.putOrReplace(identifier, factAcctRecord);
+	}
+
+	@NonNull
+	private FactAcctQuery buildFactAcctQuery(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final Map<String, String> row)
+	{
+		final String accountIdentifier = DataTableUtil.extractStringForColumnName(row, TABLE_COLUMN_ACCOUNT_FEATURE);
+		final BigDecimal crAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_CR_FEATURE);
+		final BigDecimal drAmt = DataTableUtil.extractBigDecimalForColumnName(row, TABLE_COLUMN_DR_FEATURE);
+
+		final String currencyIdentifier = DataTableUtil.extractStringForColumnName(row, I_Fact_Acct.COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Currency currencyRecord = currencyTable.get(currencyIdentifier);
+
+		final FactAcctQuery.FactAcctQueryBuilder factAcctQueryBuilder = FactAcctQuery.builder()
+				.tableRecordReference(tableRecordReference)
+				.accountId(getAccountId(accountIdentifier))
+				.crAmt(crAmt)
+				.drAmt(drAmt)
+				.currencyId(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()));
+
+		Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_CurrencyRate))
+				.ifPresent(factAcctQueryBuilder::currencyRate);
+
+		return factAcctQueryBuilder
+				.build();
 	}
 
 	@NonNull
@@ -206,7 +231,11 @@ public class Fact_Acct_StepDef
 				.append(I_Fact_Acct.COLUMNNAME_AD_Table_ID).append(" : ").append(factAcctQuery.getAD_Table_ID()).append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctQuery.getAccountId()).append("\n")
 				.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctQuery.getCrAmt()).append("\n")
-				.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctQuery.getDrAmt()).append("\n");
+				.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctQuery.getDrAmt()).append("\n")
+				.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctQuery.getCurrencyId().getRepoId()).append("\n");
+
+		Optional.ofNullable(factAcctQuery.getCurrencyRate())
+				.ifPresent(currencyRate -> message.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(currencyRate).append("\n"));
 
 		message.append("Fact_Acct records:").append("\n");
 
@@ -218,6 +247,8 @@ public class Fact_Acct_StepDef
 						.append(I_Fact_Acct.COLUMNNAME_Account_ID).append(" : ").append(factAcctRecord.getAccount_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AmtSourceCr).append(" : ").append(factAcctRecord.getAmtSourceCr()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctRecord.getAmtSourceDr()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctRecord.getC_Currency_ID()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(factAcctRecord.getCurrencyRate()).append(" ; ")
 						.append("\n"));
 
 		return "see current context: \n" + message;
@@ -226,12 +257,18 @@ public class Fact_Acct_StepDef
 	@NonNull
 	private ItemProvider.ProviderResult<I_Fact_Acct> loadFactAcct(@NonNull final FactAcctQuery factAcctQuery)
 	{
-		final I_Fact_Acct factAcctRecord = queryBL.createQueryBuilder(I_Fact_Acct.class)
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.getRecord_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, factAcctQuery.getAD_Table_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, factAcctQuery.getAccountId().getRepoId())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceCr, factAcctQuery.getCrAmt())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AmtSourceDr, factAcctQuery.getDrAmt())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Currency_ID, factAcctQuery.getCurrencyId());
+
+		Optional.ofNullable(factAcctQuery.getCurrencyRate())
+				.ifPresent(currencyRate -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_CurrencyRate, currencyRate));
+
+		final I_Fact_Acct factAcctRecord = queryBuilder
 				.create()
 				.firstOnlyOrNull(I_Fact_Acct.class);
 
@@ -279,6 +316,10 @@ public class Fact_Acct_StepDef
 		@NonNull BigDecimal crAmt;
 
 		@NonNull BigDecimal drAmt;
+
+		@NonNull CurrencyId currencyId;
+
+		@Nullable BigDecimal currencyRate;
 
 		public int getRecord_ID()
 		{

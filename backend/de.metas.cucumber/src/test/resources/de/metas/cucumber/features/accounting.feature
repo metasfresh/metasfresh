@@ -99,21 +99,42 @@ Feature: accounting-override-feature
       | elementValue_5               | element_1               | 1105  |
       | elementValue_6               | element_1               | 90044 |
 
+    And load C_Currency:
+      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
+      | eur                      | 102               |
+      | chf                      | 318               |
+
+#   Load conversion rates between CHF and EUR (from EUR to CHF) filtering them by both validFrom and validTo dates
+#   When multiple rates are valid at the same time (i.e. matches a date), then they are ordered in a descending order based on validFrom and the rate with the most recent validFrom is used
+    And load C_Conversion_Rate:
+      | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | ValidFrom  | ValidTo    |
+      | currency_rate_1                 | eur                      | chf                         | 2015-05-21 | 2155-12-31 |
+      | currency_rate_2                 | eur                      | chf                         | 2019-05-21 | 2056-12-31 |
+
+    And validate C_Conversion_Rate:
+      | C_Conversion_Rate_ID.Identifier | OPT.MultiplyRate | OPT.DivideRate |
+      | currency_rate_1                 | 1.045236         | 0.95672173557  |
+      | currency_rate_2                 | 1.13             | 0.884955752212 |
+
     And after not more than 30s, M_MatchInv are found:
       | M_MatchInv_ID.Identifier | M_Product_ID.Identifier | C_Invoice_ID.Identifier | C_InvoiceLine_ID.Identifier |
       | matchInv_1               | p_1                     | invoice_1               | invoiceLine1_1              |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_1              | elementValue_5 | 100 | 0   |
-      | factAcct_2              | elementValue_2 | 19  | 0   |
-      | factAcct_3              | elementValue_3 | 0   | 119 |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_5 | 100 | 0   | eur                      | 1.13             |
+      | factAcct_2              | elementValue_2 | 19  | 0   | eur                      | 1.13             |
+      | factAcct_3              | elementValue_3 | 0   | 119 | eur                      | 1.13             |
 
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_4              | elementValue_4 | 0   | 0   |
-      | factAcct_5              | elementValue_5 | 0   | 100 |
-      | factAcct_6              | elementValue_6 | 113 | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_4              | elementValue_4 | 0   | 0   | chf                      | 1                |
+      | factAcct_5              | elementValue_5 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_6              | elementValue_6 | 113 | 0   | chf                      | 1                |
 
     And metasfresh contains C_Invoice_Acct:
       | C_Invoice_Acct_ID.Identifier | C_Invoice_ID.Identifier | C_AcctSchema_ID.Identifier | C_ElementValue_ID.Identifier |
@@ -124,20 +145,24 @@ Feature: accounting-override-feature
       | false            |
 
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_1              | elementValue_1 | 100 | 0   |
-      | factAcct_2              | elementValue_2 | 19  | 0   |
-      | factAcct_3              | elementValue_3 | 0   | 119 |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_1 | 100 | 0   | eur                      | 1.13             |
+      | factAcct_2              | elementValue_2 | 19  | 0   | eur                      | 1.13             |
+      | factAcct_3              | elementValue_3 | 0   | 119 | eur                      | 1.13             |
 
     And fact account repost matchInvoice document with identifier matchInv_1:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_4              | elementValue_4 | 0   | 0   |
-      | factAcct_5              | elementValue_1 | 0   | 100 |
-      | factAcct_6              | elementValue_1 | 113 | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_4              | elementValue_4 | 0   | 0   | chf                      | 1                |
+      | factAcct_5              | elementValue_1 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_6              | elementValue_1 | 113 | 0   | chf                      | 1                |
 
     And update C_Invoice_Acct:
       | C_Invoice_Acct_ID.Identifier | OPT.IsActive |
@@ -148,20 +173,24 @@ Feature: accounting-override-feature
       | false            |
 
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_1              | elementValue_5 | 100 | 0   |
-      | factAcct_2              | elementValue_2 | 19  | 0   |
-      | factAcct_3              | elementValue_3 | 0   | 119 |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_5 | 100 | 0   | eur                      | 1.13             |
+      | factAcct_2              | elementValue_2 | 19  | 0   | eur                      | 1.13             |
+      | factAcct_3              | elementValue_3 | 0   | 119 | eur                      | 1.13             |
 
     And fact account repost matchInvoice document with identifier matchInv_1:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_4              | elementValue_4 | 0   | 0   |
-      | factAcct_5              | elementValue_5 | 0   | 100 |
-      | factAcct_6              | elementValue_6 | 113 | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_4              | elementValue_4 | 0   | 0   | chf                      | 1                |
+      | factAcct_5              | elementValue_5 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_6              | elementValue_6 | 113 | 0   | chf                      | 1                |
 
   @from:cucumber
   @Id:S0250_200
@@ -262,29 +291,50 @@ Feature: accounting-override-feature
       | elementValue_5               | element_1               | 1105  |
       | elementValue_6               | element_1               | 90044 |
 
+    And load C_Currency:
+      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
+      | eur                      | 102               |
+      | chf                      | 318               |
+
+#   Load conversion rates between CHF and EUR (from EUR to CHF) filtering them by both validFrom and validTo dates
+#   When multiple rates are valid at the same time (i.e. matches a date), then they are ordered in a descending order based on validFrom and the rate with the most recent validFrom is used
+    And load C_Conversion_Rate:
+      | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | ValidFrom  | ValidTo    |
+      | currency_rate_1                 | eur                      | chf                         | 2015-05-21 | 2155-12-31 |
+      | currency_rate_2                 | eur                      | chf                         | 2019-05-21 | 2056-12-31 |
+
+    And validate C_Conversion_Rate:
+      | C_Conversion_Rate_ID.Identifier | OPT.MultiplyRate | OPT.DivideRate |
+      | currency_rate_1                 | 1.045236         | 0.95672173557  |
+      | currency_rate_2                 | 1.13             | 0.884955752212 |
+
     And after not more than 30s, M_MatchInv are found:
       | M_MatchInv_ID.Identifier | M_Product_ID.Identifier | C_Invoice_ID.Identifier | C_InvoiceLine_ID.Identifier |
       | matchInv_1               | p_1                     | invoice_1               | invoiceLine1_1              |
       | matchInv_2               | p_2                     | invoice_1               | invoiceLine1_2              |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     |
-      | factAcct_1              | elementValue_5 | 100   | 0      |
-      | factAcct_2              | elementValue_5 | 80    | 0      |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             |
 
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_5              | elementValue_6 | 113 | 0   |
-      | factAcct_6              | elementValue_5 | 0   | 100 |
-      | factAcct_7              | elementValue_4 | 0   | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_5              | elementValue_6 | 113 | 0   | chf                      | 1                |
+      | factAcct_6              | elementValue_5 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 1                |
 
     And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  |
-      | factAcct_9              | elementValue_5 | 0     | 80 |
-      | factAcct_10             | elementValue_4 | 0     | 0  |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                |
+      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             |
+      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 1                |
 
     And metasfresh contains C_Invoice_Acct:
       | C_Invoice_Acct_ID.Identifier | C_Invoice_ID.Identifier | C_AcctSchema_ID.Identifier | C_ElementValue_ID.Identifier |
@@ -295,31 +345,39 @@ Feature: accounting-override-feature
       | false            |
 
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     |
-      | factAcct_1              | elementValue_1 | 100   | 0      |
-      | factAcct_2              | elementValue_1 | 80    | 0      |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_1 | 100   | 0      | eur                      | 1.13             |
+      | factAcct_2              | elementValue_1 | 80    | 0      | eur                      | 1.13             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             |
 
     And fact account repost matchInvoice document with identifier matchInv_1:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_5              | elementValue_1 | 113 | 0   |
-      | factAcct_6              | elementValue_1 | 0   | 100 |
-      | factAcct_7              | elementValue_4 | 0   | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_5              | elementValue_1 | 113 | 0   | chf                      | 1                |
+      | factAcct_6              | elementValue_1 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 1                |
 
     And fact account repost matchInvoice document with identifier matchInv_2:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR |
-      | factAcct_8              | elementValue_1 | 90.40 | 0  |
-      | factAcct_9              | elementValue_1 | 0     | 80 |
-      | factAcct_10             | elementValue_4 | 0     | 0  |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_8              | elementValue_1 | 90.40 | 0  | chf                      | 1                |
+      | factAcct_9              | elementValue_1 | 0     | 80 | eur                      | 1.13             |
+      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 1                |
 
     And update C_Invoice_Acct:
       | C_Invoice_Acct_ID.Identifier | OPT.IsActive |
@@ -330,31 +388,39 @@ Feature: accounting-override-feature
       | false            |
 
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     |
-      | factAcct_1              | elementValue_5 | 100   | 0      |
-      | factAcct_2              | elementValue_5 | 80    | 0      |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             |
 
     And fact account repost matchInvoice document with identifier matchInv_1:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_5              | elementValue_6 | 113 | 0   |
-      | factAcct_6              | elementValue_5 | 0   | 100 |
-      | factAcct_7              | elementValue_4 | 0   | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_5              | elementValue_6 | 113 | 0   | chf                      | 1                |
+      | factAcct_6              | elementValue_5 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 1                |
 
     And fact account repost matchInvoice document with identifier matchInv_2:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  |
-      | factAcct_9              | elementValue_5 | 0     | 80 |
-      | factAcct_10             | elementValue_4 | 0     | 0  |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                |
+      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             |
+      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 1                |
 
   @from:cucumber
   @Id:S0250_300
@@ -455,29 +521,50 @@ Feature: accounting-override-feature
       | elementValue_5               | element_1               | 1105  |
       | elementValue_6               | element_1               | 90044 |
 
+    And load C_Currency:
+      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
+      | eur                      | 102               |
+      | chf                      | 318               |
+
+#   Load conversion rates between CHF and EUR (from EUR to CHF) filtering them by both validFrom and validTo dates
+#   When multiple rates are valid at the same time (i.e. matches a date), then they are ordered in a descending order based on validFrom and the rate with the most recent validFrom is used
+    And load C_Conversion_Rate:
+      | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | ValidFrom  | ValidTo    |
+      | currency_rate_1                 | eur                      | chf                         | 2015-05-21 | 2155-12-31 |
+      | currency_rate_2                 | eur                      | chf                         | 2019-05-21 | 2056-12-31 |
+
+    And validate C_Conversion_Rate:
+      | C_Conversion_Rate_ID.Identifier | OPT.MultiplyRate | OPT.DivideRate |
+      | currency_rate_1                 | 1.045236         | 0.95672173557  |
+      | currency_rate_2                 | 1.13             | 0.884955752212 |
+
     And after not more than 30s, M_MatchInv are found:
       | M_MatchInv_ID.Identifier | M_Product_ID.Identifier | C_Invoice_ID.Identifier | C_InvoiceLine_ID.Identifier |
       | matchInv_1               | p_1                     | invoice_1               | invoiceLine1_1              |
       | matchInv_2               | p_2                     | invoice_1               | invoiceLine1_2              |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     |
-      | factAcct_1              | elementValue_5 | 100   | 0      |
-      | factAcct_2              | elementValue_5 | 80    | 0      |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             |
 
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_5              | elementValue_6 | 113 | 0   |
-      | factAcct_6              | elementValue_5 | 0   | 100 |
-      | factAcct_7              | elementValue_4 | 0   | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_5              | elementValue_6 | 113 | 0   | chf                      | 1                |
+      | factAcct_6              | elementValue_5 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 1                |
 
     And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  |
-      | factAcct_9              | elementValue_5 | 0     | 80 |
-      | factAcct_10             | elementValue_4 | 0     | 0  |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                |
+      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             |
+      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 1                |
 
     And metasfresh contains C_Invoice_Acct:
       | C_Invoice_Acct_ID.Identifier | C_Invoice_ID.Identifier | C_AcctSchema_ID.Identifier | C_ElementValue_ID.Identifier | OPT.C_InvoiceLine_ID.Identifier |
@@ -488,31 +575,39 @@ Feature: accounting-override-feature
       | false            |
 
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     |
-      | factAcct_1              | elementValue_1 | 100   | 0      |
-      | factAcct_2              | elementValue_5 | 80    | 0      |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_1 | 100   | 0      | eur                      | 1.13             |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             |
 
     And fact account repost matchInvoice document with identifier matchInv_1:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_5              | elementValue_1 | 113 | 0   |
-      | factAcct_6              | elementValue_1 | 0   | 100 |
-      | factAcct_7              | elementValue_4 | 0   | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_5              | elementValue_1 | 113 | 0   | chf                      | 1                |
+      | factAcct_6              | elementValue_1 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 1                |
 
     And fact account repost matchInvoice document with identifier matchInv_2:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  |
-      | factAcct_9              | elementValue_5 | 0     | 80 |
-      | factAcct_10             | elementValue_4 | 0     | 0  |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                |
+      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             |
+      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 1                |
 
     And update C_Invoice_Acct:
       | C_Invoice_Acct_ID.Identifier | OPT.IsActive |
@@ -523,29 +618,37 @@ Feature: accounting-override-feature
       | false            |
 
     And after not more than 30s, the invoice document with identifier invoice_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR     |
-      | factAcct_1              | elementValue_5 | 100   | 0      |
-      | factAcct_2              | elementValue_5 | 80    | 0      |
-      | factAcct_3              | elementValue_2 | 34.20 | 0      |
-      | factAcct_4              | elementValue_3 | 0     | 214.20 |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR     | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_1              | elementValue_5 | 100   | 0      | eur                      | 1.13             |
+      | factAcct_2              | elementValue_5 | 80    | 0      | eur                      | 1.13             |
+      | factAcct_3              | elementValue_2 | 34.20 | 0      | eur                      | 1.13             |
+      | factAcct_4              | elementValue_3 | 0     | 214.20 | eur                      | 1.13             |
 
     And fact account repost matchInvoice document with identifier matchInv_1:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_1 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR  | CR  |
-      | factAcct_5              | elementValue_6 | 113 | 0   |
-      | factAcct_6              | elementValue_5 | 0   | 100 |
-      | factAcct_7              | elementValue_4 | 0   | 0   |
+      | Fact_Acct_ID.Identifier | Account        | DR  | CR  | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_5              | elementValue_6 | 113 | 0   | chf                      | 1                |
+      | factAcct_6              | elementValue_5 | 0   | 100 | eur                      | 1.13             |
+      | factAcct_7              | elementValue_4 | 0   | 0   | chf                      | 1                |
 
     And fact account repost matchInvoice document with identifier matchInv_2:
       | IsEnforcePosting |
       | false            |
 
+#   C_AcctSchema.C_Currency_ID is CHF,
+#   Therefore the Fact_Acct records with C_Currency_ID EUR have the currencyRate 1.13 (C_Conversion_Rate.MultiplyRate with identifier "currency_rate_2"),
+#   And ofc, those Fact_Acct records with C_Currency_ID CHF have the currencyRate 1 (same currency)
+#   The CurrencyRate is the multiplyRate to be used to convert EUR to CHF if necessary (e.g. 100 EUR * 1.13 = 113 CHF)
     And after not more than 30s, the matchInvoice document with identifier matchInv_2 has the following accounting records:
-      | Fact_Acct_ID.Identifier | Account        | DR    | CR |
-      | factAcct_8              | elementValue_6 | 90.40 | 0  |
-      | factAcct_9              | elementValue_5 | 0     | 80 |
-      | factAcct_10             | elementValue_4 | 0     | 0  |
+      | Fact_Acct_ID.Identifier | Account        | DR    | CR | C_Currency_ID.Identifier | OPT.CurrencyRate |
+      | factAcct_8              | elementValue_6 | 90.40 | 0  | chf                      | 1                |
+      | factAcct_9              | elementValue_5 | 0     | 80 | eur                      | 1.13             |
+      | factAcct_10             | elementValue_4 | 0     | 0  | chf                      | 1                |
      
