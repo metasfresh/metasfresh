@@ -22,6 +22,8 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.util.NumberUtils;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,33 +36,107 @@ import java.math.BigDecimal;
 @Value
 @Builder
 @Jacksonized
-public class JsonPaymentAllocationLine {
-    @NonNull
-    @ApiModelProperty(position = 10, required = true,
-            dataType = "java.lang.String",
-            value = "Identifier of the Invoice in question. Can be\n"
-                    + "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-                    + "* or something like `doc-<C_Invoice.documentNo>`"
-                    + "* or something like `ext-<C_Invoice.ExternalId>`")
-    String invoiceIdentifier;
+public class JsonPaymentAllocationLine
+{
+	@NonNull
+	@ApiModelProperty(position = 10, required = true,
+			dataType = "java.lang.String",
+			value = "Identifier of the Invoice in question. Can be\n"
+					+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
+					+ "* or something like `doc-<C_Invoice.documentNo>`"
+					+ "* or something like `ext-<C_Invoice.ExternalId>`")
+	String invoiceIdentifier;
 
-    @ApiModelProperty(position = 20)
-    @Nullable
-    String docBaseType;
+	@ApiModelProperty(position = 20)
+	@Nullable
+	String docBaseType;
 
-    @ApiModelProperty(position = 30)
-    @Nullable
-    String docSubType;
+	@ApiModelProperty(position = 30)
+	@Nullable
+	String docSubType;
 
-    @ApiModelProperty(position = 40)
-    @Nullable
-    BigDecimal amount;
+	@ApiModelProperty(position = 40)
+	@Nullable
+	BigDecimal amount;
 
-    @ApiModelProperty(position = 50)
-    @Nullable
-    BigDecimal discountAmt;
+	@ApiModelProperty(position = 50)
+	@Nullable
+	BigDecimal discountAmt;
 
-    @ApiModelProperty(position = 60)
-    @Nullable
-    BigDecimal writeOffAmt;
+	@ApiModelProperty(position = 60)
+	@Nullable
+	BigDecimal writeOffAmt;
+
+	@JsonIgnore
+	public boolean isAtLeastOneAmtSet()
+	{
+		return amount != null || discountAmt != null || writeOffAmt != null;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public BigDecimal getTotalAmt()
+	{
+		BigDecimal totalAmt = BigDecimal.ZERO;
+		if (amount != null)
+		{
+			totalAmt = totalAmt.add(amount);
+		}
+
+		if (discountAmt != null)
+		{
+			totalAmt = totalAmt.add(discountAmt);
+		}
+
+		if (writeOffAmt != null)
+		{
+			totalAmt = totalAmt.add(writeOffAmt);
+		}
+
+		return totalAmt;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public InvoiceIdentifier getInvIdentifier()
+	{
+		return InvoiceIdentifier.builder()
+				.invoiceIdentifier(invoiceIdentifier)
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.build();
+	}
+
+	@JsonIgnore
+	@NonNull
+	public JsonPaymentAllocationLine aggregate(@NonNull final JsonPaymentAllocationLine line)
+	{
+		if (!getInvIdentifier().equals(line.getInvIdentifier()))
+		{
+			throw new RuntimeException("JsonPaymentAllocationLines must share the same InvoiceIdentifier in order to be able to aggregate!"
+											   + " this.InvoiceIdentifier=" + this.getInvIdentifier()
+											   + " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
+		}
+
+		return JsonPaymentAllocationLine.builder()
+				.invoiceIdentifier(invoiceIdentifier)
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.amount(NumberUtils.sumNullSafe(amount, line.amount))
+				.discountAmt(NumberUtils.sumNullSafe(discountAmt, line.discountAmt))
+				.writeOffAmt(NumberUtils.sumNullSafe(writeOffAmt, line.writeOffAmt))
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class InvoiceIdentifier
+	{
+		@NonNull
+		String invoiceIdentifier;
+		@Nullable
+		String docBaseType;
+		@Nullable
+		String docSubType;
+	}
 }
