@@ -478,6 +478,13 @@ public class DeliveryPlanningService
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
 		final boolean isIncoming = deliveryPlanningType.isIncoming();
+		final BPartnerLocationId shipFrom = isIncoming ?
+				deliveryPlanningLocationId :
+				warehouseBPLocationId;
+
+		final BPartnerLocationId shipTo = isIncoming ?
+				warehouseBPLocationId :
+				deliveryPlanningLocationId;
 
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
@@ -488,14 +495,10 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
-				.loadingPartnerLocationId(isIncoming
-						? warehouseBPLocationId
-						: deliveryPlanningLocationId)
+				.loadingPartnerLocationId(shipFrom)
 				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedLoadingDate()))
 				.loadingTime(deliveryPlanningRecord.getLoadingTime())
-				.deliveryPartnerLocationId(isIncoming
-						? deliveryPlanningLocationId
-						: warehouseBPLocationId)
+				.deliveryPartnerLocationId(shipTo)
 				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
 				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 
