@@ -258,6 +258,8 @@ Feature: create payments using payment API
       | eur                      | 102               |
       | chf                      | 318               |
 
+#   Load conversion rates between CHF and EUR filtering them by both validFrom and validTo dates
+#   When multiple rates are valid at the same time (i.e. matches a date), then they are ordered in a descending order based on validFrom and the rate with the most recent validFrom is used
     And load C_Conversion_Rate:
       | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | ValidFrom  | ValidTo    |
       | currency_rate_1                 | chf                      | eur                         | 2015-05-21 | 2155-12-31 |
@@ -284,6 +286,8 @@ Feature: create payments using payment API
       | invl_03022023_1 | inv_03022023_1          | product_03022023_1      | 10          | PCE               |
     And the invoice identified by inv_03022023_1 is completed
 
+#    Use "2016-05-21" as transactionDate, so that the rate with identifier "currency_rate_1" is used for conversion between CHF and EUR
+#    "2016-05-21" is in the range [2015-05-21 - 2155-12-31] (currency_rate_1) and not in the range [2019-05-21 - 2056-12-31] (currency_rate_2)
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
     """
 {
@@ -314,6 +318,8 @@ Feature: create payments using payment API
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | inv_03022023_1              | payment_03022023_1          | 23.8       | 0                | 0               | 0               |
 
+#    Invoice is fully paid because rate with identifier "currency_rate_1" is used for conversion between CHF and EUR
+#    The invoice's grandTotal is 23.8 EUR, the payment amount is 24.88 CHF and the C_Conversion_Rate.DivideRate is 1.045236 (24.88 CHF / 1.045236 = 23.8 EUR)
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
       | inv_03022023_1          | bpartner_03022023_1      | bpartner_location_03022023_1      | 10 Tage 1 % | true      | CO        | true       |
@@ -941,6 +947,8 @@ Feature: create payments using payment API
       | eur                      | 102               |
       | chf                      | 318               |
 
+#   Load conversion rates between CHF and EUR filtering them by both validFrom and validTo dates
+#   When multiple rates are valid at the same time (i.e. matches a date), then they are ordered in a descending order based on validFrom and the rate with the most recent validFrom is used
     And load C_Conversion_Rate:
       | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | ValidFrom  | ValidTo    |
       | currency_rate_1                 | chf                      | eur                         | 2015-05-21 | 2155-12-31 |
@@ -966,6 +974,9 @@ Feature: create payments using payment API
       | Identifier      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_03022023_2 | inv_03022023_2          | product_03022023_2      | 10          | PCE               |
     And the invoice identified by inv_03022023_2 is completed
+
+#    Use "2016-05-21" as transactionDate, so that the rate with identifier "currency_rate_1" is used for conversion between CHF and EUR
+#    "2016-05-21" is in the range [2015-05-21 - 2155-12-31] (currency_rate_1) and not in the range [2019-05-21 - 2056-12-31] (currency_rate_2)
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/payment' and fulfills with '200' status code
     """
@@ -997,6 +1008,8 @@ Feature: create payments using payment API
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
       | inv_03022023_2              | payment_03022023_2          | -23.8      | 0                | 0               | 0               |
 
+#    Invoice is fully paid because rate with identifier "currency_rate_1" is used for conversion between CHF and EUR
+#    The invoice's grandTotal is 23.8 EUR, the payment amount is 24.88 CHF and the C_Conversion_Rate.DivideRate is 1.045236 (24.88 CHF / 1.045236 = 23.8 EUR)
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid |
       | inv_03022023_2          | bpartner_03022023_2      | bpartner_location_03022023_2      | 10 Tage 1 % | true      | CO        | true       |
