@@ -15,6 +15,15 @@ INSERT INTO t_alter_column values('i_deliveryplanning','DocumentNo',null,'NULL',
 /* DDL */ SELECT public.db_alter_table('I_DeliveryPlanning','ALTER TABLE I_DeliveryPlanning DROP COLUMN IF EXISTS I_LineContent')
 ;
 
+DELETE FROM AD_UI_Element WHERE AD_Field_ID = 712066
+;
+
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 712066
+;
+
+DELETE FROM AD_Field WHERE AD_Field_ID = 712066
+;
+
 -- Column: I_DeliveryPlanning.I_LineContent
 -- 2023-02-07T14:16:33.906Z
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=585776
