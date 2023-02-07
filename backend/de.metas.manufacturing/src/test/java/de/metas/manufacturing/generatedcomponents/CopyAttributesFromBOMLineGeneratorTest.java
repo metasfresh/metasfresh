@@ -22,17 +22,15 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import de.metas.document.sequence.DocSequenceId;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CopyAttributesFromBOMLineGeneratorTest
 {
@@ -43,8 +41,7 @@ class CopyAttributesFromBOMLineGeneratorTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		mkAttribute(ATTR_Attribute1);
-		mkAttribute(ATTR_Attribute2);
+		//mkAttribute(ATTR_Attribute1);
 	}
 
 	private void mkAttribute(final AttributeCode attributeCode)
@@ -61,17 +58,14 @@ class CopyAttributesFromBOMLineGeneratorTest
 		final CopyAttributesFromBOMLineGenerator generator = new CopyAttributesFromBOMLineGenerator();
 
 		final ImmutableAttributeSet result = generator.generate(ComponentGeneratorContext.builder()
-																		.existingAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute1, "value1").build())
-																		.bomLineAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute2, "value2").build())
-																		.parameters(ComponentGeneratorParams.builder()
-																							.sequenceId(DocSequenceId.ofRepoId(123456))
-																							.build())
-																		.clientId(ClientId.METASFRESH)
-																		.build());
+				.existingAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute1, "value1").build())
+				.bomLineAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute2, "value2").build())
+				.build());
 
 		assertThat(result)
 				.isEqualTo(ImmutableAttributeSet.builder()
-								   .attributeValue(ATTR_Attribute2, "value2")
-								   .build());
+						.attributeValue(ATTR_Attribute1, "value1")
+						.attributeValue(ATTR_Attribute2, "value2")
+						.build());
 	}
 }

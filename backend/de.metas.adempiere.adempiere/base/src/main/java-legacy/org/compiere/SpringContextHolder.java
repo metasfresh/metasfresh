@@ -158,7 +158,7 @@ public final class SpringContextHolder
 		{
 			return springApplicationContext.getBean(requiredType);
 		}
-		catch (final NoSuchBeanDefinitionException | IllegalStateException e)
+		catch (final NoSuchBeanDefinitionException e)
 		{
 			if (Adempiere.isUnitTestMode())
 			{

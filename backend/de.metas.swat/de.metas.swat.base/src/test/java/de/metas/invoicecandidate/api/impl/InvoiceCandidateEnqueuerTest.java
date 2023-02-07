@@ -15,7 +15,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.SpringContextHolder;
@@ -24,22 +23,15 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 {
-	@BeforeClass
-	public static void beforeClass()
-	{
-		AdempiereTestHelper.get().forceStaticInit();
-	}
-
 	@Before
 	public void beforeEach()
 	{
@@ -76,6 +68,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -137,7 +130,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
-
+		
 		//
 		// Create invoice candidates
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
