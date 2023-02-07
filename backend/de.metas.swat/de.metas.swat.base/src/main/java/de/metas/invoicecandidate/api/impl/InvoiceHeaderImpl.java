@@ -417,4 +417,14 @@ import java.util.List;
 	{
 		return notShowOriginCountry;
 	}
+
+	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
+	{
+		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
+	{
+		this.notShowOriginCountry = notShowOriginCountry;
+	}
 }
