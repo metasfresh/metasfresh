@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_DeliveryPlanning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2024656675L;
+	private static final long serialVersionUID = -2004566134L;
 
     /** Standard Constructor */
     public X_I_DeliveryPlanning (final Properties ctx, final int I_DeliveryPlanning_ID, @Nullable final String trxName)
@@ -167,7 +167,7 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	}
 
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
@@ -253,18 +253,6 @@ public class X_I_DeliveryPlanning extends org.compiere.model.PO implements I_I_D
 	public java.lang.String getI_IsImported() 
 	{
 		return get_ValueAsString(COLUMNNAME_I_IsImported);
-	}
-
-	@Override
-	public void setI_LineContent (final @Nullable java.lang.String I_LineContent)
-	{
-		set_Value (COLUMNNAME_I_LineContent, I_LineContent);
-	}
-
-	@Override
-	public java.lang.String getI_LineContent() 
-	{
-		return get_ValueAsString(COLUMNNAME_I_LineContent);
 	}
 
 	@Override

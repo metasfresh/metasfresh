@@ -22,17 +22,23 @@
 
 package de.metas.deliveryplanning.impexp.process;
 
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataRepository;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_DeliveryPlanning;
+import org.compiere.model.I_I_DeliveryPlanning_Data;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.X_I_DeliveryPlanning;
 
@@ -41,16 +47,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Import {@link org.compiere.model.I_I_DeliveryPlanning} to {@link org.compiere.model.I_M_Delivery_Planning}.
  */
 public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I_I_DeliveryPlanning>
 {
-	DeliveryPlanningRepository deliveryPlanningRepository = SpringContextHolder.instance.getBean(DeliveryPlanningRepository.class);
-	DeliveryPlanningDataRepository deliveryPlanningDataRepository = SpringContextHolder.instance.getBean(DeliveryPlanningDataRepository.class);
+	final DeliveryPlanningRepository deliveryPlanningRepository = SpringContextHolder.instance.getBean(DeliveryPlanningRepository.class);
+	final DeliveryPlanningDataRepository deliveryPlanningDataRepository = SpringContextHolder.instance.getBean(DeliveryPlanningDataRepository.class);
+	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
-	Set<DeliveryPlanningDataId> deliveryPlanningDataIds = new HashSet<>();
+	final Set<DeliveryPlanningDataId> deliveryPlanningDataIds = new HashSet<>();
 
 	@Override
 	public Class<I_I_DeliveryPlanning> getImportModelClass()
@@ -103,25 +111,26 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 		final String documentNo = importRecord.getDocumentNo();
 		if (Check.isBlank(documentNo))
 		{
-			importRecord.setI_ErrorMsg("No Delivery Instruction Document No");
+			failWithErrorMsg(importRecord, "No Delivery Instruction Document No");
 		}
 		else
 		{
 			final List<I_M_Delivery_Planning> deliveryPlannings = deliveryPlanningRepository.getByReleaseNo(documentNo);
 			if (deliveryPlannings.size() == 0)
 			{
-				importRecord.setI_ErrorMsg("No Delivery Instruction Document No matching");
+				failWithErrorMsg(importRecord, "No matching Delivery Instruction Document No");
 			}
 			else if (deliveryPlannings.size() > 1)
 			{
-				importRecord.setI_ErrorMsg("Multiple Delivery Instruction Document No matching");
+				failWithErrorMsg(importRecord, "Multiple Delivery Instruction Document No matching");
 			}
 			else
 			{
 				final I_M_Delivery_Planning deliveryPlanning = deliveryPlannings.get(0);
 				if (deliveryPlanning.isProcessed())
 				{
-					importRecord.setI_ErrorMsg("Delivery planning is already processed");
+					final String errorMsg = "Delivery planning is already processed";
+					failWithErrorMsg(importRecord, errorMsg);
 				}
 				else
 				{
@@ -134,6 +143,11 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 		InterfaceWrapperHelper.save(importRecord);
 
 		return importResult;
+	}
+
+	private static void failWithErrorMsg(final @NonNull I_I_DeliveryPlanning importRecord, final String errorMsg)
+	{
+		throw new AdempiereException(errorMsg);
 	}
 
 	private void updateDeliveryPlanning(final I_I_DeliveryPlanning importRecord, final I_M_Delivery_Planning deliveryPlanning)
@@ -152,5 +166,10 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 						.toBuilder()
 						.processed(true)
 						.build()));
+		final List<CacheInvalidateMultiRequest> cacheInvalidationRequestList = deliveryPlanningDataIds.stream().map(DeliveryPlanningDataId::getRepoId)
+				.map(id -> CacheInvalidateMultiRequest.allChildRecords(I_I_DeliveryPlanning_Data.Table_Name, id, I_I_DeliveryPlanning.Table_Name))
+				.collect(Collectors.toList());
+		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.ofMultiRequests(cacheInvalidationRequestList);
+		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.CHANGE);
 	}
 }
