@@ -269,8 +269,8 @@ public class C_Payment_StepDef
 		}
 	}
 
-	@Then("validate invoice api response error message")
-	public void validate_invoice_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
+	@Then("validate payment api response error message")
+	public void validate_payment_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

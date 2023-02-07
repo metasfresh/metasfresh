@@ -1462,6 +1462,6 @@ Feature: create payments using payment API
 }
 """
 
-    Then validate invoice api response error message
+    Then validate payment api response error message
       | JsonErrorItem.message                                             |
       | Line's total amount cannot be greater than invoice's open amount! |

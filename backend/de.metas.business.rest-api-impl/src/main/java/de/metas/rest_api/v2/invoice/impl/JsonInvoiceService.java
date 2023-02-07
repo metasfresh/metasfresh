@@ -110,7 +110,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.elasticsearch.common.collect.Tuple;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -160,7 +159,6 @@ public class JsonInvoiceService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
