@@ -2,6 +2,8 @@ package de.metas.order.costs;
 
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethod;
+import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
+import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -66,6 +68,25 @@ public class OrderCostRepository
 
 		final CostCalculationMethod calculationMethod = from.getCalculationMethod();
 		record.setCostCalculationMethod(calculationMethod.getCode());
+		calculationMethod.mapOnParams(
+				from.getCalculationMethodParams(),
+				new CostCalculationMethod.ParamsMapper<Object>()
+				{
+
+					@Override
+					public Object fixedAmount(final FixedAmountCostCalculationMethodParams params)
+					{
+						record.setCostCalculation_FixedAmount(params.getFixedAmount().toBigDecimal());
+						return null;
+					}
+
+					@Override
+					public Object percentageOfAmount(final PercentageCostCalculationMethodParams params)
+					{
+						record.setCostCalculation_Percentage(params.getPercentage().toBigDecimal());
+						return null;
+					}
+				});
 
 		record.setCostDistributionMethod(from.getDistributionMethod().getCode());
 		record.setC_Currency_ID(from.getCostAmount().getCurrencyId().getRepoId());
