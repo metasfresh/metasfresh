@@ -166,7 +166,7 @@ public class InvoiceHeaderImplBuilder
 	@VisibleForTesting
 	String getExternalId()
 	{
-		return externalId;
+		return ExternalId.isInvalid(externalId) ? null : ExternalId.toValue(externalId);
 	}
 
 	private int getC_Async_Batch_ID()
