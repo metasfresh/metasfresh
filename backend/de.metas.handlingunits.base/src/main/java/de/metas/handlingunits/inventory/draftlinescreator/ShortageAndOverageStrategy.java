@@ -1,26 +1,13 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 /*
@@ -45,93 +32,32 @@ import java.util.stream.Stream;
  * #L%
  */
 
-/**
- * Builds up a list of HUs for certain product, locator and warehouse, which have stock
- *
- * @author metas-dev <dev@metasfresh.com>
- */
 @Value
 public class ShortageAndOverageStrategy implements HUsForInventoryStrategy
 {
-	// services
-	IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	@NonNull
-	HuForInventoryLineFactory huForInventoryLineFactory;
+	IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@NonNull
-	WarehouseId warehouseId;
+	HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull
-	LocatorId locatorId;
+	I_M_HU huRecord;
 	@NonNull
-	ProductId productId;
-	@NonNull
-	Collection<HuId> huIds;
-	@NonNull
-	AttributeSetInstanceId asiId;
+	BigDecimal shortageOverage;
 
 	@Builder
 	private ShortageAndOverageStrategy(
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
-			@NonNull final WarehouseId warehouseId,
-			@NonNull final LocatorId locatorId,
-			@NonNull final ProductId productId,
-			@NonNull final Collection<HuId> huIds,
-			@Nullable final AttributeSetInstanceId asiId)
+			@NonNull final I_M_HU huRecord,
+			@NonNull final BigDecimal shortageOverage)
 	{
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
-
-		this.locatorId = locatorId;
-		this.warehouseId = warehouseId;
-		this.productId = productId;
-		this.huIds = huIds;
-		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
-
-		Check.errorUnless(warehouseId.equals(locatorId.getWarehouseId()),
-							  "The locator's WH needs to be the given WH; warehouseId={}; locatorId={}",
-							  warehouseId, locatorId);
-
+		this.huRecord = huRecord;
+		this.shortageOverage = shortageOverage;
 	}
 
 	@Override
 	public Stream<HuForInventoryLine> streamHus()
 	{
-		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
-				.setOnlyTopLevelHUs()
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.setOnlyStockedProducts(true)
-				.addOnlyInWarehouseId(warehouseId)
-				.addOnlyInLocatorId(locatorId)
-				.addOnlyWithProductId(productId)
-				.addOnlyHUIds(huIds);
-
-		if (asiId.isRegular())
-		{
-			appendAttributeFilters(huQueryBuilder);
-		}
-
-		return huQueryBuilder
-				.createQueryBuilder()
-				.clearOrderBys().orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
-				.create()
-				.iterateAndStream()
-				.flatMap(huForInventoryLineFactory::ofHURecord);
-	}
-
-	private void appendAttributeFilters(final IHUQueryBuilder huQueryBuilder)
-	{
-		final ImmutableAttributeSet storageRelevantAttributes = attributeDAO.getImmutableAttributeSetById(asiId)
-				.filterOnlyStorageRelevantAttributes();
-		if (storageRelevantAttributes.isEmpty())
-		{
-			return;
-		}
-
-		for (final AttributeId attributeId : storageRelevantAttributes.getAttributeIds())
-		{
-			final Object value = storageRelevantAttributes.getValue(attributeId);
-			huQueryBuilder.addOnlyWithAttribute(attributeId, value);
-		}
+		return huForInventoryLineFactory.ofHURecordWithQtyAdjustment(huRecord, shortageOverage);
 	}
 }

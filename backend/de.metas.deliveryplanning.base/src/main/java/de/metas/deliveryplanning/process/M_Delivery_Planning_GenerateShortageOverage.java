@@ -22,31 +22,30 @@
 
 package de.metas.deliveryplanning.process;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
+import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
-import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.handlingunits.inventory.draftlinescreator.ShortageAndOverageStrategy;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Inventory;
-import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impexp.InventoryImportProcess;
 import de.metas.logging.LogManager;
@@ -60,28 +59,16 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
@@ -92,7 +79,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 
 import static de.metas.document.DocBaseType.MaterialPhysicalInventory;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -101,27 +87,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_InventoryOverageDocument;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_InventoryShortageDocument;
 
+/**
+ * Creates an inventory document for the given M_Delivery_Planning that corrects the respective quantities *after* they were received.
+ */
 public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private static final Logger logger = LogManager.getLogger(InventoryImportProcess.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
-	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 	private static final AdMessageKey MSG_Event_ShortageGenerated = AdMessageKey.of("Event_ShortageGenerated");
 	private static final AdMessageKey MSG_Event_OverageGenerated = AdMessageKey.of("Event_OverageGenerated");
+	private static final AdMessageKey MSG_ERROR_QUANTITY_ZERO = AdMessageKey.of("ShortageOverageQuantityZeroError");
 	private static final String PARAM_QTY = "Quantity";
 	private static final int PARAM_DEFAULT_VALUE_ZERO = 0;
 	private static final String SYSCONFIG_SHORTAGE_OVERAGE_TARGET_WINDOW = "de.metas.deliveryplanning.shortageOverageDocument.TargetWindow";
 	private static final int WINDOW_PHYSICAL_INVENTORY = 168;
+
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Param(parameterName = PARAM_QTY, mandatory = true)
 	private BigDecimal p_Qty;
@@ -165,44 +152,37 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 	protected String doIt() throws Exception
 	{
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(getRecord_ID());
-		final I_M_Delivery_Planning record = load(deliveryPlanningId, I_M_Delivery_Planning.class);
 
-		final DocTypeId docTypeId;
+		final DocTypeQueryBuilder docTypeQuery = DocTypeQuery.builder()
+			.docBaseType(MaterialPhysicalInventory)
+			.adClientId(getClientID().getRepoId())
+			.adOrgId(OrgId.ANY.getRepoId());
+
 		final AdMessageKey adMessageKey;
 		if (p_Qty.signum() > 0)
 		{
 			adMessageKey = MSG_Event_OverageGenerated;
-			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											.docBaseType(MaterialPhysicalInventory)
-											.docSubType(DOCSUBTYPE_InventoryOverageDocument)
-											.adClientId(getClientID().getRepoId())
-											.adOrgId(OrgId.ANY.getRepoId())
-											.build());
+			docTypeQuery.docSubType(DOCSUBTYPE_InventoryOverageDocument);
 		}
 		else if (p_Qty.signum() < 0)
 		{
 			adMessageKey = MSG_Event_ShortageGenerated;
-			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-														.docBaseType(MaterialPhysicalInventory)
-														.docSubType(DOCSUBTYPE_InventoryShortageDocument)
-														.adClientId(getClientID().getRepoId())
-														.adOrgId(OrgId.ANY.getRepoId())
-														.build());
+			docTypeQuery.docSubType(DOCSUBTYPE_InventoryShortageDocument);
 		}
 		else
 		{
-			return MSG_Error + "Quantity 0 is not allowed";
+			throw new AdempiereException(MSG_ERROR_QUANTITY_ZERO);
 		}
 
-		final I_M_Inventory inventory = generateInventoryDocument(docTypeId, record);
+		final I_M_Inventory inventory = generateInventoryDocument(docTypeDAO.getDocTypeId(docTypeQuery.build()), deliveryPlanningId);
 		createUserNotification(inventory, adMessageKey);
 
 		return MSG_OK;
 	}
 
-	private I_M_Inventory generateInventoryDocument(@NonNull final DocTypeId doctypeId, @NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
+	private I_M_Inventory generateInventoryDocument(@NonNull final DocTypeId doctypeId, @NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final DeliveryPlanningReceiptInfo receiptInfo = deliveryPlanningService.getReceiptInfo(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
+		final DeliveryPlanningReceiptInfo receiptInfo = deliveryPlanningService.getReceiptInfo(deliveryPlanningId);
 		final InOutId inOutId = receiptInfo.getReceiptId();
 		Check.assumeNotNull(inOutId, "InOutId shall be set, because of isReceived() check in preconditions");
 
@@ -218,7 +198,7 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		}
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
-		inventoryRecord.setAD_Org_ID(deliveryPlanningRecord.getAD_Org_ID());
+		inventoryRecord.setAD_Org_ID(receiptInfo.getOrgId().getRepoId());
 		inventoryRecord.setC_DocType_ID(doctypeId.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(inOutRecord.getM_Warehouse_ID());
 		inventoryRecord.setMovementDate(inOutRecord.getMovementDate());
@@ -226,93 +206,43 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		saveRecord(inventoryRecord);
 		logger.trace("Insert inventory - {}", inventoryRecord);
 
-		createInventoryLine(inventoryRecord, inOutRecord);
+		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), inOutLines.get(0));
 
 		return inventoryRecord;
 	}
 
-	private void createInventoryLine(@NonNull final I_M_Inventory inventoryRecord, @NonNull final I_M_InOut inOutRecord)
+	private void createInventoryLine(@NonNull final InventoryId inventoryId, @NonNull final I_M_InOutLine inOutLineRecord)
 	{
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
-		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOutRecord);
-		final I_M_InOutLine firstInOutLineRecord = inOutLines.get(0);
-		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(firstInOutLineRecord.getM_Locator_ID());
-		Check.assumeNotNull(locatorId, "locator shall be set");
-
-		final ProductId productId = ProductId.ofRepoId(firstInOutLineRecord.getM_Product_ID());
-		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
-
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(firstInOutLineRecord.getM_AttributeSetInstance_ID());
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(inventoryRecord.getM_Warehouse_ID());
-
-		final TableRecordReference mInOutLineTableRecordReference = TableRecordReference.of(firstInOutLineRecord);
+		final TableRecordReference mInOutLineTableRecordReference = TableRecordReference.of(inOutLineRecord);
 		final Set<TableRecordReference> mInOutLineTableRecordReferenceSet = Collections.singleton(mInOutLineTableRecordReference);
 		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsMultimap = huAssignmentDAO.retrieveHUsByRecordRefs(mInOutLineTableRecordReferenceSet);
 		final Collection<HuId> huIds = huIdsMultimap.get(mInOutLineTableRecordReference);
+		final I_M_HU huRecord = load(CollectionUtils.singleElement(huIds), I_M_HU.class);
 
 		final ShortageAndOverageStrategy shortageAndOverageStrategy = HUsForInventoryStrategies.shortageAndOverage()
-				.warehouseId(warehouseId)
-				.locatorId(locatorId)
-				.productId(productId)
 				.huForInventoryLineFactory(huForInventoryLineFactory)
-				.huIds(huIds)
+				.huRecord(huRecord)
+				.shortageOverage(p_Qty)
 				.build();
-		final List<HuForInventoryLine> hus = shortageAndOverageStrategy.streamHus()
-				.collect(ImmutableList.toImmutableList());
 
-		final Quantity qtyBooked = computeTotalQtyBooked(hus, stockingUOM, UOMConversionContext.of(productId));
-		if(qtyBooked.toBigDecimal().add(p_Qty).signum() < 0)
-		{
-			throw new AdempiereException("Shortage is greater than booked quantity");
-		}
+		final InventoryLinesCreationCtx ctx = createContext(
+				inventoryId,
+				shortageAndOverageStrategy);
 
-		final I_M_InventoryLine inventoryLineRecord = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
-		inventoryLineRecord.setM_Inventory_ID(inventoryRecord.getM_Inventory_ID());
-		inventoryLineRecord.setAD_Org_ID(inventoryRecord.getAD_Org_ID());
-		inventoryLineRecord.setM_Locator_ID(locatorId.getRepoId());
-		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
-		inventoryLineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId());
-		inventoryLineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(HUAggregationType.SINGLE_HU));
-		inventoryLineRecord.setC_UOM_ID(qtyBooked.getUomId().getRepoId());
-		inventoryLineRecord.setQtyCount(qtyBooked.toBigDecimal().add(p_Qty));
-		inventoryLineRecord.setQtyBook(qtyBooked.toBigDecimal());
-		inventoryLineRecord.setIsCounted(true);
-		inventoryLineRecord.setM_HU_ID(huIds.stream().findFirst().get().getRepoId());
+		new DraftInventoryLinesCreator(ctx).execute();
 
-		InterfaceWrapperHelper.saveRecord(inventoryLineRecord);
-		logger.trace("Insert inventory line - {}", inventoryLineRecord);
-
-		final List<InventoryLineHU> inventoryLineHUs;
-		inventoryLineHUs = toInventoryLineHUs(hus, productId, UomId.ofRepoId(stockingUOM.getC_UOM_ID()));
-
-		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord)
-				.withInventoryLineHUs(inventoryLineHUs);
-
-		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 	}
 
-	private Quantity computeTotalQtyBooked(
-			final List<HuForInventoryLine> hus,
-			final I_C_UOM targetUOM,
-			final UOMConversionContext conversionCtx)
+	private InventoryLinesCreationCtx createContext(
+			@NonNull final InventoryId inventoryId,
+			@NonNull final HUsForInventoryStrategy strategy)
 	{
-		return hus.stream()
-				.map(HuForInventoryLine::getQuantityBooked)
-				.map(qty -> uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUOM))
-				.reduce(Quantity::add)
-				.orElseGet(() -> Quantity.zero(targetUOM));
-	}
-
-	private List<InventoryLineHU> toInventoryLineHUs(
-			@NonNull final List<HuForInventoryLine> hus,
-			@NonNull final ProductId productId,
-			@NonNull final UomId targetUomId)
-	{
-		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
-		return hus.stream()
-				.map(DraftInventoryLinesCreator::toInventoryLineHU)
-				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
-				.collect(ImmutableList.toImmutableList());
+		return InventoryLinesCreationCtx.builder()
+				.inventory(inventoryRepository.getById(inventoryId))
+				.inventoryRepo(inventoryRepository)
+				.inventoryLineAggregator(InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator.INSTANCE)
+				.strategy(strategy)
+				.build();
 	}
 
 	private void createUserNotification(@NonNull final I_M_Inventory inventory, @NonNull final AdMessageKey adMessageKey)
