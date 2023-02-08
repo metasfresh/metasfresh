@@ -4,6 +4,7 @@ import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class DeliveryPlanningReceiptInfo
 	@NonNull private final DeliveryPlanningId deliveryPlanningId;
 	@Nullable private final OrderAndLineId purchaseOrderAndLineId;
 	@NonNull private final ReceiptScheduleId receiptScheduleId;
+	@NonNull private final OrgId orgId;
 	boolean isB2B;
 
 	@Nullable private InOutId receiptId;

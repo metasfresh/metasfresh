@@ -35,6 +35,7 @@ import de.metas.location.CountryId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
@@ -157,6 +158,7 @@ public class DeliveryPlanningRepository
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
 				//
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.build();
 	}
 

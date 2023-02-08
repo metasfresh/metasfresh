@@ -700,7 +700,6 @@ public interface I_C_DocType
 
 	/**
 	 * Set Overwrite document date on complete.
-	 * Überschreibt das Belegdatum mit dem aktuellen Datum, wenn der Beleg fertig gestellt wird.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -710,7 +709,6 @@ public interface I_C_DocType
 
 	/**
 	 * Get Overwrite document date on complete.
-	 * Überschreibt das Belegdatum mit dem aktuellen Datum, wenn der Beleg fertig gestellt wird.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
