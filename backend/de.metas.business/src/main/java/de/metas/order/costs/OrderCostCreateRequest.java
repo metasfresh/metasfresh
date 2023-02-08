@@ -1,6 +1,7 @@
 package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
@@ -15,6 +16,7 @@ import javax.annotation.Nullable;
 @Value
 public class OrderCostCreateRequest
 {
+	@Nullable BPartnerId bpartnerId;
 	@NonNull OrderCostTypeId costTypeId;
 	@Nullable CostCalculationMethodParams costCalculationMethodParams;
 
@@ -22,10 +24,12 @@ public class OrderCostCreateRequest
 
 	@Builder
 	private OrderCostCreateRequest(
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final OrderCostTypeId costTypeId,
 			@Nullable final CostCalculationMethodParams costCalculationMethodParams,
 			@NonNull final ImmutableSet<OrderAndLineId> orderAndLineIds)
 	{
+		this.bpartnerId = bpartnerId;
 		if (orderAndLineIds.isEmpty())
 		{
 			throw new AdempiereException("No order lines");

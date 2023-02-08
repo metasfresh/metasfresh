@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.costs;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
@@ -8,13 +9,13 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.costs.calculation_methods.CostCalculationMethod;
-import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
-import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
 import de.metas.order.costs.OrderCostCreateRequest;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.OrderCostType;
 import de.metas.order.costs.OrderCostTypeId;
+import de.metas.order.costs.calculation_methods.CostCalculationMethod;
+import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
+import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
 import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
@@ -39,6 +40,10 @@ public class C_Order_CreateCost extends JavaProcess
 {
 	private final OrderCostService orderCostService = SpringContextHolder.instance.getBean(OrderCostService.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+	private static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
+	@Param(parameterName = PARAM_C_BPartner_ID)
+	private BPartnerId p_bpartnerId;
 
 	public static final String PARAM_CostTypeId = I_C_Cost_Type.COLUMNNAME_C_Cost_Type_ID;
 	@Param(parameterName = PARAM_CostTypeId)
@@ -94,6 +99,7 @@ public class C_Order_CreateCost extends JavaProcess
 	{
 		orderCostService.createOrderCost(
 				OrderCostCreateRequest.builder()
+						.bpartnerId(p_bpartnerId)
 						.costTypeId(p_costTypeId)
 						.orderAndLineIds(getSelectedOrderAndLineIds())
 						.costCalculationMethodParams(getCostCalculationMethodParams())

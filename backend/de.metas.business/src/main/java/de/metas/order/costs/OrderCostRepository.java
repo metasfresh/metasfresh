@@ -2,6 +2,7 @@ package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -108,6 +109,7 @@ public class OrderCostRepository
 				.id(orderCostId)
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.calculationMethod(calculationMethod)
 				.calculationMethodParams(calculationMethodParams)
@@ -189,6 +191,7 @@ public class OrderCostRepository
 		record.setIsActive(true);
 		record.setC_Order_ID(from.getOrderId().getRepoId());
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
+		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
 		record.setC_Cost_Type_ID(from.getCostTypeId().getRepoId());
 
 		final CostCalculationMethod calculationMethod = from.getCalculationMethod();

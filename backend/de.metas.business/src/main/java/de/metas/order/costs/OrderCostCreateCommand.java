@@ -55,6 +55,7 @@ class OrderCostCreateCommand
 		final OrderCost orderCost = OrderCost.builder()
 				.orderId(orderId)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
+				.bpartnerId(request.getBpartnerId())
 				.costTypeId(costType.getId())
 				.calculationMethod(costType.getCalculationMethod())
 				.calculationMethodParams(request.getCostCalculationMethodParams())
