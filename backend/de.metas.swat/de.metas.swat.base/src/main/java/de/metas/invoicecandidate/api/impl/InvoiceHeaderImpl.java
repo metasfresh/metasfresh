@@ -112,6 +112,10 @@ import java.util.Optional;
 	@Setter
 	private SectionCodeId sectionCodeId;
 
+	private String invoiceAdditionalText;
+
+	private boolean notShowOriginCountry;
+
 	@Setter
 	@Getter
 	private ProjectId projectId;
@@ -437,5 +441,28 @@ import java.util.Optional;
 	void setC_DocTypeInvoice(@Nullable final I_C_DocType docType)
 	{
 		this.docTypeInvoice = docType;
+	}
+
+	@Nullable
+	@Override
+	public String getInvoiceAdditionalText()
+	{
+		return invoiceAdditionalText;
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry()
+	{
+		return notShowOriginCountry;
+	}
+
+	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
+	{
+		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
+	{
+		this.notShowOriginCountry = notShowOriginCountry;
 	}
 }

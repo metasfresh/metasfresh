@@ -2631,4 +2631,28 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
+
+	@Override
+	public void setInvoiceAdditionalText (final @Nullable java.lang.String InvoiceAdditionalText)
+	{
+		set_Value (COLUMNNAME_InvoiceAdditionalText, InvoiceAdditionalText);
+	}
+
+	@Override
+	public java.lang.String getInvoiceAdditionalText()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
+	}
+
+	@Override
+	public void setIsNotShowOriginCountry (final boolean IsNotShowOriginCountry)
+	{
+		set_Value (COLUMNNAME_IsNotShowOriginCountry, IsNotShowOriginCountry);
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
+	}
 }

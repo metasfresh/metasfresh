@@ -447,6 +447,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				invoice.setC_Activity_ID(ActivityId.toRepoId(invoiceHeader.getActivityId()));
 			}
+
+			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
+			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

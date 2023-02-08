@@ -260,6 +260,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setExternalLineId(orderLine.getExternalId());
 		icRecord.setExternalHeaderId(order.getExternalId());
 
+		icRecord.setInvoiceAdditionalText(order.getInvoiceAdditionalText());
+		icRecord.setIsNotShowOriginCountry(order.isNotShowOriginCountry());
+
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
 		// Because it's a performance nightmare for orders with a lot of lines
