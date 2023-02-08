@@ -1194,7 +1194,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Check main (ship) location
 		{
-			final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
+			final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
 			final String locationEmail = bpartnerLocation != null ? StringUtils.trimBlankToNull(bpartnerLocation.getEMail()) : null;
 			if (locationEmail != null)
 			{
@@ -1219,7 +1219,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerLocationId billBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
 		if (billBPLocationId != null)
 		{
-			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(billBPLocationId);
+			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
 			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
 			if (billLocationEmail != null)
 			{
