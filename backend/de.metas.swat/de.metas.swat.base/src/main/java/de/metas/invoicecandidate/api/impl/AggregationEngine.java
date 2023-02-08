@@ -494,6 +494,9 @@ public final class AggregationEngine
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 
+			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
+			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
+
 			getSectionCodeId(icRecord, headerAggregationId)
 					.ifPresent(sectionCodeId -> invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId)));
 

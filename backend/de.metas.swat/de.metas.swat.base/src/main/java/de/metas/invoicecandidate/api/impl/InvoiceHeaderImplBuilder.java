@@ -98,6 +98,9 @@ public class InvoiceHeaderImplBuilder
 
 	@Nullable private ForexContractRef forexContractRef;
 
+	private String invoiceAdditionalText;
+	private boolean notShowOriginCountry;
+
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -154,13 +157,16 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setProjectId(ProjectId.ofRepoIdOrNull(getC_Project_ID()));
 		invoiceHeader.setActivityId(ActivityId.ofRepoIdOrNull(getC_Activity_ID()));
 
+		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
+		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
+
 		return invoiceHeader;
 	}
 
 	@VisibleForTesting
 	String getExternalId()
 	{
-		return ExternalId.isInvalid(externalId) ? null : ExternalId.toValue(externalId);
+		return externalId;
 	}
 
 	private int getC_Async_Batch_ID()
@@ -606,5 +612,25 @@ public class InvoiceHeaderImplBuilder
 	public void setForexContractRef(@Nullable final ForexContractRef forexContractRef)
 	{
 		this.forexContractRef = forexContractRef;
+	}
+
+	public String getInvoiceAdditionalText()
+	{
+		return invoiceAdditionalText;
+	}
+
+	public boolean isNotShowOriginCountry()
+	{
+		return notShowOriginCountry;
+	}
+
+	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
+	{
+		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
+	{
+		this.notShowOriginCountry = notShowOriginCountry;
 	}
 }
