@@ -1,9 +1,4 @@
-DROP FUNCTION IF EXISTS getcreditlimitfordepartment(p_m_department_id numeric,
-                                                    p_date            date)
-;
-
-CREATE OR REPLACE FUNCTION getcreditlimitfordepartment(p_m_department_id numeric,
-                                                       p_date            date) RETURNS numeric
+CREATE OR REPLACE FUNCTION getCreditLimitForDepartment(p_m_department_id numeric, p_date date) RETURNS numeric
     STABLE
     LANGUAGE sql
 AS
@@ -35,8 +30,8 @@ GROUP BY dep.m_department_id
 $$
 ;
 
-COMMENT ON FUNCTION getcreditlimitfordepartment(numeric, date) IS 'TEST: SELECT getcreditlimitfordepartment(2156017, now()::date);'
+COMMENT ON FUNCTION getCreditLimitForDepartment(numeric, date) IS 'TEST: SELECT getCreditLimitForDepartment(2156017, now()::date);'
 ;
 
-ALTER FUNCTION getcreditlimitfordepartment(numeric, date) OWNER TO metasfresh
+ALTER FUNCTION getCreditLimitForDepartment(numeric, date) OWNER TO metasfresh
 ;
