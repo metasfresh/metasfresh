@@ -89,6 +89,9 @@ public class InvoiceHeaderImplBuilder
 
 	@Nullable private ForexContractRef forexContractRef;
 
+	private String invoiceAdditionalText;
+	private boolean notShowOriginCountry;
+
 	InvoiceHeaderImplBuilder() {}
 
 	public InvoiceHeaderImpl build()
@@ -139,6 +142,9 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
 		invoiceHeader.setSectionCodeId(SectionCodeId.ofRepoIdOrNull(getM_SectionCode_ID()));
+
+		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
+		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
 
 		return invoiceHeader;
 	}
@@ -543,5 +549,25 @@ public class InvoiceHeaderImplBuilder
 	public void setForexContractRef(@Nullable final ForexContractRef forexContractRef)
 	{
 		this.forexContractRef = forexContractRef;
+	}
+
+	public String getInvoiceAdditionalText()
+	{
+		return invoiceAdditionalText;
+	}
+
+	public boolean isNotShowOriginCountry()
+	{
+		return notShowOriginCountry;
+	}
+
+	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
+	{
+		this.invoiceAdditionalText = invoiceAdditionalText;
+	}
+
+	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
+	{
+		this.notShowOriginCountry = notShowOriginCountry;
 	}
 }
