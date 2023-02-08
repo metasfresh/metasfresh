@@ -112,7 +112,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 
 -- 2023-02-02T08:49:08.886Z
-INSERT INTO M_AttributeSet (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsInstanceAttribute,IsLot,IsLotMandatory,IsSerNo,IsSerNoMandatory,MandatoryType,M_AttributeSet_ID,Name,Updated,UpdatedBy) VALUES (0,0,TO_TIMESTAMP('2023-02-02 10:49:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','N','N','N','N',540014,'OnConsignment',TO_TIMESTAMP('2023-02-02 10:49:08','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO M_AttributeSet (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,IsInstanceAttribute,MandatoryType,M_AttributeSet_ID,Name,Updated,UpdatedBy) VALUES (0,0,TO_TIMESTAMP('2023-02-02 10:49:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N',540014,'OnConsignment',TO_TIMESTAMP('2023-02-02 10:49:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-02-02T08:49:08.888Z
