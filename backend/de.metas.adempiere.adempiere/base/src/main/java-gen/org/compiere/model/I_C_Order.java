@@ -1442,7 +1442,7 @@ public interface I_C_Order
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set SAP PayT ID.
+	 * Set External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
