@@ -5,13 +5,17 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethod;
 import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
 import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
 import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,13 +25,15 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Function;
 
 @EqualsAndHashCode
 @ToString
 public class OrderCost
 {
-	@Getter @Setter @Nullable private OrderCostId id;
+	@Setter(AccessLevel.PACKAGE)
+	@Getter @Nullable private OrderCostId id;
 	@Getter @NonNull private final OrderId orderId;
 	@Getter @NonNull private final OrgId orgId;
 	@Getter @NonNull private final OrderCostTypeId costTypeId;
@@ -157,6 +163,45 @@ public class OrderCost
 				throw new AdempiereException("Quantity based distribution is not supported"); // TODO
 			}
 		});
+	}
+
+	public OrderCostAddReceiptResult addMaterialReceipt(@NonNull OrderCostAddReceiptRequest request)
+	{
+		final OrderCostDetail detail = getDetailByOrderLineId(request.getOrderLineId());
+
+		final Quantity qty = request.getQty();
+		final Money receivedCostAmt = request.getCostAmount();
+		detail.addReceivedCost(receivedCostAmt, qty);
+
+		return OrderCostAddReceiptResult.builder()
+				.orderCostDetailId(Check.assumeNotNull(detail.getId(), "detail is saved"))
+				.costAmount(receivedCostAmt)
+				.qty(qty)
+				.build();
+	}
+
+	public Money computeCostAmountForQty(
+			@NonNull final OrderLineId orderLineId,
+			@NonNull final Quantity qty,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final OrderCostDetail detail = getDetailByOrderLineId(orderLineId);
+
+		final Percent percentage = qty.percentageOf(detail.getQtyOrdered());
+		return detail.getCostAmount().multiply(percentage, precision);
+	}
+
+	public Optional<OrderCostDetail> getDetailByOrderLineIdIfExists(final OrderLineId orderLineId)
+	{
+		return details.stream()
+				.filter(detail -> OrderLineId.equals(detail.getOrderLineId(), orderLineId))
+				.findFirst();
+	}
+
+	public OrderCostDetail getDetailByOrderLineId(final OrderLineId orderLineId)
+	{
+		return getDetailByOrderLineIdIfExists(orderLineId)
+				.orElseThrow(() -> new AdempiereException("No cost detail found for " + orderLineId));
 	}
 
 }

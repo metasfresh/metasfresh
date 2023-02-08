@@ -54,4 +54,27 @@ public enum CostCalculationMethod implements ReferenceListAwareEnum
 		return type.cast(params);
 	}
 
+	public interface CaseMapper<T>
+	{
+		T fixedAmount();
+
+		T percentageOfAmount();
+	}
+
+	public <T> T map(@NonNull final CaseMapper<T> mapper)
+	{
+		if (this == CostCalculationMethod.FixedAmount)
+		{
+			return mapper.fixedAmount();
+		}
+		else if (this == CostCalculationMethod.PercentageOfAmount)
+		{
+			return mapper.percentageOfAmount();
+		}
+		else
+		{
+			throw new AdempiereException("Calculation method not handled: " + this);
+		}
+	}
+
 }

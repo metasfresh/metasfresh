@@ -17,7 +17,7 @@ public class OrderCostTypeId implements RepoIdAware
 
 	public static OrderCostTypeId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
 
-	public static int toRepoId(final OrderCostTypeId id) {return id != null ? id.getRepoId() : -1;}
+	public static int toRepoId(@Nullable final OrderCostTypeId id) {return id != null ? id.getRepoId() : -1;}
 
 	int repoId;
 

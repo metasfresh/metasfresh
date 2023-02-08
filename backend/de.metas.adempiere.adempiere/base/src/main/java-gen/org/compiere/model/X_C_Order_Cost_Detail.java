@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_Cost_Detail extends org.compiere.model.PO implements I_C_Order_Cost_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1375708045L;
+	private static final long serialVersionUID = 628572673L;
 
     /** Standard Constructor */
     public X_C_Order_Cost_Detail (final Properties ctx, final int C_Order_Cost_Detail_ID, @Nullable final String trxName)
@@ -133,6 +133,19 @@ public class X_C_Order_Cost_Detail extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setCostAmountReceived (final BigDecimal CostAmountReceived)
+	{
+		set_Value (COLUMNNAME_CostAmountReceived, CostAmountReceived);
+	}
+
+	@Override
+	public BigDecimal getCostAmountReceived() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmountReceived);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -185,6 +198,19 @@ public class X_C_Order_Cost_Detail extends org.compiere.model.PO implements I_C_
 	public BigDecimal getQtyOrdered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyReceived (final BigDecimal QtyReceived)
+	{
+		set_Value (COLUMNNAME_QtyReceived, QtyReceived);
+	}
+
+	@Override
+	public BigDecimal getQtyReceived() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReceived);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

@@ -1,18 +1,19 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for C_Order_Cost_Detail
+/** Generated Interface for M_InOut_Cost
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Order_Cost_Detail 
+public interface I_M_InOut_Cost 
 {
 
-	String Table_Name = "C_Order_Cost_Detail";
+	String Table_Name = "M_InOut_Cost";
 
-//	/** AD_Table_ID=542297 */
+//	/** AD_Table_ID=542299 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -75,7 +76,7 @@ public interface I_C_Order_Cost_Detail
 	/**
 	 * Set Order Cost Detail.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -84,13 +85,17 @@ public interface I_C_Order_Cost_Detail
 	/**
 	 * Get Order Cost Detail.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Order_Cost_Detail_ID();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_C_Order_Cost_Detail_ID = new ModelColumn<>(I_C_Order_Cost_Detail.class, "C_Order_Cost_Detail_ID", null);
+	org.compiere.model.I_C_Order_Cost_Detail getC_Order_Cost_Detail();
+
+	void setC_Order_Cost_Detail(org.compiere.model.I_C_Order_Cost_Detail C_Order_Cost_Detail);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_C_Order_Cost_Detail> COLUMN_C_Order_Cost_Detail_ID = new ModelColumn<>(I_M_InOut_Cost.class, "C_Order_Cost_Detail_ID", org.compiere.model.I_C_Order_Cost_Detail.class);
 	String COLUMNNAME_C_Order_Cost_Detail_ID = "C_Order_Cost_Detail_ID";
 
 	/**
@@ -115,8 +120,35 @@ public interface I_C_Order_Cost_Detail
 
 	void setC_Order_Cost(org.compiere.model.I_C_Order_Cost C_Order_Cost);
 
-	ModelColumn<I_C_Order_Cost_Detail, org.compiere.model.I_C_Order_Cost> COLUMN_C_Order_Cost_ID = new ModelColumn<>(I_C_Order_Cost_Detail.class, "C_Order_Cost_ID", org.compiere.model.I_C_Order_Cost.class);
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_C_Order_Cost> COLUMN_C_Order_Cost_ID = new ModelColumn<>(I_M_InOut_Cost.class, "C_Order_Cost_ID", org.compiere.model.I_C_Order_Cost.class);
 	String COLUMNNAME_C_Order_Cost_ID = "C_Order_Cost_ID";
+
+	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_InOut_Cost.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Orderline.
@@ -140,7 +172,7 @@ public interface I_C_Order_Cost_Detail
 
 	void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
 
-	ModelColumn<I_C_Order_Cost_Detail, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_Order_Cost_Detail.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_InOut_Cost.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
@@ -161,29 +193,8 @@ public interface I_C_Order_Cost_Detail
 	 */
 	BigDecimal getCostAmount();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_CostAmount = new ModelColumn<>(I_C_Order_Cost_Detail.class, "CostAmount", null);
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_CostAmount = new ModelColumn<>(I_M_InOut_Cost.class, "CostAmount", null);
 	String COLUMNNAME_CostAmount = "CostAmount";
-
-	/**
-	 * Set Cost Amount Received.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCostAmountReceived (BigDecimal CostAmountReceived);
-
-	/**
-	 * Get Cost Amount Received.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCostAmountReceived();
-
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_CostAmountReceived = new ModelColumn<>(I_C_Order_Cost_Detail.class, "CostAmountReceived", null);
-	String COLUMNNAME_CostAmountReceived = "CostAmountReceived";
 
 	/**
 	 * Get Created.
@@ -195,7 +206,7 @@ public interface I_C_Order_Cost_Detail
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_Created = new ModelColumn<>(I_C_Order_Cost_Detail.class, "Created", null);
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_Created = new ModelColumn<>(I_M_InOut_Cost.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -252,95 +263,133 @@ public interface I_C_Order_Cost_Detail
 	 */
 	boolean isActive();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Order_Cost_Detail.class, "IsActive", null);
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_IsActive = new ModelColumn<>(I_M_InOut_Cost.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Line Net Amount.
+	 * Set Shipment/Receipt Costs.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setLineNetAmt (BigDecimal LineNetAmt);
+	void setM_InOut_Cost_ID (int M_InOut_Cost_ID);
 
 	/**
-	 * Get Line Net Amount.
+	 * Get Shipment/Receipt Costs.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getLineNetAmt();
+	int getM_InOut_Cost_ID();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_LineNetAmt = new ModelColumn<>(I_C_Order_Cost_Detail.class, "LineNetAmt", null);
-	String COLUMNNAME_LineNetAmt = "LineNetAmt";
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_M_InOut_Cost_ID = new ModelColumn<>(I_M_InOut_Cost.class, "M_InOut_Cost_ID", null);
+	String COLUMNNAME_M_InOut_Cost_ID = "M_InOut_Cost_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	int getM_InOut_ID();
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	org.compiere.model.I_M_InOut getM_InOut();
+
+	void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_M_InOut_Cost.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Qty Ordered.
-	 * Qty Ordered
+	 * Set Receipt Line.
+	 * Line on Receipt document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_InOutLine_ID (int M_InOutLine_ID);
+
+	/**
+	 * Get Receipt Line.
+	 * Line on Receipt document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_InOutLine_ID();
+
+	org.compiere.model.I_M_InOutLine getM_InOutLine();
+
+	void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_M_InOut_Cost.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+
+	/**
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setQtyOrdered (BigDecimal QtyOrdered);
+	void setQty (BigDecimal Qty);
 
 	/**
-	 * Get Qty Ordered.
-	 * Qty Ordered
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyOrdered();
+	BigDecimal getQty();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_C_Order_Cost_Detail.class, "QtyOrdered", null);
-	String COLUMNNAME_QtyOrdered = "QtyOrdered";
-
-	/**
-	 * Set Empfangene Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyReceived (BigDecimal QtyReceived);
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_Qty = new ModelColumn<>(I_M_InOut_Cost.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Get Empfangene Menge.
+	 * Set Reversal ID.
+	 * ID of document reversal
 	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getQtyReceived();
+	void setReversal_ID (int Reversal_ID);
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_QtyReceived = new ModelColumn<>(I_C_Order_Cost_Detail.class, "QtyReceived", null);
-	String COLUMNNAME_QtyReceived = "QtyReceived";
+	/**
+	 * Get Reversal ID.
+	 * ID of document reversal
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getReversal_ID();
+
+	@Nullable org.compiere.model.I_M_InOut_Cost getReversal();
+
+	void setReversal(@Nullable org.compiere.model.I_M_InOut_Cost Reversal);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_M_InOut_Cost> COLUMN_Reversal_ID = new ModelColumn<>(I_M_InOut_Cost.class, "Reversal_ID", org.compiere.model.I_M_InOut_Cost.class);
+	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
 	 * Get Updated.
@@ -352,7 +401,7 @@ public interface I_C_Order_Cost_Detail
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Order_Cost_Detail, Object> COLUMN_Updated = new ModelColumn<>(I_C_Order_Cost_Detail.class, "Updated", null);
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_Updated = new ModelColumn<>(I_M_InOut_Cost.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
