@@ -23,7 +23,7 @@
 /**
  *
  */
-package de.metas.impexp.parser;
+package de.metas.impexp.parser.csv;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.io.ByteSource;

@@ -303,6 +303,12 @@ public class Money
 		return this.value.compareTo(other.value) >= 0;
 	}
 
+	public boolean isGreaterThan(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) > 0;
+	}
+
 	public boolean isEqualByComparingTo(@Nullable final Money other)
 	{
 		if (other == null)

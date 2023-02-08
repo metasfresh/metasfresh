@@ -46,6 +46,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 
 public class C_BP_BankAccount_StepDef
@@ -76,6 +77,56 @@ public class C_BP_BankAccount_StepDef
 		for (final Map<String, String> dataTableRow : rows)
 		{
 			create_C_BP_BankAccount(dataTableRow);
+		}
+	}
+
+	@And("load C_BP_BankAccount:")
+	public void load_C_BP_BankAccount(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			loadBankAccount(dataTableRow);
+		}
+	}
+
+	@And("update C_BP_BankAccount:")
+	public void update_C_BP_BankAccount(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			updateBankAccount(dataTableRow);
+		}
+	}
+
+	private void updateBankAccount(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final I_C_BP_BankAccount bankAccountRecord = bpBankAccountTable.get(identifier);
+
+		final String isoCode = DataTableUtil.extractStringForColumnName(row, "OPT." + I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
+		if (Check.isNotBlank(isoCode))
+		{
+			final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode));
+			bankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
+		}
+
+		saveRecord(bankAccountRecord);
+	}
+
+	private void loadBankAccount(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
+
+		if (id != null)
+		{
+			final I_C_BP_BankAccount bankAccountRecord = InterfaceWrapperHelper.load(id, I_C_BP_BankAccount.class);
+
+			bpBankAccountTable.putOrReplace(identifier, bankAccountRecord);
 		}
 	}
 

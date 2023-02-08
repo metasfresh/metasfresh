@@ -941,6 +941,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
+	@Override
+	public void setInvoiceAdditionalText (final @Nullable java.lang.String InvoiceAdditionalText)
+	{
+		set_Value (COLUMNNAME_InvoiceAdditionalText, InvoiceAdditionalText);
+	}
+
+	@Override
+	public java.lang.String getInvoiceAdditionalText() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
+	}
+
 	/** 
 	 * InvoiceCollectionType AD_Reference_ID=394
 	 * Reference name: C_Invoice InvoiceCollectionType
@@ -1024,6 +1036,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isInDispute() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInDispute);
+	}
+
+	@Override
+	public void setIsNotShowOriginCountry (final boolean IsNotShowOriginCountry)
+	{
+		set_Value (COLUMNNAME_IsNotShowOriginCountry, IsNotShowOriginCountry);
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
 	}
 
 	@Override

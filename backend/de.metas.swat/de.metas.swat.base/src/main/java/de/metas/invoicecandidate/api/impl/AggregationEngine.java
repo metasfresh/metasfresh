@@ -476,6 +476,9 @@ public final class AggregationEngine
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 
 			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
+
+			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
+			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
 		}
 		catch (final RuntimeException rte)
 		{

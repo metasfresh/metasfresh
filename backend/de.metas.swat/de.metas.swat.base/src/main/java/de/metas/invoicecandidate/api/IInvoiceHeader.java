@@ -91,4 +91,9 @@ public interface IInvoiceHeader
 
 	@Nullable
 	ForexContractRef getForexContractRef();
+
+	@Nullable
+	String getInvoiceAdditionalText();
+
+	boolean isNotShowOriginCountry();
 }

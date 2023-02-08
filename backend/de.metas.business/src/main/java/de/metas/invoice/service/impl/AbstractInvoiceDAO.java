@@ -477,6 +477,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list();
 	}
 
+	@NonNull
 	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
@@ -530,6 +531,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.listImmutable(I_C_Invoice.class);
 	}
 
+	@NonNull
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
@@ -556,6 +558,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
+	@NonNull
 	private Optional<InvoiceId> getInvoiceIdByExternalIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
