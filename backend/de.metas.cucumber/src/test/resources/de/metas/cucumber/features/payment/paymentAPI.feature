@@ -40,8 +40,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_1     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -127,8 +127,8 @@ Feature: create payments using payment API
       | bp_bank_account_03022023_3     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -250,8 +250,8 @@ Feature: create payments using payment API
       | bp_bank_account_03022023_1     | CHF                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And load C_Currency:
       | C_Currency_ID.Identifier | OPT.C_Currency_ID |
@@ -357,8 +357,8 @@ Feature: create payments using payment API
       | bp_bank_account_01022023_1     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -444,8 +444,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_3     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -533,8 +533,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_5     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -626,8 +626,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_7     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | inboundDocType          | ARR         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | inboundDocType          | ARR             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -727,8 +727,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_2     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -815,8 +815,8 @@ Feature: create payments using payment API
       | bp_bank_account_03022023_10    | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier          | Name                |
@@ -939,8 +939,8 @@ Feature: create payments using payment API
       | bp_bank_account_03022023_2     | CHF                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And load C_Currency:
       | C_Currency_ID.Identifier | OPT.C_Currency_ID |
@@ -1047,8 +1047,8 @@ Feature: create payments using payment API
       | bp_bank_account_01022023_2     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -1135,8 +1135,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_4     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -1224,8 +1224,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_6     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -1318,8 +1318,8 @@ Feature: create payments using payment API
       | bp_bank_account_02022023_9     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
@@ -1420,8 +1420,8 @@ Feature: create payments using payment API
       | bp_bank_account_03022023_5     | EUR                     |
 
     And load C_DocType:
-      | C_DocType_ID.Identifier | DocBaseType |
-      | outboundDocType         | APP         |
+      | C_DocType_ID.Identifier | OPT.DocBaseType |
+      | outboundDocType         | APP             |
 
     And metasfresh contains M_Products:
       | Identifier         | Name               |
