@@ -27,7 +27,7 @@ FROM (SELECT 1000000 + ROW_NUMBER() OVER ()                                     
              bp.value                                                                                                    AS partner_code,
              dsc.m_department_id,
              bp.m_sectioncode_id,
-             getcreditlimitforpartner(bp.c_bpartner_id, NOW()::date)                                                     AS creditlimit,
+             concat(getcreditlimitforpartner(bp.c_bpartner_id, NOW()::date), ' ', c.iso_code::text ) AS creditlimit,
              getCreditLimitForSectionPartnerByDepartment(bp.c_bpartner_id, dsc.m_department_id, NOW()::date)             AS creditlimit_by_department,
              (SELECT MAX(creditlimitindicator) FROM C_BPartner_Stats s WHERE s.C_BPartner_ID = bp.c_bpartner_id)         AS cl_indicator_order,
              (SELECT MAX(deliverycreditlimitindicator) FROM C_BPartner_Stats s WHERE s.C_BPartner_ID = bp.c_bpartner_id) AS cl_indicator_delivery,
@@ -40,6 +40,9 @@ FROM (SELECT 1000000 + ROW_NUMBER() OVER ()                                     
              dsc.ad_org_id
       FROM c_bpartner bp
                INNER JOIN m_department_sectioncode dsc ON bp.m_sectioncode_id = dsc.m_sectioncode_id
+               INNER JOIN ad_clientinfo ci ON bp.ad_client_id = ci.ad_client_id
+               INNER JOIN c_acctschema ac ON ci.c_acctschema1_id = ac.c_acctschema_id
+               INNER JOIN c_currency c on ac.c_currency_id = c.c_currency_id
 
       UNION ALL
 
@@ -70,5 +73,3 @@ ORDER BY cl.m_department_id, cl.C_BPartner_Creditlimit_Usage_V_ID, cl.c_bpartner
 ALTER TABLE C_BPartner_Creditlimit_Usage_V
     OWNER TO metasfresh
 ;
-
-
