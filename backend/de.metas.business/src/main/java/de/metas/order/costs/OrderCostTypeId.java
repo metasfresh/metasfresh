@@ -8,6 +8,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value
 public class OrderCostTypeId implements RepoIdAware
@@ -16,6 +17,8 @@ public class OrderCostTypeId implements RepoIdAware
 	public static OrderCostTypeId ofRepoId(final int repoId) {return new OrderCostTypeId(repoId);}
 
 	public static OrderCostTypeId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+
+	public static Optional<OrderCostTypeId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static int toRepoId(@Nullable final OrderCostTypeId id) {return id != null ? id.getRepoId() : -1;}
 

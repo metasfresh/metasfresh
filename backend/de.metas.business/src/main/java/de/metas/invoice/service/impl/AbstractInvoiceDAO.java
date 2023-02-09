@@ -81,7 +81,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
@@ -377,6 +376,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Nullable
 	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		if (!invoiceBL.isInvoice(invoice))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());

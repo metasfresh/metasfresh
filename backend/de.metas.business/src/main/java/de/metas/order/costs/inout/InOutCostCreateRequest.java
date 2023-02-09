@@ -1,9 +1,11 @@
 package de.metas.order.costs.inout;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.costs.OrderCostDetailId;
+import de.metas.order.costs.OrderCostTypeId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -21,6 +23,9 @@ public class InOutCostCreateRequest
 	@NonNull OrderCostDetailId orderCostDetailId;
 	@NonNull OrderAndLineId orderAndLineId;
 	@NonNull InOutAndLineId receiptAndLineId;
+
+	@Nullable BPartnerId bpartnerId;
+	@NonNull OrderCostTypeId costTypeId;
 
 	@NonNull Quantity qty;
 	@NonNull Money costAmount;

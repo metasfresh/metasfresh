@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1180394811L;
+	private static final long serialVersionUID = 1737747499L;
 
     /** Standard Constructor */
     public X_M_InOut_Cost (final Properties ctx, final int M_InOut_Cost_ID, @Nullable final String trxName)
@@ -33,6 +33,48 @@ public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_C
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Cost_Type getC_Cost_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Cost_Type_ID, org.compiere.model.I_C_Cost_Type.class);
+	}
+
+	@Override
+	public void setC_Cost_Type(final org.compiere.model.I_C_Cost_Type C_Cost_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Cost_Type_ID, org.compiere.model.I_C_Cost_Type.class, C_Cost_Type);
+	}
+
+	@Override
+	public void setC_Cost_Type_ID (final int C_Cost_Type_ID)
+	{
+		if (C_Cost_Type_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Cost_Type_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Cost_Type_ID, C_Cost_Type_ID);
+	}
+
+	@Override
+	public int getC_Cost_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Cost_Type_ID);
 	}
 
 	@Override

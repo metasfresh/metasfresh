@@ -52,6 +52,51 @@ public interface I_M_InOut_Cost
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Cost_Type_ID (int C_Cost_Type_ID);
+
+	/**
+	 * Get Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Cost_Type_ID();
+
+	org.compiere.model.I_C_Cost_Type getC_Cost_Type();
+
+	void setC_Cost_Type(org.compiere.model.I_C_Cost_Type C_Cost_Type);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_C_Cost_Type> COLUMN_C_Cost_Type_ID = new ModelColumn<>(I_M_InOut_Cost.class, "C_Cost_Type_ID", org.compiere.model.I_C_Cost_Type.class);
+	String COLUMNNAME_C_Cost_Type_ID = "C_Cost_Type_ID";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *

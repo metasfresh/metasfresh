@@ -50,6 +50,7 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -172,6 +173,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -193,7 +195,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
 	{
-		return Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+		return invoiceDAO.getByIdInTrx(invoiceId);
+	}
+
+	@Override
+	public I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId)
+	{
+		return invoiceDAO.retrieveLineById(invoiceLineId);
 	}
 
 	@Override
@@ -890,7 +898,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void ensureUOMsAreNotNull(final @NonNull InvoiceId invoiceId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId); // // TODO tbp: create this method!
 		for (final I_C_InvoiceLine line : lines)
@@ -912,8 +919,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
 		renumberLines(lines, step);
 	}
@@ -1404,7 +1409,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
@@ -1504,7 +1508,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return isInvoice(docBaseType);
 	}
 
-	private boolean isInvoice(final String docBaseType)
+	private static boolean isInvoice(final String docBaseType)
 	{
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
 		return invoiceDocBaseType != null && (invoiceDocBaseType.equals(InvoiceDocBaseType.CustomerInvoice) || invoiceDocBaseType.equals(InvoiceDocBaseType.VendorInvoice));
@@ -1677,8 +1681,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void updateInvoiceLineIsReadOnlyFlags(@NonNull final I_C_Invoice invoice, final I_C_InvoiceLine... invoiceLines)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final boolean saveLines;
 		final List<I_C_InvoiceLine> linesToUpdate;
 		if (Check.isEmpty(invoiceLines))
@@ -1788,8 +1790,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
@@ -1912,7 +1912,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Nullable
 	public String getLocationEmail(@NonNull final InvoiceId invoiceId)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
 
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);

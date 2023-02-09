@@ -14,6 +14,7 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -127,6 +128,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Create a credit memo for the given invoice.

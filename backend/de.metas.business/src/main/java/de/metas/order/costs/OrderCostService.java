@@ -4,14 +4,20 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.order.IOrderBL;
+import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.inout.InOutCostCreateCommand;
 import de.metas.order.costs.inout.InOutCostDeleteCommand;
+import de.metas.order.costs.inout.InOutCostQuery;
 import de.metas.order.costs.inout.InOutCostRepository;
 import de.metas.order.costs.inout.InOutCostReverseCommand;
+import de.metas.order.costs.invoice.CreateMatchInvoiceCommand;
+import de.metas.order.costs.invoice.CreateMatchInvoiceRequest;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Stream;
 
 @Service
 public class OrderCostService
@@ -90,6 +96,19 @@ public class OrderCostService
 				.receiptId(receiptId)
 				.initialReversalId(initialReversalId)
 				//
+				.build()
+				.execute();
+	}
+
+	public Stream<InOutCost> stream(@NonNull final InOutCostQuery query)
+	{
+		return inOutCostRepository.stream(query);
+	}
+
+	public void createMatchInvoice(CreateMatchInvoiceRequest request)
+	{
+		CreateMatchInvoiceCommand.builder()
+				.request(request)
 				.build()
 				.execute();
 	}

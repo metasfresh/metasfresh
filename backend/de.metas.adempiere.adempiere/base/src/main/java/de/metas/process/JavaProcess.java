@@ -19,6 +19,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -819,6 +820,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.filter(recordRef -> recordRef.getTableName().equals(tableName))
 				.map(TableRecordReference::getRecord_ID)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected final <T> Integer getSingleSelectedIncludedRecordIds(final Class<T> modelClass)
+	{
+		final Set<Integer> selectedIncludedRecordIds = getSelectedIncludedRecordIds(modelClass);
+		return CollectionUtils.singleElement(selectedIncludedRecordIds);
 	}
 
 	/**

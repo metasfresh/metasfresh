@@ -79,6 +79,8 @@ public class InOutCostReverseCommand
 					.orderCostDetailId(initialCost.getOrderCostDetailId())
 					.orderAndLineId(initialCost.getOrderAndLineId())
 					.receiptAndLineId(lineId)
+					.bpartnerId(initialCost.getBpartnerId())
+					.costTypeId(initialCost.getCostTypeId())
 					.qty(initialCost.getQty().negate())
 					.costAmount(initialCost.getCostAmount().negate())
 					.build());

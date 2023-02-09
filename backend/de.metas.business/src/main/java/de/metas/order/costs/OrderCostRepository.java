@@ -2,6 +2,7 @@ package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -17,6 +18,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -50,6 +52,11 @@ public class OrderCostRepository
 				.listDistinct(I_C_Order_Cost_Detail.COLUMNNAME_C_Order_Cost_ID, OrderCostId.class);
 
 		return getByIds(orderCostIds);
+	}
+
+	public OrderCost getById(@NonNull final OrderCostId orderCostId)
+	{
+		return CollectionUtils.singleElement(getByIds(ImmutableSet.of(orderCostId)));
 	}
 
 	public List<OrderCost> getByIds(@NonNull final Collection<OrderCostId> orderCostIds)
