@@ -106,14 +106,14 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	@Override
 	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
 	{
-		if (C_DocType_Invoicing_Pool_ID < 1) 
+		if (C_DocType_Invoicing_Pool_ID < 1)
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocType_Invoicing_Pool_ID, C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID() 
+	public int getC_DocType_Invoicing_Pool_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
@@ -298,8 +298,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
-	/** Bill Of Material Version = BOM */
-	public static final String DOCBASETYPE_BillOfMaterialVersion = "BOM";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	@Override
@@ -343,7 +343,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 
 	/** 
 	 * DocSubType AD_Reference_ID=148
-	 * Reference name: C_DocType SubType
+	 * Reference name: C_DocType SubTypeSO
 	 */
 	public static final int DOCSUBTYPE_AD_Reference_ID=148;
 	/** OnCreditOrder = WI */
@@ -454,6 +454,10 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_InternalVendorInvoice = "IVI";
 	/** Delivery Instruction = DI */
 	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
+	/** InventoryShortageDocument = ISD */
+	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
+	/** InventoryOverageDocument = IOD */
+	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
