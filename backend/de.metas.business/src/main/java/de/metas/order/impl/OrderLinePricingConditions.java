@@ -17,6 +17,8 @@ import de.metas.util.IColorRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -59,15 +61,16 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	public void updateNoPriceConditionsColor(@NonNull final I_C_OrderLine orderLine)
 	{
 		final HasPricingConditions hasPricingConditions = hasPricingConditions(orderLine);
-		final int colorId = getColorId(hasPricingConditions);
-		orderLine.setNoPriceConditionsColor_ID(colorId);
+		final ColorId colorId = getColorId(hasPricingConditions);
+		orderLine.setNoPriceConditionsColor_ID(ColorId.toRepoId(colorId));
 	}
 
-	private int getColorId(final HasPricingConditions hasPricingConditions)
+	@Nullable
+	private ColorId getColorId(final HasPricingConditions hasPricingConditions)
 	{
 		if (hasPricingConditions == HasPricingConditions.YES)
 		{
-			return -1;
+			return null;
 		}
 		else if (hasPricingConditions == HasPricingConditions.TEMPORARY)
 		{
@@ -84,25 +87,25 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 	}
 
 	@Override
-	public int getTemporaryPriceConditionsColorId()
+	public ColorId getTemporaryPriceConditionsColorId()
 	{
 		return getColorIdBySysConfig(SYSCONFIG_TemporaryPriceConditionsColorName);
 	}
 
-	private int getNoPriceConditionsColorId()
+	private ColorId getNoPriceConditionsColorId()
 	{
 		return getColorIdBySysConfig(SYSCONFIG_NoPriceConditionsColorName);
 	}
 
-	private int getColorIdBySysConfig(final String sysConfigName)
+	@Nullable
+	private ColorId getColorIdBySysConfig(final String sysConfigName)
 	{
 		final String colorName = Services.get(ISysConfigBL.class).getValue(sysConfigName, "-");
 		if (Check.isEmpty(colorName) || "-".equals(colorName))
 		{
-			return -1;
+			return null;
 		}
-		final ColorId colorId = Services.get(IColorRepository.class).getColorIdByName(colorName);
-		return ColorId.toRepoId(colorId);
+		return Services.get(IColorRepository.class).getColorIdByName(colorName);
 	}
 
 	@Override
@@ -129,8 +132,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 
 	private boolean isMandatoryPricingConditions()
 	{
-		final int noPriceConditionsColorId = getNoPriceConditionsColorId();
-		return noPriceConditionsColorId > 0;
+		final ColorId noPriceConditionsColorId = getNoPriceConditionsColorId();
+		return noPriceConditionsColorId != null;
 	}
 
 	private boolean isPricingConditionsMissingButRequired(final I_C_OrderLine orderLine)

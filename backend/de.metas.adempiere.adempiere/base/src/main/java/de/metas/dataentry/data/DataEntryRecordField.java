@@ -1,17 +1,7 @@
 package de.metas.dataentry.data;
 
-import static de.metas.util.Check.assume;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
@@ -22,6 +12,14 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static de.metas.util.Check.assume;
 
 /*
  * #%L
@@ -54,11 +52,11 @@ public abstract class DataEntryRecordField<T>
 
 	@Getter
 	@JsonIgnore
-	private final DataEntryCreatedUpdatedInfo createdUpdatedInfo;
+	private final CreatedUpdatedInfo createdUpdatedInfo;
 
 	protected DataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
 	{
 		this.dataEntryFieldId = dataEntryFieldId;
 		this.createdUpdatedInfo = createdUpdatedInfo;
@@ -70,7 +68,7 @@ public abstract class DataEntryRecordField<T>
 	@SuppressWarnings("unchecked")
 	public static <T> DataEntryRecordField<T> createDataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@NonNull final T value)
 	{
 		final DataEntryRecordField<T> result;
@@ -113,6 +111,7 @@ public abstract class DataEntryRecordField<T>
 		return result;
 	}
 
+	@Nullable
 	public static Object convertValueToFieldType(
 			@Nullable final Object value,
 			@NonNull final DataEntryField field)
@@ -173,6 +172,7 @@ public abstract class DataEntryRecordField<T>
 		}
 	}
 
+	@Nullable
 	private static DataEntryListValueId convertValueToListValueId(
 			@Nullable final Object value,
 			@NonNull final DataEntryField field)

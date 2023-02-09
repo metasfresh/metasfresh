@@ -31,6 +31,8 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -57,9 +59,9 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	}
 
 	@Override
-	public final boolean isCreateMissingCandidatesAutomatically()
+	public final CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
@@ -72,18 +74,16 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	 * @return <code>true</code> always.
 	 */
 	@Override
-	public final boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public final CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
-	private final PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
+	private PPOrder2InvoiceCandidatesProducer createInvoiceCandidatesProducer()
 	{
-		final PPOrder2InvoiceCandidatesProducer invoiceCandidatesProducer = new PPOrder2InvoiceCandidatesProducer()
+		return new PPOrder2InvoiceCandidatesProducer()
 				.setC_ILCandHandler(getHandlerRecord())
 				.setILCandHandlerInstance(this);
-
-		return invoiceCandidatesProducer;
 	}
 
 	/**
@@ -122,15 +122,13 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	}
 
 	/**
-	 * @param ctx
 	 * @param limit how many quality orders to retrieve
-	 * @param trxName
 	 * @return all PP_Orders which are suitable for invoices and there are no invoice candidates created yet.
 	 */
 	@Override
-	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
-		return dao.retrievePPOrdersWithMissingICs(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
+		return dao.retrievePPOrdersWithMissingICs(limit);
 	}
 
 	/**
@@ -166,8 +164,7 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	}
 
 	/**
-	 *
-	 * @returns {@link OnInvalidateForModelAction#RECREATE_ASYNC}.
+	 * @return {@link OnInvalidateForModelAction#RECREATE_ASYNC}.
 	 */
 	@Override
 	public final OnInvalidateForModelAction getOnInvalidateForModelAction()

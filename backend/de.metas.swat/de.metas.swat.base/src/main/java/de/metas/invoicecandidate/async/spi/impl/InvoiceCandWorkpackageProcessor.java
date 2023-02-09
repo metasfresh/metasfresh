@@ -34,12 +34,12 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
-import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
@@ -67,10 +67,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
-	private InvoicingParams _invoicingParams = null; // lazy loaded
 
 	/**
 	 * @param result result to be used when processing
@@ -94,9 +93,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// use the workpackge's ctx. It contains the client, org and user that created the queu-block this package belongs to
 		final Properties localCtx = InterfaceWrapperHelper.getCtx(workPackage);
 
-		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveItems(workPackage, I_C_Invoice_Candidate.class, localTrxName);
+		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveAllItems(workPackage, I_C_Invoice_Candidate.class);
 
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			// Validate all invoice candidates
 			updateInvalid(localCtx, candidatesOfPackage, localTrxName);
@@ -146,13 +145,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 
-	private final IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
-		if (_invoicingParams == null)
-		{
-			_invoicingParams = new InvoicingParams(getParameters());
-		}
-		return _invoicingParams;
+		return InvoicingParams.ofParams(getParameters());
 	}
 
 	private void updateInvalid(
@@ -178,7 +173,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				.setContext(localCtx, localTrxName)
 				.setLockedBy(elementsLock)
 				.setTaggedWithAnyTag()
-				.setOnlyC_Invoice_Candidates(candidates)
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(candidates))
 				.update();
 
 		// Make sure the invoice candidate is fresh before we actually use it (task 06162, also see javadoc of updateInvalid method)

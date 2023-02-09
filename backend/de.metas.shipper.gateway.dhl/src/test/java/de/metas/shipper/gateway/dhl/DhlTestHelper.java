@@ -52,6 +52,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -114,7 +115,7 @@ class DhlTestHelper
 								.widthInCM(10)
 								.build())
 						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
+						.grossWeightKg(BigDecimal.ONE)
 						.build())
 				.customerReference(null)
 				.shipperProduct(DhlShipperProduct.Dhl_Paket)
@@ -162,7 +163,7 @@ class DhlTestHelper
 								.widthInCM(10)
 								.build())
 						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
+						.grossWeightKg(BigDecimal.ONE)
 						.build())
 				.customerReference(null)
 				.shipperProduct(DhlShipperProduct.Dhl_PaketInternational)
@@ -210,7 +211,7 @@ class DhlTestHelper
 								.widthInCM(10)
 								.build())
 						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
+						.grossWeightKg(BigDecimal.ONE)
 						.build())
 				.customerReference(null)
 				.shipperProduct(DhlShipperProduct.Dhl_PaketInternational)
@@ -375,7 +376,7 @@ class DhlTestHelper
 
 		//
 		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
-		final int grossWeightInKg = deliveryPosition.getGrossWeightKg();
+		final BigDecimal grossWeightInKg = deliveryPosition.getGrossWeightKg();
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 		final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
@@ -391,7 +392,7 @@ class DhlTestHelper
 				pickupFromLocation,
 				pickupDate,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
+				//deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,

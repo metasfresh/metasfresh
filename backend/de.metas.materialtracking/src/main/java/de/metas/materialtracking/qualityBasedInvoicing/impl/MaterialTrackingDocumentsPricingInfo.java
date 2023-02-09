@@ -27,7 +27,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;

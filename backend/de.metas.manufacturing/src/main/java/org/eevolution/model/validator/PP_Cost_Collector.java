@@ -63,7 +63,7 @@ public class PP_Cost_Collector
 		if (cc.getM_Locator_ID() <= 0 && cc.getM_Warehouse_ID() > 0)
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(cc.getM_Warehouse_ID());
-			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 			cc.setM_Locator_ID(locatorId.getRepoId());
 		}
 

@@ -1,18 +1,8 @@
 package de.metas.purchasecandidate;
 
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.util.Check;
 import de.metas.util.time.generator.Frequency;
 import lombok.Builder;
@@ -20,6 +10,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Optional;
 
 /*
  * #%L

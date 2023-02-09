@@ -10,7 +10,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -26,6 +25,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -102,7 +102,12 @@ public class Group
 
 		if (regularLines.isEmpty())
 		{
-			throw new AdempiereException("Group shall contain at least one regular line");
+			final String compensatedProductIds = compensationLines.stream()
+					.map(GroupCompensationLine::getProductId)
+					.map(RepoIdAware::getRepoId)
+					.map(Object::toString)
+					.collect(Collectors.joining(", "));
+			throw new AdempiereException("Group shall contain at least one regular line. It has only compensated lines for the product ID(s):" + compensatedProductIds);
 		}
 
 		this.regularLines = ImmutableList.copyOf(regularLines);

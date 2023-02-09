@@ -24,7 +24,7 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.compiere.model.POInfo;
 
 import javax.annotation.Nullable;
@@ -58,6 +58,7 @@ import java.util.Optional;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEntityDataBindingDescriptor, SqlEntityBinding
 {
 	public static Builder builder()
@@ -250,6 +251,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return sqlSelectVersionById.isPresent();
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	@ToString(doNotUseGetters = true)
 	public static final class Builder implements DocumentEntityDataBindingDescriptorBuilder
 	{
@@ -300,7 +302,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		}
 
 		/**
-		 * @return SELECT ... FROM ....
+		 * SELECT ... FROM ....
 		 */
 		private void buildSqlSelects()
 		{

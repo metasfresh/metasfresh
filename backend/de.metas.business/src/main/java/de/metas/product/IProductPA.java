@@ -22,16 +22,17 @@ package de.metas.product;
  * #L%
  */
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.model.I_M_ProductScalePrice;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Properties;
-
-import org.adempiere.model.I_M_ProductScalePrice;
-import org.compiere.model.MAttributeSetInstance;
-
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
-import de.metas.util.ISingletonService;
 
 public interface IProductPA extends ISingletonService
 {
@@ -39,21 +40,14 @@ public interface IProductPA extends ISingletonService
 
 	I_M_Product retrieveProduct(Properties ctx, int productId, boolean throwEx, String trxName);
 
-	Collection<MAttributeSetInstance> retrieveSerno(int productId, String text, String trxName);
-
 	/**
-	 * 
-	 * @param productId
-	 * @param bPartnerId
-	 * @param priceListId
-	 * @param qty
-	 * @param soTrx
-	 * @return
-	 * @throws ProductNotOnPriceListException
+	 * throws ProductNotOnPriceListException
 	 */
-	BigDecimal retrievePriceStd(int productId, int bPartnerId, int priceListId, BigDecimal qty, boolean soTrx);
+	BigDecimal retrievePriceStd(@NonNull OrgId orgId, int productId, int bPartnerId, int priceListId, @Nullable CountryId countryId, BigDecimal qty, boolean soTrx);
 
 	Collection<I_M_ProductScalePrice> retrieveScalePrices(int productPriceId, String trxName);
 
 	I_M_ProductScalePrice retrieveOrCreateScalePrices(int productPriceId, BigDecimal qty, boolean createNew, String trxName);
+
+	I_M_ProductScalePrice retrieveScalePrices(int productPriceId, BigDecimal qty, String trxName);
 }

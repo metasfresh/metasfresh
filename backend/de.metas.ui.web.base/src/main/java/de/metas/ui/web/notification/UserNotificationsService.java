@@ -10,12 +10,13 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -122,7 +123,7 @@ public class UserNotificationsService
 		return notificationsQueue;
 	}
 
-	public UserNotificationsList getNotifications(final UserId adUserId, final int limit)
+	public UserNotificationsList getNotifications(final UserId adUserId, final QueryLimit limit)
 	{
 		return getNotificationsQueue(adUserId).getNotificationsAsList(limit);
 	}

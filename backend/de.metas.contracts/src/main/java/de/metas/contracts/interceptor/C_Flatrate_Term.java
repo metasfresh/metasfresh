@@ -22,8 +22,10 @@
 
 package de.metas.contracts.interceptor;
 
+import de.metas.acct.GLCategoryRepository;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
@@ -31,8 +33,7 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
-import de.metas.contracts.impl.FlatrateBL;
+import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Contract_Term_Alloc;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -43,14 +44,21 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.ordercandidate.api.IOLCandDAO;
+import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -61,10 +69,10 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -75,6 +83,7 @@ import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -86,6 +95,8 @@ import java.util.Set;
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
 {
+	private final static Logger logger = LogManager.getLogger(C_Flatrate_Term.class);
+
 	private static final String CONFIG_FLATRATE_TERM_ALLOW_REACTIVATE = "de.metas.contracts.C_Flatrate_Term.allow_reactivate_%s";
 
 	private static final String MSG_TERM_ERROR_PLANNED_QTY_PER_UNIT = "Term_Error_PlannedQtyPerUnit";
@@ -93,15 +104,31 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
+	private static final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final IDocumentLocationBL documentLocationBL;
 
 	private final ContractOrderService contractOrderService;
+	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final ADReferenceService adReferenceService;
+	private final GLCategoryRepository glCategoryRepository;
 
-	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService)
+	public C_Flatrate_Term(
+			@NonNull final ContractOrderService contractOrderService,
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final GLCategoryRepository glCategoryRepository)
 	{
 		this.contractOrderService = contractOrderService;
+		this.documentLocationBL = documentLocationBL;
+		this.adReferenceService = adReferenceService;
+		this.glCategoryRepository = glCategoryRepository;
 	}
 
 	@Init
@@ -112,17 +139,19 @@ public class C_Flatrate_Term
 			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Pauschalengebuehr);
+			ensureDocTypesExist(I_C_DocType.DocSubType_CallOrder);
 		}
 	}
 
 	private void ensureDocTypesExist(final String docSubType)
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
+		final ClientId clientId = ClientId.METASFRESH;
 		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Client_ID, clientId)
 				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, OrgId.ANY)
 				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
 				.create()
@@ -139,7 +168,7 @@ public class C_Flatrate_Term
 
 			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
 					.retrieveDocType(DocTypeQuery.builder()
-							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+							.docBaseType(DocBaseType.CustomerContract)
 							.docSubType(docSubType)
 							.adClientId(org.getAD_Client_ID())
 							.adOrgId(org.getAD_Org_ID())
@@ -150,7 +179,7 @@ public class C_Flatrate_Term
 			}
 
 			final POInfo docTypePOInfo = POInfo.getPOInfo(I_C_DocType.Table_Name);
-			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+			final String name = adReferenceService.retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 					.ctx(localCtx)
@@ -158,10 +187,11 @@ public class C_Flatrate_Term
 					.entityType(Contracts_Constants.ENTITY_TYPE)
 					.name(name)
 					.printName(name)
-					.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+					.docBaseType(DocBaseType.CustomerContract)
 					.docSubType(docSubType)
 					.isSOTrx(true)
 					.newDocNoSequenceStartNo(10000)
+					.glCategoryId(glCategoryRepository.getDefaultId(clientId).orElseThrow(() -> new AdempiereException("No default GL Category found")))
 					.build());
 		}
 	}
@@ -171,7 +201,10 @@ public class C_Flatrate_Term
 	{
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
 
-		term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
+		if (term.getBill_BPartner_ID() == 0)
+		{ // make sure not to override a Bill_BPartner_ID that is already set via extend-flatrate-term
+			term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
+		}
 
 		if (!flatrateData.isHasContracts())
 		{
@@ -227,7 +260,11 @@ public class C_Flatrate_Term
 
 			final I_C_Calendar invoicingCal = term.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract();
 
-			final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(ctx, invoicingCal, term.getStartDate(), term.getEndDate(), trxName);
+			final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+			final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(term.getStartDate(), orgId, orgDAO::getTimeZone);
+			final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(term.getEndDate(), orgId, orgDAO::getTimeZone);
+
+			final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(ctx, invoicingCal, startDate, endDate, trxName);
 
 			if (periodsOfTerm.isEmpty())
 			{
@@ -236,16 +273,19 @@ public class C_Flatrate_Term
 			}
 			else
 			{
-				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
+				final LocalDateAndOrgId firstPeriodStartDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(0).getStartDate(), orgId, orgDAO::getTimeZone);
+				if (firstPeriodStartDate.compareTo(startDate) > 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
 							new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
-				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
-				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
+
+				final LocalDateAndOrgId lastPeriodEndDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(periodsOfTerm.size() - 1).getEndDate(), orgId, orgDAO::getTimeZone);
+				
+				if (lastPeriodEndDate.compareTo(endDate) < 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
-							new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
+							new Object[] { lastPeriodEndDate.toTimestamp(orgDAO::getTimeZone), invoicingCal.getName() }));
 				}
 			}
 		}
@@ -258,16 +298,12 @@ public class C_Flatrate_Term
 
 	/**
 	 * If the term that is deleted was the last term, remove the "processed"-flag from the term's data record.
-	 *
-	 * @param term
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateFlatrateData(final I_C_Flatrate_Term term)
 	{
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
-		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(flatrateData);
+		final List<I_C_Flatrate_Term> terms = flatrateDAO.retrieveTerms(flatrateData);
 		if (terms.size() == 1)
 		{
 			Check.assume(
@@ -302,8 +338,6 @@ public class C_Flatrate_Term
 
 	/**
 	 * If the term that is deleted is referenced from a {@link C_OLCand}, delete the reference and set the cand to <code>processed='N'</code>.
-	 *
-	 * @param term
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateOLCandReference(final I_C_Flatrate_Term term)
@@ -319,7 +353,7 @@ public class C_Flatrate_Term
 
 		for (final I_C_Contract_Term_Alloc cta : ctas)
 		{
-			final I_C_OLCand olCand = InterfaceWrapperHelper.create(cta.getC_OLCand(), I_C_OLCand.class);
+			final de.metas.ordercandidate.model.I_C_OLCand olCand = candDAO.retrieveByIds(OLCandId.ofRepoId(cta.getC_OLCand_ID()));
 			olCand.setProcessed(false);
 			InterfaceWrapperHelper.save(olCand);
 			InterfaceWrapperHelper.delete(cta);
@@ -332,7 +366,7 @@ public class C_Flatrate_Term
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Candidates(final I_C_Flatrate_Term term)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(term);
+		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(term);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
@@ -470,7 +504,7 @@ public class C_Flatrate_Term
 
 	/**
 	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
-	 *
+	 * <p>
 	 * task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -531,7 +565,7 @@ public class C_Flatrate_Term
 		{
 			final I_C_BPartner billBPartnerRecord = bparnterDAO.getById(term.getBill_BPartner_ID());
 
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
+			throw new AdempiereException(de.metas.contracts.impl.FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
 					.markAsUserValidationError();
 		}
 	}
@@ -577,7 +611,7 @@ public class C_Flatrate_Term
 	{
 		if (!Check.isEmpty(term.getDocumentNo(), true) && Check.isEmpty(term.getMasterDocumentNo(), true))
 		{
-			final I_C_Flatrate_Term ancestor = Services.get(IFlatrateDAO.class).retrieveAncestorFlatrateTerm(term);
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
 			if (ancestor == null)
 			{
 				term.setMasterDocumentNo(term.getDocumentNo());
@@ -626,6 +660,28 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID,
+			I_C_Flatrate_Term.COLUMNNAME_Bill_Location_ID,
+			I_C_Flatrate_Term.COLUMNNAME_Bill_User_ID },
+			skipIfCopying = true)
+	public void updateBillToAddress(final I_C_Flatrate_Term term)
+	{
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(ContractDocumentLocationAdapterFactory.billLocationAdapter(term));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID,
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_Location_ID,
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID },
+			skipIfCopying = true)
+	public void updateDropshipAddress(final I_C_Flatrate_Term term)
+	{
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(term));
+	}
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -637,14 +693,43 @@ public class C_Flatrate_Term
 					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
 					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
 			})
-	public void ensureOneMediatedContract(@NonNull final I_C_Flatrate_Term term)
+	public void ensureOneContract(@NonNull final I_C_Flatrate_Term term)
 	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+		ensureOneContractOfGivenType(term);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	public void ensureOneContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
 	{
-		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+		ensureOneContractOfGivenType(term);
+	}
+
+	private void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+		final TypeConditions contractType = TypeConditions.ofCode(term.getType_Conditions());
+
+		switch (contractType)
+		{
+			case MEDIATED_COMMISSION:
+			case MARGIN_COMMISSION:
+			case LICENSE_FEE:
+				flatrateBL.ensureOneContractOfGivenType(term, contractType);
+			default:
+				logger.debug("Skipping ensureOneContractOfGivenType check for 'Type_Conditions' =" + contractType);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void setC_Flatrate_Term_Master(@NonNull final I_C_Flatrate_Term term)
+	{
+		if (term.getC_Flatrate_Term_Master_ID() <= 0)
+		{
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
+			if (ancestor == null)
+			{
+				term.setC_Flatrate_Term_Master_ID(term.getC_Flatrate_Term_ID());
+			}
+		}
 	}
 }

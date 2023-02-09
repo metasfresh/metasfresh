@@ -4,10 +4,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -17,7 +18,6 @@ import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
@@ -54,30 +54,29 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 
 	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId,
-			@Nullable final String tableName,
+			@NonNull final CreateFiltersProviderContext context,
 			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
+		final String tableName = StringUtils.trimBlankToNull(context.getTableName());
+		final AdTabId adTabId = context.getAdTabId();
 		if (tableName == null || adTabId == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		Check.assumeNotEmpty(tableName, "tableName is not empty");
-
-		final int adTableId = adTablesRepo.retrieveTableId(tableName);
+		final AdTableId adTableId = adTablesRepo.retrieveAdTableId(tableName);
 
 		final List<IUserQueryField> searchFields = fields
 				.stream()
-				.map(field -> createUserQueryField(field))
+				.map(UserQueryDocumentFilterDescriptorsProviderFactory::createUserQueryField)
 				.collect(ImmutableList.toImmutableList());
 
 		final UserQueryRepository repository = UserQueryRepository.builder()
 				.setAD_Tab_ID(adTabId.getRepoId())
-				.setAD_Table_ID(adTableId)
+				.setAD_Table_ID(adTableId.getRepoId())
 				.setAD_User_ID(UserId.METASFRESH.getRepoId()) // FIXME: hardcoded, see https://github.com/metasfresh/metasfresh-webui/issues/162
 				.setSearchFields(searchFields)
-				.setColumnDisplayTypeProvider(POInfo.getPOInfo(AdTableId.ofRepoId(adTableId)))
+				.setColumnDisplayTypeProvider(POInfo.getPOInfoNotNull(tableName))
 				.build();
 
 		return new UserQueryDocumentFilterDescriptorsProvider(repository);
@@ -89,6 +88,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 				.columnName(field.getFieldName())
 				.displayName(field.getCaption())
 				.widgetType(field.getWidgetType())
+				// TODO: use a lookup descriptor without validation rules with params
 				.lookupDescriptor(field.getLookupDescriptorForFiltering())
 				.build();
 	}

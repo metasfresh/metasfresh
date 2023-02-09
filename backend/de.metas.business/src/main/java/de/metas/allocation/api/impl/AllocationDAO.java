@@ -3,6 +3,7 @@ package de.metas.allocation.api.impl;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -395,5 +396,22 @@ public class AllocationDAO implements IAllocationDAO
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						record -> PaymentId.ofRepoId(record.getC_Payment_ID()),
 						record -> InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID())));
+	}
+
+	@Override
+	public @NonNull I_C_AllocationHdr getById(@NonNull final PaymentAllocationId allocationId)
+	{
+		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(final @NonNull PaymentId paymentId)
+	{
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.create()
+				.list();
 	}
 }

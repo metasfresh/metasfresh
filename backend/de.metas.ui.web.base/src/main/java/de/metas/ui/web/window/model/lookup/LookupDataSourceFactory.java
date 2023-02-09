@@ -1,18 +1,25 @@
 package de.metas.ui.web.window.model.lookup;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_AD_Column;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -22,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -45,17 +53,28 @@ import java.util.concurrent.ConcurrentHashMap;
  * #L%
  */
 
+@Component
 public final class LookupDataSourceFactory
 {
-	public static final transient LookupDataSourceFactory instance = new LookupDataSourceFactory();
+	public static LookupDataSourceFactory sharedInstance()
+	{
+		return SpringContextHolder.instance.getBeanOr(LookupDataSourceFactory.class, _sharedInstance);
+	}
+
+	private static final LookupDataSourceFactory _sharedInstance = new LookupDataSourceFactory(LookupDescriptorProviders.sharedInstance());
 
 	private static final Logger logger = LogManager.getLogger(LookupDataSourceFactory.class);
 
-	private final CCache<LookupDescriptor, LookupDataSource> lookupDataSourcesCache = new CCache<>("LookupDataSourcesCache", 300);
-	private final ConcurrentHashMap<String, CacheInvalidationGroup> cacheInvalidationGroupsByTableName = new ConcurrentHashMap<>();
+	// NOTE: because we also have a shared instance, it's important to have the following maps static:
+	private static final CCache<LookupDescriptor, LookupDataSource> lookupDataSourcesCache = new CCache<>("LookupDataSourcesCache", 300);
+	private static final ConcurrentHashMap<String, CacheInvalidationGroup> cacheInvalidationGroupsByTableName = new ConcurrentHashMap<>();
 
-	private LookupDataSourceFactory()
+	@Getter
+	private final LookupDescriptorProviders lookupDescriptorProviders;
+
+	public LookupDataSourceFactory(@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	public LookupDataSource searchInTableLookup(final String tableName)
@@ -66,49 +85,46 @@ public final class LookupDataSourceFactory
 		}
 		else
 		{
-			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchInTable(tableName)
+			final LookupDescriptor lookupDescriptor = lookupDescriptorProviders.searchInTable(tableName)
 					.provide()
-					.get();
+					.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + tableName));
 			return getLookupDataSource(lookupDescriptor);
 		}
 	}
 
 	public LookupDataSource productAttributes()
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.productAttributes()
-				.provide()
-				.get();
-		return getLookupDataSource(lookupDescriptor);
+		return getLookupDataSource(lookupDescriptorProviders.productAttributes());
 	}
 
-	public LookupDataSource listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
+	public LookupDataSource listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
-				.listByAD_Reference_Value_ID(AD_Reference_Value_ID)
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProviders.listByAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.provide()
-				.get();
-		return getLookupDataSource(lookupDescriptor);
-	}
-
-	public LookupDataSource searchByAD_Val_Rule_ID(final int AD_Reference_Value_ID, final int AD_Val_Rule_ID)
-	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
-				.searchByAD_Val_Rule_ID(AD_Reference_Value_ID, AD_Val_Rule_ID)
-				.provide()
-				.get();
+				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + AD_Reference_Value_ID));
 		return getLookupDataSource(lookupDescriptor);
 	}
 
 	public LookupDataSource searchByColumn(@NonNull final String tableName, @NonNull final String columnname)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final I_AD_Column column = adTableDAO.retrieveColumn(tableName, columnname);
+		final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(tableName, columnname);
+		final ReferenceId adReferenceValueId = column.getAdReferenceValueId();
+		final AdValRuleId adValRuleId = column.getAdValRuleId();
 
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
-				.searchByAD_Val_Rule_ID(column.getAD_Reference_Value_ID(), column.getAD_Val_Rule_ID())
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProviders.searchByAD_Val_Rule_ID(adReferenceValueId, adValRuleId)
 				.provide()
-				.get();
+				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + tableName + "." + columnname)
+						.appendParametersToMessage()
+						.setParameter("adReferenceValueId", adReferenceValueId)
+						.setParameter("adValRuleId", adValRuleId));
 
+		return getLookupDataSource(lookupDescriptor);
+	}
+
+	public LookupDataSource getLookupDataSource(final Function<SqlLookupDescriptorProviderBuilder, LookupDescriptor> lookupDescriptorMapper)
+	{
+		final LookupDescriptor lookupDescriptor = lookupDescriptorMapper.apply(lookupDescriptorProviders.sql());
 		return getLookupDataSource(lookupDescriptor);
 	}
 
@@ -195,7 +211,7 @@ public final class LookupDataSourceFactory
 			synchronized (lookupDataSources)
 			{
 				final List<LookupDataSource> result = new ArrayList<>(lookupDataSources.size());
-				for (final Iterator<WeakReference<LookupDataSource>> it = lookupDataSources.iterator(); it.hasNext();)
+				for (final Iterator<WeakReference<LookupDataSource>> it = lookupDataSources.iterator(); it.hasNext(); )
 				{
 					final LookupDataSource lookupDataSource = it.next().get();
 					if (lookupDataSource == null)

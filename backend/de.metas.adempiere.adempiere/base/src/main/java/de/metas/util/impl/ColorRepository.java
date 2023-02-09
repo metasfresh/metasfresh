@@ -1,19 +1,6 @@
 package de.metas.util.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.awt.Color;
-import java.math.BigDecimal;
-import java.net.URL;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Color;
-import org.compiere.model.MImage;
-import org.compiere.model.X_AD_Color;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.ColorId;
@@ -22,6 +9,23 @@ import de.metas.util.MFColor;
 import de.metas.util.MFColorType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Color;
+import org.compiere.model.MImage;
+import org.compiere.model.X_AD_Color;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,30 +52,75 @@ import lombok.NonNull;
 public class ColorRepository implements IColorRepository
 {
 	private static final Logger logger = LogManager.getLogger(ColorRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private static final CCache<Integer, MFColor> colorValuesById = CCache.<Integer, MFColor> newCache(I_AD_Color.Table_Name, 20, CCache.EXPIREMINUTES_Never);
-	private static final CCache<String, ColorId> colorIdByName = CCache.<String, ColorId> newCache(I_AD_Color.Table_Name + "#by#Name", 10, CCache.EXPIREMINUTES_Never);
+	private static final CCache<Integer, ColorsMap> cache = CCache.<Integer, ColorsMap>builder()
+			.tableName(I_AD_Color.Table_Name)
+			.initialCapacity(1)
+			.build();
 
 	@Override
-	public MFColor getColorById(final int adColorId)
+	public MFColor getColorById(@NonNull final ColorId adColorId)
 	{
-		if (adColorId <= 0)
-		{
-			return null;
-		}
-
-		return colorValuesById.getOrLoad(adColorId, () -> createMFColorById(adColorId));
+		return getColorsMap().getMFColorById(adColorId);
 	}
 
-	private static MFColor createMFColorById(final int adColorId)
+	@Override
+	public ColorId saveFlatColorAndReturnId(@NonNull String flatColorHexString)
 	{
-		final I_AD_Color colorRecord = loadOutOfTrx(adColorId, I_AD_Color.class);
-		if (colorRecord == null)
-		{
-			logger.warn("No color found for ID={}. Returning null.", adColorId);
-			return null;
-		}
+		final Color flatColor = Color.decode(flatColorHexString);
 
+		return getColorsMap()
+				.getColorIdByFlatColor(flatColor)
+				.orElseGet(() -> createFlatColor(flatColor));
+	}
+
+	@NonNull
+	private static ColorId createFlatColor(@NonNull final Color flatColor)
+	{
+		final I_AD_Color newColorRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Color.class);
+		newColorRecord.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+		newColorRecord.setName(toHexString(flatColor));
+		newColorRecord.setColorType(X_AD_Color.COLORTYPE_NormalFlat);
+		newColorRecord.setRed(flatColor.getRed());
+		newColorRecord.setGreen(flatColor.getGreen());
+		newColorRecord.setBlue(flatColor.getBlue());
+		newColorRecord.setAlpha(0);
+		newColorRecord.setImageAlpha(BigDecimal.ZERO);
+		InterfaceWrapperHelper.save(newColorRecord);
+
+		return ColorId.ofRepoId(newColorRecord.getAD_Color_ID());
+	}
+
+	private static String toHexString(@NonNull final Color color)
+	{
+		return "#" + Integer.toHexString(color.getRGB()).substring(2).toLowerCase();
+	}
+
+	@Override
+	public ColorId getColorIdByName(final String colorName)
+	{
+		return getColorsMap().getColorIdByName(colorName);
+	}
+
+	private ColorsMap getColorsMap() {return cache.getOrLoad(0, this::retrieveColorsMap);}
+
+	private ColorsMap retrieveColorsMap()
+	{
+		final List<I_AD_Color> records = queryBL.createQueryBuilderOutOfTrx(I_AD_Color.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_Color.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH, ClientId.SYSTEM)
+				.orderByDescending(I_AD_Color.COLUMNNAME_AD_Client_ID)
+				.orderBy(I_AD_Color.COLUMNNAME_AD_Color_ID)
+				.create()
+				.list();
+
+		return new ColorsMap(records);
+	}
+
+	@Nullable
+	private static MFColor toMFColor(@NonNull final I_AD_Color colorRecord)
+	{
 		// Color Type
 		final String colorTypeCode = colorRecord.getColorType();
 		if (colorTypeCode == null)
@@ -80,24 +129,23 @@ public class ColorRepository implements IColorRepository
 			return null;
 		}
 
-		final MFColor color;
 		final MFColorType colorType = MFColorType.ofCode(colorTypeCode);
 		if (colorType == MFColorType.FLAT)
 		{
-			color = MFColor.ofFlatColor(extractPrimaryAWTColor(colorRecord));
+			return MFColor.ofFlatColor(extractPrimaryAWTColor(colorRecord));
 		}
 		else if (colorType == MFColorType.GRADIENT)
 		{
 			final int repeatDistance = colorRecord.getRepeatDistance();
 			final String startPointStr = colorRecord.getStartPoint();
 			final int startPoint = startPointStr == null ? MFColor.DEFAULT_GradientStartPoint : Integer.parseInt(startPointStr);
-			color = MFColor.ofGradientColor(extractPrimaryAWTColor(colorRecord), extractSecondaryAWTColor(colorRecord), startPoint, repeatDistance);
+			return MFColor.ofGradientColor(extractPrimaryAWTColor(colorRecord), extractSecondaryAWTColor(colorRecord), startPoint, repeatDistance);
 		}
 		else if (colorType == MFColorType.LINES)
 		{
 			final int lineWidth = colorRecord.getLineWidth();
 			final int lineDistance = colorRecord.getLineDistance();
-			color = MFColor.ofLinesColor(extractSecondaryAWTColor(colorRecord), extractPrimaryAWTColor(colorRecord), lineWidth, lineDistance);
+			return MFColor.ofLinesColor(extractSecondaryAWTColor(colorRecord), extractPrimaryAWTColor(colorRecord), lineWidth, lineDistance);
 		}
 		else if (colorType == MFColorType.TEXTURE)
 		{
@@ -109,13 +157,12 @@ public class ColorRepository implements IColorRepository
 			}
 			final BigDecimal imageAlphaBD = colorRecord.getImageAlpha();
 			final float compositeAlpha = imageAlphaBD == null ? MFColor.DEFAULT_TextureCompositeAlpha : imageAlphaBD.floatValue();
-			color = MFColor.ofTextureColor(url, extractPrimaryAWTColor(colorRecord), compositeAlpha);
+			return MFColor.ofTextureColor(url, extractPrimaryAWTColor(colorRecord), compositeAlpha);
 		}
 		else
 		{
-			color = null;
+			return null;
 		}
-		return color;
 	}
 
 	private static Color extractPrimaryAWTColor(@NonNull final I_AD_Color colorRecord)
@@ -128,61 +175,61 @@ public class ColorRepository implements IColorRepository
 		return new Color(colorRecord.getRed(), colorRecord.getGreen(), colorRecord.getBlue());
 	}
 
-	@Override
-	public ColorId saveFlatColorAndReturnId(@NonNull String flatColorHexString)
+	//
+	//
+	//
+
+	private static class ColorsMap
 	{
-		final Color flatColor = MFColor.ofFlatColorHexString(flatColorHexString).getFlatColor();
-		final I_AD_Color existingColorRecord = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_Color.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.addEqualsFilter(I_AD_Color.COLUMNNAME_ColorType, X_AD_Color.COLORTYPE_NormalFlat)
-				.addEqualsFilter(I_AD_Color.COLUMNNAME_Red, flatColor.getRed())
-				.addEqualsFilter(I_AD_Color.COLUMNNAME_Green, flatColor.getGreen())
-				.addEqualsFilter(I_AD_Color.COLUMNNAME_Blue, flatColor.getBlue())
-				.orderByDescending(I_AD_Color.COLUMNNAME_AD_Client_ID)
-				.orderBy(I_AD_Color.COLUMNNAME_AD_Color_ID)
-				.create()
-				.first();
-		if (existingColorRecord != null)
+		private final ImmutableMap<ColorId, MFColor> colorsById;
+		private final ImmutableMap<String, ColorId> idsByName;
+		private final ImmutableMap<Color, ColorId> idsByFlatColor;
+
+		private ColorsMap(final List<I_AD_Color> records)
 		{
-			return ColorId.ofRepoId(existingColorRecord.getAD_Color_ID());
+			this.colorsById = records.stream().collect(ImmutableMap.toImmutableMap(
+					record -> ColorId.ofRepoId(record.getAD_Color_ID()),
+					ColorRepository::toMFColor
+			));
+
+			this.idsByName = records.stream().collect(ImmutableMap.toImmutableMap(
+					I_AD_Color::getName,
+					record -> ColorId.ofRepoId(record.getAD_Color_ID())
+			));
+
+			final HashMap<Color, ColorId> idsByFlatColor = new HashMap<>();
+			colorsById.forEach((colorId, mfColor) -> {
+				if (mfColor.isFlat() && mfColor.getFlatColor() != null)
+				{
+					idsByFlatColor.computeIfAbsent(mfColor.getFlatColor(), k -> colorId);
+				}
+			});
+			this.idsByFlatColor = ImmutableMap.copyOf(idsByFlatColor);
 		}
 
-		final I_AD_Color newColorRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Color.class);
-		newColorRecord.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		newColorRecord.setName(flatColorHexString.toLowerCase());
-		newColorRecord.setColorType(X_AD_Color.COLORTYPE_NormalFlat);
-		newColorRecord.setRed(flatColor.getRed());
-		newColorRecord.setGreen(flatColor.getGreen());
-		newColorRecord.setBlue(flatColor.getBlue());
-		//
-		newColorRecord.setAlpha(0);
-		newColorRecord.setImageAlpha(BigDecimal.ZERO);
-		//
-		InterfaceWrapperHelper.save(newColorRecord);
+		public MFColor getMFColorById(@NonNull final ColorId colorId)
+		{
+			final MFColor mfColor = colorsById.get(colorId);
+			if (mfColor == null)
+			{
+				throw new AdempiereException("No color found for " + colorId);
+			}
+			return mfColor;
+		}
 
-		return ColorId.ofRepoId(newColorRecord.getAD_Color_ID());
+		public ColorId getColorIdByName(final String name)
+		{
+			final ColorId colorId = idsByName.get(name);
+			if (colorId == null)
+			{
+				throw new AdempiereException("No color found for `" + name + "`");
+			}
+			return colorId;
+		}
+
+		public Optional<ColorId> getColorIdByFlatColor(final Color flatColor)
+		{
+			return Optional.ofNullable(idsByFlatColor.get(flatColor));
+		}
 	}
-
-
-
-	@Override
-	public ColorId getColorIdByName(final String colorName)
-	{
-		return colorIdByName.getOrLoad(colorName, () -> retrieveColorIdByName(colorName));
-	}
-
-	private ColorId retrieveColorIdByName(final String colorName)
-	{
-		final int colorRepoId = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Color.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.addEqualsFilter(I_AD_Color.COLUMNNAME_Name, colorName)
-				.create()
-				.firstIdOnly();
-		return ColorId.ofRepoIdOrNull(colorRepoId);
-	}
-
 }

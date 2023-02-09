@@ -126,7 +126,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 			final I_SEPA_Export sepaExport,
 			final String SEPA_MandateRefNo,
 			final String iban,
-			final String bic,
+			final String swiftCode,
 			final BigDecimal amt,
 			final CurrencyId currencyId)
 	{
@@ -134,13 +134,14 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIBAN(iban);
+		bankAccount.setSwiftCode(swiftCode);
 		bankAccount.setIsEsrAccount(true);
 		bankAccount.setA_Name("bankAccount.A_Name");
 		save(bankAccount);
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
 		line.setIBAN(iban);
-		line.setSwiftCode(bic);
+		line.setSwiftCode(swiftCode);
 		line.setAmt(amt);
 		line.setC_Currency_ID(currencyId.getRepoId());
 		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);

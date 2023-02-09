@@ -3,7 +3,7 @@ package de.metas.inoutcandidate.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -44,6 +44,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelClass);
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
+
+	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(Set<ShipmentScheduleId> ids, Class<T> clazz);
 
 	@Nullable
 	I_M_ShipmentSchedule getByOrderLineId(OrderLineId orderLineId);
@@ -117,4 +119,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
 
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
+
+	ImmutableSet<OrderId> getOrderIds(IQueryFilter<? extends I_M_ShipmentSchedule> filter);
 }

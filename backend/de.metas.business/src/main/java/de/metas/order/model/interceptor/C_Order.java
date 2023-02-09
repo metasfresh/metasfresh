@@ -35,6 +35,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -68,9 +69,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -91,6 +94,7 @@ public class C_Order
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -197,6 +201,22 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	public void updateProjectFromOrder(@NonNull final I_C_Order order)
+	{
+		if (order.getC_Project_ID() <= 0)
+		{
+			return; // let possible existing project assignment be
+		}
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			orderLine.setC_Project_ID(order.getC_Project_ID());
+			orderDAO.save(orderLine);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID,
@@ -210,15 +230,76 @@ public class C_Order
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setIncoterms(@NonNull final I_C_Order order)
+	{
+		if (InterfaceWrapperHelper.isCopying(order))
+		{
+			return; // nothing to do ; the value shall be cloned
+		}
+
+		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
+		if (bpartner == null)
+		{
+			return; // nothing to do yet
+		}
+
+		final int incotermsId;
+
+		if (order.isSOTrx())
+		{
+			incotermsId = bpartner.getC_Incoterms_Customer_ID();
+		}
+		else
+		{
+			incotermsId = bpartner.getC_Incoterms_Vendor_ID();
+		}
+
+		order.setC_Incoterms_ID(incotermsId);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
-		final DeliveryViaRule deliveryViaRule = orderBL.evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = orderBL.findDeliveryViaRule(order).orElse(null);
 
 		if (deliveryViaRule != null)
 		{
 			order.setDeliveryViaRule(deliveryViaRule.getCode());
 		}
+	}
+
+	/**
+	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
+	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setPaymentRule(final I_C_Order order)
+	{
+		if (!InterfaceWrapperHelper.isUIAction(order) || InterfaceWrapperHelper.isCopying(order))
+		{
+			return;
+		}
+
+		final I_C_BPartner bpartner = order.getC_BPartner();
+		final PaymentRule paymentRule;
+		if (order.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+		}
+		else if (!order.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+		}
+		else
+		{
+			paymentRule = invoiceBL.getDefaultPaymentRule();
+		}
+
+		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -478,7 +559,7 @@ public class C_Order
 		validateSupplierApprovals(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
 		if (orderBL.isMediated(order))

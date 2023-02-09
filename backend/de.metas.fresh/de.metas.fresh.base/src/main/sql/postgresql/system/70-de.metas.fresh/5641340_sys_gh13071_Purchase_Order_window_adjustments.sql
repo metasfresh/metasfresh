@@ -1,0 +1,10 @@
+-- 2022-05-30T14:35:22.102Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-05-30 15:35:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551722
+;
+
+-- 2022-05-30T14:38:19.503Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-05-30 15:38:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541284
+;
+

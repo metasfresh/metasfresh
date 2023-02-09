@@ -1,12 +1,6 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -15,6 +9,10 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -51,7 +49,7 @@ public class ReceiptsScheduleCreatedHandler
 	}
 
 	@Override
-	public Collection<Class<? extends ReceiptScheduleCreatedEvent>> getHandeledEventType()
+	public Collection<Class<? extends ReceiptScheduleCreatedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(ReceiptScheduleCreatedEvent.class);
 	}

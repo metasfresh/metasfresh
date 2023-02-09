@@ -34,7 +34,8 @@ public interface EverhourConstants
 
 	@AllArgsConstructor
 	@Getter
-	enum CustomHeaders {
+	enum CustomHeaders
+	{
 		API_KEY("X-Api-Key"),
 		VERSION("X-Accept-Version");
 
@@ -58,7 +59,8 @@ public interface EverhourConstants
 	enum Endpoints
 	{
 		TEAM("team"),
-		TIME("time");
+		TIME("time"),
+		USERS("users");
 
 		private final String value;
 	}

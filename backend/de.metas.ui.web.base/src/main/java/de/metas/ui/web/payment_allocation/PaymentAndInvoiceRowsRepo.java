@@ -72,12 +72,13 @@ public class PaymentAndInvoiceRowsRepo
 	public PaymentAndInvoiceRowsRepo(
 			@NonNull final CurrencyRepository currenciesRepo,
 			@NonNull final PaymentAllocationRepository paymentAllocationRepo,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService)
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.currenciesRepo = currenciesRepo;
 		this.paymentAllocationRepo = paymentAllocationRepo;
 		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
-		bpartnersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		bpartnersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
 	public PaymentAndInvoiceRows getByBPartnerId(@NonNull final BPartnerId bPartnerId)
@@ -190,6 +191,7 @@ public class PaymentAndInvoiceRowsRepo
 				.documentNo(paymentToAllocate.getDocumentNo())
 				.bpartner(bpartnersLookup.findById(bpartnerId))
 				.dateTrx(paymentToAllocate.getDateTrx())
+				.paymentAmtMultiplier(paymentToAllocate.getPaymentAmtMultiplier())
 				.payAmt(paymentToAllocate.getPayAmt())
 				.openAmt(paymentToAllocate.getOpenAmt())
 				.paymentDirection(paymentToAllocate.getPaymentDirection())
@@ -233,9 +235,11 @@ public class PaymentAndInvoiceRowsRepo
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.docTypeName(docTypeBL.getNameById(invoiceToAllocate.getDocTypeId()))
 				.documentNo(invoiceToAllocate.getDocumentNo())
+				.poReference(invoiceToAllocate.getPoReference())
 				.dateInvoiced(invoiceToAllocate.getDateInvoiced())
 				.bpartner(bpartnersLookup.findById(invoiceToAllocate.getBpartnerId()))
 				.docBaseType(invoiceToAllocate.getDocBaseType())
+				.invoiceAmtMultiplier(invoiceToAllocate.getMultiplier())
 				.grandTotal(invoiceToAllocate.getGrandTotal())
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())

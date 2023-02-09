@@ -23,28 +23,30 @@
 package de.metas.rest_api.v2.pricing;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.pricelist.CreatePriceListVersionRequest;
 import de.metas.pricing.pricelist.PriceListVersion;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
@@ -62,6 +64,8 @@ import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 public class PriceListRestService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final PriceListVersionRepository priceListVersionRepository;
@@ -264,6 +268,20 @@ public class PriceListRestService
 	{
 		return getPriceListVersionId(priceListVersionIdentifier, orgCode)
 				.map(priceListVersionRepository::getPriceListVersionById);
+	}
+
+	@NonNull
+	public PriceListVersionId getNewestVersionId(
+			@NonNull final String priceListIdentifier,
+			@NonNull final OrgId orgId)
+	{
+		final String orgCode = orgDAO.retrieveOrgValue(orgId);
+		final PriceListId priceListId = getPriceListId(priceListIdentifier, orgCode);
+
+		return priceListDAO.retrieveNewestPriceListVersionId(priceListId)
+				.orElseThrow(() -> new AdempiereException("No price list version found for price list identifier !")
+						.appendParametersToMessage()
+						.setParameter("priceListIdentifier", priceListIdentifier));
 	}
 
 	private void handleNewPriceListVersionExternalReference(

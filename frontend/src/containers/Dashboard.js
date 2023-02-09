@@ -37,27 +37,27 @@ export class Dashboard extends Component {
     rawModal: PropTypes.any,
   };
 
-  componentDidUpdate() {
-    // TODO: Resolve this hotfix
-    return;
+  // componentDidUpdate() {
+  // TODO: Resolve this hotfix
+  // return;
 
-    /*
-        const { me } = this.props;
+  /*
+      const { me } = this.props;
 
-        if (me) {
-            let docIntroHints;
+      if (me) {
+          let docIntroHints;
 
-            if (Array.isArray(introHints['default'])) {
-                docIntroHints = introHints['default'];
-            }
+          if (Array.isArray(introHints['default'])) {
+              docIntroHints = introHints['default'];
+          }
 
-            this.setState({
-                hintsEnabled: (docIntroHints && (docIntroHints.length > 0)),
-                introHints: docIntroHints,
-            });
-        }
-        */
-  }
+          this.setState({
+              hintsEnabled: (docIntroHints && (docIntroHints.length > 0)),
+              introHints: docIntroHints,
+          });
+      }
+      */
+  // }
 
   toggleEditMode = () => {
     this.setState((prevState) => ({ editmode: !prevState.editmode }));

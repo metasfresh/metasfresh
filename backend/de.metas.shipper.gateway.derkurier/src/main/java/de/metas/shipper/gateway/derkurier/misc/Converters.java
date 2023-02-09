@@ -2,6 +2,7 @@ package de.metas.shipper.gateway.derkurier.misc;
 
 import static de.metas.shipper.gateway.derkurier.DerKurierConstants.STREET_DELIMITER;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -10,8 +11,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -159,7 +160,7 @@ public class Converters
 							timeToString(derKurierDeliveryData.getDesiredTimeFrom()),
 							timeToString(derKurierDeliveryData.getDesiredTimeTo()),
 							intToString(posCounter),
-							intToString(deliveryPosition.getGrossWeightKg()),
+							bigDecimalToString(deliveryPosition.getGrossWeightKg()),
 							intToString(packageDimensions.map(PackageDimensions::getLengthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getWidthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getHeightInCM)),
@@ -238,6 +239,15 @@ public class Converters
 			return "";
 		}
 		return Integer.toString(integer);
+	}
+
+	private static String bigDecimalToString(@Nullable final BigDecimal bigDecimal)
+	{
+		if (bigDecimal == null)
+		{
+			return "";
+		}
+		return bigDecimal.toString();
 	}
 
 	private static String stringToString(@NonNull final Optional<String> string)

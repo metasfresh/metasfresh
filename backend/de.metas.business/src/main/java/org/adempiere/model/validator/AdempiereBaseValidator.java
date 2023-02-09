@@ -63,7 +63,6 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 
 import java.util.List;
 
@@ -139,8 +138,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type()); // 04599
 
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance); // FRESH-727
-
-		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE);
 
 		//
 		// Currency
@@ -331,7 +328,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// task 09508: make sure that masterdata-fixes in warehouse and resource/plant make is to other clients
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Warehouse.Table_Name);
-		cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name);
+		//cacheMgt.enableRemoteCacheInvalidationForTableName(I_S_Resource.Table_Name); // not needed anymore because we have a dedicated cache for S_Resource
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);

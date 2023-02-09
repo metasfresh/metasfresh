@@ -40,6 +40,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
@@ -54,14 +55,11 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -71,25 +69,24 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -105,7 +102,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -130,6 +126,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
 		return load(huId, I_M_HU.class);
+	}
+
+	@Override
+	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
+				.create()
+				.listIds(HuId::ofRepoId);
 	}
 
 	@Override
@@ -440,7 +455,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final BPartnerId bpartnerId)
+	public List<I_M_HU_PI_Item> retrievePIItems(
+			@NonNull final I_M_HU_PI handlingUnit,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
 		return retrievePIItems(version, bpartnerId);
@@ -601,6 +618,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
+		if (piVersion == null)
+		{
+			throw new HUException("No current version found for " + piId);
+		}
+		return piVersion;
+	}
+
+	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pi);
@@ -641,36 +669,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(final I_M_Locator locator)
+	public Iterator<I_M_HU> retrieveTopLevelHUsForLocator(@NonNull final LocatorId locatorId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(locator);
-		final String trxName = InterfaceWrapperHelper.getTrxName(locator);
-		final int locatorId = locator.getM_Locator_ID();
-
-		return retrieveTopLevelHUsForLocators(ctx, Collections.singleton(locatorId), trxName);
-	}
-
-	public Iterator<I_M_HU> retrieveTopLevelHUsForLocators(final Properties ctx, final Collection<Integer> locatorIds, final String trxName)
-	{
-		if (locatorIds.isEmpty())
-		{
-			return IteratorUtils.emptyIterator();
-		}
-
-		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getCompositeFilter();
-		filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_M_Locator_ID, locatorIds);
-
-		// Top Level filter
-		filters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null);
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_HU.COLUMN_M_HU_ID);
-
-		return queryBuilder
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_Locator_ID, locatorId)
+				.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null) // top level HU
+				.orderBy(I_M_HU.COLUMN_M_HU_ID)
 				.create()
-				.setOnlyActiveRecords(true)
 				.iterate(I_M_HU.class);
 	}
 
@@ -698,7 +704,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, trxName);
 	}
 
-	@Cached
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
+	}
+
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
@@ -835,6 +849,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull final HuPackingInstructionsVersionId versionId, @Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePIVersionById(versionId);
+		return retrievePackingMaterial(version, bpartnerId);
+	}
+
+	@Override
 	public List<I_M_HU> retrieveVirtualHUs(final I_M_HU_Item itemMaterial)
 	{
 		return retrieveIncludedHUs(itemMaterial);
@@ -844,7 +865,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
 		final HUReservationRepository huReservationRepository = getHUReservationRepository();
-		return new HUQueryBuilder(huReservationRepository);
+		final AgeAttributesService ageAttributesService = getAgeAttributeService();
+		return new HUQueryBuilder(huReservationRepository, ageAttributesService);
 	}
 
 	private HUReservationRepository getHUReservationRepository()
@@ -855,6 +877,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			return new HUReservationRepository();
 		}
 		return SpringContextHolder.instance.getBean(HUReservationRepository.class);
+	}
+
+	private AgeAttributesService getAgeAttributeService()
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// avoid having to annotate each test that uses HUQueryBuilder with "@RunWith(SpringRunner.class) @SpringBootTest.."
+			return new AgeAttributesService();
+		}
+		return SpringContextHolder.instance.getBean(AgeAttributesService.class);
 	}
 
 	@Override
@@ -890,25 +922,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// Get those PI Items which are about Default LUs
 			final List<I_M_HU_PI_Item> defaultLUPIItems = parentPIItems
 					.stream()
-					.filter(parentPIItem -> parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU())
+					.sorted(Comparator.<I_M_HU_PI_Item, Integer>comparing(item -> isDefaultLU(item) ? 0 : 1) // defaults first
+							.thenComparing(item -> item.getQty().signum() > 0 ? 0 : 1) // those who have a finite Qty TUs/LU first
+							.thenComparing(I_M_HU_PI_Item::getM_HU_PI_Item_ID)) // by ID just to have a deterministic order
 					.collect(Collectors.toList());
 
-			// If we found only one default, we can return it directly
-			if (defaultLUPIItems.size() == 1)
-			{
-				return defaultLUPIItems.get(0);
-			}
-
-			logger.warn("More then one parent PI Item found. Returing the first one."
-							+ "\n huPI={}"
-							+ "\n huUnitType={}"
-							+ "\n bpartner={}"
-							+ "\n HU PI Items with DefaultLU={}"
-							+ "\n => parent HU PI Items={}",
-					huPI, huUnitType, bpartnerId, defaultLUPIItems, parentPIItems);
-
-			return parentPIItems.get(0);
+			return defaultLUPIItems.get(0);
 		}
+	}
+
+	private boolean isDefaultLU(final I_M_HU_PI_Item parentPIItem)
+	{
+		return parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU();
 	}
 
 	@Override
@@ -953,36 +978,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.firstOnly(I_DD_NetworkDistribution.class);
 	}
 
-	private Set<WarehouseId> retrieveWarehouseIdsForHUs(final List<I_M_HU> hus)
+	@Override
+	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
 	{
 		final Set<Integer> locatorRepoIds = hus.stream()
 				.map(I_M_HU::getM_Locator_ID)
 				.filter(locatorRepoId -> locatorRepoId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return Services.get(IWarehouseDAO.class).getWarehouseIdsForLocatorRepoIds(locatorRepoIds);
-	}
-
-	@Override
-	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
-	{
-		if (hus.isEmpty())
-		{
-			// should never happen
-			return Collections.emptyList();
-		}
-
-		// used for deciding the org and context
-		final I_M_HU firstHU = hus.get(0);
-
-		final OrgId orgId = OrgId.ofRepoId(firstHU.getAD_Org_ID());
-
-		final Set<WarehouseId> huWarehouseIds = retrieveWarehouseIdsForHUs(hus);
-
-		return Services.get(IWarehouseDAO.class).getByOrgId(orgId)
-				.stream()
-				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
-				.collect(ImmutableList.toImmutableList());
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
 
 	@Override
@@ -1001,7 +1006,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public void setReservedByHUIds(@NonNull final Collection<HuId> huIds, final boolean reserved)
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
 	{
 		if (huIds.isEmpty())
 		{

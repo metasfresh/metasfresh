@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -50,6 +51,8 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 
 	private final int freshQtyOnHandLineId;
 
+	private final Integer qtyStockEstimateSeqNo;
+	
 	private final Instant eventDate;
 
 	public AbstractStockEstimateEvent(
@@ -59,6 +62,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 			final int plantId,
 			final int freshQtyOnHandId,
 			final int freshQtyOnHandLineId,
+			@Nullable final Integer qtyStockEstimateSeqNo, 
 			@NonNull final Instant eventDate
 	)
 	{
@@ -68,6 +72,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 		this.plantId = plantId;
 		this.freshQtyOnHandId = freshQtyOnHandId;
 		this.freshQtyOnHandLineId = freshQtyOnHandLineId;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
 		this.eventDate = eventDate;
 	}
 

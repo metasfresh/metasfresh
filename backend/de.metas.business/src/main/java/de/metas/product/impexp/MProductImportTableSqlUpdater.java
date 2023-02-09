@@ -1,16 +1,5 @@
 package de.metas.product.impexp;
 
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
-
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_I_Product;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
@@ -18,7 +7,16 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_I_Product;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
+
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 /*
  * #%L
@@ -47,29 +45,38 @@ import lombok.experimental.UtilityClass;
  * Those updates complements the data from existing metasfresh records and flag those import records that can't yet be imported.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-@UtilityClass
 public class MProductImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
 
-	private String targetTableName = I_I_Product.Table_Name;
-	private String valueColumnName = I_I_Product.COLUMNNAME_Value;
+	private final ImportRecordsSelection selection;
+	private final Properties ctx;
+	private final String targetTableName;
+	private final String valueColumnName;
 
-	final private String priceName_KAEP = "KAEP";
-	final private String priceName_APU = "APU";
-	final private String priceName_AEP = "AEP";
-	final private String priceName_AVP = "AVP";
-	final private String priceName_UVP = "UVP";
-	final private String priceName_ZBV = "ZBV";
+	private static final String priceName_KAEP = "KAEP";
+	private static final String priceName_APU = "APU";
+	private static final String priceName_AEP = "AEP";
+	private static final String priceName_AVP = "AVP";
+	private static final String priceName_UVP = "UVP";
+	private static final String priceName_ZBV = "ZBV";
 
-	@Builder(buildMethodName = "updateIProduct")
-	private void updateMProductImportTable(@NonNull final ImportRecordsSelection selection, @NonNull final Properties ctx)
+	@Builder
+	private MProductImportTableSqlUpdater(
+			@NonNull final ImportRecordsSelection selection,
+			@NonNull final Properties ctx,
+			@NonNull final String tableName,
+			@NonNull final String valueName)
 	{
-		targetTableName = I_I_Product.Table_Name;
-		valueColumnName = I_I_Product.COLUMNNAME_Value;
+		this.selection = selection;
+		this.ctx = ctx;
+		this.targetTableName = tableName;
+		this.valueColumnName = valueName;
+	}
 
+	public void updateIProduct()
+	{
 		dbUpdateBPartners(selection);
 
 		dbUpdateManufacturers(selection);
@@ -101,20 +108,16 @@ public class MProductImportTableSqlUpdater
 		dbUpdateDosageForm(selection);
 
 		dbUpdateIndication(selection);
-		
+
 		dbUpdateCustomsTarrif(selection);
-		
+
 		dbUpdateRawMaterialOrignCountry(selection);
 
 		dbUpdateErrorMessages(selection);
 	}
 
-	@Builder(buildMethodName = "updateIPharmaProduct")
-	private void updatePharmaProductImportTable(@NonNull final ImportRecordsSelection selection, @NonNull final Properties ctx, @NonNull final String tableName, @NonNull final String valueName)
+	public void updateIPharmaProduct()
 	{
-		targetTableName = tableName;
-		valueColumnName = valueName;
-
 		dbUpdateProductsByValue(selection);
 		dbUpdateProductsByExternalId(selection);
 		dbUpdateProductCategoryForIFAProduct(selection);
@@ -143,7 +146,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName)
@@ -151,7 +154,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause());
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateManufacturers(@NonNull final ImportRecordsSelection selection)
@@ -164,7 +167,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE Manufacturer_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateManufacturersIFA(@NonNull final ImportRecordsSelection selection)
@@ -176,7 +179,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE Manufacturer_ID IS NULL AND A00ANBNR5 IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
@@ -188,7 +191,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing UPC={}", no);
 
 		dbUpdateProductsByValue(selection);
@@ -205,7 +208,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing Value={}", no);
 	}
 
@@ -218,7 +221,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Product Existing ExternalId={}", no);
 	}
 
@@ -233,10 +236,10 @@ public class MProductImportTableSqlUpdater
 				.append(" SET ProductCategory_Value=(SELECT MAX(Value) FROM M_Product_Category")
 				.append(" WHERE IsDefault='Y' AND AD_Client_ID=").append(adClientId).append(") ")
 				.append("WHERE ProductCategory_Value IS NULL AND M_Product_Category_ID IS NULL")
-				.append(" AND M_Product_ID IS NULL")	// set category only if product not found
+				.append(" AND M_Product_ID IS NULL")    // set category only if product not found
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set Category Default Value={}", no);
 
 		sql = new StringBuilder("UPDATE ")
@@ -246,7 +249,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE ProductCategory_Value IS NOT NULL AND M_Product_Category_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Set Category={}", no);
 	}
 
@@ -270,7 +273,7 @@ public class MProductImportTableSqlUpdater
 					.append(strField).append(" IS NULL"
 							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
 					.append(selection.toSqlWhereClause("i"));
-			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{
 				logger.debug(strField + " - default from existing Product=" + no);
@@ -289,7 +292,7 @@ public class MProductImportTableSqlUpdater
 					.append(numField).append(" IS NULL OR ").append(numField).append("=0)"
 							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
 					.append(selection.toSqlWhereClause("i"));
-			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
 			{
 				logger.debug("{} default from existing Product={}", numField, no);
@@ -309,16 +312,16 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE X12DE355 IS NULL AND C_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set UOM Default={}", no);
 		//
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE u.X12DE355=i.X12DE355 AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) ")
+				.append(" SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE upper(u.X12DE355)=upper(i.X12DE355) AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) ")
 				.append("WHERE C_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Set UOM={}", no);
 		//
 		sql = new StringBuilder("UPDATE ")
@@ -327,7 +330,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdatePackageUOM(@NonNull final ImportRecordsSelection selection)
@@ -341,7 +344,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE Package_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Set Package_UOM ={}", no);
 	}
 
@@ -359,7 +362,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_Currency_ID IS NULL AND ISO_Code IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set Currency Default={}", no);
 		//
 		sql = new StringBuilder("UPDATE ")
@@ -369,7 +372,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_Currency_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("doIt- Set Currency={}", no);
 		//
 		sql = new StringBuilder("UPDATE ")
@@ -378,7 +381,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_Currency_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateVendorProductNo(@NonNull final ImportRecordsSelection selection)
@@ -392,7 +395,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NOT NULL AND VendorProductNo IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("VendorProductNo Set to Value={}", no);
 	}
 
@@ -411,7 +414,7 @@ public class MProductImportTableSqlUpdater
 					.append(" and ").append(COLUMNNAME_I_IsImported).append("<>'Y'")
 					.append(" and i.C_TaxCategory_Name is not null")
 					.append(selection.toSqlWhereClause("i"));
-			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
 
 		// Set default C_TaxCategory_ID where it was not set
@@ -425,7 +428,7 @@ public class MProductImportTableSqlUpdater
 					.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 					.append(" and i.C_TaxCategory_ID is null")
 					.append(selection.toSqlWhereClause("i"));
-			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -442,7 +445,7 @@ public class MProductImportTableSqlUpdater
 				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" and i.M_PriceList_Version_Name is not null")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateDosageForm(@NonNull final ImportRecordsSelection selection)
@@ -454,7 +457,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_DosageForm_ID IS NULL AND A00DARFO IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdatePharmaProductCategory(@NonNull final ImportRecordsSelection selection)
@@ -468,7 +471,7 @@ public class MProductImportTableSqlUpdater
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateProductCategoryForIFAProduct(@NonNull final ImportRecordsSelection selection)
@@ -482,7 +485,7 @@ public class MProductImportTableSqlUpdater
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateIndication(@NonNull final ImportRecordsSelection selection)
@@ -494,7 +497,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Indication_ID IS NULL AND M_Indication_Name IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdatePriceLists(@NonNull final ImportRecordsSelection selection, @NonNull final Properties ctx, @NonNull final String nameToMatch)
@@ -511,9 +514,9 @@ public class MProductImportTableSqlUpdater
 				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		final Object[] params = new Object[] { nameToMatch, adClientId };
-		DB.executeUpdateEx(sql.toString(), params, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), params, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	private void dbUpdateCustomsTarrif(@NonNull final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -523,10 +526,9 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_CustomsTariff_ID IS NULL AND i.CustomsTariff IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	
 	private void dbUpdateRawMaterialOrignCountry(@NonNull final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE ")
@@ -536,9 +538,9 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE RawMaterialOrigin_ID IS NULL AND i.RawMaterialOriginCountryCode IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
 		StringBuilder sql;
@@ -549,7 +551,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Product_Category_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -557,23 +559,56 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE ProductType NOT IN ('E','I','R','S')")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" <>'Y'")
 				.append(" AND Value IN (SELECT Value FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY Value HAVING COUNT(*) > 1)")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Scale Price not unique,' ")
+				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" ='Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_Qty).append(" IN (SELECT "
+						+ I_I_Product.COLUMNNAME_Qty
+						+ " FROM "
+						+ I_I_Product.Table_Name
+						+ " ii WHERE ii."
+						+ I_I_Product.COLUMNNAME_Value
+						+ " = i."
+						+ I_I_Product.COLUMNNAME_Value
+						+ " AND i."
+						+ I_I_Product.COLUMNNAME_AD_Client_ID
+						+ "=ii."
+						+ I_I_Product.COLUMNNAME_AD_Client_ID
+						+ " AND ii."
+						+ I_I_Product.COLUMNNAME_IsScalePrice
+						+ " = 'Y' AND ii."
+						+ I_I_Product.COLUMNNAME_I_IsImported
+						+ " <>'Y'"
+						+ " AND ii."
+						+ I_I_Product.COLUMNNAME_I_Product_ID
+						+ " <> i."
+						+ I_I_Product.COLUMNNAME_I_Product_ID
+						+ ")"
+				)
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		//
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=UPC not unique,' ")
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" <>'Y'")
 				.append(" AND UPC IN (SELECT UPC FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY UPC HAVING COUNT(*) > 1)")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -581,7 +616,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE Value IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -591,7 +626,7 @@ public class MProductImportTableSqlUpdater
 				.append(" AND (C_BPartner_ID, VendorProductNo) IN ")
 				.append(" (SELECT C_BPartner_ID, VendorProductNo FROM I_Product ii WHERE i.AD_Client_ID=ii.AD_Client_ID GROUP BY C_BPartner_ID, VendorProductNo HAVING COUNT(*) > 1)")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -600,7 +635,7 @@ public class MProductImportTableSqlUpdater
 				.append("AND M_PharmaProductCategory_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessagesIFA(@NonNull final ImportRecordsSelection selection)
@@ -612,7 +647,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Product_Category_ID IS NULL AND A00SSATZ = '1'") // category shall be mandatory only when is new product
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -620,7 +655,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE A00PZN IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -628,7 +663,7 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE Package_UOM_ID IS NULL and i.A00PGEINH IS NOT NULL ")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
@@ -636,19 +671,17 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_DosageForm_ID IS NULL and (i.A00DARFO IS NOT NULL and i.A00DARFO <> '---')")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public void dbUpdateIsPriceCopiedToYes(@NonNull final String whereClause, @NonNull final String columnname)
+	public static void dbUpdateIsPriceCopiedToYes(@NonNull final String targetTableName, @NonNull final String columnName)
 	{
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET " + columnname + " = 'Y' ")
-				.append(" WHERE 1=1 AND ")
-				.append(whereClause);
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+				.append(" SET " + columnName + " = 'Y' ")
+				.append(" WHERE coalesce(" + columnName + ", 'N') != 'Y'");
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
-	
 
 }

@@ -1,12 +1,14 @@
 package org.adempiere.ad.wrapper;
 
-import java.util.Properties;
-import java.util.Set;
-
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -51,8 +53,6 @@ public interface IInterfaceWrapperHelper
 	/**
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
-	 * @param model
-	 * @param useClientOrgFromModel
 	 * @return context
 	 */
 	Properties getCtx(final Object model, final boolean useClientOrgFromModel);
@@ -114,8 +114,6 @@ public interface IInterfaceWrapperHelper
 	boolean isValueChanged(Object model, String columnName);
 	
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if any of given column names where changed
 	 */
 	boolean isValueChanged(Object model, Set<String> columnNames);
@@ -123,13 +121,12 @@ public interface IInterfaceWrapperHelper
 	/**
 	 * Checks if given columnName's value is <code>null</code>
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return <code>true</code> if columnName's value is <code>null</code>
 	 */
 	boolean isNull(Object model, String columnName);
 	
-	<T> T getDynAttribute(final Object model, final String attributeName);
+	@Nullable
+	<T> T getDynAttribute(@NonNull final Object model, final String attributeName);
 
 	Object setDynAttribute(final Object model, final String attributeName, final Object value);
 

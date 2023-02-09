@@ -59,6 +59,10 @@ public class DocumentLocation
 			@Nullable final BPartnerContactId contactId,
 			@Nullable final String bpartnerAddress)
 	{
+		if ((bpartnerLocationId != null || contactId != null) && bpartnerId == null)
+		{
+			throw new AdempiereException("If bpartnerLocationId=" + bpartnerLocationId + " OR contactId=" + contactId + " are not null, then bpartnerId may also not be null");
+		}
 		if (bpartnerLocationId != null && !bpartnerLocationId.getBpartnerId().equals(bpartnerId))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " shall match");
@@ -75,7 +79,7 @@ public class DocumentLocation
 		this.bpartnerAddress = bpartnerAddress;
 	}
 
-	public static DocumentLocation ofBPartnerLocationId(@NonNull BPartnerLocationId bpartnerLocationId)
+	public static DocumentLocation ofBPartnerLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return builder()
 				.bpartnerId(bpartnerLocationId.getBpartnerId())
@@ -124,5 +128,12 @@ public class DocumentLocation
 			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
 		}
 		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
+	}
+
+	public DocumentLocation withContactId(@Nullable final BPartnerContactId contactId)
+	{
+		return !Objects.equals(this.contactId, contactId)
+				? toBuilder().contactId(contactId).build()
+				: this;
 	}
 }

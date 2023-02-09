@@ -35,7 +35,6 @@ package de.metas.document.archive.model;
  */
 public interface IArchiveAware
 {
-    final String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
+    String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
     int getAD_Archive_ID();
-	I_AD_Archive getAD_Archive();
 }

@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.quantity.Quantity;
@@ -65,7 +69,7 @@ public class DeliveredQtyItem
 		this.qtyCatch = qtyCatch;
 		this.qtyOverride = qtyOverride;
 		this.completedOrClosed = completedOrClosed;
-		this.inDispute = coalesce(inDispute, false);
+		this.inDispute = coalesceNotNull(inDispute, false);
 	}
 
 }

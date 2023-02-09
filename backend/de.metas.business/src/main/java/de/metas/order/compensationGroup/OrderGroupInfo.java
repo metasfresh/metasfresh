@@ -1,12 +1,12 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Optional;
-
-import org.eevolution.api.ProductBOMId;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.api.ProductBOMId;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -18,12 +18,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,4 +42,7 @@ public class OrderGroupInfo
 
 	@NonNull
 	Optional<ProductBOMId> bomId;
+
+	@Nullable
+	GroupCompensationOrderBy groupCompensationOrderBy;
 }

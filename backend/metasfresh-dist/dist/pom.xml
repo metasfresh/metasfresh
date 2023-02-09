@@ -105,6 +105,20 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.acct</groupId>
+            <artifactId>de.metas.acct.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.forex</groupId>
+            <artifactId>de.metas.forex.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
@@ -303,6 +317,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.marketing</groupId>
@@ -322,6 +343,13 @@
         <dependency>
             <groupId>de.metas.marketing</groupId>
             <artifactId>marketing-serialletter</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.marketing</groupId>
+            <artifactId>marketing-activecampaign</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
@@ -459,6 +487,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.salesorder</groupId>
+            <artifactId>de-metas-salesorder</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+                
+        <dependency>
             <groupId>de.metas.serviceprovider</groupId>
             <artifactId>de.metas.serviceprovider.base</artifactId>
             <version>${metasfresh.version}</version>
@@ -511,13 +547,6 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>de.metas.elasticsearch</groupId>
-            <artifactId>de.metas.elasticsearch</artifactId>
-            <version>${metasfresh.version}</version>
-            <classifier>migration-postgres-sql</classifier>
-            <type>zip</type>
-        </dependency>
 
         <dependency>
             <groupId>de.metas.inbound</groupId>
@@ -530,6 +559,13 @@
         <dependency>
             <groupId>de.metas.swat</groupId>
             <artifactId>de.metas.swat.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.invoice</groupId>
+            <artifactId>de.metas.invoice.webui</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
@@ -591,6 +627,14 @@
         <dependency>
             <groupId>de.metas.servicerepair</groupId>
             <artifactId>de.metas.servicerepair.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.deliveryplanning</groupId>
+            <artifactId>de.metas.deliveryplanning.base</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>

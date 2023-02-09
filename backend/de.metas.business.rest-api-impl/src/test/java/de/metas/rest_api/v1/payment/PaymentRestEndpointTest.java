@@ -25,7 +25,6 @@ package de.metas.rest_api.v1.payment;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
@@ -35,6 +34,9 @@ import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.pricing.productprice.ProductPriceRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -70,7 +72,7 @@ class PaymentRestEndpointTest
 	public static final String EXTERNAL_ID = "1234";
 
 	private final CurrencyService currencyService = new CurrencyService();
-	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade();
+	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade(new ProductPriceRepository(new ProductTaxCategoryService(new ProductTaxCategoryRepository())));
 	private final JsonPaymentService jsonPaymentService = new JsonPaymentService(currencyService, bpartnerPriceListServicesFacade);
 	private final PaymentRestController paymentRestEndpoint = new PaymentRestController(jsonPaymentService);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);

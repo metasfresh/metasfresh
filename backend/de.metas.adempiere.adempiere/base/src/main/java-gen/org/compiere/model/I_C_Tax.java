@@ -73,7 +73,7 @@ public interface I_C_Tax
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Regel.
+	 * Set Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -82,7 +82,7 @@ public interface I_C_Tax
 	void setAD_Rule_ID (int AD_Rule_ID);
 
 	/**
-	 * Get Regel.
+	 * Get Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -312,8 +312,8 @@ public interface I_C_Tax
 	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
-	 * Set Dokumentbasiert.
-	 * Steuer wird dokumentbasiert berechnet (abweichend wäre zeilenweise)
+	 * Set Document Level.
+	 * Tax is calculated on document level (rather than line by line)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -322,8 +322,8 @@ public interface I_C_Tax
 	void setIsDocumentLevel (boolean IsDocumentLevel);
 
 	/**
-	 * Get Dokumentbasiert.
-	 * Steuer wird dokumentbasiert berechnet (abweichend wäre zeilenweise)
+	 * Get Document Level.
+	 * Tax is calculated on document level (rather than line by line)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -358,8 +358,8 @@ public interface I_C_Tax
 	String COLUMNNAME_IsFiscalRepresentation = "IsFiscalRepresentation";
 
 	/**
-	 * Set VK Steuer.
-	 * Dies ist eine VK Steuer
+	 * Set Sales Tax.
+	 * This is a sales tax (i.e. not a value added tax)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -368,8 +368,8 @@ public interface I_C_Tax
 	void setIsSalesTax (boolean IsSalesTax);
 
 	/**
-	 * Get VK Steuer.
-	 * Dies ist eine VK Steuer
+	 * Get Sales Tax.
+	 * This is a sales tax (i.e. not a value added tax)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -404,7 +404,7 @@ public interface I_C_Tax
 	String COLUMNNAME_IsSmallbusiness = "IsSmallbusiness";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -414,7 +414,7 @@ public interface I_C_Tax
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -427,8 +427,8 @@ public interface I_C_Tax
 	String COLUMNNAME_IsSummary = "IsSummary";
 
 	/**
-	 * Set steuerbefreit.
-	 * Steuersatz steuerbefreit
+	 * Set SO Tax exempt.
+	 * Business partner is exempt from tax on sales
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -437,8 +437,8 @@ public interface I_C_Tax
 	void setIsTaxExempt (boolean IsTaxExempt);
 
 	/**
-	 * Get steuerbefreit.
-	 * Steuersatz steuerbefreit
+	 * Get SO Tax exempt.
+	 * Business partner is exempt from tax on sales
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -494,8 +494,8 @@ public interface I_C_Tax
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Übergeordnete Steuer.
-	 * Setzt sich die Steuer aus mehreren Steuersätzen zusammen, wird dies mit übergeordneten Steuersätzen definiert.
+	 * Set Parent Tax.
+	 * Parent Tax indicates a tax that is made up of multiple taxes
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -504,8 +504,8 @@ public interface I_C_Tax
 	void setParent_Tax_ID (int Parent_Tax_ID);
 
 	/**
-	 * Get Übergeordnete Steuer.
-	 * Setzt sich die Steuer aus mehreren Steuersätzen zusammen, wird dies mit übergeordneten Steuersätzen definiert.
+	 * Get Parent Tax.
+	 * Parent Tax indicates a tax that is made up of multiple taxes
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -516,7 +516,7 @@ public interface I_C_Tax
 	String COLUMNNAME_Parent_Tax_ID = "Parent_Tax_ID";
 
 	/**
-	 * Set Satz.
+	 * Set Rate.
 	 * Rate or Tax or Exchange
 	 *
 	 * <br>Type: Number
@@ -526,7 +526,7 @@ public interface I_C_Tax
 	void setRate (BigDecimal Rate);
 
 	/**
-	 * Get Satz.
+	 * Get Rate.
 	 * Rate or Tax or Exchange
 	 *
 	 * <br>Type: Number
@@ -539,24 +539,24 @@ public interface I_C_Tax
 	String COLUMNNAME_Rate = "Rate";
 
 	/**
-	 * Set erfordert Steuer-ID.
-	 * Dieser Steuersatz erfordert eine Steuer-ID beim Geschäftspartner,.
+	 * Set Requires Tax Certificate.
+	 * This tax rate requires the Business Partner to be tax exempt
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setRequiresTaxCertificate (java.lang.String RequiresTaxCertificate);
+	void setRequiresTaxCertificate (@Nullable java.lang.String RequiresTaxCertificate);
 
 	/**
-	 * Get erfordert Steuer-ID.
-	 * Dieser Steuersatz erfordert eine Steuer-ID beim Geschäftspartner,.
+	 * Get Requires Tax Certificate.
+	 * This tax rate requires the Business Partner to be tax exempt
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getRequiresTaxCertificate();
+	@Nullable java.lang.String getRequiresTaxCertificate();
 
 	ModelColumn<I_C_Tax, Object> COLUMN_RequiresTaxCertificate = new ModelColumn<>(I_C_Tax.class, "RequiresTaxCertificate", null);
 	String COLUMNNAME_RequiresTaxCertificate = "RequiresTaxCertificate";
@@ -587,8 +587,8 @@ public interface I_C_Tax
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set VK/ EK Typ.
-	 * Steuer für Einkauf und/ oder Verkauf Transaktionen.
+	 * Set SO/PO Type.
+	 * Sales Tax applies to sales situations, Purchase Tax to purchase situations
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -597,8 +597,8 @@ public interface I_C_Tax
 	void setSOPOType (java.lang.String SOPOType);
 
 	/**
-	 * Get VK/ EK Typ.
-	 * Steuer für Einkauf und/ oder Verkauf Transaktionen.
+	 * Get SO/PO Type.
+	 * Sales Tax applies to sales situations, Purchase Tax to purchase situations
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -610,7 +610,28 @@ public interface I_C_Tax
 	String COLUMNNAME_SOPOType = "SOPOType";
 
 	/**
-	 * Set Steuer-Indikator.
+	 * Set Tax Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTaxCode (@Nullable java.lang.String TaxCode);
+
+	/**
+	 * Get Tax Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTaxCode();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_TaxCode = new ModelColumn<>(I_C_Tax.class, "TaxCode", null);
+	String COLUMNNAME_TaxCode = "TaxCode";
+
+	/**
+	 * Set Tax Indicator.
 	 * Short form for Tax to be printed on documents
 	 *
 	 * <br>Type: String
@@ -620,7 +641,7 @@ public interface I_C_Tax
 	void setTaxIndicator (@Nullable java.lang.String TaxIndicator);
 
 	/**
-	 * Get Steuer-Indikator.
+	 * Get Tax Indicator.
 	 * Short form for Tax to be printed on documents
 	 *
 	 * <br>Type: String
@@ -660,7 +681,7 @@ public interface I_C_Tax
 	String COLUMNNAME_To_Country_ID = "To_Country_ID";
 
 	/**
-	 * Set An.
+	 * Set To.
 	 * Receiving Region
 	 *
 	 * <br>Type: Table
@@ -670,7 +691,7 @@ public interface I_C_Tax
 	void setTo_Region_ID (int To_Region_ID);
 
 	/**
-	 * Get An.
+	 * Get To.
 	 * Receiving Region
 	 *
 	 * <br>Type: Table

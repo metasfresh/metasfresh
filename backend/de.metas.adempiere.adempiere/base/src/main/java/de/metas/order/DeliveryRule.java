@@ -1,16 +1,15 @@
 package de.metas.order;
 
-import java.util.Arrays;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_Order;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Order;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /*
  * #%L
@@ -53,14 +52,15 @@ public enum DeliveryRule implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static DeliveryRule ofNullableCode(final String code)
+	@Nullable
+	public static DeliveryRule ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
 	public static DeliveryRule ofCode(@NonNull final String code)
 	{
-		DeliveryRule type = typesByCode.get(code);
+		final DeliveryRule type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + DeliveryRule.class + " found for code: " + code);
@@ -70,7 +70,8 @@ public enum DeliveryRule implements ReferenceListAwareEnum
 
 	private static final ImmutableMap<String, DeliveryRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DeliveryRule::getCode);
 
-	public static String toCodeOrNull(final DeliveryRule type)
+	@Nullable
+	public static String toCodeOrNull(@Nullable final DeliveryRule type)
 	{
 		return type != null ? type.getCode() : null;
 	}
@@ -82,10 +83,14 @@ public enum DeliveryRule implements ReferenceListAwareEnum
 
 	public boolean isCompleteOrderOrLine()
 	{
-		return COMPLETE_ORDER.equals(this)
-				|| COMPLETE_LINE.equals(this);
+		return COMPLETE_ORDER.equals(this) || COMPLETE_LINE.equals(this);
 	}
 
+	public boolean isBasedOnDelivery()
+	{
+		return AVAILABILITY.equals(this) || COMPLETE_ORDER.equals(this) || COMPLETE_LINE.equals(this);
+	}
+	
 	public boolean isAvailability()
 	{
 		return AVAILABILITY.equals(this);

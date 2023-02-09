@@ -2,6 +2,10 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.util.Properties;
+
 /** Generated Interface for ExternalSystem_Config_RabbitMQ_HTTP
  *  @author metasfresh (generated) 
  */
@@ -48,6 +52,28 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+
+	/**
+	 * Set Users Group.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSubjectCreatedByUserGroup_ID (int SubjectCreatedByUserGroup_ID);
+
+	/**
+	 * Get Users Group.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSubjectCreatedByUserGroup_ID();
+
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_AD_UserGroup> COLUMN_SubjectCreatedByUserGroup_ID = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "SubjectCreatedByUserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
+	String COLUMNNAME_SubjectCreatedByUserGroup_ID = "SubjectCreatedByUserGroup_ID";
 
 	/**
 	 * Get Created.
@@ -165,6 +191,29 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Auto-send if created by users group.
+	 * If a business bartner was created by a user from the given group, then it is automatically send.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoSendWhenCreatedByUserGroup (boolean IsAutoSendWhenCreatedByUserGroup);
+
+	/**
+	 * Get Auto-send if created by users group.
+	 * If a business bartner was created by a user from the given group, then it is automatically send.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoSendWhenCreatedByUserGroup();
+
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsAutoSendWhenCreatedByUserGroup = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsAutoSendWhenCreatedByUserGroup", null);
+	String COLUMNNAME_IsAutoSendWhenCreatedByUserGroup = "IsAutoSendWhenCreatedByUserGroup";
+
+	/**
 	 * Set IsSyncBPartnersToRabbitMQ.
 	 * If checked, then business selected partners can be initially send to RabbitMQ via an action in the business partner window. Once initially send, they will from there onwards be automatically send whenever changed in metasfresh.
 	 *
@@ -186,6 +235,29 @@ public interface I_ExternalSystem_Config_RabbitMQ_HTTP
 
 	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsSyncBPartnersToRabbitMQ = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsSyncBPartnersToRabbitMQ", null);
 	String COLUMNNAME_IsSyncBPartnersToRabbitMQ = "IsSyncBPartnersToRabbitMQ";
+
+	/**
+	 * Set Send partner references.
+	 * If ticked, then selected external references to business partners can be initially sent to RabbitMQ with an action in the External Reference window. After they have been sent once, they are automatically resent when changes are made.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncExternalReferencesToRabbitMQ (boolean IsSyncExternalReferencesToRabbitMQ);
+
+	/**
+	 * Get Send partner references.
+	 * If ticked, then selected external references to business partners can be initially sent to RabbitMQ with an action in the External Reference window. After they have been sent once, they are automatically resent when changes are made.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncExternalReferencesToRabbitMQ();
+
+	ModelColumn<I_ExternalSystem_Config_RabbitMQ_HTTP, Object> COLUMN_IsSyncExternalReferencesToRabbitMQ = new ModelColumn<>(I_ExternalSystem_Config_RabbitMQ_HTTP.class, "IsSyncExternalReferencesToRabbitMQ", null);
+	String COLUMNNAME_IsSyncExternalReferencesToRabbitMQ = "IsSyncExternalReferencesToRabbitMQ";
 
 	/**
 	 * Set Remote-URL.

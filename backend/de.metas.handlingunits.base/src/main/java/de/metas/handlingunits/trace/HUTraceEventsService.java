@@ -15,7 +15,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.organization.OrgId;
@@ -25,7 +25,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
@@ -459,7 +459,12 @@ public class HUTraceEventsService
 		else
 		{
 			oldTopLevelHuId = HuId.ofRepoIdOrNull(huAccessService.retrieveTopLevelHuId(parentHUItemOld.getM_HU()));
-			Check.errorIf(oldTopLevelHuId == null, "oldTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; parentHUItemOld={}", oldTopLevelHuId, parentHUItemOld);
+			if (oldTopLevelHuId == null)
+			{
+				// this might happen if the HU is in the process of being destructed
+				logger.info("parentHUItemOld={} has M_HU_ID={} whichout a top-levelHU; -> nothing to do", parentHUItemOld, parentHUItemOld.getM_HU_ID());
+				return;
+			}
 		}
 
 		for (final I_M_HU vhu : vhus)

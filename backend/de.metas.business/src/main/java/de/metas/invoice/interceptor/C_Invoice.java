@@ -6,6 +6,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
@@ -21,6 +22,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
@@ -31,6 +33,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -66,6 +69,8 @@ public class C_Invoice // 03771
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
+	private final  IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
+
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
 			@NonNull final IDocumentLocationBL documentLocationBL)
@@ -99,7 +104,6 @@ public class C_Invoice // 03771
 	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)
 	{
 		allocationBL.autoAllocateAvailablePayments(invoice);
-		testAndMarkAsPaid(invoice);
 	}
 
 	private void ensureUOMsAreNotNull(@NonNull final I_C_Invoice invoice)
@@ -168,6 +172,38 @@ public class C_Invoice // 03771
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
 		}
+	}
+
+	/**
+	 * In the workflow [order => invoice] : The new invoice must inherit the payment rule from the related order.
+	 * When creating a manual invoice: The new invoice must inherit the payment rule from the BPartner.
+	 * When cloning an invoice: all should be set as in the original invoice, so the payment rule should be the same as in the old invoice.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID })
+	public void setPaymentRule(final I_C_Invoice invoice)
+	{
+		if (!InterfaceWrapperHelper.isUIAction(invoice) || InterfaceWrapperHelper.isCopying(invoice))
+		{
+			return;
+		}
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+		final PaymentRule paymentRule;
+		if (invoice.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+
+		}
+		else if (!invoice.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+		}
+		else
+		{
+			paymentRule = invoiceBL.getDefaultPaymentRule();
+		}
+
+		invoice.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -244,7 +280,6 @@ public class C_Invoice // 03771
 			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
 			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 		}
-		testAndMarkAsPaid(creditMemo);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -302,7 +337,6 @@ public class C_Invoice // 03771
 			paymentDAO.save(payment);
 
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
-			testAndMarkAsPaid(invoice);
 		}
 	}
 
@@ -313,7 +347,6 @@ public class C_Invoice // 03771
 		{
 			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
-			testAndMarkAsPaid(invoice);
 		}
 	}
 
@@ -378,5 +411,27 @@ public class C_Invoice // 03771
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
 		invoiceBL.setInvoiceLineTaxes(invoice);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_SectionCode_ID })
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_M_SectionCode_ID)
+	public void updateSectionCode(@NonNull final I_C_Invoice invoice)
+	{
+		for (final I_C_InvoiceLine line : invoiceDAO.retrieveLines(invoice))
+		{
+			line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+			invoiceDAO.save(line);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_PREPARE })
+	public void updateBPartnerStats(@NonNull I_C_Invoice invoice)
+	{
+		bPartnerStatisticsUpdater
+				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
+												  .bpartnerId(invoice.getC_BPartner_ID())
+												  .build());
+
 	}
 }

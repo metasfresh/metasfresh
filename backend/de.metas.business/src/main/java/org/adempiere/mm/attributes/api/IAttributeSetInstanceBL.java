@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api;
 import com.google.common.base.Predicates;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -12,23 +13,25 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IAttributeSetInstanceBL extends ISingletonService
 {
-	/** Call {@link #buildDescription(I_M_AttributeSetInstance, boolean)} with verbose = false. */
+	/**
+	 * Call {@link #buildDescription(I_M_AttributeSetInstance, boolean)} with verbose = false.
+	 */
 	String buildDescription(I_M_AttributeSetInstance asi);
 
 	/**
 	 * Build ASI Description
-	 *
-	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
+	 * <p>
+	 * e.g. - Product Values - Instance Values
 	 *
 	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */
@@ -50,7 +53,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	/**
 	 * Get an existing Attribute Set Instance, create a new one if none exists yet.
-	 *
+	 * <p>
 	 * In case a new ASI is created, it will be saved and also set to ASI aware ({@link IAttributeSetInstanceAware#setM_AttributeSetInstance(I_M_AttributeSetInstance)}).
 	 *
 	 * @return existing ASI/newly created ASI
@@ -87,6 +90,11 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 		return createASIFromAttributeSet(attributeSet, Predicates.alwaysTrue());
 	}
 
+	/**
+	 * Clone the ASI from the given {@code from} to the given {@code to}, or just create a new empty ASI in {@code to} in case from is null or "none"
+	 */
+	void cloneOrCreateASI(@Nullable Object to, @Nullable Object from);
+
 	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
@@ -99,7 +107,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeId attributeId, Object value);
 
 	/**
-	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, 
+	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)},
 	 * but the {@link AttributeId} is loaded from the given {@code attributeCode}.
 	 */
 	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, Object value);
@@ -123,4 +131,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
+
+	String getAttributeValueOrNull(@NonNull AttributeCode attributeCode, @NonNull AttributeSetInstanceId asiId);
 }

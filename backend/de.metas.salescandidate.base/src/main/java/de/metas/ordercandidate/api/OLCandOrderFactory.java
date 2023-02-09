@@ -5,7 +5,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.modelvalidator.Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -15,6 +14,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -45,10 +46,11 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -63,6 +65,7 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -70,6 +73,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -87,11 +91,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -100,6 +106,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -141,7 +148,11 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -155,6 +166,7 @@ class OLCandOrderFactory
 	private final ILoggable loggable;
 	private final int olCandProcessorId;
 	private final IOLCandListener olCandListeners;
+	private final OLCandAggregation aggregationInfo;
 
 	//
 	private I_C_Order order;
@@ -171,7 +183,8 @@ class OLCandOrderFactory
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
-			final IOLCandListener olCandListeners)
+			final IOLCandListener olCandListeners,
+			final OLCandAggregation aggregationInfo)
 	{
 		this.orderDefaults = orderDefaults;
 		ctx = Env.getCtx();
@@ -182,7 +195,7 @@ class OLCandOrderFactory
 		this.olCandProcessorId = olCandProcessorId;
 
 		this.olCandListeners = olCandListeners;
-
+		this.aggregationInfo = aggregationInfo;
 	}
 
 	private I_C_Order newOrder(@NonNull final OLCand candidateOfGroup)
@@ -230,6 +243,7 @@ class OLCandOrderFactory
 			OrderDocumentLocationAdapterFactory
 					.deliveryLocationAdapter(order)
 					.setFrom(dropShipBPartner);
+			order.setIsDropShip(true);
 		}
 		else
 		{
@@ -242,6 +256,7 @@ class OLCandOrderFactory
 			OrderDocumentLocationAdapterFactory
 					.handOverLocationAdapter(order)
 					.setFrom(handOverBPartner);
+			order.setIsUseHandOver_Location(true);
 		}
 		else
 		{
@@ -263,6 +278,7 @@ class OLCandOrderFactory
 		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
+		order.setC_Project_ID(ProjectId.toRepoId(candidateOfGroup.getProjectId()));
 
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
@@ -292,6 +308,13 @@ class OLCandOrderFactory
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
+
+		setBPSalesRepIdToOrder(order, candidateOfGroup);
+
+		order.setBPartnerName(candidateOfGroup.getBpartnerName());
+		order.setEMail(candidateOfGroup.getEmail());
+		order.setPhone(candidateOfGroup.getPhone());
+		order.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(candidateOfGroup)));
 
 		save(order);
 		return order;
@@ -336,8 +359,12 @@ class OLCandOrderFactory
 				final I_AD_Note note = createOrderCompleteErrorNote(errorMsg);
 				for (final OLCand candidate : candidates)
 				{
-					candidate.setError(errorMsg, note.getAD_Note_ID());
+					final AdIssueId adIssueId = errorManager.createIssue(ex);
+					candidate.setError(errorMsg, note.getAD_Note_ID(), adIssueId);
+
 					save(candidate.unbox());
+
+					olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
 		}
@@ -353,13 +380,22 @@ class OLCandOrderFactory
 		{
 			candidate.setGroupingError(ex.getLocalizedMessage());
 			save(candidate.unbox());
+
+			olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 		}
 	}
 
 	private void validateAndCreateCompensationGroups()
 	{
-		groupsToOrderLines.keySet()
+		orderLines.values()
 				.stream()
+				//dev-note: make sure the compensation groups are created in the right order
+				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(primaryOrderLineToGroup::get)
+				.filter(Objects::nonNull)
+				.map(OrderLineGroup::getGroupKey)
 				.map(groupsToOrderLines::get)
 				.forEach(this::createCompensationGroup);
 	}
@@ -383,12 +419,11 @@ class OLCandOrderFactory
 
 		final GroupCompensationType groupCompensationType = getGroupCompensationType(productForMainLine);
 		final GroupCompensationAmtType groupCompensationAmtType = getGroupCompensationAmtType(productForMainLine);
+		final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
 
 		if (groupCompensationType.equals(GroupCompensationType.Discount)
 				&& groupCompensationAmtType.equals(GroupCompensationAmtType.Percent))
 		{
-			final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
-
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(mainOrderLineInGroup::setGroupCompensationPercentage);
@@ -401,9 +436,10 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(orderLineIds)
-				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
-				.build());
+															.orderLineIds(orderLineIds)
+															.newGroupTemplate(createNewGroupTemplate(productId))
+															.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
+															.build());
 	}
 
 	@NonNull
@@ -418,13 +454,13 @@ class OLCandOrderFactory
 		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId, @Nullable final ProductCategoryId productCategoryId)
+	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId)
 	{
 		return GroupTemplate.builder()
 				.name(productBL.getProductName(productId))
 				.regularLinesToAdd(ImmutableList.of())
 				.compensationLines(ImmutableList.of())
-				.productCategoryId(productCategoryId)
+				.productCategoryId(productDAO.retrieveProductCategoryByProductId(productId))
 				.build();
 	}
 
@@ -441,14 +477,19 @@ class OLCandOrderFactory
 
 	public void addOLCand(@NonNull final OLCand candidate)
 	{
+		validateCandidateOutOfTrx(candidate.unbox());
+
 		try
 		{
 			addOLCand0(candidate);
+
 			olcandBL.markAsProcessed(candidate);
 		}
 		catch (final Exception ex)
 		{
-			olcandBL.markAsError(userInChargeId, candidate, ex);
+			trxManager.runInNewTrx(() -> olcandBL.markAsError(userInChargeId, candidate, ex));
+
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
@@ -459,10 +500,13 @@ class OLCandOrderFactory
 			currentOrderLine = newOrderLine(candidate);
 		}
 
+		setExternalBPartnerInfo(currentOrderLine, candidate);
+
 		currentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
 		currentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 		currentOrderLine.setProductDescription(candidate.getProductDescription()); // 08626: Propagate ProductDescription to C_OrderLine
 		currentOrderLine.setLine(candidate.getLine());
+		currentOrderLine.setExternalId(candidate.getExternalLineId());
 
 		//
 		// Quantity
@@ -470,7 +514,8 @@ class OLCandOrderFactory
 			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
-			currentOrderLine.setQtyItemCapacity(candidate.getQtyItemCapacity());
+
+			currentOrderLine.setQtyItemCapacity(Quantitys.toBigDecimalOrNull(candidate.getQtyItemCapacityEff()));
 
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
 			currentOrderLine.setQtyOrdered(qtyOrdered);
@@ -485,6 +530,7 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
+				currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
 			}
 			else
 			{
@@ -613,10 +659,93 @@ class OLCandOrderFactory
 		return note;
 	}
 
+	private void validateCandidateOutOfTrx(@NonNull final I_C_OLCand candidate)
+	{
+		olCandValidatorService.setValidationProcessInProgress(true);
+
+		try
+		{
+			final I_C_OLCand validatedOlCand = trxManager.callInNewTrx(() -> {
+				final I_C_OLCand cand = olCandValidatorService.validate(candidate);
+
+				saveRecord(cand);
+				return cand;
+			});
+
+			if (validatedOlCand.isError())
+			{
+				throw new AdempiereException("Fail to validate candidate.")
+						.appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getC_OLCand_ID());
+			}
+		}
+		finally
+		{
+			olCandValidatorService.setValidationProcessInProgress(false);
+		}
+	}
+
 	@Nullable
 	@VisibleForTesting
 	I_C_Order getOrder()
 	{
 		return order;
+	}
+
+	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)
+	{
+		switch (olCand.getAssignSalesRepRule())
+		{
+			case Candidate:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepId()));
+				break;
+			case BPartner:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+				break;
+			case CandidateFirst:
+				final int salesRepInt = Optional.ofNullable(olCand.getSalesRepId())
+						.map(BPartnerId::getRepoId)
+						.orElseGet(() -> BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+
+				order.setC_BPartner_SalesRep_ID(salesRepInt);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SalesRepFrom type")
+						.appendParametersToMessage()
+						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
+		}
+	}
+
+	@Nullable
+	private SectionCodeId getSectionCodeId(@NonNull final OLCand groupRepOLCand)
+	{
+		if (aggregationInfo == null)
+		{
+			return null;
+		}
+
+		if (aggregationInfo.isSplitByDiscriminatorColumn(I_C_OLCand.COLUMNNAME_M_SectionCode_ID))
+		{
+			return groupRepOLCand.getSectionCodeId();
+		}
+
+		return null;
+	}
+
+	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	{
+		orderLine.setExternalSeqNo(candidate.getLine());
+
+		final I_C_OLCand olCand = candidate.unbox();
+
+		orderLine.setBPartner_QtyItemCapacity(olCand.getQtyItemCapacity());
+
+		final UomId uomId = UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
+
+		if (uomId != null)
+		{
+			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
+			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+		}
 	}
 }

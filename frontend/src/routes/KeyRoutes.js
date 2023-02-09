@@ -26,17 +26,35 @@ function propsAreEqual(prevProps, nextProps) {
   return false;
 }
 
+function queriesAreEqual(prevProps, nextProps) {
+  const { match, location } = prevProps;
+  const { match: nextMatch, location: nextLocation } = nextProps;
+
+  if (
+    _.isEqual(location.query, nextLocation.query) &&
+    match.params.windowId === nextMatch.params.windowId
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * @file Functional component.
  * @module KeyRoutes/RawDocListRoute
  * @description Route for the document's lists
  */
 const RawDocListRoute = ({ location, match }) => {
-  const { search } = location;
+  const { search, pathname } = location;
   const { params } = match;
-  const query = queryString.parse(search);
+  const query = queryString.parse(search, {
+    ignoreQueryPrefix: true,
+  });
 
-  return <DocList query={query} windowId={params.windowId} />;
+  return (
+    <DocList query={query} windowId={params.windowId} pathname={pathname} />
+  );
 };
 
 RawDocListRoute.propTypes = {
@@ -44,7 +62,7 @@ RawDocListRoute.propTypes = {
   match: PropTypes.object,
 };
 
-const DocListRoute = React.memo(RawDocListRoute, propsAreEqual);
+const DocListRoute = React.memo(RawDocListRoute, queriesAreEqual);
 
 /**
  * @file Functional component.
@@ -71,17 +89,18 @@ BoardRoute.propTypes = {
  */
 const RawMasterWindowRoute = (props) => {
   const dispatch = useDispatch();
-  const { match } = props;
+  const {
+    match: { params: matchParams },
+    location: { search: urlSearchParams },
+  } = props;
+
+  const { windowId, docId } = matchParams;
 
   useEffect(() => {
-    const {
-      match: { params },
-    } = props;
+    dispatch(createWindow({ windowId, docId, urlSearchParams }));
+  }, [windowId, docId, urlSearchParams]);
 
-    dispatch(createWindow({ windowId: params.windowId, docId: params.docId }));
-  }, [match]);
-
-  return <MasterWindow {...props} params={match.params} />;
+  return <MasterWindow {...props} params={matchParams} />;
 };
 
 RawMasterWindowRoute.propTypes = {

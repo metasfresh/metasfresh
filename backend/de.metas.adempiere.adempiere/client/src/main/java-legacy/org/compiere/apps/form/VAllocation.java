@@ -251,21 +251,22 @@ public class VAllocation extends Allocation
 	{
 		//  Currency
 		int AD_Column_ID = 3505;    //  C_Invoice.C_Currency_ID
-		MLookup lookupCur = MLookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
+		final MLookupFactory lookupFactory = MLookupFactory.newInstance();
+		MLookup lookupCur = lookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
 		currencyPick = new VLookup("C_Currency_ID", true, false, true, lookupCur);
 		currencyPick.setValue(new Integer(m_C_Currency_ID));
 		currencyPick.addVetoableChangeListener(this);
 
 		// Organization filter selection
 		AD_Column_ID = 839; //C_Period.AD_Org_ID (needed to allow org 0)
-		MLookup lookupOrg = MLookupFactory.get(Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
+		MLookup lookupOrg = lookupFactory.get(Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
 		organizationPick = new VLookup("AD_Org_ID", true, false, true, lookupOrg);
 		organizationPick.setValue(Env.getAD_Org_ID(Env.getCtx()));
 		organizationPick.addVetoableChangeListener(this);
 
 		//  BPartner
 		AD_Column_ID = 3499;        //  C_Invoice.C_BPartner_ID
-		MLookup lookupBP = MLookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.Search);
+		MLookup lookupBP = lookupFactory.get (Env.getCtx(), m_WindowNo, 0, AD_Column_ID, DisplayType.Search);
 		bpartnerSearch = new VLookup("C_BPartner_ID", true, false, true, lookupBP);
 		bpartnerSearch.addVetoableChangeListener(this);
 

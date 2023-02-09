@@ -3,6 +3,9 @@ Feature: DB-Based Locking
   As a developer
   I want to use a locking mechanism for data records
 
+  Background:
+    Given infrastructure and metasfresh are running
+  
   @from:cucumber
   Scenario: Acquiring a lock on an not-yet-locked record succeeds
     Given I_AD_PInstance with id 123124 is created

@@ -62,6 +62,12 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
+	public <T extends I_M_ReceiptSchedule> T getById(@NonNull final ReceiptScheduleId id, @NonNull final Class<T> modelClass)
+	{
+		return Check.assumeNotNull(InterfaceWrapperHelper.load(id, modelClass), "Receipt Schedule exists for {}", id);
+	}
+
+	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
 	{
 		// Note that we can't filter by IsError in the where clause, because it wouldn't work with pagination.
@@ -99,8 +105,8 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ReceiptSchedule.class, ctx, trxName)
-				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule>(I_M_ReceiptSchedule.COLUMNNAME_AD_Table_ID, adTableId))
-				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule>(I_M_ReceiptSchedule.COLUMNNAME_Record_ID, recordId))
+				.filter(new EqualsQueryFilter<>(I_M_ReceiptSchedule.COLUMNNAME_AD_Table_ID, adTableId))
+				.filter(new EqualsQueryFilter<>(I_M_ReceiptSchedule.COLUMNNAME_Record_ID, recordId))
 				.filterByClientId()
 				.create()
 				.firstOnly(I_M_ReceiptSchedule.class);
@@ -149,16 +155,13 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	{
 		final IQueryBuilder<I_M_ReceiptSchedule_Alloc> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class, receiptLine)
-				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedule.getM_ReceiptSchedule_ID()))
-				.filter(new EqualsQueryFilter<I_M_ReceiptSchedule_Alloc>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, receiptLine.getM_InOutLine_ID()));
+				.filter(new EqualsQueryFilter<>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedule.getM_ReceiptSchedule_ID()))
+				.filter(new EqualsQueryFilter<>(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID, receiptLine.getM_InOutLine_ID()));
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_Alloc_ID);
 
-		final I_M_ReceiptSchedule_Alloc existingRsa = queryBuilder.create()
-				.firstOnly(I_M_ReceiptSchedule_Alloc.class);
-
-		return existingRsa;
+		return queryBuilder.create().firstOnly(I_M_ReceiptSchedule_Alloc.class);
 	}
 
 	@Override
@@ -295,14 +298,12 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public IQueryBuilder<I_M_ReceiptSchedule> createQueryForReceiptScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter)
 	{
-		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
-
-		return queryBuilder;
 	}
 
 	@Override
@@ -319,9 +320,9 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@NonNull
-	public Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(@NonNull final ImmutableSet<ReceiptScheduleId> receiptScheduleIds)
+	public <T extends I_M_ReceiptSchedule> Map<ReceiptScheduleId, T> getByIds(@NonNull final ImmutableSet<ReceiptScheduleId> receiptScheduleIds, @NonNull final Class<T> type)
 	{
-		final List<I_M_ReceiptSchedule> receiptSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(receiptScheduleIds, I_M_ReceiptSchedule.class);
+		final List<T> receiptSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(receiptScheduleIds, type);
 
 		if (Check.isEmpty(receiptSchedules))
 		{

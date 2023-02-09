@@ -59,7 +59,7 @@ public class InOutDependentFinder implements IApprovedForInvoicingFinder
 		return inOutDAO.retrieveLinesForInOutId(inOutId)
 				.stream()
 				.map(InOutAndLineId::getInOutLineId)
-				.map(inOutDAO::getLineById)
+				.map(inOutDAO::getLineByIdInTrx)
 				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
 				.flatMap(List::stream)
 				.filter(I_C_Invoice_Candidate::isApprovalForInvoicing)

@@ -16,17 +16,16 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.DocBaseType;
+import de.metas.document.IDocTypeDAO;
+import de.metas.util.Services;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *	Document Type Model
@@ -53,11 +52,11 @@ public class MDocType extends X_C_DocType
 	 *	@return array of doc types
 	 */
 	@Deprecated
-	static public MDocType[] getOfDocBaseType (Properties ctx, String DocBaseType)
+	static public MDocType[] getOfDocBaseType (Properties ctx, DocBaseType DocBaseType)
 	{
 		String whereClause  = "AD_Client_ID=? AND DocBaseType=?";
 		List<MDocType> list = new Query(ctx, Table_Name, whereClause, null)
-									.setParameters(new Object[]{Env.getAD_Client_ID(ctx), DocBaseType})
+									.setParameters(Env.getAD_Client_ID(ctx), DocBaseType)
 									.setOnlyActiveRecords(true)
 									.setOrderBy("IsDefault DESC, C_DocType_ID")
 									.list(MDocType.class);
@@ -96,12 +95,6 @@ public class MDocType extends X_C_DocType
 		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
 
-	/**************************************************************************
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param C_DocType_ID id
-	 *	@param trxName transaction
-	 */
 	public MDocType(Properties ctx, int C_DocType_ID, String trxName)
 	{
 		super(ctx, C_DocType_ID, trxName);
@@ -126,53 +119,17 @@ public class MDocType extends X_C_DocType
 		}
 	}	//	MDocType
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
 	public MDocType(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MDocType
-
-	/**
-	 * 	New Constructor
-	 *	@param ctx context
-	 *	@param DocBaseType document base type
-	 *	@param Name name
-	 *	@param trxName transaction
-	 */
-	public MDocType (Properties ctx, String DocBaseType, String Name, String trxName)
-	{
-		this (ctx, 0, trxName);
-		setAD_Org_ID(0);
-		setDocBaseType (DocBaseType);
-		setName (Name);
-		setPrintName (Name);
-		setGL_Category_ID ();
-	}	//	MDocType
-
-	/**
-	 * 	Set Default GL Category
-	 */
-	public void setGL_Category_ID()
-	{
-		final String sql = "SELECT GL_Category_ID FROM GL_Category"
-						+" WHERE AD_Client_ID=?"
-						+" ORDER BY IsDefault DESC, GL_Category_ID";
-		int GL_Category_ID = DB.getSQLValue(get_TrxName(), sql, getAD_Client_ID());
-		setGL_Category_ID(GL_Category_ID);
-	}	//	setGL_Category_ID
-
+	}
 
 	/**
 	 * 	Set SOTrx based on document base type
 	 */
 	public void setIsSOTrx()
 	{
-		final boolean isSOTrx = Services.get(IDocTypeBL.class).isSOTrx(getDocBaseType());
+		final boolean isSOTrx = DocBaseType.ofCode(getDocBaseType()).isSOTrx();
 		setIsSOTrx(isSOTrx);
 	}	// setIsSOTrx
 
@@ -183,11 +140,10 @@ public class MDocType extends X_C_DocType
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MDocType[");
-		sb.append(get_ID()).append("-").append(getName())
-			.append(",DocNoSequence_ID=").append(getDocNoSequence_ID())
-			.append("]");
-		return sb.toString();
+		return "MDocType["
+				+ get_ID() + "-" + getName()
+				+ ",DocNoSequence_ID=" + getDocNoSequence_ID()
+				+ "]";
 	}	//	toString
 
 	/**
@@ -232,7 +188,7 @@ public class MDocType extends X_C_DocType
 				+ " AND rol.IsManual='N'"
 				+ ")";
 
-			int docact = DB.executeUpdate(sqlDocAction, get_TrxName());
+			int docact = DB.executeUpdateAndSaveErrorOnFail(sqlDocAction, get_TrxName());
 			log.debug("AD_Document_Action_Access=" + docact);
 		}
 		return success;
@@ -248,7 +204,7 @@ public class MDocType extends X_C_DocType
 	{
 		if(success) {
 			//delete access records
-			int docactDel = DB.executeUpdate("DELETE FROM AD_Document_Action_Access WHERE C_DocType_ID=" + get_IDOld(), get_TrxName());
+			int docactDel = DB.executeUpdateAndSaveErrorOnFail("DELETE FROM AD_Document_Action_Access WHERE C_DocType_ID=" + get_IDOld(), get_TrxName());
 			log.debug("Deleting AD_Document_Action_Access=" + docactDel + " for C_DocType_ID: " + get_IDOld());
 		}
 		return success;

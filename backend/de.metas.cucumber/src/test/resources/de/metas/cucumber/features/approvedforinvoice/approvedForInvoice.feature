@@ -31,9 +31,9 @@ Feature: approved for invoicing
       | bpartner_SO | Customer_SO_15092022 | N            | Y              | ps_SO                         |
       | bpartner_PO | Vendor_PO_15092022   | Y            | N              | ps_PO                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | C_BPartner_ID.Identifier |
-      | bpartnerLocation_SO | bpartner_SO              |
-      | bpartnerLocation_PO | bpartner_PO              |
+      | Identifier          | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | bpartnerLocation_SO | bpartner_SO              | true         | true         |
+      | bpartnerLocation_PO | bpartner_PO              | true         | true         |
     And load AD_Message:
       | Identifier                 | Value                                        |
       | approved_for_invoice_error | Operation_Not_Supported_Approved_For_Invoice |
@@ -56,9 +56,9 @@ Feature: approved for invoicing
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_SO                    | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 10           |
+    Then after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 10           |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
       | invoiceCand_1                     | true                     |
@@ -79,20 +79,20 @@ Feature: approved for invoicing
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_SO                    | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | inOut_1               |
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 10           |
+    Then after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 10           |
 
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
@@ -119,9 +119,9 @@ Feature: approved for invoicing
       | ol_1       | o_1                   | p_PO                    | 10         |
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 10           |
+    Then after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 10           |
 
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
@@ -144,7 +144,7 @@ Feature: approved for invoicing
       | ol_1       | o_1                   | p_PO                    | 10         |
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_PO              | bpartnerLocation_PO               | p_PO                    | 10         | warehouse                 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -154,9 +154,9 @@ Feature: approved for invoicing
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | inOut_1               |
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 5            |
+    Then after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 5            |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
       | invoiceCand_1                     | true                     |
@@ -171,12 +171,12 @@ Feature: approved for invoicing
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_1               | true    | bpartner_SO              | bpartnerLocation_SO               | warehouse                 | A            | P               | I               | 2022-09-15   | C-           | 5            | MMS             | MS             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_1               | inOut_1               | p_SO                        | 10         | 10          | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_1               | inOut_1               | p_SO                        | 10         | 10          | PCE     | locator                     | Y                           |
 
     When the shipment identified by inOut_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | inOutLine_1                   | 10               | 10           |
 
@@ -199,7 +199,7 @@ Feature: approved for invoicing
 
     When the shipment identified by inOut_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | inOutLine_1                   | 10               | 10           |
 

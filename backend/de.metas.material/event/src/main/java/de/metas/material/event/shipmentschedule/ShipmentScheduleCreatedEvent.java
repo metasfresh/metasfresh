@@ -47,14 +47,12 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleCreatedEvent";
 
-	private final DocumentLineDescriptor documentLineDescriptor;
-
 	@Builder
 	public ShipmentScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
-			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
+			@JsonProperty("shipmentScheduleDetail") @NonNull final ShipmentScheduleDetail shipmentScheduleDetail,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
 			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
@@ -62,30 +60,24 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 				eventDescriptor,
 				materialDescriptor,
 				minMaxDescriptor,
-				reservedQuantity,
-				shipmentScheduleId);
-
-		this.documentLineDescriptor = documentLineDescriptor;
+				shipmentScheduleDetail,
+				shipmentScheduleId,
+				documentLineDescriptor);
 	}
 
 	@Override
-	public BigDecimal getOrderedQuantityDelta()
-	{
-		return getMaterialDescriptor().getQuantity();
-	}
-
-	@Override
+	@NonNull
 	public BigDecimal getReservedQuantityDelta()
 	{
-		return getReservedQuantity();
+		return getShipmentScheduleDetail().getReservedQuantity();
 	}
-
+	
 	@Override
 	public void validate()
 	{
 		super.validate();
 
-		Check.errorIf(documentLineDescriptor == null, "documentLineDescriptor may not be null");
-		documentLineDescriptor.validate();
+		Check.errorIf(getDocumentLineDescriptor() == null, "documentLineDescriptor may not be null");
+		getDocumentLineDescriptor().validate();
 	}
 }

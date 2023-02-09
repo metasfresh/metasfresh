@@ -60,14 +60,14 @@ public class M_HU_CreateReceipt_StepDef
 
 	public M_HU_CreateReceipt_StepDef(
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final M_HU_List_StepDefData huListTable,
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
-			@NonNull final M_InOut_StepDefData inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huTable = huTable;
-		this.huListTable = huListTable;
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.inOutTable = inOutTable;
+		this.huListTable = huListTable;
 	}
 
 	@And("create material receipt")

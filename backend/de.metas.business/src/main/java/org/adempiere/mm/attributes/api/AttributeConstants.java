@@ -50,12 +50,18 @@ public class AttributeConstants
 	//
 	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
 
+	//
+	public final AttributeCode ATTR_Vendor_BPartner_ID = AttributeCode.ofString("Vendor");
+
 	public static final String ATTR_SerialNo_String = "SerialNo";
 	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString(ATTR_SerialNo_String);
 
 	public static final String ATTR_LotNumber_String = "Lot-Nummer";
 	public static final AttributeCode ATTR_LotNumber = AttributeCode.ofString(ATTR_LotNumber_String);
 	public static final AttributeCode ATTR_LotNumberDate = AttributeCode.ofString("HU_LotNumberDate");
+
+	public static final String ATTR_RepackNumber_String = "RepackNumber";
+	public static final AttributeCode ATTR_RepackNumber = AttributeCode.ofString(ATTR_RepackNumber_String);
 
 	public static final AttributeCode RouterPassword = AttributeCode.ofString("RouterPassword");
 	public static final AttributeCode RouterMAC1 = AttributeCode.ofString("RouterMAC1");
@@ -66,4 +72,7 @@ public class AttributeConstants
 	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
 
 	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
+
+	public static final AttributeCode CountryOfOrigin = AttributeCode.ofString("1000001");
+	public static final AttributeCode HU_BatchNo = AttributeCode.ofString("HU_BatchNo");
 }

@@ -30,13 +30,16 @@ import org.compiere.model.X_C_ProjectType;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public enum ProjectCategory implements ReferenceListAwareEnum
 {
 	General(X_C_ProjectType.PROJECTCATEGORY_General),
 	AssertProject(X_C_ProjectType.PROJECTCATEGORY_AssetProject),
 	WorkOrderJob(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob),
 	ServiceChargeProject(X_C_ProjectType.PROJECTCATEGORY_ServiceChargeProject),
-	ServiceOrRepair(X_C_ProjectType.PROJECTCATEGORY_ServiceOrRepair);
+	ServiceOrRepair(X_C_ProjectType.PROJECTCATEGORY_ServiceOrRepair),
+	Budget(X_C_ProjectType.PROJECTCATEGORY_Budget),
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ProjectCategory> index = ReferenceListAwareEnums.index(values());
 
@@ -59,8 +62,21 @@ public enum ProjectCategory implements ReferenceListAwareEnum
 		return type != null ? type : ProjectCategory.General;
 	}
 
+	@Nullable
+	public static ProjectCategory ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
+	}
+
 	public boolean isServiceOrRepair()
 	{
 		return ServiceOrRepair.equals(this);
+	}
+
+	public boolean isBudget() {return Budget.equals(this);}
+
+	public boolean isWorkOrder()
+	{
+		return WorkOrderJob.equals(this);
 	}
 }

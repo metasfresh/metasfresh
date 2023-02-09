@@ -29,9 +29,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.time.LocalDate;
-
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
@@ -204,6 +203,18 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
+	@ApiModelProperty(position = 240)
+	private String title;
+
+	@ApiModelProperty(hidden = true)
+	private boolean titleSet;
+
+	@ApiModelProperty(position = 250)
+	private String phone2;
+
+	@ApiModelProperty(hidden = true)
+	private boolean phone2Set;
+
 	public void setCode(final String code)
 	{
 		this.code = code;
@@ -340,5 +351,17 @@ public class JsonRequestContact
 	{
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		invoiceEmailEnabledSet = true;
+	}
+
+	public void setTitle(final String title)
+	{
+		this.title = title;
+		this.titleSet = true;
+	}
+
+	public void setPhone2(final String phone2)
+	{
+		this.phone2 = phone2;
+		this.phone2Set = true;
 	}
 }

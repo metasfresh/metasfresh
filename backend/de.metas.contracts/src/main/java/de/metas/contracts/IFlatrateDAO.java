@@ -25,6 +25,7 @@ package de.metas.contracts;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -34,6 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -54,10 +56,12 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -103,13 +107,12 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieved data entries that have the given term and uom, have type = 'IP' and have a period that lies at least partially withing the given dateFrom and dateTo.
 	 */
-	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, Timestamp dateFrom, Timestamp dateTo, UomId uomId);
+	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, LocalDateAndOrgId dateFrom, LocalDateAndOrgId dateTo, UomId uomId);
 
 	/**
-	 *
-	 * @param term mandatory; the term whose data entries are returned
+	 * @param term          mandatory; the term whose data entries are returned
 	 * @param dataEntryType optional; if set, then only data entries with the given type are returned
-	 * @param uomId optional; if set, then only data entries with the given uom are returned
+	 * @param uomId         optional; if set, then only data entries with the given uom are returned
 	 */
 	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Term term, String dataEntryType, UomId uomId);
 
@@ -120,6 +123,10 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Invoice_Clearing_Alloc retrieveClearingAllocOrNull(I_C_Invoice_Candidate invoiceCandToClear, I_C_Flatrate_DataEntry dataEntry);
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Conditions flatrateConditions);
+
+	Iterable<I_C_Flatrate_Term> retrieveTerms(@NonNull FlatrateDataId flatrateDataId);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveTermsAsList(@NonNull FlatrateDataId flatrateDataId);
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Data flatrateData);
 
@@ -136,17 +143,28 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
 
-	I_C_Flatrate_Conditions getConditionsById (ConditionsId flatrateConditionsId);
+	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);
 
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
+
+	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
+	boolean hasOverlappingTerms(FlatrateTermOverlapCriteria flatrateTermOverlapCriteria);
+
+	Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
+			@NonNull BPartnerId bPartnerId,
+			@NonNull Instant date,
+			@NonNull OrgId orgId);
+
+	boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm);
 
 	@Value
 	@Builder
 	class TermsQuery
 	{
-		@NonNull 
+		@NonNull
 		OrgId orgId;
-		
+
 		@Singular
 		List<BPartnerId> billPartnerIds;
 
@@ -224,9 +242,8 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves a {@link I_C_Flatrate_Data} for the given partner or creates and saves it on the fly. Note that if a record is created, it is also directly set to processed, so the anticipation is
 	 * that a term is directly created.
-	 *
 	 */
-	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
+	I_C_Flatrate_Data retrieveOrCreateFlatrateData(I_C_BPartner bPartner);
 
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 

@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
@@ -79,12 +80,12 @@ import java.util.Set;
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final OrderFactory orderFactory;
 
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Builder
 	private PurchaseOrderFromItemFactory(
@@ -93,15 +94,17 @@ import java.util.Set;
 			@Nullable final DocTypeId docType)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
+		final OrgId orgId = orderAggregationKey.getOrgId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
-				.orgId(orderAggregationKey.getOrgId())
+				.orgId(orgId)
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised())
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
-				.externalHeaderId(orderAggregationKey.getExternalId());
+				.externalHeaderId(orderAggregationKey.getExternalId())
+				.dateOrdered(SystemTime.asLocalDate(orgDAO.getTimeZone(orgId)));
 
 		if (docType != null)
 		{
@@ -133,6 +136,7 @@ import java.util.Set;
 			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
+		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}

@@ -1,13 +1,14 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.springframework.stereotype.Repository;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.cleverreach.model.I_MKTG_CleverReach_Config;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.springframework.stereotype.Repository;
 
 /*
  * #%L
@@ -48,13 +49,19 @@ public class CleverReachConfigRepository
 
 		// TODO add AD_message
 		Check.errorIf(configRecord == null, "Unable to load MKTG_CleverReach_Config for MKTG_Platform_ID={}", platformRepoId);
+		return ofRecord(configRecord);
+	}
 
+	@NonNull
+	@VisibleForTesting
+	public static CleverReachConfig ofRecord(@NonNull final I_MKTG_CleverReach_Config configRecord)
+	{
 		return CleverReachConfig.builder()
 				.client_id(configRecord.getCustomerNo())
 				.login(configRecord.getUserName())
 				.password(configRecord.getPassword())
-				.platformId(plaformId)
+				.platformId(PlatformId.ofRepoId(configRecord.getMKTG_Platform_ID()))
+				.orgId(OrgId.ofRepoId(configRecord.getAD_Org_ID()))
 				.build();
-
 	}
 }

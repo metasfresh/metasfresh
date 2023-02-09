@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "json-schema-legacy/maindoc/UBL-DigitalAgreement-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-legacy/maindoc/UBL-DigitalAgreement-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "required": [
+    "DigitalAgreement"
+    ],
+  "properties": {
+    "_D": {
+      "description": "Document ABIE XML namespace string",
+      "type": "string"
+      },
+    "_A": {
+      "description": "Library ABIE XML namespace string (for ASBIEs)",
+      "type": "string"
+      },
+    "_B": {
+      "description": "BBIE XML namespace string",
+      "type": "string"
+      },
+    "_E": {
+      "description": "Extension scaffolding XML namespace string",
+      "type": "string"
+      },
+    "DigitalAgreement": {
+      "description": "A document used to support business parties agreeing on a set of digital processes, terms and conditions to ensure interoperability.",
+      "items": {
+        "$ref": "#/definitions/DigitalAgreement"
+        },
+      "maxItems": 1,
+      "minItems": 1,
+      "type": "array"
+      }
+    },
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "DigitalAgreement": {
+      "title": "Digital Agreement. Details",
+      "description": "A document used to support business parties agreeing on a set of digital processes, terms and conditions to ensure interoperability.",
+      "required": [
+        "ID",
+        "IssueDate",
+        "VersionID",
+        "ParticipantParty",
+        "DigitalProcess"
+        ],
+      "properties": {
+
+        "UBLExtensions": {
+          "title": "UBLExtensions",
+          "description": "An optional set of extensions to the committee model",
+          "items": { 
+            "$ref": "../common/UBL-CommonExtensionComponents-2.3.json#/definitions/UBLExtensions" },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+
+        "UBLVersionID": {
+          "title": "Digital Agreement. UBL Version Identifier. Identifier",
+          "description": "Identifies the earliest version of the UBL 2 schema for this document type that defines all of the elements that might be encountered in the current instance.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UBLVersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "CustomizationID": {
+          "title": "Digital Agreement. Customization Identifier. Identifier",
+          "description": "Identifies a user-defined customization of UBL for a specific use.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomizationID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProfileID": {
+          "title": "Digital Agreement. Profile Identifier. Identifier",
+          "description": "Identifies a user-defined profile of the customization of UBL being used.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProfileExecutionID": {
+          "title": "Digital Agreement. Profile Execution Identifier. Identifier",
+          "description": "Identifies an instance of executing a profile, to associate all transactions in a collaboration.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileExecutionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ID": {
+          "title": "Digital Agreement. Identifier",
+          "description": "An identifier for this document, assigned by the sender.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "UUID": {
+          "title": "Digital Agreement. UUID. Identifier",
+          "description": "A universally unique identifier for an instance of this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UUID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssueDate": {
+          "title": "Digital Agreement. Issue Date. Date",
+          "description": "The date, assigned by the sender, on which this document was issued.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueDate"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssueTime": {
+          "title": "Digital Agreement. Issue Time. Time",
+          "description": "The time, assigned by the sender, at which this document was issued.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueTime"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "AgreementTypeCode": {
+          "title": "Digital Agreement. Agreement Type Code. Code",
+          "description": "A code signifying the type of digital agreement (e.g. bi-lateral, multi-lateral).",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/AgreementTypeCode"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "VersionID": {
+          "title": "Digital Agreement. Version Identifier. Identifier",
+          "description": "Identifies the current version of this digital agreement.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/VersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "PreviousVersionID": {
+          "title": "Digital Agreement. Previous Version Identifier. Identifier",
+          "description": "Identifies the previous version of this digital agreement.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/PreviousVersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "RequiredResponseMessageLevelCode": {
+          "title": "Digital Agreement. Required_ Response Message Level Code. Code",
+          "description": "A code signifying the minimum response message level the parties are required to provide (e.g. EESPA response message level).",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/RequiredResponseMessageLevelCode"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "Signature": {
+          "title": "Digital Agreement. Signature",
+          "description": "A signature applied to this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Signature"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "GovernorParty": {
+          "title": "Digital Agreement. Governor_ Party. Party",
+          "description": "The party governing the agreement (e.g. a multi-lateral digital agreement).",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/GovernorParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ParticipantParty": {
+          "title": "Digital Agreement. Participant Party",
+          "description": "The business parties agreeing on a set of digital processes, terms and conditions to ensure interoperability.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ParticipantParty"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "AgreementCountry": {
+          "title": "Digital Agreement. Agreement_ Country. Country",
+          "description": "The country to which this digital agreement applies.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AgreementCountry"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "RequiredCertificationDocumentReference": {
+          "title": "Digital Agreement. Required Certification_ Document Reference. Document Reference",
+          "description": "A reference to a certification document required by this digital agreement.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/RequiredCertificationDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "DigitalAgreementTerms": {
+          "title": "Digital Agreement. Digital Agreement Terms",
+          "description": "A reference to digital agreement terms and conditions.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/DigitalAgreementTerms"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "DigitalProcess": {
+          "title": "Digital Agreement. Digital Process",
+          "description": "The digital processes in scope of this digital agreement.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/DigitalProcess"
+            },
+          "minItems": 1,
+          "type": "array"
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

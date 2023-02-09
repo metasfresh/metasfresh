@@ -22,14 +22,13 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import javax.annotation.Nullable;
 
 @Getter
 @ToString
@@ -164,6 +163,75 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
+	@ApiModelProperty(position = 200, //
+			value = "Translates to C_BPartner_Location.IsEphemeral")
+	private boolean ephemeral;
+
+	@ApiModelProperty(hidden = true)
+	private boolean ephemeralSet;
+
+	@ApiModelProperty(position = 210)
+	@Nullable
+	private String email;
+
+	@ApiModelProperty(hidden = true)
+	private boolean emailSet;
+
+	@ApiModelProperty(position = 220)
+	private String phone;
+
+	@ApiModelProperty(hidden = true)
+	private boolean phoneSet;
+
+	@ApiModelProperty(position = 230, //
+			value = "Translates to C_BPartner_Location.VisitorsAddress")
+	private Boolean visitorsAddress;
+
+	@ApiModelProperty(hidden = true)
+	private boolean visitorsAddressSet;
+
+	@ApiModelProperty(position = 240, //
+			value = "Translates to C_BPartner_Location.IsHandoverLocation")
+	private Boolean handoverLocation;
+
+	@ApiModelProperty(hidden = true)
+	private boolean handoverLocationSet;
+
+	@ApiModelProperty(position = 250, //
+			value = "Translates to C_BPartner_Location.IsRemitTo")
+	private Boolean remitTo;
+
+	@ApiModelProperty(hidden = true)
+	private boolean remitToAddressSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Translates to C_BPartner_Location.IsReplicationLookupDefault")
+	private Boolean replicationLookupDefault;
+
+	@ApiModelProperty(hidden = true)
+	private boolean replicationLookupDefaultSet;
+
+	@ApiModelProperty(position = 270, //
+			value = "Translates to C_BPartner_Location.VATaxId")
+	private String vatId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean vatIdSet;
+
+	@ApiModelProperty(position = 280, //
+			value = "Translates to C_BPartner_Location.SAP_PaymentMethod")
+	private String sapPaymentMethod;
+
+	private boolean sapPaymentMethodSet;
+
+
+	@ApiModelProperty(position = 290,  //
+			value = "This translates to `C_BPartner_Location.SAP_BPartnerCode`.")
+	private String sapBPartnerCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sapBPartnerCodeSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -270,5 +338,65 @@ public class JsonRequestLocation
 	{
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
+	}
+
+	public void setEphemeral(final Boolean ephemeral)
+	{
+		this.ephemeral = ephemeral;
+		this.ephemeralSet = true;
+	}
+
+	public void setEmail(@Nullable final String email)
+	{
+		this.email = email;
+		this.emailSet = true;
+	}
+
+	public void setPhone(final String phone)
+	{
+		this.phone = phone;
+		this.phoneSet = true;
+	}
+
+	public void setVisitorsAddress(final Boolean visitorsAddress)
+	{
+		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddressSet = true;
+	}
+
+	public void setHandoverLocation(final Boolean handoverLocation)
+	{
+		this.handoverLocation = handoverLocation;
+		this.handoverLocationSet = true;
+	}
+
+	public void setRemitTo(final Boolean remitTo)
+	{
+		this.remitTo = remitTo;
+		this.remitToAddressSet = true;
+	}
+
+	public void setReplicationLookupDefault(final Boolean replicationLookupDefault)
+	{
+		this.replicationLookupDefault = replicationLookupDefault;
+		this.replicationLookupDefaultSet = true;
+	}
+
+	public void setVatId(final String vatId)
+	{
+		this.vatId = vatId;
+		this.vatIdSet = true;
+	}
+
+	public void setSapPaymentMethod(final String sapPaymentMethod)
+	{
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapPaymentMethodSet = true;
+	}
+
+	public void setSapBPartnerCode(final String sapBPartnerCode)
+	{
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sapBPartnerCodeSet = true;
 	}
 }

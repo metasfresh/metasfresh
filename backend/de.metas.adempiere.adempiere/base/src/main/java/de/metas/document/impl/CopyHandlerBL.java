@@ -1,10 +1,8 @@
-package de.metas.document.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,14 +20,16 @@ package de.metas.document.impl;
  * #L%
  */
 
+package de.metas.document.impl;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.util.Util;
 
 import de.metas.document.ICopyHandler;

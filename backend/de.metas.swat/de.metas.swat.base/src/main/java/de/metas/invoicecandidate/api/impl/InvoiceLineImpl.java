@@ -91,6 +91,8 @@ import java.util.TreeSet;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
 	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
+	@Getter @Setter
+	private int C_VAT_Code_ID;
 
 	@Override
 	public int getM_Product_ID()

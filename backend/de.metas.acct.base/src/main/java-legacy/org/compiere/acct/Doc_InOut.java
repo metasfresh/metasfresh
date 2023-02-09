@@ -16,33 +16,35 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MInOut;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.acct.accounts.BPartnerGroupAccountType;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MInOut;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /**
  * Post Shipment/Receipt Documents.
@@ -52,15 +54,10 @@ import de.metas.util.Services;
  *  Document Types:     MMS, MMR
  * </pre>
  *
- * metas:
- * <li>copied from // metas: from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_InOut.java, Rev 10177
- * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
- *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- *         <li>BF [ 2858043 ] Correct Included Tax in Average Costing
- *
+ * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * <li>BF [ 2858043 ] Correct Included Tax in Average Costing
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
@@ -119,9 +116,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		return docLines;
-	}	// loadLines
+	}    // loadLines
 
-	/** @return zero (always balanced) */
+	/**
+	 * @return zero (always balanced)
+	 */
 	@Override
 	protected BigDecimal getBalance()
 	{
@@ -151,28 +150,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final String docBaseType = getDocumentType();
+		final DocBaseType docBaseType = getDocBaseType();
 
 		//
 		// *** Sales - Shipment
-		if (DOCTYPE_MatShipment.equals(docBaseType) && isSOTrx())
+		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
 		{
 			return createFacts_SalesShipment(as);
 		}
 		//
 		// *** Sales - Return
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (DOCTYPE_MatReceipt.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (DOCTYPE_MatShipment.equals(docBaseType) && !isSOTrx())
+		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
@@ -183,9 +182,16 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 	}
 
+	@NonNull
+	private Fact newFacts(final AcctSchema as)
+	{
+		return new Fact(this, as, PostingType.Actual)
+				.setCurrencyConversionContext(getCurrencyConversionContext(as));
+	}
+
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
 		return ImmutableList.of(fact);
 	}
@@ -204,7 +210,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// CoGS DR
 		final FactLine dr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Cogs, as),
+				line.getAccount(ProductAcctType.P_COGS_Acct, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -214,13 +220,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());		// Revenue X-Org
+		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());        // Revenue X-Org
 		dr.setQty(line.getQty().negate());
 
 		//
 		// Inventory CR
 		final FactLine cr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Asset, as),
+				line.getAccount(ProductAcctType.P_Asset_Acct, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		if (cr == null)
@@ -234,7 +240,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -254,7 +260,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// Inventory DR
 		final FactLine dr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Asset, as),
+				line.getAccount(ProductAcctType.P_Asset_Acct, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -268,7 +274,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// CoGS CR
 		final FactLine cr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Cogs, as),
+				line.getAccount(ProductAcctType.P_COGS_Acct, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		if (cr == null)
@@ -278,13 +284,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
+		cr.setAD_Org_ID(line.getOrderOrgId());        // Revenue X-Org
 		cr.setQty(line.getQty().negate());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -318,7 +324,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// NotInvoicedReceipt CR
 		final FactLine cr = fact.createLine(line,
-				getAccount(AccountType.NotInvoicedReceipts, as),
+				getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		//
@@ -334,7 +340,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_PurchasingReturn(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final Fact fact = newFacts(as);
 		getDocLines().forEach(line -> createFacts_PurchasingReturnLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -353,7 +359,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt DR
-		final FactLine dr = fact.createLine(line, getAccount(AccountType.NotInvoicedReceipts, as),
+		final FactLine dr = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -402,7 +408,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		postDependingMatchInvsIfNeeded();
 	}
 
-	private final void postDependingMatchInvsIfNeeded()
+	private void postDependingMatchInvsIfNeeded()
 	{
 		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
@@ -439,4 +445,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final CurrencyPrecision precision = services.getCurrencyStandardPrecision(currencyId);
 		return precision.round(costs.getValue());
 	}
+
+	protected CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
+	{
+		final I_M_InOut inout = getModel(I_M_InOut.class);
+		return inOutBL.getCurrencyConversionContext(inout);
+	}
+
 }   // Doc_InOut

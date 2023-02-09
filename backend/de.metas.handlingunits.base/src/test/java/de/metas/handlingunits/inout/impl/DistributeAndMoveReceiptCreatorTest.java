@@ -1,19 +1,16 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -21,7 +18,18 @@ import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
+import de.metas.resource.ResourceService;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -56,9 +64,21 @@ public class DistributeAndMoveReceiptCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
-		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
+		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(
+				new LotNumberQuarantineRepository(),
+				new DDOrderService(
+						ddOrderLowLevelDAO,
+						ddOrderLowLevelService,
+						new DDOrderMoveScheduleService(
+								ddOrderLowLevelDAO,
+								new DDOrderMoveScheduleRepository(),
+								ADReferenceService.newMocked(),
+								huReservationService)));
 	}
 
 	@Test

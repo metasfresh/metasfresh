@@ -1,0 +1,56 @@
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+
+pull_request_rules:
+  - name: Automatic merge ⬇️ into base-branch using the merge queue
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+      - or:
+        - base=adorable_badger_uat
+        - base=big_coconut_uat
+        - base=hard_encoded_uat
+        - base=holy_cow_uat
+        - base=inner_silence_uat
+        - base=intensive_care_uat
+        - base=mad_orange_uat
+        - base=master
+        - base=neon_underwear_uat
+        - base=release
+        - base=tasty_ham_uat
+        - base=tenacious_d_uat
+        - base=week_end_uat
+        - base=yoyo_uat
+      - or:
+        - "#approved-reviews-by>=1"
+        - label=ops:without_review_approval
+    actions:
+      queue:
+        name: default
+        method: squash
+pull_request_rules:
+  - name: add a label with the name of the branch
+    conditions:
+      - merged
+      - or:
+        - base=adorable_badger_uat
+        - base=big_coconut_uat
+        - base=hard_encoded_uat 
+        - base=holy_cow_uat
+        - base=inner_silence_uat
+        - base=intensive_care_uat
+        - base=mad_orange_uat
+        - base=master
+        - base=neon_underwear_uat
+        - base=release
+        - base=tasty_ham_uat
+        - base=tenacious_d_uat
+        - base=week_end_uat
+        - base=yoyo_uat
+    actions:
+      label:
+        add:
+          - "branch:{{base}}"        

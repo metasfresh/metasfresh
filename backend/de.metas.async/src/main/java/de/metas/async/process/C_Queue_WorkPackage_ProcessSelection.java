@@ -1,18 +1,11 @@
 package de.metas.async.process;
 
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.IQuery;
-
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.processor.impl.WorkpackageProcessor2Wrapper;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor2;
@@ -22,6 +15,15 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.IQuery;
+
+import java.util.Iterator;
 
 /*
  * #%L
@@ -51,14 +53,15 @@ import de.metas.util.Services;
  * Note that the WPs are processed with the context of this process.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 {
 
 	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
-	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
+	private final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
+
+	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	@Override
 	protected String doIt() throws Exception
@@ -114,7 +117,10 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 						continue; // might be processed by the server
 					}
 
-					final IWorkpackageProcessor workpackageProcessor = workpackageProcessorFactory.getWorkpackageProcessor(workPackage.getC_Queue_Block().getC_Queue_PackageProcessor());
+					final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
+					final QueuePackageProcessor packageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(packageProcessorId);
+
+					final IWorkpackageProcessor workpackageProcessor = workpackageProcessorFactory.getWorkpackageProcessor(packageProcessor);
 					final IWorkpackageProcessor2 workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workpackageProcessor);
 					final IParams workpackageParameters = workpackageParamDAO.retrieveWorkpackageParams(workPackage);
 					workPackageProcessorWrapped.setParameters(workpackageParameters);
@@ -127,7 +133,7 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 					workPackage.setProcessed(true);
 					addLog("Processed {}", workPackage);
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					workPackage.setIsError(true);
 				}

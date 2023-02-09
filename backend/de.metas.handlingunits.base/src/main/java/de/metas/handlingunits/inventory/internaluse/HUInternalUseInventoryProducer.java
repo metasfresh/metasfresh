@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inventory.internaluse;
 
 import com.google.common.collect.ImmutableListMultimap;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,7 +45,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -180,7 +180,7 @@ public class HUInternalUseInventoryProducer
 
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
-						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+						.docBaseType(DocBaseType.MaterialPhysicalInventory)
 						.docSubType(InventoryDocSubType.InternalUseInventory.toDocSubTypeString())
 						.adClientId(warehouse.getAD_Client_ID())
 						.adOrgId(warehouse.getAD_Org_ID())

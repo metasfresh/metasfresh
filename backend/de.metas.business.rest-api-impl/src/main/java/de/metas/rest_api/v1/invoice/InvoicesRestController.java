@@ -25,22 +25,22 @@ package de.metas.rest_api.v1.invoice;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.invoice.InvoiceId;
-import de.metas.rest_api.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
-import de.metas.rest_api.invoicecandidates.impl.CloseInvoiceCandidatesService;
-import de.metas.rest_api.invoicecandidates.impl.CreateInvoiceCandidatesService;
-import de.metas.rest_api.invoicecandidates.impl.EnqueueForInvoicingService;
-import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCheckInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCloseInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v1.invoice.impl.InvoiceService;
 import de.metas.rest_api.v1.invoice.impl.JSONInvoiceInfoResponse;
+import de.metas.rest_api.v1.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
+import de.metas.rest_api.v1.invoicecandidates.impl.CloseInvoiceCandidatesService;
+import de.metas.rest_api.v1.invoicecandidates.impl.CreateInvoiceCandidatesService;
+import de.metas.rest_api.v1.invoicecandidates.impl.EnqueueForInvoicingService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -61,6 +61,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
+/**
+ * @deprecated please consider migrating to version 2 of this API.
+ */
+@Deprecated
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/invoices",

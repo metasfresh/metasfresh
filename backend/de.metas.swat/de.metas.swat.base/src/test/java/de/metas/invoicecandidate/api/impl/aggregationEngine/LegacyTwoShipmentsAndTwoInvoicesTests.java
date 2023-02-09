@@ -22,36 +22,13 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.invoice.InvoiceDocBaseType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.X_C_DocType;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
@@ -61,15 +38,38 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_MatchInv;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * <b>IMPORTANT:</b> these tests are still valid! It's just the way they are implemented that is "legacy".
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEngineTestBase
 {
+	@Override
+	public void init()
+	{
+		super.init();
+
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+
+		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
+	}
+
 	/**
 	 * 06630 (Invoice Rule: "Nach Lieferung")<br>
 	 * <br>
@@ -247,6 +247,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		im11.setQty(partialQty1_32.getStockQty().toBigDecimal());
 		im11.setQtyInUOM(partialQty1_32.getUOMQtyNotNull().toBigDecimal());
 		im11.setC_UOM_ID(partialQty1_32.getUOMQtyNotNull().getUomId().getRepoId());
+		im11.setM_InOut_ID(iol11.getM_InOut_ID());
 		im11.setM_InOutLine(iol11);
 		InterfaceWrapperHelper.save(im11);
 

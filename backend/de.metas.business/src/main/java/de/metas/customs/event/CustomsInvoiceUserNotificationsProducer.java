@@ -52,7 +52,7 @@ public class CustomsInvoiceUserNotificationsProducer
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.customs.UserNotifications")
-			.type(Type.REMOTE)
+			.type(Type.DISTRIBUTED)
 			.build();
 
 	private static final AdWindowId WINDOW_CUSTOMS_INVOICE = AdWindowId.ofRepoId(540643); // FIXME: HARDCODED

@@ -24,7 +24,7 @@ package de.metas.common.bpartner.v1.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalreference.v1.JsonSingleExternalReferenceCreateReq;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -44,7 +44,7 @@ public class JsonRequestLocationUpsertItem
 			value = LOCATION_IDENTIFIER_DOC
 					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created lcoation.") //
 	@NonNull
-	final String locationIdentifier;
+	String locationIdentifier;
 
 	@ApiModelProperty(allowEmptyValue = false, position = 20, value = "The location to upsert")
 	@NonNull

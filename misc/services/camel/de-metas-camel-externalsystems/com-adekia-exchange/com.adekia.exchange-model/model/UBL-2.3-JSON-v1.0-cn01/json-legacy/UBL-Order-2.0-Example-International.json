@@ -1,0 +1,170 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:Order-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "Order":[{
+ "UBLVersionID":[{"_":"2.0"}],
+ "CustomizationID":[{"_":"urn:oasis:names:specification:ubl:xpath:Order-2.0:samples-2.0-draft"}],
+ "ProfileID":[{"_":"bpid:urn:oasis:names:draft:bpss:ubl-2-sample-international-scenario"}],
+ "ID":[{"_":"AEG012345"}],
+ "CopyIndicator":[{"_":false}],
+ "UUID":[{"_":"6E09886B-DC6E-439F-82D1-7CCAC7F4E3B1"}],
+ "IssueDate":[{"_":"2005-06-20"}],
+ "Note":[{"_":"sample"}],
+ "BuyerCustomerParty":[{
+  "CustomerAssignedAccountID":[{"_":"XFB01"}],
+  "SupplierAssignedAccountID":[{"_":"GT00978567"}],
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"IYT Corporation"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Avon Way"}],
+    "BuildingName":[{"_":"Thereabouts"}],
+    "BuildingNumber":[{"_":"56A"}],
+    "CityName":[{"_":"Bridgtow"}],
+    "PostalZone":[{"_":"ZZ99 1ZZ"}],
+    "CountrySubentity":[{"_":"Avon"}],
+    "AddressLine":[{
+     "Line":[{"_":"3rd Floor, Room 5"}]
+    }],
+    "Country":[{
+     "IdentificationCode":[{"_":"GB"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"Mr Fred Churchill"}],
+    "Telephone":[{"_":"+44 127 2653214"}],
+    "Telefax":[{"_":"+44 127 2653215"}],
+    "ElectronicMail":[{"_":"fred@iytcorporation.gov.uk"}]
+   }]
+  }]
+ }],
+ "SellerSupplierParty":[{
+  "CustomerAssignedAccountID":[{"_":"CO001"}],
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"Consortial"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Boston Road"}],
+    "BuildingName":[{"_":"Suite M-102"}],
+    "BuildingNumber":[{"_":"630"}],
+    "CityName":[{"_":"Billerica"}],
+    "PostalZone":[{"_":"01821"}],
+    "CountrySubentity":[{"_":"Massachusetts"}],
+    "CountrySubentityCode":[{"_":"MA"}],
+    "Country":[{
+     "IdentificationCode":[{"_":"US"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"Mrs Bouquet"}],
+    "Telephone":[{"_":" +1 158 1233714"}],
+    "Telefax":[{"_":"+ 1 158 1233856"}],
+    "ElectronicMail":[{"_":"bouquet@fpconsortial.com"}]
+   }]
+  }]
+ }],
+ "OriginatorCustomerParty":[{
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"The Terminus"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Avon Way"}],
+    "BuildingName":[{"_":"Thereabouts"}],
+    "BuildingNumber":[{"_":"56A"}],
+    "CityName":[{"_":"Bridgtow"}],
+    "PostalZone":[{"_":"ZZ99 1ZZ"}],
+    "CountrySubentity":[{"_":"Avon"}],
+    "AddressLine":[{
+     "Line":[{"_":"3rd Floor, Room 5"}]
+    }],
+    "Country":[{
+     "IdentificationCode":[{"_":"GB"}]
+    }]
+   }],
+   "PartyTaxScheme":[{
+    "RegistrationName":[{"_":"Bridgtow District Council"}],
+    "CompanyID":[{"_":"12356478"}],
+    "ExemptionReason":[{"_":"Local Authority"}],
+    "TaxScheme":[{
+     "ID":[{"_":"UK VAT"}],
+     "TaxTypeCode":[{"_":"VAT"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"S Massiah"}],
+    "Telephone":[{"_":"+ 44 127 98876545"}],
+    "Telefax":[{"_":"+ 44 127 98876546"}],
+    "ElectronicMail":[{"_":"smassiah@the-email.co.uk"}]
+   }]
+  }]
+ }],
+ "Delivery":[{
+  "DeliveryAddress":[{
+   "StreetName":[{"_":"Avon Way"}],
+   "BuildingName":[{"_":"Thereabouts"}],
+   "BuildingNumber":[{"_":"56A"}],
+   "CityName":[{"_":"Bridgtow"}],
+   "PostalZone":[{"_":"ZZ99 1ZZ"}],
+   "CountrySubentity":[{"_":"Avon"}],
+   "AddressLine":[{
+    "Line":[{"_":"3rd Floor, Room 5"}]
+   }],
+   "Country":[{
+    "IdentificationCode":[{"_":"GB"}]
+   }]
+  }],
+  "RequestedDeliveryPeriod":[{
+   "StartDate":[{"_":"2005-06-29"}],
+   "StartTime":[{"_":"01:00:00.0Z"}],
+   "EndDate":[{"_":"2005-06-30"}],
+   "EndTime":[{"_":"18:00:00.0Z"}]
+  }]
+ }],
+ "DeliveryTerms":[{
+  "ID":[{"_":"FOB Destination"}],
+  "DeliveryLocation":[{
+   "ID":[{"_":"GBFXT"}],
+   "Description":[{"_":"Felixstowe"}]
+  }]
+ }],
+ "TransactionConditions":[{
+  "Description":[{"_":"Please advise when transport is booked."}]
+ }],
+ "AnticipatedMonetaryTotal":[{
+  "LineExtensionAmount":[{"_":1000.00,
+   "currencyID":"USD"}],
+  "PayableAmount":[{"_":1000.00,
+   "currencyID":"USD"}]
+ }],
+ "OrderLine":[{
+  "Note":[{"_":"this is an illustrative order line"}],
+  "LineItem":[{
+   "ID":[{"_":"1"}],
+   "SalesOrderID":[{"_":"A"}],
+   "LineStatusCode":[{"_":"NoStatus"}],
+   "Quantity":[{"_":100,
+    "unitCode":"KGM"}],
+   "LineExtensionAmount":[{"_":1000.00,
+    "currencyID":"USD"}],
+   "Price":[{
+    "PriceAmount":[{"_":10.00,
+     "currencyID":"USD"}],
+    "BaseQuantity":[{"_":1,
+     "unitCode":"KGM"}]
+   }],
+   "Item":[{
+    "Description":[{"_":"Beeswax"}],
+    "Name":[{"_":"Acme Beeswax"}],
+    "BuyersItemIdentification":[{
+     "ID":[{"_":"6578489"}]
+    }],
+    "SellersItemIdentification":[{
+     "ID":[{"_":"17589683"}]
+    }]
+   }]
+  }]
+ }]
+}]}

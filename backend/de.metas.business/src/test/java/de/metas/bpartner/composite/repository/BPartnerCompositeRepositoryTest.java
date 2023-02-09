@@ -32,9 +32,13 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.CreditLimitTypeId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
-import de.metas.marketing.base.model.CampaignId;
+import de.metas.currency.ICurrencyBL;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -42,6 +46,9 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -49,29 +56,39 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 class BPartnerCompositeRepositoryTest
 {
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
+	private ICurrencyBL currencyBL;
 	private CountryId countryId_DE;
+	private OrgId orgId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		orgId = AdempiereTestHelper.createOrgWithTimeZone("defaultOrg");
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
-				new MockLogEntriesRepository());
+				new MockLogEntriesRepository(),
+				new UserRoleRepository(),
+				new BPartnerCreditLimitRepository());
+
+		currencyBL = Services.get(ICurrencyBL.class);
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -80,8 +97,11 @@ class BPartnerCompositeRepositoryTest
 	@Test
 	void save_and_load_standardCase()
 	{
+		//dev-note: the ICurrencyBL returned it's a PlainCurrencyBL so the ClientId.METASFRESH, OrgId.MAIN sent as param don't matter
+		final CurrencyId currencyId = currencyBL.getBaseCurrencyId(ClientId.METASFRESH, OrgId.MAIN);
+
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(OrgId.MAIN)
+				.orgId(orgId)
 				.bpartner(BPartner.builder()
 						.value("12345")
 						.name("name1")
@@ -123,6 +143,8 @@ class BPartnerCompositeRepositoryTest
 						//.district("district")
 						.countryCode("DE")
 						.poBox("poBox")
+						.phone("phone")
+						.email("email")
 						.build())
 				.contact(BPartnerContact.builder()
 						// @Nullable final BPartnerContactId id,
@@ -155,11 +177,19 @@ class BPartnerCompositeRepositoryTest
 						.orgMappingId(null)
 						.birthday(LocalDate.parse("1901-02-03"))
 						.bPartnerLocationId(null)
-						.roles(ImmutableList.of()
-						).build())
+						.roles(ImmutableList.of())
+						.email2("email2")
+						.email3("email3")
+						.build())
+				.creditLimit(BPartnerCreditLimit.builder()
+									 .amount(Money.of(BigDecimal.valueOf(54.20), currencyId))
+									 .active(true)
+									 .creditLimitTypeId(CreditLimitTypeId.ofRepoId(123))
+									 .dateFrom(Instant.now())
+									 .build())
 				.build();
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		Assertions.assertThat(bpartnerId).isNotNull();
@@ -173,7 +203,9 @@ class BPartnerCompositeRepositoryTest
 						"bpartner.changeLog",
 						"locations.changeLog",
 						"locations.original",
-						"contacts.changeLog")
+						"contacts.changeLog",
+						"creditLimits.changeLog",
+						"creditLimits.bPartnerId")
 				.isEqualTo(bpartnerComposite);
 	}
 
@@ -194,7 +226,7 @@ class BPartnerCompositeRepositoryTest
 				.build());
 
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
-				.orgId(OrgId.MAIN)
+				.orgId(orgId)
 				.bpartner(BPartner.builder()
 						.value("value")
 						.name("name1")
@@ -205,7 +237,7 @@ class BPartnerCompositeRepositoryTest
 						.build())
 				.build();
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		Assertions.assertThat(bpartnerId).isNotNull();

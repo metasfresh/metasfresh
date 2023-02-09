@@ -1,11 +1,11 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import org.springframework.stereotype.Service;
-
+import de.metas.marketing.base.model.PlatformGatewayId;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.marketing.base.spi.PlatformClientFactory;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -41,9 +41,9 @@ public class CleverReachClientFactory implements PlatformClientFactory
 	}
 
 	@Override
-	public String getPlatformGatewayId()
+	public PlatformGatewayId getPlatformGatewayId()
 	{
-		return "CleverReach";
+		return PlatformGatewayId.CleverReach;
 	}
 
 	@Override

@@ -22,30 +22,6 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.ArchiveAction;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
-
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -54,11 +30,29 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.archive.api.ArchiveAction;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
-
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
@@ -187,26 +181,20 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public final I_C_Doc_Outbound_Log retrieveLog(@NonNull final ArchiveId archiveId)
-	{
-		final I_AD_Archive archiveRecord = archiveDAO.retrieveArchive(archiveId);
-		final TableRecordReference tableRecordReference = TableRecordReference.ofReferenced(archiveRecord);
-		return retrieveLog(tableRecordReference);
-	}
-
-	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final TableRecordReference tableRecordReference)
 	{
-		final I_C_Doc_Outbound_Log docExchange = Services
-				.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.firstOnly(I_C_Doc_Outbound_Log.class);
+	}
 
-		return docExchange;
+	public static TableRecordReference extractRecordRef(@NonNull final I_AD_Archive archive)
+	{
+		return TableRecordReference.of(archive.getAD_Table_ID(), archive.getRecord_ID());
 	}
 
 	@Override
@@ -218,5 +206,11 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
+	}
+
+	@Override
+	public I_C_Doc_Outbound_Config getConfigById(final int docOutboundConfigId)
+	{
+		return InterfaceWrapperHelper.load(docOutboundConfigId, I_C_Doc_Outbound_Config.class);
 	}
 }

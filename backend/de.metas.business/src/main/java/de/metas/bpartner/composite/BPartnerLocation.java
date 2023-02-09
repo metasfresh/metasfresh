@@ -7,21 +7,21 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.Set;
 
 import static de.metas.util.Check.isBlank;
 
@@ -67,6 +67,17 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String EPHEMERAL = "ephemeral";
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+	public static final String VAT_TAX_ID = "vatTaxId";
+	public static final String SAP_PAYMENT_METHOD = "sapPaymentMethod";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+	public static final String COUNTRY_NAME = "countryName";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -114,6 +125,10 @@ public class BPartnerLocation
 	private String district;
 	@Nullable
 	private String countryCode;
+	@Nullable
+	private String phone;
+	@Nullable
+	private String email;
 
 	@Nullable
 	private BPartnerLocationType locationType;
@@ -123,6 +138,34 @@ public class BPartnerLocation
 
 	@Nullable
 	private OrgMappingId orgMappingId;
+
+	private boolean ephemeral;
+
+	@Nullable
+	private String mobile;
+
+	@Nullable
+	private String fax;
+
+	@Nullable
+	final String setupPlaceNo;
+
+	@Nullable
+	private String vatTaxId;
+
+	private boolean remitTo;
+	private boolean handOverLocation;
+	private boolean replicationLookupDefault;
+	private boolean visitorsAddress;
+
+	@Nullable
+	private String sapPaymentMethod;
+
+	@Nullable
+	private String sapBPartnerCode;
+
+	@Nullable
+	private String countryName;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -153,9 +196,23 @@ public class BPartnerLocation
 			@Nullable final String region,
 			@Nullable final String city,
 			@Nullable final String countryCode,
+			@Nullable final String phone,
+			@Nullable final String email,
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final Boolean ephemeral,
+			@Nullable final String mobile,
+			@Nullable final String fax,
+			@Nullable final String setupPlaceNo,
+			@Nullable final String vatTaxId,
+			@Nullable final String countryName,
+			@Nullable final Boolean remitTo,
+			@Nullable final Boolean handOverLocation,
+			@Nullable final Boolean replicationLookupDefault,
+			@Nullable final Boolean visitorsAddress,
+			@Nullable final String sapPaymentMethod,
+			@Nullable final String sapBPartnerCode)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -183,6 +240,32 @@ public class BPartnerLocation
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+
+		this.ephemeral = CoalesceUtil.coalesceNotNull(ephemeral, false);
+
+		this.phone = phone;
+
+		this.mobile = mobile;
+
+		this.fax = fax;
+
+		this.email = email;
+
+		this.setupPlaceNo = setupPlaceNo;
+		this.vatTaxId = vatTaxId;
+
+		this.countryName = countryName;
+
+		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
+
+		this.replicationLookupDefault = replicationLookupDefault != null ? replicationLookupDefault : false;
+
+		this.remitTo = remitTo != null ? remitTo : false;
+
+		this.visitorsAddress = visitorsAddress != null ? visitorsAddress : false;
+
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapBPartnerCode = sapBPartnerCode;
 	}
 
 	public BPartnerLocation deepCopy()
@@ -255,6 +338,7 @@ public class BPartnerLocation
 				.region(getRegion())
 				.district(getDistrict())
 				.countryCode(getCountryCode())
+				.countryName(getCountryName())
 				.build();
 	}
 
@@ -271,5 +355,15 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+		setCountryName(address.getCountryName());
+	}
+
+	/**
+	 * Can be used if this instance's ID is known to be not null.
+	 */
+	@NonNull
+	public BPartnerLocationId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "id may not be null at this point");
 	}
 }

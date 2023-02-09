@@ -25,6 +25,7 @@ package de.metas.common.externalsystem;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -34,6 +35,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Send from metasfresh to camel to indicate that metasfresh wants an external system to do something.
@@ -42,6 +44,8 @@ import java.util.Map;
 public class JsonExternalSystemRequest
 {
 	JsonMetasfreshId externalSystemConfigId;
+
+	String externalSystemChildConfigValue;
 
 	String orgCode;
 
@@ -73,15 +77,23 @@ public class JsonExternalSystemRequest
 			@JsonProperty("externalSystemConfigId") @NonNull final JsonMetasfreshId externalSystemConfigId,
 			@JsonProperty("parameters") @Singular final Map<String, String> parameters,
 			@JsonProperty("traceId") @NonNull final String traceId,
-			@JsonProperty("writeAuditEndpoint") @Nullable final String writeAuditEndpoint)
+			@JsonProperty("writeAuditEndpoint") @Nullable final String writeAuditEndpoint,
+			@JsonProperty("externalSystemChildConfigValue") @NonNull final String externalSystemChildConfigValue)
 	{
 		this.externalSystemConfigId = externalSystemConfigId;
 		this.orgCode = orgCode;
 		this.externalSystemName = externalSystemName;
 		this.command = command;
 		this.adPInstanceId = adPInstanceId;
-		this.parameters = parameters;
+		this.parameters = Optional.ofNullable(parameters).orElseGet(ImmutableMap::of);
 		this.traceId = traceId;
 		this.writeAuditEndpoint = writeAuditEndpoint;
+		this.externalSystemChildConfigValue = externalSystemChildConfigValue;
+	}
+
+	@Nullable
+	public String getParameter(@NonNull final String parameterName)
+	{
+		return parameters.get(parameterName);
 	}
 }

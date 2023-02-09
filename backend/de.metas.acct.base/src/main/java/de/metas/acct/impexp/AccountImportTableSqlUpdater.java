@@ -64,7 +64,7 @@ public class AccountImportTableSqlUpdater
 				.append("WHERE ElementName IS NOT NULL AND C_Element_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 		logger.debug("Set Element Default={} ",  no);
 	}
 
@@ -78,7 +78,7 @@ public class AccountImportTableSqlUpdater
 				.append("AND i.ParentValue=ev.Value AND i.AD_Client_ID=ev.AD_Client_ID ) ")
 				.append("WHERE ParentElementValue_ID IS NULL ")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 		logger.debug("Found Parent ElementValue={}",  no);
 	}
 
@@ -89,13 +89,13 @@ public class AccountImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE AD_TreeNode set Parent_ID = parentelementvalue_id, seqno = c_elementvalue_id ")
 				.append(" from i_elementvalue ev where ev.C_ElementValue_ID = node_ID and ad_tree_ID = ? " )
 				.append(" and parentelementvalue_id is not null " );
-		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
 		logger.debug("Updated Parent ElementValue=" + no);
 
 		sql = new StringBuilder("update AD_TreeNode set  seqno = c_elementvalue_id ")
 				.append(" from i_elementvalue ev where ev.C_ElementValue_ID = node_ID and ad_tree_ID = ? " )
 				.append(" and ev.IsSummary='Y' " );
-		no = DB.executeUpdateEx(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), new Object[] {treeId}, ITrx.TRXNAME_None);
 		logger.debug("Updated Parent Seqno={}",  no);
 
 	}
@@ -112,7 +112,7 @@ public class AccountImportTableSqlUpdater
 				.append("WHERE ParentElementValue_ID IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 		logger.debug("Found Parent ElementValue=" + no);
 	}
 	
@@ -123,7 +123,7 @@ public class AccountImportTableSqlUpdater
 				.append(" and exists ( select 1 from c_element e where e.c_element_id = c_elementvalue.c_element_id and e.ad_tree_id = tn.ad_tree_id) " )
 				.append(" and c_element_id = ? " )
 				.append("  " );
-		int no = DB.executeUpdateEx(sql.toString(), new Object[] {c_element_id}, ITrx.TRXNAME_None);
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), new Object[] {c_element_id}, ITrx.TRXNAME_None);
 		logger.debug("Updated Element values: {}",  no);
 
 	}
@@ -139,14 +139,14 @@ public class AccountImportTableSqlUpdater
 				.append("WHERE ParentElementValue_ID IS NULL AND ParentValue IS NOT NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y' ")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 		logger.info("Not Found Parent ElementValue=" + no);
 
 		sql = new StringBuilder("UPDATE I_ElementValue "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Value is mandatory, ' "
 				+ "WHERE Value IS NULL "
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(selection.toSqlWhereClause());
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 		logger.info("Value is mandatory={}", no);
 	}
 }

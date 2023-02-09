@@ -2,7 +2,7 @@ package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
-import de.metas.money.CurrencyConversionTypeId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -16,7 +16,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Objects;
 
 /*
@@ -59,9 +59,11 @@ public class CostDetailCreateRequest
 	CostElement costElement;
 	CostAmount amt;
 	Quantity qty;
-	CurrencyConversionTypeId currencyConversionTypeId;
-	LocalDate date;
+	@Nullable CurrencyConversionContext currencyConversionContext;
+	Instant date;
 	String description;
+
+	CostAmount explicitCostPrice;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -75,9 +77,10 @@ public class CostDetailCreateRequest
 			@Nullable final CostElement costElement,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
-			@NonNull final LocalDate date,
-			@Nullable final String description)
+			@Nullable final CurrencyConversionContext currencyConversionContext,
+			@NonNull final Instant date,
+			@Nullable final String description,
+			@Nullable final CostAmount explicitCostPrice)
 	{
 		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
@@ -89,9 +92,10 @@ public class CostDetailCreateRequest
 		this.initialDocumentRef = initialDocumentRef;
 		this.amt = amt;
 		this.qty = qty;
-		this.currencyConversionTypeId = currencyConversionTypeId;
+		this.currencyConversionContext = currencyConversionContext;
 		this.date = date;
 		this.description = description;
+		this.explicitCostPrice = explicitCostPrice;
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -215,7 +219,9 @@ public class CostDetailCreateRequest
 				.qty(getQty())
 				//
 				.documentRef(getDocumentRef())
-				.description(getDescription());
+				.description(getDescription())
+				.dateAcct(getDate())
+				;
 
 		if (!isAllCostElements())
 		{

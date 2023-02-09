@@ -7,21 +7,20 @@
 @Library('misc')
 import de.metas.jenkins.MvnConf
 
-def build(final MvnConf mvnConf, 
-          final Map scmVars, 
+def build(final MvnConf mvnConf,
+          final Map scmVars,
           final boolean forceBuild = false,
           final boolean forceSkipMobileWebui = false,
           final boolean forceSkipProcurementWebui = false) {
-    
+
     stage('Build misc services') {
         currentBuild.description = """${currentBuild.description}<p/>
 			<h2>misc services</h2>"""
 
-// comment back in when this is merged towards master or release        
-//        dir('mobile-webui/mobile-webui-frontend') {
-//            def buildFile = load('buildfile.groovy')
-//            buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
-//        }
+        dir('mobile-webui/mobile-webui-frontend') {
+            def buildFile = load('buildfile.groovy')
+            buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
+        }
         dir('procurement-webui') {
             def buildFile = load('buildfile.groovy')
             buildFile.build(mvnConf, scmVars, forceBuild, forceSkipProcurementWebui)

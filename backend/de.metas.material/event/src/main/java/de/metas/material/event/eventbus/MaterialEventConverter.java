@@ -1,11 +1,10 @@
 package de.metas.material.event.eventbus;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.event.Event;
 import de.metas.material.event.MaterialEvent;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L

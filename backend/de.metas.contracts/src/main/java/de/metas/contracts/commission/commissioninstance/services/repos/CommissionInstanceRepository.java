@@ -16,6 +16,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
+import de.metas.contracts.commission.commissioninstance.businesslogic.margin.MarginConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShareId;
@@ -28,6 +29,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
+import de.metas.contracts.commission.licensefee.algorithm.LicenseFeeConfig;
 import de.metas.contracts.commission.mediated.algorithm.MediatedCommissionConfig;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
@@ -37,15 +39,18 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.Percent;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -58,6 +63,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -105,6 +111,7 @@ public class CommissionInstanceRepository
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final CommissionRecordStagingService commissionRecordStagingService;
 	private final CommissionConfigProvider commissionConfigProvider;
@@ -183,16 +190,14 @@ public class CommissionInstanceRepository
 		return instanceBuilder.build();
 	}
 
-	public Beneficiary createBeneficiary(final int c_BPartner_SalesRep_ID)
-	{
-		return Beneficiary.of(BPartnerId.ofRepoId(c_BPartner_SalesRep_ID));
-	}
-
 	private CommissionTriggerData extractCommissionTriggerData(@NonNull final I_C_Commission_Instance instanceRecord)
 	{
 		final CommissionTriggerType triggerType = CommissionTriggerType.ofCode(instanceRecord.getCommissionTrigger_Type());
 
 		final CommissionTriggerDocumentId triggerDocumentId = CommissionInstanceRepoTools.extractCommissionTriggerDocumentId(instanceRecord);
+
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(instanceRecord.getC_UOM_ID()));
+		final Quantity qtyInvolved = Quantity.of(instanceRecord.getQty(), uom);
 
 		return CommissionTriggerData.builder()
 				.orgId(OrgId.ofRepoId(instanceRecord.getAD_Org_ID()))
@@ -202,8 +207,10 @@ public class CommissionInstanceRepository
 				.forecastedBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Forecasted()))
 				.invoiceableBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiceable()))
 				.invoicedBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiced()))
-				.tradedCommissionPercent(Percent.ZERO)
 				.timestamp(TimeUtil.asInstant(instanceRecord.getMostRecentTriggerTimestamp()))
+				.productId(ProductId.ofRepoId(instanceRecord.getM_Product_Order_ID()))
+				.documentCurrencyId(CurrencyId.ofRepoId(instanceRecord.getC_Currency_ID()))
+				.totalQtyInvolved(qtyInvolved)
 				.build();
 	}
 
@@ -299,7 +306,9 @@ public class CommissionInstanceRepository
 		commissionInstanceRecord.setPointsBase_Forecasted(triggerData.getForecastedBasePoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiceable(triggerData.getInvoiceableBasePoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiced(triggerData.getInvoicedBasePoints().toBigDecimal());
-
+		commissionInstanceRecord.setQty(triggerData.getTotalQtyInvolved().toBigDecimal());
+		commissionInstanceRecord.setC_UOM_ID(triggerData.getTotalQtyInvolved().getUOM().getC_UOM_ID());
+		commissionInstanceRecord.setC_Currency_ID(triggerData.getDocumentCurrencyId().getRepoId());
 		saveRecord(commissionInstanceRecord);
 
 		final CommissionInstanceId commissionInstanceId = CommissionInstanceId.ofRepoId(commissionInstanceRecord.getC_Commission_Instance_ID());
@@ -429,6 +438,12 @@ public class CommissionInstanceRepository
 
 		MediatedCommissionConfig.castOrEmpty(share.getConfig())
 				.ifPresent(mediatedConfig -> shareRecordToUse.setC_MediatedCommissionSettingsLine_ID(mediatedConfig.getMediatedCommissionSettingsLineId().getRepoId()));
+
+		MarginConfig.castOrEmpty(share.getConfig())
+				.ifPresent(marginConfig -> shareRecordToUse.setC_Customer_Trade_Margin_Line_ID(marginConfig.getCustomerTradeMarginLineId().getRepoId()));
+
+		LicenseFeeConfig.castOrEmpty(share.getConfig())
+				.ifPresent(licenseFeeConfig -> shareRecordToUse.setC_LicenseFeeSettingsLine_ID(licenseFeeConfig.getLicenseFeeSettingsLineId().getRepoId()));
 
 		HierarchyContract.castOrEmpty(share.getContract())
 				.ifPresent(hierarchyContract -> shareRecordToUse.setC_CommissionSettingsLine_ID(CommissionSettingsLineId.toRepoId(hierarchyContract.getCommissionSettingsLineId())));

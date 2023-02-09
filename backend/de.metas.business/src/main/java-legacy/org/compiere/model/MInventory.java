@@ -16,20 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -40,11 +28,23 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Physical Inventory Model
@@ -54,10 +54,8 @@ import de.metas.util.Services;
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 1948157 ] Is necessary the reference for document reverse
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Armen Rizal, Goodwill Consulting
  *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
  */
 public class MInventory extends X_M_Inventory implements IDocument
 {
@@ -81,17 +79,12 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MInventory(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 
-	/**
-	 * Warehouse Constructor
-	 *
-	 * @param wh
-	 * @param trxName
-	 */
 	public MInventory(final I_M_Warehouse wh)
 	{
 		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
@@ -170,7 +163,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+					.docBaseType(DocBaseType.MaterialPhysicalInventory)
 					.adClientId(getAD_Client_ID())
 					.adOrgId(getAD_Org_ID())
 					.build();
@@ -225,7 +218,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), DocBaseType.MaterialPhysicalInventory, getAD_Org_ID());
 
 		if (!hasLines())
 		{
@@ -411,7 +404,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 
 		final MDocType docType = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), docType.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), DocBaseType.ofCode(docType.getDocBaseType()), getAD_Org_ID());
 
 		final I_M_Inventory reversal = createAndProcessReversal();
 
@@ -514,9 +507,9 @@ public class MInventory extends X_M_Inventory implements IDocument
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

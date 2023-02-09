@@ -24,6 +24,7 @@ package de.metas.notification;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
@@ -76,7 +77,7 @@ public class NotificationSenderTemplateTest
 		Services.registerService(IDocumentBL.class, mockedDocumentBL);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
 
 		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());

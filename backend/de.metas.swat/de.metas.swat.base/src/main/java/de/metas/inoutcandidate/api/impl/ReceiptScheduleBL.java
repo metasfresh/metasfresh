@@ -30,6 +30,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -40,7 +41,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
@@ -91,7 +91,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
 
-	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+	private final static Logger logger = LogManager.getLogger(ReceiptScheduleBL.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
@@ -100,6 +100,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	@Override
 	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
@@ -111,6 +112,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public IAggregationKeyBuilder<I_M_ReceiptSchedule> getHeaderAggregationKeyBuilder()
 	{
 		return headerAggregationKeyBuilder;
+	}
+
+	@Override
+	public <T extends I_M_ReceiptSchedule> T getById(@NonNull final ReceiptScheduleId id, @NonNull final Class<T> modelClass)
+	{
+		return receiptScheduleDAO.getById(id, modelClass);
 	}
 
 	@Override
@@ -136,7 +143,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public LocatorId getLocatorEffectiveId(final I_M_ReceiptSchedule rs)
 	{
 		final WarehouseId warehouseId = getWarehouseEffectiveId(rs);
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -163,7 +170,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public BigDecimal getQtyOrdered(final I_M_ReceiptSchedule rs)
 	{
-		return Services.get(IReceiptScheduleQtysBL.class).getQtyOrdered(rs);
+		return receiptScheduleQtysBL.getQtyOrdered(rs);
 	}
 
 	@Override
@@ -280,8 +287,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 	@Override
 	public void generateInOuts(final Properties ctx,
-			@NonNull final IInOutProducer producer,
-			@NonNull final Iterator<I_M_ReceiptSchedule> receiptSchedules)
+							   @NonNull final IInOutProducer producer,
+							   @NonNull final Iterator<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult>createExecutor()
 				.setContext(ctx)
@@ -555,18 +562,18 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
-						 {
-							 allCounter.incrementAndGet();
-							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
-							 {
-								 return;
-							 }
-							 record.setExportStatus(newExportStatus.getCode());
-							 updateCanBeExportedFrom(record);
-							 InterfaceWrapperHelper.saveRecord(record);
+				{
+					allCounter.incrementAndGet();
+					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+					{
+						return;
+					}
+					record.setExportStatus(newExportStatus.getCode());
+					updateCanBeExportedFrom(record);
+					InterfaceWrapperHelper.saveRecord(record);
 
-							 updatedCounter.incrementAndGet();
-						 });
+					updatedCounter.incrementAndGet();
+				});
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ReceiptSchedules", updatedCounter.get(), allCounter.get());
 	}
@@ -732,4 +739,5 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			delegate.setBPartnerAddress_Override(address);
 		}
 	}
+
 }

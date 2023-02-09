@@ -10,6 +10,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
@@ -31,7 +32,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -226,13 +226,13 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}

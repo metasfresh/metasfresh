@@ -14,16 +14,18 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -50,6 +52,7 @@ public class PPOrderBOMBLTest
 		helper = new MRPTestHelper();
 
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
+		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
 
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
@@ -95,11 +98,13 @@ public class PPOrderBOMBLTest
 				.fromToMultiplier(new BigDecimal("1500000"))
 				.build());
 
+		final I_PP_Product_BOMVersions bomVersions = helper.createBOMVersions(ProductId.ofRepoId(pSalad.getM_Product_ID()));
 		//
 		// Define BOM
 		//@formatter:off
 		final I_PP_Product_BOM saladProductBom = helper.newProductBOM()
 				.product(pSalad).uom(uomStuck)
+				.bomVersions(bomVersions)
 				// Carrot
 				.newBOMLine()
 					.product(pCarrot).uom(uomKillogram)
@@ -188,15 +193,15 @@ public class PPOrderBOMBLTest
 
 	private void assertUOM(final I_C_UOM expectedUOM, final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		assertThat(ppOrderBOMLine.getC_UOM())
+		assertThat(ppOrderBOMLine.getC_UOM_ID())
 			.as("BOM line's UOM: "+ppOrderBOMLine)
-			.isEqualTo(expectedUOM);
+			.isEqualTo(expectedUOM.getC_UOM_ID());
 	}
 
 	private void testExtractUpdateOrderBOMLineQuantities(final OrderBOMLineQuantities qtys)
 	{
 		final I_PP_Order_BOMLine record = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
-		PPOrderBOMBL.setQuantities(record, qtys);
+		PPOrderBOMBL.updateRecord(record, qtys);
 
 		final OrderBOMLineQuantities qtysActual = ppOrderBOMBL.getQuantities(record);
 		assertThat(qtysActual).usingRecursiveComparison().isEqualTo(qtys);

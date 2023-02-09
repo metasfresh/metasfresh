@@ -1,12 +1,17 @@
 package de.metas.document.sequenceno;
 
+import de.metas.document.DocumentSequenceInfo;
+import lombok.NonNull;
 import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,13 +31,11 @@ import org.compiere.util.Evaluatee;
 
 public interface CustomSequenceNoProvider
 {
-	boolean isApplicable(Evaluatee context);
+	boolean isApplicable(Evaluatee context, DocumentSequenceInfo documentSequenceInfo);
 
-	String provideSequenceNo(Evaluatee context);
-
-	/**
-	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
-	 * Note that if the incremental number is appended, that is <i>without</i> applying the {@code AD_Sequence}'s decimal pattern.
-	 */
-	boolean isUseIncrementSeqNoAsPrefix();
+	@NonNull
+	String provideSeqNo(
+			@NonNull Supplier<String> incrementalSeqNoSupplier,
+			@NonNull Evaluatee context,
+			@NonNull DocumentSequenceInfo documentSequenceInfo);
 }

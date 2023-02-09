@@ -24,21 +24,23 @@ package de.metas.activity.model.validator;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
-
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_M_InOutLine.class)
 public class M_InOutLine
 {
-	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_InOutLine.COLUMNNAME_M_Product_ID })
 	public void updateActivity(final I_M_InOutLine inOutLine)
@@ -53,8 +55,11 @@ public class M_InOutLine
 		{
 			return;
 		}
-		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
 
+		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(
+				ClientId.ofRepoId(inOutLine.getAD_Client_ID()),
+				OrgId.ofRepoId(inOutLine.getAD_Org_ID()),
+				productId);
 		if (productActivityId == null)
 		{
 			return;
@@ -67,10 +72,6 @@ public class M_InOutLine
 			return;
 		}
 
-		if (productActivityId != null)
-		{
-			dimensionService.updateRecord(inOutLine, orderLineDimension.withActivityId(productActivityId));
-		}
-
+		dimensionService.updateRecord(inOutLine, orderLineDimension.withActivityId(productActivityId));
 	}
 }

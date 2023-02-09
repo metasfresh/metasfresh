@@ -4,23 +4,20 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
-import { processNewRecord } from '../../actions/GenericActions';
+import { startProcess } from '../../api/process';
+import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
-  closeModal,
-  createProcess,
-  createWindow,
-  handleProcessResponse,
-  fetchChangeLog,
   callAPI,
+  closeModal,
+  createWindow,
+  fetchChangeLog,
+  fireUpdateData,
   patch,
   resetPrintingOptions,
-  fireUpdateData,
 } from '../../actions/WindowActions';
-import { openFile } from '../../actions/GenericActions';
 
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -36,6 +33,10 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -124,15 +125,17 @@ class Modal extends Component {
     const msgBody = JSON.parse(websocketMsg.body);
     const { stale } = msgBody;
     if (stale) {
-      const { dispatch, windowId, docId, tabId, rowId } = this.props;
+      const { dispatch, windowId, docId, tabId, rowId, isAdvanced } =
+        this.props;
 
       dispatch(
         fireUpdateData({
           windowId,
           documentId: docId,
-          isModal: true,
           tabId,
           rowId,
+          isModal: true,
+          fetchAdvancedFields: isAdvanced,
         })
       );
     }
@@ -496,7 +499,8 @@ class Modal extends Component {
       windowId,
       docId,
       'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf?${extraParams}`
+      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`,
+      extraParams
     );
     this.handleClose();
   };
@@ -676,6 +680,7 @@ class Modal extends Component {
                   tabIndex={0}
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
+                  disabled={indicator === 'error'}
                 >
                   {counterpart.translate('modal.actions.start')}
 

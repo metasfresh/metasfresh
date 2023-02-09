@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -31,6 +31,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -418,6 +419,19 @@ public class PurchaseCandidateRepository
 			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
 		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
+		record.setIsSimulated(purchaseCandidate.isSimulated());
+
+		if (purchaseCandidate.isSimulated())
+		{
+			record.setProcessed(true);
+		}
+
+		record.setIsManualPrice(purchaseCandidate.isManualPrice());
+		if (purchaseCandidate.isManualPrice())
+		{
+			record.setC_Currency_ID(CurrencyId.toRepoId(purchaseCandidate.getCurrencyId()));
+			record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
+		}
 
 		record.setProductDescription(purchaseCandidate.getProductDescription());
 
@@ -536,6 +550,7 @@ public class PurchaseCandidateRepository
 				.priceActual(record.getPurchasePriceActual())
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.isTaxIncluded(record.isTaxIncluded())
 				.prepared(record.isPrepared())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
@@ -718,4 +733,40 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public List<PurchaseCandidate> getAllByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderPO_ID, purchaseOrderId.getRepoId())
+				.create()
+				.stream()
+				.map(I_C_PurchaseCandidate_Alloc::getC_PurchaseCandidate_ID)
+				.map(PurchaseCandidateId::ofRepoId)
+				.map(this::getById)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> deleteQuery = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
+
+		if (deletePurchaseCandidateQuery.isOnlySimulated())
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+		}
+
+		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, deletePurchaseCandidateQuery.getSalesOrderLineId());
+		}
+
+		if (deleteQuery.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all I_C_PurchaseCandidate records is not allowed!");
+		}
+
+		deleteQuery
+				.create()
+				.deleteDirectly();
+	}
 }

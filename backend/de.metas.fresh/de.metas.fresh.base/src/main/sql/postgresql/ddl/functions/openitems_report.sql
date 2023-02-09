@@ -129,7 +129,7 @@ FROM
 			
 
 		WHERE true
-			AND i.DocStatus IN ('CO','CL','RE') AND i.isActive = 'Y'
+			AND i.DocStatus IN ('CO','CL') AND i.isActive = 'Y'
 	)as oi
 	INNER JOIN C_BPartner bp 	ON oi.C_BPartner_ID = bp.C_BPartner_ID
 	INNER JOIN C_Currency c 	ON oi.C_Currency_ID = c.C_Currency_ID

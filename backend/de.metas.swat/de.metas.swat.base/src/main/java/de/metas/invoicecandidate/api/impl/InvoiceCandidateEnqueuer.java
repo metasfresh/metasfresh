@@ -1,44 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.Joiner;
-
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
@@ -52,8 +14,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
-import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.logging.TableRecordMDC;
@@ -62,14 +25,25 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /**
- *
- *
  * TODO there is duplicated code from <code>de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer</code>.
  * Please deduplicate it when there is time.
  * My favorite solution would be to create a "locking item-chump-processor" to do all the magic.
- *
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
@@ -90,7 +64,7 @@ import lombok.NonNull;
 	private Boolean _failOnChanges = null;
 	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
-	private IInvoicingParams _invoicingParams;
+	private InvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 	private IWorkpackagePrioStrategy _priority = null;
 
@@ -118,7 +92,7 @@ import lombok.NonNull;
 	private IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final ILock icLock = InvoiceCandidateLockingUtil.lockInvoiceCandidatesForSelection(pinstanceId);
-		try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
+		try (final ILockAutoCloseable ignored = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{
 			return enqueueSelectionInTrx(icLock, pinstanceId);
 		}
@@ -151,7 +125,7 @@ import lombok.NonNull;
 				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setLockedBy(icLock)
 				.setTaggedWithAnyTag()
-				.setOnlyC_Invoice_Candidates(invoiceCandidates)
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
 				.update();
 
 		//
@@ -177,7 +151,7 @@ import lombok.NonNull;
 
 		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
 		{
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
 				if (isFailOnInvoiceCandidateError() && icRecord.isError())
@@ -231,19 +205,17 @@ import lombok.NonNull;
 		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+			throw new AdempiereException(MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P);
 		}
 
 		//
-		// Create an return the enqueuing result
-		final IInvoiceCandidateEnqueueResult result = new InvoiceCandidateEnqueueResult(
+		// Create and return the enqueuing result
+		return new InvoiceCandidateEnqueueResult(
 				invoiceCandidateSelectionCount,
 				workpackageAggregator.getGroupsCount(),
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
 				icLock);
-
-		return result;
 	}
 
 	/**
@@ -284,7 +256,7 @@ import lombok.NonNull;
 		return true;
 	}
 
-	private final void prepareSelectionForEnqueueing(final PInstanceId selectionId)
+	private void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
 		//
 		// Check incomplete compensation groups
@@ -292,7 +264,7 @@ import lombok.NonNull;
 		if (!incompleteOrderDocumentNo.isEmpty())
 		{
 			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
-			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
+			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, incompleteOrderDocumentNoStr);
 		}
 
 		// Note: we set dateInvoiced and updateDateAcct *before* enqueuing, because they are always relevant for aggregation (no matter which aggregation rules we choose)
@@ -303,7 +275,7 @@ import lombok.NonNull;
 		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
 		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
 		// This is critical because we assume that dateInvoiced is *implicitly* part of the aggregation key, so different values would fail the invoicing
-		final IInvoicingParams invoicingParams = getInvoicingParams();
+		final InvoicingParams invoicingParams = getInvoicingParams();
 		final LocalDate paramDateInvoiced = invoicingParams.getDateInvoiced();
 		if (paramDateInvoiced != null)
 		{
@@ -321,7 +293,7 @@ import lombok.NonNull;
 
 		//
 		// Update POReference (task 07978)
-		final String poReference = invoicingParams.getPOReference();
+		final String poReference = invoicingParams.getPoReference();
 		if (!Check.isEmpty(poReference, true))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
@@ -339,8 +311,10 @@ import lombok.NonNull;
 		invoiceCandDAO.updateApprovalForInvoicingToTrue(selectionId);
 	}
 
-	/** NOTE: we designed this method for the case of enqueuing a big number of invoice candidates. */
-	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
+	/**
+	 * NOTE: we designed this method for the case of enqueuing a big number of invoice candidates.
+	 */
+	private Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
 		return () -> {
 			final Properties ctx = getCtx();
@@ -359,7 +333,7 @@ import lombok.NonNull;
 	/**
 	 * @return context; never returns null
 	 */
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		return _ctx;
 	}
@@ -371,24 +345,24 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final boolean isFailIfNothingEnqueued()
+	private boolean isFailIfNothingEnqueued()
 	{
 		return _failIfNothingEnqueued;
 	}
 
-	private final boolean isFailOnInvoiceCandidateError()
+	private boolean isFailOnInvoiceCandidateError()
 	{
 		return _failOnInvoiceCandidateError;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceCandidateEnqueuer setInvoicingParams(InvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
 	}
 
-	private final IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
 		Check.assumeNotNull(_invoicingParams, "invoicingParams not null");
 		return _invoicingParams;
@@ -401,7 +375,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final boolean isFailOnChanges()
+	private boolean isFailOnChanges()
 	{
 		// Use the explicit setting if available
 		if (_failOnChanges != null)
@@ -413,7 +387,7 @@ import lombok.NonNull;
 		return sysConfigBL.getBooleanValue(SYSCONFIG_FailOnChanges, DEFAULT_FailOnChanges);
 	}
 
-	private final IInvoiceCandidatesChangesChecker newInvoiceCandidatesChangesChecker()
+	private IInvoiceCandidatesChangesChecker newInvoiceCandidatesChangesChecker()
 	{
 		if (isFailOnChanges())
 		{

@@ -24,6 +24,7 @@ import org.compiere.model.I_C_Payment;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -35,12 +36,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,21 +54,21 @@ final class AllocationLineCandidateSaver
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
+	public ImmutableMap<PaymentAllocationId, AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> saveInTrx(candidates));
 	}
 
-	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId, AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
 	{
-		final ImmutableMap.Builder<PaymentAllocationId,AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
+		final ImmutableMap.Builder<PaymentAllocationId, AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
 
 		for (final AllocationLineCandidate candidate : candidates)
 		{
 			final PaymentAllocationId paymentAllocationId = saveCandidate(candidate);
 			if (paymentAllocationId != null)
 			{
-				candidatesByPaymentId.put(paymentAllocationId,candidate);
+				candidatesByPaymentId.put(paymentAllocationId, candidate);
 			}
 		}
 
@@ -142,7 +143,8 @@ final class AllocationLineCandidateSaver
 		return createAndComplete(allocationBuilder);
 	}
 
-	private PaymentAllocationId saveCandidate_InvoiceToInvoice(AllocationLineCandidate candidate)
+	@Nullable
+	private PaymentAllocationId saveCandidate_InvoiceToInvoice(@NonNull final AllocationLineCandidate candidate)
 	{
 		final Money payAmt = candidate.getAmounts().getPayAmt();
 		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
@@ -182,6 +184,9 @@ final class AllocationLineCandidateSaver
 				// Amounts
 				.amount(payAmt.negate().toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
+				.discountAmt(Optional.ofNullable(candidate.getPayAmtDiscountInInvoiceCurrency())
+									 .map(Money::toBigDecimal)
+									 .orElse(BigDecimal.ZERO))
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
 

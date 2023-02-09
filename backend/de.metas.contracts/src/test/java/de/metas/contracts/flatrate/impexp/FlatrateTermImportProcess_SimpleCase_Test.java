@@ -1,24 +1,7 @@
 package de.metas.contracts.flatrate.impexp;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
-
-import de.metas.bpartner.service.IBPartnerDAO;
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
@@ -32,14 +15,31 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.greeting.GreetingRepository;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -68,8 +68,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	private IInvoiceCandDAO iinvoiceCandDAO;
 	private IShipmentScheduleHandlerBL inOutCandHandlerBL;
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		helper.setupModuleInterceptors_Contracts_Full();
 
@@ -83,11 +83,12 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test
@@ -292,7 +293,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 
 		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
-		assertThat(candidates).hasSize(0);
+		assertThat(candidates).isEmpty();
 
 		assertShipmentSchedules(flatrateTerm, false);
 	}
@@ -301,7 +302,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	{
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 
@@ -343,7 +343,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		}
 		else
 		{
-			assertThat(createdShipmentCandidateIds).hasSize(0);
+			assertThat(createdShipmentCandidateIds).isEmpty();
 		}
 
 	}

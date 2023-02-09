@@ -1,14 +1,24 @@
 package de.metas.document;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
 {
-	I_C_DocType getById(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
+	@NonNull
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
@@ -26,6 +36,7 @@ public interface IDocTypeBL extends ISingletonService
 	 * @return true if it's a sales cost estimate
 	 */
 	boolean isSalesCostEstimate(I_C_DocType dt);
+
 	/**
 	 * @return true if it's a sales proposal (Not binding)
 	 */
@@ -46,8 +57,6 @@ public interface IDocTypeBL extends ISingletonService
 	 */
 	boolean isSalesProposalOrQuotation(I_C_DocType dt);
 
-	boolean isSOTrx(String docBaseType);
-
 	boolean isPrepay(DocTypeId docTypeId);
 
 	boolean isPrepay(I_C_DocType dt);
@@ -57,4 +66,10 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isRequisition(DocTypeId docTypeId);
 
 	boolean isMediated(DocTypeId docTypeId);
+
+	boolean isCallOrder(DocTypeId docTypeId);
+
+	boolean isInternalVendorInvoice(DocTypeId docTypeId);
+
+	void save(I_C_DocType dt);
 }

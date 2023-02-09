@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -11,6 +12,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -77,6 +79,9 @@ public class Product
 	Boolean discontinued;
 
 	@Nullable
+	LocalDate discontinuedFrom;
+
+	@Nullable
 	Boolean active;
 
 	@Nullable
@@ -92,4 +97,19 @@ public class Product
 
 	@Nullable
 	CommodityNumberId commodityNumberId;
+
+	@Nullable
+	SectionCodeId sectionCodeId;
+
+	boolean purchased;
+
+	@Nullable
+	String sapProductHierarchy;
+
+
+	@Nullable
+	String guaranteeMonths;
+
+	@Nullable
+	String warehouseTemperature;
 }

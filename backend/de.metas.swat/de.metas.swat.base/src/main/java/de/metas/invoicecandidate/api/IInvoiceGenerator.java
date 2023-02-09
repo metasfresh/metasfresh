@@ -22,17 +22,16 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 
 import java.util.Iterator;
 import java.util.Properties;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-
 /**
  * Generates from {@link I_C_Invoice}s from {@link I_C_Invoice_Candidate}s
- *
  * <b>IMPORTANT:</b>
  * <ul>
  * <li>Candidates with IsError='Y' are ignored, even if they are part of the selection!</li>
@@ -56,6 +55,6 @@ public interface IInvoiceGenerator
 
 	IInvoiceGenerator setCollector(IInvoiceGenerateResult collector);
 
-	IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams);
+	IInvoiceGenerator setInvoicingParams(InvoicingParams invoicingParams);
 
 }

@@ -35,17 +35,15 @@ package org.compiere.FA;
  * #L%
  */
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
-import org.compiere.util.DB;
-
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 /**
  *	Import Assets
@@ -128,7 +126,7 @@ public class ImportAsset extends JavaProcess
 			+ " I_ErrorMsg = NULL,"
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		no = DB.executeUpdate(sql.toString(),null);		
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
 
 
 		//	Set Currency
@@ -174,7 +172,7 @@ public class ImportAsset extends JavaProcess
 			StringBuffer sqlA = new StringBuffer ("INSERT INTO A_Asset (A_Asset_ID,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -184,7 +182,7 @@ public class ImportAsset extends JavaProcess
 				+ "SELECT ?,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"				
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -201,7 +199,7 @@ public class ImportAsset extends JavaProcess
 				+ "SET( A_Asset_ID,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -211,7 +209,7 @@ public class ImportAsset extends JavaProcess
 				+ "(SELECT A_Asset_ID,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"				
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -441,7 +439,7 @@ public class ImportAsset extends JavaProcess
 							+ "SET I_IsImported='E', I_ErrorMsg=").append(DB.TO_STRING("Insert Asset: " + ex.toString()))
 							.append(" WHERE I_Asset_ID=").append(I_Asset_ID);
 						
-						DB.executeUpdate(sql.toString(),null);
+						DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
 						continue;
 					}
 				}
@@ -453,7 +451,6 @@ public class ImportAsset extends JavaProcess
 					
 					try
 					{						
-						//String sqlcall = "UPDATE A_Asset SET(AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,Name,Description,Help,A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths,LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession,LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,C_Location_ID, IsDepreciated, IsFullyDepreciated, AD_User_ID,M_AttributeSetInstance_ID, A_Parent_Asset_ID, A_QTY_Original,A_QTY_Current) = (SELECT AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,Name,Description,Help,A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths,LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession,LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,C_Location_ID, IsDepreciated, IsFullyDepreciated, AD_User_ID,M_AttributeSetInstance_ID, A_Parent_Asset_ID, A_QTY_Original,A_QTY_Current FROM I_Asset WHERE I_Asset_ID=1000000) WHERE A_Asset_ID=2005000";
 						//pstmt_updateProduct =  prepareStatement(sqlB.toString(), ResultSet.TYPE_FORWARD_ONLY,	ResultSet.CONCUR_UPDATABLE, null);
 						pstmt_updateProduct.executeUpdate();
 						noUpdate++;
@@ -499,7 +496,7 @@ public class ImportAsset extends JavaProcess
 			+ "SET I_IsImported='N' " 
 			//+ "Updated= TO_DATE('"+m_DateValue+"','YYYY-MM-DD HH24:MI:SS.FFF') "
 			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(),null);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
 		addLog (0, null, new BigDecimal (no), "@Errors@");
 		addLog (0, null, new BigDecimal (noInsert), "@A_Asset_ID@: @Inserted@");
 		addLog (0, null, new BigDecimal (noUpdate), "@A_Asset_ID@: @Updated@");

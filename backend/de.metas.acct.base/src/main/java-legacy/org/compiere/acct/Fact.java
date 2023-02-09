@@ -16,13 +16,21 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,23 +39,13 @@ import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaElementsMap;
-import de.metas.acct.api.AcctSchemaGeneralLedger;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.PostingType;
-import de.metas.i18n.BooleanWithReason;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Accounting Fact
@@ -103,17 +101,27 @@ public final class Fact
 	 */
 	private List<FactLine> m_lines = new ArrayList<>();
 
-	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private CurrencyConversionContext currencyConversionContext = null;
 
-	public Fact setFactTrxLinesStrategy(@NonNull final FactTrxStrategy factTrxLinesStrategy)
+	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
 		this.factTrxLinesStrategy = factTrxLinesStrategy;
 		return this;
 	}
 
-	/**
-	 * Dispose
-	 */
+	public Fact setCurrencyConversionContext(@Nullable final CurrencyConversionContext currencyConversionContext)
+	{
+		this.currencyConversionContext = currencyConversionContext;
+		return this;
+	}
+
+	@Nullable
+	CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return currencyConversionContext;
+	}
+
 	public void dispose()
 	{
 		m_lines.clear();
@@ -756,13 +764,13 @@ public final class Fact
 		sb.append(",PostType=").append(getPostingType());
 		sb.append("]");
 		return sb.toString();
-	}    // toString
+	}
 
-	/**
-	 * Get Lines
-	 *
-	 * @return FactLine Array
-	 */
+	public boolean isEmpty()
+	{
+		return m_lines.isEmpty();
+	}
+
 	public FactLine[] getLines()
 	{
 		final FactLine[] temp = new FactLine[m_lines.size()];
@@ -770,11 +778,46 @@ public final class Fact
 		return temp;
 	}    // getLines
 
+	@NonNull
+	public FactLine getSingleLineByAccountId(final MAccount account)
+	{
+		FactLine lineFound = null;
+		for (FactLine line : m_lines)
+		{
+			if (line.getAccount_ID() == account.getAccount_ID())
+			{
+				if (lineFound == null)
+				{
+					lineFound = line;
+				}
+				else
+				{
+					throw new AdempiereException("More than one fact line found for " + account + ": " + lineFound + ", " + line);
+				}
+			}
+
+		}
+
+		if (lineFound == null)
+		{
+			throw new AdempiereException("No fact line found for " + account + " in " + m_lines);
+		}
+
+		return lineFound;
+	}
+
 	public void save()
 	{
-		factTrxLinesStrategy
-				.createFactTrxLines(m_lines)
-				.forEach(this::save);
+		if (factTrxLinesStrategy != null)
+		{
+			factTrxLinesStrategy
+					.createFactTrxLines(m_lines)
+					.forEach(this::save);
+		}
+		else
+		{
+			m_lines.forEach(line -> InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited));
+		}
 	}
 
 	private void save(final FactTrxLines factTrxLines)

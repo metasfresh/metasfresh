@@ -1,518 +1,331 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Tab
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 644045757L;
+	private static final long serialVersionUID = -275252737L;
 
     /** Standard Constructor */
-    public X_AD_Tab (Properties ctx, int AD_Tab_ID, String trxName)
+    public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Tab_ID, trxName);
-      /** if (AD_Tab_ID == 0)
-        {
-			setAD_Element_ID (0);
-			setAD_Tab_ID (0);
-			setAD_Table_ID (0);
-			setAD_Window_ID (0);
-			setAllowQuickInput (true); // Y
-			setEntityType (null); // U
-			setHasTree (false);
-			setIsAdvancedTab (false); // N
-			setIsCheckParentsChanged (true); // Y
-			setIsGridModeOnly (false); // N
-			setIsInsertRecord (true); // Y
-			setIsReadOnly (false);
-			setIsRefreshAllOnActivate (false); // N
-			setIsRefreshViewOnChangeEvents (false); // N
-			setIsSearchCollapsed (true); // Y
-			setIsSingleRow (false);
-			setIsSortTab (false); // N
-			setIsTranslationTab (false);
-			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_Tab WHERE AD_Window_ID=@AD_Window_ID@
-			setTabLevel (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Tab (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Tab (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_Column()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column)
+	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
 	}
 
-	/** Set Spalte.
-		@param AD_Column_ID 
-		Column in the table
-	  */
 	@Override
-	public void setAD_Column_ID (int AD_Column_ID)
+	public void setAD_Column_ID (final int AD_Column_ID)
 	{
 		if (AD_Column_ID < 1) 
 			set_Value (COLUMNNAME_AD_Column_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
+			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
 	}
 
-	/** Get Spalte.
-		@return Column in the table
-	  */
 	@Override
-	public int getAD_Column_ID () 
+	public int getAD_Column_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_ColumnSortOrder() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_ColumnSortOrder()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_ColumnSortOrder_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setAD_ColumnSortOrder(org.compiere.model.I_AD_Column AD_ColumnSortOrder)
+	public void setAD_ColumnSortOrder(final org.compiere.model.I_AD_Column AD_ColumnSortOrder)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_ColumnSortOrder_ID, org.compiere.model.I_AD_Column.class, AD_ColumnSortOrder);
 	}
 
-	/** Set Order Column.
-		@param AD_ColumnSortOrder_ID 
-		Column determining the order
-	  */
 	@Override
-	public void setAD_ColumnSortOrder_ID (int AD_ColumnSortOrder_ID)
+	public void setAD_ColumnSortOrder_ID (final int AD_ColumnSortOrder_ID)
 	{
 		if (AD_ColumnSortOrder_ID < 1) 
 			set_Value (COLUMNNAME_AD_ColumnSortOrder_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_ColumnSortOrder_ID, Integer.valueOf(AD_ColumnSortOrder_ID));
+			set_Value (COLUMNNAME_AD_ColumnSortOrder_ID, AD_ColumnSortOrder_ID);
 	}
 
-	/** Get Order Column.
-		@return Column determining the order
-	  */
 	@Override
-	public int getAD_ColumnSortOrder_ID () 
+	public int getAD_ColumnSortOrder_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ColumnSortOrder_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_ColumnSortOrder_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_ColumnSortYesNo() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_ColumnSortYesNo()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_ColumnSortYesNo_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setAD_ColumnSortYesNo(org.compiere.model.I_AD_Column AD_ColumnSortYesNo)
+	public void setAD_ColumnSortYesNo(final org.compiere.model.I_AD_Column AD_ColumnSortYesNo)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_ColumnSortYesNo_ID, org.compiere.model.I_AD_Column.class, AD_ColumnSortYesNo);
 	}
 
-	/** Set Included Column.
-		@param AD_ColumnSortYesNo_ID 
-		Column determining if a Table Column is included in Ordering
-	  */
 	@Override
-	public void setAD_ColumnSortYesNo_ID (int AD_ColumnSortYesNo_ID)
+	public void setAD_ColumnSortYesNo_ID (final int AD_ColumnSortYesNo_ID)
 	{
 		if (AD_ColumnSortYesNo_ID < 1) 
 			set_Value (COLUMNNAME_AD_ColumnSortYesNo_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_ColumnSortYesNo_ID, Integer.valueOf(AD_ColumnSortYesNo_ID));
+			set_Value (COLUMNNAME_AD_ColumnSortYesNo_ID, AD_ColumnSortYesNo_ID);
 	}
 
-	/** Get Included Column.
-		@return Column determining if a Table Column is included in Ordering
-	  */
 	@Override
-	public int getAD_ColumnSortYesNo_ID () 
+	public int getAD_ColumnSortYesNo_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ColumnSortYesNo_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_ColumnSortYesNo_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	public org.compiere.model.I_AD_Element getAD_Element()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
 	}
 
 	@Override
-	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	public void setAD_Element(final org.compiere.model.I_AD_Element AD_Element)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
 	}
 
-	/** Set System-Element.
-		@param AD_Element_ID 
-		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
-	  */
 	@Override
-	public void setAD_Element_ID (int AD_Element_ID)
+	public void setAD_Element_ID (final int AD_Element_ID)
 	{
 		if (AD_Element_ID < 1) 
 			set_Value (COLUMNNAME_AD_Element_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+			set_Value (COLUMNNAME_AD_Element_ID, AD_Element_ID);
 	}
 
-	/** Get System-Element.
-		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
-	  */
 	@Override
-	public int getAD_Element_ID () 
+	public int getAD_Element_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Element_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Image getAD_Image() throws RuntimeException
+	public org.compiere.model.I_AD_Image getAD_Image()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Image_ID, org.compiere.model.I_AD_Image.class);
 	}
 
 	@Override
-	public void setAD_Image(org.compiere.model.I_AD_Image AD_Image)
+	public void setAD_Image(final org.compiere.model.I_AD_Image AD_Image)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Image_ID, org.compiere.model.I_AD_Image.class, AD_Image);
 	}
 
-	/** Set Bild.
-		@param AD_Image_ID 
-		Image or Icon
-	  */
 	@Override
-	public void setAD_Image_ID (int AD_Image_ID)
+	public void setAD_Image_ID (final int AD_Image_ID)
 	{
 		if (AD_Image_ID < 1) 
 			set_Value (COLUMNNAME_AD_Image_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Image_ID, Integer.valueOf(AD_Image_ID));
+			set_Value (COLUMNNAME_AD_Image_ID, AD_Image_ID);
 	}
 
-	/** Get Bild.
-		@return Image or Icon
-	  */
 	@Override
-	public int getAD_Image_ID () 
+	public int getAD_Image_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Image_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Image_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Message getAD_Message() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Message_ID, org.compiere.model.I_AD_Message.class);
-	}
-
-	@Override
-	public void setAD_Message(org.compiere.model.I_AD_Message AD_Message)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Message_ID, org.compiere.model.I_AD_Message.class, AD_Message);
-	}
-
-	/** Set Statusleistenmeldung.
-		@param AD_Message_ID 
-		System Message
-	  */
-	@Override
-	public void setAD_Message_ID (int AD_Message_ID)
+	public void setAD_Message_ID (final int AD_Message_ID)
 	{
 		if (AD_Message_ID < 1) 
 			set_Value (COLUMNNAME_AD_Message_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Message_ID, Integer.valueOf(AD_Message_ID));
+			set_Value (COLUMNNAME_AD_Message_ID, AD_Message_ID);
 	}
 
-	/** Get Statusleistenmeldung.
-		@return System Message
-	  */
 	@Override
-	public int getAD_Message_ID () 
+	public int getAD_Message_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Message_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Message_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Process or Report
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Process or Report
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
-	/** Set Register.
-		@param AD_Tab_ID 
-		Tab within a Window
-	  */
 	@Override
-	public void setAD_Tab_ID (int AD_Tab_ID)
+	public void setAD_Tab_ID (final int AD_Tab_ID)
 	{
 		if (AD_Tab_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Tab_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Tab_ID, Integer.valueOf(AD_Tab_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Tab_ID, AD_Tab_ID);
 	}
 
-	/** Get Register.
-		@return Tab within a Window
-	  */
 	@Override
-	public int getAD_Tab_ID () 
+	public int getAD_Tab_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Tab_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Tab_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
-	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	public org.compiere.model.I_AD_Window getAD_Window()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
 
 	@Override
-	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
+	public void setAD_Window(final org.compiere.model.I_AD_Window AD_Window)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
 	}
 
-	/** Set Fenster.
-		@param AD_Window_ID 
-		Data entry or display window
-	  */
 	@Override
-	public void setAD_Window_ID (int AD_Window_ID)
+	public void setAD_Window_ID (final int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, AD_Window_ID);
 	}
 
-	/** Get Fenster.
-		@return Data entry or display window
-	  */
 	@Override
-	public int getAD_Window_ID () 
+	public int getAD_Window_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
 	}
 
-	/** Set Schnelleingabe einschalten.
-		@param AllowQuickInput Schnelleingabe einschalten	  */
 	@Override
-	public void setAllowQuickInput (boolean AllowQuickInput)
+	public void setAllowQuickInput (final boolean AllowQuickInput)
 	{
-		set_Value (COLUMNNAME_AllowQuickInput, Boolean.valueOf(AllowQuickInput));
+		set_Value (COLUMNNAME_AllowQuickInput, AllowQuickInput);
 	}
 
-	/** Get Schnelleingabe einschalten.
-		@return Schnelleingabe einschalten	  */
 	@Override
-	public boolean isAllowQuickInput () 
+	public boolean isAllowQuickInput() 
 	{
-		Object oo = get_Value(COLUMNNAME_AllowQuickInput);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_AllowQuickInput);
 	}
 
-	/** Set Speicherwarnung.
-		@param CommitWarning 
-		Warning displayed when saving
-	  */
 	@Override
-	public void setCommitWarning (java.lang.String CommitWarning)
+	public void setCommitWarning (final @Nullable java.lang.String CommitWarning)
 	{
 		set_Value (COLUMNNAME_CommitWarning, CommitWarning);
 	}
 
-	/** Get Speicherwarnung.
-		@return Warning displayed when saving
-	  */
 	@Override
-	public java.lang.String getCommitWarning () 
+	public java.lang.String getCommitWarning() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CommitWarning);
+		return get_ValueAsString(COLUMNNAME_CommitWarning);
 	}
 
-	/** Set Default Selected Record.
-		@param DefaultWhereClause 
-		default SQL WHERE clause for selecting a default line
-	  */
 	@Override
-	public void setDefaultWhereClause (java.lang.String DefaultWhereClause)
+	public void setDefaultWhereClause (final @Nullable java.lang.String DefaultWhereClause)
 	{
 		set_Value (COLUMNNAME_DefaultWhereClause, DefaultWhereClause);
 	}
 
-	/** Get Default Selected Record.
-		@return default SQL WHERE clause for selecting a default line
-	  */
 	@Override
-	public java.lang.String getDefaultWhereClause () 
+	public java.lang.String getDefaultWhereClause() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DefaultWhereClause);
+		return get_ValueAsString(COLUMNNAME_DefaultWhereClause);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Anzeigelogik.
-		@param DisplayLogic 
-		If the Field is displayed, the result determines if the field is actually displayed
-	  */
 	@Override
-	public void setDisplayLogic (java.lang.String DisplayLogic)
+	public void setDisplayLogic (final @Nullable java.lang.String DisplayLogic)
 	{
 		set_Value (COLUMNNAME_DisplayLogic, DisplayLogic);
 	}
 
-	/** Get Anzeigelogik.
-		@return If the Field is displayed, the result determines if the field is actually displayed
-	  */
 	@Override
-	public java.lang.String getDisplayLogic () 
+	public java.lang.String getDisplayLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DisplayLogic);
+		return get_ValueAsString(COLUMNNAME_DisplayLogic);
 	}
 
 	/** 
@@ -520,731 +333,477 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Has Tree.
-		@param HasTree 
-		Window has Tree Graph
-	  */
 	@Override
-	public void setHasTree (boolean HasTree)
+	public void setHasTree (final boolean HasTree)
 	{
-		set_Value (COLUMNNAME_HasTree, Boolean.valueOf(HasTree));
+		set_Value (COLUMNNAME_HasTree, HasTree);
 	}
 
-	/** Get Has Tree.
-		@return Window has Tree Graph
-	  */
 	@Override
-	public boolean isHasTree () 
+	public boolean isHasTree() 
 	{
-		Object oo = get_Value(COLUMNNAME_HasTree);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_HasTree);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Import Fields.
-		@param ImportFields 
-		Create Fields from Table Columns
-	  */
 	@Override
-	public void setImportFields (java.lang.String ImportFields)
+	public void setImportFields (final @Nullable java.lang.String ImportFields)
 	{
 		set_Value (COLUMNNAME_ImportFields, ImportFields);
 	}
 
-	/** Get Import Fields.
-		@return Create Fields from Table Columns
-	  */
 	@Override
-	public java.lang.String getImportFields () 
+	public java.lang.String getImportFields() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ImportFields);
+		return get_ValueAsString(COLUMNNAME_ImportFields);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Tab getIncluded_Tab() throws RuntimeException
+	public org.compiere.model.I_AD_Tab getIncluded_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_Included_Tab_ID, org.compiere.model.I_AD_Tab.class);
 	}
 
 	@Override
-	public void setIncluded_Tab(org.compiere.model.I_AD_Tab Included_Tab)
+	public void setIncluded_Tab(final org.compiere.model.I_AD_Tab Included_Tab)
 	{
 		set_ValueFromPO(COLUMNNAME_Included_Tab_ID, org.compiere.model.I_AD_Tab.class, Included_Tab);
 	}
 
-	/** Set Included Tab.
-		@param Included_Tab_ID 
-		Included Tab in this Tab (Master Dateail)
-	  */
 	@Override
-	public void setIncluded_Tab_ID (int Included_Tab_ID)
+	public void setIncluded_Tab_ID (final int Included_Tab_ID)
 	{
 		if (Included_Tab_ID < 1) 
 			set_Value (COLUMNNAME_Included_Tab_ID, null);
 		else 
-			set_Value (COLUMNNAME_Included_Tab_ID, Integer.valueOf(Included_Tab_ID));
+			set_Value (COLUMNNAME_Included_Tab_ID, Included_Tab_ID);
 	}
 
-	/** Get Included Tab.
-		@return Included Tab in this Tab (Master Dateail)
-	  */
 	@Override
-	public int getIncluded_Tab_ID () 
+	public int getIncluded_Tab_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Included_Tab_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Included_Tab_ID);
 	}
 
-	/** Set Interner Name.
-		@param InternalName 
-		Generally used to give records a name that can be safely referenced from code.
-	  */
+	/** 
+	 * IncludedTabNewRecordInputMode AD_Reference_ID=541421
+	 * Reference name: IncludedTabNewRecordInputMode
+	 */
+	public static final int INCLUDEDTABNEWRECORDINPUTMODE_AD_Reference_ID=541421;
+	/** ALL_AVAILABLE_METHODS = A */
+	public static final String INCLUDEDTABNEWRECORDINPUTMODE_ALL_AVAILABLE_METHODS = "A";
+	/** Quick Input Only = Q */
+	public static final String INCLUDEDTABNEWRECORDINPUTMODE_QuickInputOnly = "Q";
 	@Override
-	public void setInternalName (java.lang.String InternalName)
+	public void setIncludedTabNewRecordInputMode (final java.lang.String IncludedTabNewRecordInputMode)
+	{
+		set_Value (COLUMNNAME_IncludedTabNewRecordInputMode, IncludedTabNewRecordInputMode);
+	}
+
+	@Override
+	public java.lang.String getIncludedTabNewRecordInputMode() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncludedTabNewRecordInputMode);
+	}
+
+	@Override
+	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
 	}
 
-	/** Get Interner Name.
-		@return Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public java.lang.String getInternalName () 
+	public java.lang.String getInternalName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
-	/** Set Advanced Tab.
-		@param IsAdvancedTab 
-		This Tab contains advanced Functionality
-	  */
 	@Override
-	public void setIsAdvancedTab (boolean IsAdvancedTab)
+	public void setIsAdvancedTab (final boolean IsAdvancedTab)
 	{
-		set_Value (COLUMNNAME_IsAdvancedTab, Boolean.valueOf(IsAdvancedTab));
+		set_Value (COLUMNNAME_IsAdvancedTab, IsAdvancedTab);
 	}
 
-	/** Get Advanced Tab.
-		@return This Tab contains advanced Functionality
-	  */
 	@Override
-	public boolean isAdvancedTab () 
+	public boolean isAdvancedTab() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAdvancedTab);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAdvancedTab);
 	}
 
-	/** Set Check Parents Changed.
-		@param IsCheckParentsChanged 
-		Before saving a record in this tab shall we check if the parent tabs were changed?
-	  */
 	@Override
-	public void setIsCheckParentsChanged (boolean IsCheckParentsChanged)
+	public void setIsAutodetectDefaultDateFilter (final boolean IsAutodetectDefaultDateFilter)
 	{
-		set_Value (COLUMNNAME_IsCheckParentsChanged, Boolean.valueOf(IsCheckParentsChanged));
+		set_Value (COLUMNNAME_IsAutodetectDefaultDateFilter, IsAutodetectDefaultDateFilter);
 	}
 
-	/** Get Check Parents Changed.
-		@return Before saving a record in this tab shall we check if the parent tabs were changed?
-	  */
 	@Override
-	public boolean isCheckParentsChanged () 
+	public boolean isAutodetectDefaultDateFilter() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCheckParentsChanged);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAutodetectDefaultDateFilter);
 	}
 
-	/** Set Grid Mode Only.
-		@param IsGridModeOnly 
-		Allow grid mode only
-	  */
 	@Override
-	public void setIsGridModeOnly (boolean IsGridModeOnly)
+	public void setIsCheckParentsChanged (final boolean IsCheckParentsChanged)
 	{
-		set_Value (COLUMNNAME_IsGridModeOnly, Boolean.valueOf(IsGridModeOnly));
+		set_Value (COLUMNNAME_IsCheckParentsChanged, IsCheckParentsChanged);
 	}
 
-	/** Get Grid Mode Only.
-		@return Allow grid mode only
-	  */
 	@Override
-	public boolean isGridModeOnly () 
+	public boolean isCheckParentsChanged() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsGridModeOnly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCheckParentsChanged);
 	}
 
-	/** Set Accounting Tab.
-		@param IsInfoTab 
-		This Tab contains accounting information
-	  */
 	@Override
-	public void setIsInfoTab (boolean IsInfoTab)
+	public void setIsGridModeOnly (final boolean IsGridModeOnly)
 	{
-		set_Value (COLUMNNAME_IsInfoTab, Boolean.valueOf(IsInfoTab));
+		set_Value (COLUMNNAME_IsGridModeOnly, IsGridModeOnly);
 	}
 
-	/** Get Accounting Tab.
-		@return This Tab contains accounting information
-	  */
 	@Override
-	public boolean isInfoTab () 
+	public boolean isGridModeOnly() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInfoTab);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsGridModeOnly);
 	}
 
-	/** Set Insert Record.
-		@param IsInsertRecord 
-		The user can insert a new Record
-	  */
 	@Override
-	public void setIsInsertRecord (boolean IsInsertRecord)
+	public void setIsInfoTab (final boolean IsInfoTab)
 	{
-		set_Value (COLUMNNAME_IsInsertRecord, Boolean.valueOf(IsInsertRecord));
+		set_Value (COLUMNNAME_IsInfoTab, IsInfoTab);
 	}
 
-	/** Get Insert Record.
-		@return The user can insert a new Record
-	  */
 	@Override
-	public boolean isInsertRecord () 
+	public boolean isInfoTab() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInsertRecord);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInfoTab);
 	}
 
-	/** Set Query data on load.
-		@param IsQueryOnLoad Query data on load	  */
 	@Override
-	public void setIsQueryOnLoad (boolean IsQueryOnLoad)
+	public void setIsInsertRecord (final boolean IsInsertRecord)
 	{
-		set_Value (COLUMNNAME_IsQueryOnLoad, Boolean.valueOf(IsQueryOnLoad));
+		set_Value (COLUMNNAME_IsInsertRecord, IsInsertRecord);
 	}
 
-	/** Get Query data on load.
-		@return Query data on load	  */
 	@Override
-	public boolean isQueryOnLoad () 
+	public boolean isInsertRecord() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsQueryOnLoad);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInsertRecord);
 	}
 
-	/** Set Schreibgeschützt.
-		@param IsReadOnly 
-		Field is read only
-	  */
 	@Override
-	public void setIsReadOnly (boolean IsReadOnly)
+	public void setIsQueryIfNoFilters (final boolean IsQueryIfNoFilters)
 	{
-		set_Value (COLUMNNAME_IsReadOnly, Boolean.valueOf(IsReadOnly));
+		set_Value (COLUMNNAME_IsQueryIfNoFilters, IsQueryIfNoFilters);
 	}
 
-	/** Get Schreibgeschützt.
-		@return Field is read only
-	  */
 	@Override
-	public boolean isReadOnly () 
+	public boolean isQueryIfNoFilters() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReadOnly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsQueryIfNoFilters);
 	}
 
-	/** Set Refresh All On Activate.
-		@param IsRefreshAllOnActivate 
-		Refresh all rows when user activates this tab, instead of refreshing only current row
-	  */
 	@Override
-	public void setIsRefreshAllOnActivate (boolean IsRefreshAllOnActivate)
+	public void setIsQueryOnLoad (final boolean IsQueryOnLoad)
 	{
-		set_Value (COLUMNNAME_IsRefreshAllOnActivate, Boolean.valueOf(IsRefreshAllOnActivate));
+		set_Value (COLUMNNAME_IsQueryOnLoad, IsQueryOnLoad);
 	}
 
-	/** Get Refresh All On Activate.
-		@return Refresh all rows when user activates this tab, instead of refreshing only current row
-	  */
 	@Override
-	public boolean isRefreshAllOnActivate () 
+	public boolean isQueryOnLoad() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRefreshAllOnActivate);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsQueryOnLoad);
 	}
 
-	/** Set Refresh view on change events.
-		@param IsRefreshViewOnChangeEvents Refresh view on change events	  */
 	@Override
-	public void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents)
+	public void setIsReadOnly (final boolean IsReadOnly)
 	{
-		set_Value (COLUMNNAME_IsRefreshViewOnChangeEvents, Boolean.valueOf(IsRefreshViewOnChangeEvents));
+		set_Value (COLUMNNAME_IsReadOnly, IsReadOnly);
 	}
 
-	/** Get Refresh view on change events.
-		@return Refresh view on change events	  */
 	@Override
-	public boolean isRefreshViewOnChangeEvents () 
+	public boolean isReadOnly() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRefreshViewOnChangeEvents);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsReadOnly);
 	}
 
-	/** Set Search Active.
-		@param IsSearchActive 
-		This mark activates the search button from toolbar
-	  */
 	@Override
-	public void setIsSearchActive (boolean IsSearchActive)
+	public void setIsRefreshAllOnActivate (final boolean IsRefreshAllOnActivate)
 	{
-		set_Value (COLUMNNAME_IsSearchActive, Boolean.valueOf(IsSearchActive));
+		set_Value (COLUMNNAME_IsRefreshAllOnActivate, IsRefreshAllOnActivate);
 	}
 
-	/** Get Search Active.
-		@return This mark activates the search button from toolbar
-	  */
 	@Override
-	public boolean isSearchActive () 
+	public boolean isRefreshAllOnActivate() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSearchActive);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsRefreshAllOnActivate);
 	}
 
-	/** Set Collapse Search Panel.
-		@param IsSearchCollapsed Collapse Search Panel	  */
 	@Override
-	public void setIsSearchCollapsed (boolean IsSearchCollapsed)
+	public void setIsRefreshViewOnChangeEvents (final boolean IsRefreshViewOnChangeEvents)
 	{
-		set_Value (COLUMNNAME_IsSearchCollapsed, Boolean.valueOf(IsSearchCollapsed));
+		set_Value (COLUMNNAME_IsRefreshViewOnChangeEvents, IsRefreshViewOnChangeEvents);
 	}
 
-	/** Get Collapse Search Panel.
-		@return Collapse Search Panel	  */
 	@Override
-	public boolean isSearchCollapsed () 
+	public boolean isRefreshViewOnChangeEvents() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSearchCollapsed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsRefreshViewOnChangeEvents);
 	}
 
-	/** Set Single Row Layout.
-		@param IsSingleRow 
-		Default for toggle between Single- and Multi-Row (Grid) Layout
-	  */
 	@Override
-	public void setIsSingleRow (boolean IsSingleRow)
+	public void setIsSearchActive (final boolean IsSearchActive)
 	{
-		set_Value (COLUMNNAME_IsSingleRow, Boolean.valueOf(IsSingleRow));
+		set_Value (COLUMNNAME_IsSearchActive, IsSearchActive);
 	}
 
-	/** Get Single Row Layout.
-		@return Default for toggle between Single- and Multi-Row (Grid) Layout
-	  */
 	@Override
-	public boolean isSingleRow () 
+	public boolean isSearchActive() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSingleRow);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSearchActive);
 	}
 
-	/** Set Order Tab.
-		@param IsSortTab 
-		The Tab determines the Order
-	  */
 	@Override
-	public void setIsSortTab (boolean IsSortTab)
+	public void setIsSearchCollapsed (final boolean IsSearchCollapsed)
 	{
-		set_Value (COLUMNNAME_IsSortTab, Boolean.valueOf(IsSortTab));
+		set_Value (COLUMNNAME_IsSearchCollapsed, IsSearchCollapsed);
 	}
 
-	/** Get Order Tab.
-		@return The Tab determines the Order
-	  */
 	@Override
-	public boolean isSortTab () 
+	public boolean isSearchCollapsed() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSortTab);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSearchCollapsed);
 	}
 
-	/** Set Übersetzungsregister.
-		@param IsTranslationTab 
-		This Tab contains translation information
-	  */
 	@Override
-	public void setIsTranslationTab (boolean IsTranslationTab)
+	public void setIsSingleRow (final boolean IsSingleRow)
 	{
-		set_Value (COLUMNNAME_IsTranslationTab, Boolean.valueOf(IsTranslationTab));
+		set_Value (COLUMNNAME_IsSingleRow, IsSingleRow);
 	}
 
-	/** Get Übersetzungsregister.
-		@return This Tab contains translation information
-	  */
 	@Override
-	public boolean isTranslationTab () 
+	public boolean isSingleRow() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsTranslationTab);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSingleRow);
 	}
 
-	/** Set Max. Suchergebnisse.
-		@param MaxQueryRecords 
-		Wenn definiert können Suie nicht mehr Suchergebnisse abfragen - die Suchbedingungen müssen verändert werden, um eine geringere Anzahl zu erhalten
-	  */
 	@Override
-	public void setMaxQueryRecords (int MaxQueryRecords)
+	public void setIsSortTab (final boolean IsSortTab)
 	{
-		set_Value (COLUMNNAME_MaxQueryRecords, Integer.valueOf(MaxQueryRecords));
+		set_Value (COLUMNNAME_IsSortTab, IsSortTab);
 	}
 
-	/** Get Max. Suchergebnisse.
-		@return Wenn definiert können Suie nicht mehr Suchergebnisse abfragen - die Suchbedingungen müssen verändert werden, um eine geringere Anzahl zu erhalten
-	  */
 	@Override
-	public int getMaxQueryRecords () 
+	public boolean isSortTab() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MaxQueryRecords);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsBoolean(COLUMNNAME_IsSortTab);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setIsTranslationTab (final boolean IsTranslationTab)
+	{
+		set_Value (COLUMNNAME_IsTranslationTab, IsTranslationTab);
+	}
+
+	@Override
+	public boolean isTranslationTab() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTranslationTab);
+	}
+
+	@Override
+	public void setMaxQueryRecords (final int MaxQueryRecords)
+	{
+		set_Value (COLUMNNAME_MaxQueryRecords, MaxQueryRecords);
+	}
+
+	@Override
+	public int getMaxQueryRecords() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxQueryRecords);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Sql ORDER BY.
-		@param OrderByClause 
-		Fully qualified ORDER BY clause
-	  */
 	@Override
-	public void setOrderByClause (java.lang.String OrderByClause)
+	public void setOrderByClause (final @Nullable java.lang.String OrderByClause)
 	{
 		set_Value (COLUMNNAME_OrderByClause, OrderByClause);
 	}
 
-	/** Get Sql ORDER BY.
-		@return Fully qualified ORDER BY clause
-	  */
 	@Override
-	public java.lang.String getOrderByClause () 
+	public java.lang.String getOrderByClause() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_OrderByClause);
+		return get_ValueAsString(COLUMNNAME_OrderByClause);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getParent_Column() throws RuntimeException
+	public org.compiere.model.I_AD_Column getParent_Column()
 	{
 		return get_ValueAsPO(COLUMNNAME_Parent_Column_ID, org.compiere.model.I_AD_Column.class);
 	}
 
 	@Override
-	public void setParent_Column(org.compiere.model.I_AD_Column Parent_Column)
+	public void setParent_Column(final org.compiere.model.I_AD_Column Parent_Column)
 	{
 		set_ValueFromPO(COLUMNNAME_Parent_Column_ID, org.compiere.model.I_AD_Column.class, Parent_Column);
 	}
 
-	/** Set Parent Column.
-		@param Parent_Column_ID 
-		The link column on the parent tab.
-	  */
 	@Override
-	public void setParent_Column_ID (int Parent_Column_ID)
+	public void setParent_Column_ID (final int Parent_Column_ID)
 	{
 		if (Parent_Column_ID < 1) 
 			set_Value (COLUMNNAME_Parent_Column_ID, null);
 		else 
-			set_Value (COLUMNNAME_Parent_Column_ID, Integer.valueOf(Parent_Column_ID));
+			set_Value (COLUMNNAME_Parent_Column_ID, Parent_Column_ID);
 	}
 
-	/** Get Parent Column.
-		@return The link column on the parent tab.
-	  */
 	@Override
-	public int getParent_Column_ID () 
+	public int getParent_Column_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_Column_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Parent_Column_ID);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Read Only Logic.
-		@param ReadOnlyLogic 
-		Logic to determine if field is read only (applies only when field is read-write)
-	  */
 	@Override
-	public void setReadOnlyLogic (java.lang.String ReadOnlyLogic)
+	public void setQuickInput_CloseButton_Caption (final @Nullable java.lang.String QuickInput_CloseButton_Caption)
+	{
+		set_Value (COLUMNNAME_QuickInput_CloseButton_Caption, QuickInput_CloseButton_Caption);
+	}
+
+	@Override
+	public java.lang.String getQuickInput_CloseButton_Caption() 
+	{
+		return get_ValueAsString(COLUMNNAME_QuickInput_CloseButton_Caption);
+	}
+
+	@Override
+	public void setQuickInput_OpenButton_Caption (final @Nullable java.lang.String QuickInput_OpenButton_Caption)
+	{
+		set_Value (COLUMNNAME_QuickInput_OpenButton_Caption, QuickInput_OpenButton_Caption);
+	}
+
+	@Override
+	public java.lang.String getQuickInput_OpenButton_Caption() 
+	{
+		return get_ValueAsString(COLUMNNAME_QuickInput_OpenButton_Caption);
+	}
+
+	@Override
+	public void setReadOnlyLogic (final @Nullable java.lang.String ReadOnlyLogic)
 	{
 		set_Value (COLUMNNAME_ReadOnlyLogic, ReadOnlyLogic);
 	}
 
-	/** Get Read Only Logic.
-		@return Logic to determine if field is read only (applies only when field is read-write)
-	  */
 	@Override
-	public java.lang.String getReadOnlyLogic () 
+	public java.lang.String getReadOnlyLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReadOnlyLogic);
-	}
-
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
-	@Override
-	public void setSeqNo (int SeqNo)
-	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
-	}
-
-	/** Get Reihenfolge.
-		@return Method of ordering records; lowest number comes first
-	  */
-	@Override
-	public int getSeqNo () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Tab Level.
-		@param TabLevel 
-		Hierarchical Tab Level (0 = top)
-	  */
-	@Override
-	public void setTabLevel (int TabLevel)
-	{
-		set_Value (COLUMNNAME_TabLevel, Integer.valueOf(TabLevel));
-	}
-
-	/** Get Tab Level.
-		@return Hierarchical Tab Level (0 = top)
-	  */
-	@Override
-	public int getTabLevel () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_TabLevel);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsString(COLUMNNAME_ReadOnlyLogic);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Tab getTemplate_Tab() throws RuntimeException
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setTabLevel (final int TabLevel)
+	{
+		set_Value (COLUMNNAME_TabLevel, TabLevel);
+	}
+
+	@Override
+	public int getTabLevel() 
+	{
+		return get_ValueAsInt(COLUMNNAME_TabLevel);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Tab getTemplate_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_Template_Tab_ID, org.compiere.model.I_AD_Tab.class);
 	}
 
 	@Override
-	public void setTemplate_Tab(org.compiere.model.I_AD_Tab Template_Tab)
+	public void setTemplate_Tab(final org.compiere.model.I_AD_Tab Template_Tab)
 	{
 		set_ValueFromPO(COLUMNNAME_Template_Tab_ID, org.compiere.model.I_AD_Tab.class, Template_Tab);
 	}
 
-	/** Set Template Tab.
-		@param Template_Tab_ID Template Tab	  */
 	@Override
-	public void setTemplate_Tab_ID (int Template_Tab_ID)
+	public void setTemplate_Tab_ID (final int Template_Tab_ID)
 	{
 		if (Template_Tab_ID < 1) 
 			set_Value (COLUMNNAME_Template_Tab_ID, null);
 		else 
-			set_Value (COLUMNNAME_Template_Tab_ID, Integer.valueOf(Template_Tab_ID));
+			set_Value (COLUMNNAME_Template_Tab_ID, Template_Tab_ID);
 	}
 
-	/** Get Template Tab.
-		@return Template Tab	  */
 	@Override
-	public int getTemplate_Tab_ID () 
+	public int getTemplate_Tab_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Template_Tab_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Template_Tab_ID);
 	}
 
-	/** Set Sql WHERE.
-		@param WhereClause 
-		Fully qualified SQL WHERE clause
-	  */
 	@Override
-	public void setWhereClause (java.lang.String WhereClause)
+	public void setWhereClause (final @Nullable java.lang.String WhereClause)
 	{
 		set_Value (COLUMNNAME_WhereClause, WhereClause);
 	}
 
-	/** Get Sql WHERE.
-		@return Fully qualified SQL WHERE clause
-	  */
 	@Override
-	public java.lang.String getWhereClause () 
+	public java.lang.String getWhereClause() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WhereClause);
+		return get_ValueAsString(COLUMNNAME_WhereClause);
 	}
 }

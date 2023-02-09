@@ -1,7 +1,8 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-import { noConnection } from '../actions/WindowActions';
-import { store } from '../containers/App';
+import { connectionError } from '../actions/AppActions';
+import { BAD_GATEWAY_ERROR, NO_CONNECTION_ERROR } from '../constants/Constants';
+import store from '../store/store';
 import { getUserSession } from '../api';
 import _ from 'lodash';
 function socketFactory() {
@@ -43,6 +44,7 @@ export function connectWS(topic, onMessageCallback) {
 
   const connect = () => {
     let reconnectCounter = 0;
+    let connectionErrorType = NO_CONNECTION_ERROR;
     this.sockClient = new Client({
       brokerURL: config.WS_URL,
       debug(strMessage) {
@@ -50,18 +52,25 @@ export function connectWS(topic, onMessageCallback) {
         // -- detect reconnect and increment the reconnect counter
         if (strMessage.includes('reconnect')) {
           getUserSession()
-            .then(({ data }) => {
+            .then(({ data, status }) => {
               reconnectCounter =
                 data && !data.loggedIn ? reconnectCounter + 1 : 0;
+
+              if (status === 502) connectionErrorType = BAD_GATEWAY_ERROR;
             })
             .catch(() => {
               reconnectCounter += 1;
             });
         }
+
         // -- if more than max allowed reconnect times  ->  deactivate
         if (reconnectCounter > maxReconnectTimesNo) {
           this.reconnectDelay = 0; // 0 - deactivates the sockClient
-          store.dispatch(noConnection(true));
+          store.dispatch(
+            connectionError({
+              errorType: connectionErrorType,
+            })
+          );
         }
       },
       reconnectDelay: 5000,

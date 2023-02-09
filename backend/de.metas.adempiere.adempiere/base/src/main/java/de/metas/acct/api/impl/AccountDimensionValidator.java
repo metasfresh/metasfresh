@@ -228,6 +228,14 @@ import lombok.NonNull;
 		{
 			return accountDimension.getC_Activity_ID();
 		}
+		else if (elementType.equals(AcctSchemaElementType.Order))
+		{
+			return accountDimension.getC_Order_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.SectionCode))
+		{
+			return accountDimension.getM_SectionCode_ID();
+		}
 		else if (elementType.equals(AcctSchemaElementType.UserList1))
 		{
 			return accountDimension.getUser1_ID();

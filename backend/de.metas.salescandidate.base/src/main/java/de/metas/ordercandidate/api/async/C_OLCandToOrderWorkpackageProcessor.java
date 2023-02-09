@@ -23,20 +23,29 @@
 package de.metas.ordercandidate.api.async;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
+import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandProcessorRepository;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
+import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+
+import java.util.List;
 
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
 
@@ -47,19 +56,38 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	private final static Logger logger = LogManager.getLogger(C_OLCandToOrderWorkpackageProcessor.class);
 
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final OLCandProcessorRepository olCandProcessorRepo = SpringContextHolder.instance.getBean(OLCandProcessorRepository.class);
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final String localTrxName)
 	{
+		final List<OLCandId> candidateIds = queueDAO.retrieveItems(workPackage, I_C_OLCand.class, localTrxName)
+				.stream()
+				.map(I_C_OLCand::getC_OLCand_ID)
+				.map(OLCandId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		if (candidateIds.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No OLCands enqueued to be processed for C_Queue_WorkPackage_ID={}", workPackage.getC_Queue_WorkPackage_ID());
+			return Result.SUCCESS;
+		}
+
+		final PInstanceId enqueuedSelection = queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, candidateIds)
+				.create()
+				.createSelection();
+
 		final int olCandProcessorId = getParameters().getParameterAsInt(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
 
 		final OLCandProcessorDescriptor olCandProcessorDescriptor = olCandProcessorRepo.getById(olCandProcessorId);
 
 		try
 		{
-			olCandBL.process(olCandProcessorDescriptor, AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
+			olCandBL.process(olCandProcessorDescriptor, enqueuedSelection, AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 		}
 		catch (final Exception ex)
 		{

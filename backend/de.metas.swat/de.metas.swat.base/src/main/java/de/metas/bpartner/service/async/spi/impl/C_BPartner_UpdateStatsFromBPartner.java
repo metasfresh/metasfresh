@@ -22,47 +22,46 @@
 
 package de.metas.bpartner.service.async.spi.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.util.Services;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Update BPartner's TotalOpenBalance and SO_CreditUsed fields.
  *
  * @author tsa
- *
  */
 public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdapter
 {
 	final static private String PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP = "alsoResetCreditStatusFromBPGroup";
+
+	private final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 
 	public static void createWorkpackage(@NonNull final BPartnerStatisticsUpdateRequest request)
 	{
 		for (final int bpartnerId : request.getBpartnerIds())
 		{
 			SCHEDULER.schedule(BPartnerToUpdate.builder()
-					.bpartnerId(bpartnerId)
-					.alsoResetCreditStatusFromBPGroup(request.isAlsoResetCreditStatusFromBPGroup())
-					.build());
+									   .bpartnerId(bpartnerId)
+									   .alsoResetCreditStatusFromBPGroup(request.isAlsoResetCreditStatusFromBPGroup())
+									   .build());
 		}
 	}
 
@@ -104,9 +103,6 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		// Services
-		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
 		final List<I_C_BPartner> bpartners = retrieveAllItems(I_C_BPartner.class);
 		final boolean alsoSetCreditStatusBaseOnBPGroup = getParameters().getParameterAsBool(PARAM_ALSO_RESET_CREDITSTATUS_FROM_BP_GROUP);
 
@@ -114,11 +110,12 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		{
 			if (alsoSetCreditStatusBaseOnBPGroup)
 			{
-				Services.get(IBPartnerStatsBL.class).resetCreditStatusFromBPGroup(bpartner);
+				bPartnerStatsService.resetSOCreditStatusFromBPGroup(bpartner);
 			}
 
-			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
-			bpartnerStatsDAO.updateBPartnerStatistics(stats);
+			final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+			final BPartnerStats stats = bPartnerStatsService.getCreateBPartnerStats(bPartnerId);
+			bPartnerStatsService.updateBPartnerStatistics(stats);
 		}
 
 		return Result.SUCCESS;

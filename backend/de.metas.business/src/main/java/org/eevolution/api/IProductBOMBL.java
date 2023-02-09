@@ -22,21 +22,22 @@ package org.eevolution.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IProductBOMBL extends ISingletonService
 {
@@ -94,4 +95,10 @@ public interface IProductBOMBL extends ISingletonService
 	QtyCalculationsBOMLine toQtyCalculationsBOMLine(
 			@NonNull I_PP_Product_BOMLine productBOMLine,
 			@NonNull I_PP_Product_BOM bom);
+
+	Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull I_PP_Product_BOMLine bomLine);
+
+	void verifyDefaultBOMProduct(@NonNull ProductId productId);
+
+	void verifyDefaultBOMProduct(@NonNull I_M_Product product);
 }

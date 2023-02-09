@@ -58,7 +58,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	}
 
 	@Override
-	public final void postEvent(@NonNull final Event event)
+	public final void processEvent(@NonNull final Event event)
 	{
 		try (final MDCCloseable mdc = EventMDC.putEvent(event))
 		{
@@ -70,7 +70,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 			else
 			{
 				logger.debug("queuing=false; -> post event immediately; this={}", this);
-				super.postEvent(event);
+				super.processEvent(event);
 			}
 		}
 	}
@@ -190,17 +190,19 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 		logger.debug("flush - posting {} queued events to event bus; this={}", queuedEventsList.size(), this);
 		for (final Event event : queuedEventsList)
 		{
-			super.postEvent(event);
+			super.processEvent(event);
 		}
 	}
 
 	@Override
 	public String toString()
 	{
+		final Topic topic = getTopic();
+
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("topicName", getTopicName())
-				.add("type", getType())
+				.add("topicName", topic.getName())
+				.add("type", topic.getType())
 				.add("destroyed", isDestroyed() ? Boolean.TRUE : null)
 				.toString();
 	}

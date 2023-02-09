@@ -3,9 +3,12 @@ package de.metas.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.window.api.WindowCopyResult;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
@@ -121,4 +124,10 @@ public interface IADProcessDAO extends ISingletonService
 	ImmutableList<I_AD_Process_Para> getProcessParamsByProcessIds(Set<Integer> processIDs);
 
 	void save(I_AD_Process process);
+
+	void copyWindowRelatedProcesses(WindowCopyResult windowCopyResult);
+
+	void updateColumnNameByAdElementId(
+			@NonNull AdElementId adElementId,
+			@Nullable String newColumnName);
 }

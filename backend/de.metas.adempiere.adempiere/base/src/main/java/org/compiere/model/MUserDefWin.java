@@ -50,12 +50,6 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	/** No Windows (i.e. empty array) */
 	private static final MUserDefWin[] NoWindows = new MUserDefWin[]{};
 
-	/**
-	 * Get existing User Defined Windows for Role or User
-	 * @param ctx context
-	 * @param AD_Window_ID window ID
-	 * @return array of window customizations or empty array
-	 */
 	private static MUserDefWin[] get (Properties ctx, AdWindowId adWindowId)
 	{
 		if (adWindowId == null)
@@ -100,7 +94,6 @@ public class MUserDefWin extends X_AD_UserDef_Win
 
 	/**
 	 * Apply customizations to given GridWindowVO
-	 * @param vo
 	 */
 	public static void apply(GridWindowVO vo)
 	{
@@ -115,7 +108,6 @@ public class MUserDefWin extends X_AD_UserDef_Win
 
 	/**
 	 * Apply customizations to given GridTabVO
-	 * @param vo
 	 * @return true if tab is displayed, false if tab is hidden
 	 */
 	public static boolean apply(GridTabVO vo)
@@ -135,7 +127,6 @@ public class MUserDefWin extends X_AD_UserDef_Win
 
 	/**
 	 * Apply customizations to given GridFieldVO
-	 * @param vo
 	 */
 	public static void apply(GridFieldVO vo)
 	{
@@ -146,7 +137,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 			{
 				continue;
 			}
-			MUserDefField uf = ut.getField(vo.AD_Field_ID);
+			MUserDefField uf = ut.getField(vo.getAD_Field_ID());
 			if (uf != null)
 			{
 				uf.apply(vo);
@@ -154,23 +145,24 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MUserDefWin(Properties ctx, int AD_UserDef_Win_ID, String trxName)
 	{
 		super(ctx, AD_UserDef_Win_ID, trxName);
 	}
 
+	@SuppressWarnings("unused")
 	public MUserDefWin(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
 
 	/**
-	 * @param reload if true, do not use cache
 	 * @return tab customizations for this window
 	 */
-	private MUserDefTab[] getTabs(boolean reload)
+	private MUserDefTab[] getTabs()
 	{
-		if (!reload && m_tabs != null)
+		if (m_tabs != null)
 		{
 			return m_tabs;
 		}
@@ -181,13 +173,12 @@ public class MUserDefWin extends X_AD_UserDef_Win
 								.setOrderBy(MUserDefTab.COLUMNNAME_AD_Tab_ID)
 								.list(MUserDefTab.class);
 		//
-		m_tabs = list.toArray(new MUserDefTab[list.size()]);
+		m_tabs = list.toArray(new MUserDefTab[0]);
 		return m_tabs;
 	}
 	private MUserDefTab[] m_tabs = null;
 
 	/**
-	 * @param AD_Tab_ID
 	 * @return tab customization of given AD_Tab_ID or null if not found
 	 */
 	public MUserDefTab getTab(int AD_Tab_ID)
@@ -196,7 +187,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		{
 			return null;
 		}
-		for (MUserDefTab tab : getTabs(false))
+		for (MUserDefTab tab : getTabs())
 		{
 			if (AD_Tab_ID == tab.getAD_Tab_ID())
 			{

@@ -369,7 +369,7 @@ public class CompuDataInvoicBean
 			cctopInvoice500V.setTaxfree(Util.getADBooleanString(xmlCctopInvoic500V.getTaxfree()));
 			cctopInvoice500V.setUpc(xmlCctopInvoic500V.getEANCU());
 			cctopInvoice500V.setValue(xmlCctopInvoic500V.getValue());
-			cctopInvoice500V.setVendorProductNo(xmlCctopInvoic500V.getVendorProductNo());
+			cctopInvoice500V.setCustomerProductNo(xmlCctopInvoic500V.getCustomerProductNo());
 			cctopInvoice500V.setProductDescription(xmlCctopInvoic500V.getProductDescription());
 			if (xmlCctopInvoic500V.getOrderLine() == null)
 			{

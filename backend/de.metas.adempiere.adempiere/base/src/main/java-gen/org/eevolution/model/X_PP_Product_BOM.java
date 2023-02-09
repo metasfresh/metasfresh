@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Product_BOM
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Product_BOM, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 985149621L;
+	private static final long serialVersionUID = -2118481425L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (final Properties ctx, final int PP_Product_BOM_ID, @Nullable final String trxName)
@@ -99,18 +99,18 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
+	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_DocType_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
 	@Override
@@ -126,6 +126,33 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setDateDoc (final java.sql.Timestamp DateDoc)
+	{
+		set_Value (COLUMNNAME_DateDoc, DateDoc);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateDoc() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateDoc);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -137,8 +164,96 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
+	public static final String DOCACTION_Complete = "CO";
+	/** Approve = AP */
+	public static final String DOCACTION_Approve = "AP";
+	/** Reject = RJ */
+	public static final String DOCACTION_Reject = "RJ";
+	/** Post = PO */
+	public static final String DOCACTION_Post = "PO";
+	/** Void = VO */
+	public static final String DOCACTION_Void = "VO";
+	/** Close = CL */
+	public static final String DOCACTION_Close = "CL";
+	/** Reverse_Correct = RC */
+	public static final String DOCACTION_Reverse_Correct = "RC";
+	/** Reverse_Accrual = RA */
+	public static final String DOCACTION_Reverse_Accrual = "RA";
+	/** Invalidate = IN */
+	public static final String DOCACTION_Invalidate = "IN";
+	/** Re_Activate = RE */
+	public static final String DOCACTION_Re_Activate = "RE";
+	/** None = -- */
+	public static final String DOCACTION_None = "--";
+	/** Prepare = PR */
+	public static final String DOCACTION_Prepare = "PR";
+	/** Unlock = XL */
+	public static final String DOCACTION_Unlock = "XL";
+	/** WaitComplete = WC */
+	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	@Override
-	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
+	public void setDocAction (final java.lang.String DocAction)
+	{
+		set_Value (COLUMNNAME_DocAction, DocAction);
+	}
+
+	@Override
+	public java.lang.String getDocAction() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocAction);
+	}
+
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	@Override
+	public void setDocStatus (final java.lang.String DocStatus)
+	{
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	@Override
+	public java.lang.String getDocStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocStatus);
+	}
+
+	@Override
+	public void setDocumentNo (final java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
@@ -159,6 +274,33 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Sequence getLotNo_Sequence()
+	{
+		return get_ValueAsPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setLotNo_Sequence(final org.compiere.model.I_AD_Sequence LotNo_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_LotNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, LotNo_Sequence);
+	}
+
+	@Override
+	public void setLotNo_Sequence_ID (final int LotNo_Sequence_ID)
+	{
+		if (LotNo_Sequence_ID < 1) 
+			set_Value (COLUMNNAME_LotNo_Sequence_ID, null);
+		else 
+			set_Value (COLUMNNAME_LotNo_Sequence_ID, LotNo_Sequence_ID);
+	}
+
+	@Override
+	public int getLotNo_Sequence_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LotNo_Sequence_ID);
 	}
 
 	@Override
@@ -258,6 +400,45 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
+	public org.eevolution.model.I_PP_Product_BOMVersions getPP_Product_BOMVersions()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class);
+	}
+
+	@Override
+	public void setPP_Product_BOMVersions(final org.eevolution.model.I_PP_Product_BOMVersions PP_Product_BOMVersions)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMVersions_ID, org.eevolution.model.I_PP_Product_BOMVersions.class, PP_Product_BOMVersions);
+	}
+
+	@Override
+	public void setPP_Product_BOMVersions_ID (final int PP_Product_BOMVersions_ID)
+	{
+		if (PP_Product_BOMVersions_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMVersions_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMVersions_ID, PP_Product_BOMVersions_ID);
+	}
+
+	@Override
+	public int getPP_Product_BOMVersions_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Product_BOMVersions_ID);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
 	public void setProcessing (final boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Processing);
@@ -342,5 +523,20 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
+	}
+
+	@Override
+	public void setS_PreferredResource_ID(final int S_PreferredResource_ID)
+	{
+		if (S_PreferredResource_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_S_PreferredResource_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_S_PreferredResource_ID, S_PreferredResource_ID);
+	}
+
+	@Override
+	public int getS_PreferredResource_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_S_PreferredResource_ID);
 	}
 }

@@ -34,9 +34,10 @@ import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -56,9 +57,11 @@ import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.time.SystemTime;
+import de.metas.common.util.time.TimeSource;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
@@ -67,10 +70,17 @@ import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.repository.IncotermsRepository;
+import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
+import de.metas.sectionCode.SectionCodeRepository;
+import de.metas.sectionCode.SectionCodeService;
+import de.metas.test.SnapshotFunctionFactory;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -83,6 +93,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -90,7 +101,9 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
@@ -104,7 +117,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
+import java.time.ZoneId;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
@@ -139,11 +154,14 @@ class BpartnerRestControllerTest
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
 	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private SectionCodeRepository sectionCodeRepository;
+	private IncotermsRepository incotermsRepository;
+	private BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	@BeforeAll
 	static void beforeAll()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll
@@ -156,6 +174,7 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
@@ -171,8 +190,13 @@ class BpartnerRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository());
+		bPartnerCreditLimitRepository = new BPartnerCreditLimitRepository();
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), bPartnerCreditLimitRepository);
 		currencyRepository = new CurrencyRepository();
+
+		sectionCodeRepository = new SectionCodeRepository();
+
+		incotermsRepository = new IncotermsRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -180,14 +204,20 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
+				new TitleRepository(),
 				currencyRepository,
+				new JobRepository(),
 				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				new SectionCodeService(sectionCodeRepository),
+				incotermsRepository,
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				bPartnerCreditLimitRepository);
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
 				jsonServiceFactory,
-				new JsonRequestConsolidateService());
+				new JsonRequestConsolidateService(),
+				new CreditLimitService(bPartnerCreditLimitRepository, jsonServiceFactory));
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
@@ -332,6 +362,7 @@ class BpartnerRestControllerTest
 		final int initialUserRecordCount = POJOLookupMap.get().getRecords(I_AD_User.class).size();
 		final int initialBPartnerLocationRecordCount = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class).size();
 		final int initialLocationRecordCount = POJOLookupMap.get().getRecords(I_C_Location.class).size();
+		final int initialBpartnerCreditLimitRecordCount = POJOLookupMap.get().getRecords(I_C_BPartner_CreditLimit.class).size();
 
 		createCountryRecord("CH");
 		createCountryRecord("DE");
@@ -341,6 +372,7 @@ class BpartnerRestControllerTest
 
 		assertThat(bpartnerComposite.getContactsNotNull().getRequestItems()).hasSize(2); // guard
 		assertThat(bpartnerComposite.getLocationsNotNull().getRequestItems()).hasSize(2);// guard
+		assertThat(bpartnerComposite.getCreditLimitsNotNull().getRequestItems()).hasSize(1);// guard
 
 		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner();
 		bpartner.setGroup(BP_GROUP_RECORD_NAME);
@@ -356,7 +388,21 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		SystemTime.setTimeSource( new TimeSource()
+		{
+			@Override
+			public long millis()
+			{
+				return 1561134560;
+			}
+
+			@Override
+			public ZoneId zoneId()
+			{
+				return TimeZone.getTimeZone("GMT").toZoneId();
+			}
+		});
+
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
@@ -372,6 +418,7 @@ class BpartnerRestControllerTest
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + 2);
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_CreditLimit.class)).hasSize(initialBpartnerCreditLimitRecordCount + 1);
 	}
 
 	/**
@@ -560,7 +607,7 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setBPartner_Parent_ID(123); // in one test this shall be updated to null
 		saveRecord(bpartnerRecord);
 
-		createExternalReference("1234567", "BPartner", bpartnerRecord.getC_BPartner_ID());
+		createExternalReference("1234567", "BPartner", bpartnerRecord.getC_BPartner_ID(), BPartnerRecordsUtil.ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID, true);
 
 		final RecordCounts initialCounts = new RecordCounts();
 
@@ -851,5 +898,25 @@ class BpartnerRestControllerTest
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 
 		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveBPartnersProducts()
+	{
+		createBPartnerData(1);
+
+		final I_C_BPartner_Product bPartnerProductRecord = newInstance(I_C_BPartner_Product.class);
+		bPartnerProductRecord.setC_BPartner_ID(21);
+		bPartnerProductRecord.setM_Product_ID(10);
+		saveRecord(bPartnerProductRecord);
+
+		final ResponseEntity<JsonResponseProductBPartner> page1 = bpartnerRestController.retrieveBPartnerProducts(String.valueOf(bPartnerProductRecord.getC_BPartner_ID()));
+		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+
+		final JsonResponseProductBPartner responseProductBPartner = page1.getBody();
+		assertThat(responseProductBPartner).isNotNull();
+		assertThat(responseProductBPartner.getBPartnerProducts()).hasSize(1);
+
+		expect(responseProductBPartner).toMatchSnapshot();
 	}
 }

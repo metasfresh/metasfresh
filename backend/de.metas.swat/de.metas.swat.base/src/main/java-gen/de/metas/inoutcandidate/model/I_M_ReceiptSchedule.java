@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ReceiptSchedule
  *  @author metasfresh (generated) 
@@ -311,6 +312,27 @@ public interface I_M_ReceiptSchedule
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
 	 * Set Sales order.
@@ -1486,4 +1508,29 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_ReceiptSchedule.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 }

@@ -27,13 +27,12 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
-import org.eevolution.api.PPOrderId;
 import de.metas.util.Services;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
@@ -78,12 +77,12 @@ public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
-		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
-		if (docStatus.isCompletedOrClosed())
+		final DocStatus docStatus = getDocStatus();
+		if (docStatus != null && docStatus.isCompletedOrClosed())
 		{
 			createOrderCosts();
 		}
-		else if (DocStatus.Voided.equals(docStatus))
+		else if (docStatus != null && docStatus.isVoided())
 		{
 			logger.debug("Skip creating costs for voided documents");
 		}

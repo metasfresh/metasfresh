@@ -25,8 +25,12 @@ package org.eevolution.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.product.UpdateProductRequest;
 import de.metas.quantity.Quantity;
@@ -35,9 +39,13 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -59,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class ProductBOMBL implements IProductBOMBL
@@ -68,6 +77,8 @@ public class ProductBOMBL implements IProductBOMBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
 	public boolean isValidFromTo(final I_PP_Product_BOM productBOM, final Date date)
@@ -268,16 +279,13 @@ public class ProductBOMBL implements IProductBOMBL
 		final HashMap<ProductBOMId, I_PP_Product_BOM> boms = new HashMap<>();
 
 		final List<I_M_Product> finishGoods = productDAO.getByIds(finishGoodIds);
+
 		for (final I_M_Product finishGood : finishGoods)
 		{
-			final I_PP_Product_BOM bom = bomDAO.getDefaultBOM(finishGood, bomType).orElse(null);
-			if (bom == null)
-			{
-				continue;
-			}
+			final ProductId finishedGoodProductId = ProductId.ofRepoId(finishGood.getM_Product_ID());
 
-			final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
-			boms.put(bomId, bom);
+			bomDAO.getDefaultBOM(finishedGoodProductId, bomType)
+					.ifPresent(bom -> boms.put(ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()), bom));
 		}
 
 		if (boms.isEmpty())
@@ -327,5 +335,73 @@ public class ProductBOMBL implements IProductBOMBL
 				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
 				//
 				.build();
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull final I_PP_Product_BOMLine bomLine)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> ProductBOMDAO.extractIssuingToleranceSpec(bomLine),
+				() -> productBL.getIssuingToleranceSpec(ProductId.ofRepoId(bomLine.getM_Product_ID()))
+		);
+	}
+
+	@Override
+	public void verifyDefaultBOMProduct(@NonNull final ProductId productId)
+	{
+		verifyDefaultBOMProduct(productDAO.getById(productId));
+	}
+
+	@Override
+	public void verifyDefaultBOMProduct(@NonNull final I_M_Product product)
+	{
+		try
+		{
+			trxManager.runInThreadInheritedTrx(() -> checkProductById(product));
+		}
+		catch (final Exception ex)
+		{
+			product.setIsVerified(false);
+			InterfaceWrapperHelper.save(product);
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private void checkProductById(@NonNull final I_M_Product product)
+	{
+		if (!product.isBOM())
+		{
+			// No BOM - should not happen, but no problem
+			return;
+		}
+
+		// Check this level
+		updateProductLLCAndMarkAsVerified(product);
+
+		// Get Default BOM from this product
+		final I_PP_Product_BOM bom = bomDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.orElseThrow(() -> {
+					final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(AdMessageKey.of("NO_Default_PP_Product_BOM_For_Product"),
+																					  product.getValue() + "_" + product.getName());
+
+					return new AdempiereException(errorMsg);
+				});
+
+		// Check All BOM Lines
+		for (final I_PP_Product_BOMLine tbomline : bomDAO.retrieveLines(bom))
+		{
+			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
+			final I_M_Product bomLineProduct = productBL.getById(productId);
+			updateProductLLCAndMarkAsVerified(bomLineProduct);
+		}
+	}
+
+	private void updateProductLLCAndMarkAsVerified(@NonNull final I_M_Product product)
+	{
+		// NOTE: when LLC is calculated, the BOM cycles are also checked
+		final int lowLevelCode = calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
+		product.setLowLevel(lowLevelCode);
+		product.setIsVerified(true);
+		InterfaceWrapperHelper.save(product);
 	}
 }

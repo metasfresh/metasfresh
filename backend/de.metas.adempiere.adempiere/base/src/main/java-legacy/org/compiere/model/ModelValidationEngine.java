@@ -16,20 +16,23 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.IImportProcess;
+import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
+import de.metas.security.IUserLoginListener;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorFactory;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
@@ -42,6 +45,7 @@ import org.adempiere.ad.modelvalidator.ModuleActivatorDescriptorsCollection;
 import org.adempiere.ad.modelvalidator.ModuleActivatorDescriptorsRepository;
 import org.adempiere.ad.modelvalidator.TimingType;
 import org.adempiere.ad.persistence.EntityTypesCache;
+import org.adempiere.ad.service.ADSystemInfo;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.MFSession;
@@ -52,37 +56,29 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.ApplicationContext;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
-
-import de.metas.impexp.processing.IImportInterceptor;
-import de.metas.impexp.processing.IImportProcess;
-import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
-import de.metas.script.IADRuleDAO;
-import de.metas.script.ScriptEngineFactory;
-import de.metas.security.IUserLoginListener;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Model Validation Engine
@@ -104,6 +100,11 @@ import lombok.NonNull;
  */
 public class ModelValidationEngine implements IModelValidationEngine
 {
+
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.modelInterceptor.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static PerformanceMonitoringService _performanceMonitoringService;
 
 	/**
 	 * Get Singleton
@@ -360,9 +361,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 			return failOnMissingModelInteceptorsOverride;
 		}
 
-		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());
-		final boolean isFail = system.isFailOnMissingModelValidator();
-		return isFail;
+		final ADSystemInfo system = Services.get(ISystemBL.class).get();
+		return system.isFailOnMissingModelValidator();
 	}
 
 	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
@@ -696,21 +696,28 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	public void fireModelChange(@NonNull final PO po, final ModelChangeType changeType)
 	{
-		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-		final String tableName = po.get_TableName();
-		final String changeTypeStr = changeType.toString();
 
-		performanceMonitoringService.monitorSpan(
-				() -> fireModelChange0(po, changeType),
-				SpanMetadata
-						.builder()
-						.name(changeTypeStr + " " + tableName)
-						.type(Type.MODEL_INTERCEPTOR.getCode())
-						.subType(SubType.MODEL_CHANGE.getCode())
-						.action(changeTypeStr)
-						.label("tableName", tableName)
-						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
-						.build());
+		if(!isPerformanceMonitorActive())
+		{
+			fireModelChange0(po, changeType);
+		}
+		else
+		{
+			final String tableName = po.get_TableName();
+			final String changeTypeStr = changeType.toString();
+
+			performanceMonitoringService().monitor(
+					() -> fireModelChange0(po, changeType),
+					Metadata
+							.builder()
+							.className("ModelValidationEngine")
+							.type(Type.MODEL_INTERCEPTOR)
+							.functionName("fireModelChange")
+							.label("changeType", changeTypeStr)
+							.label("tableName", tableName)
+							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
+							.build());
+		}
 	}
 
 	public void fireModelChange0(@Nullable final PO po, @NonNull final ModelChangeType changeType)
@@ -785,6 +792,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 			logger.debug("Executed: ALL {} interceptors for {}", changeType, po);
 		}
 	}	// fireModelChange
+
+	private boolean isPerformanceMonitorActive()
+	{
+		return sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
 
 	private final void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
 	{
@@ -1065,23 +1089,28 @@ public class ModelValidationEngine implements IModelValidationEngine
 	{
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
 		{
-			final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+			if(!isPerformanceMonitorActive())
+			{
+				return fireDocValidate0(model, docTiming);
+			}
+			else
+			{
+				final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+				final int recordId = InterfaceWrapperHelper.getId(model);
+				final String docTimingStr = docTiming.toString();
 
-			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-			final int recordId = InterfaceWrapperHelper.getId(model);
-			final String docTimingStr = docTiming.toString();
-
-			return perfMonService.monitorSpan(
-					() -> fireDocValidate0(model, docTiming),
-					SpanMetadata
-							.builder()
-							.name(docTimingStr + " " + tableName)
-							.type(Type.MODEL_INTERCEPTOR.getCode())
-							.subType(SubType.DOC_VALIDATE.getCode())
-							.action(docTimingStr)
-							.label("tableName", tableName)
-							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
-							.build());
+				return performanceMonitoringService().monitor(
+						() -> fireDocValidate0(model, docTiming),
+						Metadata
+								.builder()
+								.className("ModelValidationEngine")
+								.type(Type.MODEL_INTERCEPTOR)
+								.functionName("fireDocValidate")
+								.label("docTiming", docTimingStr)
+								.label("tableName", tableName)
+								.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
+								.build());
+			}
 		}
 	}
 
@@ -1339,7 +1368,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * After Load Preferences into Context for selected client.
 	 *
 	 * @param ctx context
-	 * @see org.compiere.util.Login#loadPreferences(KeyNamePair, Timestamp) 
 	 * @author Teo Sarca - FR [ 1670025 ] - https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335
 	 */
 	public void afterLoadPreferences(Properties ctx)

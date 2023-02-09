@@ -4,12 +4,16 @@ import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.acct.impexp.AccountImportProcess;
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.model.I_Fact_Acct_EndingBalance;
+import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccoutingDocsToRepostDBTableWatcher;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
@@ -20,6 +24,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.elementvalue.MElementValueTreeSupport;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -30,14 +35,18 @@ import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_I_ElementValue;
@@ -48,7 +57,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Properties;
 
 /**
@@ -67,19 +76,23 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
 
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
+	private final ProductActivityProvider productActivityProvider;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
 	public AcctModuleInterceptor(
 			@NonNull final ICostElementRepository costElementRepo,
-			@NonNull final TreeNodeService treeNodeService)
+			@NonNull final TreeNodeService treeNodeService,
+			@NonNull final ProductActivityProvider productActivityProvider)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
+		this.productActivityProvider = productActivityProvider;
 	}
 
 	@Override
@@ -96,9 +109,12 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			userRolePermissionsDAO.setAccountingModuleActive();
 		}
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		importProcessFactory.registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
+
+		final IPOTreeSupportFactory treeSupportFactory = Services.get(IPOTreeSupportFactory.class);
+		treeSupportFactory.register(I_C_ElementValue.Table_Name, MElementValueTreeSupport.class);
 
 		//
 		// Accounting service
@@ -110,6 +126,13 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			logger.info("Skip setting up accounting service because profile {} is not active", Profiles.PROFILE_AccountingService);
 		}
+
+		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Log.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Summary.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_EndingBalance.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_I_ElementValue.Table_Name);
 	}
 
 	@Override
@@ -121,7 +144,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
 
 		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
 
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));
@@ -176,7 +199,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			try
 			{
 				final OrgId adOrgId = OrgId.ofRepoId(adOrgRepoId);
-				final LocalDate date = Env.getLocalDate(ctx);
+				final Instant date = Env.getDate(ctx).toInstant();
 				final CurrencyConversionTypeId conversionTypeId = currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
 				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
 			}

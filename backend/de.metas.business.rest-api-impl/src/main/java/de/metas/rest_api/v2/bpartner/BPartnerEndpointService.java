@@ -32,6 +32,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseCompositeList;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactList;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.v2.JsonPagingDescriptor;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.externalreference.ExternalIdentifier;
@@ -106,7 +107,16 @@ public class BPartnerEndpointService
 				.stream()
 				.filter(jsonContact -> isJsonContactMatches(orgId, jsonContact, contactIdentifier))
 				.findAny());
+	}
 
+	@NonNull
+	public JsonResponseProductBPartner retrieveBPartnerProduct(
+			@Nullable final String orgCode,
+			@NonNull final ExternalIdentifier bpartnerIdentifier)
+	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		return jsonRetriever.getJsonResponseProductBPartner(orgId, bpartnerIdentifier);
 	}
 
 	private boolean isJsonContactMatches(

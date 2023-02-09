@@ -10,29 +10,29 @@ package org.adempiere.util.lang;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import de.metas.util.Check;
-
 /**
  * Wraps a {@link BigDecimal} and makes it mutable.
- * 
- * @author tsa
  *
+ * @author tsa
  */
 public final class MutableBigDecimal extends Number implements IMutable<BigDecimal>
 {
@@ -50,11 +50,6 @@ public final class MutableBigDecimal extends Number implements IMutable<BigDecim
 		this.value = value;
 	}
 
-	public MutableBigDecimal(final Number value)
-	{
-		this(value == null ? (BigDecimal)null : new BigDecimal(value.toString()));
-	}
-
 	public MutableBigDecimal()
 	{
 		this(BigDecimal.ZERO);
@@ -64,25 +59,19 @@ public final class MutableBigDecimal extends Number implements IMutable<BigDecim
 	public String toString()
 	{
 		return value.toString();
-	};
+	}
 
 	@Override
+	@NonNull
 	public BigDecimal getValue()
 	{
 		return value;
 	}
 
 	@Override
-	public void setValue(final BigDecimal value)
+	public void setValue(@Nullable final BigDecimal value)
 	{
-		if (value instanceof BigDecimal)
-		{
-			this.value = value;
-		}
-		else
-		{
-			this.value = new BigDecimal(value.toString());
-		}
+		this.value = value != null ? value : BigDecimal.ZERO;
 	}
 
 	@Override

@@ -100,7 +100,9 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return repoId == NONE.repoId;
 	}
 
-	/** @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}. */
+	/**
+	 * @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}.
+	 */
 	public boolean isRegular()
 	{
 		return repoId > NONE.repoId;
@@ -110,6 +112,9 @@ public class AttributeSetInstanceId implements RepoIdAware
 	{
 		return asiId != null && asiId.isRegular();
 	}
+
+	@Nullable
+	public AttributeSetInstanceId asRegularOrNull() {return isRegular() ? this : null;}
 
 	/** Note that currently, according to this method, "NONE" ist not equal to an emptpy ASI */
 	public static boolean equals(@Nullable final AttributeSetInstanceId id1, @Nullable final AttributeSetInstanceId id2)

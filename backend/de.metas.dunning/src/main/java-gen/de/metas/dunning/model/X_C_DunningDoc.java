@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_DunningDoc
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
 public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_DunningDoc, org.compiere.model.I_Persistent 
@@ -14,7 +14,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1280603864L;
+	private static final long serialVersionUID = 2120654377L;
 
     /** Standard Constructor */
     public X_C_DunningDoc (Properties ctx, int C_DunningDoc_ID, String trxName)
@@ -61,7 +61,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Anschrift-Text.
 		@return Anschrift-Text	  */
 	@Override
-	public java.lang.String getBPartnerAddress () 
+	public java.lang.String getBPartnerAddress ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress);
 	}
@@ -79,7 +79,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	}
 
 	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
+		@param C_BPartner_ID
 		Bezeichnet einen Geschäftspartner
 	  */
 	@Override
@@ -95,7 +95,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return Bezeichnet einen Geschäftspartner
 	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
@@ -116,7 +116,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	}
 
 	/** Set Standort.
-		@param C_BPartner_Location_ID 
+		@param C_BPartner_Location_ID
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
@@ -132,7 +132,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
 		if (ii == null)
@@ -153,7 +153,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	}
 
 	/** Set Belegart.
-		@param C_DocType_ID 
+		@param C_DocType_ID
 		Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
@@ -169,7 +169,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
@@ -203,7 +203,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Mahnkontakt.
 		@return Mahnkontakt	  */
 	@Override
-	public int getC_Dunning_Contact_ID () 
+	public int getC_Dunning_Contact_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_Contact_ID);
 		if (ii == null)
@@ -225,7 +225,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Dunning Document.
 		@return Dunning Document	  */
 	@Override
-	public int getC_DunningDoc_ID () 
+	public int getC_DunningDoc_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DunningDoc_ID);
 		if (ii == null)
@@ -259,7 +259,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Mahnstufe.
 		@return Mahnstufe	  */
 	@Override
-	public int getC_DunningLevel_ID () 
+	public int getC_DunningLevel_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DunningLevel_ID);
 		if (ii == null)
@@ -278,7 +278,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
@@ -319,7 +319,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
-		@param DocAction 
+		@param DocAction
 		Der zukünftige Status des Belegs
 	  */
 	@Override
@@ -333,7 +333,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return Der zukünftige Status des Belegs
 	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
@@ -368,7 +368,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
-		@param DocStatus 
+		@param DocStatus
 		The current status of the document
 	  */
 	@Override
@@ -382,13 +382,13 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return The current status of the document
 	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
 	/** Set Nr..
-		@param DocumentNo 
+		@param DocumentNo
 		Document sequence number of the document
 	  */
 	@Override
@@ -401,13 +401,13 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return Document sequence number of the document
 	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
 	/** Set Dunning Date.
-		@param DunningDate 
+		@param DunningDate
 		Date of Dunning
 	  */
 	@Override
@@ -420,7 +420,7 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 		@return Date of Dunning
 	  */
 	@Override
-	public java.sql.Timestamp getDunningDate () 
+	public java.sql.Timestamp getDunningDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DunningDate);
 	}
@@ -436,13 +436,13 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Benutze abw. Adresse.
 		@return Benutze abw. Adresse	  */
 	@Override
-	public boolean isUseBPartnerAddress () 
+	public boolean isUseBPartnerAddress ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsUseBPartnerAddress);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -458,21 +458,48 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Massenaustritt.
 		@return Massenaustritt	  */
 	@Override
-	public boolean isWriteOff () 
+	public boolean isWriteOff ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsWriteOff);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -481,16 +508,16 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -507,13 +534,13 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	/** Get Process Now.
 		@return Process Now	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;

@@ -13,7 +13,7 @@ import java.util.Optional;
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;

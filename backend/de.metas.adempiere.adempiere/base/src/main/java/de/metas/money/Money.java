@@ -142,6 +142,11 @@ public class Money
 		return signum() == 0;
 	}
 
+	public boolean isNegative()
+	{
+		return signum() < 0;
+	}
+
 	public Money negate()
 	{
 		if (value.signum() == 0)
@@ -166,44 +171,19 @@ public class Money
 		return Money.zero(currencyId);
 	}
 
-	public static CurrencyId getCommonCurrencyIdOfAll(@NonNull final Money... moneys)
+	public Money toZeroIfNegative()
 	{
-		if (moneys.length == 0)
-		{
-			throw new AdempiereException("The given moneys may not be empty");
-		}
-		else if (moneys.length == 1)
-		{
-			return moneys[0].getCurrencyId();
-		}
-		else
-		{
-			CurrencyId commonCurrencyId = null;
-			for (final Money money : moneys)
-			{
-				if (money == null)
-				{
-					continue;
-				}
+		return signum() >= 0 ? this : zero(currencyId);
+	}
 
-				final CurrencyId currencyId = money.getCurrencyId();
-				if (commonCurrencyId == null)
-				{
-					commonCurrencyId = currencyId;
-				}
-				else if (!CurrencyId.equals(commonCurrencyId, currencyId))
-				{
-					throw new AdempiereException("All given Money instances shall have the same currency: " + Arrays.asList(moneys));
-				}
-			}
+	public static void assertSameCurrency(final Money... moneys)
+	{
+		getCommonCurrencyIdOfAll(moneys);
+	}
 
-			if (commonCurrencyId == null)
-			{
-				throw new AdempiereException("At least one non null Money instance was expected: " + Arrays.asList(moneys));
-			}
-
-			return commonCurrencyId;
-		}
+	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
+	{
+		return CurrencyId.getCommonCurrencyIdOfAll(Money::getCurrencyId, "Money", moneys);
 	}
 
 	public static boolean isSameCurrency(@NonNull final Money... moneys)
@@ -302,6 +282,12 @@ public class Money
 		return this.value.compareTo(other.value) <= 0;
 	}
 
+	public boolean isGreaterThanOrEqualTo(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) >= 0;
+	}
+
 	public boolean isEqualByComparingTo(@Nullable final Money other)
 	{
 		if (other == null)
@@ -346,5 +332,24 @@ public class Money
 	private Money withValue(@NonNull final BigDecimal newValue)
 	{
 		return value.compareTo(newValue) != 0 ? of(newValue, currencyId) : this;
+	}
+
+	public static int countNonZero(final Money... array)
+	{
+		if (array == null || array.length == 0)
+		{
+			return 0;
+		}
+
+		int count = 0;
+		for (final Money money : array)
+		{
+			if (money != null && money.signum() != 0)
+			{
+				count++;
+			}
+		}
+
+		return count;
 	}
 }

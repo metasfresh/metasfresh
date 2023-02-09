@@ -22,14 +22,13 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -40,7 +39,7 @@ import java.util.function.Function;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonInvoicePaymentCreateRequest.JsonInvoicePaymentCreateRequestBuilder.class)
+@Jacksonized
 public class JsonInvoicePaymentCreateRequest
 {
 	@ApiModelProperty(required = true, //
@@ -83,22 +82,19 @@ public class JsonInvoicePaymentCreateRequest
 	@JsonProperty("lines")
 	List<JsonPaymentAllocationLine> lines;
 
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonInboundPaymentInfoBuilder
-	{
-	}
-
+	@JsonIgnore
 	public BigDecimal getAmount()
 	{
 		return getAmount(JsonPaymentAllocationLine::getAmount);
 	}
 
+	@JsonIgnore
 	public BigDecimal getDiscountAmt()
 	{
 		return getAmount(JsonPaymentAllocationLine::getDiscountAmt);
 	}
 
+	@JsonIgnore
 	public BigDecimal getWriteOffAmt()
 	{
 		return getAmount(JsonPaymentAllocationLine::getWriteOffAmt);
@@ -106,7 +102,6 @@ public class JsonInvoicePaymentCreateRequest
 
 	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
 	{
-
 		final List<JsonPaymentAllocationLine> lines = getLines();
 		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}

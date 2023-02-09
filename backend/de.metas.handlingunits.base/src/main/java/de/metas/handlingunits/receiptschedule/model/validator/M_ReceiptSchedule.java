@@ -76,7 +76,7 @@ public class M_ReceiptSchedule
 
 		// List of handling units receipt schedule allocations.
 		// This is where we take the hus from and we mark them as destroyed
-		final List<de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc> huAllocs = Services.get(IHUReceiptScheduleDAO.class).retrieveHandlingUnitAllocations(rs, trxName);
+		final List<de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc> huAllocs = Services.get(IHUReceiptScheduleDAO.class).retrieveAllHandlingUnitAllocations(rs, trxName);
 
 		Services.get(IHUReceiptScheduleBL.class).destroyHandlingUnits(huAllocs, trxName);
 

@@ -114,6 +114,6 @@ public class WorkpackageLogsRepository implements IWorkpackageLogsRepository
 	public void deleteLogsInTrx(@NonNull final QueueWorkPackageId workpackageId)
 	{
 		final String sql = "DELETE FROM " + I_C_Queue_WorkPackage_Log.Table_Name + " WHERE " + I_C_Queue_WorkPackage_Log.COLUMNNAME_C_Queue_WorkPackage_ID + "=?";
-		DB.executeUpdateEx(sql, new Object[] { workpackageId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { workpackageId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

@@ -46,7 +46,7 @@ public class SwaggerUtil
 			.description("Authorization token")
 			.modelRef(new ModelRef("string"))
 			.parameterType("header")
-			.required(true)
+			.required(false) // not required because we have some endpoints which are excluded (like the /auth one)
 			.build();
 
 	public ApiInfo createApiInfo(

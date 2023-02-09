@@ -96,28 +96,6 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCatch_UOM_ID (int Catch_UOM_ID);
-
-	/**
-	 * Get Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCatch_UOM_ID();
-
-	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
-
-	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -145,8 +123,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -155,8 +132,7 @@ public interface I_M_InOutLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -167,27 +143,52 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Bestätigte Menge.
-	 * Confirmation of a received quantity
+	 * Set Flatrate Term.
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setConfirmedQty (@Nullable BigDecimal ConfirmedQty);
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
 	/**
-	 * Get Bestätigte Menge.
-	 * Confirmation of a received quantity
+	 * Get Flatrate Term.
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getConfirmedQty();
+	int getC_Flatrate_Term_ID();
 
-	ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new ModelColumn<>(I_M_InOutLine.class, "ConfirmedQty", null);
-	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
+	ModelColumn<I_M_InOutLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Orderline.
@@ -215,7 +216,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Project.
+	 * Set Project en_US 208.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
@@ -225,7 +226,7 @@ public interface I_M_InOutLine
 	void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Project.
+	 * Get Project en_US 208.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
@@ -291,6 +292,71 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCatch_UOM_ID();
+
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
+	 * Set Qty Confirmed.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setConfirmedQty (@Nullable BigDecimal ConfirmedQty);
+
+	/**
+	 * Get Qty Confirmed.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getConfirmedQty();
+
+	ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new ModelColumn<>(I_M_InOutLine.class, "ConfirmedQty", null);
+	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -314,28 +380,6 @@ public interface I_M_InOutLine
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Description.
@@ -405,7 +449,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
-	 * Set Berechnete Menge.
+	 * Set Invoiced.
 	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
@@ -415,7 +459,7 @@ public interface I_M_InOutLine
 	void setIsInvoiced (boolean IsInvoiced);
 
 	/**
-	 * Get Berechnete Menge.
+	 * Get Invoiced.
 	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
@@ -569,27 +613,6 @@ public interface I_M_InOutLine
 	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMovementQty (BigDecimal MovementQty);
-
-	/**
-	 * Get Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMovementQty();
-
-	ModelColumn<I_M_InOutLine, Object> COLUMN_MovementQty = new ModelColumn<>(I_M_InOutLine.class, "MovementQty", null);
-	String COLUMNNAME_MovementQty = "MovementQty";
-
-	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -612,7 +635,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set RMA-Position.
+	 * Set RMA Line.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -622,7 +645,7 @@ public interface I_M_InOutLine
 	void setM_RMALine_ID (int M_RMALine_ID);
 
 	/**
-	 * Get RMA-Position.
+	 * Get RMA Line.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -637,6 +660,52 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, org.compiere.model.I_M_RMALine> COLUMN_M_RMALine_ID = new ModelColumn<>(I_M_InOutLine.class, "M_RMALine_ID", org.compiere.model.I_M_RMALine.class);
 	String COLUMNNAME_M_RMALine_ID = "M_RMALine_ID";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_InOutLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
+	 * Set Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMovementQty (BigDecimal MovementQty);
+
+	/**
+	 * Get Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMovementQty();
+
+	ModelColumn<I_M_InOutLine, Object> COLUMN_MovementQty = new ModelColumn<>(I_M_InOutLine.class, "MovementQty", null);
+	String COLUMNNAME_MovementQty = "MovementQty";
 
 	/**
 	 * Set Picked Quantity.
@@ -681,8 +750,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Set Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -691,8 +760,8 @@ public interface I_M_InOutLine
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Get Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -769,7 +838,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Ref_InOutLine_ID = "Ref_InOutLine_ID";
 
 	/**
-	 * Set Storno-Zeile.
+	 * Set Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -778,7 +847,7 @@ public interface I_M_InOutLine
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Storno-Zeile.
+	 * Get Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -794,8 +863,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ReversalLine_ID = "ReversalLine_ID";
 
 	/**
-	 * Set Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Set Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -804,8 +872,7 @@ public interface I_M_InOutLine
 	void setScrappedQty (@Nullable BigDecimal ScrappedQty);
 
 	/**
-	 * Get Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Get Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -817,8 +884,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ScrappedQty = "ScrappedQty";
 
 	/**
-	 * Set Zielmenge.
-	 * Target Movement Quantity
+	 * Set Target Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -827,8 +893,7 @@ public interface I_M_InOutLine
 	void setTargetQty (@Nullable BigDecimal TargetQty);
 
 	/**
-	 * Get Zielmenge.
-	 * Target Movement Quantity
+	 * Get Target Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

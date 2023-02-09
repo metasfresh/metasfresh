@@ -24,15 +24,20 @@ package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.UUID;
 
 /**
  * Send from the procurement-webui to metasfresh to request a {@link PutBPartnersRequest} containing all business partners that shall be able to log into the procurement webui.
  */
 @Value
+@Builder
+@Jacksonized
 public class GetAllBPartnersRequest extends RequestToMetasfresh
 {
-	public static final GetAllBPartnersRequest INSTANCE = new GetAllBPartnersRequest();
-
-	private GetAllBPartnersRequest(){};
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
 }
