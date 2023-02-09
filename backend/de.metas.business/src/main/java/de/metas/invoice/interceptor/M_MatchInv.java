@@ -25,10 +25,10 @@ package de.metas.invoice.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.invoice.model.I_M_MatchInv;
 
 /**
  *
@@ -42,8 +42,6 @@ public class M_MatchInv
 	/**
 	 * Note that we need the C_Invoice_ID for be set, because in the "Eingansrechnung" (PO-Invoice) window, the invoice lines are in an included tab, so the matchInv tab is a subtab of the C_Invoice
 	 * tab.
-	 *
-	 * @param matchInv
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID)
 	public void updateC_Invoice_ID(final I_M_MatchInv matchInv)
