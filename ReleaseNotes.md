@@ -13,7 +13,8 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#14492](https://github.com/metasfresh/metasfresh/issues/14492) Delivery Planning - Shortage and Overage
-  * [#14500](https://github.com/metasfresh/metasfresh/issues/14500) Credit Limit - Reporting 
+  * [#14500](https://github.com/metasfresh/metasfresh/issues/14500) Credit Limit - Reporting
+  * [#14470](https://github.com/metasfresh/metasfresh/issues/14470) Inventory management: Add Process To Move CUQY To another Location
   * [#14475](https://github.com/metasfresh/metasfresh/issues/14475) Fix /invoices/payment 
   * [#14408](https://github.com/metasfresh/metasfresh/issues/14408) Delivery Based Credit Limit 
   * [#14469](https://github.com/metasfresh/metasfresh/issues/14469) SAP: mark only imported fields as read-only
