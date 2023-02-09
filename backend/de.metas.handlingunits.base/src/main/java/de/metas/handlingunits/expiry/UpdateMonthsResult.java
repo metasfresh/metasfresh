@@ -1,10 +1,11 @@
-package de.metas.impexp.parser;
+package de.metas.handlingunits.expiry;
 
-import java.util.List;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -24,8 +25,10 @@ import java.util.List;
  * #L%
  */
 
-public interface ImpDataLineParser
+@Value
+@Builder
+public class UpdateMonthsResult
 {
-
-	List<ImpDataCell> parseDataCells(String line);
+	int countChecked;
+	int countUpdated;
 }

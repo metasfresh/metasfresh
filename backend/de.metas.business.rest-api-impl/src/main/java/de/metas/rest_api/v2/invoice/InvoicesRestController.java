@@ -260,7 +260,7 @@ public class InvoicesRestController
 	{
 		try
 		{
-			jsonInvoiceService.createInboundPaymentFromJson(request);
+			jsonInvoiceService.createPaymentFromJson(request);
 
 			return ResponseEntity.ok().build();
 		}

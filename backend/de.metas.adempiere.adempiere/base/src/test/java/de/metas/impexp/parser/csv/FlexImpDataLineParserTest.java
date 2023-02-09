@@ -1,4 +1,4 @@
-package de.metas.impexp.parser;
+package de.metas.impexp.parser.csv;
 
 import static de.metas.impexp.format.ImpFormatColumnDataType.Number;
 import static de.metas.impexp.format.ImpFormatColumnDataType.String;
@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import de.metas.impexp.parser.ImpDataCell;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

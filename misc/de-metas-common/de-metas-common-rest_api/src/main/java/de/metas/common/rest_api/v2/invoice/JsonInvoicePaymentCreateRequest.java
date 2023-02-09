@@ -24,6 +24,8 @@ package de.metas.common.rest_api.v2.invoice;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,6 +56,12 @@ public class JsonInvoicePaymentCreateRequest
 			dataType = "java.lang.String")
 	@NonNull
 	String currencyCode;
+	
+	@NonNull
+	@ApiModelProperty(required = true, //
+			value = "Specifies the direction of the payment: Inbound or Outbound.")
+	@Builder.Default
+	JsonPaymentDirection type = JsonPaymentDirection.INBOUND;
 
 	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
@@ -100,9 +108,41 @@ public class JsonInvoicePaymentCreateRequest
 		return getAmount(JsonPaymentAllocationLine::getWriteOffAmt);
 	}
 
+	@JsonIgnore
+	public LocalDate getTransactionDateOr(@NonNull final LocalDate defaultDate)
+	{
+		return transactionDate != null ? transactionDate : defaultDate;
+	}
+
+	@NonNull
 	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
 	{
 		final List<JsonPaymentAllocationLine> lines = getLines();
-		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+		return lines == null 
+				? BigDecimal.ZERO 
+				: lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	@NonNull
+	@JsonIgnore
+	public ImmutableMap<JsonPaymentAllocationLine.InvoiceIdentifier, JsonPaymentAllocationLine> getAggregatedLines()
+	{
+		if (lines == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableListMultimap<JsonPaymentAllocationLine.InvoiceIdentifier, JsonPaymentAllocationLine> invoiceIdentifier2Allocation = lines.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(JsonPaymentAllocationLine::getInvIdentifier, Function.identity()));
+
+		return invoiceIdentifier2Allocation.keySet()
+				.stream()
+				.map(invoiceIdentifier -> {
+					final List<JsonPaymentAllocationLine> lines = invoiceIdentifier2Allocation.get(invoiceIdentifier);
+
+					return lines.stream().reduce(JsonPaymentAllocationLine::aggregate).orElse(null);
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableMap.toImmutableMap(JsonPaymentAllocationLine::getInvIdentifier, Function.identity()));
 	}
 }
