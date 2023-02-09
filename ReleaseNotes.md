@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14500](https://github.com/metasfresh/metasfresh/issues/14500) Credit Limit - Reporting 
   * [#14475](https://github.com/metasfresh/metasfresh/issues/14475) Fix /invoices/payment 
   * [#14408](https://github.com/metasfresh/metasfresh/issues/14408) Delivery Based Credit Limit 
   * [#14469](https://github.com/metasfresh/metasfresh/issues/14469) SAP: mark only imported fields as read-only
