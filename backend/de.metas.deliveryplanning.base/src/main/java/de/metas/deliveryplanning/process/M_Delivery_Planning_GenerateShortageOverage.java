@@ -38,11 +38,10 @@ import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCre
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.handlingunits.inventory.draftlinescreator.ShortageAndOverageStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
-import org.compiere.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
@@ -71,6 +70,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
@@ -78,12 +78,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.document.DocBaseType.MaterialPhysicalInventory;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static de.metas.inventory.AggregationType.SINGLE_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_InventoryOverageDocument;
@@ -244,7 +243,7 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		return InventoryLinesCreationCtx.builder()
 				.inventory(inventoryRepository.getById(inventoryId))
 				.inventoryRepo(inventoryRepository)
-				.inventoryLineAggregator(InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator.INSTANCE)
+				.inventoryLineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(SINGLE_HU))
 				.strategy(strategy)
 				.build();
 	}
