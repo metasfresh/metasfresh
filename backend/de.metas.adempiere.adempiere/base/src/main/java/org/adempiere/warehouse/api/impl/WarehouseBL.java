@@ -258,7 +258,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final ImmutableSet<WarehouseId> warehouseIds = warehouseDAO.retrieveWarehouseWithLocation(oldLocationId);
 
-		for (final WarehouseId warehouseId : warehouseIds) 
+		for (final WarehouseId warehouseId : warehouseIds)
 		{
 			updateWarehouseLocation(warehouseId, newLocationId);
 		}
