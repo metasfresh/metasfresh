@@ -1643,8 +1643,6 @@ public class CalloutOrder extends CalloutEngine
 				{
 					final BPartnerLocationAndCaptureId warehouseBPLocationId = Services.get(IWarehouseDAO.class).getWarehouseLocationById(warehouseId);
 
-					final BPartnerId warehouseBPartnerId = BPartnerId.ofRepoIdOrNull(warehouse.getC_BPartner_ID());
-
 					OrderDocumentLocationAdapterFactory
 							.deliveryLocationAdapter(order)
 							.setFrom(DocumentLocation.ofBPartnerLocationAndCaptureId(warehouseBPLocationId));
