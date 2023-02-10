@@ -606,10 +606,14 @@ public class C_Invoice_Candidate_StepDef
 			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
 			{
 				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+				final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.extractIdentifiers(invoiceCandIdentifier)
+						.stream()
+						.map(invoiceCandTable::get)
+						.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+						.map(InvoiceCandidateId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
 
-				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
-				invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 			}
 		}
 	}
@@ -675,9 +679,9 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-							+ "**tableRow:**\n{}\n"
-							+ "**all candidates:**\n{}",
-					tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
+																   + "**tableRow:**\n{}\n"
+																   + "**all candidates:**\n{}",
+														   tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
 			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateUpdated(tableRow), logContext);
 		}
 	}
@@ -908,12 +912,12 @@ public class C_Invoice_Candidate_StepDef
 		{
 			final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
 			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-							+ "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-							+ "**query result:**\n{}\n"
-							+ "**all candidates:**\n{}",
-					row, candidatesQuery,
-					candidatesQuery.list(),
-					Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
+																   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
+																   + "**query result:**\n{}\n"
+																   + "**all candidates:**\n{}",
+														   row, candidatesQuery,
+														   candidatesQuery.list(),
+														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
 			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery), logContext);
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -1053,7 +1057,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
-						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
 			}
 		}
 
@@ -1064,7 +1068,7 @@ public class C_Invoice_Candidate_StepDef
 			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) != 0)
 			{
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
-						invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
 			}
 		}
 
@@ -1205,8 +1209,8 @@ public class C_Invoice_Candidate_StepDef
 		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
-				new ArrayList<>(),
-				(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
+																	new ArrayList<>(),
+																	(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
 
 		//query by id
 		final String invCandDetails = invCandidateDetailList.get(0);
@@ -1243,7 +1247,7 @@ public class C_Invoice_Candidate_StepDef
 			final int timeoutSec) throws Throwable
 	{
 		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
-				+ "Error message: {}", timeoutSec, throwable.getMessage());
+							+ "Error message: {}", timeoutSec, throwable.getMessage());
 
 		final String invoiceCandIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 
