@@ -230,6 +230,41 @@ final class DeliveryPlanningGenerateProcessesHelper
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
 		}
 
+		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(shipmentInfo.getDeliveryPlanningId()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	public ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = getReceiptInfoIfIncomingType(deliveryPlanningId);
+		if (!optionalDeliveryPlanningReceipt.isPresent())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an incoming delivery planning");
+		}
+
+		return checkEligibleToCreateReceipt(optionalDeliveryPlanningReceipt.get());
+	}
+
+	private ProcessPreconditionsResolution checkEligibleToCreateReceipt(final DeliveryPlanningReceiptInfo receiptInfo)
+	{
+		if (receiptInfo.isReceived())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Already received");
+		}
+		if (receiptInfo.getPurchaseOrderId() == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
+		}
+
+		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(receiptInfo.getDeliveryPlanningId()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

@@ -711,4 +711,9 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.getShipmentInfosByOrderLineIds(salesOrderLineIds);
 	}
 
+	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+
+	}
 }

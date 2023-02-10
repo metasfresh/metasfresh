@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
+import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
@@ -580,5 +581,13 @@ public class DeliveryPlanningRepository
 				.addFilter(selectedDeliveryPlanningsFilter)
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+	}
+
+	public boolean hasCompleteDeliveryInstruction(final DeliveryPlanningId deliveryPlanningId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.anyMatch();
 	}
 }
