@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14508](https://github.com/metasfresh/metasfresh/issues/14508) Create Cucumber for accounting 
   * [#14492](https://github.com/metasfresh/metasfresh/issues/14492) Delivery Planning - Shortage and Overage
   * [#14500](https://github.com/metasfresh/metasfresh/issues/14500) Credit Limit - Reporting
   * [#14470](https://github.com/metasfresh/metasfresh/issues/14470) Inventory management: Add Process To Move CUQY To another Location
