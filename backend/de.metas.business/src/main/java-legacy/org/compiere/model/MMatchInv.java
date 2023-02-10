@@ -45,7 +45,6 @@ import java.util.Properties;
  *         <li>BF [ 1926113 ] MMatchInv.getNewerDateAcct() should work in trx
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Bayu Cahya, Sistematika
  *         <li>BF [ 2240484 ] Re MatchingPO, MMatchPO doesn't contains Invoice info
  *
@@ -106,18 +105,6 @@ public class MMatchInv extends X_M_MatchInv
 
 		return true;
 	}
-
-	@Override
-	protected boolean afterSave(final boolean newRecord, final boolean success)
-	{
-		// shall not happen (legacy)
-		if (!success)
-		{
-			return false;
-		}
-
-		return success;
-	}	// afterSave
 
 	private Timestamp getNewerDateAcct()
 	{

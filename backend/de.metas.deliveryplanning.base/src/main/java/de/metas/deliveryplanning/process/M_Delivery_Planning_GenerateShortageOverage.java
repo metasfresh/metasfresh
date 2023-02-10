@@ -32,6 +32,7 @@ import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
@@ -41,10 +42,11 @@ import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregato
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.handlingunits.inventory.draftlinescreator.ShortageAndOverageStrategy;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InOut;
+import org.compiere.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impexp.InventoryImportProcess;
@@ -106,6 +108,7 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
 	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -186,13 +189,13 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		final InOutId inOutId = receiptInfo.getReceiptId();
 		Check.assumeNotNull(inOutId, "InOutId shall be set, because of isReceived() check in preconditions");
 
-		final I_M_InOut inOutRecord = load(inOutId, I_M_InOut.class);
-		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOutRecord);
-		if(inOutLines.size() == 0)
+		final I_M_InOut inOutRecord = inOutDAO.getById(inOutId);
+		final Set <InOutAndLineId> inOutLinesIds = inOutDAO.retrieveLinesForInOutId(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
+		if(inOutLinesIds.size() == 0)
 		{
 			throw new AdempiereException("No receipt lines found");
 		}
-		if(inOutLines.size() > 1)
+		if(inOutLinesIds.size() > 1)
 		{
 			throw new AdempiereException("More than 1 receipt line exists");
 		}
@@ -206,18 +209,19 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		saveRecord(inventoryRecord);
 		logger.trace("Insert inventory - {}", inventoryRecord);
 
-		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), inOutLines.get(0));
+		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), CollectionUtils.singleElement(inOutLinesIds).getInOutLineId().getRepoId());
 
 		return inventoryRecord;
 	}
 
-	private void createInventoryLine(@NonNull final InventoryId inventoryId, @NonNull final I_M_InOutLine inOutLineRecord)
+	private void createInventoryLine(@NonNull final InventoryId inventoryId, final int inOutLineId)
 	{
-		final TableRecordReference mInOutLineTableRecordReference = TableRecordReference.of(inOutLineRecord);
+		final TableRecordReference mInOutLineTableRecordReference = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineId);
 		final Set<TableRecordReference> mInOutLineTableRecordReferenceSet = Collections.singleton(mInOutLineTableRecordReference);
 		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsMultimap = huAssignmentDAO.retrieveHUsByRecordRefs(mInOutLineTableRecordReferenceSet);
 		final Collection<HuId> huIds = huIdsMultimap.get(mInOutLineTableRecordReference);
-		final I_M_HU huRecord = load(CollectionUtils.singleElement(huIds), I_M_HU.class);
+		final I_M_HU huRecord = handlingUnitsDAO.getById(CollectionUtils.singleElement(huIds));
+
 
 		final ShortageAndOverageStrategy shortageAndOverageStrategy = HUsForInventoryStrategies.shortageAndOverage()
 				.huForInventoryLineFactory(huForInventoryLineFactory)
