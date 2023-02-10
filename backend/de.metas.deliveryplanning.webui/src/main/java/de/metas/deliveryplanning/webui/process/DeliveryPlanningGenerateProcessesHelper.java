@@ -219,7 +219,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		return checkEligibleToCreateShipment(optionalShipmentInfo.get());
 	}
 
-	private ProcessPreconditionsResolution checkEligibleToCreateShipment(final DeliveryPlanningShipmentInfo shipmentInfo)
+	private ProcessPreconditionsResolution checkEligibleToCreateShipment(@NonNull final DeliveryPlanningShipmentInfo shipmentInfo)
 	{
 		if (shipmentInfo.isShipped())
 		{
@@ -249,7 +249,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		return checkEligibleToCreateReceipt(optionalDeliveryPlanningReceipt.get());
 	}
 
-	private ProcessPreconditionsResolution checkEligibleToCreateReceipt(final DeliveryPlanningReceiptInfo receiptInfo)
+	private ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningReceiptInfo receiptInfo)
 	{
 		if (receiptInfo.isReceived())
 		{
