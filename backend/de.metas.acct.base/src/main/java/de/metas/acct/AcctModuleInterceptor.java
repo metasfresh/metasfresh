@@ -23,6 +23,7 @@ import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.elementvalue.MElementValueTreeSupport;
 import de.metas.impexp.processing.IImportProcessFactory;
@@ -80,6 +81,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
 
 	private final ICostElementRepository costElementRepo;
+	private final ICostingService costDetailService;
 	private final TreeNodeService treeNodeService;
 	private final ProductActivityProvider productActivityProvider;
 
@@ -87,10 +89,12 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 	public AcctModuleInterceptor(
 			@NonNull final ICostElementRepository costElementRepo,
+			@NonNull final ICostingService costDetailService,
 			@NonNull final TreeNodeService treeNodeService,
 			@NonNull final ProductActivityProvider productActivityProvider)
 	{
 		this.costElementRepo = costElementRepo;
+		this.costDetailService = costDetailService;
 		this.treeNodeService = treeNodeService;
 		this.productActivityProvider = productActivityProvider;
 	}
@@ -153,7 +157,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		//
 		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(postingService, factAcctDAO));
+		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(costDetailService, postingService, factAcctDAO));
 		//
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution());
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine());

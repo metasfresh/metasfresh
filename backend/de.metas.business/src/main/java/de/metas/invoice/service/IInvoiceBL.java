@@ -37,6 +37,7 @@ import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -382,4 +383,6 @@ public interface IInvoiceBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
 
 	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	Instant getDateAcct(InvoiceId invoiceId);
 }

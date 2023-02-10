@@ -21,7 +21,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -67,11 +66,8 @@ public class M_InOut
 		}
 	}
 
-	/**
-	 * Reverse {@link I_M_MatchInv} assignments.
-	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void removeMatchInvAssignments(final I_M_InOut inoutRecord)
+	public void deleteMatchInvs(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{

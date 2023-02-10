@@ -49,7 +49,6 @@ import de.metas.logging.LogManager;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -2274,19 +2273,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
-		{
-			if (matchPO.getC_InvoiceLine_ID() <= 0)
-			{
-				matchPO.setProcessed(false);
-				InterfaceWrapperHelper.delete(matchPO);
-			}
-			else
-			{
-				matchPO.setM_InOutLine_ID(-1);
-				InterfaceWrapperHelper.save(matchPO);
-			}
-		}
+		Services.get(IMatchPOBL.class).unlink(InOutId.ofRepoId(getM_InOut_ID()));
 	}
 
 	@Override

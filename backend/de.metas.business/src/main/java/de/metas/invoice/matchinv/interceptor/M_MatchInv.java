@@ -22,40 +22,49 @@ package de.metas.invoice.matchinv.interceptor;
  * #L%
  */
 
-
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-
 /**
- *
  * @author ts
- *
  */
 @Interceptor(I_M_MatchInv.class)
 @Component
 public class M_MatchInv
 {
-	/**
-	 * Note that we need the C_Invoice_ID for be set, because in the "Eingansrechnung" (PO-Invoice) window, the invoice lines are in an included tab, so the matchInv tab is a subtab of the C_Invoice
-	 * tab.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID)
-	public void updateC_Invoice_ID(final I_M_MatchInv matchInv)
+	private final IMatchPOBL matchPOBL = Services.get(IMatchPOBL.class);
+	private final MatchInvoiceService matchInvoiceService;
+
+	public M_MatchInv(
+			@NonNull final MatchInvoiceService matchInvoiceService)
 	{
-		final int invoiceId;
-		if (matchInv.getC_InvoiceLine_ID() > 0)
-		{
-			invoiceId = matchInv.getC_InvoiceLine().getC_Invoice_ID();
-		}
-		else
-		{
-			invoiceId = 0;
-		}
-		matchInv.setC_Invoice_ID(invoiceId);
+		this.matchInvoiceService = matchInvoiceService;
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void afterDelete(final I_M_MatchInv matchInv)
+	{
+		clearInvoiceLineFromMatchPOs(matchInv);
+	}
+
+	private void clearInvoiceLineFromMatchPOs(final I_M_MatchInv matchInv)
+	{
+		final OrderLineId orderLineId = matchInvoiceService.getOrderLineId(matchInv).orElse(null);
+		if (orderLineId == null)
+		{
+			return;
+		}
+
+		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID());
+		matchPOBL.unlink(orderLineId, invoiceLineId);
+	}
 }

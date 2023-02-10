@@ -43,7 +43,6 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
@@ -1460,19 +1459,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			// for (int i = 0; i < mInv.length; i++)
 			// mInv[i].delete(true);
 
-			for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByInvoiceId(InvoiceId.ofRepoId(getC_Invoice_ID())))
-			{
-				if (matchPO.getM_InOutLine_ID() <= 0)
-				{
-					matchPO.setProcessed(false);
-					InterfaceWrapperHelper.delete(matchPO);
-				}
-				else
-				{
-					matchPO.setC_InvoiceLine_ID(-1);
-					InterfaceWrapperHelper.save(matchPO);
-				}
-			}
+			Services.get(IMatchPOBL.class).unlink(InvoiceId.ofRepoId(getC_Invoice_ID()));
 		}
 		//
 		load(get_TrxName());    // reload allocation reversal info

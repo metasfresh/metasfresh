@@ -125,6 +125,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -1952,4 +1953,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return Services.get(IInvoiceLineBL.class).getQtyInvoicedStockUOM(invoiceLine);
 	}
 
+	@Override
+	public Instant getDateAcct(@NonNull final InvoiceId invoiceId)
+	{
+		return getById(invoiceId).getDateAcct().toInstant();
+	}
 }

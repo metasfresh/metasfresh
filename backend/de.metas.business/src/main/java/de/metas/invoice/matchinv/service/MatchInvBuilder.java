@@ -1,5 +1,6 @@
 package de.metas.invoice.matchinv.service;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -10,7 +11,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -20,11 +20,10 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * Helper class used to create a quantity matching between {@link I_C_InvoiceLine} and {@link I_M_InOutLine} (i.e. {@link I_M_MatchInv}).
@@ -38,12 +37,13 @@ public class MatchInvBuilder
 	// services
 	private final MatchInvoiceService matchInvoiceService;
 	private final IInvoiceBL invoiceBL;
+	private final IProductBL productBL;
 
 	//
 	// Parameters
 	private I_C_InvoiceLine _invoiceLine;
 	private I_M_InOutLine _inoutLine;
-	private Timestamp _dateTrx;
+	private Instant _dateTrx;
 	private StockQtyAndUOMQty _qtyToMatchExact;
 	private boolean _considerQtysAlreadyMatched = true;
 	private boolean _allowQtysOfOppositeSigns = false;
@@ -57,10 +57,12 @@ public class MatchInvBuilder
 
 	MatchInvBuilder(
 			@NonNull final MatchInvoiceService matchInvoiceService,
-			@NonNull final IInvoiceBL invoiceBL)
+			@NonNull final IInvoiceBL invoiceBL,
+			@NonNull final IProductBL productBL)
 	{
 		this.matchInvoiceService = matchInvoiceService;
 		this.invoiceBL = invoiceBL;
+		this.productBL = productBL;
 	}
 
 	/**
@@ -106,7 +108,6 @@ public class MatchInvBuilder
 		final ProductId inoutLineProductId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
 		if (!ProductId.equals(invoiceLineProductId, inoutLineProductId))
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
 			final String invoiceProductName = productBL.getProductValueAndName(invoiceLineProductId);
 			final String inoutProductName = productBL.getProductValueAndName(inoutLineProductId);
 			throw new AdempiereException("@Invalid@ @M_Product_ID@"
@@ -134,15 +135,24 @@ public class MatchInvBuilder
 		matchInv.setM_AttributeSetInstance_ID(inoutLine.getM_AttributeSetInstance_ID());
 
 		//
-		// Set DateTrx if specified.
-		// If not, it will be automatically set on save.
-		final Date dateTrx = getDateTrx();
+		// Set DateTrx
+		final Instant dateTrx = getDateTrx();
 		if (dateTrx != null)
 		{
-			matchInv.setDateTrx(TimeUtil.asTimestamp(dateTrx));
+			matchInv.setDateTrx(Timestamp.from(dateTrx));
+		}
+		if (matchInv.getDateTrx() == null)
+		{
+			matchInv.setDateTrx(SystemTime.asDayTimestamp());
 		}
 
-		// NOTE: DateAcct will be automatically set on save.
+		//
+		// Set Acct Date
+		if (matchInv.getDateAcct() == null)
+		{
+			final Instant dateAcct = matchInvoiceService.computeNewerDateAcct(matchInv);
+			matchInv.setDateAcct(Timestamp.from(dateAcct));
+		}
 
 		matchInv.setProcessed(true);
 		InterfaceWrapperHelper.save(matchInv);
@@ -400,12 +410,12 @@ public class MatchInvBuilder
 	public MatchInvBuilder dateTrx(final Timestamp dateTrx)
 	{
 		assertNotBuilt();
-		this._dateTrx = dateTrx;
+		this._dateTrx = dateTrx != null ? dateTrx.toInstant() : null;
 		return this;
 	}
 
 	@Nullable
-	private Timestamp getDateTrx() {return _dateTrx;}
+	private Instant getDateTrx() {return _dateTrx;}
 
 	/**
 	 * Enables matching creation to be skipped if there exists at least one matching between invoice line and inout line.

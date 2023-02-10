@@ -16,6 +16,7 @@ import org.compiere.model.I_R_Request;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -180,4 +181,6 @@ public interface IInOutBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
 
 	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
+
+	Instant getDateAcct(InOutId inoutId);
 }

@@ -66,6 +66,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Comparator;
@@ -641,5 +642,11 @@ public class InOutBL implements IInOutBL
 		}
 
 		return conversionCtx;
+	}
+
+	@Override
+	public Instant getDateAcct(@NonNull final InOutId inoutId)
+	{
+		return getById(inoutId).getDateAcct().toInstant();
 	}
 }

@@ -6,9 +6,12 @@ import com.google.common.collect.Maps;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -23,6 +26,7 @@ import org.compiere.model.I_M_MatchInv;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +40,7 @@ public class MatchInvoiceService
 
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final MatchInvoiceRepository matchInvoiceRepository;
 
 	public MatchInvoiceService(@NonNull final MatchInvoiceRepository matchInvoiceRepository)
@@ -45,7 +50,7 @@ public class MatchInvoiceService
 
 	public MatchInvBuilder newMatchInvBuilder()
 	{
-		return new MatchInvBuilder(this, invoiceBL);
+		return new MatchInvBuilder(this, invoiceBL, productBL);
 	}
 
 	public I_M_MatchInv getById(final MatchInvId matchInvId) {return matchInvoiceRepository.getById(matchInvId);}
@@ -178,4 +183,27 @@ public class MatchInvoiceService
 	{
 		return matchInvoiceRepository.hasMatchInvs(invoiceLineId, inoutLineId);
 	}
+
+	Instant computeNewerDateAcct(final I_M_MatchInv matchInv)
+	{
+		final Instant invoiceDateAcct = invoiceBL.getDateAcct(InvoiceId.ofRepoId(matchInv.getC_Invoice_ID()));
+		final Instant inoutDateAcct = inoutBL.getDateAcct(InOutId.ofRepoId(matchInv.getM_InOut_ID()));
+
+		return invoiceDateAcct.isAfter(inoutDateAcct) ? invoiceDateAcct : inoutDateAcct;
+	}
+
+	public Optional<OrderLineId> getOrderLineId(final I_M_MatchInv matchInv)
+	{
+		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID());
+		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(invoiceLineId);
+		OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(matchInv.getM_InOutLine_ID());
+			final I_M_InOutLine ioLine = inoutBL.getLineByIdInTrx(inoutLineId);
+			orderLineId = OrderLineId.ofRepoIdOrNull(ioLine.getC_OrderLine_ID());
+		}
+		return Optional.ofNullable(orderLineId);
+	}
+
 }
