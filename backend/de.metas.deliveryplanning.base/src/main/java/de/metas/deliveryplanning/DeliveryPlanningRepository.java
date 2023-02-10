@@ -582,7 +582,7 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
 	}
 
-	public boolean hasCompleteDeliveryInstruction(final DeliveryPlanningId deliveryPlanningId)
+	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
