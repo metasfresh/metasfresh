@@ -14,8 +14,7 @@ BEGIN
     UPDATE ad_printformatitem_trl p_trl
     SET IsTranslated = e_trl.IsTranslated,
         printname    = e_trl.printname,
-        Updated      = NOW(),
-        UpdatedBy    = 99
+        Updated      = e_trl.updated
 
     FROM AD_Element_Trl_Effective_v e_trl
     WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
@@ -25,9 +24,8 @@ BEGIN
                  FROM ad_column c
                           JOIN ad_printformatitem p ON c.ad_column_id = p.ad_column_id
                  WHERE c.ad_element_id = e_trl.ad_element_id
-                   AND p_trl.ad_printformatitem_id = p.ad_printformatitem_id
-                   AND (COALESCE(p_trl.IsTranslated, '') NOT LIKE COALESCE(e_trl.IsTranslated, '')
-                     OR COALESCE(p_trl.printname, '') NOT LIKE COALESCE(e_trl.printname, '')));
+                   AND p_trl.ad_printformatitem_id = p.ad_printformatitem_id)
+      AND p_trl.updated <> e_trl.updated;
 
 
     GET DIAGNOSTICS update_count = ROW_COUNT;
@@ -38,19 +36,17 @@ BEGIN
         UPDATE ad_printformatitem p
         SET Name      = e_trl.Name,
             printname = e_trl.printname,
-            Updated   = NOW(),
-            UpdatedBy = 99
+            Updated   = e_trl.updated
 
         FROM AD_Element_Trl_Effective_v e_trl
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
-          AND isbasead_language(e_trl.ad_language) = 'Y'
           AND EXISTS(SELECT 1
                      FROM AD_Column c
                      WHERE c.ad_element_id = e_trl.ad_element_id
-                       AND c.ad_column_id = p.ad_column_id
-                       AND (COALESCE(p.Name, '') NOT LIKE COALESCE(e_trl.Name, '')
-                         OR COALESCE(p.printname, '') NOT LIKE COALESCE(e_trl.printname, '')));
+                       AND c.ad_column_id = p.ad_column_id)
+          AND isbasead_language(e_trl.ad_language) = 'Y'
+          AND p.updated <> e_trl.updated;
 
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;

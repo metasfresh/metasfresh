@@ -16,8 +16,7 @@ BEGIN
         Name         = e_trl.Name,
         Description  = e_trl.Description,
         Help         = e_trl.help,
-        Updated      = NOW(),
-        UpdatedBy    = 99
+        Updated      = e_trl.updated
 
     FROM AD_Element_Trl_Effective_v e_trl
     WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
@@ -26,11 +25,8 @@ BEGIN
       AND EXISTS(SELECT 1
                  FROM ad_process_para p
                  WHERE p.ad_element_id = e_trl.ad_element_id
-                   AND p.ad_process_para_id = p_trl.ad_process_para_id
-                   AND (p_trl.IsTranslated NOT LIKE e_trl.IsTranslated
-                     OR (COALESCE(p_trl.Name, '') NOT LIKE COALESCE(e_trl.Name, ''))
-                     OR (COALESCE(p_trl.Description, '') NOT LIKE COALESCE(e_trl.Description, ''))
-                     OR (COALESCE(p_trl.Help, '') NOT LIKE COALESCE(e_trl.Help, ''))));
+                   AND p.ad_process_para_id = p_trl.ad_process_para_id)
+      AND p_trl.updated <> e_trl.updated;
 
     GET DIAGNOSTICS update_count = ROW_COUNT;
     RAISE NOTICE 'Update % AD_Process_Para_Trl rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
@@ -41,21 +37,14 @@ BEGIN
         SET Name        = e_trl.Name,
             Description = e_trl.Description,
             Help        = e_trl.help,
-            Updated     = NOW(),
-            UpdatedBy   = 99
+            Updated     = e_trl.updated
 
         FROM AD_Element_Trl_Effective_v e_trl
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
           AND p.ad_element_id = e_trl.ad_element_id
           AND isbasead_language(e_trl.ad_language) = 'Y'
-          AND EXISTS(SELECT 1
-                     FROM AD_Process_Para_Trl p_trl
-                     WHERE p_trl.ad_process_para_id = p.ad_process_para_id
-                       AND p_trl.ad_language = e_trl.ad_language
-                       AND (COALESCE(p.Name, '') NOT LIKE COALESCE(e_trl.Name, '')
-                         OR COALESCE(p.Description, '') NOT LIKE COALESCE(e_trl.Description, '')
-                         OR COALESCE(p.Help, '') NOT LIKE COALESCE(e_trl.Help, '')));
+          AND p.updated <> e_trl.updated;
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;
         RAISE NOTICE 'Update % AD_Process_Para rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;

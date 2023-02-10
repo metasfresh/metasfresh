@@ -16,9 +16,7 @@ BEGIN
         Name         = e_trl.Name,
         Description  = e_trl.Description,
         Help         = e_trl.Help,
-        Updated      = NOW(),
-        UpdatedBy    = 99
-
+        Updated      = e_trl.updated
     FROM AD_Element_Trl_Effective_v e_trl
     WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
       AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
@@ -26,11 +24,8 @@ BEGIN
       AND EXISTS(SELECT 1
                  FROM ad_window w
                  WHERE w.ad_element_id = e_trl.ad_element_id
-                   AND w.ad_window_id = w_trl.ad_window_id
-                   AND ((COALESCE(w_trl.Name, '') NOT LIKE COALESCE(e_trl.Name, ''))
-                     OR (COALESCE(w_trl.Description, '') NOT LIKE COALESCE(e_trl.Description, ''))
-                     OR (COALESCE(w_trl.Help, '') NOT LIKE COALESCE(e_trl.Help, ''))
-                     OR w_trl.IsTranslated NOT LIKE e_trl.IsTranslated));
+                   AND w.ad_window_id = w_trl.ad_window_id)
+      AND w_trl.updated <> e_trl.updated;
 
 
     GET DIAGNOSTICS update_count = ROW_COUNT;
@@ -41,21 +36,14 @@ BEGIN
         SET Name        = e_trl.Name,
             Description = e_trl.Description,
             Help        = e_trl.Help,
-            Updated     = NOW(),
-            UpdatedBy   = 99
+            Updated     = e_trl.updated
 
         FROM AD_Element_Trl_Effective_v e_trl
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
           AND w.ad_element_id = e_trl.ad_element_id
           AND isbasead_language(e_trl.ad_language) = 'Y'
-          AND EXISTS(SELECT 1
-                     FROM Ad_Window_Trl w_trl
-                     WHERE w_trl.ad_window_id = w.ad_window_id
-                       AND w_trl.ad_language = e_trl.ad_language
-                       AND (COALESCE(w.Name, '') NOT LIKE COALESCE(e_trl.Name, '')
-                         OR COALESCE(w.Description, '') NOT LIKE COALESCE(e_trl.Description, '')
-                         OR COALESCE(w.Help, '') NOT LIKE COALESCE(e_trl.Help, '')));
+          AND w.updated <> e_trl.updated;
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;
         RAISE NOTICE 'Update % AD_Window rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;

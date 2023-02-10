@@ -26,30 +26,14 @@ BEGIN
         po_printname            = e_trl.po_printname,
         po_description          = e_trl.po_description,
         po_help                 = e_trl.po_help,
-        Updated                 = NOW(),
-        UpdatedBy               = 99
+        Updated                 = e_trl.updated
+
     FROM AD_Element_Trl_Effective_v e_trl
     WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
       AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
       AND e.AD_Element_ID = e_trl.AD_Element_ID
       AND isbasead_language(e_trl.ad_language) = 'Y'
-      AND EXISTS(SELECT 1
-                 FROM ad_element_trl el_trl
-                 WHERE el_trl.ad_element_id = e_trl.ad_element_id
-                   AND el_trl.ad_language = e_trl.ad_language
-                   AND ((COALESCE(e.name, '') NOT LIKE COALESCE(e_trl.name, ''))
-                     OR (COALESCE(e.printname, '') NOT LIKE COALESCE(e_trl.printname, ''))
-                     OR (COALESCE(e.description, '') NOT LIKE COALESCE(e_trl.description, ''))
-                     OR (COALESCE(e.help, '') NOT LIKE COALESCE(e_trl.help, ''))
-                     OR (COALESCE(e.commitwarning, '') NOT LIKE COALESCE(e_trl.commitwarning, ''))
-                     OR (COALESCE(e.webui_namebrowse, '') NOT LIKE COALESCE(e_trl.webui_namebrowse, ''))
-                     OR (COALESCE(e.webui_namenew, '') NOT LIKE COALESCE(e_trl.webui_namenew, ''))
-                     OR (COALESCE(e.webui_namenewbreadcrumb, '') NOT LIKE COALESCE(e_trl.webui_namenewbreadcrumb, ''))
-                     OR (COALESCE(e.po_name, '') NOT LIKE COALESCE(e_trl.po_name, ''))
-                     OR (COALESCE(e.po_printname, '') NOT LIKE COALESCE(e_trl.po_printname, ''))
-                     OR (COALESCE(e.po_description, '') NOT LIKE COALESCE(e_trl.po_description, ''))
-                     OR (COALESCE(e.po_help, '') NOT LIKE COALESCE(e_trl.po_help, ''))));
-
+      AND e.updated <> e_trl.updated;
     --
     GET DIAGNOSTICS update_count = ROW_COUNT;
     RAISE NOTICE 'Update % AD_Element rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
