@@ -1,22 +1,9 @@
-package de.metas.invoice.service.impl;
+package de.metas.invoice.matchinv.service;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.util.TimeUtil;
-
-import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvBuilder;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.material.MovementType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -24,53 +11,85 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Helper class used to create a quantity matching between {@link I_C_InvoiceLine} and {@link I_M_InOutLine} (i.e. {@link I_M_MatchInv}).
  *
  * @author tsa
  */
-/* package */class MatchInvBuilder implements IMatchInvBuilder
+@ToString
+public class MatchInvBuilder
 {
+	//
 	// services
-	// private static final transient Logger logger = CLogMgt.getLogger(MatchInvBuilder.class);
-	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
-	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final MatchInvoiceService matchInvoiceService;
+	private final IInvoiceBL invoiceBL;
 
+	//
 	// Parameters
-	private Object _contextProvider;
 	private I_C_InvoiceLine _invoiceLine;
 	private I_M_InOutLine _inoutLine;
-	private Date _dateTrx;
+	private Timestamp _dateTrx;
 	private StockQtyAndUOMQty _qtyToMatchExact;
 	private boolean _considerQtysAlreadyMatched = true;
 	private boolean _allowQtysOfOppositeSigns = false;
 	private boolean _skipIfMatchingsAlreadyExist = false;
 
+	//
 	// Status
 	private boolean _built = false;
+	private Boolean _materialReturns = null; // lazy
+	private Boolean _creditMemoInvoice = null; // lazy
 
-	@Override
+	MatchInvBuilder(
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final IInvoiceBL invoiceBL)
+	{
+		this.matchInvoiceService = matchInvoiceService;
+		this.invoiceBL = invoiceBL;
+	}
+
+	/**
+	 * Creates and process the {@link I_M_MatchInv}.
+	 *
+	 * @return <ul>
+	 * <li>true if the {@link I_M_MatchInv} was created and processed.
+	 * <li>false if there was NO need to create the matching.
+	 * </ul>
+	 */
 	public boolean build()
 	{
 		markBuilt();
 
 		if (isSkipBecauseMatchingsAlreadyExist())
 		{
-			return noMatchInvNeeded();
+			return false;
 		}
 
 		final StockQtyAndUOMQty qtyToMatch = calculateQtyToMatch();
 		if (qtyToMatch.signum() == 0)
 		{
-			return noMatchInvNeeded();
+			return false;
 		}
 
-		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		final I_M_InOutLine inoutLine = getM_InOutLine();
-		final I_M_InOut inout = inoutLine.getM_InOut();
+		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
+		final I_C_Invoice invoice = getInvoice();
+		final I_M_InOutLine inoutLine = getInOutLine();
+		final I_M_InOut inout = getInOut();
 
 		//
 		// Make sure IsSOTrx matches
@@ -96,11 +115,11 @@ import de.metas.util.Services;
 		}
 
 		// Create the new M_MatchInv record
-		final I_M_MatchInv matchInv = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class, getContextProvider());
+		final I_M_MatchInv matchInv = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class);
 		matchInv.setAD_Org_ID(invoiceLine.getAD_Org_ID());
 		matchInv.setC_Invoice_ID(invoiceLine.getC_Invoice_ID());
 		matchInv.setC_InvoiceLine(invoiceLine);
-		matchInv.setM_InOut_ID(inout.getM_InOut_ID());
+		matchInv.setM_InOut_ID(inoutLine.getM_InOut_ID());
 		matchInv.setM_InOutLine(inoutLine);
 		matchInv.setIsSOTrx(inout.isSOTrx());
 		matchInv.setDocumentNo(inout.getDocumentNo());
@@ -131,111 +150,112 @@ import de.metas.util.Services;
 		return true;
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!_built, "Not already built: {}", this);
 	}
 
-	private final void markBuilt()
+	private void markBuilt()
 	{
 		assertNotBuilt();
 		_built = true;
 	}
 
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	/**
-	 * Convenient method to returned from {@link #build()} when NO {@link I_M_MatchInv} record is needed
-	 *
-	 * @return false
-	 */
-	private final boolean noMatchInvNeeded()
-	{
-		return false;
-	}
-
-	@Override
-	public IMatchInvBuilder setContext(final Object contextProvider)
-	{
-		assertNotBuilt();
-		this._contextProvider = contextProvider;
-		return this;
-	}
-
-	private final Object getContextProvider()
-	{
-		Check.assumeNotNull(_contextProvider, "_contextProvider not null");
-		return _contextProvider;
-	}
-
-	private final String getTrxName()
-	{
-		return InterfaceWrapperHelper.getTrxName(getContextProvider());
-	}
-
-	@Override
-	public IMatchInvBuilder setC_InvoiceLine(final I_C_InvoiceLine invoiceLine)
+	public MatchInvBuilder invoiceLine(final I_C_InvoiceLine invoiceLine)
 	{
 		assertNotBuilt();
 		this._invoiceLine = invoiceLine;
 		return this;
 	}
 
-	private final I_C_InvoiceLine getC_InvoiceLine()
+	private I_C_InvoiceLine getInvoiceLine()
 	{
-		Check.assumeNotNull(_invoiceLine, "_invoiceLine not null");
-		return _invoiceLine;
+		return Check.assumeNotNull(_invoiceLine, "_invoiceLine not null");
 	}
 
-	@Override
-	public IMatchInvBuilder setM_InOutLine(final I_M_InOutLine inoutLine)
+	private InvoiceLineId getInvoiceLineId()
+	{
+		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
+		return InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+	}
+
+	private I_C_Invoice getInvoice()
+	{
+		return getInvoiceLine().getC_Invoice();
+	}
+
+	public MatchInvBuilder inoutLine(final I_M_InOutLine inoutLine)
 	{
 		assertNotBuilt();
 		this._inoutLine = inoutLine;
 		return this;
 	}
 
-	private final I_M_InOutLine getM_InOutLine()
+	private I_M_InOutLine getInOutLine()
 	{
-		Check.assumeNotNull(_inoutLine, "_inoutLine not null");
-		return _inoutLine;
+		return Check.assumeNotNull(_inoutLine, "_inoutLine not null");
 	}
 
-	@Override
-	public IMatchInvBuilder setQtyToMatchExact(final StockQtyAndUOMQty qtyToMatchExact)
+	public InOutLineId getInOutLineId()
+	{
+		return InOutLineId.ofRepoId(getInOutLine().getM_InOutLine_ID());
+	}
+
+	private I_M_InOut getInOut()
+	{
+		final I_M_InOutLine inoutLine = getInOutLine();
+		return inoutLine.getM_InOut();
+	}
+
+	/**
+	 * Set the exact quantity which shall be matched.
+	 * When then quantity to be matched is specified, then the builder:
+	 * <ul>
+	 * <li>will NOT check and validate again previous matched quantities, i.e. {@link #considerQtysAlreadyMatched(boolean)} will be ignored.
+	 * <li>{@link #allowQtysOfOppositeSigns()} will not be considered because makes no sense.
+	 * <li>regular invoice/credit memo and regular inout/material returns will NOT be checked if they are compatible.
+	 * </ul>
+	 */
+	public MatchInvBuilder qtyToMatchExact(final StockQtyAndUOMQty qtyToMatchExact)
 	{
 		assertNotBuilt();
 		this._qtyToMatchExact = qtyToMatchExact;
 		return this;
 	}
 
-	private final StockQtyAndUOMQty getQtyToMatchExact()
+	@Nullable
+	private StockQtyAndUOMQty getQtyToMatchExact()
 	{
 		return _qtyToMatchExact;
 	}
 
-	@Override
-	public IMatchInvBuilder setConsiderQtysAlreadyMatched(final boolean considerQtysAlreadyMatched)
+	/**
+	 * Sets if previous matched quantities shall be considered when calculating how much it can be allocated.
+	 * NOTE:
+	 * <ul>
+	 * <li>by default, this option is enabled
+	 * <li>this option has no effect if the quantity to be matched was specified (see {@link #qtyToMatchExact(StockQtyAndUOMQty)})
+	 * </ul>
+	 */
+	public MatchInvBuilder considerQtysAlreadyMatched(final boolean considerQtysAlreadyMatched)
 	{
 		assertNotBuilt();
 		this._considerQtysAlreadyMatched = considerQtysAlreadyMatched;
 		return this;
 	}
 
-	private final boolean isConsiderQtysAlreadyMatched()
+	private boolean isConsiderQtysAlreadyMatched()
 	{
 		return _considerQtysAlreadyMatched;
 	}
 
-	@Override
-	public IMatchInvBuilder setAllowQtysOfOppositeSigns(final boolean allowQtysOfOppositeSigns)
+	/**
+	 * Enables that "quantity invoiced but not matched" and "quantity shipped/received but not matched" shall be matched when they are of opposite signs.
+	 */
+	public MatchInvBuilder allowQtysOfOppositeSigns()
 	{
 		assertNotBuilt();
-		this._allowQtysOfOppositeSigns = allowQtysOfOppositeSigns;
+		this._allowQtysOfOppositeSigns = true;
 		return this;
 	}
 
@@ -248,7 +268,7 @@ import de.metas.util.Services;
 	{
 		//
 		// Consider the QtyToMatch which was precisely specified.
-		// In this case we are not doing further checkings.
+		// In this case we are not doing further checking.
 		final StockQtyAndUOMQty qtyToMatchExact = getQtyToMatchExact();
 		if (qtyToMatchExact != null)
 		{
@@ -313,7 +333,7 @@ import de.metas.util.Services;
 
 	private StockQtyAndUOMQty getQtyInvoicedNotMatched()
 	{
-		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
+		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
@@ -331,20 +351,19 @@ import de.metas.util.Services;
 		final StockQtyAndUOMQty qtyMatched;
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvDAO.retrieveQtyMatched(invoiceLine);
+			qtyMatched = matchInvoiceService.getQtyMatched(invoiceLine);
 		}
 		else
 		{
 			qtyMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
 		}
 
-		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyInvoiced, qtyMatched);
-		return qtyNotMatched;
+		return StockQtyAndUOMQtys.subtract(qtyInvoiced, qtyMatched);
 	}
 
 	private StockQtyAndUOMQty getQtyMovedNotMatchedInStockUOM()
 	{
-		final I_M_InOutLine inoutLine = getM_InOutLine();
+		final I_M_InOutLine inoutLine = getInOutLine();
 
 		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
 		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
@@ -353,7 +372,7 @@ import de.metas.util.Services;
 				inoutLine.getMovementQty(), productId,
 				inoutLine.getQtyEntered(), uomId);
 
-		// Negate the qtyReceived if this is an material return,
+		// Negate the qtyReceived if this is a material return,
 		// because we want to have the qtyReceived as an absolute value.
 		if (isMaterialReturns())
 		{
@@ -363,7 +382,7 @@ import de.metas.util.Services;
 		final StockQtyAndUOMQty qtyMatched;
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvDAO.retrieveQtysInvoiced(
+			qtyMatched = matchInvoiceService.getQtyMatched(
 					inoutLine,
 					qtyReceived.toZero()/* initialQtys */);
 		}
@@ -372,45 +391,36 @@ import de.metas.util.Services;
 			qtyMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
 		}
 
-		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
-		return qtyNotMatched;
+		return StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 	}
 
-	@Override
-	public IMatchInvBuilder setDateTrx(final Date dateTrx)
+	/**
+	 * Sets DateTrx to be used (optional).
+	 */
+	public MatchInvBuilder dateTrx(final Timestamp dateTrx)
 	{
 		assertNotBuilt();
 		this._dateTrx = dateTrx;
 		return this;
 	}
 
-	private final Timestamp getDateTrx()
-	{
-		return TimeUtil.asTimestamp(_dateTrx);
-	}
+	@Nullable
+	private Timestamp getDateTrx() {return _dateTrx;}
 
-	@Override
-	public IMatchInvBuilder setSkipIfMatchingsAlreadyExist(final boolean skipIfMatchingsAlreadyExist)
+	/**
+	 * Enables matching creation to be skipped if there exists at least one matching between invoice line and inout line.
+	 */
+	public MatchInvBuilder skipIfMatchingsAlreadyExist()
 	{
 		assertNotBuilt();
-		this._skipIfMatchingsAlreadyExist = skipIfMatchingsAlreadyExist;
+		this._skipIfMatchingsAlreadyExist = true;
 		return this;
 	}
 
-	/**
-	 * @return true if {@link #setSkipIfMatchingsAlreadyExist(boolean)} was enabled and we a {@link I_M_MatchInv} already exists.
-	 */
 	private boolean isSkipBecauseMatchingsAlreadyExist()
 	{
-		if (!_skipIfMatchingsAlreadyExist)
-		{
-			return false;
-		}
-
-		return matchInvDAO.hasMatchInvs(getC_InvoiceLine(), getM_InOutLine(), getTrxName());
+		return _skipIfMatchingsAlreadyExist && matchInvoiceService.hasMatchInvs(getInvoiceLineId(), getInOutLineId());
 	}
-
-	private Boolean _creditMemoInvoice = null;
 
 	/**
 	 * @return true if underlying invoice line is part of a credit memo invoice
@@ -419,14 +429,10 @@ import de.metas.util.Services;
 	{
 		if (_creditMemoInvoice == null)
 		{
-			final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-			final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-			_creditMemoInvoice = invoiceBL.isCreditMemo(invoice);
+			_creditMemoInvoice = invoiceBL.isCreditMemo(getInvoice());
 		}
 		return _creditMemoInvoice;
 	}
-
-	private Boolean _materialReturns = null;
 
 	/**
 	 * @return true if underlying inout line is part of a material returns (customer or vendor).
@@ -435,10 +441,8 @@ import de.metas.util.Services;
 	{
 		if (_materialReturns == null)
 		{
-			final I_M_InOutLine inoutLine = getM_InOutLine();
-			final I_M_InOut inout = inoutLine.getM_InOut();
-			final String movementType = inout.getMovementType();
-			_materialReturns = inOutBL.isReturnMovementType(movementType);
+			final I_M_InOut inout = getInOut();
+			_materialReturns = MovementType.isMaterialReturn(inout.getMovementType());
 		}
 		return _materialReturns;
 	}

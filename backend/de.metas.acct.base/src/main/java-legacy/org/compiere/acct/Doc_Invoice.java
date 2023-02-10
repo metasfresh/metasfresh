@@ -32,11 +32,11 @@ import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.MatchInvId;
 import de.metas.invoice.acct.InvoiceAcct;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -82,7 +82,7 @@ import java.util.Set;
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
@@ -202,8 +202,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}    // loadTaxes
 
@@ -667,18 +665,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (line.isItem())  // stockable item
 			{
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine(line,
-						line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as),
-						getCurrencyId(),
-						amtReceived, null,  // DR/CR
-						line.getQtyReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
+						.setAmtSource(getCurrencyId(), amtReceived, null)
+						.setQty(line.getQtyReceivedAbs())
+						.buildAndAdd();
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine(line,
-						line.getAccount(ProductAcctType.P_Expense_Acct, as),
-						getCurrencyId(),
-						amtNotReceived, null,  // DR/CR
-						line.getQtyNotReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
+						.setAmtSource(getCurrencyId(), amtNotReceived, null)
+						.setQty(line.getQtyNotReceivedAbs())
+						.buildAndAdd();
 			}
 			else // service
 			{
@@ -792,18 +792,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (line.isItem())  // stockable item
 			{
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine(line,
-						line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as),
-						getCurrencyId(),
-						null, amtReceived,  // DR/CR
-						line.getQtyReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
+						.setAmtSource(getCurrencyId(), null, amtReceived)
+						.setQty(line.getQtyReceivedAbs())
+						.buildAndAdd();
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine(line,
-						line.getAccount(ProductAcctType.P_Expense_Acct, as),
-						getCurrencyId(),
-						null, amtNotReceived,  // DR/CR
-						line.getQtyNotReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
+						.setAmtSource(getCurrencyId(), null, amtNotReceived)
+						.setQty(line.getQtyNotReceivedAbs())
+						.buildAndAdd();
 			}
 			else // service
 			{
@@ -895,7 +897,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInvoiceLines(invoiceLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 

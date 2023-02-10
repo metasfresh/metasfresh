@@ -1,4 +1,4 @@
-package de.metas.invoice.interceptor;
+package de.metas.invoice.matchinv.interceptor;
 
 /*
  * #%L

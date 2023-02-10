@@ -75,7 +75,7 @@ public final class Fact
 	}
 
 	// services
-	static final transient Logger log = LogManager.getLogger(Fact.class);
+	static final Logger log = LogManager.getLogger(Fact.class);
 
 	/**
 	 * Document
@@ -176,11 +176,13 @@ public final class Fact
 	 * @param qty        quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
 	 * @return Fact Line or null
 	 */
-	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
+	public FactLine createLine(
+			@Nullable final DocLine<?> docLine,
+			@NonNull final MAccount account,
 			final CurrencyId currencyId,
-			final BigDecimal debitAmt, final BigDecimal creditAmt,
-			final BigDecimal qty)
+			@Nullable final BigDecimal debitAmt,
+			@Nullable final BigDecimal creditAmt,
+			@Nullable final BigDecimal qty)
 	{
 		return createLine()
 				.setDocLine(docLine)

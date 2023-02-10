@@ -10,7 +10,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costrevaluation.CostRevaluationLineId;
-import de.metas.invoice.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.money.CurrencyId;
 import de.metas.order.MatchPOId;
 import de.metas.organization.OrgId;

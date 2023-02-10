@@ -98,6 +98,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.TableRecordMDC;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -2119,7 +2120,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				if (inout != null)
 				{
-					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					if (MovementType.isMaterialReturn(inout.getMovementType()))
 					{
 						qty = qty.negate();
 					}

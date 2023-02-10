@@ -29,8 +29,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -62,7 +62,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
@@ -424,7 +424,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInOutLines(inoutLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInOutLineIds(inoutLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 

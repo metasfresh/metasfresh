@@ -1,4 +1,4 @@
-package de.metas.invoice;
+package de.metas.invoice.matchinv;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

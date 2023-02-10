@@ -28,8 +28,8 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.compensationGroup.Group;
@@ -48,7 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
@@ -64,7 +63,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(DocLine_Invoice.class);
-	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -75,7 +74,8 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	private BigDecimal _includedTaxAmt = BigDecimal.ZERO;
-	private BigDecimal _qtyReceived = null;
+	private Quantity _qtyInvoiced = null; // lazy
+	private Quantity _qtyReceivedInStockUOM = null; // lazy
 
 	private final String SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema = "M_Product_Acct_Consider_CompensationSchema";
 
@@ -153,14 +153,14 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	 *
 	 * @return quantity (absolute value)
 	 */
-	private BigDecimal adjustQtySignByCreditMemoAndSOTrx(final BigDecimal qty)
+	private Quantity adjustQtySignByCreditMemoAndSOTrx(final Quantity qty)
 	{
 		if (qty == null || qty.signum() == 0)
 		{
 			return qty;
 		}
 
-		BigDecimal qtyAdjusted = qty;
+		Quantity qtyAdjusted = qty;
 		if (isCreditMemo())
 		{
 			qtyAdjusted = qtyAdjusted.negate();
@@ -181,54 +181,45 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		return _includedTaxAmt;
 	}
 
-	/**
-	 * @return quantity received
-	 */
-	public final BigDecimal getQtyReceived()
+	private Quantity getQtyReceivedInStockUOM()
 	{
-		if (_qtyReceived == null)
+		if (_qtyReceivedInStockUOM == null)
 		{
-			final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-			BigDecimal qtyReceived = matchInvDAO.retrieveForInvoiceLineQuery(invoiceLine)
-					.create()
-					.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
-			if (qtyReceived == null)
-			{
-				qtyReceived = BigDecimal.ZERO;
-			}
-			this._qtyReceived = qtyReceived;
+			this._qtyReceivedInStockUOM = matchInvoiceService.getQtyMatched(getC_InvoiceLine()).getStockQty();
 		}
-		return _qtyReceived;
+		return _qtyReceivedInStockUOM;
 	}
 
 	/**
 	 * @return quantity received (absolute value)
 	 */
-	public final BigDecimal getQtyReceivedAbs()
+	Quantity getQtyReceivedAbs()
 	{
-		return adjustQtySignByCreditMemoAndSOTrx(getQtyReceived());
+		return adjustQtySignByCreditMemoAndSOTrx(getQtyReceivedInStockUOM());
 	}
 
-	/**
-	 * @return quantity invoiced
-	 */
-	public final BigDecimal getQtyInvoiced()
+	private Quantity getQtyInvoiced()
 	{
-		return getC_InvoiceLine().getQtyInvoiced();
+		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
+		if(_qtyInvoiced == null)
+		{
+			_qtyInvoiced = invoiceBL.getQtyInvoicedStockUOM(invoiceLine);
+		}
+		return _qtyInvoiced;
 	}
 
 	/**
 	 * @return quantity invoiced but not received
 	 */
-	public final BigDecimal getQtyNotReceived()
+	public final Quantity getQtyNotReceived()
 	{
-		return getQtyInvoiced().subtract(getQtyReceived());
+		return getQtyInvoiced().subtract(getQtyReceivedInStockUOM());
 	}
 
 	/**
 	 * @return quantity invoiced but not received (absolute value)
 	 */
-	public final BigDecimal getQtyNotReceivedAbs()
+	final Quantity getQtyNotReceivedAbs()
 	{
 		return adjustQtySignByCreditMemoAndSOTrx(getQtyNotReceived());
 	}
@@ -245,13 +236,13 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			return BigDecimal.ZERO;
 		}
 
-		final BigDecimal qtyReceived = getQtyReceived();
+		final Quantity qtyReceived = getQtyReceivedAbs();
 		if (qtyReceived.signum() == 0)
 		{
 			return BigDecimal.ZERO;
 		}
 
-		final BigDecimal qtyInvoiced = getQtyInvoiced();
+		final Quantity qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() == 0)
 		{
 			// shall not happen
@@ -265,11 +256,10 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			return lineNetAmt;
 		}
 
-		final BigDecimal qtyReceivedMultiplier = qtyReceived.divide(qtyInvoiced, 12, RoundingMode.HALF_UP);
+		final BigDecimal qtyReceivedMultiplier = qtyReceived.toBigDecimal().divide(qtyInvoiced.toBigDecimal(), 12, RoundingMode.HALF_UP);
 
-		final BigDecimal receivedAmt = lineNetAmt.multiply(qtyReceivedMultiplier)
+		return lineNetAmt.multiply(qtyReceivedMultiplier)
 				.setScale(getStdPrecision(), RoundingMode.HALF_UP);
-		return receivedAmt;
 	}
 
 	/**
@@ -281,12 +271,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	{
 		// Reposting is required if a M_MatchInv was created for a purchase invoice.
 		// ... because we book the matched quantity on InventoryClearing and on Expense the not matched quantity
-		if (!matchInv.getC_InvoiceLine().getC_Invoice().isSOTrx())
-		{
-			return true;
-		}
-
-		return false; // not needed
+		return !matchInv.getC_InvoiceLine().getC_Invoice().isSOTrx();// not needed
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -379,4 +380,6 @@ public interface IInvoiceBL extends ISingletonService
 	String getLocationEmail(InvoiceId invoiceId);
 
 	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
+	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 }

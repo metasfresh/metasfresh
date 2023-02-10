@@ -18,8 +18,8 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -60,13 +60,16 @@ import java.util.Optional;
 @Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
-	public AveragePOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
+	public AveragePOCostingMethodHandler(
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final MatchInvoiceService matchInvoiceService)
 	{
 		super(utils);
+		this.matchInvoiceService = matchInvoiceService;
 	}
 
 	@Override
@@ -85,7 +88,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
-		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
+		final I_M_MatchInv matchInv = matchInvoiceService.getById(matchInvId);
 
 		final I_C_OrderLine orderLine = Optional.of(matchInv)
 				.map(I_M_MatchInv::getC_InvoiceLine)

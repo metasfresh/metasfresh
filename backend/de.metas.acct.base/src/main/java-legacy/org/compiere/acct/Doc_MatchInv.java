@@ -38,6 +38,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -174,7 +175,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		_receipt = inOutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
 	}
 
-	public I_M_MatchInv getM_MatchInv()
+	private I_M_MatchInv getM_MatchInv()
 	{
 		return getModel(I_M_MatchInv.class);
 	}
@@ -561,7 +562,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		final I_M_InOut receipt = inOutBL.getById(InOutId.ofRepoId(receiptLine.getM_InOut_ID()));
-		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
+		final boolean isReturnTrx = MovementType.isMaterialReturn(receipt.getMovementType());
 		final Quantity matchQty = isReturnTrx ? getQty().negate() : getQty();
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
