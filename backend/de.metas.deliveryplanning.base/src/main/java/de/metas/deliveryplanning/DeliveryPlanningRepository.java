@@ -272,7 +272,6 @@ public class DeliveryPlanningRepository
 
 		final Quantity qtyOrdered = request.getQtyOrdered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
-		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
 		final Quantity actualLoadedQty = request.getActualLoadedQty();
 
 		final Quantity plannedLoadedQty = request.getPlannedLoadedQty();
