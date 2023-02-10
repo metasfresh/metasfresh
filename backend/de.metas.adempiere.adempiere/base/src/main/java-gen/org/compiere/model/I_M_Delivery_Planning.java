@@ -18,28 +18,7 @@ public interface I_M_Delivery_Planning
 
 
 	/**
-	 * Set Actual Delivered Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setActualDeliveredQty (BigDecimal ActualDeliveredQty);
-
-	/**
-	 * Get Actual Delivered Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getActualDeliveredQty();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_ActualDeliveredQty = new ModelColumn<>(I_M_Delivery_Planning.class, "ActualDeliveredQty", null);
-	String COLUMNNAME_ActualDeliveredQty = "ActualDeliveredQty";
-
-	/**
-	 * Set Actual Delivery Date.
+	 * Set Act Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -48,7 +27,7 @@ public interface I_M_Delivery_Planning
 	void setActualDeliveryDate (@Nullable java.sql.Timestamp ActualDeliveryDate);
 
 	/**
-	 * Get Actual Delivery Date.
+	 * Get Act Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -60,7 +39,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDeliveryDate = "ActualDeliveryDate";
 
 	/**
-	 * Set Actual Discharge Quantity.
+	 * Set Act Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -69,7 +48,7 @@ public interface I_M_Delivery_Planning
 	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
 
 	/**
-	 * Get Actual Discharge Quantity.
+	 * Get Act Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -81,7 +60,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
 
 	/**
-	 * Set Actual Loading Date.
+	 * Set Act Load Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -90,7 +69,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadingDate (@Nullable java.sql.Timestamp ActualLoadingDate);
 
 	/**
-	 * Get Actual Loading Date.
+	 * Get Act Load Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -102,7 +81,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualLoadingDate = "ActualLoadingDate";
 
 	/**
-	 * Set Actual Loaded Quantity.
+	 * Set Act Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -111,7 +90,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Actual Loaded Quantity.
+	 * Get Act Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -572,7 +551,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
-	 * Set Loading Time.
+	 * Set Load Time.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -581,7 +560,7 @@ public interface I_M_Delivery_Planning
 	void setLoadingTime (@Nullable java.lang.String LoadingTime);
 
 	/**
-	 * Get Loading Time.
+	 * Get Load Time.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -919,7 +898,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OriginCountry = "OriginCountry";
 
 	/**
-	 * Set Planned Delivery Date.
+	 * Set Plan Delivery Date (ETA).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -928,7 +907,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedDeliveryDate (@Nullable java.sql.Timestamp PlannedDeliveryDate);
 
 	/**
-	 * Get Planned Delivery Date.
+	 * Get Plan Delivery Date (ETA).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -940,7 +919,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedDeliveryDate = "PlannedDeliveryDate";
 
 	/**
-	 * Set Planned Discharge Quantity.
+	 * Set Plan Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -949,7 +928,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedDischargeQuantity (BigDecimal PlannedDischargeQuantity);
 
 	/**
-	 * Get Planned Discharge Quantity.
+	 * Get Plan Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -961,7 +940,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
 
 	/**
-	 * Set Planned Loaded Quantity.
+	 * Set Plan Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -970,7 +949,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedLoadedQuantity (BigDecimal PlannedLoadedQuantity);
 
 	/**
-	 * Get Planned Loaded Quantity.
+	 * Get Plan Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -982,7 +961,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedLoadedQuantity = "PlannedLoadedQuantity";
 
 	/**
-	 * Set Planned Loading Date.
+	 * Set Plan Load Date (ETD).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -991,7 +970,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedLoadingDate (@Nullable java.sql.Timestamp PlannedLoadingDate);
 
 	/**
-	 * Get Planned Loading Date.
+	 * Get Plan Load Date (ETD).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1107,7 +1086,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Qty Ordered.
+	 * Set PO/SO Line Qty.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
@@ -1117,7 +1096,7 @@ public interface I_M_Delivery_Planning
 	void setQtyOrdered (BigDecimal QtyOrdered);
 
 	/**
-	 * Get Qty Ordered.
+	 * Get PO/SO Line Qty.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity

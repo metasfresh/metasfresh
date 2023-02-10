@@ -787,7 +787,7 @@ public class C_Invoice_Candidate_StepDef
 			{
 				final String invoiceCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-				final Set<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.splitIdentifiers(invoiceCandIdentifiers)
+				final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.splitIdentifiers(invoiceCandIdentifiers)
 						.stream()
 						.map(invoiceCandTable::get)
 						.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
