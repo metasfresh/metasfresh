@@ -372,6 +372,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.build();
 
 		return husFinder.streamHus()
+				.filter(huForInventoryLine -> ProductId.equals(productId, huForInventoryLine.getProductId()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
