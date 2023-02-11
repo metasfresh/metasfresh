@@ -25,6 +25,8 @@ package de.metas.camel.externalsystems.sap.conversionRate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.sap.conversionRate.routecontroller.LocalFileConversionRateSyncServiceRouteBuilder;
+import de.metas.camel.externalsystems.sap.conversionRate.routecontroller.SFTPConversionRateSyncServiceRouteBuilder;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.v2.conversionRate.JsonCurrencyRateCreateRequest;
@@ -42,10 +44,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.sap.conversionRate.LocalFileConversionRateSyncServiceRouteBuilder.START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID;
-import static de.metas.camel.externalsystems.sap.conversionRate.LocalFileConversionRateSyncServiceRouteBuilder.STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID;
-import static de.metas.camel.externalsystems.sap.conversionRate.SFTPConversionRateSyncServiceRouteBuilder.START_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID;
-import static de.metas.camel.externalsystems.sap.conversionRate.SFTPConversionRateSyncServiceRouteBuilder.STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.conversionRate.routecontroller.LocalFileConversionRateSyncServiceRouteBuilder.START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.conversionRate.routecontroller.LocalFileConversionRateSyncServiceRouteBuilder.STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.conversionRate.routecontroller.SFTPConversionRateSyncServiceRouteBuilder.START_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.conversionRate.routecontroller.SFTPConversionRateSyncServiceRouteBuilder.STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
 public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
@@ -120,7 +122,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 		//then
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 		assertThat(context.getRoute(getSFTPConversionRateSyncRouteId(stopExternalSystemRequest))).isNotNull();
-		assertThat(context.getRouteController().getRouteStatus(getSFTPConversionRateSyncRouteId(stopExternalSystemRequest)).isStarted()).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(getSFTPConversionRateSyncRouteId(stopExternalSystemRequest)).isStarted()).isTrue();
 
 		//when
 		prepareDisableRouteForTesting(mockExternalSystemStatusProcessor);
@@ -155,7 +157,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 		//then
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 		assertThat(context.getRoute(getLocalFileConversionRateSyncRouteId(stopExternalSystemRequest))).isNotNull();
-		assertThat(context.getRouteController().getRouteStatus(getLocalFileConversionRateSyncRouteId(stopExternalSystemRequest)).isStarted()).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(getLocalFileConversionRateSyncRouteId(stopExternalSystemRequest)).isStarted()).isTrue();
 
 		//when
 		prepareDisableRouteForTesting(mockExternalSystemStatusProcessor);
@@ -177,7 +179,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 		final JsonExternalSystemRequest externalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
-		final MockUpsertConversionRateProcessor mockUpsertConversionRateProcessor = new MockUpsertConversionRateProcessor();
+		final MockCreateConversionRateProcessor mockCreateConversionRateProcessor = new MockCreateConversionRateProcessor();
 
 		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
 
@@ -187,7 +189,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 
 		assertThat(context.getRoute(getSFTPConversionRateSyncRouteId(externalSystemRequest))).isNotNull();
 
-		prepareSyncRouteForTesting(mockUpsertConversionRateProcessor, getSFTPConversionRateSyncRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockCreateConversionRateProcessor, getSFTPConversionRateSyncRouteId(externalSystemRequest));
 
 		final InputStream expectedUpsertConversionRateRequest = this.getClass().getResourceAsStream(JSON_CURRENCY_RATE_CREATE_REQUEST);
 		final MockEndpoint conversionRateSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_CONVERSION_RATE_ENDPOINT);
@@ -200,7 +202,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
-		assertThat(mockUpsertConversionRateProcessor.called).isEqualTo(1);
+		assertThat(mockCreateConversionRateProcessor.called).isEqualTo(1);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
 
@@ -214,7 +216,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 		final JsonExternalSystemRequest externalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
-		final MockUpsertConversionRateProcessor mockUpsertConversionRateProcessor = new MockUpsertConversionRateProcessor();
+		final MockCreateConversionRateProcessor mockUpsertConversionRateProcessor = new MockCreateConversionRateProcessor();
 
 		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
 
@@ -262,7 +264,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	private void prepareSyncRouteForTesting(
-			@NonNull final MockUpsertConversionRateProcessor mockUpsertConversionRateProcessor,
+			@NonNull final GetConversionRateFromFileRouteBuilderTest.MockCreateConversionRateProcessor mockUpsertConversionRateProcessor,
 			@NonNull final String conversionRateSyncRouteId) throws Exception
 	{
 		AdviceWith.adviceWith(context, conversionRateSyncRouteId,
@@ -277,7 +279,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	@NonNull
-	private String getSFTPConversionRateSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	private static String getSFTPConversionRateSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		return SFTPConversionRateSyncServiceRouteBuilder.getConversionRateFromSFTPRouteId(externalSystemRequest);
 	}
@@ -299,7 +301,7 @@ public class GetConversionRateFromFileRouteBuilderTest extends CamelTestSupport
 		}
 	}
 
-	private static class MockUpsertConversionRateProcessor implements Processor
+	private static class MockCreateConversionRateProcessor implements Processor
 	{
 		@Getter
 		private int called = 0;

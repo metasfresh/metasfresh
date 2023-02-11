@@ -47,11 +47,12 @@ public class ConversionRateRepository
 		conversionRateRecord.setC_Currency_ID(request.getCurrencyId().getRepoId());
 		conversionRateRecord.setC_Currency_ID_To(request.getCurrencyToId().getRepoId());
 		conversionRateRecord.setC_ConversionType_ID(request.getConversionTypeId().getRepoId());
-		conversionRateRecord.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
-		conversionRateRecord.setDivideRate(request.getDivideRate());
-		conversionRateRecord.setMultiplyRate(request.getMultiplyRate());
 
+		conversionRateRecord.setValidFrom(TimeUtil.asTimestampNotNull(request.getValidFrom()));
 		conversionRateRecord.setValidTo(TimeUtil.asTimestamp(request.getValidTo()));
+
+		conversionRateRecord.setDivideRate(request.getDivideRate());
+		conversionRateRecord.setMultiplyRate(ConversionRate.invertRate(request.getDivideRate()));
 
 		save(conversionRateRecord);
 
@@ -63,13 +64,15 @@ public class ConversionRateRepository
 	{
 		return ConversionRate.builder()
 				.conversionRateId(ConversionRateId.ofRepoId(conversionRate.getC_Conversion_Rate_ID()))
+
 				.currencyId(CurrencyId.ofRepoId(conversionRate.getC_Currency_ID()))
 				.currencyToId(CurrencyId.ofRepoId(conversionRate.getC_Currency_ID_To()))
 				.conversionTypeId(CurrencyConversionTypeId.ofRepoId(conversionRate.getC_ConversionType_ID()))
+
 				.validFrom(TimeUtil.asInstantNonNull(conversionRate.getValidFrom()))
 				.validTo(TimeUtil.asInstant(conversionRate.getValidTo()))
+
 				.divideRate(conversionRate.getDivideRate())
-				.multiplyRate(conversionRate.getMultiplyRate())
 				.build();
 	}
 }

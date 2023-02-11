@@ -41,8 +41,6 @@ import static de.metas.camel.externalsystems.sap.SAPConstants.ROUTE_PROPERTY_CON
 
 public class GetConversionRateFromFileRouteBuilder extends IdAwareRouteBuilder
 {
-	private static final String PROCESS_CONVERSION_RATE_ROW_PROCESSOR_ID = "SAP-ConversionRate-processConversionRateRowProcessorId";
-
 	@NonNull
 	private final ConversionRateFileEndpointConfig fileEndpointConfig;
 
@@ -77,7 +75,7 @@ public class GetConversionRateFromFileRouteBuilder extends IdAwareRouteBuilder
 				.process(this::attachContext)
 				.split(body().tokenize("\n")).streaming()
 					.unmarshal(new BindyCsvDataFormat(ConversionRateRow.class))
-					.process(new ConversionRateUpsertProcessor()).id(PROCESS_CONVERSION_RATE_ROW_PROCESSOR_ID)
+					.process(new ConversionRateUpsertProcessor())
 					.choice()
 						.when(bodyAs(JsonCurrencyRateCreateRequest.class).isNull())
 							.log("Nothing to do! No Conversion rate to upsert!")

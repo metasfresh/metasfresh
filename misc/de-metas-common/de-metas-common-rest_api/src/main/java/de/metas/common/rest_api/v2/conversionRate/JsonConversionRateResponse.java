@@ -22,22 +22,20 @@
 
 package de.metas.common.rest_api.v2.conversionRate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonConversionRateResponse.JsonConversionRateResponseBuilder.class)
+@Jacksonized
 public class JsonConversionRateResponse
 {
 	@NonNull
-	@JsonProperty("responseItems")
 	List<JsonConversionRateResponseItem> responseItems;
 
 	@NonNull

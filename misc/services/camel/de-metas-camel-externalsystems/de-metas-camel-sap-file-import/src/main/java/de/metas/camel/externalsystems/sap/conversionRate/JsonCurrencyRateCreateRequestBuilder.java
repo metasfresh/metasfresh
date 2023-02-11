@@ -29,7 +29,7 @@ import de.metas.common.rest_api.v2.conversionRate.JsonCurrencyRateCreateRequestI
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
+import java.util.Optional;
 
 @Value
 public class JsonCurrencyRateCreateRequestBuilder
@@ -51,14 +51,19 @@ public class JsonCurrencyRateCreateRequestBuilder
 	{
 		final JsonCurrencyRateCreateRequestBuilder requestBuilder = new JsonCurrencyRateCreateRequestBuilder(orgCode, row.getFrom());
 
-		requestBuilder.addConversionRateRow(row);
+		final boolean added = requestBuilder.addConversionRateRow(row);
+
+		if (!added)
+		{
+			throw new RuntimeException("Cannot add current row to just initialized JsonCurrencyRateCreateRequestBuilder! see row:" + row);
+		}
 
 		return requestBuilder;
 	}
 
 	public boolean addConversionRateRow(@NonNull final ConversionRateRow conversionRateRow)
 	{
-		if (!isForSameCurrency(conversionRateRow))
+		if (!matchesCurrencyFrom(conversionRateRow))
 		{
 			return false;
 		}
@@ -78,27 +83,27 @@ public class JsonCurrencyRateCreateRequestBuilder
 				.build();
 	}
 
-	@NonNull
-	private JsonCurrencyRateCreateRequestItem getItem(@NonNull final ConversionRateRow row)
-	{
-		final JsonCurrencyRateCreateRequestItem jsonCurrencyRateCreateRequestItem = new JsonCurrencyRateCreateRequestItem();
-
-		jsonCurrencyRateCreateRequestItem.setCurrencyCodeTo(row.getTo());
-		jsonCurrencyRateCreateRequestItem.setValidFrom(row.getValidFrom());
-
-		final BigDecimal divideRate = BigDecimal.valueOf(Double.parseDouble(row.getIndirQuot())).abs();
-		jsonCurrencyRateCreateRequestItem.setDivideRate(divideRate);
-
-		if (row.getExrt().equals(EURX))
-		{
-			jsonCurrencyRateCreateRequestItem.setConversionType(COMPANY_CONVERSION_TYPE);
-		}
-
-		return jsonCurrencyRateCreateRequestItem;
-	}
-
-	private boolean isForSameCurrency(@NonNull final ConversionRateRow conversionRateRow)
+	private boolean matchesCurrencyFrom(@NonNull final ConversionRateRow conversionRateRow)
 	{
 		return currencyCodeFrom.equals(conversionRateRow.getFrom());
+	}
+
+	@NonNull
+	private static JsonCurrencyRateCreateRequestItem getItem(@NonNull final ConversionRateRow row)
+	{
+		return JsonCurrencyRateCreateRequestItem.builder()
+				.currencyCodeTo(row.getTo())
+				.conversionType(getConversionType(row).orElse(null))
+				.validFrom(row.getValidFrom())
+				.divideRate(row.getDivideRate())
+				.build();
+	}
+
+	@NonNull
+	private static Optional<String> getConversionType(@NonNull final ConversionRateRow row)
+	{
+		return Optional.ofNullable(row.getExrt())
+				.filter(EURX::equals)
+				.map(extrFlag -> COMPANY_CONVERSION_TYPE);
 	}
 }

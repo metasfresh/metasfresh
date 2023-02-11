@@ -46,12 +46,14 @@ public class JsonCurrencyRateCreateRequestTest
 	@Test
 	public void serializeDeserialize() throws IOException
 	{
-		final JsonCurrencyRateCreateRequestItem requestItem = new JsonCurrencyRateCreateRequestItem();
-		requestItem.setCurrencyCodeTo("currencyCodeTo");
-		requestItem.setConversionType("conversionType");
-		requestItem.setValidFrom(LocalDate.of(2023,2,1));
-		requestItem.setValidTo(LocalDate.of(2023,5,1));
-		requestItem.setDivideRate(BigDecimal.valueOf(1.55));
+		final JsonCurrencyRateCreateRequestItem requestItem = JsonCurrencyRateCreateRequestItem
+				.builder()
+				.currencyCodeTo("currencyCodeTo")
+				.conversionType("conversionType")
+				.divideRate(BigDecimal.valueOf(1.55))
+				.validFrom(LocalDate.of(2023, 2, 1))
+				.validTo(LocalDate.of(2023, 5, 1))
+				.build();
 
 		final JsonCurrencyRateCreateRequest currencyRateCreateRequest = JsonCurrencyRateCreateRequest.builder()
 				.orgCode("orgCode")
