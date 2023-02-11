@@ -160,6 +160,7 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
+
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		registerInOutLinesWithMissingInvoiceCandidateFilter();
 

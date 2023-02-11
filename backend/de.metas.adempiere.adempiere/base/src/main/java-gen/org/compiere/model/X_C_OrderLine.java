@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 986580396L;
+	private static final long serialVersionUID = -520173760L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -930,6 +930,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isManualPrice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualPrice);
+	}
+
+	@Override
+	public void setIsOnConsignment (final boolean IsOnConsignment)
+	{
+		set_Value (COLUMNNAME_IsOnConsignment, IsOnConsignment);
+	}
+
+	@Override
+	public boolean isOnConsignment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOnConsignment);
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1741191389L;
+	private static final long serialVersionUID = 1059344685L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -271,8 +271,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
-	/** Bill Of Material Version = BOM */
-	public static final String DOCBASETYPE_BillOfMaterialVersion = "BOM";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	@Override
@@ -316,7 +316,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 
 	/** 
 	 * DocSubType AD_Reference_ID=148
-	 * Reference name: C_DocType SubType
+	 * Reference name: C_DocType SubTypeSO
 	 */
 	public static final int DOCSUBTYPE_AD_Reference_ID=148;
 	/** OnCreditOrder = WI */
@@ -413,12 +413,18 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_CostEstimate = "CE";
 	/** Kreditoren Nachbelastung = NBK */
 	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
+	/** LS = LS */
+	public static final String DOCSUBTYPE_LS = "LS";
 	/** Payment service provider invoice = SI */
 	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
 	/** Delivery Instruction = DI */
 	public static final String DOCSUBTYPE_DeliveryInstruction = "DI";
+	/** InventoryShortageDocument = ISD */
+	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
+	/** InventoryOverageDocument = IOD */
+	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{

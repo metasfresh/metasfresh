@@ -433,6 +433,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			invoice.setM_SectionCode_ID(SectionCodeId.toRepoId(invoiceHeader.getM_SectionCode_ID()));
+
+			invoice.setInvoiceAdditionalText(invoiceHeader.getInvoiceAdditionalText());
+			invoice.setIsNotShowOriginCountry(invoiceHeader.isNotShowOriginCountry());
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

@@ -6,7 +6,7 @@ import de.metas.common.util.time.SystemTime;
 import org.compiere.SpringContextHolder;
 
 import de.metas.handlingunits.expiry.HUWithExpiryDatesService;
-import de.metas.handlingunits.expiry.UpdateMonthsUntilExpiryResult;
+import de.metas.handlingunits.expiry.UpdateMonthsResult;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 
@@ -43,7 +43,7 @@ public class M_HU_Update_MonthsUntilExpiry_Attribute extends JavaProcess
 		final LocalDate today = SystemTime.asLocalDate();
 		addLog("Today is: " + today);
 
-		final UpdateMonthsUntilExpiryResult result = huWithExpiryDatesService.updateMonthsUntilExpiry(today);
+		final UpdateMonthsResult result = huWithExpiryDatesService.updateMonthsUntilExpiry(today);
 		addLog("Result: " + result);
 
 		return MSG_OK;

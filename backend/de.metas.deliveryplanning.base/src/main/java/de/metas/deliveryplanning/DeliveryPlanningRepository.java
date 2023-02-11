@@ -35,6 +35,7 @@ import de.metas.location.CountryId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
@@ -83,6 +84,15 @@ public class DeliveryPlanningRepository
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
+	}
+
+	public List<I_M_Delivery_Planning> getByReleaseNo(@NonNull final String releaseNo)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, releaseNo)
+				.create()
+				.list();
 	}
 
 	protected List<DeliveryPlanningShipmentInfo> getShipmentInfosByOrderLineIds(@NonNull final Set<OrderAndLineId> salesOrderAndLineId)
@@ -148,6 +158,7 @@ public class DeliveryPlanningRepository
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
 				//
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.build();
 	}
 
@@ -271,7 +282,6 @@ public class DeliveryPlanningRepository
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
-		deliveryPlanningRecord.setActualDeliveredQty(actualDeliveredQty.toBigDecimal());
 		deliveryPlanningRecord.setActualLoadQty(actualLoadedQty.toBigDecimal());
 
 		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1272209807L;
+	private static final long serialVersionUID = 1192039455L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1244,6 +1244,29 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
+	@Override
+	public void setInvoiceAdditionalText (final @Nullable java.lang.String InvoiceAdditionalText)
+	{
+		set_Value (COLUMNNAME_InvoiceAdditionalText, InvoiceAdditionalText);
+	}
+
+	@Override
+	public java.lang.String getInvoiceAdditionalText() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
+	}
+
+	@Override
+	public void setIsNotShowOriginCountry (final boolean IsNotShowOriginCountry)
+	{
+		set_Value (COLUMNNAME_IsNotShowOriginCountry, IsNotShowOriginCountry);
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
+	}
 	/** 
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
@@ -1365,6 +1388,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isInvoiced() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
+	}
+
+	@Override
+	public void setIsOnConsignment (final boolean IsOnConsignment)
+	{
+		set_Value (COLUMNNAME_IsOnConsignment, IsOnConsignment);
+	}
+
+	@Override
+	public boolean isOnConsignment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOnConsignment);
 	}
 
 	@Override

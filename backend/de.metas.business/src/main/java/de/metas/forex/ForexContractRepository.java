@@ -68,7 +68,7 @@ public class ForexContractRepository
 					.maturityDate(record.getFEC_MaturityDate().toInstant())
 					.currencyId(currencyId)
 					.toCurrencyId(CurrencyId.ofRepoId(record.getTo_Currency_ID()))
-					.currencyRate(record.getCurrencyRate())
+					.currencyRate(record.getFEC_CurrencyRate())
 					.amount(Money.of(record.getFEC_Amount(), currencyId))
 					.allocatedAmount(Money.of(record.getFEC_Amount_Alloc(), currencyId))
 					.openAmount(Money.of(record.getFEC_Amount_Open(), currencyId))

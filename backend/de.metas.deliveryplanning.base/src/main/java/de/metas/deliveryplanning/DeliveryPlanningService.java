@@ -44,6 +44,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.location.CountryId;
@@ -82,6 +84,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -137,6 +140,9 @@ public class DeliveryPlanningService
 
 	final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
+	final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
 	public DeliveryPlanningService(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService,
@@ -154,7 +160,10 @@ public class DeliveryPlanningService
 		return sysConfigBL.getBooleanValue(SYSCONFIG_M_Delivery_Planning_CreateAutomatically, false, clientAndOrgId);
 	}
 
-	private DeliveryStatusColorPalette getColorPalette() {return deliveryStatusColorPaletteService.get();}
+	private DeliveryStatusColorPalette getColorPalette()
+	{
+		return deliveryStatusColorPaletteService.get();
+	}
 
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
@@ -229,7 +238,6 @@ public class DeliveryPlanningService
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
-				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
 
 				.plannedLoadedQty(plannedLoadedQty)
 				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
@@ -377,7 +385,7 @@ public class DeliveryPlanningService
 		}
 
 		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(deliveryInstructionRequest.getClientId(),
-				deliveryInstructionRequest.getOrgId());
+																	   deliveryInstructionRequest.getOrgId());
 
 		final Money creditUsedByDeliveryInstruction = computeCreditUsedByDeliveryInstruction(deliveryInstructionRequest, baseCurrencyId);
 
@@ -399,7 +407,7 @@ public class DeliveryPlanningService
 	}
 
 	private Money computeCreditUsedByDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request,
-														 @NonNull final CurrencyId currencyId)
+			@NonNull final CurrencyId currencyId)
 	{
 		if (request.getOrderLineId() == null)
 		{
@@ -412,7 +420,7 @@ public class DeliveryPlanningService
 
 		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),
-				orderLineCurrencyId);
+														orderLineCurrencyId);
 
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
@@ -455,8 +463,6 @@ public class DeliveryPlanningService
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
-		final BPartnerLocationId warehouseBPLocationId = warehouseBL.getBPartnerLocationId(warehouseId);
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
@@ -478,6 +484,8 @@ public class DeliveryPlanningService
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
 		final boolean isIncoming = deliveryPlanningType.isIncoming();
+		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord);
+		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord);
 
 		return DeliveryInstructionCreateRequest.builder()
 				.orgId(orgId)
@@ -488,14 +496,10 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
-				.loadingPartnerLocationId(isIncoming
-						? warehouseBPLocationId
-						: deliveryPlanningLocationId)
+				.loadingPartnerLocationId(shipFrom)
 				.loadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedLoadingDate()))
 				.loadingTime(deliveryPlanningRecord.getLoadingTime())
-				.deliveryPartnerLocationId(isIncoming
-						? deliveryPlanningLocationId
-						: warehouseBPLocationId)
+				.deliveryPartnerLocationId(shipTo)
 				.deliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
 				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 
@@ -514,6 +518,41 @@ public class DeliveryPlanningService
 				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
 				.deliveryPlanningId(deliveryPlanningId)
 				.build();
+	}
+
+	private BPartnerLocationId extractShipFromLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
+	{
+		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
+
+		final boolean isIncoming = deliveryPlanningType.isIncoming();
+
+		if (isIncoming)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(ReceiptScheduleId.ofRepoId(deliveryPlanningRecord.getM_ReceiptSchedule_ID()));
+
+			return BPartnerLocationId.ofRepoId(receiptSchedule.getC_BPartner_ID(), receiptSchedule.getC_BPartner_Location_ID());
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
+		return warehouseBL.getBPartnerLocationId(warehouseId);
+	}
+
+
+	private BPartnerLocationId extractShipToLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
+	{
+		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
+
+		final boolean isOutgoing = deliveryPlanningType.isOutgoing();
+
+		if (isOutgoing)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(deliveryPlanningRecord.getM_ShipmentSchedule_ID()));
+
+			return BPartnerLocationId.ofRepoId(shipmentSchedule.getC_BPartner_ID(), shipmentSchedule.getC_BPartner_Location_ID());
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
+		return warehouseBL.getBPartnerLocationId(warehouseId);
 	}
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
