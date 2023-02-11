@@ -1,0 +1,42 @@
+{
+  "orgCode": "orgCode",
+  "currencyCodeFrom": "currencyFrom",
+  "requestItems": [
+    {
+      "currencyCodeTo": "currencyTo1",
+      "currencyCodeToSet": true,
+      "conversionType": "Company",
+      "conversionTypeSet": true,
+      "validFrom": "2023-02-20",
+      "validFromSet": true,
+      "validTo": null,
+      "validToSet": false,
+      "divideRate": "1.523",
+      "divideRateSet": true
+    },
+    {
+      "currencyCodeTo": "currencyTo1",
+      "currencyCodeToSet": true,
+      "conversionType": null,
+      "conversionTypeSet": false,
+      "validFrom": "2023-04-19",
+      "validFromSet": true,
+      "validTo": null,
+      "validToSet": false,
+      "divideRate": "1.46124",
+      "divideRateSet": true
+    },
+    {
+      "currencyCodeTo": "currencyTo2",
+      "currencyCodeToSet": true,
+      "conversionType": "Company",
+      "conversionTypeSet": true,
+      "validFrom": "2023-02-25",
+      "validFromSet": true,
+      "validTo": null,
+      "validToSet": false,
+      "divideRate": "1.6",
+      "divideRateSet": true
+    }
+  ]
+}

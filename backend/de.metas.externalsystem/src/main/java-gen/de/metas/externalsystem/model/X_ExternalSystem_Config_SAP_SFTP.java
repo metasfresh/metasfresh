@@ -152,6 +152,30 @@ public class X_ExternalSystem_Config_SAP_SFTP extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setSFTP_ConversionRate_FileName_Pattern (final @Nullable java.lang.String SFTP_ConversionRate_FileName_Pattern)
+	{
+		set_Value (COLUMNNAME_SFTP_ConversionRate_FileName_Pattern, SFTP_ConversionRate_FileName_Pattern);
+	}
+
+	@Override
+	public java.lang.String getSFTP_ConversionRate_FileName_Pattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_ConversionRate_FileName_Pattern);
+	}
+
+	@Override
+	public void setSFTP_ConversionRate_TargetDirectory (final @Nullable java.lang.String SFTP_ConversionRate_TargetDirectory)
+	{
+		set_Value (COLUMNNAME_SFTP_ConversionRate_TargetDirectory, SFTP_ConversionRate_TargetDirectory);
+	}
+
+	@Override
+	public java.lang.String getSFTP_ConversionRate_TargetDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_ConversionRate_TargetDirectory);
+	}
+
+	@Override
 	public void setSFTP_CreditLimit_FileName_Pattern (final @Nullable java.lang.String SFTP_CreditLimit_FileName_Pattern)
 	{
 		set_Value (COLUMNNAME_SFTP_CreditLimit_FileName_Pattern, SFTP_CreditLimit_FileName_Pattern);

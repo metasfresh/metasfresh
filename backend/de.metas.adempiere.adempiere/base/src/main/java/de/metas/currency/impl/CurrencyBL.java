@@ -342,6 +342,22 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
+	public CurrencyConversionTypeId getCurrencyConversionTypeIdOrDefault(@NonNull final OrgId orgId, @Nullable final String conversionTypeName)
+	{
+		if (Check.isBlank(conversionTypeName))
+		{
+			final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
+
+			return getDefaultConversionTypeId(clientId, orgId, Instant.now());
+		}
+
+		final ConversionTypeMethod conversionTypeMethod = ConversionTypeMethod.ofName(conversionTypeName);
+
+		return getCurrencyConversionTypeId(conversionTypeMethod);
+	}
+
+	@Override
 	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
 	{
 		return currencyDAO.getConversionTypeId(type);

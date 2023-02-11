@@ -53,6 +53,9 @@ public class SAPConfigMapper
 				.targetDirectoryCreditLimit(externalSystemConfigSapSftp.getSFTP_CreditLimit_TargetDirectory())
 				.fileNamePatternCreditLimit(externalSystemConfigSapSftp.getSFTP_CreditLimit_FileName_Pattern())
 
+				.targetDirectoryConversionRate(externalSystemConfigSapSftp.getSFTP_ConversionRate_TargetDirectory())
+				.fileNamePatternConversionRate(externalSystemConfigSapSftp.getSFTP_ConversionRate_FileName_Pattern())
+
 				.processedDirectory(externalSystemConfigSapSftp.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapSftp.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapSftp.getPollingFrequencyInMs()))
@@ -76,6 +79,9 @@ public class SAPConfigMapper
 
 				.targetDirectoryCreditLimit(externalSystemConfigSapLocalFile.getLocalFile_CreditLimit_TargetDirectory())
 				.fileNamePatternCreditLimit(externalSystemConfigSapLocalFile.getLocalFile_CreditLimit_FileName_Pattern())
+
+				.targetDirectoryConversionRate(externalSystemConfigSapLocalFile.getLocalFile_ConversionRate_TargetDirectory())
+				.fileNamePatternConversionRate(externalSystemConfigSapLocalFile.getLocalFile_ConversionRate_FileName_Pattern())
 
 				.processedDirectory(externalSystemConfigSapLocalFile.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapLocalFile.getErroredDirectory())
