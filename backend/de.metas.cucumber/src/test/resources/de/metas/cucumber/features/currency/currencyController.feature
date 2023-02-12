@@ -8,7 +8,7 @@ Feature:Create conversion rates via metasfresh api
   @from:cucumber
   Scenario: Create conversion rate for existing currencies
 
-    Given load C_Currency:
+    Given load C_Currency by ISO Code:
       | C_Currency_ID.Identifier | ISO_Code |
       | currency_EUR             | EUR      |
       | currencyTo_USD           | USD      |
