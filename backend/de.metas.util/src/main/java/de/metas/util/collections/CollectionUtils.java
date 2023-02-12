@@ -496,7 +496,7 @@ public final class CollectionUtils
 	public static boolean hasDuplicatesForValue(@NonNull final Collection<String> collection, @NonNull final String value)
 	{
 		return collection.stream()
-				.filter(elem -> elem.equals(value))
+				.filter(elem -> value.equals(elem))
 				.count() > 1;
 	}
 }

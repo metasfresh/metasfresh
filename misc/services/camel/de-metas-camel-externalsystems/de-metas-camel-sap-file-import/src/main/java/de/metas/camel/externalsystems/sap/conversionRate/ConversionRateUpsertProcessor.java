@@ -60,6 +60,7 @@ public class ConversionRateUpsertProcessor implements Processor
 
 		final JsonCurrencyRateCreateRequestBuilder requestBuilder = conversionRateContext.getJsonCurrencyRateCreateRequestBuilder();
 
+		// while adding rows, we set the body to null, but we add the stuff to our context until all is added
 		if (requestBuilder == null)
 		{
 			conversionRateContext.initConversionRateRequestBuilderFor(conversionRateRow);
@@ -77,7 +78,7 @@ public class ConversionRateUpsertProcessor implements Processor
 		}
 
 		final JsonCurrencyRateCreateRequest createCurrencyRateRequest = requestBuilder.build();
-		exchange.getIn().setBody(createCurrencyRateRequest);
+		exchange.getIn().setBody(createCurrencyRateRequest); // *now* we set the request as our exchange body and are going to proceed by calling the metasfresh-API
 
 		conversionRateContext.initConversionRateRequestBuilderFor(conversionRateRow);
 	}
