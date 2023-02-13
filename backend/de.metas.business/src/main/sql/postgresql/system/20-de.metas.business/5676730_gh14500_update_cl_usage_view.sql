@@ -33,15 +33,14 @@ FROM (WITH data AS (SELECT dsc.m_department_id,
                            groupSectionPartner.ad_org_id
 
                     FROM c_bpartner groupSectionPartner
-                             INNER JOIN c_bpartner sectionPartner ON groupSectionPartner.c_bpartner_id = sectionPartner.section_group_partner_id
-                             INNER JOIN m_department_sectioncode dsc ON sectionPartner.m_sectioncode_id = dsc.m_sectioncode_id AND dsc.isactive = 'Y'
-                             INNER JOIN c_bpartner_stats stats ON sectionPartner.c_bpartner_id = stats.c_bpartner_id
-                             INNER JOIN ad_clientinfo ci ON sectionPartner.ad_client_id = ci.ad_client_id
-                             INNER JOIN c_acctschema ac ON ci.c_acctschema1_id = ac.c_acctschema_id
-                             INNER JOIN c_currency c ON ac.c_currency_id = c.c_currency_id
+                             JOIN c_bpartner sectionPartner ON groupSectionPartner.c_bpartner_id = sectionPartner.section_group_partner_id
+                             JOIN m_department_sectioncode dsc ON sectionPartner.m_sectioncode_id = dsc.m_sectioncode_id AND dsc.isactive = 'Y'
+                             JOIN c_bpartner_stats stats ON sectionPartner.c_bpartner_id = stats.c_bpartner_id
+                             JOIN ad_clientinfo ci ON sectionPartner.ad_client_id = ci.ad_client_id
+                             JOIN c_acctschema ac ON ci.c_acctschema1_id = ac.c_acctschema_id
+                             JOIN c_currency c ON ac.c_currency_id = c.c_currency_id
 
-                    WHERE groupSectionPartner.issectiongrouppartner = 'Y'
-                    ORDER BY dsc.m_department_id, groupSectionPartner.c_bpartner_id),
+                    WHERE groupSectionPartner.issectiongrouppartner = 'Y'),
 
            data_totals AS (SELECT m_department_id,
                                   section_group_partner_id,
@@ -52,12 +51,12 @@ FROM (WITH data AS (SELECT dsc.m_department_id,
                                   COALESCE(SUM(data.so_creditused), 0)             AS total_so_credit_used,
                                   COALESCE(SUM(data.delivery_creditused), 0)       AS total_delivery_credit_used,
                                   CASE
-                                      WHEN COALESCE(SUM(data.cl_section_code), 0) > 0 AND COALESCE(SUM(data.so_creditused), 0) > 0 THEN ROUND((SUM(data.so_creditused) / SUM(data.cl_section_code)) * 100, 1)
-                                                                                                                                   ELSE 0
+                                      WHEN COALESCE(SUM(data.cl_section_code), 0) != 0 AND COALESCE(SUM(data.so_creditused), 0) != 0 THEN ROUND((SUM(data.so_creditused) / SUM(data.cl_section_code)) * 100, 3)
+                                                                                                                                     ELSE 0
                                   END                                              AS so_credit_used_indicator,
                                   CASE
-                                      WHEN COALESCE(SUM(data.cl_section_code), 0) > 0 AND COALESCE(SUM(data.delivery_creditused), 0) > 0 THEN ROUND((SUM(data.delivery_creditused) / SUM(data.cl_section_code)) * 100, 1)
-                                                                                                                                         ELSE 0
+                                      WHEN COALESCE(SUM(data.cl_section_code), 0) != 0 AND COALESCE(SUM(data.delivery_creditused), 0) != 0 THEN ROUND((SUM(data.delivery_creditused) / SUM(data.cl_section_code)) * 100, 3)
+                                                                                                                                           ELSE 0
                                   END                                              AS delivery_credit_used_indicator
                            FROM data
                            GROUP BY
