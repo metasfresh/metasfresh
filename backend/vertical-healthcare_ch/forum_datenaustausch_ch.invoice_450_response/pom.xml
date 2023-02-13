@@ -100,7 +100,6 @@
 					<dependency>
 						<groupId>javax.xml.bind</groupId>
 						<artifactId>jaxb-api</artifactId>
-						<version>${jaxb.api.version}</version>
 					</dependency>
 					<!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
 					<dependency>

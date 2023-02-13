@@ -48,7 +48,8 @@
         <acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
 
         <javax.activation.version>1.2.0</javax.activation.version>
-        <jaxb.api.version>2.3.0</jaxb.api.version>
+        <jaxb.api.version>2.3.1</jaxb.api.version>
+        <jaxb.core.version>2.3.0.1</jaxb.core.version>
         <jaxb.impl.version>2.3.8</jaxb.impl.version>
 
     </properties>
@@ -223,7 +224,7 @@
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-core</artifactId>
-                <version>${jaxb.api.version}</version>
+                <version>${jaxb.core.version}</version>
             </dependency>
 
             <dependency>
