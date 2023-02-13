@@ -90,5 +90,63 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_Para_ID=542539 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
-/* DDL */ SELECT update_Process_Para_Translation_From_AD_Element(582059, 'en_US');
+/* DDL */ SELECT update_Process_Para_Translation_From_AD_Element(582059, 'en_US')
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- Table: C_Invoice
+-- EntityType: D
+-- 2023-02-13T12:32:50.068Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585221,318,541360,TO_TIMESTAMP('2023-02-13 14:32:49','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2023-02-13 14:32:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- Table: C_Invoice
+-- Tab: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D)
+-- Window: Eingangsrechnung(183,D)
+-- EntityType: D
+-- 2023-02-13T13:29:16.071Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Tab_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585221,290,318,541361,183,TO_TIMESTAMP('2023-02-13 15:29:15','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2023-02-13 15:29:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- Table: C_Invoice
+-- Window: Eingangsrechnung(183,D)
+-- EntityType: D
+-- 2023-02-13T14:04:20.937Z
+UPDATE AD_Table_Process SET AD_Tab_ID=NULL,AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2023-02-13 16:04:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541361
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- 2023-02-13T15:32:44.903Z
+UPDATE AD_Process_Trl SET Name='Neues Fälligkeitsdatum festlegen',Updated=TO_TIMESTAMP('2023-02-13 17:32:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585221
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- 2023-02-13T15:32:46.148Z
+UPDATE AD_Process_Trl SET Name='Neues Fälligkeitsdatum festlegen',Updated=TO_TIMESTAMP('2023-02-13 17:32:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585221
+;
+
+-- 2023-02-13T15:32:46.149Z
+UPDATE AD_Process SET Name='Neues Fälligkeitsdatum festlegen' WHERE AD_Process_ID=585221
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- 2023-02-13T15:32:46.923Z
+UPDATE AD_Process_Trl SET Name='Neues Fälligkeitsdatum festlegen',Updated=TO_TIMESTAMP('2023-02-13 17:32:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585221
+;
+
+-- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
+-- 2023-02-13T15:32:48.716Z
+UPDATE AD_Process_Trl SET Name='Neues Fälligkeitsdatum festlegen',Updated=TO_TIMESTAMP('2023-02-13 17:32:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585221
+;
+
+-- Value: Invoices_already_paid
+-- 2023-02-13T15:33:48.022Z
+UPDATE AD_Message SET MsgText='Folgende Rechnungen wurden bereits bezahlt: {}',Updated=TO_TIMESTAMP('2023-02-13 17:33:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545236
+;
+
+-- 2023-02-13T15:33:48.023Z
+UPDATE AD_Message_Trl trl SET MsgText='Folgende Rechnungen wurden bereits bezahlt: {}' WHERE AD_Message_ID=545236 AND AD_Language='de_DE'
+;
 
