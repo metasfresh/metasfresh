@@ -56,10 +56,8 @@ WHERE TRUE
   AND (dep.m_department_id = p_m_department_id OR p_m_department_id IS NULL)   -- Department
   AND (sc.m_sectioncode_id = p_m_sectioncode_id OR p_m_sectioncode_id IS NULL) -- Section Code
   AND (bp.c_bpartner_id = p_c_bpartner_id OR p_c_bpartner_id IS NULL)          -- Business partner
-  AND (dp.plannedloadingdate BETWEEN p_plannedLoadingDateFrom AND p_plannedLoadingDateTo -- Planned loading date (range)
-    OR (p_plannedLoadingDateFrom IS NULL AND p_plannedLoadingDateTo IS NULL))
-  AND (dp.planneddeliverydate BETWEEN p_plannedDeliveryDateFrom AND p_plannedDeliveryDateTo -- Planned discharge date (range)
-    OR (p_plannedDeliveryDateFrom IS NULL AND p_plannedDeliveryDateTo IS NULL))
+  AND (dp.plannedloadingdate IS NULL OR (dp.plannedloadingdate::date BETWEEN p_plannedLoadingDateFrom::date AND p_plannedLoadingDateTo::date)) -- Planned loading date (range)
+  AND (dp.planneddeliverydate IS NULL OR (dp.planneddeliverydate::date BETWEEN p_plannedDeliveryDateFrom::date AND p_plannedDeliveryDateTo)) -- Planned discharge date (range)
 
   AND o.IsSOTrx = 'Y'
   AND o.docstatus IN ('CO', 'CL')
@@ -83,12 +81,3 @@ $$
 
 ALTER FUNCTION getOverdueInvoicesWithOpenOrders() OWNER TO metasfresh
 ;
-
-
-
-
-
-
-
-
-
