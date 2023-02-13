@@ -36,13 +36,11 @@
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
-			<version>${jaxb.api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-core</artifactId>
-			<version>${jaxb.core.version}</version>
 		</dependency>
 
 		<dependency>
