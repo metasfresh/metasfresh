@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14520](https://github.com/metasfresh/metasfresh/issues/14520) Avoid useless updates to AD_Field_Trl
   * [#14538](https://github.com/metasfresh/metasfresh/issues/14538) Field Renaming Delivery Planning Window
   * [#14508](https://github.com/metasfresh/metasfresh/issues/14508) Create Cucumber for accounting 
   * [#14492](https://github.com/metasfresh/metasfresh/issues/14492) Delivery Planning - Shortage and Overage
