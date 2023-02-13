@@ -67,6 +67,9 @@ public class SAPConfigUtil
 				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY))
 				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN))
 
+				.targetDirectoryConversionRate(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CONVERSION_RATE_TARGET_DIRECTORY))
+				.fileNamePatternConversionRate(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CONVERSION_RATE_FILENAME_PATTERN))
+
 				.build();
 	}
 
@@ -94,6 +97,9 @@ public class SAPConfigUtil
 
 				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY))
 				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN))
+
+				.targetDirectoryConversionRate(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CONVERSION_RATE_TARGET_DIRECTORY))
+				.fileNamePatternConversionRate(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CONVERSION_RATE_FILENAME_PATTERN))
 
 				.build();
 	}

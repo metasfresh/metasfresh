@@ -56,6 +56,13 @@ public class ExternalSystem_Config_SAP_SFTP
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP_SFTP.COLUMNNAME_SFTP_ConversionRate_TargetDirectory })
+	public void sanitizeConversionRateTargetDirectory(final I_ExternalSystem_Config_SAP_SFTP sapConfigSFTP)
+	{
+		sapConfigSFTP.setSFTP_ConversionRate_TargetDirectory(sanitizeDirectoryRelativePath(sapConfigSFTP.getSFTP_ConversionRate_TargetDirectory()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_ExternalSystem_Config_SAP_SFTP.COLUMNNAME_ProcessedDirectory })
 	public void sanitizeProcessedDirectory(final I_ExternalSystem_Config_SAP_SFTP sapConfigSFTP)
 	{

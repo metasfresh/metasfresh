@@ -140,6 +140,30 @@ public class X_ExternalSystem_Config_SAP_LocalFile extends org.compiere.model.PO
 	}
 
 	@Override
+	public void setLocalFile_ConversionRate_FileName_Pattern (final @Nullable java.lang.String LocalFile_ConversionRate_FileName_Pattern)
+	{
+		set_Value (COLUMNNAME_LocalFile_ConversionRate_FileName_Pattern, LocalFile_ConversionRate_FileName_Pattern);
+	}
+
+	@Override
+	public java.lang.String getLocalFile_ConversionRate_FileName_Pattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_LocalFile_ConversionRate_FileName_Pattern);
+	}
+
+	@Override
+	public void setLocalFile_ConversionRate_TargetDirectory (final @Nullable java.lang.String LocalFile_ConversionRate_TargetDirectory)
+	{
+		set_Value (COLUMNNAME_LocalFile_ConversionRate_TargetDirectory, LocalFile_ConversionRate_TargetDirectory);
+	}
+
+	@Override
+	public java.lang.String getLocalFile_ConversionRate_TargetDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_LocalFile_ConversionRate_TargetDirectory);
+	}
+
+	@Override
 	public void setLocalFile_CreditLimit_FileName_Pattern (final @Nullable java.lang.String LocalFile_CreditLimit_FileName_Pattern)
 	{
 		set_Value (COLUMNNAME_LocalFile_CreditLimit_FileName_Pattern, LocalFile_CreditLimit_FileName_Pattern);

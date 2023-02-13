@@ -61,6 +61,8 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_APPROVED_BY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CONVERSION_RATE_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CONVERSION_RATE_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ERRORED_DIRECTORY;
@@ -74,6 +76,8 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODU
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_APPROVED_BY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CONVERSION_RATE_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CONVERSION_RATE_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_ERRORED_DIRECTORY;
@@ -235,6 +239,9 @@ public class InvokeSAPService
 		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryCreditLimit());
 		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, contentSourceSFTP.getFileNamePatternCreditLimit());
 
+		parameters.put(PARAM_SFTP_CONVERSION_RATE_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryConversionRate());
+		parameters.put(PARAM_SFTP_CONVERSION_RATE_FILENAME_PATTERN, contentSourceSFTP.getFileNamePatternConversionRate());
+
 		parameters.put(PARAM_SFTP_APPROVED_BY, String.valueOf(UserId.toRepoId(contentSourceSFTP.getApprovedBy())));
 
 		return parameters;
@@ -258,6 +265,9 @@ public class InvokeSAPService
 
 		parameters.put(PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryCreditLimit());
 		parameters.put(PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN, contentSourceLocalFile.getFileNamePatternCreditLimit());
+
+		parameters.put(PARAM_LOCAL_FILE_CONVERSION_RATE_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryConversionRate());
+		parameters.put(PARAM_LOCAL_FILE_CONVERSION_RATE_FILENAME_PATTERN, contentSourceLocalFile.getFileNamePatternConversionRate());
 
 		parameters.put(PARAM_LOCAL_FILE_APPROVED_BY, String.valueOf(UserId.toRepoId(contentSourceLocalFile.getApprovedBy())));
 

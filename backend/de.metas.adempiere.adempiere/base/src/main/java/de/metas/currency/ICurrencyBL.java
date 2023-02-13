@@ -187,4 +187,7 @@ public interface ICurrencyBL extends ISingletonService
 	CurrencyPrecision getStdPrecision(CurrencyId currencyId);
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
+
+	@NonNull
+	CurrencyConversionTypeId getCurrencyConversionTypeIdOrDefault(@NonNull OrgId orgId, @Nullable String conversionTypeName);
 }

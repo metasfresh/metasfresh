@@ -428,7 +428,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
         "fileNamePatternBPartner" : "BPartnerSFTP*",
         "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
-        "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
+        "fileNamePatternCreditLimit" : "CreditLimitSFTP*",
+        "targetDirectoryConversionRate" : "testSAPSFTPConversionRateDirectory",
+        "fileNamePatternConversionRate" : "ConversionRateSFTP*"
       },
       "contentSourceLocalFile" : {
         "rootLocation" : "testLocalFileRootLocation",
@@ -445,7 +447,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
         "fileNamePatternBPartner" : "BPartnerLocalFile*",
         "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
-        "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+        "fileNamePatternCreditLimit" : "CreditLimitLocalFile*",
+        "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
+        "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
       },
       "checkDescriptionForMaterialType" : false
     },
@@ -478,7 +482,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
       "fileNamePatternBPartner" : "BPartnerSFTP*",
       "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
-      "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
+      "fileNamePatternCreditLimit" : "CreditLimitSFTP*",
+      "targetDirectoryConversionRate" : "testSAPSFTPConversionRateDirectory",
+      "fileNamePatternConversionRate" : "ConversionRateSFTP*"
     },
     "contentSourceLocalFile" : {
       "rootLocation" : "testLocalFileRootLocation",
@@ -495,7 +501,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
       "fileNamePatternBPartner" : "BPartnerLocalFile*",
       "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
-      "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+      "fileNamePatternCreditLimit" : "CreditLimitLocalFile*",
+      "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
+      "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
     },
     "checkDescriptionForMaterialType" : false
   }
@@ -531,7 +539,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
         "fileNamePatternBPartner" : "BPartnerSFTP*",
         "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
-        "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
+        "fileNamePatternCreditLimit" : "CreditLimitSFTP*",
+        "targetDirectoryConversionRate" : "testSAPSFTPConversionRateDirectory",
+        "fileNamePatternConversionRate" : "ConversionRateSFTP*"
       },
       "contentSourceLocalFile" : {
         "rootLocation" : "testLocalFileRootLocation",
@@ -548,7 +558,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
         "fileNamePatternBPartner" : "BPartnerLocalFile*",
         "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
-        "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+        "fileNamePatternCreditLimit" : "CreditLimitLocalFile*",
+        "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
+        "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
       },
       "checkDescriptionForMaterialType" : false
     },
@@ -864,7 +876,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
           "fileNamePatternBPartner" : "BPartnerSFTP*",
           "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
-          "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
+          "fileNamePatternCreditLimit" : "CreditLimitSFTP*",
+          "targetDirectoryConversionRate" : "testSAPSFTPConversionRateDirectory",
+          "fileNamePatternConversionRate" : "ConversionRateSFTP*"
         },
         "contentSourceLocalFile" : {
           "rootLocation" : "testLocalFileRootLocation",
@@ -881,7 +895,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
           "fileNamePatternBPartner" : "BPartnerLocalFile*",
           "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
-          "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+          "fileNamePatternCreditLimit" : "CreditLimitLocalFile*",
+          "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
+          "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
         },
         "checkDescriptionForMaterialType" : false
       },

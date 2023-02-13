@@ -204,12 +204,14 @@ public class ExternalSystemTestUtil
 		contentSourceSAPSFTP.setSFTP_Product_TargetDirectory("testSAPSFTPProductDirectory");
 		contentSourceSAPSFTP.setSFTP_BPartner_TargetDirectory("testSAPSFTPBPartnerDirectory");
 		contentSourceSAPSFTP.setSFTP_CreditLimit_TargetDirectory("testSAPSFTPCreditLimitDirectory");
+		contentSourceSAPSFTP.setSFTP_ConversionRate_TargetDirectory("testSAPSFTPConversionRateDirectory");
 		contentSourceSAPSFTP.setProcessedDirectory("testSAPSFTPProcessedDirectory");
 		contentSourceSAPSFTP.setErroredDirectory("testSAPSFTPErroredDirectory");
 		contentSourceSAPSFTP.setPollingFrequencyInMs(1000);
 		contentSourceSAPSFTP.setSFTP_Product_FileName_Pattern("ProductSFTP*");
 		contentSourceSAPSFTP.setSFTP_BPartner_FileName_Pattern("BPartnerSFTP*");
 		contentSourceSAPSFTP.setSFTP_CreditLimit_FileName_Pattern("CreditLimitSFTP*");
+		contentSourceSAPSFTP.setSFTP_ConversionRate_FileName_Pattern("ConversionRateSFTP*");
 		contentSourceSAPSFTP.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
 
 		saveRecord(contentSourceSAPSFTP);
@@ -228,12 +230,14 @@ public class ExternalSystemTestUtil
 		contentSourceSAPLocalFile.setLocalFile_Product_TargetDirectory("testSAPLocalFileProductDirectory");
 		contentSourceSAPLocalFile.setLocalFile_BPartner_TargetDirectory("testSAPLocalFileBPartnerDirectory");
 		contentSourceSAPLocalFile.setLocalFile_CreditLimit_TargetDirectory("testSAPLocalFileCreditLimitDirectory");
+		contentSourceSAPLocalFile.setLocalFile_ConversionRate_TargetDirectory("testSAPLocalFileConversionRateDirectory");
 		contentSourceSAPLocalFile.setProcessedDirectory("testSAPLocalFileProcessedDirectory");
 		contentSourceSAPLocalFile.setErroredDirectory("testSAPLocalFileErroredDirectory");
 		contentSourceSAPLocalFile.setPollingFrequencyInMs(1000);
 		contentSourceSAPLocalFile.setLocalFile_Product_FileName_Pattern("ProductLocalFile*");
 		contentSourceSAPLocalFile.setLocalFile_BPartner_FileName_Pattern("BPartnerLocalFile*");
 		contentSourceSAPLocalFile.setLocalFile_CreditLimit_FileName_Pattern("CreditLimitLocalFile*");
+		contentSourceSAPLocalFile.setLocalFile_ConversionRate_FileName_Pattern("ConversionRateLocalFile*");
 		contentSourceSAPLocalFile.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
 
 		saveRecord(contentSourceSAPLocalFile);

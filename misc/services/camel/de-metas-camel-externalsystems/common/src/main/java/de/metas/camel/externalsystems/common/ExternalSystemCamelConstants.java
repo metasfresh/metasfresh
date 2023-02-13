@@ -154,4 +154,7 @@ public class ExternalSystemCamelConstants
 	public static final String MF_GET_WORK_ORDER_PROJECT_V2_CAMEL_URI = "metasfresh.workorder-v2-baseurl.camel.uri";
 
 	public static final String MF_GET_BUDGET_PROJECT_V2_ROUTE_ID = "To-MF_GetBudgetProjects-Route";
+
+	public static final String MF_CREATE_CONVERSION_RATE_CAMEL_URI = "metasfresh.create-conversion-rate-v2.camel.uri";
+	public static final String MF_CREATE_CONVERSION_RATE_V2_URI = "metasfresh.api.v2.currency.baseurl";
 }
