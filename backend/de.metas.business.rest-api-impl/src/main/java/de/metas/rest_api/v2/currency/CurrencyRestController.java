@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CurrencyRestController
 {
+	@NonNull
 	private final ConversionRateService conversionRateService;
 
 	public CurrencyRestController(@NonNull final ConversionRateService conversionRateService)
@@ -47,7 +48,7 @@ public class CurrencyRestController
 
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Conversion rate successfully created"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke attachment endpoint"),
+			@ApiResponse(code = 401, message = "You are not authorized to invoke the endpoint"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request could not be processed")
 	})

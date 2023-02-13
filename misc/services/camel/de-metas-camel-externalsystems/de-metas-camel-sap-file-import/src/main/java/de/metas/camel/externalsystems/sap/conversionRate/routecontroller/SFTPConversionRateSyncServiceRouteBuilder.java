@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.conversionRate;
+package de.metas.camel.externalsystems.sap.conversionRate.routecontroller;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.sap.SAPConfigUtil;
+import de.metas.camel.externalsystems.sap.conversionRate.GetConversionRateFromFileRouteBuilder;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -40,15 +41,15 @@ import static de.metas.camel.externalsystems.sap.service.OnDemandRoutesControlle
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class LocalFileConversionRateSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
+public class SFTPConversionRateSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE = "startConversionRateSyncLocalFile";
-	private static final String STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE = "stopConversionRateSyncLocalFile";
+	private static final String START_CONVERSION_RATE_SYNC_SFTP_ROUTE = "startConversionRateSyncSFTP";
+	private static final String STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE = "stopConversionRateSyncSFTP";
 
 	@VisibleForTesting
-	public static final String START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE;
+	public static final String START_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CONVERSION_RATE_SYNC_SFTP_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE;
+	public static final String STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE;
 
 	@Override
 	public void configure() throws Exception
@@ -57,15 +58,15 @@ public class LocalFileConversionRateSyncServiceRouteBuilder extends RouteBuilder
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(START_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID))
+				.routeId(START_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID))
+				.routeId(STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -77,7 +78,7 @@ public class LocalFileConversionRateSyncServiceRouteBuilder extends RouteBuilder
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getConversionRateFromLocalFileRouteBuilder(request, exchange.getContext()))
+				.onDemandRouteBuilder(getSFTPRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -90,7 +91,7 @@ public class LocalFileConversionRateSyncServiceRouteBuilder extends RouteBuilder
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getConversionRateFromLocalFileRouteId(request))
+				.routeId(getConversionRateFromSFTPRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -99,27 +100,28 @@ public class LocalFileConversionRateSyncServiceRouteBuilder extends RouteBuilder
 	}
 
 	@NonNull
-	private GetConversionRateFromFileRouteBuilder getConversionRateFromLocalFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetConversionRateFromFileRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
 		return GetConversionRateFromFileRouteBuilder
 				.builder()
-				.fileEndpointConfig(SAPConfigUtil.extractLocalFileConfig(request, camelContext))
+				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
-				.routeId(getConversionRateFromLocalFileRouteId(request))
+				.routeId(getConversionRateFromSFTPRouteId(request))
 				.build();
 	}
 
+	@NonNull
 	@VisibleForTesting
-	public static String getConversionRateFromLocalFileRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	public static String getConversionRateFromSFTPRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "GetConversionRateFromLocalFile#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetConversionRateFromSTPServer#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override
 	public String getServiceValue()
 	{
-		return "LocalFileSyncConversionRate";
+		return "SFTPSyncConversionRate";
 	}
 
 	@Override
@@ -131,12 +133,12 @@ public class LocalFileConversionRateSyncServiceRouteBuilder extends RouteBuilder
 	@Override
 	public String getEnableCommand()
 	{
-		return START_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE;
+		return START_CONVERSION_RATE_SYNC_SFTP_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_CONVERSION_RATE_SYNC_LOCAL_FILE_ROUTE;
+		return STOP_CONVERSION_RATE_SYNC_SFTP_ROUTE;
 	}
 }

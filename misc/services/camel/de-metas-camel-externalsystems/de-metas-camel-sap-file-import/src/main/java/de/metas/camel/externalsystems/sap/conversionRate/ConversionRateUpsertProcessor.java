@@ -33,14 +33,6 @@ import static de.metas.camel.externalsystems.sap.SAPConstants.ROUTE_PROPERTY_CON
 
 public class ConversionRateUpsertProcessor implements Processor
 {
-	@Override
-	public void process(final Exchange exchange) throws Exception
-	{
-		final ConversionRateRow conversionRateRow = exchange.getIn().getBody(ConversionRateRow.class);
-
-		processConversionRateRow(exchange, conversionRateRow);
-	}
-
 	public static void processLastConversionRateGroup(@NonNull final Exchange exchange)
 	{
 		final ConversionRateContext conversionRateContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CONVERSION_RATE_ROUTE_CONTEXT, ConversionRateContext.class);
@@ -54,13 +46,22 @@ public class ConversionRateUpsertProcessor implements Processor
 		exchange.getIn().setBody(conversionRateContext.getJsonCurrencyRateCreateRequestBuilder().build());
 	}
 
+	@Override
+	public void process(final Exchange exchange) throws Exception
+	{
+		final ConversionRateRow conversionRateRow = exchange.getIn().getBody(ConversionRateRow.class);
+
+		processConversionRateRow(exchange, conversionRateRow);
+	}
+
 	private void processConversionRateRow(@NonNull final Exchange exchange, @NonNull final ConversionRateRow conversionRateRow)
 	{
 		final ConversionRateContext conversionRateContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CONVERSION_RATE_ROUTE_CONTEXT, ConversionRateContext.class);
 
-		final JsonCurrencyRateCreateRequestBuilder jsonCurrencyRateCreateRequestBuilder = conversionRateContext.getJsonCurrencyRateCreateRequestBuilder();
+		final JsonCurrencyRateCreateRequestBuilder requestBuilder = conversionRateContext.getJsonCurrencyRateCreateRequestBuilder();
 
-		if (jsonCurrencyRateCreateRequestBuilder == null)
+		// while adding rows, we set the body to null, but we add the stuff to our context until all is added
+		if (requestBuilder == null)
 		{
 			conversionRateContext.initConversionRateRequestBuilderFor(conversionRateRow);
 
@@ -68,7 +69,7 @@ public class ConversionRateUpsertProcessor implements Processor
 			return;
 		}
 
-		final boolean added = jsonCurrencyRateCreateRequestBuilder.addConversionRateRow(conversionRateRow);
+		final boolean added = requestBuilder.addConversionRateRow(conversionRateRow);
 
 		if (added)
 		{
@@ -76,8 +77,8 @@ public class ConversionRateUpsertProcessor implements Processor
 			return;
 		}
 
-		final JsonCurrencyRateCreateRequest upsertCreditLimitRequest = conversionRateContext.getJsonCurrencyRateCreateRequestBuilder().build();
-		exchange.getIn().setBody(upsertCreditLimitRequest);
+		final JsonCurrencyRateCreateRequest createCurrencyRateRequest = requestBuilder.build();
+		exchange.getIn().setBody(createCurrencyRateRequest); // *now* we set the request as our exchange body and are going to proceed by calling the metasfresh-API
 
 		conversionRateContext.initConversionRateRequestBuilderFor(conversionRateRow);
 	}

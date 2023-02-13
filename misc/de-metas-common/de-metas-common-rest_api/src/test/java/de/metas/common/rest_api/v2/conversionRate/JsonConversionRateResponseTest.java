@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -51,6 +52,7 @@ public class JsonConversionRateResponseTest
 				.currencyCodeFrom("currencyCodeFrom")
 				.currencyCodeTo("currencyCodeTo")
 				.divideRate(BigDecimal.valueOf(1.5))
+				.validFrom(Instant.now())
 				.build();
 
 		final JsonConversionRateResponse response = JsonConversionRateResponse.builder()

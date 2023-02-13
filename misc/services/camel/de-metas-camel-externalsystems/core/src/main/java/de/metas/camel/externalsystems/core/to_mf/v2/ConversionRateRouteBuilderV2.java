@@ -22,8 +22,6 @@
 
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.rest_api.v2.conversionRate.JsonCurrencyRateCreateRequest;
 import lombok.NonNull;
@@ -40,19 +38,16 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 @Component
 public class ConversionRateRouteBuilderV2 extends RouteBuilder
 {
-	@VisibleForTesting
-	static final String UPSERT_CONVERSION_RATE_PROCESSOR_ID = "UpsertConversionRateProcessorId";
-
 	@Override
 	public void configure() throws Exception
 	{
 		errorHandler(noErrorHandler());
 
 		from("{{" + MF_CREATE_CONVERSION_RATE_CAMEL_URI + "}}")
-				.routeId(ExternalSystemCamelConstants.MF_CREATE_CONVERSION_RATE_CAMEL_URI)
+				.routeId(MF_CREATE_CONVERSION_RATE_CAMEL_URI)
 				.streamCaching()
 
-				.process(this::processJsonCurrencyRateCreateRequest).id(UPSERT_CONVERSION_RATE_PROCESSOR_ID)
+				.process(this::processJsonCurrencyRateCreateRequest)
 
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonCurrencyRateCreateRequest.class))
 				.removeHeaders("CamelHttp*")

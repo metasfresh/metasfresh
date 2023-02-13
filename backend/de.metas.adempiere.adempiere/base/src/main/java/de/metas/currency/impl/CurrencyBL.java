@@ -333,12 +333,19 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}
 
+	@NonNull
 	private CurrencyConversionTypeId getDefaultConversionTypeId(
 			final ClientId adClientId,
 			final OrgId adOrgId,
 			final Instant date)
 	{
 		return currencyDAO.getDefaultConversionTypeId(adClientId, adOrgId, date);
+	}
+
+	@Override
+	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
+	{
+		return currencyDAO.getConversionTypeId(type);
 	}
 
 	@Override
@@ -349,18 +356,12 @@ public class CurrencyBL implements ICurrencyBL
 		{
 			final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
-			return getDefaultConversionTypeId(clientId, orgId, Instant.now());
+			return getDefaultConversionTypeId(clientId, orgId, SystemTime.asInstant());
 		}
 
 		final ConversionTypeMethod conversionTypeMethod = ConversionTypeMethod.ofName(conversionTypeName);
 
 		return getCurrencyConversionTypeId(conversionTypeMethod);
-	}
-
-	@Override
-	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
-	{
-		return currencyDAO.getConversionTypeId(type);
 	}
 
 	@Nullable

@@ -22,43 +22,31 @@
 
 package de.metas.common.rest_api.v2.conversionRate;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-@Value
 @ApiModel
+@Value
+@Builder
+@Jacksonized
 public class JsonCurrencyRateCreateRequest
 {
-	@ApiModelProperty(position = 10, value = "Translated to `C_ConversionRate.AD_Org.Value")
+	@ApiModelProperty(position = 10, value = "Translated to `C_ConversionRate.AD_Org_ID")
+	@Nullable
 	String orgCode;
 
-	@ApiModelProperty(position = 20, value = "Translated to `C_ConversionRate.C_Currency.ISO_Code")
+	@ApiModelProperty(position = 20, value = "Translated to `C_ConversionRate.C_Currency_ID")
+	@NonNull
 	String currencyCodeFrom;
 
 	@ApiModelProperty(position = 30, dataType = "List of conversion rates")
-	@JsonProperty("requestItems")
+	@NonNull
 	List<JsonCurrencyRateCreateRequestItem> requestItems;
-
-	@JsonCreator
-	@Builder
-	public JsonCurrencyRateCreateRequest(
-			@Nullable @JsonProperty("orgCode") final String orgCode,
-			@NonNull @JsonProperty("currencyCodeFrom") final String currencyCodeFrom,
-			@NonNull @JsonProperty("requestItems") final List<JsonCurrencyRateCreateRequestItem> requestItems)
-	{
-		this.orgCode = orgCode;
-		this.currencyCodeFrom = currencyCodeFrom;
-		this.requestItems = coalesce(requestItems, ImmutableList.of());
-	}
 }

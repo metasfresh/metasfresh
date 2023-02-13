@@ -53,9 +53,6 @@ public class ConversionRateCreateRequest
 	BigDecimal divideRate;
 
 	@NonNull
-	BigDecimal multiplyRate;
-
-	@NonNull
 	Instant validFrom;
 
 	@Nullable

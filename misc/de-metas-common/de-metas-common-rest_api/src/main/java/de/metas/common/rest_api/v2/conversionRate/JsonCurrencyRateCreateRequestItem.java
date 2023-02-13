@@ -23,78 +23,42 @@
 package de.metas.common.rest_api.v2.conversionRate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@ApiModel
+@Value
+@Builder
+@Jacksonized
 public class JsonCurrencyRateCreateRequestItem
 {
-	@ApiModelProperty(required = true, position = 10, value = "Translated to `C_ConversionRate.C_Currency_To.ISO_Code")
-	private String currencyCodeTo;
+	@ApiModelProperty(required = true, position = 10, value = "Translated to `C_ConversionRate.C_Currency_To_ID")
+	@NonNull
+	String currencyCodeTo;
 
-	@ApiModelProperty(hidden = true)
-	private boolean currencyCodeToSet;
-
-	@ApiModelProperty(position = 20, value = "Translated to `C_ConversionRate.C_ConversionType.Name`")
-	private String conversionType;
-
-	@ApiModelProperty(hidden = true)
-	private boolean conversionTypeSet;
+	@ApiModelProperty(position = 20, value = "Translated to `C_ConversionRate.C_ConversionType_ID`")
+	@Nullable
+	String conversionType;
 
 	@ApiModelProperty(required = true, position = 30, value = "Translated to `C_ConversionRate.ValidFrom`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate validFrom;
-
-	@ApiModelProperty(hidden = true)
-	private boolean validFromSet;
+	@NonNull
+	LocalDate validFrom;
 
 	@ApiModelProperty(position = 40, value = "Translated to `C_ConversionRate.ValidTo`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate validTo;
-
-	@ApiModelProperty(hidden = true)
-	private boolean validToSet;
+	@Nullable
+	LocalDate validTo;
 
 	@ApiModelProperty(required = true, position = 50, value = "Translated to `C_ConversionRate.DivideRate`")
-	private BigDecimal divideRate;
-
-	@ApiModelProperty(hidden = true)
-	private boolean divideRateSet;
-
-	public void setCurrencyCodeTo(final String currencyCodeTo)
-	{
-		this.currencyCodeTo = currencyCodeTo;
-		this.currencyCodeToSet = true;
-	}
-
-	public void setConversionType(final String conversionType)
-	{
-		this.conversionType = conversionType;
-		this.conversionTypeSet = true;
-	}
-
-	public void setValidFrom(final LocalDate validFrom)
-	{
-		this.validFrom = validFrom;
-		this.validFromSet = true;
-	}
-
-	public void setValidTo(final LocalDate validTo)
-	{
-		this.validTo = validTo;
-		this.validToSet = true;
-	}
-
-	public void setDivideRate(final BigDecimal divideRate)
-	{
-		this.divideRate = divideRate;
-		this.divideRateSet = true;
-	}
+	@NonNull
+	BigDecimal divideRate;
 }

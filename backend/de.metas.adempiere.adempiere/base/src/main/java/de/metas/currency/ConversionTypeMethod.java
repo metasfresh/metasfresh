@@ -1,15 +1,11 @@
 package de.metas.currency;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Arrays;
 
 /*
  * #%L
@@ -33,23 +29,19 @@ import java.util.Arrays;
  * #L%
  */
 
-@Getter
 @AllArgsConstructor
 public enum ConversionTypeMethod implements ReferenceListAwareEnum
 {
-	Spot("S", "Spot"),
-	PeriodEnd("P", "Period End"),
-	Average("A", "Average"),
-	Company("C", "Company"),
-	ForeignExchangeContract("F", "FEC");
+	Spot("S"),
+	PeriodEnd("P"),
+	Average("A"),
+	Company("C"),
+	ForeignExchangeContract("F");
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ConversionTypeMethod> index = ReferenceListAwareEnums.index(values());
 
-	private static final ImmutableMap<String, ConversionTypeMethod> conversionTypesByName = Maps.uniqueIndex(Arrays.asList(values()), ConversionTypeMethod::getName);
-
+	@Getter
 	private final String code;
-
-	private final String name;
 
 	@NonNull
 	public static ConversionTypeMethod ofCode(@NonNull final String code)
@@ -58,15 +50,17 @@ public enum ConversionTypeMethod implements ReferenceListAwareEnum
 	}
 
 	@NonNull
-	public static ConversionTypeMethod ofName(@NonNull final String codeOrName)
+	public static ConversionTypeMethod ofName(@NonNull final String name)
 	{
-		final ConversionTypeMethod conversionTypeMethod = conversionTypesByName.get(codeOrName);
-
-		if (conversionTypeMethod == null)
+		try
 		{
-			throw new AdempiereException("No " + ConversionTypeMethod.class + " found for name: " + codeOrName);
+			return ConversionTypeMethod.valueOf(name);
 		}
-
-		return conversionTypeMethod;
+		catch (final Throwable t)
+		{
+			throw new AdempiereException("No " + ConversionTypeMethod.class + " found for name: " + name)
+					.appendParametersToMessage()
+					.setParameter("AdditionalErrorMessage", t.getMessage());
+		}
 	}
 }

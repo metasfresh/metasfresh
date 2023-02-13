@@ -28,9 +28,9 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.conversionRate.JsonConversionRateResponse;
 import de.metas.common.rest_api.v2.conversionRate.JsonConversionRateResponseItem;
+import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.currency.C_Currency_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -77,6 +77,7 @@ public class C_Conversion_Rate_StepDef
 		final List<JsonConversionRateResponseItem> responseItems = response.getResponseItems();
 
 		assertThat(responseItems.size()).isNotZero();
+		assertThat(responseItems.size()).isEqualTo(dataTable.asMaps().size());
 
 		for (int idx = 0; idx < responseItems.size(); idx++)
 		{
@@ -96,24 +97,21 @@ public class C_Conversion_Rate_StepDef
 		{
 			final String conversionRateIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Conversion_Rate.COLUMNNAME_C_Conversion_Rate_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final SoftAssertions softly = new SoftAssertions();
-
 			final I_C_Conversion_Rate conversionRate = conversionRateTable.get(conversionRateIdentifier);
-			softly.assertThat(conversionRate).isNotNull();
+			assertThat(conversionRate).isNotNull();
+
+			final SoftAssertions softly = new SoftAssertions();
 
 			final String currencyFromIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Currency currencyFrom = currencyTable.get(currencyFromIdentifier);
-			softly.assertThat(currencyFrom).isNotNull();
 			softly.assertThat(conversionRate.getC_Currency_ID()).as(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID).isEqualTo(currencyFrom.getC_Currency_ID());
 
 			final String currencyToIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Currency currencyTo = currencyTable.get(currencyToIdentifier);
-			softly.assertThat(currencyTo).isNotNull();
 			softly.assertThat(conversionRate.getC_Currency_ID_To()).as(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To).isEqualTo(currencyTo.getC_Currency_ID());
 
 			final String conversionTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_ConversionType conversionType = conversionTypeTable.get(conversionTypeIdentifier);
-			softly.assertThat(conversionType).isNotNull();
 			softly.assertThat(conversionRate.getC_ConversionType_ID()).as(I_C_Conversion_Rate.COLUMNNAME_C_ConversionType_ID).isEqualTo(conversionType.getC_ConversionType_ID());
 
 			final BigDecimal divideRate = DataTableUtil.extractBigDecimalForColumnName(row, I_C_Conversion_Rate.COLUMNNAME_DivideRate);

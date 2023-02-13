@@ -8,11 +8,11 @@ Feature:Create conversion rates via metasfresh api
   @from:cucumber
   Scenario: Create conversion rate for existing currencies
 
-    Given load C_Currency:
+    Given load C_Currency by ISO Code:
       | C_Currency_ID.Identifier | ISO_Code |
-      | currencyFrom             | EUR      |
-      | currencyTo_1             | USD      |
-      | currencyTo_2             | CHF      |
+      | currency_EUR             | EUR      |
+      | currencyTo_USD           | USD      |
+      | currencyTo_CHF           | CHF      |
     And load C_ConversionType:
       | C_ConversionType_ID.Identifier | Value |
       | conversionType                 | C     |
@@ -25,27 +25,17 @@ Feature:Create conversion rates via metasfresh api
    "requestItems":[
       {
         "currencyCodeTo": "USD",
-        "currencyCodeToSet": true,
-        "conversionType": "Company",
-        "conversionTypeSet": true,
+        "conversionType": "Company",        
         "validFrom": "2023-02-20",
-        "validFromSet": true,
-        "validTo": "2023-05-20",
-        "validToSet": true,
-        "divideRate": "1.6",
-        "divideRateSet": true
+        "validTo": "2023-05-20",        
+        "divideRate": "1.6"        
       },
        {
-        "currencyCodeTo": "CHF",
-        "currencyCodeToSet": true,
-        "conversionType": "Company",
-        "conversionTypeSet": true,
-        "validFrom": "2023-05-15",
-        "validFromSet": true,
+        "currencyCodeTo": "CHF",        
+        "conversionType": "Company",        
+        "validFrom": "2023-05-15",        
         "validTo": "2023-07-20",
-        "validToSet": true,
-        "divideRate": "0.5",
-        "divideRateSet": true
+        "divideRate": "0.5"        
       }
    ]
 }
@@ -58,5 +48,5 @@ Feature:Create conversion rates via metasfresh api
 
     And validate created C_Conversion_Rate:
       | C_Conversion_Rate_ID.Identifier | C_Currency_ID.Identifier | C_Currency_ID_To.Identifier | C_ConversionType_ID.Identifier | DivideRate | ValidFrom  |
-      | conversionRate_1                | currencyFrom             | currencyTo_1                | conversionType                 | 1.6        | 2023-02-20 |
-      | conversionRate_2                | currencyFrom             | currencyTo_2                | conversionType                 | 0.5        | 2023-05-15 |
+      | conversionRate_1                | currency_EUR             | currencyTo_USD              | conversionType                 | 1.6        | 2023-02-20 |
+      | conversionRate_2                | currency_EUR             | currencyTo_CHF              | conversionType                 | 0.5        | 2023-05-15 |

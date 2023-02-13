@@ -28,6 +28,7 @@ import lombok.NonNull;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -56,5 +57,11 @@ public class ConversionRateRow
 	public LocalDate getValidFrom()
 	{
 		return LocalDate.parse(validFrom, DateTimeFormatter.ofPattern(DEFAULT_DATE_FORMAT));
+	}
+
+	@NonNull
+	public BigDecimal getDivideRate()
+	{
+		return new BigDecimal(indirQuot.trim()).abs();
 	}
 }

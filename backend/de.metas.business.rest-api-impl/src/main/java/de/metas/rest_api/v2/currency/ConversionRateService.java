@@ -33,20 +33,15 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.conversionRate.model.ConversionRate;
 import de.metas.currency.conversionRate.model.ConversionRateCreateRequest;
 import de.metas.currency.conversionRate.repository.ConversionRateRepository;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.ZoneId;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
@@ -67,117 +62,61 @@ public class ConversionRateService
 	}
 
 	@NonNull
-	public JsonConversionRateResponse createConversionRate(@NonNull final JsonCurrencyRateCreateRequest requestConversionRateUpsert)
+	public JsonConversionRateResponse createConversionRate(@NonNull final JsonCurrencyRateCreateRequest currencyRateCreateRequest)
 	{
-		return trxManager.callInNewTrx(() -> createConversionRateWithinTrx(requestConversionRateUpsert));
+		return trxManager.callInThreadInheritedTrx(() -> createConversionRateWithinTrx(currencyRateCreateRequest));
 	}
 
 	@NonNull
-	private JsonConversionRateResponse createConversionRateWithinTrx(@NonNull final JsonCurrencyRateCreateRequest requestConversionRateUpsert)
+	private JsonConversionRateResponse createConversionRateWithinTrx(@NonNull final JsonCurrencyRateCreateRequest currencyRateCreateRequest)
 	{
-		final OrgId orgId = retrieveOrgIdOrDefault(requestConversionRateUpsert.getOrgCode());
+		final OrgId orgId = retrieveOrgIdOrDefault(currencyRateCreateRequest.getOrgCode());
+		final ZoneId orgTimezone = orgDAO.getTimeZone(orgId);
+		final CurrencyId currencyFromId = getCurrencyId(currencyRateCreateRequest.getCurrencyCodeFrom());
 
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(requestConversionRateUpsert.getCurrencyCodeFrom());
-		final CurrencyId currencyFromId = currencyBL.getByCurrencyCode(currencyCode).getId();
+		final ImmutableList<JsonConversionRateResponseItem> rateResponseItems = currencyRateCreateRequest.getRequestItems()
+				.stream()
+				.map(requestItem -> buildConversionRateCreateRequest(orgTimezone, orgId, currencyFromId, requestItem))
+				.map(conversionRateRepository::create)
+				.map(this::buildJsonConversionRateResponseItem)
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList.Builder<JsonConversionRateResponseItem> responseItems = ImmutableList.builder();
-
-		for (final JsonCurrencyRateCreateRequestItem requestItem : requestConversionRateUpsert.getRequestItems())
-		{
-			final ConversionRateCreateRequest createRequest = buildConversionRateCreateRequest(orgId, currencyFromId, requestItem);
-
-			final ConversionRate createdConversionRate = conversionRateRepository.create(createRequest);
-
-			responseItems.add(buildJsonConversionRateResponseItem(
-					createdConversionRate,
-					requestConversionRateUpsert.getCurrencyCodeFrom(),
-					requestItem.getCurrencyCodeTo()));
-		}
-
-		return JsonConversionRateResponse.of(responseItems.build());
+		return JsonConversionRateResponse.of(rateResponseItems);
 	}
 
 	@NonNull
 	private ConversionRateCreateRequest buildConversionRateCreateRequest(
+			@NonNull final ZoneId orgTimezone,
 			@NonNull final OrgId orgId,
 			@NonNull final CurrencyId currencyIdFrom,
-			@NonNull final JsonCurrencyRateCreateRequestItem conversionRateUpsertItem)
+			@NonNull final JsonCurrencyRateCreateRequestItem requestItem)
 	{
-		final ConversionRateCreateRequest.ConversionRateCreateRequestBuilder createRequestBuilder = ConversionRateCreateRequest.builder()
+		return ConversionRateCreateRequest.builder()
 				.orgId(orgId)
-				.currencyId(currencyIdFrom);
-
-		//currencyTo
-		if (conversionRateUpsertItem.isCurrencyCodeToSet())
-		{
-			if (conversionRateUpsertItem.getCurrencyCodeTo() == null)
-			{
-				throw new AdempiereException(I_C_Conversion_Rate.COLUMNNAME_C_Currency_ID_To + " cannot be null!");
-			}
-
-			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(conversionRateUpsertItem.getCurrencyCodeTo());
-			final CurrencyId currencyToId = currencyBL.getByCurrencyCode(currencyCode).getId();
-
-			createRequestBuilder.currencyToId(currencyToId);
-		}
-
-		// conversionType
-		final CurrencyConversionTypeId conversionTypeId = currencyBL.getCurrencyConversionTypeIdOrDefault(orgId, conversionRateUpsertItem.getConversionType());
-
-		createRequestBuilder.conversionTypeId(conversionTypeId);
-
-		//validFrom
-		if (conversionRateUpsertItem.isValidFromSet())
-		{
-			if (conversionRateUpsertItem.getValidFrom() == null)
-			{
-				throw new AdempiereException(I_C_Conversion_Rate.COLUMNNAME_ValidFrom + " cannot be null!");
-			}
-
-			final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-			final Instant validFrom = conversionRateUpsertItem.getValidFrom().atStartOfDay(timeZone).toInstant();
-
-			createRequestBuilder.validFrom(validFrom);
-		}
-
-		//divideRate
-		if (conversionRateUpsertItem.isDivideRateSet())
-		{
-			if (conversionRateUpsertItem.getDivideRate() == null)
-			{
-				throw new AdempiereException(I_C_Conversion_Rate.COLUMNNAME_DivideRate + " cannot be null!");
-			}
-
-			createRequestBuilder.divideRate(conversionRateUpsertItem.getDivideRate());
-			createRequestBuilder.multiplyRate(BigDecimal.ONE.divide(conversionRateUpsertItem.getDivideRate(), 12, RoundingMode.HALF_UP));
-		}
-
-		//validTo
-		if (conversionRateUpsertItem.isValidToSet())
-		{
-			if (conversionRateUpsertItem.getValidTo() != null)
-			{
-				final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-				final Instant validTo = conversionRateUpsertItem.getValidTo().atStartOfDay(timeZone).toInstant();
-
-				createRequestBuilder.validTo(validTo);
-			}
-		}
-
-		return createRequestBuilder.build();
+				.currencyId(currencyIdFrom)
+				.currencyToId(getCurrencyId(requestItem.getCurrencyCodeTo()))
+				.conversionTypeId(currencyBL.getCurrencyConversionTypeIdOrDefault(orgId, requestItem.getConversionType()))
+				.divideRate(requestItem.getDivideRate())
+				.validFrom(TimeUtil.asInstant(requestItem.getValidFrom(), orgTimezone))
+				.validTo(TimeUtil.asInstant(requestItem.getValidTo(), orgTimezone))
+				.build();
 	}
 
 	@NonNull
-	private JsonConversionRateResponseItem buildJsonConversionRateResponseItem(
-			@NonNull final ConversionRate conversionRate,
-			@NonNull final String currencyCodeFrom,
-			@NonNull final String currencyCodeTo)
+	private JsonConversionRateResponseItem buildJsonConversionRateResponseItem(@NonNull final ConversionRate conversionRate)
 	{
 		return JsonConversionRateResponseItem.builder()
 				.conversionRateId(JsonMetasfreshId.of(conversionRate.getConversionRateId().getRepoId()))
-				.currencyCodeFrom(currencyCodeFrom)
-				.currencyCodeTo(currencyCodeTo)
+				.currencyCodeFrom(currencyBL.getCurrencyCodeById(conversionRate.getCurrencyId()).toThreeLetterCode())
+				.currencyCodeTo(currencyBL.getCurrencyCodeById(conversionRate.getCurrencyToId()).toThreeLetterCode())
 				.divideRate(conversionRate.getDivideRate())
+				.validFrom(conversionRate.getValidFrom())
 				.build();
+	}
+
+	@NonNull
+	private CurrencyId getCurrencyId(@NonNull final String currencyCode)
+	{
+		return currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode)).getId();
 	}
 }

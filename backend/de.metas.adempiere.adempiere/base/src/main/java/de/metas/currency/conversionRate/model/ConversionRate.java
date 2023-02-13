@@ -30,12 +30,19 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 
 @Value
 @Builder
 public class ConversionRate
 {
+	@NonNull
+	public static BigDecimal invertRate(@NonNull final BigDecimal rate)
+	{
+		return BigDecimal.ONE.divide(rate, 12, RoundingMode.HALF_UP);
+	}
+
 	@NonNull
 	ConversionRateId conversionRateId;
 
@@ -50,9 +57,6 @@ public class ConversionRate
 
 	@NonNull
 	BigDecimal divideRate;
-
-	@NonNull
-	BigDecimal multiplyRate;
 
 	@NonNull
 	Instant validFrom;

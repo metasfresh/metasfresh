@@ -22,7 +22,6 @@
 
 package de.metas.common.rest_api.v2.conversionRate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,6 +29,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -37,18 +37,17 @@ import java.math.BigDecimal;
 public class JsonConversionRateResponseItem
 {
 	@NonNull
-	@JsonProperty("conversionRateId")
 	JsonMetasfreshId conversionRateId;
 
 	@NonNull
-	@JsonProperty("currencyCodeFrom")
 	String currencyCodeFrom;
 
 	@NonNull
-	@JsonProperty("currencyCodeTo")
 	String currencyCodeTo;
 
 	@NonNull
-	@JsonProperty("divideRate")
 	BigDecimal divideRate;
+
+	@NonNull
+	Instant validFrom;
 }
