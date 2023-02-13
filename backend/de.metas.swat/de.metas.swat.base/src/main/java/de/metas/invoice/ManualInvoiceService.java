@@ -315,7 +315,8 @@ public class ManualInvoiceService
 																							  requestLine.getProductId(),
 																							  header.getBillBPartnerId(),
 																							  requestLine.getQtyToInvoice(),
-																							  header.getSoTrx());
+																							  header.getSoTrx())
+																			.setFailIfNotCalculated();
 
 		editablePricingContext.setPriceListId(priceListId);
 
