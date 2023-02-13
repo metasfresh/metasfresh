@@ -1,11 +1,11 @@
 -- Function: public.update_ad_element_on_ad_element_trl_update(numeric, character varying)
 
 DROP FUNCTION public.update_ad_element_on_ad_element_trl_update(p_AD_Element_ID numeric,
-                                                                p_AD_Language   character varying)
+                                                                p_AD_Language character varying)
 ;
 
 CREATE OR REPLACE FUNCTION public.update_ad_element_on_ad_element_trl_update(p_AD_Element_ID numeric = NULL,
-                                                                             p_AD_Language   character varying = NULL)
+                                                                             p_AD_Language character varying = NULL)
     RETURNS void
 AS
 $BODY$
@@ -36,7 +36,7 @@ BEGIN
       AND e.updated <> e_trl.updated;
     --
     GET DIAGNOSTICS update_count = ROW_COUNT;
-    RAISE NOTICE 'UPDATE % AD_Element ROWS USING AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
+    RAISE NOTICE 'Update % AD_Element rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
 
 
 END;
@@ -50,7 +50,7 @@ ALTER FUNCTION public.update_ad_element_on_ad_element_trl_update(numeric, charac
     OWNER TO metasfresh
 ;
 
-COMMENT ON FUNCTION public.update_ad_element_on_ad_element_trl_update(numeric, character varying) IS 'WHEN the AD_Element_trl has one OF its VALUES changed FOR the base LANGUAGE, the change shall ALSO propagate TO the parent AD_Element.
-This IS used FOR automatic updates ON AD_Element which has COLUMN that are NOT manually updatable.
+COMMENT ON FUNCTION public.update_ad_element_on_ad_element_trl_update(numeric, character varying) IS 'When the AD_Element_trl has one of its values changed for the base language, the change shall also propagate to the parent AD_Element.
+This is used for automatic updates on AD_Element which has column that are not manually updatable.
 '
 ;
