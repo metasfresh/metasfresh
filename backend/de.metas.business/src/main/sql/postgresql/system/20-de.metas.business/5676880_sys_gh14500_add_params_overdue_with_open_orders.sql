@@ -180,3 +180,8 @@ UPDATE AD_Process SET SQLStatement='SELECT * FROM getOverdueInvoicesWithOpenOrde
 UPDATE AD_Process_Para SET IsRange='N',Updated=TO_TIMESTAMP('2023-02-13 16:11:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542544
 ;
 
+-- Value: C_Invoice_Overdue_With_Open_Order_Excel
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2023-02-13T20:59:21.487Z
+UPDATE AD_Process SET SQLStatement='SELECT * FROM getOverdueInvoicesWithOpenOrders(@M_Department_ID/NULL@, @M_SectionCode_ID/NULL@, @C_BPartner_ID/NULL@, ''@PlannedLoadingDateFrom/1900-01-01@''::date, ''@PlannedLoadingDateTo/9999-12-31@''::date, ''@PlannedDeliveryDateFrom/1900-01-01@''::date, ''@PlannedDeliveryDateTo/9999-12-31@''::date);',Updated=TO_TIMESTAMP('2023-02-13 21:59:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585212
+;
