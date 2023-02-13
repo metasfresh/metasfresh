@@ -10,21 +10,22 @@ import org.compiere.model.X_M_InOut;
 @AllArgsConstructor
 public enum MovementType implements ReferenceListAwareEnum
 {
-	CustomerShipment(X_M_InOut.MOVEMENTTYPE_CustomerShipment),
-	CustomerReturns(X_M_InOut.MOVEMENTTYPE_CustomerReturns),
-	VendorReceipts(X_M_InOut.MOVEMENTTYPE_VendorReceipts),
-	VendorReturns(X_M_InOut.MOVEMENTTYPE_VendorReturns),
-	InventoryOut(X_M_InOut.MOVEMENTTYPE_InventoryOut),
-	InventoryIn(X_M_InOut.MOVEMENTTYPE_InventoryIn),
-	MovementFrom(X_M_InOut.MOVEMENTTYPE_MovementFrom),
-	MovementTo(X_M_InOut.MOVEMENTTYPE_MovementTo),
-	ProductionPlus(X_M_InOut.MOVEMENTTYPE_ProductionPlus),
-	ProductionMinus(X_M_InOut.MOVEMENTTYPE_ProductionMinus),
-	WorkOrderPlus(X_M_InOut.MOVEMENTTYPE_WorkOrderPlus),
-	WorkOrderMinus(X_M_InOut.MOVEMENTTYPE_WorkOrderMinus),
+	CustomerShipment(X_M_InOut.MOVEMENTTYPE_CustomerShipment, true),
+	CustomerReturns(X_M_InOut.MOVEMENTTYPE_CustomerReturns, false),
+	VendorReceipts(X_M_InOut.MOVEMENTTYPE_VendorReceipts, false),
+	VendorReturns(X_M_InOut.MOVEMENTTYPE_VendorReturns, true),
+	InventoryOut(X_M_InOut.MOVEMENTTYPE_InventoryOut, true),
+	InventoryIn(X_M_InOut.MOVEMENTTYPE_InventoryIn, false),
+	MovementFrom(X_M_InOut.MOVEMENTTYPE_MovementFrom, true),
+	MovementTo(X_M_InOut.MOVEMENTTYPE_MovementTo, false),
+	ProductionPlus(X_M_InOut.MOVEMENTTYPE_ProductionPlus, false),
+	ProductionMinus(X_M_InOut.MOVEMENTTYPE_ProductionMinus, true),
+	WorkOrderPlus(X_M_InOut.MOVEMENTTYPE_WorkOrderPlus, false),
+	WorkOrderMinus(X_M_InOut.MOVEMENTTYPE_WorkOrderMinus, true),
 	;
 
 	@Getter @NonNull private final String code;
+	@Getter final boolean isOutboundTransaction;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<MovementType> index = ReferenceListAwareEnums.index(values());
 

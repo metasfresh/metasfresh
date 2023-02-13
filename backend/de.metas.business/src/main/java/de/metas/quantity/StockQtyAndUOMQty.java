@@ -122,6 +122,7 @@ public class StockQtyAndUOMQty
 				.build();
 	}
 
+	@JsonIgnore
 	public boolean isZero()
 	{
 		return stockQty.isZero() && (uomQty == null || uomQty.isZero());

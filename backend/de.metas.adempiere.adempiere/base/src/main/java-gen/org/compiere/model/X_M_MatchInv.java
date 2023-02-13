@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1257880820L;
+	private static final long serialVersionUID = 2111428916L;
 
     /** Standard Constructor */
     public X_M_MatchInv (final Properties ctx, final int M_MatchInv_ID, @Nullable final String trxName)
@@ -192,6 +192,33 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	}
 
 	@Override
+	public org.compiere.model.I_M_InOut_Cost getM_InOut_Cost()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_Cost_ID, org.compiere.model.I_M_InOut_Cost.class);
+	}
+
+	@Override
+	public void setM_InOut_Cost(final org.compiere.model.I_M_InOut_Cost M_InOut_Cost)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_Cost_ID, org.compiere.model.I_M_InOut_Cost.class, M_InOut_Cost);
+	}
+
+	@Override
+	public void setM_InOut_Cost_ID (final int M_InOut_Cost_ID)
+	{
+		if (M_InOut_Cost_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Cost_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_Cost_ID, M_InOut_Cost_ID);
+	}
+
+	@Override
+	public int getM_InOut_Cost_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_InOut_Cost_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_M_InOut getM_InOut()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
@@ -350,5 +377,26 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * Type AD_Reference_ID=541716
+	 * Reference name: M_MatchInv_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=541716;
+	/** Material = M */
+	public static final String TYPE_Material = "M";
+	/** Cost = C */
+	public static final String TYPE_Cost = "C";
+	@Override
+	public void setType (final java.lang.String Type)
+	{
+		set_ValueNoCheck (COLUMNNAME_Type, Type);
+	}
+
+	@Override
+	public java.lang.String getType() 
+	{
+		return get_ValueAsString(COLUMNNAME_Type);
 	}
 }

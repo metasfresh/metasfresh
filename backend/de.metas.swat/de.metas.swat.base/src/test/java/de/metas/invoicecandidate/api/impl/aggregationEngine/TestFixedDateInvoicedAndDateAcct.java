@@ -7,6 +7,7 @@ import java.time.Month;
 import java.util.List;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -86,6 +87,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
@@ -108,6 +110,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
 				.build();
@@ -136,6 +139,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 13))
 				.build();
 

@@ -316,6 +316,31 @@ public interface I_M_MatchInv
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Shipment/Receipt Costs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_InOut_Cost_ID (int M_InOut_Cost_ID);
+
+	/**
+	 * Get Shipment/Receipt Costs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_InOut_Cost_ID();
+
+	@Nullable org.compiere.model.I_M_InOut_Cost getM_InOut_Cost();
+
+	void setM_InOut_Cost(@Nullable org.compiere.model.I_M_InOut_Cost M_InOut_Cost);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_M_InOut_Cost> COLUMN_M_InOut_Cost_ID = new ModelColumn<>(I_M_MatchInv.class, "M_InOut_Cost_ID", org.compiere.model.I_M_InOut_Cost.class);
+	String COLUMNNAME_M_InOut_Cost_ID = "M_InOut_Cost_ID";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -370,7 +395,7 @@ public interface I_M_MatchInv
 	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Abgleich Rechnung.
+	 * Set Match Invoice.
 	 * Match Shipment/Receipt to Invoice
 	 *
 	 * <br>Type: ID
@@ -380,7 +405,7 @@ public interface I_M_MatchInv
 	void setM_MatchInv_ID (int M_MatchInv_ID);
 
 	/**
-	 * Get Abgleich Rechnung.
+	 * Get Match Invoice.
 	 * Match Shipment/Receipt to Invoice
 	 *
 	 * <br>Type: ID
@@ -542,6 +567,29 @@ public interface I_M_MatchInv
 
 	ModelColumn<I_M_MatchInv, Object> COLUMN_QtyInUOM = new ModelColumn<>(I_M_MatchInv.class, "QtyInUOM", null);
 	String COLUMNNAME_QtyInUOM = "QtyInUOM";
+
+	/**
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setType (java.lang.String Type);
+
+	/**
+	 * Get Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getType();
+
+	ModelColumn<I_M_MatchInv, Object> COLUMN_Type = new ModelColumn<>(I_M_MatchInv.class, "Type", null);
+	String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Updated.

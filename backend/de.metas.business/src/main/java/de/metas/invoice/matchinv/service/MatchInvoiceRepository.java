@@ -5,13 +5,16 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_MatchInv;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
@@ -28,13 +31,17 @@ class MatchInvoiceRepository
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
 	 */
-	public List<I_M_MatchInv> getByInvoiceLineId(@NonNull final InvoiceLineId invoiceLineId)
+	public List<I_M_MatchInv> getByInvoiceLineId(@NonNull final InvoiceLineId invoiceLineId, @Nullable MatchInvType onlyType)
 	{
-		return queryBL.createQueryBuilder(I_M_MatchInv.class)
-				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLineId)
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_M_MatchInv> queryBuilder = queryBL.createQueryBuilder(I_M_MatchInv.class)
 				.orderBy(I_M_MatchInv.COLUMN_M_MatchInv_ID)
-				.list();
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLineId);
+		if (onlyType != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_MatchInv.COLUMNNAME_Type, onlyType);
+		}
+		return queryBuilder.list();
 	}
 
 	public Set<MatchInvId> getIdsProcessedButNotPostedByInOutLineIds(@NonNull final Set<InOutLineId> inoutLineIds)
@@ -91,19 +98,24 @@ class MatchInvoiceRepository
 				.delete(false);
 	}
 
-	public List<I_M_MatchInv> getByInOutLineId(@NonNull final InOutLineId inoutLineId)
+	public List<I_M_MatchInv> getByInOutLineId(@NonNull final InOutLineId inoutLineId, @NonNull MatchInvType type)
 	{
 		return queryBL.createQueryBuilder(I_M_MatchInv.class)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, inoutLineId)
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_Type, type)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_MatchInv.COLUMN_M_MatchInv_ID)
 				.create()
 				.list();
 	}
 
-	public boolean hasMatchInvs(@NonNull final InvoiceLineId invoiceLineId, @NonNull final InOutLineId inoutLineId)
+	public boolean hasMatchInvs(
+			@NonNull final MatchInvType type,
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InOutLineId inoutLineId)
 	{
 		return queryBL.createQueryBuilder(I_M_MatchInv.class)
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_Type, type)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineId)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineId)
 				.addOnlyActiveRecordsFilter()

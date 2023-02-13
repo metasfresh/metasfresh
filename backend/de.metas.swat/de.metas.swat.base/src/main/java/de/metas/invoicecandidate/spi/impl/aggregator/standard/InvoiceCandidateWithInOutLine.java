@@ -29,7 +29,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 public final class InvoiceCandidateWithInOutLine
 {
 	// services
-	private final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+	private final MatchInvoiceService matchInvoiceService;
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
@@ -48,8 +48,12 @@ public final class InvoiceCandidateWithInOutLine
 	@Getter
 	private final InvoiceCandidateId invoicecandidateId;
 
-	public InvoiceCandidateWithInOutLine(@NonNull final IInvoiceLineAggregationRequest request)
+	public InvoiceCandidateWithInOutLine(
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final IInvoiceLineAggregationRequest request)
 	{
+		this.matchInvoiceService = matchInvoiceService;
+
 		this.ic = request.getC_Invoice_Candidate();
 		this.iciol = request.getC_InvoiceCandidate_InOutLine();
 		this.allocateRemainingQty = request.isAllocateRemainingQty();

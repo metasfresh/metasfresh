@@ -3,8 +3,10 @@ package de.metas.invoice.matchinv.service;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.material.MovementType;
+import de.metas.order.costs.inout.InOutCostId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -41,8 +43,10 @@ public class MatchInvBuilder
 
 	//
 	// Parameters
+	private MatchInvType type;
 	private I_C_InvoiceLine _invoiceLine;
 	private I_M_InOutLine _inoutLine;
+	private InOutCostId inoutCostId;
 	private Instant _dateTrx;
 	private StockQtyAndUOMQty _qtyToMatchExact;
 	private boolean _considerQtysAlreadyMatched = true;
@@ -117,11 +121,13 @@ public class MatchInvBuilder
 
 		// Create the new M_MatchInv record
 		final I_M_MatchInv matchInv = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class);
+		matchInv.setType(getType().getCode());
 		matchInv.setAD_Org_ID(invoiceLine.getAD_Org_ID());
 		matchInv.setC_Invoice_ID(invoiceLine.getC_Invoice_ID());
 		matchInv.setC_InvoiceLine(invoiceLine);
 		matchInv.setM_InOut_ID(inoutLine.getM_InOut_ID());
 		matchInv.setM_InOutLine(inoutLine);
+		matchInv.setM_InOut_Cost_ID(InOutCostId.toRepoId(getInoutCostId()));
 		matchInv.setIsSOTrx(inout.isSOTrx());
 		matchInv.setDocumentNo(inout.getDocumentNo());
 
@@ -171,6 +177,17 @@ public class MatchInvBuilder
 		_built = true;
 	}
 
+	public MatchInvBuilder type(@NonNull final MatchInvType type)
+	{
+		this.type = type;
+		return this;
+	}
+
+	private MatchInvType getType()
+	{
+		return Check.assumeNotNull(type, "type is set");
+	}
+
 	public MatchInvBuilder invoiceLine(final I_C_InvoiceLine invoiceLine)
 	{
 		assertNotBuilt();
@@ -215,6 +232,27 @@ public class MatchInvBuilder
 	{
 		final I_M_InOutLine inoutLine = getInOutLine();
 		return inoutLine.getM_InOut();
+	}
+
+	public MatchInvBuilder inoutCostId(@Nullable InOutCostId inoutCostId)
+	{
+		this.inoutCostId = inoutCostId;
+		return this;
+	}
+
+	@Nullable
+	private InOutCostId getInoutCostId()
+	{
+		final MatchInvType type = getType();
+		if (MatchInvType.Cost.equals(type))
+		{
+			return Check.assumeNotNull(inoutCostId, "M_InOut_Cost_ID is set");
+		}
+		else
+		{
+			Check.assumeNull(inoutCostId, "M_InOut_Cost_ID shall be not set");
+			return null;
+		}
 	}
 
 	/**
@@ -429,7 +467,7 @@ public class MatchInvBuilder
 
 	private boolean isSkipBecauseMatchingsAlreadyExist()
 	{
-		return _skipIfMatchingsAlreadyExist && matchInvoiceService.hasMatchInvs(getInvoiceLineId(), getInOutLineId());
+		return _skipIfMatchingsAlreadyExist && matchInvoiceService.hasMatchInvs(getType(), getInvoiceLineId(), getInOutLineId());
 	}
 
 	/**

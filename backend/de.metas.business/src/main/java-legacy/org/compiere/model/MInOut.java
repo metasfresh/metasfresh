@@ -43,6 +43,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -1628,7 +1629,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				iLine = MInvoiceLine.getOfInOutLine(sLine);
 				if (iLine != null && iLine.getM_Product_ID() > 0)
 				{
-					final boolean matchInvCreated = matchInvoiceService.newMatchInvBuilder()
+					final boolean matchInvCreated = matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
 							.invoiceLine(iLine)
 							.inoutLine(sLine)
 							.dateTrx(getMovementDate())

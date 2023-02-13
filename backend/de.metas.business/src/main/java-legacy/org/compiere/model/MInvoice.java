@@ -37,6 +37,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
@@ -1168,7 +1169,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					&& !isReversal() // in case of reversal, the job is done by IInvoiceBL.handleReversalForInvoice()
 			)
 			{
-				matchInvoiceService.newMatchInvBuilder()
+				matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
 						.invoiceLine(line)
 						.inoutLine(line.getM_InOutLine())
 						.dateTrx(getDateInvoiced())
