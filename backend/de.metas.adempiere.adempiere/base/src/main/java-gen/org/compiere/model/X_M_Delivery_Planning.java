@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -724891020L;
+	private static final long serialVersionUID = 862093207L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -33,19 +33,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setActualDeliveredQty (final BigDecimal ActualDeliveredQty)
-	{
-		set_Value (COLUMNNAME_ActualDeliveredQty, ActualDeliveredQty);
-	}
-
-	@Override
-	public BigDecimal getActualDeliveredQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualDeliveredQty);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

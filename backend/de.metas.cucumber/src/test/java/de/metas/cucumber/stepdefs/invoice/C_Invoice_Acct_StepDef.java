@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
@@ -32,6 +33,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Invoice;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Invoice_Acct_StepDef
@@ -75,6 +78,26 @@ public class C_Invoice_Acct_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			findInvoiceAcct(row);
+		}
+	}
+
+	@And("metasfresh contains C_Invoice_Acct:")
+	public void contains_C_Invoice_Acct(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			createInvoiceAcct(row);
+		}
+	}
+
+	@And("update C_Invoice_Acct:")
+	public void update_C_Invoice_Acct(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			updateInvoiceAcct(row);
 		}
 	}
 
@@ -129,5 +152,63 @@ public class C_Invoice_Acct_StepDef
 
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Acct.COLUMNNAME_C_Invoice_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
 		invoiceAcctTable.put(identifier, invoiceAcctRecord);
+	}
+
+	private void createInvoiceAcct(@NonNull final Map<String, String> row)
+	{
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Acct.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
+
+		final String acctSchemaIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Acct.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_AcctSchema acctSchemaRecord = acctSchemaTable.get(acctSchemaIdentifier);
+
+		final String elementValueIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Acct.COLUMNNAME_C_ElementValue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_ElementValue elementValueRecord = elementValueTable.get(elementValueIdentifier);
+
+		final IQueryBuilder<I_C_Invoice_Acct> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Acct.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaRecord.getC_AcctSchema_ID())
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_ElementValue_ID, elementValueRecord.getC_ElementValue_ID());
+
+		final String invoiceLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Acct.COLUMNNAME_C_InvoiceLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int invoiceLineId;
+		if (Check.isNotBlank(invoiceLineIdentifier))
+		{
+			invoiceLineId = invoiceLineTable.get(invoiceLineIdentifier).getC_InvoiceLine_ID();
+			queryBuilder.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_InvoiceLine_ID, invoiceLineId);
+		}
+		else
+		{
+			invoiceLineId = -1;
+		}
+		
+		final I_C_Invoice_Acct invoiceAcctRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBuilder.create().firstOnlyOrNull(I_C_Invoice_Acct.class),
+				() -> InterfaceWrapperHelper.newInstance(I_C_Invoice_Acct.class));
+
+		invoiceAcctRecord.setC_Invoice_ID(invoiceRecord.getC_Invoice_ID());
+		invoiceAcctRecord.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		invoiceAcctRecord.setC_ElementValue_ID(elementValueRecord.getC_ElementValue_ID());
+		invoiceAcctRecord.setC_InvoiceLine_ID(invoiceLineId);
+
+		saveRecord(invoiceAcctRecord);
+
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Acct.COLUMNNAME_C_Invoice_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceAcctTable.putOrReplace(identifier, invoiceAcctRecord);
+	}
+
+	private void updateInvoiceAcct(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Acct.COLUMNNAME_C_Invoice_Acct_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice_Acct invoiceAcctRecord = invoiceAcctTable.get(identifier);
+
+		final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Invoice_Acct.COLUMNNAME_IsActive);
+		if (isActive != null)
+		{
+			invoiceAcctRecord.setIsActive(isActive);
+		}
+
+		saveRecord(invoiceAcctRecord);
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.externalsystem.sap.source;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.sap.SAPExternalRequest;
 import de.metas.i18n.AdMessageKey;
@@ -30,6 +31,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.Optional;
 
 @Value
 public class SAPContentSourceLocalFile
@@ -79,6 +82,13 @@ public class SAPContentSourceLocalFile
 	@Nullable
 	UserId approvedBy;
 
+	// conversion rate
+	@Nullable
+	String targetDirectoryConversionRate;
+
+	@Nullable
+	String fileNamePatternConversionRate;
+
 	@Builder
 	public SAPContentSourceLocalFile(
 			@NonNull final String rootLocation,
@@ -91,7 +101,9 @@ public class SAPContentSourceLocalFile
 			@Nullable final String fileNamePatternBPartner,
 			@Nullable final String targetDirectoryCreditLimit,
 			@Nullable final String fileNamePatternCreditLimit,
-			@Nullable final UserId approvedBy)
+			@Nullable final UserId approvedBy,
+			@Nullable final String targetDirectoryConversionRate,
+			@Nullable final String fileNamePatternConversionRate)
 	{
 		this.rootLocation = rootLocation;
 		this.processedDirectory = processedDirectory;
@@ -104,6 +116,8 @@ public class SAPContentSourceLocalFile
 		this.targetDirectoryCreditLimit = targetDirectoryCreditLimit;
 		this.fileNamePatternCreditLimit = fileNamePatternCreditLimit;
 		this.approvedBy = approvedBy;
+		this.targetDirectoryConversionRate = targetDirectoryConversionRate;
+		this.fileNamePatternConversionRate = fileNamePatternConversionRate;
 	}
 
 	@NonNull
@@ -117,30 +131,12 @@ public class SAPContentSourceLocalFile
 			return BooleanWithReason.TRUE;
 		}
 
-		final String productFileLookupInfo = Strings.nullToEmpty(targetDirectoryProduct)
-				.concat(Strings.nullToEmpty(fileNamePatternProduct));
+		final ImmutableMap<SAPExternalRequest, String> request2LookupInfo = getLookupInfoByExternalRequest();
 
-		final String bpartnerFileLookupInfo = Strings.nullToEmpty(targetDirectoryBPartner)
-				.concat(Strings.nullToEmpty(fileNamePatternBPartner));
+		final String targetLookupInfo = Optional.ofNullable(request2LookupInfo.get(sapExternalRequest))
+				.orElseThrow(() -> new AdempiereException("Unexpected sapExternalRequest=" + sapExternalRequest.getCode()));
 
-		final String creditLimitFileLookupInfo = Strings.nullToEmpty(targetDirectoryCreditLimit)
-				.concat(Strings.nullToEmpty(fileNamePatternCreditLimit));
-
-		final boolean isFileLookupInfoDuplicated;
-		switch (sapExternalRequest)
-		{
-			case START_BPARTNER_SYNC_LOCAL_FILE:
-				isFileLookupInfoDuplicated = bpartnerFileLookupInfo.equals(productFileLookupInfo) || bpartnerFileLookupInfo.equals(creditLimitFileLookupInfo);
-				break;
-			case START_PRODUCT_SYNC_LOCAL_FILE:
-				isFileLookupInfoDuplicated = productFileLookupInfo.equals(bpartnerFileLookupInfo) || productFileLookupInfo.equals(creditLimitFileLookupInfo);
-				break;
-			case START_CREDIT_LIMIT_SYNC_LOCAL_FILE:
-				isFileLookupInfoDuplicated = creditLimitFileLookupInfo.equals(productFileLookupInfo) || creditLimitFileLookupInfo.equals(bpartnerFileLookupInfo);
-				break;
-			default:
-				throw new AdempiereException("Unexpected sapExternalRequest=" + sapExternalRequest.getCode());
-		}
+		final boolean isFileLookupInfoDuplicated = CollectionUtils.hasDuplicatesForValue(request2LookupInfo.values(), targetLookupInfo);
 
 		if (isFileLookupInfoDuplicated)
 		{
@@ -152,5 +148,16 @@ public class SAPContentSourceLocalFile
 		}
 
 		return BooleanWithReason.TRUE;
+	}
+
+	@NonNull
+	private ImmutableMap<SAPExternalRequest, String> getLookupInfoByExternalRequest()
+	{
+		return ImmutableMap.of(
+				SAPExternalRequest.START_PRODUCT_SYNC_LOCAL_FILE, Strings.nullToEmpty(targetDirectoryProduct).concat(Strings.nullToEmpty(fileNamePatternProduct)),
+				SAPExternalRequest.START_BPARTNER_SYNC_LOCAL_FILE, Strings.nullToEmpty(targetDirectoryBPartner).concat(Strings.nullToEmpty(fileNamePatternBPartner)),
+				SAPExternalRequest.START_CREDIT_LIMIT_SYNC_LOCAL_FILE, Strings.nullToEmpty(targetDirectoryCreditLimit).concat(Strings.nullToEmpty(fileNamePatternCreditLimit)),
+				SAPExternalRequest.START_CONVERSION_RATE_SYNC_LOCAL_FILE, Strings.nullToEmpty(targetDirectoryConversionRate).concat(Strings.nullToEmpty(fileNamePatternConversionRate))
+		);
 	}
 }

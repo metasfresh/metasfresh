@@ -630,7 +630,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		if (isDescription())
 		{
@@ -1132,22 +1131,25 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		if (getC_TaxCategory_ID() <= 0)
 		{
-			final I_C_OrderLine orderLine = create(getC_OrderLine(), I_C_OrderLine.class);
-
 			final int taxCategoryID;
 
-			if (orderLine != null)
+			if (getC_Tax_ID() > 0)
 			{
-				taxCategoryID = orderLine.getC_TaxCategory_ID();
+				taxCategoryID = getTax().getC_TaxCategory_ID();
 			}
-
 			else
 			{
-				final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
-
-				taxCategoryID = TaxCategoryId.toRepoId(Services.get(IInvoiceBL.class).getTaxCategoryId(invoiceLine));
+				final I_C_OrderLine orderLine = create(getC_OrderLine(), I_C_OrderLine.class);
+				if (orderLine != null)
+				{
+					taxCategoryID = orderLine.getC_TaxCategory_ID();
+				}
+				else
+				{
+					final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
+					taxCategoryID = TaxCategoryId.toRepoId(Services.get(IInvoiceBL.class).getTaxCategoryId(invoiceLine));
+				}
 			}
-
 			setC_TaxCategory_ID(taxCategoryID);
 		}
 
