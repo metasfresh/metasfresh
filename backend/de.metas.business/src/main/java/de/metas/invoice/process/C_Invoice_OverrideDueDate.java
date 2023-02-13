@@ -23,7 +23,6 @@
 package de.metas.invoice.process;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -34,7 +33,6 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
@@ -76,7 +74,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 		final IQueryUpdater<I_C_Invoice> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice.class)
 				.addSetColumnValue(I_C_Invoice.COLUMNNAME_DueDate, p_OverrideDueDate);
 
-		final IQueryFilter<I_C_Invoice> filter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+		final IQueryFilter<I_C_Invoice> filter = getProcessInfo().getQueryFilterOrElseFalse();
 		queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addFilter(filter)
@@ -89,10 +87,13 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final int recordId = getRecord_ID();
-		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()) && recordId > 0)
+		if (PARAM_OVERRIDE_DUE_DATE.equals(parameter.getColumnName()))
 		{
-			return invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(recordId)).getDueDate();
+			return queryBL.createQueryBuilder(I_C_Invoice.class)
+					.addOnlyActiveRecordsFilter()
+					.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+					.create()
+					.first(I_C_Invoice.COLUMNNAME_DueDate, Timestamp.class);
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
