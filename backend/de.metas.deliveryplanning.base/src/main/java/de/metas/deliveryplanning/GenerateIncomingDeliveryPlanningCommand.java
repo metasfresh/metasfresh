@@ -101,7 +101,6 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.qtyOrdered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
 				.actualLoadedQty(Quantity.zero(uom))
-				.actualDeliveredQty(Quantity.zero(uom))
 				.plannedLoadedQty(Quantity.zero(uom))
 				.plannedDischargeQty(Quantity.zero(uom))
 				.actualDischargeQty(Quantity.zero(uom))
