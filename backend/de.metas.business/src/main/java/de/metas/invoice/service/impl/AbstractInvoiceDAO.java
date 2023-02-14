@@ -36,6 +36,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -637,5 +639,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
 		return docBaseAndSubType.equals(targetDocType);
+	}
+
+	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, true)
+				.addFilter(filter)
+				.setLimit(QueryLimit.TEN)
+				.create()
+				.stream()
+				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
+				.collect(ImmutableList.toImmutableList());
 	}
 }
