@@ -571,8 +571,6 @@ public final class AggregationEngine
 
 	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
-
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (overrideDueDateParam != null)

@@ -23,7 +23,7 @@ CREATE OR REPLACE VIEW c_invoice_v AS
                 CASE
                     WHEN charat(d.docbasetype::character varying, 2)::text = ANY (ARRAY['P'::text, 'E'::text]) THEN (-1.0)
                     ELSE 1.0
-                END AS multiplierap, d.docbasetype, paymenttermduedate(i.c_paymentterm_id, i.dateinvoiced::timestamp with time zone) AS duedate, i.M_SectionCode_ID
+                END AS multiplierap, d.docbasetype,  i.duedate::timestamp with time zone AS duedate, i.M_SectionCode_ID
            FROM c_invoice i
       JOIN c_doctype d ON i.c_doctype_id = d.c_doctype_id
      WHERE i.ispayschedulevalid <> 'Y'::bpchar
