@@ -5,7 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_M_MatchInv;
 
 /*

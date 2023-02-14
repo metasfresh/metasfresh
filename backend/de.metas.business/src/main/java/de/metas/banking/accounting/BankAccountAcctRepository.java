@@ -13,7 +13,7 @@ import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 import org.compiere.util.DB;

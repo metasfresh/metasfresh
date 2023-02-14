@@ -28,7 +28,7 @@ import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_M_Inventory;
 
 import java.math.BigDecimal;

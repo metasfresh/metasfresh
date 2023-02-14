@@ -22,7 +22,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.util.DB;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;

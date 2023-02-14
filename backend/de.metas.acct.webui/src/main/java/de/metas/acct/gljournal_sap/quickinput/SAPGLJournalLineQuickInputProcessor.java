@@ -13,7 +13,7 @@ import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import java.util.Set;
 

@@ -35,7 +35,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;

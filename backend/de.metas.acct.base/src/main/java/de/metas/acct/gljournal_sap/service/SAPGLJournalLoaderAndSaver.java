@@ -34,7 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

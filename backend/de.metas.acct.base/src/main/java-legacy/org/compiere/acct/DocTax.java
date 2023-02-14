@@ -21,7 +21,7 @@ import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.tax.api.TaxId;
 import lombok.NonNull;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import java.math.BigDecimal;
 

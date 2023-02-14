@@ -12,7 +12,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 

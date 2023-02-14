@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

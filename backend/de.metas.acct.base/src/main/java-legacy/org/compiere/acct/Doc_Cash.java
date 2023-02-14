@@ -26,7 +26,7 @@ import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
 import lombok.NonNull;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.MCash;

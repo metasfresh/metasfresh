@@ -18,7 +18,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;

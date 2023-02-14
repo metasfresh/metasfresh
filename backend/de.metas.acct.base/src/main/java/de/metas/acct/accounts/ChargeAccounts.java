@@ -4,7 +4,7 @@ import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

@@ -6,7 +6,7 @@ import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

@@ -15,7 +15,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.springframework.stereotype.Repository;
 

@@ -14,7 +14,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

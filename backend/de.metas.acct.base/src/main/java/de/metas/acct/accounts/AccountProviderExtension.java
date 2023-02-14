@@ -6,7 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

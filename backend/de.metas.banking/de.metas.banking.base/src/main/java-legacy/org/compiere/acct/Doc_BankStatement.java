@@ -18,7 +18,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 

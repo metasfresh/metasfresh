@@ -57,7 +57,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MNote;

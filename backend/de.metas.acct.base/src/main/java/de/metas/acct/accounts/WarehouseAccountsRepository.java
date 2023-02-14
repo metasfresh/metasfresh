@@ -9,7 +9,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_Acct;
 import org.springframework.stereotype.Repository;

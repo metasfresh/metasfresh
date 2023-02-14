@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.compiere.model;
+package de.metas.acct;
 
 import de.metas.acct.api.AccountId;
 import lombok.AccessLevel;

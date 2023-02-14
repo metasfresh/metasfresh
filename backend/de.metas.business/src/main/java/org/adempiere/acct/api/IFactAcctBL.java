@@ -24,7 +24,7 @@ package org.adempiere.acct.api;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.util.ISingletonService;
-import org.compiere.model.Account;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
 
