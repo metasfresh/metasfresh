@@ -53,11 +53,11 @@ FROM M_Department dep
 
 
 WHERE TRUE
-  AND (dep.m_department_id = p_m_department_id OR p_m_department_id IS NULL)   -- Department
-  AND (sc.m_sectioncode_id = p_m_sectioncode_id OR p_m_sectioncode_id IS NULL) -- Section Code
-  AND (bp.c_bpartner_id = p_c_bpartner_id OR p_c_bpartner_id IS NULL)          -- Business partner
-  AND (dp.plannedloadingdate IS NULL OR (dp.plannedloadingdate::date BETWEEN p_plannedLoadingDateFrom::date AND p_plannedLoadingDateTo::date)) -- Planned loading date (range)
-  AND (dp.planneddeliverydate IS NULL OR (dp.planneddeliverydate::date BETWEEN p_plannedDeliveryDateFrom::date AND p_plannedDeliveryDateTo)) -- Planned discharge date (range)
+  AND (dep.m_department_id = p_m_department_id OR p_m_department_id IS NULL)                                                                                                                  -- Department
+  AND (sc.m_sectioncode_id = p_m_sectioncode_id OR p_m_sectioncode_id IS NULL)                                                                                                                -- Section Code
+  AND (bp.c_bpartner_id = p_c_bpartner_id OR p_c_bpartner_id IS NULL)                                                                                                                         -- Business partner
+  AND ((p_plannedLoadingDateFrom::date = '1900-01-01' AND p_plannedLoadingDateTo::date = '9999-12-31') OR (dp.plannedloadingdate::date BETWEEN p_plannedLoadingDateFrom::date AND p_plannedLoadingDateTo::date))      -- Planned loading date (range)
+  AND ((p_plannedDeliveryDateFrom::date = '1900-01-01' AND p_plannedDeliveryDateTo::date = '9999-12-31') OR (dp.planneddeliverydate::date BETWEEN p_plannedDeliveryDateFrom::date AND p_plannedDeliveryDateTo::date)) -- Planned discharge date (range)
 
   AND o.IsSOTrx = 'Y'
   AND o.docstatus IN ('CO', 'CL')
