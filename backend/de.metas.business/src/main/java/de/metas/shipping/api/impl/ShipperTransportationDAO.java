@@ -100,7 +100,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, bPartnerId)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type, X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing)
-				.andCollect(I_M_Delivery_Planning.COLUMN_M_ShipperTransportation_ID)
+				.andCollect(I_M_Delivery_Planning.COLUMN_M_ShipperTransportation_ID, I_M_ShipperTransportation.class)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, bPartnerId)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Completed)
 				.andCollectChildren(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, I_M_ShippingPackage.class)
