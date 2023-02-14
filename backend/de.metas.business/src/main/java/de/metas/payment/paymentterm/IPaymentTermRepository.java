@@ -2,6 +2,7 @@ package de.metas.payment.paymentterm;
 
 import java.util.Optional;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_PaymentTerm;
 
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -40,4 +41,5 @@ public interface IPaymentTermRepository extends ISingletonService
 
 	Optional<PaymentTermId> retrievePaymentTermId(PaymentTermQuery build);
 
+	boolean isAllowOverrideDueDate(@NonNull PaymentTermId paymentTermId);
 }

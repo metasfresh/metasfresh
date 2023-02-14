@@ -148,4 +148,28 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}
+
+	/** Verifies that the "param" DueDateOverride is used */
+	@Test
+	public void test_using_dateDateDueOverrideParam()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.builder()
+				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getOverrideDueDate()).isEqualTo(LocalDate.of(2023, Month.FEBRUARY, 1));
+
+	}
 }
