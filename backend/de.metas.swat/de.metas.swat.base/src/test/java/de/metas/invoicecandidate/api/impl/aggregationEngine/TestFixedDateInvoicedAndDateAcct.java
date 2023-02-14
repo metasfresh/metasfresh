@@ -10,6 +10,7 @@ import de.metas.business.BusinessTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -66,6 +67,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+
 
 		return createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -156,6 +158,10 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
 				.build();
 
+		final int paymentTermId = createPaymentTerm();
+		ic1.setC_PaymentTerm_ID(paymentTermId);
+		InterfaceWrapperHelper.save(ic1);
+
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
@@ -171,5 +177,15 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final IInvoiceHeader invoice = invoices.get(0);
 		assertThat(invoice.getOverrideDueDate()).isEqualTo(LocalDate.of(2023, Month.FEBRUARY, 1));
 
+	}
+
+	private int createPaymentTerm()
+	{
+		I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
+		pt.setC_PaymentTerm_ID(100);
+		pt.setIsAllowOverrideDueDate(true);
+		InterfaceWrapperHelper.save(pt);
+
+		return pt.getC_PaymentTerm_ID();
 	}
 }
