@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.invoice;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,6 +39,12 @@ import java.util.Optional;
 @Jacksonized
 public class JsonCreateInvoiceLineItemRequest
 {
+	/**
+	 * Used to indicate that this instance's {@link JsonPrice}'s
+	 * unit of measurement shall assumed to be in whatever the stocked quantity is.
+	 */
+	public static final String STORAGE_UOM = "STORAGE_UOM";
+
 	@NonNull
 	String externalLineId;
 
@@ -56,6 +63,8 @@ public class JsonCreateInvoiceLineItemRequest
 	@Nullable
 	JsonPrice priceEntered;
 
+	@ApiModelProperty("This is the `C_UOM.X12DE355`-code (`PCE`, `KGM` etc) of the quantity to invoice.\n"
+			+ "If omitted or set to `STORAGE_UOM`, then the respective product's UOM - as set in the metasfresh masterdata - is used.")
 	@Nullable
 	String uomCode;
 
@@ -94,6 +103,8 @@ public class JsonCreateInvoiceLineItemRequest
 	@Jacksonized
 	static class JsonPrice
 	{
+		@ApiModelProperty("This is either the `C_UOM.X12DE355`-code (`PCE`, `KGM` etc) of the price's unit of measurement,\n"
+				+ "or `STORAGE_UOM` in case the respective product's UOM - as set in the metasfresh masterdata - is used.")
 		@NonNull
 		String priceUomCode;
 
