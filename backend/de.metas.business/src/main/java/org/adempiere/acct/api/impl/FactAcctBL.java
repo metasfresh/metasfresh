@@ -23,11 +23,13 @@ package org.adempiere.acct.api.impl;
  */
 
 import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.Check;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Account;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 
@@ -37,13 +39,13 @@ public class FactAcctBL implements IFactAcctBL
 {
 
 	@Override
-	public MAccount getAccount(final I_Fact_Acct factAcct)
+	public Account getAccount(final I_Fact_Acct factAcct)
 	{
 		Check.assumeNotNull(factAcct, "factAcct not null");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(factAcct);
 		final AccountDimension accountDimension = createAccountDimension(factAcct);
-		return MAccount.get(ctx, accountDimension);
+		return Account.of(AccountId.ofRepoId(MAccount.get(ctx, accountDimension).getC_ValidCombination_ID()), factAcct.getAccountConceptualName());
 	}
 
 	@Override

@@ -19,7 +19,6 @@ package org.compiere.acct;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.ProjectAccountType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -31,15 +30,16 @@ import de.metas.product.IProductDAO;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_TimeExpenseLine;
-import org.compiere.model.MAccount;
 import org.compiere.model.MProject;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -295,7 +295,8 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		}
 	}    // getLaborCost
 
-	private MAccount getProjectAccount(final ProjectAccountType acctType, final AcctSchema as)
+	@NonNull
+	private Account getProjectAccount(final ProjectAccountType acctType, final AcctSchema as)
 	{
 		final ProjectId projectId = getC_Project_ID();
 		if (projectId == null)
@@ -303,7 +304,6 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			throw new AdempiereException("Project not set");
 		}
 
-		final AccountId accountId = getAccountProvider().getProjectAccountId(as.getId(), projectId, acctType);
-		return services.getAccountById(accountId);
+		return getAccountProvider().getProjectAccount(as.getId(), projectId, acctType);
 	}
 }    // DocProjectIssue

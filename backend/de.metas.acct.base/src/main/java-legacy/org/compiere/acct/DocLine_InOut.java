@@ -15,9 +15,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 
 /*
@@ -104,7 +104,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 				: getOrgId();
 	}
 
-	public MAccount getProductAssetAccount(final AcctSchema as)
+	@NonNull
+	public Account getProductAssetAccount(final AcctSchema as)
 	{
 		if (isItem())
 		{

@@ -1,6 +1,5 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -9,6 +8,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Account;
 
 import javax.annotation.Nullable;
 
@@ -44,30 +44,31 @@ public class ProductCategoryAccounts
 	@Nullable CostingLevel costingLevel;
 	@Nullable CostingMethod costingMethod;
 
-	@NonNull AccountId P_Revenue_Acct;
-	@NonNull AccountId P_Expense_Acct;
-	@NonNull AccountId P_Asset_Acct;
-	@NonNull AccountId P_COGS_Acct;
-	@NonNull AccountId P_PurchasePriceVariance_Acct;
-	@NonNull AccountId P_InvoicePriceVariance_Acct;
-	@NonNull AccountId P_TradeDiscountRec_Acct;
-	@NonNull AccountId P_TradeDiscountGrant_Acct;
-	@NonNull AccountId P_CostAdjustment_Acct;
-	@NonNull AccountId P_InventoryClearing_Acct;
-	@NonNull AccountId P_WIP_Acct;
-	@NonNull AccountId P_MethodChangeVariance_Acct;
-	@NonNull AccountId P_UsageVariance_Acct;
-	@NonNull AccountId P_RateVariance_Acct;
-	@NonNull AccountId P_MixVariance_Acct;
-	@NonNull AccountId P_FloorStock_Acct;
-	@NonNull AccountId P_CostOfProduction_Acct;
-	@NonNull AccountId P_Labor_Acct;
-	@NonNull AccountId P_Burden_Acct;
-	@NonNull AccountId P_OutsideProcessing_Acct;
-	@NonNull AccountId P_Overhead_Acct;
-	@NonNull AccountId P_Scrap_Acct;
+	@NonNull Account P_Revenue_Acct;
+	@NonNull Account P_Expense_Acct;
+	@NonNull Account P_Asset_Acct;
+	@NonNull Account P_COGS_Acct;
+	@NonNull Account P_PurchasePriceVariance_Acct;
+	@NonNull Account P_InvoicePriceVariance_Acct;
+	@NonNull Account P_TradeDiscountRec_Acct;
+	@NonNull Account P_TradeDiscountGrant_Acct;
+	@NonNull Account P_CostAdjustment_Acct;
+	@NonNull Account P_InventoryClearing_Acct;
+	@NonNull Account P_WIP_Acct;
+	@NonNull Account P_MethodChangeVariance_Acct;
+	@NonNull Account P_UsageVariance_Acct;
+	@NonNull Account P_RateVariance_Acct;
+	@NonNull Account P_MixVariance_Acct;
+	@NonNull Account P_FloorStock_Acct;
+	@NonNull Account P_CostOfProduction_Acct;
+	@NonNull Account P_Labor_Acct;
+	@NonNull Account P_Burden_Acct;
+	@NonNull Account P_OutsideProcessing_Acct;
+	@NonNull Account P_Overhead_Acct;
+	@NonNull Account P_Scrap_Acct;
 
-	public AccountId getAccountId(@NonNull final ProductAcctType acctType)
+	@NonNull
+	public Account getAccount(@NonNull final ProductAcctType acctType)
 	{
 		switch (acctType)
 		{

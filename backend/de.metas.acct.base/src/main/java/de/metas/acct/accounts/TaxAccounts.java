@@ -1,11 +1,11 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Account;
 
 import java.util.Optional;
 
@@ -16,17 +16,18 @@ public class TaxAccounts
 {
 	@NonNull AcctSchemaId acctSchemaId;
 
-	@NonNull AccountId T_Due_Acct;
-	@NonNull AccountId T_Liability_Acct;
-	@NonNull AccountId T_Credit_Acct;
-	@NonNull AccountId T_Receivables_Acct;
-	@NonNull AccountId T_Expense_Acct;
+	@NonNull Account T_Due_Acct;
+	@NonNull Account T_Liability_Acct;
+	@NonNull Account T_Credit_Acct;
+	@NonNull Account T_Receivables_Acct;
+	@NonNull Account T_Expense_Acct;
 	/**
 	 * i.e. C_Tax_Acct.T_Revenue_Acct
 	 */
-	@NonNull Optional<AccountId> T_Revenue_Acct;
+	@NonNull Optional<Account> T_Revenue_Acct;
 
-	public Optional<AccountId> getAccountId(final TaxAcctType acctType)
+	@NonNull
+	public Optional<Account> getAccount(final TaxAcctType acctType)
 	{
 		if (TaxAcctType.TaxDue == acctType)
 		{

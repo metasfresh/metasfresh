@@ -1,7 +1,6 @@
 package de.metas.acct.gljournal_sap;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
@@ -20,6 +19,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -105,7 +105,7 @@ public class SAPGLJournal
 
 	public Supplier<SAPGLJournalLineId> addLine(
 			@NonNull PostingSign postingSign,
-			@NonNull AccountId accountId,
+			@NonNull Account account,
 			@NonNull BigDecimal amountBD,
 			@Nullable TaxId taxId,
 			@NonNull SAPGLJournalCurrencyConverter currencyConverter)
@@ -115,7 +115,7 @@ public class SAPGLJournal
 
 		final SAPGLJournalLine line = SAPGLJournalLine.builder()
 				.line(getNextLineNo())
-				.accountId(accountId)
+				.account(account)
 				.postingSign(postingSign)
 				.amount(amount)
 				.amountAcct(amountAcct)
@@ -190,14 +190,14 @@ public class SAPGLJournal
 	{
 		final TaxId taxId = Check.assumeNotNull(baseLine.getTaxId(), "line shall have the tax set: {}", baseLine);
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
-		final AccountId taxAccountId = taxProvider.getTaxAccountId(taxId, acctSchemaId, taxPostingSign);
+		final Account taxAccount = taxProvider.getTaxAccount(taxId, acctSchemaId, taxPostingSign);
 		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
 		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
 
 		return SAPGLJournalLine.builder()
 				.parentId(baseLine.getIdNotNull())
 				.line(baseLine.getLine()) // will be updated later
-				.accountId(taxAccountId)
+				.account(taxAccount)
 				.postingSign(taxPostingSign)
 				.amount(taxAmt)
 				.amountAcct(taxAmtAcct)

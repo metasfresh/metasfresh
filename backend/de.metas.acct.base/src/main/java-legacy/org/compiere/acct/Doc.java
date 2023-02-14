@@ -9,7 +9,6 @@ import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.DefaultAccountType;
 import de.metas.acct.accounts.GLAccountType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.doc.AcctDocContext;
@@ -58,9 +57,9 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
@@ -1004,42 +1003,32 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Amounts[0];
 	}   // getAmount
 
-	protected final MAccount getCustomerAccount(
+	@NonNull
+	protected final Account getCustomerAccount(
 			@NonNull final BPartnerCustomerAccountType acctType,
 			@NonNull final AcctSchema acctSchema)
 	{
 		return getAccountProvider().getBPartnerCustomerAccount(acctSchema.getId(), getBPartnerId(), acctType);
 	}
 
-	protected final AccountId getCustomerAccountId(
-			@NonNull final BPartnerCustomerAccountType acctType,
-			@NonNull final AcctSchema acctSchema)
-	{
-		return getAccountProvider().getBPartnerCustomerAccountId(acctSchema.getId(), getBPartnerId(), acctType);
-	}
-
-	protected final AccountId getVendorAccountId(
-			@NonNull final BPartnerVendorAccountType acctType,
-			@NonNull final AcctSchema acctSchema)
-	{
-		return getAccountProvider().getBPartnerVendorAccountId(acctSchema.getId(), getBPartnerId(), acctType);
-	}
-
-	protected final MAccount getVendorAccount(
+	@NonNull
+	protected final Account getVendorAccount(
 			@NonNull final BPartnerVendorAccountType acctType,
 			@NonNull final AcctSchema acctSchema)
 	{
 		return getAccountProvider().getBPartnerVendorAccount(acctSchema.getId(), getBPartnerId(), acctType);
 	}
 
-	protected final MAccount getBPGroupAccount(
+	@NonNull
+	protected final Account getBPGroupAccount(
 			@NonNull final BPartnerGroupAccountType acctType,
 			@NonNull final AcctSchema acctSchema)
 	{
 		return getAccountProvider().getBPGroupAccount(acctSchema.getId(), getBPartnerId(), acctType);
 	}
 
-	protected final MAccount getBankAccountAccount(
+	@NonNull
+	protected final Account getBankAccountAccount(
 			@NonNull final BankAccountAcctType acctType,
 			@NonNull final AcctSchema acctSchema)
 	{
@@ -1049,16 +1038,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			throw newPostingException().setDetailMessage("No Bank Statement set");
 		}
 
-		final AccountId accountId = getAccountProvider().getBankAccountAccountId(acctSchema.getId(), bpBankAccountId, acctType);
-		return services.getAccountById(accountId);
+		return getAccountProvider().getBankAccountAccount(acctSchema.getId(), bpBankAccountId, acctType);
 	}
 
-	public MAccount getGLAccount(
+	@NonNull
+	public Account getGLAccount(
 			@NonNull final GLAccountType acctType,
 			@NonNull final AcctSchema as)
 	{
-		final AccountId accountId = getAccountProvider().getGLAccountId(as, acctType);
-		return services.getAccountById(accountId);
+		return getAccountProvider().getGLAccount(as, acctType);
 	}
 
 	protected final AccountProvider getAccountProvider()
@@ -1079,16 +1067,16 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return null;
 	}
 
-	protected final MAccount getRealizedGainAcct(final AcctSchema as)
+	@NonNull
+	protected final Account getRealizedGainAcct(final AcctSchema as)
 	{
-		final AccountId accountId = getAccountProvider().getDefaultAccountId(as, DefaultAccountType.RealizedGain);
-		return services.getAccountById(accountId);
+		return AccountProvider.getDefaultAccount(as, DefaultAccountType.RealizedGain);
 	}
 
-	protected final MAccount getRealizedLossAcct(final AcctSchema as)
+	@NonNull
+	protected final Account getRealizedLossAcct(final AcctSchema as)
 	{
-		final AccountId accountId = getAccountProvider().getDefaultAccountId(as, DefaultAccountType.RealizedLoss);
-		return services.getAccountById(accountId);
+		return AccountProvider.getDefaultAccount(as, DefaultAccountType.RealizedLoss);
 	}
 
 	@Override

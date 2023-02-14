@@ -13,6 +13,7 @@ import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 import org.compiere.util.DB;
@@ -83,14 +84,15 @@ public class BankAccountAcctRepository
 				.bankAccountId(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				//
-				.B_Asset_Acct(AccountId.ofRepoId(record.getB_Asset_Acct()))
-				.B_UnallocatedCash_Acct(AccountId.ofRepoId(record.getB_UnallocatedCash_Acct()))
-				.B_InTransit_Acct(AccountId.ofRepoId(record.getB_InTransit_Acct()))
-				.B_PaymentSelect_Acct(AccountId.ofRepoId(record.getB_PaymentSelect_Acct()))
-				.B_InterestRev_Acct(AccountId.ofRepoId(record.getB_InterestRev_Acct()))
-				.B_InterestExp_Acct(AccountId.ofRepoId(record.getB_InterestExp_Acct()))
-				.PayBankFee_Acct(AccountId.ofRepoId(record.getPayBankFee_Acct()))
-				.Payment_WriteOff_Acct(AccountId.optionalOfRepoId(record.getPayment_WriteOff_Acct()))
+				.B_Asset_Acct(Account.of(AccountId.ofRepoId(record.getB_Asset_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_Asset_Acct))
+				.B_UnallocatedCash_Acct(Account.of(AccountId.ofRepoId(record.getB_UnallocatedCash_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_UnallocatedCash_Acct))
+				.B_InTransit_Acct(Account.of(AccountId.ofRepoId(record.getB_InTransit_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InTransit_Acct))
+				.B_PaymentSelect_Acct(Account.of(AccountId.ofRepoId(record.getB_PaymentSelect_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_PaymentSelect_Acct))
+				.B_InterestRev_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestRev_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InterestRev_Acct))
+				.B_InterestExp_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestExp_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InterestExp_Acct))
+				.PayBankFee_Acct(Account.of(AccountId.ofRepoId(record.getPayBankFee_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_PayBankFee_Acct))
+				.Payment_WriteOff_Acct(AccountId.optionalOfRepoId(record.getPayment_WriteOff_Acct()).
+											   map(accountId -> Account.of(accountId, I_C_BP_BankAccount_Acct.COLUMNNAME_Payment_WriteOff_Acct)))
 				//
 				.build();
 	}

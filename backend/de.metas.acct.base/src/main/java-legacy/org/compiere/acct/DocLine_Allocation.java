@@ -18,12 +18,11 @@ package org.compiere.acct;
 
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
-import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.acct.accounts.CashAccountType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
@@ -43,12 +42,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAccount;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
@@ -406,12 +405,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getBPartnerId();
 	}
 
-	public MAccount getPaymentAcct(final AcctSchema as)
+	@NonNull
+	public Account getPaymentAcct(final AcctSchema as)
 	{
 		final PaymentId paymentId = getPaymentId();
 		if (paymentId != null)
 		{
-			final MAccount paymentAcct = getPaymentAcct(as, paymentId);
+			final Account paymentAcct = getPaymentAcct(as, paymentId);
 			Check.assumeNotNull(paymentAcct, "paymentAcct not null");
 			return paymentAcct;
 		}
@@ -419,7 +419,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		final I_C_CashLine cashLine = getC_CashLine();
 		if (cashLine != null)
 		{
-			final MAccount cashbookAcct = getCashAcct(as, cashLine.getC_CashLine_ID());
+			final Account cashbookAcct = getCashAcct(as, cashLine.getC_CashLine_ID());
 			Check.assumeNotNull(cashbookAcct, "cashbookAcct not null");
 			return cashbookAcct;
 		}
@@ -433,7 +433,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	/**
 	 * Get Payment (Unallocated Payment or Payment Selection) Acct of Bank Account
 	 */
-	private MAccount getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
+	@NonNull
+	private Account getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		doc.setBPBankAccountId(null);
@@ -493,7 +494,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	/**
 	 * Get Cash (Transfer) Acct of CashBook
 	 */
-	private MAccount getCashAcct(final AcctSchema as, final int C_CashLine_ID)
+	@NonNull
+	private Account getCashAcct(final AcctSchema as, final int C_CashLine_ID)
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		final String sql = "SELECT c.C_CashBook_ID "
@@ -510,11 +512,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		doc.setC_CashBook_ID(cashBookId);
 
-		final AccountId accountId = doc.getAccountProvider().getCashAccountId(as.getId(), cashBookId, CashAccountType.CashTransfer);
-		return services.getAccountById(accountId);
+		return doc.getAccountProvider().getCashAccount(as.getId(), cashBookId, CashAccountType.CashTransfer);
 	}    // getCashAcct
 
-	public Optional<MAccount> getPaymentWriteOffAccount(final AcctSchemaId acctSchemaId)
+	public Optional<Account> getPaymentWriteOffAccount(final AcctSchemaId acctSchemaId)
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment == null)
@@ -528,8 +529,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return Optional.empty();
 		}
 
-		return getAccountProvider().getBankAccountAccountIdIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct)
-				.map(services::getAccountById);
+		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct);
 	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()

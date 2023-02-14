@@ -22,11 +22,11 @@ package de.metas.acct.callout;
  * #L%
  */
 
+import de.metas.acct.accounts.TaxAccountsRepository;
+import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.tax.ITaxAccountable;
-import de.metas.acct.accounts.TaxAccountsRepository;
-import de.metas.acct.accounts.TaxAcctType;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
@@ -162,7 +163,8 @@ import java.math.BigDecimal;
 		{
 			final AcctSchemaId acctSchemaId = taxAccountable.getAcctSchemaId();
 			final MAccount taxAccount = taxAccountsRepository.getAccounts(taxId, acctSchemaId)
-					.getAccountId(taxAcctType)
+					.getAccount(taxAcctType)
+					.map(Account::getAccountId)
 					.map(accountDAO::getById)
 					.orElseThrow(() -> new AdempiereException("@NotFound@ " + taxAcctType + " (" + taxId + ", " + acctSchemaId + ")"));
 			taxAccountable.setTax_Acct(taxAccount);

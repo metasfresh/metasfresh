@@ -1,7 +1,6 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -9,6 +8,7 @@ import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
@@ -18,9 +18,9 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -294,7 +294,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		setIsMultiCurrency();
 
 		final AcctSchema as = fact.getAcctSchema();
-		final MAccount account;
+		final Account account;
 		final BigDecimal amtSourceDr;
 		final BigDecimal amtSourceCr;
 		if (line.isInboundTrx())
@@ -351,7 +351,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	{
 		Check.assume(!line.isBankTransfer(), "Line is NOT bank transfer: {}", line);
 
-		final MAccount acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
+		final Account acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 
@@ -493,7 +493,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			return ImmutableList.of();
 		}
 
-		final MAccount acct_Charge = line.getChargeAccount(as, chargeAmt);
+		final Account acct_Charge = line.getChargeAccount(as, chargeAmt);
 		if (acct_Charge == null)
 		{
 			throw newPostingException()

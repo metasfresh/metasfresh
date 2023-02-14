@@ -1,21 +1,22 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Account;
 
 @Value
 @Builder
 public class ProjectAccounts
 {
 	@NonNull AcctSchemaId acctSchemaId;
-	@NonNull AccountId PJ_Asset_Acct;
-	@NonNull AccountId PJ_WIP_Acct;
+	@NonNull Account PJ_Asset_Acct;
+	@NonNull Account PJ_WIP_Acct;
 
-	public AccountId getAccountId(@NonNull final ProjectAccountType acctType)
+	@NonNull
+	public Account getAccount(@NonNull final ProjectAccountType acctType)
 	{
 		switch (acctType)
 		{

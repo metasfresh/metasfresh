@@ -1,9 +1,7 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.doc.PostingException;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctRepository;
@@ -22,7 +20,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.acct.Doc;
-import org.compiere.model.MAccount;
+import org.compiere.model.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -30,7 +28,6 @@ import java.util.Optional;
 
 public class AccountProvider
 {
-	@NonNull private final IAccountDAO accountDAO;
 	@NonNull private final IBPartnerDAO bpartnerDAO;
 	@NonNull private final BPartnerAccountsRepository bpartnerAccountsRepository;
 	@NonNull private final BPartnerGroupAccountsRepository bpartnerGroupAccountsRepository;
@@ -46,7 +43,6 @@ public class AccountProvider
 
 	@Builder(toBuilder = true)
 	public AccountProvider(
-			@NonNull final IAccountDAO accountDAO,
 			@NonNull final IBPartnerDAO bpartnerDAO,
 			@NonNull final BPartnerAccountsRepository bpartnerAccountsRepository,
 			@NonNull final BPartnerGroupAccountsRepository bpartnerGroupAccountsRepository,
@@ -61,7 +57,6 @@ public class AccountProvider
 			//
 			@Nullable final AccountProviderExtension extension)
 	{
-		this.accountDAO = accountDAO;
 		this.bpartnerDAO = bpartnerDAO;
 		this.bpartnerAccountsRepository = bpartnerAccountsRepository;
 		this.bpartnerGroupAccountsRepository = bpartnerGroupAccountsRepository;
@@ -76,76 +71,49 @@ public class AccountProvider
 		this.extension = extension;
 	}
 
-	private PostingException newPostingException()
+	private static PostingException newPostingException()
 	{
 		return new PostingException((Doc<?>)null);
 	}
 
 	@NonNull
-	public MAccount getBPartnerVendorAccount(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerVendorAccountType acctType)
-	{
-		return accountDAO.getById(getBPartnerVendorAccountId(acctSchemaId, bpartnerId, acctType));
-	}
-
-	@NonNull
-	public AccountId getBPartnerVendorAccountId(
+	public Account getBPartnerVendorAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerVendorAccountType acctType)
 	{
 		if (extension != null)
 		{
-			final AccountId accountId = extension.getBPartnerVendorAccountId(acctSchemaId, bpartnerId, acctType).orElse(null);
-			if (accountId != null)
+			final Account account = extension.getBPartnerVendorAccount(acctSchemaId, bpartnerId, acctType).orElse(null);
+			if (account != null)
 			{
-				return accountId;
+				return account;
 			}
 		}
 
-		return bpartnerAccountsRepository.getVendorAccounts(bpartnerId, acctSchemaId).getAccountId(acctType);
+		return bpartnerAccountsRepository.getVendorAccounts(bpartnerId, acctSchemaId).getAccount(acctType);
 	}
 
 	@NonNull
-	public MAccount getBPartnerCustomerAccount(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerCustomerAccountType acctType)
-	{
-		return accountDAO.getById(getBPartnerCustomerAccountId(acctSchemaId, bpartnerId, acctType));
-	}
-
-	@NonNull
-	public AccountId getBPartnerCustomerAccountId(
+	public Account getBPartnerCustomerAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerCustomerAccountType acctType)
 	{
 		if (extension != null)
 		{
-			final AccountId accountId = extension.getBPartnerCustomerAccountId(acctSchemaId, bpartnerId, acctType).orElse(null);
-			if (accountId != null)
+			final Account account = extension.getBPartnerCustomerAccount(acctSchemaId, bpartnerId, acctType).orElse(null);
+			if (account != null)
 			{
-				return accountId;
+				return account;
 			}
 		}
 
-		return bpartnerAccountsRepository.getCustomerAccounts(bpartnerId, acctSchemaId).getAccountId(acctType);
+		return bpartnerAccountsRepository.getCustomerAccounts(bpartnerId, acctSchemaId).getAccount(acctType);
 	}
 
 	@NonNull
-	public MAccount getBPGroupAccount(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerGroupAccountType acctType)
-	{
-		return accountDAO.getById(getBPGroupAccountId(acctSchemaId, bpartnerId, acctType));
-	}
-
-	@NonNull
-	public AccountId getBPGroupAccountId(
+	public Account getBPGroupAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerGroupAccountType acctType)
@@ -154,58 +122,48 @@ public class AccountProvider
 
 		if (extension != null)
 		{
-			final AccountId accountId = extension.getBPGroupAccountId(acctSchemaId, bpGroupId, acctType).orElse(null);
-			if (accountId != null)
+			final Account account = extension.getBPGroupAccount(acctSchemaId, bpGroupId, acctType).orElse(null);
+			if (account != null)
 			{
-				return accountId;
+				return account;
 			}
 		}
 
-		return bpartnerGroupAccountsRepository.getAccounts(bpGroupId, acctSchemaId).getAccountId(acctType);
+		return bpartnerGroupAccountsRepository.getAccounts(bpGroupId, acctSchemaId).getAccount(acctType);
 	}
 
 	@NonNull
-	public MAccount getChargeAccount(
+	public Account getChargeAccount(
 			@NonNull final ChargeId chargeId,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@Nullable final BigDecimal chargeAmt)
 	{
-		return accountDAO.getById(getChargeAccountId(chargeId, acctSchemaId, chargeAmt));
+		return chargeAccountsRepository
+				.getAccounts(chargeId, acctSchemaId)
+				.getAccountByAmt(chargeAmt);
 	}
 
 	@NonNull
-	private AccountId getChargeAccountId(
-			@NonNull final ChargeId chargeId,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@Nullable final BigDecimal chargeAmt)
-	{
-		final ChargeAccounts accounts = chargeAccountsRepository.getAccounts(chargeId, acctSchemaId);
-
-		final int chargeAmtSign = chargeAmt != null ? chargeAmt.signum() : 0;
-		return chargeAmtSign >= 0
-				? accounts.getCh_Expense_Acct() //  Expense (positive amt)
-				: accounts.getCh_Revenue_Acct(); //  Revenue (negative amt)
-	}
-
-	@NonNull
-	public AccountId getBankAccountAccountId(
+	public Account getBankAccountAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final BankAccountId bankAccountId,
 			@NonNull final BankAccountAcctType acctType)
 	{
-		return getBankAccountAccountIdIfSet(acctSchemaId, bankAccountId, acctType)
+		return getBankAccountAccountIfSet(acctSchemaId, bankAccountId, acctType)
 				.orElseThrow(() -> new AdempiereException("No account found for " + acctType + ", " + bankAccountId + ", " + acctSchemaId));
 	}
 
-	public Optional<AccountId> getBankAccountAccountIdIfSet(
+	@NonNull
+	public Optional<Account> getBankAccountAccountIfSet(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final BankAccountId bankAccountId,
 			@NonNull final BankAccountAcctType acctType)
 	{
-		return bankAccountAcctRepository.getAccounts(bankAccountId, acctSchemaId).getAccountId(acctType);
+		return bankAccountAcctRepository.getAccounts(bankAccountId, acctSchemaId).getAccount(acctType);
 	}
 
-	public AccountId getCashAccountId(
+	@NonNull
+	public Account getCashAccount(
 			@NonNull final AcctSchemaId ignoredAcctSchemaId,
 			final int ignoredCashBookId,
 			@NonNull final CashAccountType ignoredAcctType)
@@ -213,29 +171,32 @@ public class AccountProvider
 		throw new AdempiereException("Cash accounts are no longer supported");
 	}
 
-	public AccountId getWarehouseAccountId(
+	@NonNull
+	public Account getWarehouseAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final WarehouseId warehouseId,
 			@NonNull final WarehouseAccountType acctType)
 	{
-		return warehouseAccountsRepository.getAccounts(warehouseId, acctSchemaId).getAccountId(acctType);
+		return warehouseAccountsRepository.getAccounts(warehouseId, acctSchemaId).getAccount(acctType);
 	}
 
-	public AccountId getProjectAccountId(
+	@NonNull
+	public Account getProjectAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final ProjectId projectId,
 			@NonNull final ProjectAccountType acctType)
 	{
-		return projectAccountsRepository.getAccounts(projectId, acctSchemaId).getAccountId(acctType);
+		return projectAccountsRepository.getAccounts(projectId, acctSchemaId).getAccount(acctType);
 	}
 
-	public AccountId getGLAccountId(
+	@NonNull
+	public Account getGLAccount(
 			@NonNull final AcctSchema as,
 			@NonNull final GLAccountType acctType)
 	{
 		if (acctType == GLAccountType.PPVOffset)
 		{
-			return as.getGeneralLedger().getPurchasePriceVarianceOffsetAcctId();
+			return as.getGeneralLedger().getPurchasePriceVarianceOffsetAcct();
 		}
 		else
 		{
@@ -243,17 +204,18 @@ public class AccountProvider
 		}
 	}
 
-	public AccountId getDefaultAccountId(
+	@NonNull
+	public static Account getDefaultAccount(
 			@NonNull final AcctSchema as,
 			@NonNull final DefaultAccountType acctType)
 	{
 		if (acctType == DefaultAccountType.RealizedGain)
 		{
-			return as.getDefaultAccounts().getRealizedGainAcctId();
+			return as.getDefaultAccounts().getRealizedGainAcct();
 		}
 		else if (acctType == DefaultAccountType.RealizedLoss)
 		{
-			return as.getDefaultAccounts().getRealizedLossAcctId();
+			return as.getDefaultAccounts().getRealizedLossAcct();
 		}
 		else
 		{
@@ -261,14 +223,15 @@ public class AccountProvider
 		}
 	}
 
-	public Optional<MAccount> getProductCategoryAccount(
+	@NonNull
+	public Optional<Account> getProductCategoryAccount(
 			final @NonNull AcctSchemaId acctSchemaId,
 			final @NonNull ProductCategoryId productCategoryId,
 			final @NonNull ProductAcctType acctType)
 	{
 		if (extension != null)
 		{
-			final Optional<MAccount> account = extension.getProductCategoryAccount(acctSchemaId, productCategoryId, acctType);
+			final Optional<Account> account = extension.getProductCategoryAccount(acctSchemaId, productCategoryId, acctType);
 			if (account.isPresent())
 			{
 				return account;
@@ -276,22 +239,21 @@ public class AccountProvider
 		}
 
 		return productCategoryAccountsRepository.getAccounts(productCategoryId, acctSchemaId)
-				.map(accounts -> accounts.getAccountId(acctType))
-				.map(accountDAO::getById);
+				.map(accounts -> accounts.getAccount(acctType));
 	}
 
-	public MAccount getTaxAccount(
+	@NonNull
+	public Account getTaxAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final TaxId taxId,
 			@NonNull final TaxAcctType acctType)
 	{
-		return taxAccountsRepository.getAccounts(taxId, acctSchemaId).getAccountId(acctType)
-				.map(accountDAO::getById)
+		return taxAccountsRepository.getAccounts(taxId, acctSchemaId).getAccount(acctType)
 				.orElseThrow(() -> new AdempiereException("Tax account not set: " + acctType + ", " + taxId + ", " + acctSchemaId));
 	}
 
 	@NonNull
-	public MAccount getProductAccount(
+	public Account getProductAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@Nullable final ProductId productId,
 			@Nullable final TaxId taxId,
@@ -299,7 +261,7 @@ public class AccountProvider
 	{
 		if (extension != null)
 		{
-			final MAccount account = extension.getProductAccount(acctSchemaId, productId, acctType).orElse(null);
+			final Account account = extension.getProductAccount(acctSchemaId, productId, acctType).orElse(null);
 			if (account != null)
 			{
 				return account;
@@ -310,9 +272,8 @@ public class AccountProvider
 		// Product Revenue: check/use the override defined on tax level
 		if (acctType == ProductAcctType.P_Revenue_Acct && taxId != null)
 		{
-			final MAccount productRevenueAcct = taxAccountsRepository.getAccounts(taxId, acctSchemaId)
+			final Account productRevenueAcct = taxAccountsRepository.getAccounts(taxId, acctSchemaId)
 					.getT_Revenue_Acct()
-					.map(accountDAO::getById)
 					.orElse(null);
 			if (productRevenueAcct != null)
 			{
@@ -324,14 +285,12 @@ public class AccountProvider
 		{
 			return productCategoryAccountsRepository
 					.getAccounts(productBL.getDefaultProductCategoryId(), acctSchemaId)
-					.map(accounts -> accounts.getAccountId(acctType))
-					.map(accountDAO::getById)
+					.map(accounts -> accounts.getAccount(acctType))
 					.orElseThrow(() -> newPostingException().setDetailMessage("No Default Account for account type: " + acctType));
 		}
 		else
 		{
-			final AccountId accountId = productAccountsRepository.getAccounts(productId, acctSchemaId).getAccountId(acctType);
-			return accountDAO.getById(accountId);
+			return productAccountsRepository.getAccounts(productId, acctSchemaId).getAccount(acctType);
 		}
 	}
 

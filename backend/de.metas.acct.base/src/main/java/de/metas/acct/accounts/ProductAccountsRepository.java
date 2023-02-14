@@ -10,6 +10,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.Account;
 import org.compiere.model.I_M_Product_Acct;
 import org.springframework.stereotype.Repository;
 
@@ -62,33 +63,34 @@ public class ProductAccountsRepository
 				.collect(ImmutableMap.toImmutableMap(ProductAccounts::getAcctSchemaId, accounts -> accounts));
 	}
 
+	@NonNull
 	private static ProductAccounts fromRecord(@NonNull final I_M_Product_Acct record)
 	{
 		return ProductAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.activityId(Optional.ofNullable(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID())))
-				.P_Revenue_Acct(AccountId.ofRepoId(record.getP_Revenue_Acct()))
-				.P_Expense_Acct(AccountId.ofRepoId(record.getP_Expense_Acct()))
-				.P_Asset_Acct(AccountId.ofRepoId(record.getP_Asset_Acct()))
-				.P_COGS_Acct(AccountId.ofRepoId(record.getP_COGS_Acct()))
-				.P_PurchasePriceVariance_Acct(AccountId.ofRepoId(record.getP_PurchasePriceVariance_Acct()))
-				.P_InvoicePriceVariance_Acct(AccountId.ofRepoId(record.getP_InvoicePriceVariance_Acct()))
-				.P_TradeDiscountRec_Acct(AccountId.ofRepoId(record.getP_TradeDiscountRec_Acct()))
-				.P_TradeDiscountGrant_Acct(AccountId.ofRepoId(record.getP_TradeDiscountGrant_Acct()))
-				.P_CostAdjustment_Acct(AccountId.ofRepoId(record.getP_CostAdjustment_Acct()))
-				.P_InventoryClearing_Acct(AccountId.ofRepoId(record.getP_InventoryClearing_Acct()))
-				.P_WIP_Acct(AccountId.ofRepoId(record.getP_WIP_Acct()))
-				.P_MethodChangeVariance_Acct(AccountId.ofRepoId(record.getP_MethodChangeVariance_Acct()))
-				.P_UsageVariance_Acct(AccountId.ofRepoId(record.getP_UsageVariance_Acct()))
-				.P_RateVariance_Acct(AccountId.ofRepoId(record.getP_RateVariance_Acct()))
-				.P_MixVariance_Acct(AccountId.ofRepoId(record.getP_MixVariance_Acct()))
-				.P_FloorStock_Acct(AccountId.ofRepoId(record.getP_FloorStock_Acct()))
-				.P_CostOfProduction_Acct(AccountId.ofRepoId(record.getP_CostOfProduction_Acct()))
-				.P_Labor_Acct(AccountId.ofRepoId(record.getP_Labor_Acct()))
-				.P_Burden_Acct(AccountId.ofRepoId(record.getP_Burden_Acct()))
-				.P_OutsideProcessing_Acct(AccountId.ofRepoId(record.getP_OutsideProcessing_Acct()))
-				.P_Overhead_Acct(AccountId.ofRepoId(record.getP_Overhead_Acct()))
-				.P_Scrap_Acct(AccountId.ofRepoId(record.getP_Scrap_Acct()))
+				.P_Revenue_Acct(Account.of(AccountId.ofRepoId(record.getP_Revenue_Acct()), I_M_Product_Acct.COLUMNNAME_P_Revenue_Acct))
+				.P_Expense_Acct(Account.of(AccountId.ofRepoId(record.getP_Expense_Acct()), I_M_Product_Acct.COLUMNNAME_P_Expense_Acct))
+				.P_Asset_Acct(Account.of(AccountId.ofRepoId(record.getP_Asset_Acct()), I_M_Product_Acct.COLUMNNAME_P_Asset_Acct))
+				.P_COGS_Acct(Account.of(AccountId.ofRepoId(record.getP_COGS_Acct()), I_M_Product_Acct.COLUMNNAME_P_COGS_Acct))
+				.P_PurchasePriceVariance_Acct(Account.of(AccountId.ofRepoId(record.getP_PurchasePriceVariance_Acct()), I_M_Product_Acct.COLUMNNAME_P_PurchasePriceVariance_Acct))
+				.P_InvoicePriceVariance_Acct(Account.of(AccountId.ofRepoId(record.getP_InvoicePriceVariance_Acct()), I_M_Product_Acct.COLUMNNAME_P_InvoicePriceVariance_Acct))
+				.P_TradeDiscountRec_Acct(Account.of(AccountId.ofRepoId(record.getP_TradeDiscountRec_Acct()), I_M_Product_Acct.COLUMNNAME_P_TradeDiscountRec_Acct))
+				.P_TradeDiscountGrant_Acct(Account.of(AccountId.ofRepoId(record.getP_TradeDiscountGrant_Acct()), I_M_Product_Acct.COLUMNNAME_P_TradeDiscountGrant_Acct))
+				.P_CostAdjustment_Acct(Account.of(AccountId.ofRepoId(record.getP_CostAdjustment_Acct()), I_M_Product_Acct.COLUMNNAME_P_CostAdjustment_Acct))
+				.P_InventoryClearing_Acct(Account.of(AccountId.ofRepoId(record.getP_InventoryClearing_Acct()), I_M_Product_Acct.COLUMNNAME_P_InventoryClearing_Acct))
+				.P_WIP_Acct(Account.of(AccountId.ofRepoId(record.getP_WIP_Acct()), I_M_Product_Acct.COLUMNNAME_P_WIP_Acct))
+				.P_MethodChangeVariance_Acct(Account.of(AccountId.ofRepoId(record.getP_MethodChangeVariance_Acct()), I_M_Product_Acct.COLUMNNAME_P_MethodChangeVariance_Acct))
+				.P_UsageVariance_Acct(Account.of(AccountId.ofRepoId(record.getP_UsageVariance_Acct()), I_M_Product_Acct.COLUMNNAME_P_UsageVariance_Acct))
+				.P_RateVariance_Acct(Account.of(AccountId.ofRepoId(record.getP_RateVariance_Acct()), I_M_Product_Acct.COLUMNNAME_P_RateVariance_Acct))
+				.P_MixVariance_Acct(Account.of(AccountId.ofRepoId(record.getP_MixVariance_Acct()), I_M_Product_Acct.COLUMNNAME_P_MixVariance_Acct))
+				.P_FloorStock_Acct(Account.of(AccountId.ofRepoId(record.getP_FloorStock_Acct()), I_M_Product_Acct.COLUMNNAME_P_FloorStock_Acct))
+				.P_CostOfProduction_Acct(Account.of(AccountId.ofRepoId(record.getP_CostOfProduction_Acct()), I_M_Product_Acct.COLUMNNAME_P_CostOfProduction_Acct))
+				.P_Labor_Acct(Account.of(AccountId.ofRepoId(record.getP_Labor_Acct()), I_M_Product_Acct.COLUMNNAME_P_Labor_Acct))
+				.P_Burden_Acct(Account.of(AccountId.ofRepoId(record.getP_Burden_Acct()), I_M_Product_Acct.COLUMNNAME_P_Burden_Acct))
+				.P_OutsideProcessing_Acct(Account.of(AccountId.ofRepoId(record.getP_OutsideProcessing_Acct()), I_M_Product_Acct.COLUMNNAME_P_OutsideProcessing_Acct))
+				.P_Overhead_Acct(Account.of(AccountId.ofRepoId(record.getP_Overhead_Acct()), I_M_Product_Acct.COLUMNNAME_P_Overhead_Acct))
+				.P_Scrap_Acct(Account.of(AccountId.ofRepoId(record.getP_Scrap_Acct()), I_M_Product_Acct.COLUMNNAME_P_Scrap_Acct))
 				.build();
 	}
 }

@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
@@ -7,10 +8,9 @@ import de.metas.sectionCode.SectionCodeId;
 import lombok.Getter;
 import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
 
@@ -49,7 +49,7 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 	@Setter
 	private BigDecimal fixedCurrencyRate;
 
-	private MAccount m_account = null;
+	private Account account = null;
 
 	@Getter
 	@Setter
@@ -72,12 +72,12 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 
 	public final void setAccount(final I_C_ValidCombination acct)
 	{
-		m_account = LegacyAdapters.convertToPO(acct);
+		account = Account.ofId(AccountId.ofRepoId(acct.getC_ValidCombination_ID()));
 	}
 
-	public final MAccount getAccount()
+	public final Account getAccount()
 	{
-		return m_account;
+		return account;
 	}   // getAccount
 
 }

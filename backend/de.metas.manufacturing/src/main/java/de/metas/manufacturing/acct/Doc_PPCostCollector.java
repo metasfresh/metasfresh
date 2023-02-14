@@ -38,7 +38,7 @@ import lombok.NonNull;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
-import org.compiere.model.MAccount;
+import org.compiere.model.Account;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
@@ -174,8 +174,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private Fact createFactLines(
 			@NonNull final AcctSchema as,
 			@NonNull final CostElement costElement,
-			@NonNull final MAccount debit,
-			@NonNull final MAccount credit,
+			@NonNull final Account debit,
+			@NonNull final Account credit,
 			@NonNull final CostAmount cost,
 			@NonNull final Quantity qty)
 	{
@@ -227,7 +227,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
-		final MAccount credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
@@ -241,7 +241,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 			if (costsReceived.signum() != 0)
 			{
-				final MAccount debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
+				final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
 				final Fact fact = createFactLines(as, element, debit, credit, costsReceived, qtyReceived);
 				if (fact != null)
 				{
@@ -251,7 +251,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 			if (costsScrapped.signum() != 0)
 			{
-				final MAccount debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
+				final Account debit = docLine.getAccount(ProductAcctType.P_Scrap_Acct, as);
 				final Fact fact = createFactLines(as, element, debit, credit, costsScrapped, qtyScrapped);
 				if (fact != null)
 				{
@@ -277,8 +277,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final DocLine_CostCollector docLine = getLine();
 		final Quantity qtyIssued = getMovementQty();
 
-		final MAccount debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
-		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
+		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final Account credit = docLine.getAccount(isFloorStock ? ProductAcctType.P_FloorStock_Acct : ProductAcctType.P_Asset_Acct, as);
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
@@ -315,13 +315,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		final Quantity qtyMoved = getMovementQty();
-		final MAccount debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final Account debit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			final MAccount credit = docLine.getAccountForCostElement(as, element);
+			final Account credit = docLine.getAccountForCostElement(as, element);
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved);
 			if (fact != null)
 			{
@@ -352,8 +352,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			return ImmutableList.of();
 		}
 
-		final MAccount debit = docLine.getAccount(varianceAcctType, as);
-		final MAccount credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+		final Account debit = docLine.getAccount(varianceAcctType, as);
+		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
 		final Quantity qty = getMovementQty();
 
 		final ArrayList<Fact> facts = new ArrayList<>();

@@ -45,6 +45,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.Account;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_RevenueRecognition_Plan;
 import org.compiere.model.I_Fact_Acct;
@@ -168,10 +169,10 @@ public final class FactLine extends X_Fact_Acct
 		return accrual;
 	}    // reverse
 
-	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final AccountId accountId)
+	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final Account account)
 	{
-		final MAccount account = Services.get(IAccountDAO.class).getById(getCtx(), accountId);
-		setAccount(acctSchema, account);
+		final MAccount m_account = Services.get(IAccountDAO.class).getById(getCtx(), account.getAccountId());
+		setAccount(acctSchema, m_account);
 	}
 
 	public void setAccount(@NonNull final AcctSchema acctSchema, @NonNull final MAccount acct)
