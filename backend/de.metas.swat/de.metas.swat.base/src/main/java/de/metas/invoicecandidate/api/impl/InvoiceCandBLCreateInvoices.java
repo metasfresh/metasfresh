@@ -943,6 +943,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
 				.build();

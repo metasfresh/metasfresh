@@ -104,7 +104,7 @@ public class C_Invoice
 	 * This shall set the Due Date in invocie considering payment term or contracts only if due date was not set previously
 	 * @param invoice
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void setDueDate(final I_C_Invoice invoice)
 	{
 		if (invoice.getDueDate() != null)
