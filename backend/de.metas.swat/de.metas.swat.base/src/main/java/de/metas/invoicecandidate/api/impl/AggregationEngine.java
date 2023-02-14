@@ -574,6 +574,11 @@ public final class AggregationEngine
 						logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
 					}
 					final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+					if (paymentTermId == null)
+					{
+						return null;
+					}
+
 					final boolean isAllowOverrideDueDate = paymentTermRepository.isAllowOverrideDueDate(paymentTermId);
 					if (isAllowOverrideDueDate)
 					{
