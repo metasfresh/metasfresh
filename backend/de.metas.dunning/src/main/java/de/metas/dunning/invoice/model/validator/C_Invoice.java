@@ -101,16 +101,17 @@ public class C_Invoice
 	}
 
 	/**
-	 * This shall set the Due Date in invocie considering payment term or contracts only if due date was not set previously
+	 * This shall set the Due Date in invoice considering payment term or contracts, but only if due date was not set previously
 	 * @param invoice
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = {ModelValidator.TIMING_AFTER_COMPLETE})
 	public void setDueDate(final I_C_Invoice invoice)
 	{
-		if (invoice.getDueDate() != null)
+		if (invoice.getDueDate() == null)
 		{
 			final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 			invoice.setDueDate(TimeUtil.asTimestamp(dueDate));
+			InterfaceWrapperHelper.save(invoice);
 		}
 	}
 }

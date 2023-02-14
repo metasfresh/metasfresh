@@ -48,6 +48,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -68,7 +69,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
@@ -95,14 +95,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public final class AggregationEngine
 {
 
-	public static AggregationEngine newInstance()
-	{
-		return builder().build();
-	}
-
 	//
 	// services
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
+	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
@@ -115,9 +111,7 @@ public final class AggregationEngine
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
-
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	//
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
@@ -128,13 +122,11 @@ public final class AggregationEngine
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	@Nullable private final ForexContractRef forexContractRef;
-
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
-
 	@Builder
 	private AggregationEngine(
 			final IBPartnerBL bpartnerBL,
@@ -159,6 +151,11 @@ public final class AggregationEngine
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
+	}
+
+	public static AggregationEngine newInstance()
+	{
+		return builder().build();
 	}
 
 	@Override
@@ -568,7 +565,6 @@ public final class AggregationEngine
 				});
 	}
 
-
 	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(
@@ -577,13 +573,27 @@ public final class AggregationEngine
 					{
 						logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
 					}
-					return overrideDueDateParam;
+					final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+					final boolean isAllowOverrideDueDate = paymentTermRepository.isAllowOverrideDueDate(paymentTermId);
+					if (isAllowOverrideDueDate)
+					{
+						return overrideDueDateParam;
+					}
+					return null;
 				},
 				() -> {
 					logger.debug("Due Date will be set on null for now");
 
 					return null;
 				});
+	}
+
+	private PaymentTermId getC_PaymentTerm_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
+
 	}
 
 	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)
