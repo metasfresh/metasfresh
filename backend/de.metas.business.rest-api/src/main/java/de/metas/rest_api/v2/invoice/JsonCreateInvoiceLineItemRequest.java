@@ -64,7 +64,7 @@ public class JsonCreateInvoiceLineItemRequest
 	JsonPrice priceEntered;
 
 	@ApiModelProperty("This is the `C_UOM.X12DE355`-code (`PCE`, `KGM` etc) of the quantity to invoice.\n"
-			+ "If omitted, then the respective product's UOM - as set in the metasfresh masterdata - is used.")
+			+ "If omitted or set to `STORAGE_UOM`, then the respective product's UOM - as set in the metasfresh masterdata - is used.")
 	@Nullable
 	String uomCode;
 
