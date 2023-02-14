@@ -111,33 +111,35 @@ UPDATE AD_Element_Trl SET Description='Wenn angehakt, kann das bei Rechnungsstel
 UPDATE AD_Process_Para SET DefaultValue='@DateInvoiced@',Updated=TO_TIMESTAMP('2023-02-14 15:03:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542548
 ;
 
--- Field: Rechnung(167,D) -> Rechnung(263,D) -> Datum Fälligkeit
--- Column: C_Invoice.DueDate
--- 2023-02-14T16:06:34.504Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,584270,712526,0,263,0,TO_TIMESTAMP('2023-02-14 18:06:34','YYYY-MM-DD HH24:MI:SS'),100,'Datum, zu dem Zahlung fällig wird',0,'D','Datum, zu dem Zahlung ohne Abzüge oder Rabattierung fällig wird.',0,'Y','Y','Y','N','N','N','N','N','Datum Fälligkeit',0,520,0,1,1,TO_TIMESTAMP('2023-02-14 18:06:34','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- seems to exists already
+-- -- Field: Rechnung(167,D) -> Rechnung(263,D) -> Datum Fälligkeit
+-- -- Column: C_Invoice.DueDate
+-- -- 2023-02-14T16:06:34.504Z
+-- INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,584270,712526,0,263,0,TO_TIMESTAMP('2023-02-14 18:06:34','YYYY-MM-DD HH24:MI:SS'),100,'Datum, zu dem Zahlung fällig wird',0,'D','Datum, zu dem Zahlung ohne Abzüge oder Rabattierung fällig wird.',0,'Y','Y','Y','N','N','N','N','N','Datum Fälligkeit',0,520,0,1,1,TO_TIMESTAMP('2023-02-14 18:06:34','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
--- 2023-02-14T16:06:34.508Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=712526 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
+-- -- 2023-02-14T16:06:34.508Z
+-- INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=712526 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- ;
 
--- 2023-02-14T16:06:34.509Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2000) 
-;
+-- -- 2023-02-14T16:06:34.509Z
+-- /* DDL */  select update_FieldTranslation_From_AD_Name_Element(2000) 
+-- ;
 
--- 2023-02-14T16:06:34.514Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=712526
-;
+-- -- 2023-02-14T16:06:34.514Z
+-- DELETE FROM AD_Element_Link WHERE AD_Field_ID=712526
+-- ;
 
--- 2023-02-14T16:06:34.515Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(712526)
-;
+-- -- 2023-02-14T16:06:34.515Z
+-- /* DDL */ select AD_Element_Link_Create_Missing_Field(712526)
+-- ;
 
--- UI Element: Rechnung(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Datum Fälligkeit
--- Column: C_Invoice.DueDate
--- 2023-02-14T16:07:22.674Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,712526,0,263,541214,615817,'F',TO_TIMESTAMP('2023-02-14 18:07:22','YYYY-MM-DD HH24:MI:SS'),100,'Datum, zu dem Zahlung fällig wird','Datum, zu dem Zahlung ohne Abzüge oder Rabattierung fällig wird.','Y','Y','N','Y','N','N','N','Datum Fälligkeit',15,0,0,TO_TIMESTAMP('2023-02-14 18:07:22','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- UI Element: Rechnung(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Datum Fälligkeit
+-- -- Column: C_Invoice.DueDate
+-- -- 2023-02-14T16:07:22.674Z
+-- INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,712526,0,263,541214,615817,'F',TO_TIMESTAMP('2023-02-14 18:07:22','YYYY-MM-DD HH24:MI:SS'),100,'Datum, zu dem Zahlung fällig wird','Datum, zu dem Zahlung ohne Abzüge oder Rabattierung fällig wird.','Y','Y','N','Y','N','N','N','Datum Fälligkeit',15,0,0,TO_TIMESTAMP('2023-02-14 18:07:22','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
+
 
 -- Value: C_Invoice_Candidate_EnqueueSelectionForInvoicing
 -- Classname: de.metas.invoicecandidate.process.C_Invoice_Candidate_EnqueueSelectionForInvoicing
