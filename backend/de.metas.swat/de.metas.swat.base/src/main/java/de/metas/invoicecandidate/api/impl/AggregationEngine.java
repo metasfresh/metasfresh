@@ -26,7 +26,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -69,6 +68,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
@@ -115,8 +115,6 @@ public final class AggregationEngine
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	final InvoiceDueDateProviderService invoiceDueDateProviderService = SpringContextHolder.instance.getBean(InvoiceDueDateProviderService.class);
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
@@ -584,12 +582,9 @@ public final class AggregationEngine
 					return overrideDueDateParam;
 				},
 				() -> {
-					logger.debug("computeDateAcct - falling back to aggregator's computeDateInvoiced as dateAcct");
+					logger.debug("Due Date will be set on null for now");
 
-
-					final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-
-					return dueDate;
+					return null;
 				});
 	}
 
