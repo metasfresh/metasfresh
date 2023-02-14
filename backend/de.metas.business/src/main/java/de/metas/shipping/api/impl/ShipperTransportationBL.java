@@ -123,10 +123,10 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	}
 
 	@Override
-	public Money getCreditUsedByDeliveryInstructionsInCurrency(final BPartnerId bpartnerId, final CurrencyId currencyId)
+	public Money getCreditUsedByOutgoingDeliveryInstructionsInCurrency(final BPartnerId bpartnerId, final CurrencyId currencyId)
 	{
 
-		final Iterator<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveCompletedDeliveryInstructionLines(bpartnerId);
+		final Iterator<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveCompletedOutgoingDeliveryInstructionLines(bpartnerId);
 
 		Money creditUsedInDeliveryInstructions = Money.zero(currencyId);
 

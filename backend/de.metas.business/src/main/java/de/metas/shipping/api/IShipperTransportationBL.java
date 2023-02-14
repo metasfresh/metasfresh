@@ -29,6 +29,6 @@ public interface IShipperTransportationBL extends ISingletonService
 
 	boolean isDeliveryInstruction(DocTypeId docTypeId);
 
-	Money getCreditUsedByDeliveryInstructionsInCurrency(BPartnerId bpartnerId, CurrencyId currencyId);
+	Money getCreditUsedByOutgoingDeliveryInstructionsInCurrency(BPartnerId bpartnerId, CurrencyId currencyId);
 }
 
