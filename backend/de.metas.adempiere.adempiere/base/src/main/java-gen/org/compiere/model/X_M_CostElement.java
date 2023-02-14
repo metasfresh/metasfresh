@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_CostElement extends org.compiere.model.PO implements I_M_CostElement, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1592358090L;
+	private static final long serialVersionUID = 1525657078L;
 
     /** Standard Constructor */
     public X_M_CostElement (final Properties ctx, final int M_CostElement_ID, @Nullable final String trxName)
@@ -84,8 +84,8 @@ public class X_M_CostElement extends org.compiere.model.PO implements I_M_CostEl
 	public static final String COSTINGMETHOD_UserDefined = "U";
 	/** _ = x */
 	public static final String COSTINGMETHOD__ = "x";
-	/** MovingAverageInvoice = MAI */
-	public static final String COSTINGMETHOD_MovingAverageInvoice = "MAI";
+	/** MovingAverageInvoice = M */
+	public static final String COSTINGMETHOD_MovingAverageInvoice = "M";
 	@Override
 	public void setCostingMethod (final @Nullable java.lang.String CostingMethod)
 	{
