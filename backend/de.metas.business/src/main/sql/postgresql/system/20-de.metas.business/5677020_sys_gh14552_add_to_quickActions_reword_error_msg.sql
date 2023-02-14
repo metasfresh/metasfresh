@@ -24,7 +24,7 @@ UPDATE AD_Message_Trl SET MsgText='Die Rechnung wurden bereits bezahlt',Updated=
 
 -- Value: Invoice_already_paid
 -- 2023-02-14T10:22:12.276Z
-UPDATE AD_Message_Trl SET MsgText='The invoice have already been paid',Updated=TO_TIMESTAMP('2023-02-14 12:22:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545236
+UPDATE AD_Message_Trl SET MsgText='The invoice has already been paid',Updated=TO_TIMESTAMP('2023-02-14 12:22:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545236
 ;
 
 -- Process: C_Invoice_OverrideDueDate(de.metas.invoice.process.C_Invoice_OverrideDueDate)
