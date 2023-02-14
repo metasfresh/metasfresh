@@ -57,7 +57,6 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -111,7 +110,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.elasticsearch.common.collect.Tuple;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -127,6 +125,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest.STORAGE_UOM;
 
 /*
  * #%L
@@ -153,8 +152,6 @@ import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 @Service
 public class JsonInvoiceService
 {
-	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
-
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -526,6 +523,7 @@ public class JsonInvoiceService
 				.getProductInfo(ExternalIdentifier.of(jsonLine.getProductIdentifier()), orgId);
 
 		final UomId uomId = getUomId(jsonLine.getUomCode()).orElseGet(productInfo::getUomId);
+		final UomId priceUomId = extractPriceUomIdOrNull(jsonLine, productInfo);
 
 		return CreateInvoiceRequestLine.builder()
 				.externalLineId(jsonLine.getExternalLineId())
@@ -536,7 +534,7 @@ public class JsonInvoiceService
 				.productId(productInfo.getProductId())
 				.vatCodeId(getVatCodeId(jsonLine.getTaxCode(), orgId))
 				.priceEntered(jsonLine.getPriceEntered())
-				.priceUomId(getUomId(jsonLine.getPriceUomCode()).orElse(null))
+				.priceUomId(priceUomId)
 				.qtyToInvoice(Quantitys.create(jsonLine.getQtyToInvoice(), uomId))
 
 				.elementValueId(getElementValueId(jsonLine.getAcctCode(), accountsId))
@@ -679,6 +677,19 @@ public class JsonInvoiceService
 						.setParameter("OrgId", clientAndOrgId.getOrgId())
 						.setParameter("DocBaseType", invoiceDocType.getDocBaseType())
 						.setParameter("DocSubType", invoiceDocType.getDocSubType()));
+	}
+
+	@Nullable
+	private UomId extractPriceUomIdOrNull(
+			@NonNull final JsonCreateInvoiceLineItemRequest jsonLine,
+			@NonNull final ProductMasterDataProvider.ProductInfo productInfo)
+	{
+		if (STORAGE_UOM.equals(jsonLine.getPriceUomCode()))
+		{
+			return productInfo.getUomId();
+		}
+
+		return getUomId(jsonLine.getPriceUomCode()).orElse(null);
 	}
 
 	@NonNull
