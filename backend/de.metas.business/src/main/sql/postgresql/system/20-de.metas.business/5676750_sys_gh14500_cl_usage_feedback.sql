@@ -1102,3 +1102,41 @@ UPDATE AD_Field SET SortNo=2.000000000000,Updated=TO_TIMESTAMP('2023-02-13 12:14
 -- 2023-02-13T11:14:25.033Z
 UPDATE AD_Field SET SortNo=3.000000000000,Updated=TO_TIMESTAMP('2023-02-13 12:14:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712357
 ;
+
+
+-- Window: Credit limit Usage, InternalName=null
+-- 2023-02-14T11:46:04.605Z
+UPDATE AD_Window SET WindowType='Q',Updated=TO_TIMESTAMP('2023-02-14 12:46:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=541679
+;
+
+-- Tab: Credit limit Usage(541679,D) -> CreditLimit_Usage_V
+-- Table: CreditLimit_Usage_V
+-- 2023-02-14T11:46:30.038Z
+UPDATE AD_Tab SET IsGridModeOnly='N',Updated=TO_TIMESTAMP('2023-02-14 12:46:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546816
+;
+
+-- Tab: Credit limit Usage(541679,D) -> CreditLimit_Usage_V
+-- Table: CreditLimit_Usage_V
+-- 2023-02-14T11:46:35.194Z
+UPDATE AD_Tab SET IsRefreshViewOnChangeEvents='Y',Updated=TO_TIMESTAMP('2023-02-14 12:46:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546816
+;
+
+-- Field: Credit limit Usage(541679,D) -> CreditLimit_Usage_V(546816,D) -> CreditLimit_Usage_V
+-- Column: CreditLimit_Usage_V.CreditLimit_Usage_V_ID
+-- 2023-02-14T11:47:19.106Z
+UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-02-14 12:47:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=712318
+;
+
+-- Reference: M_Department
+-- Table: M_Department
+-- Key: M_Department.M_Department_ID
+-- 2023-02-14T11:50:01.015Z
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Display,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,585571,585566,0,541715,542284,TO_TIMESTAMP('2023-02-14 12:50:01','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','N',TO_TIMESTAMP('2023-02-14 12:50:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Column: CreditLimit_Usage_V.M_Department_ID
+-- 2023-02-14T11:50:10.386Z
+UPDATE AD_Column SET AD_Reference_Value_ID=541715,Updated=TO_TIMESTAMP('2023-02-14 12:50:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=586026
+;
+
+
