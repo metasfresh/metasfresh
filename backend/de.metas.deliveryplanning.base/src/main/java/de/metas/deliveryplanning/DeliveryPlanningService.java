@@ -562,17 +562,11 @@ public class DeliveryPlanningService
 		{
 			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 
-			final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
-
-			if (deliveryPlanningType.isIncoming())
-			{
-				// nothing to validate
-				continue;
-			}
-
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 
-			final boolean creditLimitAllowsDeliveryInstruction = validateCreditLimit(deliveryInstructionRequest);
+			final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
+
+			final boolean creditLimitAllowsDeliveryInstruction = deliveryPlanningType.isIncoming() || validateCreditLimit(deliveryInstructionRequest);
 
 			if (creditLimitAllowsDeliveryInstruction)
 			{
