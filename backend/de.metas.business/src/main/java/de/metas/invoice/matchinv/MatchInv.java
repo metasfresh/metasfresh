@@ -28,7 +28,6 @@ import java.time.Instant;
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
-@Builder
 public class MatchInv
 {
 	@NonNull MatchInvId id;
@@ -51,7 +50,8 @@ public class MatchInv
 	@Getter(AccessLevel.NONE)
 	@Nullable MatchInvCostPart costPart;
 
-	public MatchInv(
+	@Builder
+	private MatchInv(
 			@NonNull final MatchInvId id,
 			@NonNull final InvoiceLineId invoiceLineId,
 			@NonNull final InOutAndLineId inoutLineId,
