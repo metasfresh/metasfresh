@@ -170,6 +170,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			save(order1);
 
 			orderLine1 = orderLine("1");
@@ -192,6 +193,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order2.setC_Currency_ID(10);
 			order2.setM_PricingSystem_ID(20);
+			order2.setC_PaymentTerm_ID(100);
 			save(order2);
 
 			orderLine2 = orderLine("2");
@@ -280,6 +282,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order1.setC_Currency_ID(10);
 		order1.setM_PricingSystem_ID(20);
+		order1.setC_PaymentTerm_ID(100);
 		save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
@@ -306,6 +309,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order2.setC_Currency_ID(10);
 		order2.setM_PricingSystem_ID(20);
+		order2.setC_PaymentTerm_ID(100);
 		save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
@@ -332,6 +336,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order3.setC_Currency_ID(10);
 		order3.setM_PricingSystem_ID(20);
+		order3.setC_PaymentTerm_ID(100);
 		save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
@@ -358,6 +363,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order4.setC_Currency_ID(10);
 		order4.setM_PricingSystem_ID(20);
+		order4.setC_PaymentTerm_ID(100);
 		save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
@@ -408,6 +414,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			save(order1);
 
 			orderLine1 = orderLine("1");
@@ -446,6 +453,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			save(order1);
 
 			orderLine1 = orderLine("1");
