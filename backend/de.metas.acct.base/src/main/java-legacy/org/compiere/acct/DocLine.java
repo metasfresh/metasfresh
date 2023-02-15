@@ -53,9 +53,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -397,7 +397,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	@NonNull
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
 		final ProductId productId = getProductId();
 
@@ -410,11 +410,13 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 			if (!m_doc.isSOTrx())
 			{
-				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE); // Expense (+)
+				// Expense (+)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE);
 			}
 			else
 			{
-				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE.negate()); // Revenue (-)
+				// Revenue (-)
+				return getAccountProvider().getChargeAccount(chargeId, as.getId(), BigDecimal.ONE.negate());
 			}
 		}
 		//
@@ -487,7 +489,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @return Charge Account or null
 	 */
 	@Nullable
-	protected final MAccount getChargeAccount(@NonNull final AcctSchema as, final BigDecimal chargeAmt)
+	protected final Account getChargeAccount(@NonNull final AcctSchema as, final BigDecimal chargeAmt)
 	{
 		final ChargeId chargeId = getC_Charge_ID().orElse(null);
 		if (chargeId == null)

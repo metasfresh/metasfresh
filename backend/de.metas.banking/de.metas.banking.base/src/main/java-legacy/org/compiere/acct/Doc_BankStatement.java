@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -306,7 +307,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			@NonNull final AcctSchema as,
 			@NonNull final DocLine_BankStatement line)
 	{
-		final MAccount acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
+		final Account acct_BankInTransit = getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 		final List<BankStatementLineReferenceAcctInfo> lineReferences = line.getReferences();
@@ -399,7 +400,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			return ImmutableList.of();
 		}
 
-		final MAccount acct_Charge = line.getChargeAccount(as, chargeAmt);
+		final Account acct_Charge = line.getChargeAccount(as, chargeAmt);
 		if (acct_Charge == null)
 		{
 			throw newPostingException()
@@ -498,7 +499,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		setIsMultiCurrency();
 
 		final AcctSchema as = fact.getAcctSchema();
-		final MAccount account;
+		final Account account;
 		final BigDecimal amtSourceDr;
 		final BigDecimal amtSourceCr;
 		if (line.isInboundTrx())
@@ -553,8 +554,8 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			return BigDecimal.ZERO;
 		}
 
-		final MAccount bankAssetAccount = getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, fact.getAcctSchema());
-		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount);
+		final Account bankAssetAccount = getBankAccountAccount(BankAccountAcctType.B_Asset_Acct, fact.getAcctSchema());
+		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount.getAccountId());
 
 		final AmountSourceAndAcct bankAssetAmt;
 		final boolean isIncomeAmount;

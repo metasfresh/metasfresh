@@ -1,32 +1,30 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.document.DocTypeId;
-import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.exceptions.AdempiereException;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
-import org.compiere.model.I_GL_Distribution;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.gldistribution.GLDistributionBuilder;
 import de.metas.acct.gldistribution.GLDistributionResult;
 import de.metas.acct.gldistribution.GLDistributionResultLine;
-import de.metas.acct.gldistribution.IGLDistributionDAO;
 import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
+import de.metas.acct.gldistribution.IGLDistributionDAO;
+import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_GL_Distribution;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L

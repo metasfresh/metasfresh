@@ -1,11 +1,11 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 
 @Value
 @Builder
@@ -13,12 +13,13 @@ public class BPartnerGroupAccounts
 {
 	@NonNull AcctSchemaId acctSchemaId;
 
-	@NonNull AccountId PayDiscount_Expense_Acct;
-	@NonNull AccountId PayDiscount_Revenue_Acct;
-	@NonNull AccountId WriteOff_Acct;
-	@NonNull AccountId NotInvoicedReceipts_Acct;
+	@NonNull Account PayDiscount_Expense_Acct;
+	@NonNull Account PayDiscount_Revenue_Acct;
+	@NonNull Account WriteOff_Acct;
+	@NonNull Account NotInvoicedReceipts_Acct;
 
-	public AccountId getAccountId(@NonNull final BPartnerGroupAccountType acctType)
+	@NonNull
+	public Account getAccount(@NonNull final BPartnerGroupAccountType acctType)
 	{
 		switch (acctType)
 		{

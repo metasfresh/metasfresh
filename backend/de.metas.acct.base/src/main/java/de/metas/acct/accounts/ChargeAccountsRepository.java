@@ -9,6 +9,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_Charge_Acct;
 import org.springframework.stereotype.Repository;
 
@@ -45,12 +46,13 @@ public class ChargeAccountsRepository
 				.collect(ImmutableMap.toImmutableMap(ChargeAccounts::getAcctSchemaId, accounts -> accounts));
 	}
 
+	@NonNull
 	private static ChargeAccounts fromRecord(@NonNull final I_C_Charge_Acct record)
 	{
 		return ChargeAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.Ch_Expense_Acct(AccountId.ofRepoId(record.getCh_Expense_Acct()))
-				.Ch_Revenue_Acct(AccountId.ofRepoId(record.getCh_Revenue_Acct()))
+				.Ch_Expense_Acct(Account.of(AccountId.ofRepoId(record.getCh_Expense_Acct()), I_C_Charge_Acct.COLUMNNAME_Ch_Expense_Acct))
+				.Ch_Revenue_Acct(Account.of(AccountId.ofRepoId(record.getCh_Revenue_Acct()), I_C_Charge_Acct.COLUMNNAME_Ch_Revenue_Acct))
 				.build();
 	}
 

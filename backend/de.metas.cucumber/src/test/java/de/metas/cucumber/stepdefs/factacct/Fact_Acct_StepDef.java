@@ -264,6 +264,9 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_CurrencyRate))
 				.ifPresent(factAcctQueryBuilder::currencyRate);
 
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_AccountConceptualName))
+				.ifPresent(factAcctQueryBuilder::accountConceptualName);
+
 		return factAcctQueryBuilder
 				.build();
 	}
@@ -283,6 +286,9 @@ public class Fact_Acct_StepDef
 		Optional.ofNullable(factAcctQuery.getCurrencyRate())
 				.ifPresent(currencyRate -> message.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(currencyRate).append("\n"));
 
+		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
+				.ifPresent(accountConceptualName -> message.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(accountConceptualName).append("\n"));
+
 		message.append("Fact_Acct records:").append("\n");
 
 		queryBL.createQueryBuilder(I_Fact_Acct.class)
@@ -295,6 +301,7 @@ public class Fact_Acct_StepDef
 						.append(I_Fact_Acct.COLUMNNAME_AmtSourceDr).append(" : ").append(factAcctRecord.getAmtSourceDr()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_C_Currency_ID).append(" : ").append(factAcctRecord.getC_Currency_ID()).append(" ; ")
 						.append(I_Fact_Acct.COLUMNNAME_CurrencyRate).append(" : ").append(factAcctRecord.getCurrencyRate()).append(" ; ")
+						.append(I_Fact_Acct.COLUMNNAME_AccountConceptualName).append(" : ").append(factAcctRecord.getAccountConceptualName()).append(" ; ")
 						.append("\n"));
 
 		return "see current context: \n" + message;
@@ -313,6 +320,9 @@ public class Fact_Acct_StepDef
 
 		Optional.ofNullable(factAcctQuery.getCurrencyRate())
 				.ifPresent(currencyRate -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_CurrencyRate, currencyRate));
+
+		Optional.ofNullable(factAcctQuery.getAccountConceptualName())
+				.ifPresent(accountConceptualName -> queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AccountConceptualName, accountConceptualName));
 
 		final I_Fact_Acct factAcctRecord = queryBuilder
 				.create()
@@ -366,6 +376,8 @@ public class Fact_Acct_StepDef
 		@NonNull CurrencyId currencyId;
 
 		@Nullable BigDecimal currencyRate;
+		
+		@Nullable String accountConceptualName;
 
 		public int getRecord_ID()
 		{
