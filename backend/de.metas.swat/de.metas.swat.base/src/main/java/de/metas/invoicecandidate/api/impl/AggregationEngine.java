@@ -797,6 +797,36 @@ public final class AggregationEngine
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
 	}
 
+	@NonNull
+	private InvoiceDocBaseType flipDocBaseTypeIfNeeded(
+			@NonNull final InvoiceDocBaseType docBaseType,
+			final boolean invoiceIsSOTrx,
+			@NonNull final Money totalAmt)
+	{
+		if (totalAmt.signum() > 0 && docBaseType.isCreditMemo())
+		{
+			if (invoiceIsSOTrx)
+			{
+				return InvoiceDocBaseType.CustomerInvoice;
+			}
+			else
+			{
+				return InvoiceDocBaseType.VendorInvoice;
+			}
+		}
+
+		if (totalAmt.signum() < 0 && invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.CustomerCreditMemo;
+		}
+		else if (totalAmt.signum() < 0 && !invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.VendorCreditMemo;
+		}
+
+		return docBaseType;
+	}
+
 	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final Optional<PaymentTermId> paymentTermId = extractPaymentTermIdFromLines(invoiceHeader);
