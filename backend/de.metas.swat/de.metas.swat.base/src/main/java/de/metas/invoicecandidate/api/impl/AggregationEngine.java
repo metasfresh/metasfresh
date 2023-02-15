@@ -46,6 +46,9 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -73,6 +76,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -91,14 +95,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public final class AggregationEngine
 {
 
-	public static AggregationEngine newInstance()
-	{
-		return builder().build();
-	}
-
 	//
 	// services
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
+	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
@@ -110,9 +110,8 @@ public final class AggregationEngine
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
-
-	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
-
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	//
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
@@ -120,21 +119,21 @@ public final class AggregationEngine
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
+	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	@Nullable private final ForexContractRef forexContractRef;
-
 	private final AdTableId inoutLineTableId;
 	/**
 	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
-
 	@Builder
 	private AggregationEngine(
 			final IBPartnerBL bpartnerBL,
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
+			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@Nullable final ForexContractRef forexContractRef)
 	{
@@ -146,11 +145,17 @@ public final class AggregationEngine
 
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
+		this.overrideDueDateParam = overrideDueDateParam;
 		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
 		this.forexContractRef = forexContractRef;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
+	}
+
+	public static AggregationEngine newInstance()
+	{
+		return builder().build();
 	}
 
 	@Override
@@ -423,6 +428,10 @@ public final class AggregationEngine
 			logger.debug("Setting invoiceHeader's dateAcct={}", dateAcct);
 			invoiceHeader.setDateAcct(dateAcct);
 
+			final LocalDate overrideDueDate = computeOverrideDueDate(icRecord);
+			logger.debug("Setting invoiceHeader's OverrideDueDate={}", dateAcct);
+			invoiceHeader.setOverrideDueDate(overrideDueDate);
+
 			// #367 Invoice candidates invoicing Pricelist not found
 			// https://github.com/metasfresh/metasfresh/issues/367
 			// If we know the PLV, then just go with the PLV's M_PriceList_ID (new behavior).
@@ -490,6 +499,8 @@ public final class AggregationEngine
 
 	private LocalDate computeDateInvoiced(@NonNull final I_C_Invoice_Candidate ic)
 	{
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
+
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (dateInvoicedParam != null)
@@ -499,7 +510,7 @@ public final class AggregationEngine
 					return dateInvoicedParam;
 				},
 				() -> {
-					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
+					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced(), timeZone);
 					if (result != null)
 					{
 						logger.debug("computeDateInvoiced - returning ic's presetDateInvoiced={} as dateInvoiced", result);
@@ -507,7 +518,7 @@ public final class AggregationEngine
 					return result;
 				},
 				() -> {
-					final LocalDate result = TimeUtil.asLocalDate(ic.getDateInvoiced());
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDateInvoiced(), timeZone);
 					if (result != null)
 					{
 						logger.debug("computeDateInvoiced - returning ic's dateInvoiced={} as dateInvoiced", result);
@@ -522,6 +533,8 @@ public final class AggregationEngine
 
 	private LocalDate computeDateAcct(@NonNull final I_C_Invoice_Candidate ic)
 	{
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
+
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (dateAcctParam != null)
@@ -531,7 +544,7 @@ public final class AggregationEngine
 					return dateAcctParam;
 				},
 				() -> {
-					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
+					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced(), timeZone);
 					if (result != null)
 					{
 						logger.debug("computeDateAcct - returning ic's presetDateInvoiced={} as dateAcct", result);
@@ -539,7 +552,7 @@ public final class AggregationEngine
 					return result;
 				},
 				() -> {
-					final LocalDate result = TimeUtil.asLocalDate(ic.getDateAcct());
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDateAcct(), timeZone);
 					if (result != null)
 					{
 						logger.debug("computeDateAcct - returning ic's dateAcct={} as dateAcct", result);
@@ -550,6 +563,42 @@ public final class AggregationEngine
 					logger.debug("computeDateAcct - falling back to aggregator's computeDateInvoiced as dateAcct");
 					return computeDateInvoiced(ic);
 				});
+	}
+
+	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> {
+					if (overrideDueDateParam != null)
+					{
+						logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
+					}
+					final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+					if (paymentTermId == null)
+					{
+						return null;
+					}
+
+					final boolean isAllowOverrideDueDate = paymentTermRepository.isAllowOverrideDueDate(paymentTermId);
+					if (isAllowOverrideDueDate)
+					{
+						return overrideDueDateParam;
+					}
+					return null;
+				},
+				() -> {
+					logger.debug("Due Date will be set on null for now");
+
+					return null;
+				});
+	}
+
+	private PaymentTermId getC_PaymentTerm_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
+
 	}
 
 	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)

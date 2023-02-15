@@ -253,7 +253,7 @@ public class BPartnerStatsService
 		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrencyId(ClientId.ofRepoId(stats.getAD_Client_ID()), OrgId.ofRepoId(stats.getAD_Org_ID()));
 		Money deliveryCreditUsed = Money.zero(baseCurrencyId);
 
-		final Money creditUsedPerShippingPackageInBaseCurrency = shipperTransportationBL.getCreditUsedByDeliveryInstructionsInCurrency(bpStats.getBpartnerId(), baseCurrencyId);
+		final Money creditUsedPerShippingPackageInBaseCurrency = shipperTransportationBL.getCreditUsedByOutgoingDeliveryInstructionsInCurrency(bpStats.getBpartnerId(), baseCurrencyId);
 
 		deliveryCreditUsed = deliveryCreditUsed.add(creditUsedPerShippingPackageInBaseCurrency);
 
