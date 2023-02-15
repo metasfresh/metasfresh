@@ -40,6 +40,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
@@ -130,6 +131,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 

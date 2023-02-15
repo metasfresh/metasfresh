@@ -130,6 +130,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -194,6 +195,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
 	{
 		return invoiceDAO.getByIdInTrx(invoiceId);
+	}
+
+	@Override
+	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return invoiceDAO.getByIdsInTrx(invoiceIds);
 	}
 
 	@Override
