@@ -100,7 +100,7 @@ FROM
             i.DueDate AS DueDate,
             COALESCE(
                     EXTRACT(day from (TRUNC($1) - i.DueDate)),
-                    DaysBetween($1, i.DueDate::timestamp with time zone)
+                    DaysBetween($1, ips.DueDate::timestamp with time zone)
                 )::integer AS DaysDue,
             COALESCE( AddDays( i.DateInvoiced::timestamp with time zone, p.DiscountDays ), ips.DiscountDate ) AS DiscountDate,
             COALESCE( Round( i.GrandTotal * p.Discount / 100::numeric, 2 ), ips.DiscountAmt ) AS DiscountAmt,
