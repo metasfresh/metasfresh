@@ -48,7 +48,7 @@ public interface IShipperTransportationDAO extends ISingletonService
 	 */
 	List<I_M_ShippingPackage> retrieveShippingPackages(I_M_Package mpackage);
 
-	Iterator<I_M_ShippingPackage> retrieveCompletedDeliveryInstructionLines(@NonNull BPartnerId bPartnerId);
+	Iterator<I_M_ShippingPackage> retrieveCompletedOutgoingDeliveryInstructionLines(@NonNull BPartnerId bPartnerId);
 
 	@Nullable
 	I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId);
