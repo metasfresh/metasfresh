@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
@@ -99,8 +100,11 @@ public final class InvoiceCandidateWithInOutLine
 		{
 			return zero;
 		}
-
-		return matchInvoiceService.getQtyMatched(iciol.getM_InOutLine(), zero);
+		else
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+			return matchInvoiceService.getMaterialQtyMatched(inoutLineId, zero);
+		}
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyShipped()

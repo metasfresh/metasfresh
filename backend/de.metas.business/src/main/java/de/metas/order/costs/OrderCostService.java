@@ -1,12 +1,16 @@
 package de.metas.order.costs;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.inout.InOutCostCreateCommand;
 import de.metas.order.costs.inout.InOutCostDeleteCommand;
+import de.metas.order.costs.inout.InOutCostId;
 import de.metas.order.costs.inout.InOutCostQuery;
 import de.metas.order.costs.inout.InOutCostRepository;
 import de.metas.order.costs.inout.InOutCostReverseCommand;
@@ -17,28 +21,33 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
 public class OrderCostService
 {
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final OrderCostRepository orderCostRepository;
 	@NonNull private final OrderCostTypeRepository costTypeRepository;
 
-	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	@NonNull private final InOutCostRepository inOutCostRepository;
+	@NonNull private final MatchInvoiceService matchInvoiceService;
 
 	public OrderCostService(
 			final @NonNull OrderCostRepository orderCostRepository,
 			final @NonNull OrderCostTypeRepository costTypeRepository,
-			final @NonNull InOutCostRepository inOutCostRepository)
+			final @NonNull InOutCostRepository inOutCostRepository,
+			final @NonNull MatchInvoiceService matchInvoiceService)
 	{
 		this.orderCostRepository = orderCostRepository;
 		this.costTypeRepository = costTypeRepository;
 		this.inOutCostRepository = inOutCostRepository;
+		this.matchInvoiceService = matchInvoiceService;
 	}
 
 	public OrderCostType getCostTypeById(@NonNull final OrderCostTypeId id)
@@ -57,6 +66,11 @@ public class OrderCostService
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
+	{
+		return inOutCostRepository.getInOutCostsByIds(inoutCostIds);
 	}
 
 	public void receiveCosts(@NonNull final InOutId receiptId)
@@ -108,6 +122,10 @@ public class OrderCostService
 	public void createMatchInvoice(CreateMatchInvoiceRequest request)
 	{
 		CreateMatchInvoiceCommand.builder()
+				.orderCostService(this)
+				.matchInvoiceService(matchInvoiceService)
+				.invoiceBL(invoiceBL)
+				.inoutBL(inoutBL)
 				.request(request)
 				.build()
 				.execute();

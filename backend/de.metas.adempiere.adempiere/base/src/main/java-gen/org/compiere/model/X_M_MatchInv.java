@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2111428916L;
+	private static final long serialVersionUID = 1244080011L;
 
     /** Standard Constructor */
     public X_M_MatchInv (final Properties ctx, final int M_MatchInv_ID, @Nullable final String trxName)
@@ -33,6 +33,48 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Cost_Type getC_Cost_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Cost_Type_ID, org.compiere.model.I_C_Cost_Type.class);
+	}
+
+	@Override
+	public void setC_Cost_Type(final org.compiere.model.I_C_Cost_Type C_Cost_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Cost_Type_ID, org.compiere.model.I_C_Cost_Type.class, C_Cost_Type);
+	}
+
+	@Override
+	public void setC_Cost_Type_ID (final int C_Cost_Type_ID)
+	{
+		if (C_Cost_Type_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Cost_Type_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Cost_Type_ID, C_Cost_Type_ID);
+	}
+
+	@Override
+	public int getC_Cost_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Cost_Type_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -87,6 +129,19 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	public int getC_InvoiceLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_InvoiceLine_ID);
+	}
+
+	@Override
+	public void setCostAmount (final @Nullable BigDecimal CostAmount)
+	{
+		set_ValueNoCheck (COLUMNNAME_CostAmount, CostAmount);
+	}
+
+	@Override
+	public BigDecimal getCostAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

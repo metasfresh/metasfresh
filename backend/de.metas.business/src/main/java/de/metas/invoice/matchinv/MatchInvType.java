@@ -21,4 +21,7 @@ public enum MatchInvType implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isMaterial() {return Material.equals(this);}
+	public boolean isCost() {return Cost.equals(this);}
 }

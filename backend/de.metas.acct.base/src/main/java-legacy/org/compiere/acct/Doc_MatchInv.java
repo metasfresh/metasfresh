@@ -48,7 +48,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -143,7 +142,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		// Invoice Info
 		{
-			_invoiceLine = InterfaceWrapperHelper.create(matchInv.getC_InvoiceLine(), I_C_InvoiceLine.class);
+			_invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID()));
 			_invoice = invoiceBL.getById(InvoiceId.ofRepoId(_invoiceLine.getC_Invoice_ID()));
 			this.isCreditMemoInvoice = invoiceBL.isCreditMemo(_invoice);
 

@@ -144,7 +144,7 @@ public class InvoiceCreateInOut extends JavaProcess
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
-		final StockQtyAndUOMQty qtyMatched = matchInvoiceService.getQtyMatched(invoiceLine);
+		final StockQtyAndUOMQty qtyMatched = matchInvoiceService.getMaterialQtyMatched(invoiceLine);
 
 		final StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.create(
 				invoiceLine.getQtyInvoiced(), ProductId.ofRepoId(invoiceLine.getM_Product_ID()),

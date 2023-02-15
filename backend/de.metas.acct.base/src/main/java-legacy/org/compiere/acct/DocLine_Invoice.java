@@ -48,6 +48,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
@@ -185,7 +186,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	{
 		if (_qtyReceivedInStockUOM == null)
 		{
-			this._qtyReceivedInStockUOM = matchInvoiceService.getQtyMatched(getC_InvoiceLine()).getStockQty();
+			this._qtyReceivedInStockUOM = matchInvoiceService.getMaterialQtyMatched(getC_InvoiceLine()).getStockQty();
 		}
 		return _qtyReceivedInStockUOM;
 	}
@@ -271,7 +272,11 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	{
 		// Reposting is required if a M_MatchInv was created for a purchase invoice.
 		// ... because we book the matched quantity on InventoryClearing and on Expense the not matched quantity
-		return !matchInv.getC_InvoiceLine().getC_Invoice().isSOTrx();// not needed
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(matchInv.getC_Invoice_ID()));
+
+		return !invoice.isSOTrx();
 	}
 
 	@Override

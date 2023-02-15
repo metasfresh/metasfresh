@@ -901,8 +901,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
-	public static void unpost(final I_C_Invoice invoice)
+	public static void unpostIfNeeded(final I_C_Invoice invoice)
 	{
+		if(!invoice.isPosted())
+		{
+			return;
+		}
+
 		// Make sure the period is open
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		MPeriod.testPeriodOpen(ctx, invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());

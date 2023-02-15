@@ -1,9 +1,12 @@
 package de.metas.invoice.matchinv.service;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.material.MovementType;
 import de.metas.order.costs.inout.InOutCostId;
@@ -14,7 +17,6 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.NonNull;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -32,21 +34,22 @@ import java.time.Instant;
  *
  * @author tsa
  */
-@ToString
 public class MatchInvBuilder
 {
 	//
 	// services
 	private final MatchInvoiceService matchInvoiceService;
 	private final IInvoiceBL invoiceBL;
+	private final IInOutBL inoutBL;
 	private final IProductBL productBL;
+	private final @NonNull MatchInvListenersRegistry listenersRegistry;
 
 	//
 	// Parameters
 	private MatchInvType type;
 	private I_C_InvoiceLine _invoiceLine;
 	private I_M_InOutLine _inoutLine;
-	private InOutCostId inoutCostId;
+	private MatchInvCostPart inoutCost;
 	private Instant _dateTrx;
 	private StockQtyAndUOMQty _qtyToMatchExact;
 	private boolean _considerQtysAlreadyMatched = true;
@@ -56,17 +59,23 @@ public class MatchInvBuilder
 	//
 	// Status
 	private boolean _built = false;
+	private I_C_Invoice _invoice = null; // lazy
+	private I_M_InOut _inout = null; // lazy
 	private Boolean _materialReturns = null; // lazy
 	private Boolean _creditMemoInvoice = null; // lazy
 
 	MatchInvBuilder(
 			@NonNull final MatchInvoiceService matchInvoiceService,
 			@NonNull final IInvoiceBL invoiceBL,
-			@NonNull final IProductBL productBL)
+			@NonNull final IInOutBL inoutBL,
+			@NonNull final IProductBL productBL,
+			@NonNull final MatchInvListenersRegistry listenersRegistry)
 	{
 		this.matchInvoiceService = matchInvoiceService;
 		this.invoiceBL = invoiceBL;
+		this.inoutBL = inoutBL;
 		this.productBL = productBL;
+		this.listenersRegistry = listenersRegistry;
 	}
 
 	/**
@@ -93,43 +102,30 @@ public class MatchInvBuilder
 		}
 
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		final I_C_Invoice invoice = getInvoice();
 		final I_M_InOutLine inoutLine = getInOutLine();
-		final I_M_InOut inout = getInOut();
-
-		//
-		// Make sure IsSOTrx matches
-		if (invoice.isSOTrx() != inout.isSOTrx())
-		{
-			throw new AdempiereException("@Invalid @IsSOTrx@"
-					+ "\n @C_Invoice_ID@: " + invoice + ", @IsSOTrx@=" + invoice.isSOTrx()
-					+ "\n @M_InOut_ID@: " + inout + ", @IsSOTrx@=" + inout.isSOTrx());
-		}
-
-		//
-		// Make sure M_Product_ID matches
-		final ProductId invoiceLineProductId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-		final ProductId inoutLineProductId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
-		if (!ProductId.equals(invoiceLineProductId, inoutLineProductId))
-		{
-			final String invoiceProductName = productBL.getProductValueAndName(invoiceLineProductId);
-			final String inoutProductName = productBL.getProductValueAndName(inoutLineProductId);
-			throw new AdempiereException("@Invalid@ @M_Product_ID@"
-					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceProductName
-					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutProductName);
-		}
 
 		// Create the new M_MatchInv record
 		final I_M_MatchInv matchInv = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class);
 		matchInv.setType(getType().getCode());
+		matchInv.setIsSOTrx(isSOTrx());
+		//matchInv.setDocumentNo(inout.getDocumentNo());
 		matchInv.setAD_Org_ID(invoiceLine.getAD_Org_ID());
+
+		// Invoice
 		matchInv.setC_Invoice_ID(invoiceLine.getC_Invoice_ID());
 		matchInv.setC_InvoiceLine(invoiceLine);
+
+		// InOut
 		matchInv.setM_InOut_ID(inoutLine.getM_InOut_ID());
 		matchInv.setM_InOutLine(inoutLine);
-		matchInv.setM_InOut_Cost_ID(InOutCostId.toRepoId(getInoutCostId()));
-		matchInv.setIsSOTrx(inout.isSOTrx());
-		matchInv.setDocumentNo(inout.getDocumentNo());
+		final MatchInvCostPart inoutCost = getInoutCost();
+		if (inoutCost != null)
+		{
+			matchInv.setM_InOut_Cost_ID(inoutCost.getInoutCostId().getRepoId());
+			matchInv.setC_Cost_Type_ID(inoutCost.getCostTypeId().getRepoId());
+			matchInv.setC_Currency_ID(inoutCost.getCostAmount().getCurrencyId().getRepoId());
+			matchInv.setCostAmount(inoutCost.getCostAmount().toBigDecimal());
+		}
 
 		// Quantity
 		matchInv.setQty(qtyToMatch.getStockQty().toBigDecimal());
@@ -137,7 +133,7 @@ public class MatchInvBuilder
 		matchInv.setC_UOM_ID(qtyToMatch.getUOMQtyNotNull().getUomId().getRepoId());
 
 		// Product & ASI
-		matchInv.setM_Product_ID(inoutLineProductId.getRepoId());
+		matchInv.setM_Product_ID(getProductId().getRepoId());
 		matchInv.setM_AttributeSetInstance_ID(inoutLine.getM_AttributeSetInstance_ID());
 
 		//
@@ -154,14 +150,12 @@ public class MatchInvBuilder
 
 		//
 		// Set Acct Date
-		if (matchInv.getDateAcct() == null)
-		{
-			final Instant dateAcct = matchInvoiceService.computeNewerDateAcct(matchInv);
-			matchInv.setDateAcct(Timestamp.from(dateAcct));
-		}
+		matchInv.setDateAcct(Timestamp.from(getDateAcct()));
 
 		matchInv.setProcessed(true);
 		InterfaceWrapperHelper.save(matchInv);
+
+		listenersRegistry.fireAfterCreated(MatchInvoiceRepository.fromRecord(matchInv));
 
 		return true;
 	}
@@ -208,7 +202,11 @@ public class MatchInvBuilder
 
 	private I_C_Invoice getInvoice()
 	{
-		return getInvoiceLine().getC_Invoice();
+		if (_invoice == null)
+		{
+			_invoice = getInvoiceLine().getC_Invoice();
+		}
+		return _invoice;
 	}
 
 	public MatchInvBuilder inoutLine(final I_M_InOutLine inoutLine)
@@ -230,27 +228,38 @@ public class MatchInvBuilder
 
 	private I_M_InOut getInOut()
 	{
-		final I_M_InOutLine inoutLine = getInOutLine();
-		return inoutLine.getM_InOut();
+		if (_inout == null)
+		{
+			final I_M_InOutLine inoutLine = getInOutLine();
+			_inout = inoutLine.getM_InOut();
+		}
+		return _inout;
 	}
 
-	public MatchInvBuilder inoutCostId(@Nullable InOutCostId inoutCostId)
+	public MatchInvBuilder inoutCost(@Nullable MatchInvCostPart inoutCost)
 	{
-		this.inoutCostId = inoutCostId;
+		this.inoutCost = inoutCost;
 		return this;
 	}
 
 	@Nullable
 	private InOutCostId getInoutCostId()
 	{
+		final MatchInvCostPart inoutCost = getInoutCost();
+		return inoutCost != null ? inoutCost.getInoutCostId() : null;
+	}
+
+	@Nullable
+	private MatchInvCostPart getInoutCost()
+	{
 		final MatchInvType type = getType();
 		if (MatchInvType.Cost.equals(type))
 		{
-			return Check.assumeNotNull(inoutCostId, "M_InOut_Cost_ID is set");
+			return Check.assumeNotNull(inoutCost, "inoutCost is set");
 		}
 		else
 		{
-			Check.assumeNull(inoutCostId, "M_InOut_Cost_ID shall be not set");
+			Check.assumeNull(inoutCost, "inoutCost shall be not set");
 			return null;
 		}
 	}
@@ -381,65 +390,59 @@ public class MatchInvBuilder
 
 	private StockQtyAndUOMQty getQtyInvoicedNotMatched()
 	{
-		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-
-		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
-
-		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.create(
-				invoiceLine.getQtyInvoiced(), productId,
-				invoiceLine.getQtyEntered(), uomId);
-
-		// Negate the qtyInvoiced if this is an CreditMemo
-		if (isCreditMemoInvoice())
+		if (getInoutCost() != null)
 		{
-			qtyInvoiced = qtyInvoiced.negate();
+			throw new AdempiereException("Computing qty invoiced is supported only for material costs");
 		}
 
-		final StockQtyAndUOMQty qtyMatched;
+		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
+		final StockQtyAndUOMQty qtyInvoiced = extractQtyInvoiced(invoiceLine)
+				.negateIf(isCreditMemoInvoice());
+
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvoiceService.getQtyMatched(invoiceLine);
+			final StockQtyAndUOMQty qtyMatched = matchInvoiceService.getMaterialQtyMatched(invoiceLine);
+			return StockQtyAndUOMQtys.subtract(qtyInvoiced, qtyMatched);
 		}
 		else
 		{
-			qtyMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
+			return qtyInvoiced;
 		}
+	}
 
-		return StockQtyAndUOMQtys.subtract(qtyInvoiced, qtyMatched);
+	private static StockQtyAndUOMQty extractQtyInvoiced(final I_C_InvoiceLine invoiceLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
+
+		return StockQtyAndUOMQtys.create(
+				invoiceLine.getQtyInvoiced(), productId,
+				invoiceLine.getQtyEntered(), uomId);
 	}
 
 	private StockQtyAndUOMQty getQtyMovedNotMatchedInStockUOM()
 	{
-		final I_M_InOutLine inoutLine = getInOutLine();
-
-		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
-		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
-
-		StockQtyAndUOMQty qtyReceived = StockQtyAndUOMQtys.create(
-				inoutLine.getMovementQty(), productId,
-				inoutLine.getQtyEntered(), uomId);
-
-		// Negate the qtyReceived if this is a material return,
-		// because we want to have the qtyReceived as an absolute value.
-		if (isMaterialReturns())
+		if (getInoutCost() != null)
 		{
-			qtyReceived = qtyReceived.negate();
+			throw new AdempiereException("Computing qty moved is supported only for material costs");
 		}
 
-		final StockQtyAndUOMQty qtyMatched;
+		final I_M_InOutLine inoutLine = getInOutLine();
+		final StockQtyAndUOMQty qtyReceived = inoutBL.getStockQtyAndQtyInUOM(inoutLine)
+				// Negate the qtyReceived if this is a material return, because we want to have the qtyReceived as an absolute value.
+				.negateIf(isMaterialReturns());
+
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvoiceService.getQtyMatched(
-					inoutLine,
-					qtyReceived.toZero()/* initialQtys */);
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
+			final StockQtyAndUOMQty qtyMatched = matchInvoiceService.getMaterialQtyMatched(inoutLineId, qtyReceived.toZero());
+
+			return StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 		}
 		else
 		{
-			qtyMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
+			return qtyReceived;
 		}
-
-		return StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 	}
 
 	/**
@@ -455,6 +458,14 @@ public class MatchInvBuilder
 	@Nullable
 	private Instant getDateTrx() {return _dateTrx;}
 
+	@NonNull
+	private Instant getDateAcct()
+	{
+		final Instant invoiceDateAcct = getInvoice().getDateAcct().toInstant();
+		final Instant inoutDateAcct = getInOut().getDateAcct().toInstant();
+		return invoiceDateAcct.isAfter(inoutDateAcct) ? invoiceDateAcct : inoutDateAcct;
+	}
+
 	/**
 	 * Enables matching creation to be skipped if there exists at least one matching between invoice line and inout line.
 	 */
@@ -467,7 +478,7 @@ public class MatchInvBuilder
 
 	private boolean isSkipBecauseMatchingsAlreadyExist()
 	{
-		return _skipIfMatchingsAlreadyExist && matchInvoiceService.hasMatchInvs(getType(), getInvoiceLineId(), getInOutLineId());
+		return _skipIfMatchingsAlreadyExist && matchInvoiceService.hasMatchInvs(getInvoiceLineId(), getInOutLineId(), getInoutCostId());
 	}
 
 	/**
@@ -493,5 +504,49 @@ public class MatchInvBuilder
 			_materialReturns = MovementType.isMaterialReturn(inout.getMovementType());
 		}
 		return _materialReturns;
+	}
+
+	private ProductId getProductId()
+	{
+		final I_M_InOutLine inoutLine = getInOutLine();
+		final ProductId inoutLineProductId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+
+		//
+		// Make sure M_Product_ID matches
+		if (getType().isMaterial())
+		{
+			final I_C_InvoiceLine invoiceLine = getInvoiceLine();
+			final ProductId invoiceLineProductId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+			if (!ProductId.equals(invoiceLineProductId, inoutLineProductId))
+			{
+				final String invoiceProductName = productBL.getProductValueAndName(invoiceLineProductId);
+				final String inoutProductName = productBL.getProductValueAndName(inoutLineProductId);
+				throw new AdempiereException("@Invalid@ @M_Product_ID@"
+						+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceProductName
+						+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutProductName);
+			}
+		}
+
+		return inoutLineProductId;
+	}
+
+	private boolean isSOTrx()
+	{
+		final I_C_Invoice invoice = getInvoice();
+		final I_M_InOut inout = getInOut();
+
+		final boolean invoiceIsSOTrx = invoice.isSOTrx();
+		final boolean inoutIsSOTrx = inout.isSOTrx();
+
+		//
+		// Make sure IsSOTrx matches
+		if (invoiceIsSOTrx != inoutIsSOTrx)
+		{
+			throw new AdempiereException("@Invalid @IsSOTrx@"
+					+ "\n @C_Invoice_ID@: " + invoice + ", @IsSOTrx@=" + invoiceIsSOTrx
+					+ "\n @M_InOut_ID@: " + inout + ", @IsSOTrx@=" + inoutIsSOTrx);
+		}
+
+		return inoutIsSOTrx;
 	}
 }

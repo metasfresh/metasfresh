@@ -159,7 +159,7 @@ public class MMatchPO extends X_M_MatchPO
 			final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
 			final InOutLineId inoutLineId = InOutLineId.ofRepoId(getM_InOutLine_ID());
-			matchInvoiceService.suggestInvoiceLineId(inoutLineId, AttributeSetInstanceId.ofRepoIdOrNone(mpoASIId))
+			matchInvoiceService.suggestMaterialInvoiceLineId(inoutLineId, AttributeSetInstanceId.ofRepoIdOrNone(mpoASIId))
 					.ifPresent(invoiceLineId -> setC_InvoiceLine_ID(invoiceLineId.getRepoId()));
 		}
 		// end Bayu

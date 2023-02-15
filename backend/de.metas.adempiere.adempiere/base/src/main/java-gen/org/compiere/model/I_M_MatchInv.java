@@ -52,6 +52,53 @@ public interface I_M_MatchInv
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Cost_Type_ID (int C_Cost_Type_ID);
+
+	/**
+	 * Get Cost Type.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Cost_Type_ID();
+
+	@Nullable org.compiere.model.I_C_Cost_Type getC_Cost_Type();
+
+	void setC_Cost_Type(@Nullable org.compiere.model.I_C_Cost_Type C_Cost_Type);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_C_Cost_Type> COLUMN_C_Cost_Type_ID = new ModelColumn<>(I_M_MatchInv.class, "C_Cost_Type_ID", org.compiere.model.I_C_Cost_Type.class);
+	String COLUMNNAME_C_Cost_Type_ID = "C_Cost_Type_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -104,6 +151,27 @@ public interface I_M_MatchInv
 
 	ModelColumn<I_M_MatchInv, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new ModelColumn<>(I_M_MatchInv.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
+
+	/**
+	 * Set Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmount (@Nullable BigDecimal CostAmount);
+
+	/**
+	 * Get Cost Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmount();
+
+	ModelColumn<I_M_MatchInv, Object> COLUMN_CostAmount = new ModelColumn<>(I_M_MatchInv.class, "CostAmount", null);
+	String COLUMNNAME_CostAmount = "CostAmount";
 
 	/**
 	 * Get Created.
