@@ -50,6 +50,7 @@ public class InvoicingParams
 	public static String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	public static String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	public static String PARA_IsCompleteInvoices = "IsCompleteInvoices";
+	public static String PARA_OverrideDueDate= "OverrideDueDate";
 
 	boolean onlyApprovedForInvoicing;
 	boolean consolidateApprovedICs;
@@ -59,6 +60,7 @@ public class InvoicingParams
 	boolean assumeOneInvoice;
 	@Nullable LocalDate dateInvoiced;
 	@Nullable LocalDate dateAcct;
+	@Nullable LocalDate overrideDueDate;
 	@Nullable String poReference;
 	@Nullable BigDecimal check_NetAmtToInvoice;
 	boolean updateLocationAndContactForInvoice;
@@ -85,6 +87,7 @@ public class InvoicingParams
 				.updateLocationAndContactForInvoice(params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice))
 				.completeInvoices(params.getParameterAsBoolean(PARA_IsCompleteInvoices, true /*true for backwards-compatibility*/))
 				.forexContractParameters(ForexContractParameters.ofParams(params))
+				.overrideDueDate(params.getParameterAsLocalDate(PARA_OverrideDueDate))
 				.build();
 	}
 
@@ -107,6 +110,10 @@ public class InvoicingParams
 		if (getPoReference() != null)
 		{
 			map.put(PARA_POReference, getPoReference());
+		}
+		if (getOverrideDueDate() != null)
+		{
+			map.put(PARA_OverrideDueDate, getOverrideDueDate());
 		}
 
 		map.put(PARA_IgnoreInvoiceSchedule, isIgnoreInvoiceSchedule());

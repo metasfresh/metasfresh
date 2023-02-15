@@ -127,8 +127,6 @@ public class DeliveryPlanningCreateRequest
 
 	@NonNull Quantity actualLoadedQty;
 
-	@NonNull Quantity actualDeliveredQty;
-
 	@NonNull Quantity plannedDischargeQty;
 
 	@NonNull Quantity actualDischargeQty;

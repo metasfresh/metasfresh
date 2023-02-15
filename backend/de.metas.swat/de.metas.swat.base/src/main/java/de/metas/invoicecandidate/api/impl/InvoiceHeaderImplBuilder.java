@@ -48,6 +48,7 @@ public class InvoiceHeaderImplBuilder
 
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
+	private LocalDate _overrideDueDate;
 
 	private int AD_Org_ID;
 
@@ -126,6 +127,7 @@ public class InvoiceHeaderImplBuilder
 		// Dates
 		invoiceHeader.setDateInvoiced(getDateInvoiced());
 		invoiceHeader.setDateAcct(getDateAcct());
+		invoiceHeader.setOverrideDueDate(getOverrideDueDate());
 
 		// BPartner/Location/Contact
 		invoiceHeader.setBillTo(getBillTo());
@@ -260,6 +262,11 @@ public class InvoiceHeaderImplBuilder
 		return _dateAcct;
 	}
 
+	public LocalDate getOverrideDueDate()
+	{
+		return _overrideDueDate;
+	}
+
 	public void setPaymentRule(@Nullable final String paymentRule)
 	{
 		this.paymentRule = paymentRule;
@@ -273,6 +280,11 @@ public class InvoiceHeaderImplBuilder
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
+	}
+
+	public void setOverrideDueDate(@Nullable final LocalDate overrideDueDate)
+	{
+		_overrideDueDate = checkOverride("OverrideDueDate", this._overrideDueDate, overrideDueDate);
 	}
 
 	public int getAD_Org_ID()

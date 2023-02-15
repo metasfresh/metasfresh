@@ -84,7 +84,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -537,7 +536,6 @@ public class DeliveryPlanningService
 		return warehouseBL.getBPartnerLocationId(warehouseId);
 	}
 
-
 	private BPartnerLocationId extractShipToLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
@@ -566,7 +564,9 @@ public class DeliveryPlanningService
 
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 
-			final boolean creditLimitAllowsDeliveryInstruction = validateCreditLimit(deliveryInstructionRequest);
+			final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
+
+			final boolean creditLimitAllowsDeliveryInstruction = deliveryPlanningType.isIncoming() || validateCreditLimit(deliveryInstructionRequest);
 
 			if (creditLimitAllowsDeliveryInstruction)
 			{
@@ -711,4 +711,9 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.getShipmentInfosByOrderLineIds(salesOrderLineIds);
 	}
 
+	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+
+	}
 }

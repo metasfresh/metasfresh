@@ -125,6 +125,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.rest_api.v2.invoice.JsonCreateInvoiceLineItemRequest.STORAGE_UOM;
 
 /*
  * #%L
@@ -521,7 +522,8 @@ public class JsonInvoiceService
 		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider
 				.getProductInfo(ExternalIdentifier.of(jsonLine.getProductIdentifier()), orgId);
 
-		final UomId uomId = getUomId(jsonLine.getUomCode()).orElseGet(productInfo::getUomId);
+		final UomId uomId = extractUomId(jsonLine, productInfo);
+		final UomId priceUomId = extractPriceUomIdOrNull(jsonLine, productInfo);
 
 		return CreateInvoiceRequestLine.builder()
 				.externalLineId(jsonLine.getExternalLineId())
@@ -532,7 +534,7 @@ public class JsonInvoiceService
 				.productId(productInfo.getProductId())
 				.vatCodeId(getVatCodeId(jsonLine.getTaxCode(), orgId))
 				.priceEntered(jsonLine.getPriceEntered())
-				.priceUomId(getUomId(jsonLine.getPriceUomCode()).orElse(null))
+				.priceUomId(priceUomId)
 				.qtyToInvoice(Quantitys.create(jsonLine.getQtyToInvoice(), uomId))
 
 				.elementValueId(getElementValueId(jsonLine.getAcctCode(), accountsId))
@@ -675,6 +677,36 @@ public class JsonInvoiceService
 						.setParameter("OrgId", clientAndOrgId.getOrgId())
 						.setParameter("DocBaseType", invoiceDocType.getDocBaseType())
 						.setParameter("DocSubType", invoiceDocType.getDocSubType()));
+	}
+
+	/**
+	 * Note: we allow API-callers to use the {@link JsonCreateInvoiceLineItemRequest#STORAGE_UOM} constant,
+	 * even though they may as well omit the whole property.
+	 * I hope this makes it easier for them if they don't have any UOMs, but need to give a price (bc *there* they need the constant).
+	 */
+	private UomId extractUomId(
+			@NonNull final JsonCreateInvoiceLineItemRequest jsonLine,
+			@NonNull final ProductMasterDataProvider.ProductInfo productInfo)
+	{
+		if (STORAGE_UOM.equals(jsonLine.getPriceUomCode()))
+		{
+			return productInfo.getUomId();
+		}
+
+		return getUomId(jsonLine.getUomCode()).orElseGet(productInfo::getUomId);
+	}
+
+	@Nullable
+	private UomId extractPriceUomIdOrNull(
+			@NonNull final JsonCreateInvoiceLineItemRequest jsonLine,
+			@NonNull final ProductMasterDataProvider.ProductInfo productInfo)
+	{
+		if (STORAGE_UOM.equals(jsonLine.getPriceUomCode()))
+		{
+			return productInfo.getUomId();
+		}
+
+		return getUomId(jsonLine.getPriceUomCode()).orElse(null);
 	}
 
 	@NonNull
