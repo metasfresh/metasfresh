@@ -1,198 +1,269 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_PaymentTerm
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_PaymentTerm 
 {
 
-    /** TableName=C_PaymentTerm */
-    public static final String Table_Name = "C_PaymentTerm";
+	String Table_Name = "C_PaymentTerm";
 
-    /** AD_Table_ID=113 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=113 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(3);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set After Delivery.
+	 * Due after delivery rather than after invoicing
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAfterDelivery (boolean AfterDelivery);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get After Delivery.
+	 * Due after delivery rather than after invoicing
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAfterDelivery();
 
-    /** Column name AfterDelivery */
-    public static final String COLUMNNAME_AfterDelivery = "AfterDelivery";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_AfterDelivery = new ModelColumn<>(I_C_PaymentTerm.class, "AfterDelivery", null);
+	String COLUMNNAME_AfterDelivery = "AfterDelivery";
 
-	/** Set After Delivery.
-	  * Due after delivery rather than after invoicing
-	  */
-	public void setAfterDelivery (boolean AfterDelivery);
+	/**
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
-	/** Get After Delivery.
-	  * Due after delivery rather than after invoicing
-	  */
-	public boolean isAfterDelivery();
+	/**
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentTerm_ID();
 
-    /** Column name C_PaymentTerm_ID */
-    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_C_PaymentTerm_ID = new ModelColumn<>(I_C_PaymentTerm.class, "C_PaymentTerm_ID", null);
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
-	/** Set Payment Term.
-	  * The terms of Payment (timing, discount)
-	  */
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-	/** Get Payment Term.
-	  * The terms of Payment (timing, discount)
-	  */
-	public int getC_PaymentTerm_ID();
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Created = new ModelColumn<>(I_C_PaymentTerm.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Description = new ModelColumn<>(I_C_PaymentTerm.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount (BigDecimal Discount);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
 
-    /** Column name Discount */
-    public static final String COLUMNNAME_Discount = "Discount";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Discount = new ModelColumn<>(I_C_PaymentTerm.class, "Discount", null);
+	String COLUMNNAME_Discount = "Discount";
 
-	/** Set Discount %.
-	  * Discount in percent
-	  */
-	public void setDiscount (BigDecimal Discount);
+	/**
+	 * Set Discount 2 %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount2 (BigDecimal Discount2);
 
-	/** Get Discount %.
-	  * Discount in percent
-	  */
-	public BigDecimal getDiscount();
+	/**
+	 * Get Discount 2 %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount2();
 
-    /** Column name Discount2 */
-    public static final String COLUMNNAME_Discount2 = "Discount2";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Discount2 = new ModelColumn<>(I_C_PaymentTerm.class, "Discount2", null);
+	String COLUMNNAME_Discount2 = "Discount2";
 
-	/** Set Discount 2 %.
-	  * Discount in percent
-	  */
-	public void setDiscount2 (BigDecimal Discount2);
+	/**
+	 * Set Discount Days.
+	 * Number of days from invoice date to be eligible for discount
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDiscountDays (int DiscountDays);
 
-	/** Get Discount 2 %.
-	  * Discount in percent
-	  */
-	public BigDecimal getDiscount2();
+	/**
+	 * Get Discount Days.
+	 * Number of days from invoice date to be eligible for discount
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDiscountDays();
 
-    /** Column name DiscountDays */
-    public static final String COLUMNNAME_DiscountDays = "DiscountDays";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_DiscountDays = new ModelColumn<>(I_C_PaymentTerm.class, "DiscountDays", null);
+	String COLUMNNAME_DiscountDays = "DiscountDays";
 
-	/** Set Discount Days.
-	  * Number of days from invoice date to be eligible for discount
-	  */
-	public void setDiscountDays (int DiscountDays);
+	/**
+	 * Set Discount Days 2.
+	 * Number of days from invoice date to be eligible for discount
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDiscountDays2 (int DiscountDays2);
 
-	/** Get Discount Days.
-	  * Number of days from invoice date to be eligible for discount
-	  */
-	public int getDiscountDays();
+	/**
+	 * Get Discount Days 2.
+	 * Number of days from invoice date to be eligible for discount
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDiscountDays2();
 
-    /** Column name DiscountDays2 */
-    public static final String COLUMNNAME_DiscountDays2 = "DiscountDays2";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_DiscountDays2 = new ModelColumn<>(I_C_PaymentTerm.class, "DiscountDays2", null);
+	String COLUMNNAME_DiscountDays2 = "DiscountDays2";
 
-	/** Set Discount Days 2.
-	  * Number of days from invoice date to be eligible for discount
-	  */
-	public void setDiscountDays2 (int DiscountDays2);
+	/**
+	 * Set Note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
-	/** Get Discount Days 2.
-	  * Number of days from invoice date to be eligible for discount
-	  */
-	public int getDiscountDays2();
+	/**
+	 * Get Note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentNote();
 
-    /** Column name DocumentNote */
-    public static final String COLUMNNAME_DocumentNote = "DocumentNote";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_DocumentNote = new ModelColumn<>(I_C_PaymentTerm.class, "DocumentNote", null);
+	String COLUMNNAME_DocumentNote = "DocumentNote";
 
-	/** Set Document Note.
-	  * Additional information for a Document
-	  */
-	public void setDocumentNote (String DocumentNote);
-
-	/** Get Document Note.
-	  * Additional information for a Document
-	  */
-	public String getDocumentNote();
-
-    /** Column name FixMonthCutoff */
-    public static final String COLUMNNAME_FixMonthCutoff = "FixMonthCutoff";
-        
-    /**
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId (java.lang.String ExternalId);
+	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -201,201 +272,397 @@ public interface I_C_PaymentTerm
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalId();
+	@Nullable java.lang.String getExternalId();
 
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_C_PaymentTerm, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_PaymentTerm, Object>(I_C_PaymentTerm.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_PaymentTerm.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
-	/** Set Fix month cutoff.
-	  * Last day to include for next due date
-	  */
-	public void setFixMonthCutoff (int FixMonthCutoff);
+	/**
+	 * Set Fix month cutoff.
+	 * Last day to include for next due date
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFixMonthCutoff (int FixMonthCutoff);
 
-	/** Get Fix month cutoff.
-	  * Last day to include for next due date
-	  */
-	public int getFixMonthCutoff();
+	/**
+	 * Get Fix month cutoff.
+	 * Last day to include for next due date
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFixMonthCutoff();
 
-    /** Column name FixMonthDay */
-    public static final String COLUMNNAME_FixMonthDay = "FixMonthDay";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_FixMonthCutoff = new ModelColumn<>(I_C_PaymentTerm.class, "FixMonthCutoff", null);
+	String COLUMNNAME_FixMonthCutoff = "FixMonthCutoff";
 
-	/** Set Fix month day.
-	  * Day of the month of the due date
-	  */
-	public void setFixMonthDay (int FixMonthDay);
+	/**
+	 * Set Fix month day.
+	 * Day of the month of the due date
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFixMonthDay (int FixMonthDay);
 
-	/** Get Fix month day.
-	  * Day of the month of the due date
-	  */
-	public int getFixMonthDay();
+	/**
+	 * Get Fix month day.
+	 * Day of the month of the due date
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFixMonthDay();
 
-    /** Column name FixMonthOffset */
-    public static final String COLUMNNAME_FixMonthOffset = "FixMonthOffset";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_FixMonthDay = new ModelColumn<>(I_C_PaymentTerm.class, "FixMonthDay", null);
+	String COLUMNNAME_FixMonthDay = "FixMonthDay";
 
-	/** Set Fix month offset.
-	  * Number of months (0=same, 1=following)
-	  */
-	public void setFixMonthOffset (int FixMonthOffset);
+	/**
+	 * Set Fix month offset.
+	 * Number of months (0=same, 1=following)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFixMonthOffset (int FixMonthOffset);
 
-	/** Get Fix month offset.
-	  * Number of months (0=same, 1=following)
-	  */
-	public int getFixMonthOffset();
+	/**
+	 * Get Fix month offset.
+	 * Number of months (0=same, 1=following)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFixMonthOffset();
 
-    /** Column name GraceDays */
-    public static final String COLUMNNAME_GraceDays = "GraceDays";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_FixMonthOffset = new ModelColumn<>(I_C_PaymentTerm.class, "FixMonthOffset", null);
+	String COLUMNNAME_FixMonthOffset = "FixMonthOffset";
 
-	/** Set Grace Days.
-	  * Days after due date to send first dunning letter
-	  */
-	public void setGraceDays (int GraceDays);
+	/**
+	 * Set Grace Days.
+	 * Days after due date to send first dunning letter
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGraceDays (int GraceDays);
 
-	/** Get Grace Days.
-	  * Days after due date to send first dunning letter
-	  */
-	public int getGraceDays();
+	/**
+	 * Get Grace Days.
+	 * Days after due date to send first dunning letter
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGraceDays();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_GraceDays = new ModelColumn<>(I_C_PaymentTerm.class, "GraceDays", null);
+	String COLUMNNAME_GraceDays = "GraceDays";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsActive = new ModelColumn<>(I_C_PaymentTerm.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Default.
-	  * Default value
-	  */
-	public void setIsDefault (boolean IsDefault);
+	/**
+	 * Set Allow overriding due date.
+	 * If ticked, the due date determined at the time of invoicing based on this payment term can be overridden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowOverrideDueDate (boolean IsAllowOverrideDueDate);
 
-	/** Get Default.
-	  * Default value
-	  */
-	public boolean isDefault();
+	/**
+	 * Get Allow overriding due date.
+	 * If ticked, the due date determined at the time of invoicing based on this payment term can be overridden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowOverrideDueDate();
 
-    /** Column name IsDueFixed */
-    public static final String COLUMNNAME_IsDueFixed = "IsDueFixed";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsAllowOverrideDueDate = new ModelColumn<>(I_C_PaymentTerm.class, "IsAllowOverrideDueDate", null);
+	String COLUMNNAME_IsAllowOverrideDueDate = "IsAllowOverrideDueDate";
 
-	/** Set Fixed due date.
-	  * Payment is due on a fixed date
-	  */
-	public void setIsDueFixed (boolean IsDueFixed);
+	/**
+	 * Set Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefault (boolean IsDefault);
 
-	/** Get Fixed due date.
-	  * Payment is due on a fixed date
-	  */
-	public boolean isDueFixed();
+	/**
+	 * Get Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefault();
 
-    /** Column name IsNextBusinessDay */
-    public static final String COLUMNNAME_IsNextBusinessDay = "IsNextBusinessDay";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_PaymentTerm.class, "IsDefault", null);
+	String COLUMNNAME_IsDefault = "IsDefault";
 
-	/** Set Next Business Day.
-	  * Payment due on the next business day
-	  */
-	public void setIsNextBusinessDay (boolean IsNextBusinessDay);
+	/**
+	 * Set Fixed due date.
+	 * Payment is due on a fixed date
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDueFixed (boolean IsDueFixed);
 
-	/** Get Next Business Day.
-	  * Payment due on the next business day
-	  */
-	public boolean isNextBusinessDay();
+	/**
+	 * Get Fixed due date.
+	 * Payment is due on a fixed date
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDueFixed();
 
-    /** Column name IsValid */
-    public static final String COLUMNNAME_IsValid = "IsValid";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsDueFixed = new ModelColumn<>(I_C_PaymentTerm.class, "IsDueFixed", null);
+	String COLUMNNAME_IsDueFixed = "IsDueFixed";
 
-	/** Set Valid.
-	  * Element is valid
-	  */
-	public void setIsValid (boolean IsValid);
+	/**
+	 * Set Next Business Day.
+	 * Payment due on the next business day
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsNextBusinessDay (boolean IsNextBusinessDay);
 
-	/** Get Valid.
-	  * Element is valid
-	  */
-	public boolean isValid();
+	/**
+	 * Get Next Business Day.
+	 * Payment due on the next business day
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isNextBusinessDay();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsNextBusinessDay = new ModelColumn<>(I_C_PaymentTerm.class, "IsNextBusinessDay", null);
+	String COLUMNNAME_IsNextBusinessDay = "IsNextBusinessDay";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set Is Valid.
+	 * The element is valid
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsValid (boolean IsValid);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get Is Valid.
+	 * The element is valid
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isValid();
 
-    /** Column name NetDay */
-    public static final String COLUMNNAME_NetDay = "NetDay";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsValid = new ModelColumn<>(I_C_PaymentTerm.class, "IsValid", null);
+	String COLUMNNAME_IsValid = "IsValid";
 
-	/** Set Net Day.
-	  * Day when payment is due net
-	  */
-	public void setNetDay (String NetDay);
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
 
-	/** Get Net Day.
-	  * Day when payment is due net
-	  */
-	public String getNetDay();
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
 
-    /** Column name NetDays */
-    public static final String COLUMNNAME_NetDays = "NetDays";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Name = new ModelColumn<>(I_C_PaymentTerm.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
-	/** Set Net Days.
-	  * Net Days in which payment is due
-	  */
-	public void setNetDays (int NetDays);
+	/**
+	 * Set Name on Invoice.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setName_Invoice (@Nullable java.lang.String Name_Invoice);
 
-	/** Get Net Days.
-	  * Net Days in which payment is due
-	  */
-	public int getNetDays();
+	/**
+	 * Get Name on Invoice.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getName_Invoice();
 
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Name_Invoice = new ModelColumn<>(I_C_PaymentTerm.class, "Name_Invoice", null);
+	String COLUMNNAME_Name_Invoice = "Name_Invoice";
 
-	/** Set Process Now	  */
-	public void setProcessing (boolean Processing);
+	/**
+	 * Set Net Day.
+	 * Day when payment is due net
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNetDay (@Nullable java.lang.String NetDay);
 
-	/** Get Process Now	  */
-	public boolean isProcessing();
+	/**
+	 * Get Net Day.
+	 * Day when payment is due net
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNetDay();
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_NetDay = new ModelColumn<>(I_C_PaymentTerm.class, "NetDay", null);
+	String COLUMNNAME_NetDay = "NetDay";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Set Net Days.
+	 * Net Days in which payment is due
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setNetDays (int NetDays);
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/**
+	 * Get Net Days.
+	 * Net Days in which payment is due
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getNetDays();
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_NetDays = new ModelColumn<>(I_C_PaymentTerm.class, "NetDays", null);
+	String COLUMNNAME_NetDays = "NetDays";
 
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	/**
+	 * Set Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessing (boolean Processing);
 
-	/** Set Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	public void setValue (String Value);
+	/**
+	 * Get Process Now.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
 
-	/** Get Search Key.
-	  * Search key for the record in the format required - must be unique
-	  */
-	public String getValue();
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Processing = new ModelColumn<>(I_C_PaymentTerm.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Updated = new ModelColumn<>(I_C_PaymentTerm.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setValue (java.lang.String Value);
+
+	/**
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getValue();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_Value = new ModelColumn<>(I_C_PaymentTerm.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

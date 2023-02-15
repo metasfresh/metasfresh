@@ -51,6 +51,8 @@ import java.util.List;
 
 	private LocalDate dateAcct;
 
+	private LocalDate overrideDueDate;
+
 	@Getter
 	@Setter
 	private OrgId orgId;
@@ -119,6 +121,7 @@ import java.util.List;
 		return "InvoiceHeaderImpl ["
 				+ "docBaseType=" + docBaseType
 				+ ", dateInvoiced=" + dateInvoiced
+				+ ", OverrideDueDate=" + overrideDueDate
 				+ ", AD_Org_ID=" + OrgId.toRepoId(orgId)
 				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
@@ -177,6 +180,12 @@ import java.util.List;
 	}
 
 	@Override
+	public LocalDate getOverrideDueDate()
+	{
+		return overrideDueDate;
+	}
+
+	@Override
 	public int getC_Order_ID()
 	{
 		return C_Order_ID;
@@ -216,6 +225,11 @@ import java.util.List;
 	public void setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
+	}
+
+	public void setOverrideDueDate(final LocalDate overrideDueDate)
+	{
+		this.overrideDueDate = overrideDueDate;
 	}
 
 	public void setC_Order_ID(final int c_Order_ID)

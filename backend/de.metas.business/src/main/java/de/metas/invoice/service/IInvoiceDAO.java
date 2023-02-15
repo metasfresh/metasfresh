@@ -41,6 +41,7 @@ import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -186,4 +187,7 @@ public interface IInvoiceDAO extends ISingletonService
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
+
+	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
+
 }

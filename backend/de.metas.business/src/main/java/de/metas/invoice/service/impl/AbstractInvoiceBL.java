@@ -555,7 +555,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final org.compiere.model.I_C_Order order,
 			final DocTypeId docTypeTargetId,
 			final LocalDate dateInvoiced,
-			final LocalDate dateAcct)
+			final LocalDate dateAcct
+	)
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, order);
 		invoice.setAD_Org_ID(order.getAD_Org_ID());
