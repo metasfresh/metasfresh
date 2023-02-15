@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -49,12 +51,16 @@ import java.util.stream.Stream;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLineHU
 {
-	/** Null if not yet persisted or if this is an inventory line's single InventoryLineHU. */
+	/**
+	 * Null if not yet persisted or if this is an inventory line's single InventoryLineHU.
+	 */
 	@Nullable
 	@NonFinal
 	InventoryLineHUId id;
 
-	/** Null if this instance does not yet have a persisted HU */
+	/**
+	 * Null if this instance does not yet have a persisted HU
+	 */
 	@Nullable
 	HuId huId;
 
@@ -212,5 +218,36 @@ public class InventoryLineHU
 		}
 
 		return huId;
+	}
+
+	public static InventoryLineHU add(@NonNull final InventoryLineHU hu1, @NonNull final InventoryLineHU hu2)
+	{
+		Check.assumeEquals(hu1.getHuIdNotNull(), hu2.getHuIdNotNull());
+		if (hu1.getId() != null && hu2.getId() != null)
+		{
+			throw new AdempiereException("Can't add InventoryLineHU that's already been persisted");
+		}
+
+		Check.assumeEquals(hu1.getInventoryType(), hu2.getInventoryType());
+
+		final InventoryLineHUBuilder builder = builder()
+				.huId(hu1.getHuIdNotNull())
+				.id(coalesce(hu1.getId(), hu2.getId()));
+
+		if (InventoryType.PHYSICAL == hu1.getInventoryType())
+		{
+			Check.assumeEquals(hu1.getQtyBook().getUomId(), hu2.getQtyBook().getUomId());
+			Check.assumeEquals(hu1.getQtyCount().getUomId(), hu2.getQtyCount().getUomId());
+			builder
+					.qtyBook(hu1.getQtyBook().add(hu2.getQtyBook()))
+					.qtyCount(hu1.getQtyCount().add(hu2.getQtyCount()));
+
+		}
+		else
+		{
+			Check.assumeEquals(hu1.getQtyInternalUse(), hu2.getQtyInternalUse());
+			builder.qtyInternalUse(hu1.getQtyInternalUse().add(hu2.getQtyInternalUse()));
+		}
+		return builder.build();
 	}
 }

@@ -11,6 +11,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
@@ -76,13 +77,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Import {@link I_I_Inventory} to {@link I_M_Inventory}.
- *
  */
 public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory, InventoryGroupKey>
 {
@@ -122,7 +124,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	@Override
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
-		return ImmutableMap.<String, Object> builder()
+		return ImmutableMap.<String, Object>builder()
 				.put(I_I_Inventory.COLUMNNAME_InventoryDate, de.metas.common.util.time.SystemTime.asDayTimestamp())
 				.build();
 	}
@@ -350,10 +352,33 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 			@NonNull final UomId targetUomId)
 	{
 		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
-		return hus.stream()
+		final List<InventoryLineHU> inventoryLineHUS = hus.stream()
 				.map(DraftInventoryLinesCreator::toInventoryLineHU)
 				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
-				.collect(ImmutableList.toImmutableList());
+				.collect(Collectors.toList());
+		return consolidateHUQtiesIfNeeded(inventoryLineHUS);
+	}
+
+	@NonNull
+	private static List<InventoryLineHU> consolidateHUQtiesIfNeeded(final List<InventoryLineHU> inventoryLineHUS)
+	{
+		final Map<HuId, List<InventoryLineHU>> huIdtoInventoryLineHU = inventoryLineHUS.stream()
+				.collect(groupingBy(InventoryLineHU::getHuId, Collectors.toList()));
+		final Integer maxInventoryLineHUsPerHuId = huIdtoInventoryLineHU.values()
+				.stream()
+				.map(List::size)
+				.max(Integer::compare)
+				.orElse(0);
+		if (maxInventoryLineHUsPerHuId == 1)
+		{
+			return inventoryLineHUS;
+		}
+		final InventoryLineHU blankHU = InventoryLineHU.builder().build();
+		return huIdtoInventoryLineHU.values()
+				.stream()
+				.map(list -> list.stream()
+						.reduce(blankHU, InventoryLineHU::add))
+				.collect(Collectors.toList());
 	}
 
 	private List<HuForInventoryLine> getEligibleHUs(
