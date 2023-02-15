@@ -1,19 +1,18 @@
 package de.metas.ui.web.handlingunits.process;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 /*
  * #%L
@@ -43,37 +42,30 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 
 	private final transient HULotNumberQuarantineService lotNumberQuarantineService = SpringContextHolder.instance.getBean(HULotNumberQuarantineService.class);
 
-	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
-	{
-		final boolean quarantineHUs = isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL));
-
-		if (quarantineHUs)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_HUs_IN_Quarantine));
-		}
-
-		return super.checkPreconditionsApplicable();
-	}
-
-	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	@ProcessParamLookupValuesProvider(parameterName = I_M_Locator.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
 	@Override
 	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
 	{
 		return super.getAvailableWarehouses(evalCtx);
 	}
 
+	@ProcessParamLookupValuesProvider(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
 	@Override
-	public void assertHUsEligible()
+	protected LookupValuesList getAvailableLocators(final LookupDataSourceContext evalCtx)
 	{
-		if (isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL)))
-		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_HUs_IN_Quarantine));
-		}
+		return super.getAvailableLocators(evalCtx);
 	}
 
-	private boolean isQuarantineHUs(final Stream<I_M_HU> streamSelectedHUs)
+	@Override
+	public ProcessPreconditionsResolution checkHUsEligible(final List<I_M_HU> hus)
 	{
-		return streamSelectedHUs.anyMatch(lotNumberQuarantineService::isQuarantineHU);
+		return isQuarantineHUs(hus)
+				? ProcessPreconditionsResolution.reject(TranslatableStrings.adMessage(MSG_WEBUI_HUs_IN_Quarantine))
+				: ProcessPreconditionsResolution.accept();
+	}
+
+	private boolean isQuarantineHUs(final List<I_M_HU> hus)
+	{
+		return hus.stream().anyMatch(lotNumberQuarantineService::isQuarantineHU);
 	}
 }
