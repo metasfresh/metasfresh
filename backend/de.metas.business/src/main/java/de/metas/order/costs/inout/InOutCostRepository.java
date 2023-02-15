@@ -26,6 +26,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Repository
@@ -95,6 +96,21 @@ public class InOutCostRepository
 	private static void updateRecord(final I_M_InOut_Cost record, final InOutCost from)
 	{
 		record.setReversal_ID(InOutCostId.toRepoId(from.getReversalId()));
+	}
+
+	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
+	{
+		if (inoutCostIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOut_Cost.class)
+				.addInArrayFilter(I_M_InOut_Cost.COLUMNNAME_M_InOut_Cost_ID, inoutCostIds)
+				.orderBy(I_M_InOut_Cost.COLUMNNAME_M_InOut_Cost_ID)
+				.stream()
+				.map(InOutCostRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public ImmutableList<InOutCost> getByReceiptId(@NonNull final InOutId receiptId)
