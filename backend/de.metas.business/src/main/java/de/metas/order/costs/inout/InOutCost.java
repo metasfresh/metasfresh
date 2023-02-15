@@ -19,7 +19,6 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 @Data
-@Builder
 public class InOutCost
 {
 	@NonNull private final InOutCostId id;
@@ -35,6 +34,39 @@ public class InOutCost
 
 	@NonNull private final Quantity qty;
 	@NonNull private final Money costAmount;
+	@NonNull private Money costAmountInvoiced;
+	private boolean isInvoiced;
+
+	@Builder
+	private InOutCost(
+			@NonNull final InOutCostId id,
+			@Nullable final InOutCostId reversalId,
+			@NonNull final OrgId orgId,
+			@NonNull final OrderCostDetailId orderCostDetailId,
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final InOutAndLineId receiptAndLineId,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final OrderCostTypeId costTypeId,
+			@NonNull final Quantity qty,
+			@NonNull final Money costAmount,
+			@NonNull final Money costAmountInvoiced,
+			boolean isInvoiced)
+	{
+		Money.assertSameCurrency(costAmount, costAmountInvoiced);
+
+		this.id = id;
+		this.reversalId = reversalId;
+		this.orgId = orgId;
+		this.orderCostDetailId = orderCostDetailId;
+		this.orderAndLineId = orderAndLineId;
+		this.receiptAndLineId = receiptAndLineId;
+		this.bpartnerId = bpartnerId;
+		this.costTypeId = costTypeId;
+		this.qty = qty;
+		this.costAmount = costAmount;
+		this.costAmountInvoiced = costAmountInvoiced;
+		this.isInvoiced = isInvoiced;
+	}
 
 	public OrderCostId getOrderCostId() {return orderCostDetailId.getOrderCostId();}
 
@@ -43,4 +75,10 @@ public class InOutCost
 	public OrderLineId getOrderLineId() {return orderAndLineId.getOrderLineId();}
 
 	public InOutId getReceiptId() {return receiptAndLineId.getInOutId();}
+
+	public void addCostAmountInvoiced(@NonNull final Money amtToAdd)
+	{
+		this.costAmountInvoiced = this.costAmountInvoiced.add(amtToAdd);
+		this.isInvoiced = this.costAmount.isEqualByComparingTo(this.costAmountInvoiced);
+	}
 }

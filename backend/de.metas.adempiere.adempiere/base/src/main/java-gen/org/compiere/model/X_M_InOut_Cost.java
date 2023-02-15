@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1737747499L;
+	private static final long serialVersionUID = -1963983494L;
 
     /** Standard Constructor */
     public X_M_InOut_Cost (final Properties ctx, final int M_InOut_Cost_ID, @Nullable final String trxName)
@@ -214,6 +214,19 @@ public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_C
 	}
 
 	@Override
+	public void setCostAmountInvoiced (final BigDecimal CostAmountInvoiced)
+	{
+		set_Value (COLUMNNAME_CostAmountInvoiced, CostAmountInvoiced);
+	}
+
+	@Override
+	public BigDecimal getCostAmountInvoiced() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmountInvoiced);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -226,6 +239,18 @@ public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_C
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsInvoiced (final boolean IsInvoiced)
+	{
+		set_Value (COLUMNNAME_IsInvoiced, IsInvoiced);
+	}
+
+	@Override
+	public boolean isInvoiced() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
 	}
 
 	@Override

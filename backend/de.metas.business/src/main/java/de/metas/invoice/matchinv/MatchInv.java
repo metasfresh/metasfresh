@@ -79,7 +79,7 @@ public class MatchInv
 		this.qty = qty;
 		this.type = type;
 
-		if (type.isCost() && costPart == null)
+		if (type.isCost())
 		{
 			this.costPart = Check.assumeNotNull(costPart, "costPart shall be provided for Cost matching type");
 		}

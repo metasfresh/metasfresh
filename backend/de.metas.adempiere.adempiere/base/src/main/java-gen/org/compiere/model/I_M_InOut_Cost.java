@@ -242,6 +242,27 @@ public interface I_M_InOut_Cost
 	String COLUMNNAME_CostAmount = "CostAmount";
 
 	/**
+	 * Set Cost Amount Invoiced.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmountInvoiced (BigDecimal CostAmountInvoiced);
+
+	/**
+	 * Get Cost Amount Invoiced.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmountInvoiced();
+
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_CostAmountInvoiced = new ModelColumn<>(I_M_InOut_Cost.class, "CostAmountInvoiced", null);
+	String COLUMNNAME_CostAmountInvoiced = "CostAmountInvoiced";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -310,6 +331,29 @@ public interface I_M_InOut_Cost
 
 	ModelColumn<I_M_InOut_Cost, Object> COLUMN_IsActive = new ModelColumn<>(I_M_InOut_Cost.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Invoiced.
+	 * Is this invoiced?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiced (boolean IsInvoiced);
+
+	/**
+	 * Get Invoiced.
+	 * Is this invoiced?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiced();
+
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_IsInvoiced = new ModelColumn<>(I_M_InOut_Cost.class, "IsInvoiced", null);
+	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
 	 * Set Shipment/Receipt Costs.

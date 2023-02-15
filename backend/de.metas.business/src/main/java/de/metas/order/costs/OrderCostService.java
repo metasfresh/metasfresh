@@ -22,6 +22,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Service
@@ -71,6 +72,11 @@ public class OrderCostService
 	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
 	{
 		return inOutCostRepository.getInOutCostsByIds(inoutCostIds);
+	}
+
+	public void updateInOutCostById(@NonNull final InOutCostId inoutCostId, @NonNull final Consumer<InOutCost> consumer)
+	{
+		inOutCostRepository.updateInOutCostById(inoutCostId, consumer);
 	}
 
 	public void receiveCosts(@NonNull final InOutId receiptId)

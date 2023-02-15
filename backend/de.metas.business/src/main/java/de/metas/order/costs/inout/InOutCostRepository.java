@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Repository
@@ -80,6 +81,7 @@ public class InOutCostRepository
 
 	private static InOutCost fromRecord(@NonNull final I_M_InOut_Cost record)
 	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 		return InOutCost.builder()
 				.id(InOutCostId.ofRepoId(record.getM_InOut_Cost_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
@@ -89,13 +91,17 @@ public class InOutCostRepository
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.costAmount(Money.of(record.getCostAmount(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.costAmount(Money.of(record.getCostAmount(), currencyId))
+				.costAmountInvoiced(Money.of(record.getCostAmountInvoiced(), currencyId))
+				.isInvoiced(record.isInvoiced())
 				.build();
 	}
 
 	private static void updateRecord(final I_M_InOut_Cost record, final InOutCost from)
 	{
 		record.setReversal_ID(InOutCostId.toRepoId(from.getReversalId()));
+		record.setCostAmountInvoiced(from.getCostAmountInvoiced().toBigDecimal());
+		record.setIsInvoiced(record.isInvoiced());
 	}
 
 	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
@@ -171,5 +177,14 @@ public class InOutCostRepository
 				.addInArrayFilter(I_M_InOut_Cost.COLUMNNAME_M_InOut_Cost_ID, inoutCostIds)
 				.create()
 				.delete();
+	}
+
+	public void updateInOutCostById(final InOutCostId inoutCostId, final Consumer<InOutCost> consumer)
+	{
+		final I_M_InOut_Cost record = InterfaceWrapperHelper.load(inoutCostId, I_M_InOut_Cost.class);
+		final InOutCost inoutCost = fromRecord(record);
+		consumer.accept(inoutCost);
+		updateRecord(record, inoutCost);
+		InterfaceWrapperHelper.save(record);
 	}
 }
