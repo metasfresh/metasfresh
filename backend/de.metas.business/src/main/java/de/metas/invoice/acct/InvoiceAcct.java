@@ -42,10 +42,11 @@ public final class InvoiceAcct
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	public Optional<ElementValueId> getElementValueId(
-			@NonNull AcctSchemaId acctSchemaId,
-			@NonNull AccountTypeName accountTypeName,
-			@Nullable InvoiceLineId invoiceLineId)
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final AccountTypeName accountTypeName,
+			@Nullable final InvoiceLineId invoiceLineId)
 	{
 		return this.rulesOrdered.stream()
 				.filter(rule -> rule.matches(acctSchemaId, accountTypeName, invoiceLineId))

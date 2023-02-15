@@ -1,11 +1,11 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 
 @Value
 @Builder
@@ -13,9 +13,10 @@ public class WarehouseAccounts
 {
 	@NonNull AcctSchemaId acctSchemaId;
 
-	@NonNull AccountId W_Differences_Acct;
+	@NonNull Account W_Differences_Acct;
 
-	public AccountId getAccountId(@NonNull final WarehouseAccountType acctType)
+	@NonNull
+	public Account getAccount(@NonNull final WarehouseAccountType acctType)
 	{
 		//noinspection SwitchStatementWithTooFewBranches
 		switch (acctType)

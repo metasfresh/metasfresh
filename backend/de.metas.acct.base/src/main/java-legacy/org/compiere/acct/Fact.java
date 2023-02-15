@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
@@ -140,7 +141,7 @@ public final class Fact
 	 */
 	public FactLine createLine(
 			@Nullable final DocLine<?> docLine,
-			final MAccount account,
+			final Account account,
 			final CurrencyId currencyId,
 			@Nullable final BigDecimal debitAmt, @Nullable final BigDecimal creditAmt)
 	{
@@ -152,7 +153,7 @@ public final class Fact
 	}
 
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
+			final Account account,
 			final int C_Currency_ID,
 			final BigDecimal debitAmt, final BigDecimal creditAmt)
 	{
@@ -177,7 +178,7 @@ public final class Fact
 	 * @return Fact Line or null
 	 */
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
+			final Account account,
 			final CurrencyId currencyId,
 			final BigDecimal debitAmt, final BigDecimal creditAmt,
 			final BigDecimal qty)
@@ -191,7 +192,7 @@ public final class Fact
 	}    // createLine
 
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
+			final Account account,
 			final int C_Currency_ID,
 			final BigDecimal debitAmt, final BigDecimal creditAmt,
 			final BigDecimal qty)
@@ -230,7 +231,7 @@ public final class Fact
 	 * @param Amt        if negative Cr else Dr
 	 * @return FactLine
 	 */
-	public FactLine createLine(DocLine<?> docLine, MAccount account, CurrencyId currencyId, BigDecimal Amt)
+	public FactLine createLine(DocLine<?> docLine, Account account, CurrencyId currencyId, BigDecimal Amt)
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -349,7 +350,7 @@ public final class Fact
 		line.setPostingType(getPostingType());
 
 		// Account
-		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcctId());
+		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcct());
 
 		// Amount
 		if (diff.signum() < 0)
@@ -513,7 +514,7 @@ public final class Fact
 					{
 						if (difference.isReversal())
 						{
-							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+							line.setAccount(acctSchema, acctSchemaGL.getDueToAcct(elementType));
 							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 						else
@@ -531,7 +532,7 @@ public final class Fact
 						}
 						else
 						{
-							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+							line.setAccount(acctSchema, acctSchemaGL.getDueToAcct(elementType));
 							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 					}
@@ -635,7 +636,7 @@ public final class Fact
 			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 			line.setDocumentInfo(m_doc, null);
 			line.setPostingType(getPostingType());
-			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
+			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcct());
 
 			// Amount
 			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO);

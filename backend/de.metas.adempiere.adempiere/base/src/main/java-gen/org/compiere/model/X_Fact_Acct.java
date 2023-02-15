@@ -120,6 +120,18 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	}
 
 	@Override
+	public void setAccountConceptualName(final java.lang.String AccountConceptualName)
+	{
+		set_Value(COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName()
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
+	}
+	
+	@Override
 	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);

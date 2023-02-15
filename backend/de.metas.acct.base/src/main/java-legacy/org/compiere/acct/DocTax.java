@@ -17,11 +17,11 @@
 package org.compiere.acct;
 
 import de.metas.acct.accounts.AccountProvider;
-import de.metas.acct.api.AcctSchema;
 import de.metas.acct.accounts.TaxAcctType;
+import de.metas.acct.api.AcctSchema;
 import de.metas.tax.api.TaxId;
 import lombok.NonNull;
-import org.compiere.model.MAccount;
+import de.metas.acct.Account;
 
 import java.math.BigDecimal;
 
@@ -83,12 +83,14 @@ public final class DocTax
 	private final boolean m_salesTax;
 	private final boolean m_taxIncluded;
 
-	public MAccount getAccount(final AcctSchema as)
+	@NonNull
+	public Account getAccount(@NonNull final AcctSchema as)
 	{
 		return accountProvider.getTaxAccount(as.getId(), getTaxId(), getAPTaxType());
 	}
 
-	public MAccount getTaxDueAcct(final AcctSchema as)
+	@NonNull
+	public Account getTaxDueAcct(@NonNull final AcctSchema as)
 	{
 		return accountProvider.getTaxAccount(as.getId(), getTaxId(), TaxAcctType.TaxDue);
 	}

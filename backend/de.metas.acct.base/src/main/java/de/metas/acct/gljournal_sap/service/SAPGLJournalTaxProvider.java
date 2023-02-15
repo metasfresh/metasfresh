@@ -1,10 +1,9 @@
 package de.metas.acct.gljournal_sap.service;
 
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.accounts.TaxAccountsRepository;
 import de.metas.acct.accounts.TaxAcctType;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -15,6 +14,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -34,7 +34,8 @@ public class SAPGLJournalTaxProvider
 		this.moneyService = moneyService;
 	}
 
-	public AccountId getTaxAccountId(
+	@NonNull
+	public Account getTaxAccount(
 			@NonNull final TaxId taxId,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final PostingSign postingSign)
@@ -44,7 +45,7 @@ public class SAPGLJournalTaxProvider
 				: TaxAcctType.TaxDue;
 
 		return taxAccountsRepository.getAccounts(taxId, acctSchemaId)
-				.getAccountId(taxAcctType)
+				.getAccount(taxAcctType)
 				.orElseThrow(() -> new AdempiereException("No account found for " + taxId + ", " + acctSchemaId + ", " + taxAcctType));
 	}
 
