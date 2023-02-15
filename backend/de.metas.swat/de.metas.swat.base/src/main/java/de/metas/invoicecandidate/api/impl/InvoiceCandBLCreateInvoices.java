@@ -341,6 +341,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final String trxName)
 		{
 			final I_C_Invoice invoice;
+			final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 
 			//
 			// Case: our invoice is linked to an order
@@ -375,7 +376,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(PaymentTermId.toRepoId(invoiceHeader.getPaymentTermId()));
 
-				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced(), timeZone));
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
@@ -384,6 +384,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
+
+
+			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
@@ -943,6 +946,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.forexContractRef(invoicingParams != null ? invoicingParams.getForexContractRef() : null)
 				.build();
