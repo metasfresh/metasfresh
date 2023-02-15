@@ -17,6 +17,8 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -35,7 +37,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
@@ -780,12 +781,12 @@ public final class Fact
 	}    // getLines
 
 	@NonNull
-	public FactLine getSingleLineByAccountId(final MAccount account)
+	public FactLine getSingleLineByAccountId(final AccountId accountId)
 	{
 		FactLine lineFound = null;
 		for (FactLine line : m_lines)
 		{
-			if (line.getAccount_ID() == account.getAccount_ID())
+			if (line.getAccount_ID() == accountId.getRepoId())
 			{
 				if (lineFound == null)
 				{
@@ -793,7 +794,7 @@ public final class Fact
 				}
 				else
 				{
-					throw new AdempiereException("More than one fact line found for " + account + ": " + lineFound + ", " + line);
+					throw new AdempiereException("More than one fact line found for AccountId: " + accountId.getRepoId() + ": " + lineFound + ", " + line);
 				}
 			}
 
@@ -801,7 +802,7 @@ public final class Fact
 
 		if (lineFound == null)
 		{
-			throw new AdempiereException("No fact line found for " + account + " in " + m_lines);
+			throw new AdempiereException("No fact line found for AccountId: " + accountId.getRepoId() + " in " + m_lines);
 		}
 
 		return lineFound;
