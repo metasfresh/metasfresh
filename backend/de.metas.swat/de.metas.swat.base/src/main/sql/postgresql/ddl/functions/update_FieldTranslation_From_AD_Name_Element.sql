@@ -19,7 +19,8 @@ BEGIN
 		IsTranslated = x.IsTranslated, 
 		Name = x.Name, 
 		Description = x.Description, 
-		Help = x.Help
+		Help = x.Help,
+        Updated = x.Updated
 	FROM
 	(
 		select
@@ -29,7 +30,8 @@ BEGIN
 			etrl.IsTranslated,
 			etrl.Name,
 			etrl.Description,
-			etrl.Help
+			etrl.Help,
+		    etrl.Updated
 		from AD_Element_Trl_Effective_v etrl
 			join AD_Column c on c.AD_Element_ID = etrl.AD_Element_ID
 			join AD_Field f on f.AD_Column_ID = c.AD_Column_ID
@@ -41,6 +43,7 @@ BEGIN
 	WHERE
 		t.AD_Field_ID = x.AD_Field_ID
 		and t.AD_Language = x.AD_Language
+		and t.Updated <> x.Updated
 	;
 	--
 	GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
@@ -53,7 +56,8 @@ BEGIN
 		IsTranslated = x.IsTranslated,
 		Name = x.Name,
 		Description = x.Description,
-		Help = x.Help
+		Help = x.Help,
+        Updated = x.Updated
 	FROM
 	(
 		select
@@ -63,7 +67,8 @@ BEGIN
 			etrl.IsTranslated,
 			etrl.Name,
 			etrl.Description,
-			etrl.Help
+			etrl.Help,
+			etrl.Updated
 		from AD_Element_Trl_Effective_v etrl
 			join AD_Field f on f.AD_Name_ID = etrl.AD_Element_ID
 		where 
@@ -73,6 +78,7 @@ BEGIN
 	WHERE
 		t.AD_Field_ID = x.AD_Field_ID
 		and t.AD_Language = x.AD_Language
+		and t.Updated <> x.Updated
 	;
 	--
 	GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
