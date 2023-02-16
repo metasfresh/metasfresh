@@ -151,7 +151,7 @@ class ManualInvoiceRepository
 
 		saveRecord(invoiceLineRecord);
 
-		return ofRecord(invoiceLineRecord, invoiceId);
+		return ofRecord(invoiceLineRecord, invoiceRecord);
 	}
 
 	@NonNull
@@ -182,10 +182,10 @@ class ManualInvoiceRepository
 	@NonNull
 	private static ManualInvoiceLine ofRecord(
 			@NonNull final I_C_InvoiceLine invoiceLineRecord,
-			@NonNull final InvoiceId invoiceId)
+			@NonNull final I_C_Invoice invoiceRecord)
 	{
 		return ManualInvoiceLine.builder()
-				.id(InvoiceLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID()))
+				.id(InvoiceLineId.ofRepoId(invoiceRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
 				.externalLineId(invoiceLineRecord.getExternalIds())
 				.line(invoiceLineRecord.getLine())
 				.lineDescription(invoiceLineRecord.getDescription())
