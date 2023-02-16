@@ -127,6 +127,7 @@ class ManualInvoiceRepository
 	{
 		final I_C_InvoiceLine invoiceLineRecord = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 
+		invoiceLineRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		invoiceLineRecord.setC_Invoice_ID(invoiceId.getRepoId());
 		invoiceLineRecord.setExternalIds(request.getExternalLineId());
 

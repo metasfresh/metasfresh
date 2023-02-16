@@ -245,6 +245,7 @@ public class ManualInvoiceService
 
 		final CreateManualInvoiceLineRequest.CreateManualInvoiceLineRequestBuilder requestBuilder = CreateManualInvoiceLineRequest.builder()
 				.externalLineId(requestLine.getExternalLineId())
+				.orgId(requestLine.getOrgId())
 				.line(requestLine.getLine())
 				.lineDescription(requestLine.getLineDescription())
 

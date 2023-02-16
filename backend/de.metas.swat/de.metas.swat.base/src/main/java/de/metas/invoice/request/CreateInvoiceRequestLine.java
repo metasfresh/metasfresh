@@ -24,6 +24,7 @@ package de.metas.invoice.request;
 
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.VatCodeId;
@@ -44,6 +45,9 @@ public class CreateInvoiceRequestLine
 {
 	@NonNull
 	String externalLineId;
+	
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	ProductId productId;

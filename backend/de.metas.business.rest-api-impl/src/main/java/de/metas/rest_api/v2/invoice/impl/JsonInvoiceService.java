@@ -527,6 +527,7 @@ public class JsonInvoiceService
 
 		return CreateInvoiceRequestLine.builder()
 				.externalLineId(jsonLine.getExternalLineId())
+				.orgId(orgId)
 
 				.line(jsonLine.getLine())
 				.lineDescription(jsonLine.getLineDescription())
