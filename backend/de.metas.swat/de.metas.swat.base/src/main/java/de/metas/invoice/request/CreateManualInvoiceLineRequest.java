@@ -23,7 +23,6 @@
 package de.metas.invoice.request;
 
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
@@ -40,9 +39,6 @@ public class CreateManualInvoiceLineRequest
 {
 	@NonNull
 	String externalLineId;
-	
-	@NonNull
-	OrgId orgId;
 
 	@Nullable
 	Integer line;
