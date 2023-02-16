@@ -42,7 +42,7 @@ SELECT CASE
        fa.dateacct,
        bp.value                                                                         AS bpvalue,
        bp.name                                                                          AS bpname,
-       paymenttermduedate(i.c_paymentterm_id, i.dateinvoiced::timestamp WITH TIME ZONE) AS duedate,
+       i.duedate::timestamp WITH TIME ZONE                                              AS duedate,
        fa.description,
        bp.c_bpartner_id,
        fa.record_id                                                                     AS c_invoice_id,
