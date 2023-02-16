@@ -1,8 +1,6 @@
 package org.compiere.acct;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.bpartner.BPartnerId;
@@ -20,12 +18,10 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
+import de.metas.acct.Account;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -65,7 +61,7 @@ public final class FactLineBuilder
 	private DocLine<?> docLine = null;
 	private Integer subLineId = null;
 
-	private MAccount account = null;
+	private Account account = null;
 
 	private CurrencyId currencyId;
 	@Nullable private CurrencyConversionContext currencyConversionCtx;
@@ -116,7 +112,7 @@ public final class FactLineBuilder
 		markAsBuilt();
 
 		// Data Check
-		final MAccount account = getAccount();
+		final Account account = getAccount();
 		if (account == null)
 		{
 			throw new AdempiereException("No account for " + this);
@@ -246,6 +242,8 @@ public final class FactLineBuilder
 			line.setM_CostElement_ID(costElementId.getRepoId());
 		}
 
+		line.setAccountConceptualName(account.getAccountConceptualName());
+
 		//
 		log.debug("Built: {}", line);
 		return line;
@@ -262,20 +260,15 @@ public final class FactLineBuilder
 		built = true;
 	}
 
-	public FactLineBuilder setAccount(@NonNull final AccountId accountId)
-	{
-		final IAccountDAO accountsRepo = Services.get(IAccountDAO.class);
-		return setAccount(accountsRepo.getById(Env.getCtx(), accountId));
-	}
-
-	public FactLineBuilder setAccount(final MAccount account)
+	@NonNull
+	public FactLineBuilder setAccount(@NonNull final Account account)
 	{
 		assertNotBuild();
 		this.account = account;
 		return this;
 	}
 
-	private MAccount getAccount()
+	private Account getAccount()
 	{
 		// TODO: check if we can enforce it all the time
 		// Check.assumeNotNull(account, "account not null for {}", this);

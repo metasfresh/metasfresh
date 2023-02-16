@@ -23,10 +23,13 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.sql.Timestamp;
@@ -41,6 +44,8 @@ public class C_Vat_Code_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_AcctSchema_StepDefData acctSchemaTable;
 	private final C_Vat_Code_StepDefData vatCodeTable;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_Vat_Code_StepDef(
 			@NonNull final C_Tax_StepDefData taxTable,
@@ -76,7 +81,13 @@ public class C_Vat_Code_StepDef
 		final boolean soTrx = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_VAT_Code.COLUMNNAME_IsSOTrx, true);
 		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_VAT_Code.COLUMNNAME_Description);
 
-		final I_C_VAT_Code vatCodeRecord = InterfaceWrapperHelper.newInstance(I_C_VAT_Code.class);
+		final I_C_VAT_Code vatCodeRecord = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_C_VAT_Code.class)
+						.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, vatCode)
+						.create()
+						.firstOnly(I_C_VAT_Code.class),
+				() -> InterfaceWrapperHelper.newInstance(I_C_VAT_Code.class));
+
 		vatCodeRecord.setC_Tax_ID(taxId);
 		vatCodeRecord.setC_AcctSchema_ID(acctSchemaId);
 		vatCodeRecord.setVATCode(vatCode);
@@ -93,6 +104,6 @@ public class C_Vat_Code_StepDef
 		saveRecord(vatCodeRecord);
 
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_VAT_Code.COLUMNNAME_C_VAT_Code_ID + "." + TABLECOLUMN_IDENTIFIER);
-		vatCodeTable.put(identifier, vatCodeRecord);
+		vatCodeTable.putOrReplace(identifier, vatCodeRecord);
 	}
 }

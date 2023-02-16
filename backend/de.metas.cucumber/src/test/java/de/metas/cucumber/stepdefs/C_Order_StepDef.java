@@ -59,6 +59,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.copy.CopyRecordRequest;
 import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -160,7 +161,7 @@ public class C_Order_StepDef
 			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
 
 			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
-			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
+			final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
 			final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(orgTable::get)
@@ -386,6 +387,8 @@ public class C_Order_StepDef
 	@Then("the order is created:")
 	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
@@ -399,29 +402,47 @@ public class C_Order_StepDef
 					.firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
-			assertThat(purchaseOrder).isNotNull();
-			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
+			softly.assertThat(purchaseOrder).isNotNull();
+			softly.assertThat(purchaseOrder.isSOTrx()).as(I_C_Order.COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx);
 
 			final I_C_DocType docType = load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
 
 			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
-			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
+			softly.assertThat(docType.getDocBaseType()).as(COLUMNNAME_DocBaseType).isEqualTo(docBaseType);
 
 			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
-			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+			softly.assertThat(docType.getDocSubType()).as(COLUMNNAME_DocSubType).isEqualTo(docSubType);
 
 			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
 			if (docStatus != null)
 			{
-				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
+				softly.assertThat(purchaseOrder.getDocStatus()).as(COLUMNNAME_DocStatus).isEqualTo(docStatus);
 			}
 
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
-			assertThat(purchaseOrder.isDropShip()).isEqualTo(isDropShip);
+			softly.assertThat(purchaseOrder.isDropShip()).as(I_C_Order.COLUMNNAME_IsDropShip).isEqualTo(isDropShip);
 
-			final int partnerId = DataTableUtil.extractIntOrZeroForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID);
-			assertThat(purchaseOrder.getDropShip_BPartner_ID()).isEqualTo(partnerId);
+			final String dropShipBPIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(dropShipBPIdentifier))
+			{
+				final I_C_BPartner dropShipBP = bpartnerTable.get(dropShipBPIdentifier);
+				softly.assertThat(dropShipBP).isNotNull();
+
+				softly.assertThat(purchaseOrder.getDropShip_BPartner_ID()).as(I_C_Order.COLUMNNAME_DropShip_BPartner_ID).isEqualTo(dropShipBP.getC_BPartner_ID());
+			}
+
+			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(dropShipLocationIdentifier))
+			{
+				final I_C_BPartner_Location dropShipBPLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
+				softly.assertThat(dropShipBPLocation).isNotNull();
+
+				softly.assertThat(purchaseOrder.getDropShip_Location_ID()).as(COLUMNNAME_DropShip_Location_ID).isEqualTo(dropShipBPLocation.getC_BPartner_Location_ID());
+				softly.assertThat(purchaseOrder.getDropShip_BPartner_ID()).as(I_C_Order.COLUMNNAME_DropShip_BPartner_ID).isEqualTo(dropShipBPLocation.getC_BPartner_ID());
+			}
 		}
+
+		softly.assertAll();
 	}
 
 	@Then("the sales order identified by {string} is closed")

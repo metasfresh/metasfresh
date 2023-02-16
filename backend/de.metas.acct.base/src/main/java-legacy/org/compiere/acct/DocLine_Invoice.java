@@ -48,10 +48,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MAccount;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -282,11 +282,11 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	@Override
 	@NonNull
 	// This is a workaround for a very specific case. Please, don't use it, if possible.
-	public MAccount getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
+	public Account getAccount(@NonNull final ProductAcctType acctType, @NonNull final AcctSchema as)
 	{
 		if (acctType == ProductAcctType.P_Revenue_Acct && isConsiderCompensationSchema())
 		{
-			MAccount account = getRevenueAccountFromCompensationSchema(as);
+			final Account account = getRevenueAccountFromCompensationSchema(as);
 			if (account != null)
 			{
 				return account;
@@ -304,7 +304,8 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 				OrgId.toRepoId(getOrgId()));
 	}
 
-	private MAccount getRevenueAccountFromCompensationSchema(@NonNull final AcctSchema as)
+	@Nullable
+	private Account getRevenueAccountFromCompensationSchema(@NonNull final AcctSchema as)
 	{
 		final ProductCategoryId productCategoryId = getProductCategoryForGroupTemplateId();
 		if (productCategoryId == null)

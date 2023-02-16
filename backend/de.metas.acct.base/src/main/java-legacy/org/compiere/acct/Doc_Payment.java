@@ -16,9 +16,10 @@ import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAccount;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -131,7 +132,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 
 			// Prepayment/UnallocatedCash (CR)
-			final MAccount acct;
+			final Account acct;
 			final ChargeId chargeId = getC_Charge_ID().orElse(null);
 			if (chargeId != null)
 			{
@@ -159,7 +160,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		else if (DocBaseType.APPayment.equals(docBaseType))
 		{
 			// Prepayment/PaymentSelect (DR)
-			final MAccount acct;
+			final Account acct;
 			final ChargeId chargeId = getC_Charge_ID().orElse(null);
 			if (chargeId != null)
 			{
@@ -238,7 +239,8 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 * @param as accounting schema
 	 * @return bank in transit account ({@link BankAccountAcctType#B_InTransit_Acct})
 	 */
-	private MAccount getBankAccount(final AcctSchema as)
+	@NonNull
+	private Account getBankAccount(final AcctSchema as)
 	{
 		return getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);
 	}
