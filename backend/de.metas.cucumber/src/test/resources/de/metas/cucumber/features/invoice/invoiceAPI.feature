@@ -66,7 +66,7 @@ Feature: create invoices using invoice API
       "dateInvoiced": "2022-01-20",
       "dateAcct": "2022-01-19",
       "dateOrdered": "2022-01-18",
-      "externalHeaderId": "externalHeaderId",
+      "externalHeaderId": "externalHeaderId1",
       "invoiceDocType": {
         "docBaseType": "ARI",
         "docSubType": null
@@ -183,7 +183,7 @@ Feature: create invoices using invoice API
       "dateInvoiced": "2022-01-20",
       "dateAcct": "2022-01-19",
       "dateOrdered": "2022-01-18",
-      "externalHeaderId": "externalHeaderId",
+      "externalHeaderId": "externalHeaderId2",
       "invoiceDocType": {
         "docBaseType": "ARI",
         "docSubType": null
@@ -280,7 +280,7 @@ Feature: create invoices using invoice API
       "dateInvoiced": "2022-01-25",
       "dateAcct": "2022-01-24",
       "dateOrdered": "2022-01-23",
-      "externalHeaderId": "externalHeaderId",
+      "externalHeaderId": "externalHeaderId3",
       "invoiceDocType": {
         "docBaseType": "ARI",
         "docSubType": null
@@ -368,7 +368,7 @@ Feature: create invoices using invoice API
       "dateInvoiced": "2022-01-25",
       "dateAcct": "2022-01-24",
       "dateOrdered": "2022-01-23",
-      "externalHeaderId": "externalHeaderId",
+      "externalHeaderId": "externalHeaderId4",
       "invoiceDocType": {
         "docBaseType": "ARI",
         "docSubType": null
@@ -458,7 +458,7 @@ Feature: create invoices using invoice API
       "dateInvoiced": "2022-01-20",
       "dateAcct": "2022-01-19",
       "dateOrdered": "2022-01-18",
-      "externalHeaderId": "externalHeaderId",
+      "externalHeaderId": "externalHeaderId5",
       "invoiceDocType": {
         "docBaseType": "ARI",
         "docSubType": null

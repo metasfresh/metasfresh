@@ -238,20 +238,22 @@ public class ManualInvoiceService
 	{
 		final ProductPrice manualPrice = request.getPriceEntered(requestLine).orElse(null);
 
-		TaxId taxId = Optional.ofNullable(requestLine.getVatCodeId())
-				.map(this::getTaxByVatId)
-				.orElse(null);
+		final VatCodeId vatCodeId = requestLine.getVatCodeId();
 
-		final IPricingResult pricingResult = Optional.of(taxId == null || manualPrice == null)
-				.filter(calculatePrice -> calculatePrice)
-				.map(ignored -> getPricingResult(request.getHeader(), requestLine, priceListId, countryId, zoneId))
-				.orElse(null);
+		TaxId taxId = vatCodeId != null
+				? getTaxByVatId(vatCodeId)
+				: null;
+
+		final boolean calculatePrice = taxId == null || manualPrice == null;
+
+		final IPricingResult pricingResult = calculatePrice
+				? getPricingResult(request.getHeader(), requestLine, priceListId, countryId, zoneId)
+				: null;
 
 		if (taxId == null)
 		{
 			taxId = getTaxIdForTaxCategory(request.getHeader(), countryId, bPartnerLocationAndCaptureId, pricingResult);
 		}
-
 
 		final CreateManualInvoiceLineRequest.CreateManualInvoiceLineRequestBuilder requestBuilder = CreateManualInvoiceLineRequest.builder()
 				.externalLineId(requestLine.getExternalLineId())
