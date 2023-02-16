@@ -2,7 +2,7 @@
 -- Value: MAI
 -- ValueName: MovingAverageInvoice
 -- 2023-02-09T18:18:46.763Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,122,543405,TO_TIMESTAMP('2023-02-09 20:18:46','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Moving Average Invoice',TO_TIMESTAMP('2023-02-09 20:18:46','YYYY-MM-DD HH24:MI:SS'),100,'MAI','MovingAverageInvoice')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,122,543405,TO_TIMESTAMP('2023-02-09 20:18:46','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Moving Average Invoice',TO_TIMESTAMP('2023-02-09 20:18:46','YYYY-MM-DD HH24:MI:SS'),100,'M','MovingAverageInvoice')
 ;
 
 -- 2023-02-09T18:18:46.765Z
