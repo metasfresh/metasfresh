@@ -289,7 +289,7 @@ public class InOutBL implements IInOutBL
 		return priceListDAO.getPricingSystemById(pricingSystemId);
 	}
 
-	private boolean isReversal(final int recordId, final int recordReversalId)
+	private static boolean isReversal(final int recordId, final int recordReversalId)
 	{
 		if (recordId <= 0)
 		{
@@ -320,20 +320,16 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public boolean isReversal(final I_M_InOut inout)
+	public boolean isReversal(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "inout not null");
-
 		final int recordId = inout.getM_InOut_ID();
 		final int recordReversalId = inout.getReversal_ID();
 		return isReversal(recordId, recordReversalId);
 	}
 
 	@Override
-	public boolean isReversal(final org.compiere.model.I_M_InOutLine inoutLine)
+	public boolean isReversal(@NonNull final org.compiere.model.I_M_InOutLine inoutLine)
 	{
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
-
 		final int recordId = inoutLine.getM_InOutLine_ID();
 		final int recordReversalId = inoutLine.getReversalLine_ID();
 		return isReversal(recordId, recordReversalId);
