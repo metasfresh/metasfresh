@@ -1,4 +1,4 @@
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -39,7 +39,7 @@ import de.metas.util.Services;
 @Interceptor(I_GL_DistributionLine.class)
 public class GL_DistributionLine
 {
-	private static final transient Logger logger = LogManager.getLogger(GL_DistributionLine.class);
+	private static final Logger logger = LogManager.getLogger(GL_DistributionLine.class);
 	private final IGLDistributionBL glDistributionBL = Services.get(IGLDistributionBL.class);
 	private final IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 

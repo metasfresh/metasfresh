@@ -1,8 +1,8 @@
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.ModelValidator;
 
 import de.metas.organization.OrgId;
@@ -29,13 +29,13 @@ import de.metas.organization.OrgId;
  * #L%
  */
 
-@Interceptor(I_C_AcctSchema_Default.class)
-public class C_AcctSchema_Default
+@Interceptor(I_C_AcctSchema_GL.class)
+public class C_AcctSchema_GL
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_C_AcctSchema_Default acctSchemaDefault)
+	public void beforeSave(final I_C_AcctSchema_GL acctSchemaGL)
 	{
-		acctSchemaDefault.setAD_Org_ID(OrgId.ANY.getRepoId());
+		acctSchemaGL.setAD_Org_ID(OrgId.ANY.getRepoId());
 	}
 
 }

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_BPartner
 {
-	private final static transient Logger logger = LogManager.getLogger(C_BPartner.class);
+	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);

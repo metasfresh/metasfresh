@@ -1,4 +1,4 @@
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 /*
  * #%L

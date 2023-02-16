@@ -136,23 +136,23 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo));
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema(acctSchemaDAO, costElementRepo));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_GL());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Default());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element());
 
-		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_BP_BankAccount()); // 08354
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ValidCombination(accountBL));
 
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine());
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_Journal(importProcessFactory));
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalBatch());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_TaxDeclaration());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution());
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_Distribution());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_DistributionLine());
 	}
 
 	@Override

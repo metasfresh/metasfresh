@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;

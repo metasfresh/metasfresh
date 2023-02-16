@@ -1,4 +1,4 @@
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Activity_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID;

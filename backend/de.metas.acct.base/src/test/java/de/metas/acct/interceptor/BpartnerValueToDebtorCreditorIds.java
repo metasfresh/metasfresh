@@ -20,12 +20,12 @@
  * #L%
  */
 
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import lombok.Value;
 
 @Value
-public class BpartnerValueToDebtorCreditorIds
+class BpartnerValueToDebtorCreditorIds
 {
 	String value;
 

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.acct.interceptor.C_ElementValue;
 import de.metas.elementvalue.ChartOfAccountsRepository;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValueRepository;

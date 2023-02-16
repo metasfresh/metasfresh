@@ -1,4 +1,4 @@
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.gljournal.IGLJournalLineGroup;

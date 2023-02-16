@@ -1,4 +1,4 @@
-package de.metas.acct.model.validator;
+package de.metas.acct.interceptor;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ import org.compiere.model.ModelValidator;
 /**
  * 
  * @author ts
- * @task 08354
+ * @implSpec task 08354
  */
 @Interceptor(I_C_BP_BankAccount.class)
 public class C_BP_BankAccount
