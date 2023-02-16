@@ -350,6 +350,16 @@ public class Money
 		return withValue(precision.round(this.value));
 	}
 
+	public Money round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)
+	{
+		final CurrencyPrecision precision = precisionProvider.apply(currencyId);
+		if (precision == null)
+		{
+			throw new AdempiereException("No precision was returned by " + precisionProvider + " for " + currencyId);
+		}
+		return round(precision);
+	}
+
 	private Money withValue(@NonNull final BigDecimal newValue)
 	{
 		return value.compareTo(newValue) != 0 ? of(newValue, currencyId) : this;
