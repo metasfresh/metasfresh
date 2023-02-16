@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14521](https://github.com/metasfresh/metasfresh/issues/14521) Delivery Instruction Cucumber Tests
   * [#14554](https://github.com/metasfresh/metasfresh/issues/14554) Add accountConceptualName to fact_acct 
   * [#14569](https://github.com/metasfresh/metasfresh/issues/14569) Generate Invoice with Allowing Override Due Date
   * [#14467](https://github.com/metasfresh/metasfresh/issues/14467) Import Exchange Rate from .dat file
