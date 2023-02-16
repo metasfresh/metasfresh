@@ -1,6 +1,7 @@
 package de.metas.device.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -57,6 +58,10 @@ public final class DeviceConfig
 	@Getter
 	@NonNull
 	private final ImmutableList<String> beforeHooksClassname;
+	
+	@Getter
+	@NonNull
+	private final ImmutableMap<String, String> deviceConfigParams;
 
 	/**
 	 * warehouse IDs where this device is available; empty means that it's available to any warehouse
@@ -73,6 +78,7 @@ public final class DeviceConfig
 		requestClassnamesSupplier = builder.getRequestClassnamesSupplier();
 		assignedWarehouseIds = builder.getAssignedWarehouseIds();
 		beforeHooksClassname = builder.getBeforeHooksClassname();
+		deviceConfigParams = builder.getDeviceConfigParams();
 	}
 
 	public String getParameterValue(final String parameterName, final String defaultValue)
@@ -94,6 +100,7 @@ public final class DeviceConfig
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
 		private Set<WarehouseId> assignedWareouseIds = null;
 		private ImmutableList<String> beforeHooksClassname;
+		private ImmutableMap<String, String> deviceConfigParams;
 
 		private Builder(@NonNull final String deviceName)
 		{
@@ -181,6 +188,19 @@ public final class DeviceConfig
 		private ImmutableList<String> getBeforeHooksClassname()
 		{
 			return Optional.ofNullable(beforeHooksClassname).orElseGet(ImmutableList::of);
+		}
+
+		@NonNull
+		public DeviceConfig.Builder setDeviceConfigParams(@NonNull final ImmutableMap<String, String> deviceConfigParams)
+		{
+			this.deviceConfigParams = deviceConfigParams;
+			return this;
+		}
+
+		@NonNull
+		private ImmutableMap<String, String> getDeviceConfigParams()
+		{
+			return deviceConfigParams == null ? ImmutableMap.of() : deviceConfigParams;
 		}
 	}
 

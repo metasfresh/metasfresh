@@ -61,6 +61,7 @@ public class SendTargetWeightHook implements BeforeAcquireValueHook
 	private static final String QTY_TARGET_PARAM_NAME = "qtyTarget";
 	private static final String POSITIVE_TOLERANCE_PARAM_NAME = "positiveTolerance";
 	private static final String NEGATIVE_TOLERANCE_PARAM_NAME = "negativeTolerance";
+	private static final String TARGET_WEIGHT_SCALE_SYSCONFIG_SUFFIX = ".TargetWeightScale";
 
 	private final static Set<String> ACCEPTED_REQUEST_TYPES = ImmutableSet.of(GetInstantGrossWeighRequest.class.getSimpleName(),
 																			  GetStableGrossWeighRequest.class.getSimpleName());
@@ -91,9 +92,13 @@ public class SendTargetWeightHook implements BeforeAcquireValueHook
 		}
 
 		final Function<BigDecimal, Quantity> toQty = bd -> Quantity.of(bd, weightUOM);
+		
+		final Integer targetWeightScale = parameters.getSingleAsIntegerForSuffix(TARGET_WEIGHT_SCALE_SYSCONFIG_SUFFIX)
+				.orElse(null);
 
 		final SoehenleSendTargetWeightRequest sendTargetWeightRequest = SoehenleSendTargetWeightRequest.builder()
 				.targetWeight(convertToScaleUOM(toQty.apply(targetWeight)))
+				.targetWeightScale(targetWeightScale)
 				.positiveTolerance(parameters.getSingleAsBigDecimal(POSITIVE_TOLERANCE_PARAM_NAME)
 										   .map(toQty)
 										   .map(this::convertToScaleUOM)
