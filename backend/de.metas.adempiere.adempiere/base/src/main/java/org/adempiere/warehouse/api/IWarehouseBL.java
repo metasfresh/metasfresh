@@ -87,4 +87,6 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	WarehouseId getIdByLocatorRepoId(int locatorId);
+
+	Optional<LocationId> getLocationIdByLocatorRepoId(int locatorRepoId);
 }

@@ -238,7 +238,6 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
 	}
 
-
 	@Override
 	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
 	{
@@ -273,5 +272,13 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@Override
+	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
+	{
+		final WarehouseId warehouseId = getIdByLocatorRepoId(locatorRepoId);
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return Optional.ofNullable(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()));
 	}
 }
