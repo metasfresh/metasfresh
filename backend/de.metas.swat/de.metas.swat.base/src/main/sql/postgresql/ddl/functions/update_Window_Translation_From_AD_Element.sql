@@ -17,7 +17,8 @@ BEGIN
 		IsTranslated = x.IsTranslated,
 		Name = x.Name,
 		Description = x.Description,
-		Help = x.Help
+		Help = x.Help,
+        Updated = x.Updated
 	FROM
 	(
 		select
@@ -27,7 +28,8 @@ BEGIN
 			etrl.IsTranslated,
 			etrl.Name,
 			etrl.description,
-			etrl.help
+			etrl.help,
+			etrl.Updated
 		from AD_Element_Trl_Effective_v etrl
 			join AD_Window w on w.AD_Element_ID = etrl.AD_Element_ID
 		where 
@@ -37,6 +39,7 @@ BEGIN
 	WHERE
 		t.AD_Window_ID = x.AD_Window_ID
 		and t.AD_Language = x.AD_Language
+		and t.Updated <> x.Updated
 	;
 	
 	GET DIAGNOSTICS update_count = ROW_COUNT;
