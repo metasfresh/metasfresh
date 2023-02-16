@@ -1050,7 +1050,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getAccountProvider().getGLAccount(as, acctType);
 	}
 
-	public MAccount getCostElementAccount(
+	public Account getCostElementAccount(
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final CostElementId costElementId,
 			@NonNull final CostElementAccountType acctType)

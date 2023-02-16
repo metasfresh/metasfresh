@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 391415410L;
+	private static final long serialVersionUID = 901226757L;
 
     /** Standard Constructor */
     public X_Fact_Acct (final Properties ctx, final int Fact_Acct_ID, @Nullable final String trxName)
@@ -48,6 +48,18 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public int getA_Asset_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_A_Asset_ID);
+	}
+
+	@Override
+	public void setAccountConceptualName (final java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
 	}
 
 	@Override

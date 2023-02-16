@@ -41,6 +41,27 @@ public interface I_Fact_Acct
 	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
+	 * Set Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName (java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
+
+	/**
 	 * Set Account.
 	 * Account used
 	 *

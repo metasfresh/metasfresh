@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.PostingException;
@@ -297,7 +298,7 @@ public class AccountProvider
 		}
 	}
 
-	public MAccount getCostElementAccount(
+	public Account getCostElementAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId,
 			@NonNull final CostElementAccountType acctType)
@@ -306,6 +307,6 @@ public class AccountProvider
 				.getAccounts(costElementId, acctSchemaId)
 				.getAccountId(acctType);
 
-		return accountDAO.getById(accountId);
+		return Account.of(accountId, acctType.getColumnName());
 	}
 }
