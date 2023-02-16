@@ -7,6 +7,7 @@ import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
@@ -104,7 +105,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			}
 			else
 			{
-				return createCostForMaterialReceipt(request);
+				final CostElement costElement = request.getCostElement();
+				if (costElement == null || costElement.isMaterialElement())
+				{
+					return createCostForMaterialReceipt(request);
+				}
+				else
+				{
+					return createCostForMaterialReceipt_NonMaterialCosts(request);
+				}
 			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MovementLine))
@@ -193,6 +202,13 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		utils.saveCurrentCost(currentCosts);
 
 		return result;
+	}
+
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(CostDetailCreateRequest request)
+	{
+		throw new AdempiereException("Costing method " + getCostingMethod() + " does not support non material costs receipt")
+				.setParameter("request", request)
+				.appendParametersToMessage();
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
