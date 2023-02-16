@@ -29,18 +29,27 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 @Value
 @Builder
 public class SoehenleSendTargetWeightRequest implements IDeviceRequest<NoDeviceResponse>
 {
+	private static final int DEFAULT_SCALE = 2;
+
 	@NonNull
 	BigDecimal targetWeight;
+
+	@Nullable
+	Integer targetWeightScale;
+
 	@NonNull
 	@Builder.Default
 	BigDecimal positiveTolerance = BigDecimal.ZERO;
+
 	@NonNull
 	@Builder.Default
 	BigDecimal negativeTolerance = BigDecimal.ZERO;
@@ -54,12 +63,17 @@ public class SoehenleSendTargetWeightRequest implements IDeviceRequest<NoDeviceR
 	@NonNull
 	public String getCmd()
 	{
-		// two digits after the comma is currently required by the scale as the target weight in KGM;
-		// TODO: figure it out and create something that works in a more generic way
+		final int scale = getTargetScale();
+		
 		return "<K180K"
-				+ format(targetWeight, 2) + ";"
-				+ format(negativeTolerance, 2) + ";"
-				+ format(positiveTolerance, 2) + ">";
+				+ format(targetWeight, scale) + ";"
+				+ format(negativeTolerance, scale) + ";"
+				+ format(positiveTolerance, scale) + ">";
+	}
+
+	private int getTargetScale()
+	{
+		return Optional.ofNullable(targetWeightScale).orElse(DEFAULT_SCALE);
 	}
 
 	/**

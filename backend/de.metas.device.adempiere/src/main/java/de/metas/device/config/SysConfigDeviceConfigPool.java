@@ -3,6 +3,7 @@ package de.metas.device.config;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
@@ -175,6 +176,7 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.setRequestClassnamesSupplier(this::getDeviceRequestClassnames)
 				.setAssignedWarehouseIds(getDeviceWarehouseIds(deviceName))
 				.setBeforeHooksClassname(getBeforeHooksClassname(deviceName))
+				.setDeviceConfigParams(getDeviceConfigParams(deviceName))
 				.build();
 	}
 
@@ -249,6 +251,12 @@ public class SysConfigDeviceConfigPool implements IDeviceConfigPool
 				.map(Arrays::asList)
 				.map(ImmutableList::copyOf)
 				.orElseGet(ImmutableList::of);
+	}
+
+	@NonNull
+	private ImmutableMap<String, String> getDeviceConfigParams(@NonNull final String deviceName)
+	{
+		return ImmutableMap.copyOf(sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName, clientAndOrgId));
 	}
 	
 	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
