@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -194,7 +195,7 @@ public class SAPGLJournalLoaderAndSaver
 				.line(SeqNo.ofInt(record.getLine()))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				//
-				.accountId(AccountId.ofRepoId(record.getC_ValidCombination_ID()))
+				.account(Account.ofId(AccountId.ofRepoId(record.getC_ValidCombination_ID())))
 				.postingSign(PostingSign.ofCode(record.getPostingSign()))
 				.amount(Money.of(record.getAmount(), conversionCtx.getCurrencyId()))
 				.amountAcct(Money.of(record.getAmtAcct(), conversionCtx.getAcctCurrencyId()))
@@ -293,7 +294,7 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setParent_ID(SAPGLJournalLineId.toRepoId(line.getParentId()));
 		lineRecord.setLine(line.getLine().toInt());
 		lineRecord.setDescription(StringUtils.trimBlankToNull(line.getDescription()));
-		lineRecord.setC_ValidCombination_ID(line.getAccountId().getRepoId());
+		lineRecord.setC_ValidCombination_ID(line.getAccount().getAccountId().getRepoId());
 		lineRecord.setPostingSign(line.getPostingSign().getCode());
 		lineRecord.setAmount(line.getAmount().toBigDecimal());
 		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());

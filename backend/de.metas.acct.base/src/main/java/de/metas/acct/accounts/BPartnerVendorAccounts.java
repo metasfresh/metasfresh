@@ -1,12 +1,12 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 import org.slf4j.Logger;
 
 @Value
@@ -17,11 +17,12 @@ public class BPartnerVendorAccounts
 
 	@NonNull AcctSchemaId acctSchemaId;
 
-	@NonNull AccountId V_Liability_Acct;
-	@NonNull AccountId V_Liability_Services_Acct;
-	@NonNull AccountId V_Prepayment_Acct;
+	@NonNull Account V_Liability_Acct;
+	@NonNull Account V_Liability_Services_Acct;
+	@NonNull Account V_Prepayment_Acct;
 
-	public AccountId getAccountId(@NonNull final BPartnerVendorAccountType acctType)
+	@NonNull
+	public Account getAccount(@NonNull final BPartnerVendorAccountType acctType)
 	{
 		switch (acctType)
 		{

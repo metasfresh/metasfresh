@@ -58,7 +58,7 @@ public class SAPGLJournalService
 				glJournal -> {
 					return glJournal.addLine(
 							request.getPostingSign(),
-							request.getAccountId(),
+							request.getAccount(),
 							request.getAmount(),
 							request.getTaxId(),
 							currencyConverter);

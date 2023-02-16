@@ -16,7 +16,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
-import org.compiere.model.MAccount;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -48,44 +48,52 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	}
 
 	@Override
-	public Optional<MAccount> getProductAccount(@NonNull final AcctSchemaId acctSchemaId, @Nullable final ProductId productId, @NonNull final ProductAcctType acctType)
+	@NonNull
+	public Optional<Account> getProductAccount(@NonNull final AcctSchemaId acctSchemaId, @Nullable final ProductId productId, @NonNull final ProductAcctType acctType)
 	{
 		return getProductAccount(acctSchemaId, acctType);
 	}
 
 	@Override
-	public Optional<MAccount> getProductCategoryAccount(@NonNull final AcctSchemaId acctSchemaId, @NonNull final ProductCategoryId productCategoryId, @NonNull final ProductAcctType acctType)
+	@NonNull
+	public Optional<Account> getProductCategoryAccount(@NonNull final AcctSchemaId acctSchemaId, @NonNull final ProductCategoryId productCategoryId, @NonNull final ProductAcctType acctType)
 	{
 		return getProductAccount(acctSchemaId, acctType);
 	}
 
-	private Optional<MAccount> getProductAccount(final @NonNull AcctSchemaId acctSchemaId, final @NonNull ProductAcctType acctType)
+	@NonNull
+	private Optional<Account> getProductAccount(final @NonNull AcctSchemaId acctSchemaId, final @NonNull ProductAcctType acctType)
 	{
 		final AccountTypeName accountTypeName = AccountTypeName.ofColumnName(acctType.getColumnName());
 
 		return invoiceAccounts.getElementValueId(acctSchemaId, accountTypeName, invoiceLineId)
-				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId));
+				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId))
+				.map(id -> Account.of(id, acctType.getColumnName()));
 	}
 
 	@Override
-	public Optional<AccountId> getBPartnerCustomerAccountId(@NonNull final AcctSchemaId acctSchemaId, @NonNull final BPartnerId bpartnerId, @NonNull final BPartnerCustomerAccountType acctType)
+	@NonNull
+	public Optional<Account> getBPartnerCustomerAccount(@NonNull final AcctSchemaId acctSchemaId, @NonNull final BPartnerId bpartnerId, @NonNull final BPartnerCustomerAccountType acctType)
 	{
 		return Optional.empty();
 	}
 
 	@Override
-	public Optional<AccountId> getBPartnerVendorAccountId(@NonNull final AcctSchemaId acctSchemaId, @NonNull final BPartnerId bpartnerId, @NonNull final BPartnerVendorAccountType acctType)
+	@NonNull
+	public Optional<Account> getBPartnerVendorAccount(@NonNull final AcctSchemaId acctSchemaId, @NonNull final BPartnerId bpartnerId, @NonNull final BPartnerVendorAccountType acctType)
 	{
 		return Optional.empty();
 	}
 
 	@Override
-	public Optional<AccountId> getBPGroupAccountId(@NonNull final AcctSchemaId acctSchemaId, @NonNull final BPGroupId bpGroupId, @NonNull final BPartnerGroupAccountType acctType)
+	@NonNull
+	public Optional<Account> getBPGroupAccount(@NonNull final AcctSchemaId acctSchemaId, @NonNull final BPGroupId bpGroupId, @NonNull final BPartnerGroupAccountType acctType)
 	{
 		return Optional.empty();
 	}
 
-	private MAccount getOrCreateAccount(
+	@NonNull
+	private AccountId getOrCreateAccount(
 			@NonNull final ElementValueId elementValueId,
 			@NonNull final AcctSchemaId acctSchemaId)
 	{

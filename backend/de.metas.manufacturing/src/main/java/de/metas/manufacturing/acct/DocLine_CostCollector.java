@@ -22,14 +22,13 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
-import org.compiere.model.MAccount;
+import de.metas.acct.Account;
 import org.compiere.util.DB;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
- *
  */
 public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 {
@@ -46,7 +45,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		setReversalLine_ID(cc.getReversal_ID());
 	}
 
-	public MAccount getAccountForCostElement(
+	public Account getAccountForCostElement(
 			final AcctSchema as,
 			final CostElement costElement)
 	{
@@ -85,7 +84,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 	@Override
 	@NonNull
-	public MAccount getAccount(
+	public Account getAccount(
 			@NonNull final ProductAcctType acctType,
 			@NonNull final AcctSchema as)
 	{
@@ -110,7 +109,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 				throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + ", product " + productId + " and " + as);
 			}
 
-			return services.getAccountById(accountId);
+			return Account.of(accountId, acctType.getColumnName());
 		}
 	}
 
@@ -121,11 +120,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
-					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build());
+																	 .acctSchemaId(acctSchemaId)
+																	 .reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+																	 .initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
+																	 .date(getDateAcctAsInstant())
+																	 .build());
 		}
 		else
 		{

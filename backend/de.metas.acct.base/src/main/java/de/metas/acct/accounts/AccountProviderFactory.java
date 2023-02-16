@@ -1,6 +1,5 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.api.IAccountDAO;
 import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.product.IProductBL;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountProviderFactory
 {
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ProductAccountsRepository productAccountsRepository;
 	private final ProductCategoryAccountsRepository productCategoryAccountsRepository;
@@ -49,7 +47,6 @@ public class AccountProviderFactory
 	public AccountProvider.AccountProviderBuilder newAccountProvider()
 	{
 		return AccountProvider.builder()
-				.accountDAO(accountDAO)
 				.bpartnerDAO(bpartnerDAO)
 				.bpartnerAccountsRepository(bpartnerAccountsRepository)
 				.bpartnerGroupAccountsRepository(bpartnerGroupAccountsRepository)
