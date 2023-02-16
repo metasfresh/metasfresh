@@ -23,7 +23,8 @@ BEGIN
 		po_name = x.po_name,
 		po_printname = x.po_printname,
 		po_description = x.po_description,
-		po_help = x.po_help
+		po_help = x.po_help,
+        updated = x.updated
 		
 	FROM
 	(
@@ -41,7 +42,8 @@ BEGIN
 			etrl.po_name,
 			etrl.po_printname,
 			etrl.po_description,
-			etrl.po_help
+			etrl.po_help,
+            etrl.updated
 			
 		from AD_Element e
 		join AD_Element_Trl etrl on e.AD_Element_ID = etrl.AD_Element_ID
@@ -49,7 +51,8 @@ BEGIN
 		where e.AD_Element_ID = update_ad_element_on_ad_element_trl_update.AD_Element_ID and etrl.ad_language =  update_ad_element_on_ad_element_trl_update.AD_Language
 			
 	) x
-WHERE e.AD_Element_ID = x.AD_Element_ID ;
+WHERE e.AD_Element_ID = x.AD_Element_ID
+  AND e.updated <> x.updated;
 
 END;
 $BODY$
