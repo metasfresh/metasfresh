@@ -9,23 +9,23 @@ Feature: Generate delivery instructions from delivery plannings
 
   Scenario: Generate and regenerate delivery instructions from outgoing delivery planning
     Given  metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value              | OPT.IsActive |
-      | pricingSystem | PricingSystemName | PricingSystemValue | true         |
+      | Identifier    | Name              | Value                          | OPT.IsActive |
+      | pricingSystem | PricingSystemName | PricingSystemValueGen_02022023 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name             | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListName_SO | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                        | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameSOGen_02022023 | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer   | Customer | N            | Y              | pricingSystem                 |
+      | Identifier | Name                 | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer   | CustomerGen_02022023 | N            | Y              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1234562090546 | customer                 | true                | true                |
     And metasfresh contains M_Products:
-      | Identifier | Name        |
-      | product    | ProductName |
+      | Identifier | Name                    |
+      | product    | ProductNameGen_02022023 |
     And metasfresh contains M_ProductPrices
       | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_SO | priceListVersion_SO               | product                 | 10.0     | PCE               | Normal                        |
@@ -46,7 +46,7 @@ Feature: Generate delivery instructions from delivery plannings
 
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
-      | shipmentSchedule | orderLineDI_SO           | N             |
+      | shipmentSchedule | orderLineDI_SO            | N             |
     And after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanningDI_SO              | orderLineDI_SO            |
@@ -56,7 +56,7 @@ Feature: Generate delivery instructions from delivery plannings
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstruction_SO             | deliveryPlanningDI_SO          |
+      | deliveryInstruction_SO                | deliveryPlanningDI_SO             |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
@@ -76,11 +76,12 @@ Feature: Generate delivery instructions from delivery plannings
 
     When regenerate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstructionRegenerated_SO  | deliveryPlanningDI_SO          |
+      | deliveryInstructionRegenerated_SO     | deliveryPlanningDI_SO             |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
       | deliveryInstructionRegenerated_SO     | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | warehouseStdLocation                          | 2023-02-10       | CO            |
+      | deliveryInstruction_SO                | shipper_DHL             | customer                       | customerLocation               | customerLocation                               | warehouseStdLocation                          | 2023-02-10       | VO            |
     And load M_Package for M_ShipperTransportation: deliveryInstructionRegenerated_SO
       | M_Package_ID.Identifier | M_Product_ID.Identifier |
       | packageDI_RE            | product                 |
@@ -93,11 +94,6 @@ Feature: Generate delivery instructions from delivery plannings
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
       | shippingPackageDI_RE            | packageDI_RE            | deliveryInstructionRegenerated_SO     | customerLocation                  | 0             | customer                     | product                     | orderLineDI_SO                |
-    And validate M_ShipperTransportation:
-      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-      | deliveryInstruction_SO                | shipper_DHL             | customer                       | customerLocation               | VO            |
-
-
 
 
 

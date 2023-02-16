@@ -85,7 +85,7 @@ public class M_ShipperTransportation_StepDef
 			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
 			assertThat(deliveryPlanning).isNotNull();
 
-			deliveryPlanningService.generateDeliveryInstructions(retrieveFilter(deliveryPlanning));
+			deliveryPlanningService.generateDeliveryInstructions(getQueryFilterFor(deliveryPlanning));
 
 			InterfaceWrapperHelper.refresh(deliveryPlanning);
 
@@ -106,7 +106,7 @@ public class M_ShipperTransportation_StepDef
 			final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
 			assertThat(deliveryPlanning).isNotNull();
 
-			deliveryPlanningService.regenerateDeliveryInstructions(retrieveFilter(deliveryPlanning));
+			deliveryPlanningService.regenerateDeliveryInstructions(getQueryFilterFor(deliveryPlanning));
 
 			InterfaceWrapperHelper.refresh(deliveryPlanning);
 
@@ -178,7 +178,7 @@ public class M_ShipperTransportation_StepDef
 	}
 
 	@NonNull
-	private IQueryFilter<I_M_Delivery_Planning> retrieveFilter(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	private IQueryFilter<I_M_Delivery_Planning> getQueryFilterFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		return queryBL.createCompositeQueryFilter(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanning.getM_Delivery_Planning_ID());

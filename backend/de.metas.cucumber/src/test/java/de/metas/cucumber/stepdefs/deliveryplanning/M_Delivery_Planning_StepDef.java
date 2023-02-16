@@ -125,6 +125,14 @@ public class M_Delivery_Planning_StepDef
 			{
 				final int deliveryPlanningRecords = queryBuilder.create().count();
 
+				if (deliveryPlanningRecords > numberOfRecordsToLoad)
+				{
+					throw new AdempiereException("Found more M_Delivery_Planning records than expected for C_OrderLine_ID=" + orderLine.getC_OrderLine_ID())
+							.appendParametersToMessage()
+							.setParameter("ExpectedCount", numberOfRecordsToLoad)
+							.setParameter("ActualCount", deliveryPlanningRecords);
+				}
+
 				return deliveryPlanningRecords == numberOfRecordsToLoad;
 			};
 
@@ -154,8 +162,8 @@ public class M_Delivery_Planning_StepDef
 		deliveryPlanningService.createAdditionalDeliveryPlannings(deliveryPlanningId, noAdditionalRecords);
 	}
 
-	@When("^delete M_Delivery_Planning( expecting error:|:)$")
-	public void delete_M_Delivery_Planning(@NonNull final String semantics, @NonNull final DataTable dataTable)
+	@When("delete M_Delivery_Planning:")
+	public void delete_M_Delivery_Planning(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -330,14 +338,18 @@ public class M_Delivery_Planning_StepDef
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case closed:
-				deliveryPlanningService.closeSelectedDeliveryPlannings(retrieveFilter(deliveryPlanningIdentifier));
+				deliveryPlanningService.closeSelectedDeliveryPlannings(getQueryFilterFor(deliveryPlanningIdentifier));
 				break;
 			case opened:
-				deliveryPlanningService.reOpenSelectedDeliveryPlannings(retrieveFilter(deliveryPlanningIdentifier));
+				deliveryPlanningService.reOpenSelectedDeliveryPlannings(getQueryFilterFor(deliveryPlanningIdentifier));
 				break;
 			case canceled:
-				deliveryPlanningService.cancelDelivery(retrieveFilter(deliveryPlanningIdentifier));
+				deliveryPlanningService.cancelDelivery(getQueryFilterFor(deliveryPlanningIdentifier));
 				break;
+			default:
+				throw new AdempiereException("Unsupported action for M_Delivery_Planning!")
+						.appendParametersToMessage()
+						.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanning.getM_Delivery_Planning_ID());
 		}
 	}
 
@@ -364,7 +376,7 @@ public class M_Delivery_Planning_StepDef
 	}
 
 	@NonNull
-	private IQueryFilter<I_M_Delivery_Planning> retrieveFilter(@NonNull final String deliveryPlanningIdentifier)
+	private IQueryFilter<I_M_Delivery_Planning> getQueryFilterFor(@NonNull final String deliveryPlanningIdentifier)
 	{
 		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningTable.get(deliveryPlanningIdentifier);
 		assertThat(deliveryPlanning).isNotNull();

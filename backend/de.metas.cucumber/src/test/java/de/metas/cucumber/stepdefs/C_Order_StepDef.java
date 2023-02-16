@@ -429,7 +429,7 @@ public class C_Order_StepDef
 			}
 
 			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if(Check.isNotBlank(dropShipLocationIdentifier))
+			if (Check.isNotBlank(dropShipLocationIdentifier))
 			{
 				final I_C_BPartner_Location dropShipBPLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
 				assertThat(dropShipBPLocation).isNotNull();

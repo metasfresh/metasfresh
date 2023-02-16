@@ -7,24 +7,22 @@ Feature: Order to delivery instructions
     And metasfresh has date and time 2023-02-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
 
+
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value              | OPT.IsActive |
-      | pricingSystem | PricingSystemName | PricingSystemValue | true         |
+      | Identifier    | Name                              | Value                              | OPT.IsActive |
+      | pricingSystem | PricingSystemNameOrderDI_03022023 | PricingSystemValueOrderDI_03022023 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListName | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameSOOrderDI_03022023 | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier  | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | warehouseBP | warehouseBP |              |                |                               |
-      | customer    | Customer    | N            | Y              | pricingSystem                 |
-
+      | Identifier | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer   | CustomerOrderDI_03022023 | N            | Y              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
-      | customerLocation  | 1234567890599 | customer                 | true                | true                |
-      | warehouseLocation | 1234522899346 | warehouseBP              | true                | true                |
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | customerLocation | 1234567090599 | customer                 | true                | true                |
     And load M_AttributeSet:
       | M_AttributeSet_ID.Identifier  | Name               |
       | attributeSetConvenienceSalate | Convenience Salate |
@@ -50,31 +48,31 @@ Feature: Order to delivery instructions
   _Then two B2B delivery plannings are created for the 2 purchase orderLines
   _And different forwarders are set on both delivery planning records so that delivery instructions can be generated
   _When generate Delivery Instruction is invoked for both delivery plannings created after SO completion
-  _Then validate 2 delivery instructions: LoadingLocation = warehouseLocation, deliveryLocation = customerLocation, 2 new packages & 2 new shipping packages with ActualLoadQty = 0 are created
+  _Then validate 2 delivery instructions: LoadingLocation = dropshipWarehouseLocation, deliveryLocation = customerLocation, 2 new packages & 2 new shipping packages with ActualLoadQty = 0 are created
   _When generate Delivery Instruction is invoked for both delivery plannings created after PO completion
   _Then validate 2 delivery instructions - LoadingLocation = vendorLocation, deliveryLocation = dropshipWarehouseLocation, 2 new packages & 2 new shipping packages - ActualLoadQty = 0 are created
 
     Given load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value             | OPT.C_BPartner_Location_ID.Identifier |
       | dropShipWarehouse         | DropshipWarehouse | dropShipWarehouseLocation             |
-    And load C_Currency:
-      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
-      | currency                 | 318               |
+    And load C_Currency by ISO Code:
+      | C_Currency_ID.Identifier | ISO_Code |
+      | currency                 | EUR      |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_PO_6 | pricingSystem                 | DE                        | EUR                 | PriceListName_PO_6 | false | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList_PO_6 | pricingSystem                 | DE                        | EUR                 | PriceListNamePOOrderDI_03022023 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier            | M_PriceList_ID.Identifier | Name               | ValidFrom  |
       | priceListVersion_PO_6 | priceList_PO_6            | PurchaseOrder-PLV6 | 2023-02-01 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | vendor     | Vendor | Y            | N              | pricingSystem                 |
+      | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendor     | VendorOrderDI_03022023 | Y            | N              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier     | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation | 1234567899346 | vendor                   | true                | true                |
     And metasfresh contains M_Products:
-      | Identifier | Name          | OPT.M_Product_Category_ID.Identifier |
-      | product    | ProductName_6 | standardCategory                     |
+      | Identifier | Name                        | OPT.M_Product_Category_ID.Identifier |
+      | product    | ProductNameOrderDI_03022023 | standardCategory                     |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_PO_6 | priceListVersion_PO_6             | product                 | 5.0      | PCE               | Normal                        |
@@ -270,24 +268,24 @@ Feature: Order to delivery instructions
     Given load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value             | OPT.C_BPartner_Location_ID.Identifier |
       | dropShipWarehouse_7       | DropshipWarehouse | dropShipWarehouseLocation             |
-    And load C_Currency:
-      | C_Currency_ID.Identifier | OPT.C_Currency_ID |
-      | currency                 | 318               |
+    And load C_Currency by ISO Code:
+      | C_Currency_ID.Identifier | ISO_Code |
+      | currency                 | EUR      |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_PO_7 | pricingSystem                 | DE                        | EUR                 | PriceListName_PO_7 | false | false         | 2              | true         |
+      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList_PO_7 | pricingSystem                 | DE                        | EUR                 | PriceListNamePOOrderDI_09022023 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier            | M_PriceList_ID.Identifier | Name               | ValidFrom  |
       | priceListVersion_PO_7 | priceList_PO_7            | PurchaseOrder-PLV7 | 2023-02-01 |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | vendor_7   | Vendor7 | Y            | N              | pricingSystem                 |
+      | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendor_7   | VendorOrderDI_09022023 | Y            | N              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation_7 | 1232067899346 | vendor_7                 | true                | true                |
     And metasfresh contains M_Products:
-      | Identifier | Name          | OPT.M_Product_Category_ID.Identifier |
-      | product_7  | ProductName_7 | standardCategory                     |
+      | Identifier | Name                        | OPT.M_Product_Category_ID.Identifier |
+      | product_7  | ProductNameOrderDI_09022023 | standardCategory                     |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_PO_7 | priceListVersion_PO_7             | product_7               | 5.0      | PCE               | Normal                        |
@@ -379,8 +377,8 @@ Feature: Order to delivery instructions
 
     Then after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_7.1             | orderPO_7              | orderLinePO_7.1           | vendor_7                 | vendorLocation_7                  | product_7               | 2          | dropShipWarehouse_7       |
-      | receiptSchedule_7.2             | orderPO_7              | orderLinePO_7.2           | vendor_7                 | vendorLocation_7                  | product_7               | 4          | dropShipWarehouse_7       |
+      | receiptSchedule_7.1             | orderPO_7             | orderLinePO_7.1           | vendor_7                 | vendorLocation_7                  | product_7               | 2          | dropShipWarehouse_7       |
+      | receiptSchedule_7.2             | orderPO_7             | orderLinePO_7.2           | vendor_7                 | vendorLocation_7                  | product_7               | 4          | dropShipWarehouse_7       |
     And after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
       | deliveryPlanningPO_7.1             | orderLinePO_7.1           |

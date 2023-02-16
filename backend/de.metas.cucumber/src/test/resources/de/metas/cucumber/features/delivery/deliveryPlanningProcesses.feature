@@ -8,23 +8,23 @@ Feature: Delivery planning processes interaction
     And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
 
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value              | OPT.IsActive |
-      | pricingSystem | PricingSystemName | PricingSystemValue | true         |
+      | Identifier    | Name              | Value                                  | OPT.IsActive |
+      | pricingSystem | PricingSystemName | PricingSystemValueDPProcesses_03022023 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListName | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                              | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameDPProcesses_03022023 | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
     And metasfresh contains M_Products:
-      | Identifier | Name        |
-      | product    | ProductName |
+      | Identifier | Name                            |
+      | product    | ProductNameDPProcesses_03022023 |
     And metasfresh contains M_ProductPrices
       | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_SO | priceListVersion_SO               | product                 | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer   | Customer | N            | Y              | pricingSystem                 |
+      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer   | CustomerDPProcesses_03022023 | N            | Y              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1234568110599 | customer                 | true                | true                |
@@ -157,3 +157,6 @@ Feature: Delivery planning processes interaction
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.IsClosed | OPT.Processed | OPT.PlannedLoadedQuantity | OPT.OrderStatus |
       | deliveryPlanning_2                | 5          | 5            | Outgoing                 | true         | true          | 0                         | Canceled        |
+    And validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveryDate | OPT.DocStatus |
+      | deliveryInstruction                   | shipper_DHL             | customer                       | customerLocation               | 2023-02-10       | VO            |

@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.deliveryplanning.M_ShipperTransportation_StepDefData;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -79,10 +78,10 @@ public class M_Package_StepDef
 		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
 		assertThat(deliveryInstruction).isNotNull();
 
-		final ImmutableList<I_M_ShippingPackage> shippingPackages = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+		final I_M_ShippingPackage shippingPackage = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstruction.getM_ShipperTransportation_ID())
 				.create()
-				.listImmutable();
+				.firstOnlyNotNull(I_M_ShippingPackage.class);
 
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -90,13 +89,9 @@ public class M_Package_StepDef
 			final I_M_Product product = productTable.get(productIdentifier);
 			assertThat(product).isNotNull();
 
-			final I_M_Package packageRecord = shippingPackages.stream()
-					.filter(record -> record.getM_Product_ID() == product.getM_Product_ID())
-					.findFirst()
-					.map(I_M_ShippingPackage::getM_Package_ID)
-					.map(packageId -> InterfaceWrapperHelper.load(packageId, I_M_Package.class))
-					.orElse(null);
+			assertThat(shippingPackage.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 
+			final I_M_Package packageRecord =  InterfaceWrapperHelper.load(shippingPackage.getM_Package_ID(), I_M_Package.class);
 			assertThat(packageRecord).isNotNull();
 
 			final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
