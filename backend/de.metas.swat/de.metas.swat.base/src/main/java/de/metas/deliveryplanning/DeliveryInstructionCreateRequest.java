@@ -76,7 +76,7 @@ public class DeliveryInstructionCreateRequest
 	@NonNull
 	Instant dateDoc;
 
-	@Nullable
+	@NonNull
 	ShipperId shipperId;
 
 	@NonNull DocTypeId docTypeId;

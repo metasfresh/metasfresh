@@ -320,6 +320,14 @@ public class DeliveryPlanningService
 	private DeliveryInstructionCreateRequest createDeliveryInstructionRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+
+		if (deliveryPlanningRecord.getM_Shipper_ID() == 0)
+		{
+			throw new AdempiereException("Cannot create M_ShipperTransportation if M_Shipper_ID is missing")
+					.appendParametersToMessage()
+					.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
+		}
+
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID());
@@ -369,7 +377,7 @@ public class DeliveryPlanningService
 				.dateDoc(SystemTime.asInstant())
 				.docTypeId(docTypeId)
 
-				.shipperId(ShipperId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Shipper_ID()))
+				.shipperId(ShipperId.ofRepoId(deliveryPlanningRecord.getM_Shipper_ID()))
 
 				.productId(productId)
 				.isToBeFetched(isIncoming)

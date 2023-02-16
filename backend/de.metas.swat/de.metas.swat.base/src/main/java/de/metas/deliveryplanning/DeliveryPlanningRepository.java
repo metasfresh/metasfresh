@@ -252,7 +252,7 @@ public class DeliveryPlanningRepository
 		deliveryInstructionRecord.setLoadingTime(request.getLoadingTime());
 		deliveryInstructionRecord.setDeliveryTime(request.getDeliveryTime());
 
-		deliveryInstructionRecord.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
+		deliveryInstructionRecord.setM_Shipper_ID(request.getShipperId().getRepoId());
 
 		deliveryInstructionRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 
@@ -272,7 +272,7 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
 
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
+		mpackage.setM_Shipper_ID(request.getShipperId().getRepoId());
 		mpackage.setShipDate((TimeUtil.asTimestamp(request.getDeliveryDate())));
 		mpackage.setC_BPartner_ID(request.getShipperBPartnerId().getRepoId());
 		mpackage.setC_BPartner_Location_ID(request.getShipperLocationId().getRepoId());
