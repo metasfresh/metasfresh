@@ -185,6 +185,9 @@ public class M_Product_StepDef
 				bPartnerProduct.setUPC(upc);
 			}
 
+			final Boolean isCurrentVendor = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
+			bPartnerProduct.setIsCurrentVendor(isCurrentVendor);
+
 			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
 		}
 	}

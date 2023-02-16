@@ -59,6 +59,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -235,70 +236,79 @@ public class ManualInvoiceService
 			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId,
 			@NonNull final ZoneId zoneId)
 	{
-		final IPricingResult pricingResult = getPricingResult(request.getHeader(),
-															  requestLine,
-															  priceListId,
-															  countryId,
-															  zoneId);
-
 		final ProductPrice manualPrice = request.getPriceEntered(requestLine).orElse(null);
+
+		final VatCodeId vatCodeId = requestLine.getVatCodeId();
+
+		TaxId taxId = vatCodeId != null
+				? getTaxByVatId(vatCodeId)
+				: null;
+
+		final boolean calculatePrice = taxId == null || manualPrice == null;
+
+		final IPricingResult pricingResult = calculatePrice
+				? getPricingResult(request.getHeader(), requestLine, priceListId, countryId, zoneId)
+				: null;
+
+		if (taxId == null)
+		{
+			taxId = getTaxIdForTaxCategory(request.getHeader(), countryId, bPartnerLocationAndCaptureId, pricingResult);
+		}
 
 		final CreateManualInvoiceLineRequest.CreateManualInvoiceLineRequestBuilder requestBuilder = CreateManualInvoiceLineRequest.builder()
 				.externalLineId(requestLine.getExternalLineId())
 				.line(requestLine.getLine())
 				.lineDescription(requestLine.getLineDescription())
-
 				.productId(requestLine.getProductId())
 				.qtyToInvoice(requestLine.getQtyToInvoice())
-				.taxId(getTaxId(request.getHeader(),
-								requestLine,
-								pricingResult,
-								countryId,
-								bPartnerLocationAndCaptureId));
+				.taxId(taxId);
 
 		if (manualPrice != null)
 		{
-			final Money adjustedManualPrice = Optional.ofNullable(pricingResult.getPrecision())
-					.map(precision -> manualPrice.toMoney().round(precision))
-					.orElseGet(manualPrice::toMoney);
+			final Money adjustedManualPrice = manualPrice.toMoney();
 
-			requestBuilder
+			return requestBuilder
 					.isManualPrice(true)
 					.priceEntered(adjustedManualPrice)
-					.priceUomId(manualPrice.getUomId());
-		}
-		else
-		{
-			requestBuilder
-					.isManualPrice(false)
-					.priceEntered(pricingResult.getPriceStdAsMoney())
-					.priceUomId(pricingResult.getPriceUomId());
+					.priceUomId(manualPrice.getUomId())
+					.build();
 		}
 
-		return requestBuilder.build();
+		return requestBuilder
+				.isManualPrice(false)
+				.priceEntered(pricingResult.getPriceStdAsMoney())
+				.priceUomId(pricingResult.getPriceUomId())
+				.build();
 	}
 
 	@NonNull
-	private TaxId getTaxId(
+	private TaxId getTaxIdForTaxCategory(
 			@NonNull final CreateInvoiceRequestHeader header,
-			@NonNull final CreateInvoiceRequestLine requestLine,
-			@NonNull final IPricingResult pricingResult,
 			@NonNull final CountryId countryId,
-			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
+			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId,
+			@NonNull final IPricingResult pricingResult)
 	{
-		return Optional.ofNullable(taxDAO.getBy(TaxQuery.builder()
-														.fromCountryId(countryId)
-														.orgId(header.getOrgId())
-														.bPartnerLocationId(bPartnerLocationAndCaptureId)
-														.dateOfInterest(TimeUtil.asTimestamp(header.getDateInvoiced()))
-														.taxCategoryId(pricingResult.getTaxCategoryId())
-														.soTrx(header.getSoTrx())
-														.vatCodeId(requestLine.getVatCodeId())
-														.build()))
+		if (pricingResult.getTaxCategoryId() == null)
+		{
+			throw new AdempiereException("Couldn't find taxCategory!")
+					.appendParametersToMessage()
+					.setParameter("ProductID", pricingResult.getProductId());
+		}
+
+		final TaxQuery taxQuery = TaxQuery.builder()
+				.fromCountryId(countryId)
+				.orgId(header.getOrgId())
+				.bPartnerLocationId(bPartnerLocationAndCaptureId)
+				.dateOfInterest(TimeUtil.asTimestamp(header.getDateInvoiced()))
+				.taxCategoryId(pricingResult.getTaxCategoryId())
+				.soTrx(header.getSoTrx())
+				.build();
+
+		return Optional.ofNullable(taxDAO.getBy(taxQuery))
 				.map(Tax::getTaxId)
-				.orElseThrow(() -> new AdempiereException("No TaxID found for TaxCode or BPartnerID!")
+				.orElseThrow(() -> new AdempiereException("No TaxID found for TaxCategoryId or BPartnerID!")
 						.appendParametersToMessage()
-						.setParameter("VatCodeId", requestLine.getVatCodeId())
+						.setParameter("TaxCategoryId", pricingResult.getTaxCategoryId())
 						.setParameter("BPartnerID", header.getBillBPartnerId())
 						.setParameter("BPartnerLocationID", header.getBillBPartnerLocationId()));
 	}
@@ -315,7 +325,8 @@ public class ManualInvoiceService
 																							  requestLine.getProductId(),
 																							  header.getBillBPartnerId(),
 																							  requestLine.getQtyToInvoice(),
-																							  header.getSoTrx());
+																							  header.getSoTrx())
+				.setFailIfNotCalculated();
 
 		editablePricingContext.setPriceListId(priceListId);
 
@@ -353,6 +364,16 @@ public class ManualInvoiceService
 						.setParameter("SOTrx", header.getSoTrx()));
 
 		return PriceListId.ofRepoId(priceListRecord.getM_PriceList_ID());
+	}
+
+	@NonNull
+	private TaxId getTaxByVatId(@NonNull final VatCodeId vatCodeId)
+	{
+		return Optional.ofNullable(taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId))
+				.map(Tax::getTaxId)
+				.orElseThrow(() -> new AdempiereException("Couldn't find tax for provided VatCodeId!")
+						.appendParametersToMessage()
+						.setParameter("VatCodeId", vatCodeId));
 	}
 
 	@NonNull

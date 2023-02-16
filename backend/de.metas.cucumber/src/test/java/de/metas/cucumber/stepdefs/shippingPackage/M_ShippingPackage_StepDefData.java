@@ -20,17 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shippingPackage;
 
-import org.compiere.model.I_C_Currency;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.shipping.model.I_M_ShippingPackage;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_Currency_StepDefData extends StepDefData<I_C_Currency>
+public class M_ShippingPackage_StepDefData extends StepDefData<I_M_ShippingPackage>
 {
-	public C_Currency_StepDefData()
+	public M_ShippingPackage_StepDefData()
 	{
-		super(I_C_Currency.class);
+		super(I_M_ShippingPackage.class);
 	}
 }
