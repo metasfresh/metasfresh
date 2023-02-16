@@ -13,6 +13,7 @@ import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import org.compiere.SpringContextHolder;
+import de.metas.acct.Account;
 
 import java.util.Set;
 
@@ -29,7 +30,7 @@ public class SAPGLJournalLineQuickInputProcessor implements IQuickInputProcessor
 		final SAPGLJournalLineId glJournalLineId = glJournalService.createLine(SAPGLJournalLineCreateRequest.builder()
 				.glJournalId(SAPGLJournalLoaderAndSaver.extractId(headerRecord))
 				.postingSign(PostingSign.ofCode(lineQuickInput.getPostingSign()))
-				.accountId(AccountId.ofRepoId(lineQuickInput.getC_ValidCombination_ID()))
+				.account(Account.ofId(AccountId.ofRepoId(lineQuickInput.getC_ValidCombination_ID())))
 				.amount(lineQuickInput.getAmount())
 				.taxId(TaxId.ofRepoIdOrNull(lineQuickInput.getC_Tax_ID()))
 				.build());

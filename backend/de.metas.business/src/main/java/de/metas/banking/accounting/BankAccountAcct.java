@@ -1,12 +1,12 @@
 package de.metas.banking.accounting;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 
 import java.util.Optional;
 
@@ -45,17 +45,18 @@ public class BankAccountAcct
 
 	@NonNull AcctSchemaId acctSchemaId;
 
-	@NonNull AccountId B_Asset_Acct;
-	@NonNull AccountId B_UnallocatedCash_Acct;
-	@NonNull AccountId B_InTransit_Acct;
-	@NonNull AccountId B_PaymentSelect_Acct;
-	@NonNull AccountId B_InterestRev_Acct;
-	@NonNull AccountId B_InterestExp_Acct;
-	@NonNull AccountId PayBankFee_Acct;
+	@NonNull Account B_Asset_Acct;
+	@NonNull Account B_UnallocatedCash_Acct;
+	@NonNull Account B_InTransit_Acct;
+	@NonNull Account B_PaymentSelect_Acct;
+	@NonNull Account B_InterestRev_Acct;
+	@NonNull Account B_InterestExp_Acct;
+	@NonNull Account PayBankFee_Acct;
 
-	@NonNull Optional<AccountId> Payment_WriteOff_Acct;
+	@NonNull Optional<Account> Payment_WriteOff_Acct;
 
-	public Optional<AccountId> getAccountId(@NonNull final BankAccountAcctType acctType)
+	@NonNull
+	public Optional<Account> getAccount(@NonNull final BankAccountAcctType acctType)
 	{
 		switch (acctType)
 		{

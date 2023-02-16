@@ -19,7 +19,6 @@ package org.compiere.acct;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.WarehouseAccountType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -28,8 +27,9 @@ import de.metas.document.DocBaseType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import de.metas.acct.Account;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -132,7 +132,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 
 		//
 		// Charge/InventoryDiff CR/DR
-		final MAccount invDiff = getInvDifferencesAccount(as, line, costs.getValue().negate());
+		final Account invDiff = getInvDifferencesAccount(as, line, costs.getValue().negate());
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(invDiff)
@@ -147,16 +147,16 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		}
 	}
 
-	private MAccount getInvDifferencesAccount(final AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
+	@NonNull
+	private Account getInvDifferencesAccount(final AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
 	{
-		final MAccount chargeAcct = line.getChargeAccount(as, amount.negate());
+		final Account chargeAcct = line.getChargeAccount(as, amount.negate());
 		if (chargeAcct != null)
 		{
 			return chargeAcct;
 		}
 
-		final AccountId accountId = getAccountProvider().getWarehouseAccountId(as.getId(), getWarehouseId(), WarehouseAccountType.W_Differences_Acct);
-		return services.getAccountById(accountId);
+		return getAccountProvider().getWarehouseAccount(as.getId(), getWarehouseId(), WarehouseAccountType.W_Differences_Acct);
 	}
 
 }   // Doc_Inventory

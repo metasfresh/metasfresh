@@ -70,6 +70,27 @@ public interface I_Fact_Acct
 	 */
 	public int getAccount_ID();
 
+	/**
+	 * Set Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName(java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account conceptual name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_Fact_Acct, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
+	
 //	public org.compiere.model.I_C_ElementValue getAccount();
 
 //	public void setAccount(org.compiere.model.I_C_ElementValue Account);
