@@ -75,6 +75,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -1954,9 +1955,15 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public Set<Integer> retrieveForSectionGroupPartner(@NonNull final BPartnerId sectionGroupPartnerId)
 	{
+
+		final @NonNull IQueryFilter<I_C_BPartner> filter = queryBL.createCompositeQueryFilter(I_C_BPartner.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, sectionGroupPartnerId)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, sectionGroupPartnerId);
+
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID, sectionGroupPartnerId)
+				.addFilter(filter)
 				.create()
 				.listIds()
 				.stream().collect(ImmutableSet.toImmutableSet());

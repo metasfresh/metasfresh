@@ -1382,7 +1382,13 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
-		return instant != null ? Timestamp.from(instant) : null;
+		return instant != null ? asTimestampNotNull(instant) : null;
+	}
+
+	@NonNull
+	public static Timestamp asTimestampNotNull(@NonNull final Instant instant)
+	{
+		return Timestamp.from(instant);
 	}
 
 	/**

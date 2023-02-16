@@ -43,11 +43,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_DATE_FORMAT;
+
 @Value
 public class UpsertCreditLimitRequestBuilder
 {
 	private final static String DEFAULT_CREDIT_LIMIT_TYPE = "Insurance";
-	private final static String DEFAULT_DATE_FORMAT = "yyyyMMdd";
 	private final static String DELETED_FLAG = "X";
 
 	@NonNull

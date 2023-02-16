@@ -33,7 +33,7 @@ import java.util.Optional;
 
 @Value
 @Builder
-public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileEndpointConfig, CreditLimitFileEndpointConfig
+public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileEndpointConfig, CreditLimitFileEndpointConfig, ConversionRateFileEndpointConfig
 {
 	@NonNull
 	String rootLocation;
@@ -71,6 +71,13 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 	@Nullable
 	String fileNamePatternCreditLimit;
 
+	//conversion rate specific
+	@Nullable
+	String targetDirectoryConversionRate;
+
+	@Nullable
+	String fileNamePatternConversionRate;
+
 	@Override
 	@NonNull
 	public String getProductFileEndpoint()
@@ -90,6 +97,13 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 	public String getCreditLimitFileEndpoint()
 	{
 		return getLocalFileConnectionString(targetDirectoryCreditLimit, fileNamePatternCreditLimit);
+	}
+
+	@Override
+	@NonNull
+	public String getConversionRateFileEndpoint()
+	{
+		return getLocalFileConnectionString(targetDirectoryConversionRate, fileNamePatternConversionRate);
 	}
 
 	@NonNull

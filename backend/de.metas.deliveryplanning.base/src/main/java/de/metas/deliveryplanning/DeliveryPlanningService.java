@@ -237,7 +237,6 @@ public class DeliveryPlanningService
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
-				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
 
 				.plannedLoadedQty(plannedLoadedQty)
 				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
@@ -545,7 +544,6 @@ public class DeliveryPlanningService
 		return warehouseBL.getBPartnerLocationId(warehouseId);
 	}
 
-
 	private BPartnerLocationId extractShipToLocationId(final I_M_Delivery_Planning deliveryPlanningRecord)
 	{
 		final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
@@ -574,7 +572,9 @@ public class DeliveryPlanningService
 
 			final DeliveryInstructionCreateRequest deliveryInstructionRequest = createDeliveryInstructionRequest(DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID()));
 
-			final boolean creditLimitAllowsDeliveryInstruction = validateCreditLimit(deliveryInstructionRequest);
+			final DeliveryPlanningType deliveryPlanningType = DeliveryPlanningRepository.extractDeliveryPlanningType(deliveryPlanningRecord);
+
+			final boolean creditLimitAllowsDeliveryInstruction = deliveryPlanningType.isIncoming() || validateCreditLimit(deliveryInstructionRequest);
 
 			if (creditLimitAllowsDeliveryInstruction)
 			{
@@ -719,4 +719,9 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.getShipmentInfosByOrderLineIds(salesOrderLineIds);
 	}
 
+	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+
+	}
 }

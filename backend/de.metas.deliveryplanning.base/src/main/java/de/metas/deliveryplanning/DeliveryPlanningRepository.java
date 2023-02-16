@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CacheMgt;
+import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
@@ -35,6 +36,7 @@ import de.metas.location.CountryId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
@@ -157,6 +159,7 @@ public class DeliveryPlanningRepository
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
 				//
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.build();
 	}
 
@@ -269,7 +272,6 @@ public class DeliveryPlanningRepository
 
 		final Quantity qtyOrdered = request.getQtyOrdered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
-		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
 		final Quantity actualLoadedQty = request.getActualLoadedQty();
 
 		final Quantity plannedLoadedQty = request.getPlannedLoadedQty();
@@ -280,7 +282,6 @@ public class DeliveryPlanningRepository
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
-		deliveryPlanningRecord.setActualDeliveredQty(actualDeliveredQty.toBigDecimal());
 		deliveryPlanningRecord.setActualLoadQty(actualLoadedQty.toBigDecimal());
 
 		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());
@@ -579,5 +580,13 @@ public class DeliveryPlanningRepository
 				.addFilter(selectedDeliveryPlanningsFilter)
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false);
+	}
+
+	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.anyMatch();
 	}
 }

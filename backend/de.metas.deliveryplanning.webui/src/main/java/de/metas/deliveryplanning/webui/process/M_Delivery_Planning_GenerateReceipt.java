@@ -78,23 +78,8 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		}
 
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
-		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = helper.getReceiptInfoIfIncomingType(deliveryPlanningId);
-		if (!optionalDeliveryPlanningReceipt.isPresent())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an incoming delivery planning");
-		}
 
-		final DeliveryPlanningReceiptInfo receiptInfo = optionalDeliveryPlanningReceipt.get();
-		if (receiptInfo.isReceived())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Already received");
-		}
-		if (receiptInfo.getPurchaseOrderId() == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return helper.checkEligibleToCreateReceipt(deliveryPlanningId);
 	}
 
 	@NonNull

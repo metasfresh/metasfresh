@@ -96,4 +96,7 @@ public interface IInvoiceHeader
 	String getInvoiceAdditionalText();
 
 	boolean isNotShowOriginCountry();
+
+	@Nullable
+	LocalDate getOverrideDueDate();
 }

@@ -1,7 +1,6 @@
 package de.metas.acct.gljournal_sap.acct;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
@@ -21,7 +20,6 @@ import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
-import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -103,7 +101,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 
 			final FactLine factLine = fact.createLine(
 					null,
-					getAccountById(line.getAccountId()),
+					line.getAccount(),
 					glJournalCurrencyConversionCtx.getCurrencyId(),
 					amtSourceDr,
 					amtSourceCr);
@@ -130,10 +128,5 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 		}
 
 		return ImmutableList.of(fact);
-	}
-
-	private MAccount getAccountById(final AccountId accountId)
-	{
-		return getServices().getAccountById(accountId);
 	}
 }

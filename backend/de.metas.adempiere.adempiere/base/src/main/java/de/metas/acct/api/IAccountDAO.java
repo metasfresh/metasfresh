@@ -53,5 +53,6 @@ public interface IAccountDAO extends ISingletonService
 	@Nullable
 	MAccount retrieveAccount(Properties ctx, AccountDimension dimension);
 
-	MAccount getOrCreate(@NonNull AccountDimension dimension);
+	@NonNull
+	AccountId getOrCreate(@NonNull AccountDimension dimension);
 }

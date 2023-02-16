@@ -1,10 +1,15 @@
 package de.metas.acct.api.impl;
 
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,17 +19,10 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
-
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.compiere.util.Env;
+
+import java.util.Map;
+import java.util.Properties;
 
 /*
  * #%L
@@ -141,13 +139,14 @@ public class AccountDAO implements IAccountDAO
 	}
 
 	@Override
-	public MAccount getOrCreate(@NonNull final AccountDimension dimension)
+	@NonNull
+	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
 	{
 		// Existing
 		final MAccount existingAccount = retrieveAccount(Env.getCtx(), dimension);
 		if (existingAccount != null)
 		{
-			return existingAccount;
+			return AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID());
 		}
 
 		final MAccount vc = InterfaceWrapperHelper.newInstanceOutOfTrx(MAccount.class);
@@ -177,7 +176,7 @@ public class AccountDAO implements IAccountDAO
 		vc.setUserElementString7(dimension.getUserElementString7());
 		InterfaceWrapperHelper.save(vc);
 
-		return vc;
+		return AccountId.ofRepoId(vc.getC_ValidCombination_ID());
 	}	// get
 
 }

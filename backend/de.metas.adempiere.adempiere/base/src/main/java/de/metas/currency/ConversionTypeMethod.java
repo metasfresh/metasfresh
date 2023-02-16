@@ -5,6 +5,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -39,11 +40,27 @@ public enum ConversionTypeMethod implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ConversionTypeMethod> index = ReferenceListAwareEnums.index(values());
 
-	@Getter private final String code;
+	@Getter
+	private final String code;
 
 	@NonNull
 	public static ConversionTypeMethod ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	@NonNull
+	public static ConversionTypeMethod ofName(@NonNull final String name)
+	{
+		try
+		{
+			return ConversionTypeMethod.valueOf(name);
+		}
+		catch (final Throwable t)
+		{
+			throw new AdempiereException("No " + ConversionTypeMethod.class + " found for name: " + name)
+					.appendParametersToMessage()
+					.setParameter("AdditionalErrorMessage", t.getMessage());
+		}
 	}
 }

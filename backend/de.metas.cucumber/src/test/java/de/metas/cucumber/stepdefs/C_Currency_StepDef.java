@@ -22,9 +22,11 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Currency;
 
@@ -35,6 +37,8 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class C_Currency_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final C_Currency_StepDefData currencyTable;
 
 	public C_Currency_StepDef(@NonNull final C_Currency_StepDefData currencyTable)
@@ -49,6 +53,23 @@ public class C_Currency_StepDef
 		for (final Map<String, String> dataTableRow : rows)
 		{
 			loadCurrency(dataTableRow);
+		}
+	}
+
+	@And("load C_Currency by ISO Code:")
+	public void metasfresh_contains_C_Currency(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String isoCode = DataTableUtil.extractStringForColumnName(row, I_C_Currency.COLUMNNAME_ISO_Code);
+
+			final I_C_Currency currency = queryBL.createQueryBuilder(I_C_Currency.class)
+					.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, isoCode)
+					.create()
+					.firstOnlyNotNull(I_C_Currency.class);
+
+			final String currencyIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Currency.COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
+			currencyTable.putOrReplace(currencyIdentifier, currency);
 		}
 	}
 
