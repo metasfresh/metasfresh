@@ -56,13 +56,12 @@ class ManualInvoiceRepository
 	public ManualInvoice save(@NonNull final CreateManualInvoiceRequest createManualInvoiceRequest)
 	{
 		final I_C_Invoice invoiceRecord = saveInvoiceHeader(createManualInvoiceRequest);
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 
 		final ImmutableList.Builder<ManualInvoiceLine> lines = ImmutableList.builder();
 
 		for (final CreateManualInvoiceLineRequest createManualInvoiceLineRequest : createManualInvoiceRequest.getLines())
 		{
-			final ManualInvoiceLine manualInvoiceLine = saveLine(invoiceId, createManualInvoiceLineRequest);
+			final ManualInvoiceLine manualInvoiceLine = saveLine(invoiceRecord, createManualInvoiceLineRequest);
 
 			lines.add(manualInvoiceLine);
 		}
@@ -122,12 +121,13 @@ class ManualInvoiceRepository
 
 	@NonNull
 	private ManualInvoiceLine saveLine(
-			@NonNull final InvoiceId invoiceId,
+			@NonNull final I_C_Invoice invoiceRecord,
 			@NonNull final CreateManualInvoiceLineRequest request)
 	{
 		final I_C_InvoiceLine invoiceLineRecord = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 
-		invoiceLineRecord.setC_Invoice_ID(invoiceId.getRepoId());
+		invoiceLineRecord.setAD_Org_ID(invoiceRecord.getAD_Org_ID());
+		invoiceLineRecord.setC_Invoice_ID(invoiceRecord.getC_Invoice_ID());
 		invoiceLineRecord.setExternalIds(request.getExternalLineId());
 
 		if (request.getLine() != null)
@@ -151,7 +151,7 @@ class ManualInvoiceRepository
 
 		saveRecord(invoiceLineRecord);
 
-		return ofRecord(invoiceLineRecord, invoiceId);
+		return ofRecord(invoiceLineRecord, invoiceRecord);
 	}
 
 	@NonNull
@@ -182,10 +182,10 @@ class ManualInvoiceRepository
 	@NonNull
 	private static ManualInvoiceLine ofRecord(
 			@NonNull final I_C_InvoiceLine invoiceLineRecord,
-			@NonNull final InvoiceId invoiceId)
+			@NonNull final I_C_Invoice invoiceRecord)
 	{
 		return ManualInvoiceLine.builder()
-				.id(InvoiceLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID()))
+				.id(InvoiceLineId.ofRepoId(invoiceRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
 				.externalLineId(invoiceLineRecord.getExternalIds())
 				.line(invoiceLineRecord.getLine())
 				.lineDescription(invoiceLineRecord.getDescription())
