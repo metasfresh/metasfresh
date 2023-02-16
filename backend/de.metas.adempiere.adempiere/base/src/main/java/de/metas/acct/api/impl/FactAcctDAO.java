@@ -86,7 +86,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
 				.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID) // make sure we have a predictable order
+				.addColumn(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID) // make sure we have a predictable order
 				.endOrderBy();
 	}
 
@@ -99,13 +99,13 @@ public class FactAcctDAO implements IFactAcctDAO
 
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class, documentLine)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId);
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId);
 
 		// make sure we have a predictable order
 		queryBuilder.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+				.addColumn(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
 
 		return queryBuilder.create().list();
 	}
@@ -126,18 +126,16 @@ public class FactAcctDAO implements IFactAcctDAO
 	{
 		// Make sure we are updating the Fact_Acct records in a transaction
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int countUpdated = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId)
-				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Activity_ID, activityId)
+
+		return queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId)
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.execute();
-
-		return countUpdated;
 	}
 }
