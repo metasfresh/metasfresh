@@ -18,7 +18,8 @@ BEGIN
 		Name = x.Name,
 		Description = x.Description,
 		Help = x.Help,
-		CommitWarning = x.CommitWarning
+		CommitWarning = x.CommitWarning,
+        Updated = x.Updated
 	FROM
 	(
 		select
@@ -29,7 +30,8 @@ BEGIN
 			etrl.Name,
 			etrl.Description,
 			etrl.Help,
-			etrl.CommitWarning
+			etrl.CommitWarning,
+			etrl.Updated
 		from AD_Element_Trl_Effective_v etrl
 			join AD_Tab tab on tab.AD_Element_ID = etrl.AD_Element_ID
 		where 
@@ -39,6 +41,7 @@ BEGIN
 	WHERE
 		t.AD_Tab_ID = x.AD_Tab_ID
 		and t.AD_Language = x.AD_Language
+		and t.Updated <> x.Updated
 	;
 
 	GET DIAGNOSTICS update_count = ROW_COUNT;
