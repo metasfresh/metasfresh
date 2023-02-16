@@ -14,6 +14,7 @@ import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordSer
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_PaymentTerm;
@@ -170,6 +171,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.docTypeInvoicingPoolService(SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class))
 				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
 				.build();
 

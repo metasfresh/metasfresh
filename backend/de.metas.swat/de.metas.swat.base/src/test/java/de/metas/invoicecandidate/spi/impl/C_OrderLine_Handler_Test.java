@@ -410,6 +410,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			order1.setC_Project_ID(c_project_id);
 
 			save(order1);
