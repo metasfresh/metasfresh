@@ -415,6 +415,7 @@ final class BPartnerCompositesLoader
 				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
 				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
 				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
+				.sapBPartnerCode(bPartnerLocationRecord.getSAP_BPartnerCode())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
