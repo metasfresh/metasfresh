@@ -149,9 +149,9 @@ public class DeviceAccessorsHub
 
 				final DeviceAccessor deviceAccessor = DeviceAccessor.builder()
 						.id(deviceId)
+						.deviceConfig(deviceConfig)
 						.displayName(TranslatableStrings.anyLanguage(deviceName))
 						.device(device)
-						.assignedWarehouseIds(deviceConfig.getAssignedWarehouseIds())
 						.request(request)
 						.beforeHooks(beforeHooks)
 						.build();

@@ -26,6 +26,11 @@
 			<artifactId>de-metas-common-util</artifactId>
 			<version>${metasfresh-common.version}</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util</artifactId>
+			<version>10.0.0</version>
+        </dependency>
+    </dependencies>
 
 </project>
