@@ -22,8 +22,8 @@
 
 package de.metas.device.api.hook;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.common.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -48,7 +48,8 @@ public class RunParameters
 	@NonNull
 	public Optional<Integer> getSingleAsIntegerForSuffix(@NonNull final String suffix)
 	{
-		return getSingleForSuffix(suffix)
+		return CollectionUtils.singleElementOrEmpty(parameters.keySet(), key -> key.endsWith(suffix))
+				.flatMap(this::getSingle)
 				.map(NumberUtils::asInt);
 	}
 
@@ -58,23 +59,5 @@ public class RunParameters
 		return Optional.ofNullable(parameters.get(paramName))
 				.filter(list -> list.size() == 1)
 				.map(list -> list.get(0));
-	}
-
-	@NonNull
-	private Optional<String> getSingleForSuffix(@NonNull final String suffix)
-	{
-		final List<String> matchingKeys = parameters.keySet()
-				.stream()
-				.filter(key -> key.endsWith(suffix))
-				.collect(ImmutableList.toImmutableList());
-
-		if (matchingKeys.size() == 1)
-		{
-			return getSingle(matchingKeys.get(0));
-		}
-		else
-		{
-			return Optional.empty();
-		}
 	}
 }

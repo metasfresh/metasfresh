@@ -31,22 +31,22 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: MovingNotAllowed
 -- 2023-02-14T15:54:05.899Z
-UPDATE AD_Message_Trl SET MsgText='Ungeklärte HUs dürfen nicht in den jeweiligen Locator verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545237
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs dürfen in den jeweiligen Lagerort verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545237
 ;
 
 -- Value: MovingNotAllowed
 -- 2023-02-14T15:54:08.760Z
-UPDATE AD_Message_Trl SET MsgText='Ungeklärte HUs dürfen nicht in den jeweiligen Locator verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545237
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs dürfen in den jeweiligen Lagerort verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545237
 ;
 
 -- Value: MovingNotAllowed
 -- 2023-02-14T15:54:11.484Z
-UPDATE AD_Message_Trl SET MsgText='Ungeklärte HUs dürfen nicht in den jeweiligen Locator verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545237
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs dürfen in den jeweiligen Lagerort verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545237
 ;
 
 -- Value: MovingNotAllowed
 -- 2023-02-14T15:54:13.116Z
-UPDATE AD_Message_Trl SET MsgText='Ungeklärte HUs dürfen nicht in den jeweiligen Locator verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545237
+UPDATE AD_Message_Trl SET MsgText='Nur freigegebene HUs dürfen in den jeweiligen Lagerort verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 17:54:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545237
 ;
 
 -- 2023-02-14T16:01:41.178Z
@@ -59,7 +59,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:01:55.672Z
-UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte HUs',Updated=TO_TIMESTAMP('2023-02-14 18:01:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Nur freigegebene HUs', PrintName='Nur freigegebene HUs',Updated=TO_TIMESTAMP('2023-02-14 18:01:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_CH'
 ;
 
 -- 2023-02-14T16:01:55.702Z
@@ -68,7 +68,7 @@ UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte H
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:01:58.295Z
-UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte HUs',Updated=TO_TIMESTAMP('2023-02-14 18:01:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Nur freigegebene HUs', PrintName='Nur freigegebene HUs',Updated=TO_TIMESTAMP('2023-02-14 18:01:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_DE'
 ;
 
 -- 2023-02-14T16:01:58.298Z
@@ -81,7 +81,7 @@ UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte H
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:02:01.320Z
-UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte HUs',Updated=TO_TIMESTAMP('2023-02-14 18:02:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Name='Nur freigegebene HUs', PrintName='Nur freigegebene HUs',Updated=TO_TIMESTAMP('2023-02-14 18:02:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='fr_CH'
 ;
 
 -- 2023-02-14T16:02:01.323Z
@@ -90,7 +90,7 @@ UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte H
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:02:03.359Z
-UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte HUs',Updated=TO_TIMESTAMP('2023-02-14 18:02:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Nur freigegebene HUs', PrintName='Nur freigegebene HUs',Updated=TO_TIMESTAMP('2023-02-14 18:02:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='nl_NL'
 ;
 
 -- 2023-02-14T16:02:03.362Z
@@ -99,7 +99,7 @@ UPDATE AD_Element_Trl SET Name='Nur gelöschte HUs', PrintName='Nur gelöschte H
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:04:18.144Z
-UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Lagerort verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_CH'
 ;
 
 -- 2023-02-14T16:04:18.146Z
@@ -108,7 +108,7 @@ UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator 
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:04:19.993Z
-UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Lagerort verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='de_DE'
 ;
 
 -- 2023-02-14T16:04:19.996Z
@@ -121,7 +121,7 @@ UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator 
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:04:22.246Z
-UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Lagerort verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='fr_CH'
 ;
 
 -- 2023-02-14T16:04:22.248Z
@@ -130,7 +130,7 @@ UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator 
 
 -- Element: OnlyClearedHUs
 -- 2023-02-14T16:04:24.300Z
-UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Locator verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Description='Nur freigegebene HUs können zum Lagerort verschoben werden',Updated=TO_TIMESTAMP('2023-02-14 18:04:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582067 AND AD_Language='nl_NL'
 ;
 
 -- 2023-02-14T16:04:24.301Z
@@ -149,7 +149,7 @@ UPDATE AD_Element_Trl SET Description='Allow only cleared HUs to be moved to Loc
 -- Column: M_Locator.OnlyClearedHUs
 -- Column: M_Locator.OnlyClearedHUs
 -- 2023-02-14T16:08:03.053Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586047,582067,0,20,207,'OnlyClearedHUs',TO_TIMESTAMP('2023-02-14 18:08:02','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Nur freigegebene HUs können zum Locator verschoben werden','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Nur gelöschte HUs',0,0,TO_TIMESTAMP('2023-02-14 18:08:02','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586047,582067,0,20,207,'OnlyClearedHUs',TO_TIMESTAMP('2023-02-14 18:08:02','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Nur freigegebene HUs können zum Lagerort verschoben werden','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Nur freigegebene HUs',0,0,TO_TIMESTAMP('2023-02-14 18:08:02','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-02-14T16:08:03.055Z
@@ -164,12 +164,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('M_Locator','ALTER TABLE public.M_Locator ADD COLUMN OnlyClearedHUs CHAR(1) DEFAULT ''N'' CHECK (OnlyClearedHUs IN (''Y'',''N'')) NOT NULL')
 ;
 
--- Field: Lager und Lagerort -> Lagerort -> Nur gelöschte HUs
+-- Field: Lager und Lagerort -> Lagerort -> Nur freigegebene HUs
 -- Column: M_Locator.OnlyClearedHUs
--- Field: Lager und Lagerort(139,D) -> Lagerort(178,D) -> Nur gelöschte HUs
+-- Field: Lager und Lagerort(139,D) -> Lagerort(178,D) -> Nur freigegebene HUs
 -- Column: M_Locator.OnlyClearedHUs
 -- 2023-02-14T16:12:56.533Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,586047,712527,0,178,TO_TIMESTAMP('2023-02-14 18:12:56','YYYY-MM-DD HH24:MI:SS'),100,'Nur freigegebene HUs können zum Locator verschoben werden',1,'D','Y','N','N','N','N','N','N','N','Nur gelöschte HUs',TO_TIMESTAMP('2023-02-14 18:12:56','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,586047,712527,0,178,TO_TIMESTAMP('2023-02-14 18:12:56','YYYY-MM-DD HH24:MI:SS'),100,'Nur freigegebene HUs können zum Lagerort verschoben werden',1,'D','Y','N','N','N','N','N','N','N','Nur freigegebene HUs',TO_TIMESTAMP('2023-02-14 18:12:56','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-02-14T16:12:56.540Z
@@ -188,17 +188,17 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=712527
 /* DDL */ select AD_Element_Link_Create_Missing_Field(712527)
 ;
 
--- UI Element: Lager und Lagerort -> Lagerort.Nur gelöschte HUs
+-- UI Element: Lager und Lagerort -> Lagerort.Nur freigegebene HUs
 -- Column: M_Locator.OnlyClearedHUs
--- UI Element: Lager und Lagerort(139,D) -> Lagerort(178,D) -> main -> 10 -> default.Nur gelöschte HUs
+-- UI Element: Lager und Lagerort(139,D) -> Lagerort(178,D) -> main -> 10 -> default.Nur freigegebene HUs
 -- Column: M_Locator.OnlyClearedHUs
 -- 2023-02-14T16:14:47.440Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,712527,0,178,615818,541165,'F',TO_TIMESTAMP('2023-02-14 18:14:47','YYYY-MM-DD HH24:MI:SS'),100,'Nur freigegebene HUs können zum Locator verschoben werden','Y','N','N','Y','N','N','N',0,'Nur gelöschte HUs',95,0,0,TO_TIMESTAMP('2023-02-14 18:14:47','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,712527,0,178,615818,541165,'F',TO_TIMESTAMP('2023-02-14 18:14:47','YYYY-MM-DD HH24:MI:SS'),100,'Nur freigegebene HUs können zum Lagerort verschoben werden','Y','N','N','Y','N','N','N',0,'Nur freigegebene HUs',95,0,0,TO_TIMESTAMP('2023-02-14 18:14:47','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- UI Element: Lager und Lagerort -> Lagerort.Nur gelöschte HUs
+-- UI Element: Lager und Lagerort -> Lagerort.Nur freigegebene HUs
 -- Column: M_Locator.OnlyClearedHUs
--- UI Element: Lager und Lagerort(139,D) -> Lagerort(178,D) -> main -> 10 -> default.Nur gelöschte HUs
+-- UI Element: Lager und Lagerort(139,D) -> Lagerort(178,D) -> main -> 10 -> default.Nur freigegebene HUs
 -- Column: M_Locator.OnlyClearedHUs
 -- 2023-02-14T16:16:39.964Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2023-02-14 18:16:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615818
@@ -214,5 +214,5 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 
 -- Value: MovingNotAllowed
 -- 2023-02-14T18:44:39.620Z
-UPDATE AD_Message SET MsgText='Ungeklärte HUs dürfen nicht in den jeweiligen Locator verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 20:44:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545237
+UPDATE AD_Message SET MsgText='Nur freigegebene HUs dürfen in den jeweiligen Lagerort verschoben werden!',Updated=TO_TIMESTAMP('2023-02-14 20:44:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545237
 ;
