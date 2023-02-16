@@ -24,6 +24,7 @@ import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
@@ -57,52 +58,30 @@ import java.util.function.Consumer;
  */
 public final class Fact
 {
-	/**
-	 * Constructor
-	 *
-	 * @param document    pointer to document
-	 * @param acctSchema  Account Schema to create accounts
-	 * @param postingType the default Posting type (actual,..) for this posting
-	 */
+
+	// services
+	static final Logger log = LogManager.getLogger(Fact.class);
+	final AcctDocRequiredServicesFacade services;
+
+	final Doc<?> m_doc;
+	private final AcctSchema acctSchema;
+	private final PostingType postingType;
+	private boolean m_converted = false;
+	private ArrayList<FactLine> m_lines = new ArrayList<>();
+	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private CurrencyConversionContext currencyConversionContext = null;
+
 	public Fact(
 			@NonNull final Doc<?> document,
 			@NonNull final AcctSchema acctSchema,
 			@NonNull final PostingType postingType)
 	{
+		this.services = document.services;
+
 		this.m_doc = document;
 		this.acctSchema = acctSchema;
 		this.postingType = postingType;
 	}
-
-	// services
-	static final Logger log = LogManager.getLogger(Fact.class);
-
-	/**
-	 * Document
-	 */
-	final Doc<?> m_doc;
-	/**
-	 * Accounting Schema
-	 */
-	private final AcctSchema acctSchema;
-
-	/**
-	 * Posting Type
-	 */
-	private final PostingType postingType;
-
-	/**
-	 * Is Converted
-	 */
-	private boolean m_converted = false;
-
-	/**
-	 * Lines
-	 */
-	private List<FactLine> m_lines = new ArrayList<>();
-
-	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
-	@Nullable private CurrencyConversionContext currencyConversionContext = null;
 
 	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
@@ -126,38 +105,19 @@ public final class Fact
 	{
 		m_lines.clear();
 		m_lines = null;
-	}   // dispose
+	}
 
-	/**
-	 * Create and convert Fact Line. Used to create a DR and/or CR entry
-	 *
-	 * @param docLine    the document line or null
-	 * @param account    if null, line is not created
-	 * @param currencyId the currency
-	 * @param debitAmt   debit amount, can be null
-	 * @param creditAmt  credit amount, can be null
-	 * @return Fact Line
-	 */
-	public FactLine createLine(
-			@Nullable final DocLine<?> docLine,
-			final MAccount account,
-			final CurrencyId currencyId,
-			@Nullable final BigDecimal debitAmt, @Nullable final BigDecimal creditAmt)
+	public FactLine createLine(final DocLine<?> docLine,
+							   final MAccount account,
+							   @NonNull final CurrencyId currencyId,
+							   @Nullable final BigDecimal debitAmt,
+							   @Nullable final BigDecimal creditAmt)
 	{
 		return createLine()
 				.setDocLine(docLine)
 				.setAccount(account)
 				.setAmtSource(currencyId, debitAmt, creditAmt)
 				.buildAndAdd();
-	}
-
-	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
-			final int C_Currency_ID,
-			final BigDecimal debitAmt, final BigDecimal creditAmt)
-	{
-		final CurrencyId currencyId = CurrencyId.ofRepoId(C_Currency_ID);
-		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
 	}
 
 	public FactLineBuilder createLine()
@@ -193,10 +153,10 @@ public final class Fact
 	}    // createLine
 
 	public FactLine createLine(final DocLine<?> docLine,
-			final MAccount account,
-			final int C_Currency_ID,
-			final BigDecimal debitAmt, final BigDecimal creditAmt,
-			final BigDecimal qty)
+							   final MAccount account,
+							   final int C_Currency_ID,
+							   final BigDecimal debitAmt, final BigDecimal creditAmt,
+							   final BigDecimal qty)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(C_Currency_ID);
 		return createLine(docLine, account, currencyId, debitAmt, creditAmt, qty);
@@ -307,7 +267,7 @@ public final class Fact
 		}
 		else
 		{
-			log.warn("NO - Diff=" + balance + " - " + toString());
+			log.warn("NO - Diff=" + balance + " - {}", this);
 		}
 		return retValue;
 	}    // isSourceBalanced
@@ -317,7 +277,7 @@ public final class Fact
 	 *
 	 * @return source balance
 	 */
-	protected BigDecimal getSourceBalance()
+	private BigDecimal getSourceBalance()
 	{
 		BigDecimal result = BigDecimal.ZERO;
 		for (FactLine line : m_lines)
@@ -431,7 +391,7 @@ public final class Fact
 				if (bal.signum() != 0)
 				{
 					map.clear();
-					log.warn("(" + segmentType + ") NO - " + toString() + ", Balance=" + bal);
+					log.warn("(" + segmentType + ") NO - " + this + ", Balance=" + bal);
 					return false;
 				}
 			}
@@ -568,17 +528,12 @@ public final class Fact
 		}
 		else
 		{
-			log.warn("NO - Diff=" + balance + " - " + toString());
+			log.warn("NO - Diff=" + balance + " - " + this);
 		}
 		return retValue;
 	}    // isAcctBalanced
 
-	/**
-	 * Return Accounting Balance
-	 *
-	 * @return true if accounting lines are balanced
-	 */
-	protected BigDecimal getAcctBalance()
+	private BigDecimal getAcctBalance()
 	{
 		BigDecimal result = BigDecimal.ZERO;
 		for (FactLine line : m_lines)
@@ -748,7 +703,7 @@ public final class Fact
 		final List<FactLine> linesAfterDistribution = FactGLDistributor.newInstance()
 				.distribute(m_lines);
 
-		m_lines = linesAfterDistribution;
+		m_lines = new ArrayList<>(linesAfterDistribution);
 		// TODO
 	}
 
@@ -760,12 +715,10 @@ public final class Fact
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("Fact[");
-		sb.append(m_doc);
-		sb.append(",").append(getAcctSchema());
-		sb.append(",PostType=").append(getPostingType());
-		sb.append("]");
-		return sb.toString();
+		return "Fact[" + m_doc
+				+ "," + getAcctSchema()
+				+ ",PostType=" + getPostingType()
+				+ "]";
 	}
 
 	public boolean isEmpty()
@@ -870,57 +823,27 @@ public final class Fact
 		m_lines.forEach(consumer);
 	}
 
-	/**
-	 * Fact Balance Utility
-	 *
-	 * @author Jorg Janke
-	 * @version $Id: Fact.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
-	 */
 	private static final class Balance
 	{
-		/**
-		 * New Balance
-		 *
-		 * @param dr DR
-		 * @param cr CR
-		 */
-		public Balance(final BigDecimal dr, final BigDecimal cr)
+		private BigDecimal DR;
+		private BigDecimal CR;
+
+		public Balance(@NonNull final BigDecimal dr, @NonNull final BigDecimal cr)
 		{
-			super();
 			DR = dr;
 			CR = cr;
 		}
 
-		/**
-		 * DR Amount
-		 */
-		private BigDecimal DR = BigDecimal.ZERO;
-		/**
-		 * CR Amount
-		 */
-		private BigDecimal CR = BigDecimal.ZERO;
-
-		/**
-		 * Add
-		 *
-		 * @param dr DR
-		 * @param cr CR
-		 */
-		public void add(BigDecimal dr, BigDecimal cr)
+		public void add(@NonNull BigDecimal dr, @NonNull BigDecimal cr)
 		{
 			DR = DR.add(dr);
 			CR = CR.add(cr);
 		}
 
-		/**
-		 * Get Balance
-		 *
-		 * @return balance
-		 */
 		public BigDecimal getBalance()
 		{
 			return DR.subtract(CR);
-		}    // getBalance
+		}
 
 		/**
 		 * Get Post Balance
@@ -957,20 +880,10 @@ public final class Fact
 			return DR.signum() <= 0 && CR.signum() <= 0;
 		}    // isReversal
 
-		/**
-		 * String Representation
-		 *
-		 * @return info
-		 */
 		@Override
 		public String toString()
 		{
-			final StringBuilder sb = new StringBuilder("Balance[");
-			sb.append("DR=").append(DR)
-					.append("-CR=").append(CR)
-					.append(" = ").append(getBalance())
-					.append("]");
-			return sb.toString();
-		} // toString
+			return "Balance[" + "DR=" + DR + "-CR=" + CR + " = " + getBalance() + "]";
+		}
 	}    // Balance
 }   // Fact

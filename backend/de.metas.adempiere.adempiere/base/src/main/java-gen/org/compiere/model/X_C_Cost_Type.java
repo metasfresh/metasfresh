@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -243073994L;
+	private static final long serialVersionUID = -1868517016L;
 
     /** Standard Constructor */
     public X_C_Cost_Type (final Properties ctx, final int C_Cost_Type_ID, @Nullable final String trxName)
@@ -101,6 +101,33 @@ public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Typ
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
+
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
+	{
+		if (M_CostElement_ID < 1) 
+			set_Value (COLUMNNAME_M_CostElement_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+	}
+
+	@Override
+	public int getM_CostElement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
 	}
 
 	@Override

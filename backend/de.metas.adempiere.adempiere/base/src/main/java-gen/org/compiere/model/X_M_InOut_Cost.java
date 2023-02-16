@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1963983494L;
+	private static final long serialVersionUID = 261362364L;
 
     /** Standard Constructor */
     public X_M_InOut_Cost (final Properties ctx, final int M_InOut_Cost_ID, @Nullable final String trxName)
@@ -251,6 +251,33 @@ public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_C
 	public boolean isInvoiced() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
+
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
+	{
+		if (M_CostElement_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+	}
+
+	@Override
+	public int getM_CostElement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
 	}
 
 	@Override

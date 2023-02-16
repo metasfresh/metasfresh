@@ -356,6 +356,33 @@ public interface I_M_InOut_Cost
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_M_InOut_Cost, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_InOut_Cost.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
 	 * Set Shipment/Receipt Costs.
 	 *
 	 * <br>Type: ID

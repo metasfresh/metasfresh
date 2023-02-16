@@ -9,11 +9,13 @@ import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
@@ -36,6 +38,7 @@ import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,7 +48,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_RevenueRecognition_Plan;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Movement;
@@ -77,21 +79,18 @@ import java.sql.SQLException;
  */
 public final class FactLine extends X_Fact_Acct
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1287219868802190295L;
+	private MAccount m_acct = null;
+	private AcctSchema acctSchema = null;
+	private Doc<?> m_doc = null;
+	private DocLine<?> m_docLine = null;
+	private CurrencyConversionContext currencyConversionCtx = null;
+	private AcctDocRequiredServicesFacade _services;
 
 	FactLine(final int AD_Table_ID, final int Record_ID)
 	{
 		this(AD_Table_ID, Record_ID, 0);
 	}
 
-	/**
-	 * @param AD_Table_ID - Table of Document Source
-	 * @param Record_ID   - Record of document
-	 * @param Line_ID     - Optional line id
-	 */
 	FactLine(final int AD_Table_ID, final int Record_ID, final int Line_ID)
 	{
 		super(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
@@ -109,23 +108,15 @@ public final class FactLine extends X_Fact_Acct
 		setLine_ID(Line_ID);
 	}   // FactLine
 
-	/**
-	 * Account
-	 */
-	private MAccount m_acct = null;
-	/**
-	 * Accounting Schema
-	 */
-	private AcctSchema acctSchema = null;
-	/**
-	 * Document Header
-	 */
-	private Doc<?> m_doc = null;
-	/**
-	 * Document Line
-	 */
-	private DocLine<?> m_docLine = null;
-	private CurrencyConversionContext currencyConversionCtx = null;
+	public void setServices(@NonNull final AcctDocRequiredServicesFacade services)
+	{
+		this._services = services;
+	}
+
+	public AcctDocRequiredServicesFacade getServices()
+	{
+		return Check.assumeNotNull(this._services, "services is set");
+	}
 
 	/**
 	 * Create Reversal (negate DR/CR) of the line
@@ -769,134 +760,33 @@ public final class FactLine extends X_Fact_Acct
 		}
 	}   // setLocator
 
-	/**
-	 * Set Location from Locator
-	 *
-	 * @param M_Locator_ID locator
-	 * @param isFrom       from
-	 */
+	public void setLocation(@Nullable final LocationId C_Location_ID, final boolean isFrom)
+	{
+		setLocation(LocationId.toRepoId(C_Location_ID), isFrom);
+	}
+
 	public void setLocationFromLocator(final int M_Locator_ID, final boolean isFrom)
 	{
-		if (M_Locator_ID == 0)
-		{
-			return;
-		}
-		int C_Location_ID = 0;
-		final String sql = "SELECT w.C_Location_ID FROM M_Warehouse w, M_Locator l "
-				+ "WHERE w.M_Warehouse_ID=l.M_Warehouse_ID AND l.M_Locator_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, M_Locator_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				C_Location_ID = rs.getInt(1);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-			return;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		if (C_Location_ID != 0)
-		{
-			setLocation(C_Location_ID, isFrom);
-		}
-	}   // setLocationFromLocator
+		getServices().getLocationIdByLocatorRepoId(M_Locator_ID)
+				.ifPresent(locationId -> setLocation(locationId, isFrom));
+	}
 
-	/**
-	 * Set Location from Busoness Partner Location
-	 *
-	 * @param C_BPartner_Location_ID bp location
-	 * @param isFrom                 from
-	 */
-	public void setLocationFromBPartner(final int C_BPartner_Location_ID, final boolean isFrom)
+	public void setLocationFromBPartner(@Nullable final BPartnerLocationId C_BPartner_Location_ID, final boolean isFrom)
 	{
-		if (C_BPartner_Location_ID == 0)
-		{
-			return;
-		}
-		int C_Location_ID = 0;
-		final String sql = "SELECT C_Location_ID FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, C_BPartner_Location_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				C_Location_ID = rs.getInt(1);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-			return;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		if (C_Location_ID != 0)
-		{
-			setLocation(C_Location_ID, isFrom);
-		}
-	}   // setLocationFromBPartner
+		getServices().getLocationId(C_BPartner_Location_ID)
+				.ifPresent(locationId -> setLocation(locationId, isFrom));
+	}
 
-	/**
-	 * Set Location from Organization
-	 *
-	 * @param AD_Org_ID org
-	 * @param isFrom    from
-	 */
-	public void setLocationFromOrg(final int AD_Org_ID, final boolean isFrom)
+	public void setLocationFromOrg(@NonNull final OrgId orgId, final boolean isFrom)
 	{
-		if (AD_Org_ID == 0)
+		if(!orgId.isRegular())
 		{
 			return;
 		}
 
-		// 03711 using OrgBP_Location_ID to the the C_Location. Note that we have removed AD_OrgInfo.C_Location_ID
-		int OrgBP_Location_ID = 0;
-		final String sql = "SELECT OrgBP_Location_ID FROM AD_OrgInfo WHERE AD_Org_ID=?";
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, AD_Org_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				OrgBP_Location_ID = rs.getInt(1);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-			return;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		if (OrgBP_Location_ID > 0)
-		{
-			// 03711 using OrgBP_Location_ID to the the C_Location
-			final I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(getCtx(), OrgBP_Location_ID, I_C_BPartner_Location.class, get_TrxName());
-			setLocation(bpLoc.getC_Location_ID(), isFrom);
-		}
-	}   // setLocationFromOrg
+		getServices().getLocationId(orgId)
+				.ifPresent(locationId -> setLocation(locationId, isFrom));
+	}
 
 	/**************************************************************************
 	 * Returns Source Balance of line
@@ -1154,6 +1044,11 @@ public final class FactLine extends X_Fact_Acct
 		}
 		sb = sb + "]";
 		return sb;
+	}
+
+	public OrgId getOrgId()
+	{
+		return OrgId.ofRepoIdOrAny(getAD_Org_ID());
 	}
 
 	/**
@@ -1492,14 +1387,14 @@ public final class FactLine extends X_Fact_Acct
 	{
 		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, getC_AcctSchema_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, AD_Table_ID)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, Record_ID)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, Line_ID)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Account_ID, m_acct.getAccount_ID());
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, getC_AcctSchema_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, AD_Table_ID)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, Record_ID)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, Line_ID)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, m_acct.getAccount_ID());
 		if (I_M_Movement.Table_ID == AD_Table_ID)
 		{
-			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMN_M_Locator_ID, getM_Locator_ID());
+			queryBuilder.addEqualsFilter(I_Fact_Acct.COLUMNNAME_M_Locator_ID, getM_Locator_ID());
 		}
 
 		final I_Fact_Acct fact = queryBuilder.create().firstOnly(I_Fact_Acct.class);

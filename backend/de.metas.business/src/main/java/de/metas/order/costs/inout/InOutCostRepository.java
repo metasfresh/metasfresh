@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.money.CurrencyId;
@@ -49,6 +50,7 @@ public class InOutCostRepository
 
 		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 		record.setC_Cost_Type_ID(request.getCostTypeId().getRepoId());
+		record.setM_CostElement_ID(request.getCostElementId().getRepoId());
 
 		record.setC_UOM_ID(request.getQty().getUomId().getRepoId());
 		record.setQty(request.getQty().toBigDecimal());
@@ -90,6 +92,7 @@ public class InOutCostRepository
 				.receiptAndLineId(InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.costAmount(Money.of(record.getCostAmount(), currencyId))
 				.costAmountInvoiced(Money.of(record.getCostAmountInvoiced(), currencyId))

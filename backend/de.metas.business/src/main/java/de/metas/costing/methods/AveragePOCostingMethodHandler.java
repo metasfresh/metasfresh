@@ -21,7 +21,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -130,6 +129,23 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				CostDetailPreviousAmounts.of(currentCost));
+
+		utils.saveCurrentCost(currentCost);
+
+		return result;
+	}
+
 
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)

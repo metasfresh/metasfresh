@@ -56,6 +56,7 @@ class OrderCostCreateCommand
 				.orderId(orderId)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.bpartnerId(request.getBpartnerId())
+				.costElementId(costType.getCostElementId())
 				.costTypeId(costType.getId())
 				.calculationMethod(costType.getCalculationMethod())
 				.calculationMethodParams(request.getCostCalculationMethodParams())

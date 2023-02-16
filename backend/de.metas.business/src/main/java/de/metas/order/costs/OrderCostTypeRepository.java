@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.costing.CostElementId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethod;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -50,6 +51,7 @@ public class OrderCostTypeRepository
 				.id(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.distributionMethod(CostDistributionMethod.ofCode(record.getCostDistributionMethod()))
 				.calculationMethod(CostCalculationMethod.ofCode(record.getCostCalculationMethod()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.build();
 	}
 

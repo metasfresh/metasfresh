@@ -2,6 +2,7 @@ package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -39,6 +40,7 @@ public class OrderCost
 	@Getter @NonNull private final OrgId orgId;
 
 	@Getter @Nullable private final BPartnerId bpartnerId;
+	@Getter @NonNull private final CostElementId costElementId;
 	@Getter @NonNull private final OrderCostTypeId costTypeId;
 	@Getter @NonNull private final CostCalculationMethod calculationMethod;
 	@Getter @Nullable private final CostCalculationMethodParams calculationMethodParams;
@@ -55,6 +57,7 @@ public class OrderCost
 			final @NonNull OrderId orderId,
 			final @NonNull OrgId orgId,
 			final @Nullable BPartnerId bpartnerId,
+			final @NonNull CostElementId costElementId,
 			final @NonNull OrderCostTypeId costTypeId,
 			final @NonNull CostCalculationMethod calculationMethod,
 			final @Nullable CostCalculationMethodParams calculationMethodParams,
@@ -75,8 +78,9 @@ public class OrderCost
 
 		this.id = id;
 		this.orderId = orderId;
-		this.bpartnerId = bpartnerId;
 		this.orgId = orgId;
+		this.bpartnerId = bpartnerId;
+		this.costElementId = costElementId;
 		this.costTypeId = costTypeId;
 		this.calculationMethod = calculationMethod;
 		this.calculationMethodParams = calculationMethodParams;

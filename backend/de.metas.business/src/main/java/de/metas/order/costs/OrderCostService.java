@@ -74,6 +74,11 @@ public class OrderCostService
 		return inOutCostRepository.getInOutCostsByIds(inoutCostIds);
 	}
 
+	public ImmutableList<InOutCost> getByReceiptId(@NonNull final InOutId receiptId)
+	{
+		return inOutCostRepository.getByReceiptId(receiptId);
+	}
+
 	public void updateInOutCostById(@NonNull final InOutCostId inoutCostId, @NonNull final Consumer<InOutCost> consumer)
 	{
 		inOutCostRepository.updateInOutCostById(inoutCostId, consumer);

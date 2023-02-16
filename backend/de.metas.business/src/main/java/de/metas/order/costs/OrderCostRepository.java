@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostElementId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -117,6 +118,7 @@ public class OrderCostRepository
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.calculationMethod(calculationMethod)
 				.calculationMethodParams(calculationMethodParams)
@@ -199,6 +201,7 @@ public class OrderCostRepository
 		record.setC_Order_ID(from.getOrderId().getRepoId());
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
 		record.setC_Cost_Type_ID(from.getCostTypeId().getRepoId());
 
 		final CostCalculationMethod calculationMethod = from.getCalculationMethod();

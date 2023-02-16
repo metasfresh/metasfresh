@@ -39,13 +39,8 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
-import de.metas.order.OrderLineId;
-import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -132,6 +127,12 @@ public class CostingService implements ICostingService
 	private List<AcctSchema> getAllAcctSchemaByClientId(final ClientId clientId)
 	{
 		return acctSchemasRepo.getAllByClient(clientId);
+	}
+
+	@Override
+	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
+	{
+		return costElementsRepo.getById(costElementId);
 	}
 
 	@Override
@@ -304,21 +305,20 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
-		return request.isAllCostElements()
-				? getAllCostElements(request.getClientId())
+		return request.isAllMaterialCostElements()
+				? getMaterialCostingMethods(request.getClientId())
 				: ImmutableList.of(request.getCostElement());
 	}
 
 	private List<CostElement> extractCostElements(final MoveCostsRequest request)
 	{
-		return request.isAllCostElements()
-				? getAllCostElements(request.getClientId())
+		return request.isAllMaterialCostElements()
+				? getMaterialCostingMethods(request.getClientId())
 				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
 	}
 
-	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
+	private List<CostElement> getMaterialCostingMethods(@NonNull final ClientId clientId)
 	{
-		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
 		return costElementsRepo.getMaterialCostingMethods(clientId);
 	}
 

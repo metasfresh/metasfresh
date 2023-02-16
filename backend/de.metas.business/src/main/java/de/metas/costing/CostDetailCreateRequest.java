@@ -120,7 +120,7 @@ public class CostDetailCreateRequest
 		return getCostElement().getId();
 	}
 
-	public boolean isAllCostElements()
+	public boolean isAllMaterialCostElements()
 	{
 		return costElement == null;
 	}
@@ -220,10 +220,9 @@ public class CostDetailCreateRequest
 				//
 				.documentRef(getDocumentRef())
 				.description(getDescription())
-				.dateAcct(getDate())
-				;
+				.dateAcct(getDate());
 
-		if (!isAllCostElements())
+		if (!isAllMaterialCostElements())
 		{
 			costDetail.costElementId(getCostElementId());
 		}

@@ -104,6 +104,7 @@ public class InOutCostCreateCommand
 						.receiptAndLineId(InOutAndLineId.ofRepoId(receiptLine.getM_InOut_ID(), receiptLine.getM_InOutLine_ID()))
 						.bpartnerId(orderCost.getBpartnerId())
 						.costTypeId(orderCost.getCostTypeId())
+						.costElementId(orderCost.getCostElementId())
 						.qty(addResult.getQty())
 						.costAmount(addResult.getCostAmount())
 						.build());

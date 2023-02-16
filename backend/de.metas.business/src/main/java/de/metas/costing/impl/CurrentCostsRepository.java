@@ -204,7 +204,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
@@ -231,7 +231,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costSegment.getClientId(), costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			// throw new AdempiereException("No cost elements found for costing method: " + costingMethod);
@@ -300,7 +300,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		currentCost.setId(CurrentCostId.ofRepoId(costRecord.getM_Cost_ID()));
 	}
 
-	private void updateCostRecord(
+	private static void updateCostRecord(
 			final I_M_Cost cost,
 			final CurrentCost from)
 	{
@@ -344,7 +344,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final OrgId productOrgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
+		final List<CostElement> costElements = costElementRepo.getByClientId(clientId);
 
 		for (final AcctSchema as : acctSchemasRepo.getAllByClient(clientId))
 		{

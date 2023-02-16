@@ -452,8 +452,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		});
 
 		// Receivables DR
@@ -563,8 +563,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		});
 
 		// Receivables CR
@@ -693,8 +693,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
+			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
 		});
 
 		// Liability CR
@@ -820,8 +820,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
+			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
 		});
 
 		// Liability DR

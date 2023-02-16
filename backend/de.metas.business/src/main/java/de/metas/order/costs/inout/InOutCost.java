@@ -1,6 +1,7 @@
 package de.metas.order.costs.inout;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.money.Money;
@@ -31,6 +32,7 @@ public class InOutCost
 
 	@Nullable private final BPartnerId bpartnerId;
 	@NonNull private final OrderCostTypeId costTypeId;
+	@NonNull private final CostElementId costElementId;
 
 	@NonNull private final Quantity qty;
 	@NonNull private final Money costAmount;
@@ -47,6 +49,7 @@ public class InOutCost
 			@NonNull final InOutAndLineId receiptAndLineId,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final OrderCostTypeId costTypeId,
+			@NonNull final CostElementId costElementId,
 			@NonNull final Quantity qty,
 			@NonNull final Money costAmount,
 			@NonNull final Money costAmountInvoiced,
@@ -62,6 +65,7 @@ public class InOutCost
 		this.receiptAndLineId = receiptAndLineId;
 		this.bpartnerId = bpartnerId;
 		this.costTypeId = costTypeId;
+		this.costElementId = costElementId;
 		this.qty = qty;
 		this.costAmount = costAmount;
 		this.costAmountInvoiced = costAmountInvoiced;

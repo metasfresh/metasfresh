@@ -1,6 +1,7 @@
 package de.metas.order.costs.inout;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -26,6 +27,7 @@ public class InOutCostCreateRequest
 
 	@Nullable BPartnerId bpartnerId;
 	@NonNull OrderCostTypeId costTypeId;
+	@NonNull CostElementId costElementId;
 
 	@NonNull Quantity qty;
 	@NonNull Money costAmount;

@@ -320,6 +320,33 @@ public interface I_C_Order_Cost
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_C_Order_Cost, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_C_Order_Cost.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

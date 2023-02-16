@@ -19,8 +19,11 @@ import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
+import de.metas.costing.CostElementId;
+import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
@@ -146,7 +149,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@Getter(AccessLevel.PROTECTED)
 	protected final AcctDocRequiredServicesFacade services;
 
-
 	private static final Logger log = LogManager.getLogger(Doc.class);
 
 	protected Doc(final AcctDocContext ctx)
@@ -232,7 +234,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private LocalDateAndOrgId _dateAcct = null;
 	private LocalDateAndOrgId _dateDoc = null;
 	/**
-	 *
 	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
 	 */
 	private boolean m_MultiCurrency = false;
@@ -1061,6 +1062,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return services.getAccountById(accountId);
 	}
 
+	public MAccount getCostElementAccount(
+			@NonNull final AcctSchema acctSchema,
+			@NonNull final CostElementId costElementId,
+			@NonNull final CostElementAccountType acctType)
+	{
+		return getAccountProvider().getCostElementAccount(acctSchema.getId(), costElementId, acctType);
+	}
+
 	protected final AccountProvider getAccountProvider()
 	{
 		AccountProvider accountProvider = this._accountProvider;
@@ -1391,6 +1400,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	protected final int getC_BPartner_Location_ID()
 	{
 		return getValueAsIntOrZero("C_BPartner_Location_ID");
+	}
+
+	protected final BPartnerLocationId getBPartnerLocationId()
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(getBPartnerId(), getC_BPartner_Location_ID());
 	}
 
 	@Nullable
