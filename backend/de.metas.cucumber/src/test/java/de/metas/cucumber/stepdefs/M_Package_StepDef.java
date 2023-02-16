@@ -83,20 +83,24 @@ public class M_Package_StepDef
 				.create()
 				.firstOnlyNotNull(I_M_ShippingPackage.class);
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShippingPackage.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
+			softly.assertThat(product).isNotNull();
 
-			assertThat(shippingPackage.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			softly.assertThat(shippingPackage.getM_Product_ID()).as(I_M_ShippingPackage.COLUMNNAME_M_Product_ID).isEqualTo(product.getM_Product_ID());
 
 			final I_M_Package packageRecord =  InterfaceWrapperHelper.load(shippingPackage.getM_Package_ID(), I_M_Package.class);
-			assertThat(packageRecord).isNotNull();
+			softly.assertThat(packageRecord).isNotNull();
 
 			final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
 			packageTable.putOrReplace(packageIdentifier, packageRecord);
 		}
+
+		softly.assertAll();
 	}
 
 	@And("validate M_Package:")

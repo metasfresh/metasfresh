@@ -50,6 +50,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
@@ -232,7 +233,7 @@ public class C_OrderLine_StepDef
 				orderLine.setC_Currency_ID(currency.getC_Currency_ID());
 			}
 
-			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, I_C_OrderLine.COLUMNNAME_DateOrdered);
+			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_DateOrdered);
 			if (dateOrdered != null)
 			{
 				orderLine.setDateOrdered(dateOrdered);
@@ -248,15 +249,18 @@ public class C_OrderLine_StepDef
 	public void thePurchaseOrderLinkedToOrderO_HasLines(
 			@NonNull final String orderIdentifier,
 			@Nullable final String docSubType,
-			@NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
+			@NonNull final String linkedOrderIdentifier,
+			@NonNull final DataTable dataTable)
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		final I_C_Order purchaseOrder = queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
 				.create().firstOnly(I_C_Order.class);
 
-		assertThat(purchaseOrder).isNotNull();
+		softly.assertThat(purchaseOrder).isNotNull();
 		orderTable.putOrReplace(orderIdentifier, purchaseOrder);
 
 		final I_C_DocType docType = queryBL
@@ -265,10 +269,11 @@ public class C_OrderLine_StepDef
 				.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, purchaseOrder.getC_DocTypeTarget_ID())
 				.create().firstOnly(I_C_DocType.class);
 
-		assertThat(docType).isNotNull();
+		softly.assertThat(docType).isNotNull();
+
 		if (Check.isNotBlank(docSubType))
 		{
-			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+			softly.assertThat(docType.getDocSubType()).as(I_C_DocType.COLUMNNAME_DocSubType).isEqualTo(docSubType);
 		}
 
 		final List<I_C_OrderLine> purchaseOrderLines = queryBL
@@ -304,14 +309,14 @@ public class C_OrderLine_StepDef
 				if (Check.isNotBlank(warehouseIdentifier))
 				{
 					final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-					assertThat(warehouse).isNotNull();
+					softly.assertThat(warehouse).isNotNull();
 
 					linePresent = linePresent && (orderLine.getM_Warehouse_ID() == warehouse.getM_Warehouse_ID());
 				}
 
 				if (datePromised != null)
 				{
-					assertThat(orderLine.getDatePromised()).isNotNull();
+					softly.assertThat(orderLine.getDatePromised()).as(I_C_OrderLine.COLUMNNAME_DatePromised).isNotNull();
 					linePresent = linePresent && (orderLine.getDatePromised().equals(TimeUtil.asTimestamp(datePromised)));
 				}
 
@@ -327,8 +332,10 @@ public class C_OrderLine_StepDef
 				}
 			}
 
-			assertThat(linePresent).isTrue();
+			softly.assertThat(linePresent).isTrue();
 		}
+
+		softly.assertAll();
 	}
 
 	@And("validate the created order lines")
