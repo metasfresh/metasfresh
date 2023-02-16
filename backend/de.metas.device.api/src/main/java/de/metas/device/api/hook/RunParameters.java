@@ -23,6 +23,7 @@
 package de.metas.device.api.hook;
 
 import de.metas.common.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -42,6 +43,14 @@ public class RunParameters
 	{
 		return getSingle(paramName)
 				.map(value -> NumberUtils.asBigDecimal(value, null));
+	}
+
+	@NonNull
+	public Optional<Integer> getSingleAsIntegerForSuffix(@NonNull final String suffix)
+	{
+		return CollectionUtils.singleElementOrEmpty(parameters.keySet(), key -> key.endsWith(suffix))
+				.flatMap(this::getSingle)
+				.map(NumberUtils::asInt);
 	}
 
 	@NonNull
