@@ -71,13 +71,14 @@ public class Tax
 	@NonNull Integer seqNo;
 
 	@Builder
-	public Tax(final @NonNull TaxId taxId,
-			final @NonNull OrgId orgId,
-			final @NonNull Timestamp validFrom,
-			final @Nullable CountryId countryId,
-			final @Nullable CountryId toCountryId,
-			final @Nullable TypeOfDestCountry typeOfDestCountry,
-			final @NonNull TaxCategoryId taxCategoryId,
+	public Tax(
+			@NonNull final TaxId taxId,
+			@NonNull final OrgId orgId,
+			@NonNull final Timestamp validFrom,
+			@Nullable final CountryId countryId,
+			@Nullable final CountryId toCountryId,
+			@Nullable final TypeOfDestCountry typeOfDestCountry,
+			@NonNull final TaxCategoryId taxCategoryId,
 			@Nullable final Boolean requiresTaxCertificate,
 			final SOPOType sopoType,
 			final boolean isTaxExempt,
@@ -85,9 +86,9 @@ public class Tax
 			@Nullable final Boolean isSmallBusiness,
 			final boolean isWholeTax,
 			final boolean isDocumentLevel,
-			final BigDecimal rate,
-			final BoilerPlateId boilerPlateId,
-			final @NonNull Integer seqNo)
+			@NonNull final BigDecimal rate,
+			@Nullable final BoilerPlateId boilerPlateId,
+			@NonNull final Integer seqNo)
 	{
 		this.taxId = taxId;
 		this.orgId = orgId;
