@@ -279,7 +279,7 @@ public class BPartnerStatsService
 
 	private void updateDeliveryCreditStatus(@NonNull final BPartnerStats bpStats)
 	{
-		final CreditStatus initialCreditStatus = bpStats.getSoCreditStatus();
+		final CreditStatus initialCreditStatus = bpStats.getDeliveryCreditStatus();
 
 		final I_C_BPartner_Stats stats = bPartnerStatsDAO.loadDataRecord(bpStats);
 
