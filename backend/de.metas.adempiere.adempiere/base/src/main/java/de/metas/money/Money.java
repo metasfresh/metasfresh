@@ -59,7 +59,7 @@ import static java.math.BigDecimal.ZERO;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class Money
+public class Money implements Comparable<Money>
 {
 	public static Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
 	{
@@ -176,11 +176,14 @@ public class Money
 		return signum() >= 0 ? this : zero(currencyId);
 	}
 
+	public Money abs() {return withValue(value.abs());}
+
 	public static void assertSameCurrency(final Money... moneys)
 	{
 		getCommonCurrencyIdOfAll(moneys);
 	}
 
+	@NonNull
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
 	{
 		return CurrencyId.getCommonCurrencyIdOfAll(Money::getCurrencyId, "Money", moneys);
@@ -291,23 +294,18 @@ public class Money
 		}
 	}
 
-	public boolean isLessThanOrEqualTo(@NonNull final Money other)
+	@Override
+	public int compareTo(@NonNull final Money other)
 	{
 		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) <= 0;
+		return this.value.compareTo(other.value);
 	}
 
-	public boolean isGreaterThanOrEqualTo(@NonNull final Money other)
-	{
-		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) >= 0;
-	}
+	public boolean isLessThanOrEqualTo(@NonNull final Money other) {return compareTo(other) <= 0;}
 
-	public boolean isGreaterThan(@NonNull final Money other)
-	{
-		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) > 0;
-	}
+	public boolean isGreaterThanOrEqualTo(@NonNull final Money other) {return compareTo(other) >= 0;}
+
+	public boolean isGreaterThan(@NonNull final Money other) {return compareTo(other) > 0;}
 
 	public boolean isEqualByComparingTo(@Nullable final Money other)
 	{
