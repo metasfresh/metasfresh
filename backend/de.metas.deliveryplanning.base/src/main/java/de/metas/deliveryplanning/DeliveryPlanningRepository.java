@@ -61,7 +61,9 @@ import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -487,7 +489,7 @@ public class DeliveryPlanningRepository
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
+			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());
@@ -588,5 +590,21 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.anyMatch();
+	}
+
+	@Nullable
+	public Timestamp getMinLoadingDateFromCompletedDeliveryInstructions(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addNotNull(I_M_ShipperTransportation.COLUMNNAME_LoadingDate)
+				.create()
+				.listDistinct(I_M_ShipperTransportation.COLUMNNAME_LoadingDate, Timestamp.class)
+				.stream()
+				.min(Timestamp::compareTo)
+				.orElse(null);
 	}
 }
