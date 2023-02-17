@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14596](https://github.com/metasfresh/metasfresh/issues/14596) SAP Partner ID in Business Partner location is set to null after credit limit import
+  * [#14537](https://github.com/metasfresh/metasfresh/issues/14537) Moving Average Invoice Costing Method
   * [#14582](https://github.com/metasfresh/metasfresh/issues/14582) Hus in zur Prüfung können in Produktion benutzt werden 
   * [#14521](https://github.com/metasfresh/metasfresh/issues/14521) Delivery Instruction Cucumber Tests
   * [#14554](https://github.com/metasfresh/metasfresh/issues/14554) Add accountConceptualName to fact_acct 
