@@ -44,7 +44,7 @@ SELECT dep.value || '_' || dep.name                        AS "Department",
 
 
 FROM M_Department dep
-         JOIN M_Department_SectionCode depSC ON dep.m_department_id = depSC.m_department_id AND depSC.isactive = 'Y'
+         JOIN M_Department_SectionCode depSC ON dep.m_department_id = depSC.m_department_id
          JOIN M_SectionCode sc ON depSC.m_sectioncode_id = sc.m_sectioncode_id
          JOIN C_BPartner bp ON sc.m_sectioncode_id = bp.m_sectioncode_id
          JOIN C_Order o ON bp.c_bpartner_id = o.c_bpartner_id
