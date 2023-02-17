@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
-import de.metas.costing.CostPrice;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
@@ -15,7 +14,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -204,14 +202,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			}
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-					.fromCountryId(countryFromId)
-					.orgId(orgId)
-					.bPartnerLocationId(partnerLocationId)
-					.dateOfInterest(taxDate)
-					.taxCategoryId(taxCategoryId)
-					.soTrx(SOTrx.ofBoolean(isSOTrx))
-					.vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
-					.build());
+												 .fromCountryId(countryFromId)
+												 .orgId(orgId)
+												 .bPartnerLocationId(partnerLocationId)
+												 .dateOfInterest(taxDate)
+												 .taxCategoryId(taxCategoryId)
+												 .soTrx(SOTrx.ofBoolean(isSOTrx))
+												 .vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
+												 .build());
 
 			if (tax == null)
 			{
@@ -562,7 +560,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				stockUOMId);
 	}
 
-
 	@NonNull
 	@Override
 	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
@@ -574,25 +571,23 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		return Quantity.of(qtyInvoiced, stockUOM);
 	}
 
-
 	@Override
-	public CostPrice getCostPrice(@NonNull final InvoiceLineId invoiceLineId)
+	public ProductPrice getCostPrice(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		invoiceBL.getBy
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
 
-		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 
-
-
-		UomId priceUomId = UomId.ofRepoId(orderLine.getPrice_UOM_ID());
+		UomId priceUomId = UomId.ofRepoId(invoiceLine.getPrice_UOM_ID());
 		if (priceUomId == null)
 		{
-			priceUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+			priceUomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
 		}
 
-		final BigDecimal priceActual = orderLine.getPriceActual();
-		if (!isTaxIncluded(orderLine))
+		final BigDecimal priceActual = invoiceLine.getPriceActual();
+
+		if (!invoiceBL.isTaxIncluded(invoiceLine))
 		{
 			return ProductPrice.builder()
 					.productId(productId)
@@ -601,7 +596,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					.build();
 		}
 
-		final int taxId = orderLine.getC_Tax_ID();
+		final int taxId = invoiceLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
 			// shall not happen
@@ -622,7 +617,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					.build();
 		}
 
-		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
+		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(invoiceRecord);
 		final BigDecimal taxAmt = taxBL.calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
@@ -631,5 +626,4 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.money(Money.of(priceActualWithoutTax, currencyId))
 				.build();
 	}
-
 }

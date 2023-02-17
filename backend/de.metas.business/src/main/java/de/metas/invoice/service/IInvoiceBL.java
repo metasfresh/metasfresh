@@ -379,4 +379,5 @@ public interface IInvoiceBL extends ISingletonService
 
 	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
 
+	I_C_InvoiceLine getLineById(InvoiceLineId invoiceLineId);
 }

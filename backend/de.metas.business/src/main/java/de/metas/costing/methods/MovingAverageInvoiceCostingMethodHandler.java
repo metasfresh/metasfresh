@@ -51,6 +51,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -67,8 +68,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
-
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public MovingAverageInvoiceCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -111,15 +112,16 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		}
 		else
 		{
-			final I_C_InvoiceLine invoiceLine =
+			final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID()));
 
-			final CostAmount amtConv = getMAInvoiceCostAmountInAcctCurrency(invoiceLineId);
+
+
+			final CostAmount amtConv = getMAInvoiceCostAmountInAcctCurrency(invoiceLine);
 			return utils.createCostDetailRecordWithChangedCosts(
 					request.withAmount(amtConv),
 					CostDetailPreviousAmounts.of(currentCost));
 		}
 	}
-
 
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
@@ -368,12 +370,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				acctSchemaId);
 	}
 
-
-	private CostAmount getMAInvoiceCostAmountInAcctCurrency(@NonNull final InvoiceLineId invoiceLineId)
+	private CostAmount getMAInvoiceCostAmountInAcctCurrency(final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		// TODO: 17/02/2023  add the logic from 2.2.4.1
-		return null;
 
-		invoiceLineBL.getCostPrice(invoiceLineId);
+
+		invoiceLineBL.getCostPrice(invoiceLine);
+
+		return null;
 	}
 }

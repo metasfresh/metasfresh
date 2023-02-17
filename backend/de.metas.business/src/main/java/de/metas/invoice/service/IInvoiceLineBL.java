@@ -24,11 +24,10 @@ package de.metas.invoice.service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.costing.CostPrice;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
@@ -100,5 +99,5 @@ public interface IInvoiceLineBL extends ISingletonService
 	Quantity getQtyInvoicedStockUOM(I_C_InvoiceLine invoiceLine);
 
 
-	CostPrice getCostPrice(InvoiceLineId invoiceLineId);
+	ProductPrice getCostPrice(final I_C_InvoiceLine invoiceLine);
 }
