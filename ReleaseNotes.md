@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14542](https://github.com/metasfresh/metasfresh/issues/14542) When importing inventory, different CUs that are in the same TU get summed up incorrectly
   * [#14596](https://github.com/metasfresh/metasfresh/issues/14596) SAP Partner ID in Business Partner location is set to null after credit limit import
   * [#14537](https://github.com/metasfresh/metasfresh/issues/14537) Moving Average Invoice Costing Method
   * [#14582](https://github.com/metasfresh/metasfresh/issues/14582) Hus in zur Prüfung können in Produktion benutzt werden 
