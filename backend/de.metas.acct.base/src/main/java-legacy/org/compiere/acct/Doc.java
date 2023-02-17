@@ -146,7 +146,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	@Getter(AccessLevel.PROTECTED)
-	protected final AcctDocRequiredServicesFacade services;
+	@NonNull protected final AcctDocRequiredServicesFacade services;
 
 	private static final Logger log = LogManager.getLogger(Doc.class);
 

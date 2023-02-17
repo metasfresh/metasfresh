@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
@@ -21,7 +22,6 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -122,6 +122,7 @@ public final class FactLineBuilder
 		final Doc<?> doc = getDoc();
 		final DocLine<?> docLine = getDocLine();
 		final FactLine line = new FactLine(
+				doc.getServices(),
 				doc.get_Table_ID(), // AD_Table_ID
 				doc.get_ID(), // Record_ID
 				docLine == null ? 0 : docLine.get_ID()); // Line_ID
@@ -152,11 +153,10 @@ public final class FactLineBuilder
 		}
 
 		//
-		// Amounts - one needs to not zero
-		final CurrencyId currencyId = getCurrencyId();
-		final BigDecimal amtSourceDr = getAmtSourceDr();
-		final BigDecimal amtSourceCr = getAmtSourceCr();
-		line.setAmtSource(currencyId, amtSourceDr, amtSourceCr);
+		// Amounts - one needs to be not zero
+		final Money amtSourceDr = getAmtSourceDr();
+		final Money amtSourceCr = getAmtSourceCr();
+		line.setAmtSource(amtSourceDr, amtSourceCr);
 		if (line.isZeroAmtSource())
 		{
 			if (line.getQty().signum() == 0)
@@ -171,7 +171,7 @@ public final class FactLineBuilder
 
 			if (log.isDebugEnabled())
 			{
-				log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + toString());
+				log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + this);
 			}
 		}
 
@@ -395,11 +395,6 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	private CurrencyId getCurrencyId()
-	{
-		return currencyId;
-	}
-
 	public FactLineBuilder setCurrencyConversionCtx(@Nullable final CurrencyConversionContext currencyConversionCtx)
 	{
 		assertNotBuild();
@@ -419,21 +414,31 @@ public final class FactLineBuilder
 	}
 
 	@Nullable
-	private BigDecimal getAmtSourceDr()
+	private Money getAmtSourceDr()
 	{
-		return amtSourceDr;
+		return amtSourceDr != null ? Money.of(amtSourceDr, currencyId) : null;
 	}
 
 	@Nullable
-	private BigDecimal getAmtSourceCr()
+	private Money getAmtSourceCr()
 	{
-		return amtSourceCr;
+		return amtSourceCr != null ? Money.of(amtSourceCr, currencyId) : null;
 	}
 
 	/**
 	 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
 	 */
-	public FactLineBuilder setAmtSourceDrOrCr(final BigDecimal amtSource)
+	public FactLineBuilder setAmtSourceDrOrCr(@NonNull final Money amtSource)
+	{
+		setCurrencyId(amtSource.getCurrencyId());
+		setAmtSourceDrOrCr(amtSource.toBigDecimal());
+		return this;
+	}
+
+	/**
+	 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
+	 */
+	public FactLineBuilder setAmtSourceDrOrCr(@NonNull final BigDecimal amtSource)
 	{
 		if (amtSource.signum() < 0)
 		{

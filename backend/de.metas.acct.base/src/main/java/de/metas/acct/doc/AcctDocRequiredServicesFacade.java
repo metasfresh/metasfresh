@@ -11,6 +11,9 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -59,6 +62,9 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -124,6 +130,8 @@ public class AcctDocRequiredServicesFacade
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
@@ -395,5 +403,20 @@ public class AcctDocRequiredServicesFacade
 		}
 
 		return warehouseBL.getLocationIdByLocatorRepoId(locatorRepoId);
+	}
+
+	public Tax getTaxById(@NonNull final TaxId taxId)
+	{
+		return taxDAO.getTaxById(taxId);
+	}
+
+	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
+	{
+		return warehouseBL.getOrgIdByLocatorRepoId(locatorId);
+	}
+
+	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
+	{
+		return vatCodeDAO.findVATCode(request);
 	}
 }
