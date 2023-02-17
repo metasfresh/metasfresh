@@ -724,4 +724,9 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
 
 	}
+
+	public void updateICFromDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		deliveryPlanningRepository.updateICFromDeliveryPlanningId(deliveryPlanningId);
+	}
 }
