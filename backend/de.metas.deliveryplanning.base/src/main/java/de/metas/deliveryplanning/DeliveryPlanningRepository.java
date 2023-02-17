@@ -616,6 +616,7 @@ public class DeliveryPlanningRepository
 
 		final ImmutableList<I_C_Invoice_Candidate> relatedICs = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId)
 				.stream()
+				.filter(ic -> !ic.isProcessed())
 				.peek(ic -> ic.setActualLoadingDate(minLoadingDateFromCompletedDeliveryInstructions))
 				.collect(ImmutableList.toImmutableList());
 		invoiceCandDAO.saveAll(relatedICs);
