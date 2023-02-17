@@ -4,6 +4,7 @@ DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice_PerTax
 CREATE OR REPLACE VIEW RV_DATEV_Export_Fact_Acct_Invoice_PerTax
             (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, GrandTotal, taxamt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype,
              c_tax_rate,
+             vatCode,
              c_doctype_name,
              fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id)
 AS
@@ -26,6 +27,7 @@ SELECT DebitOrCreditIndicator,
        c_invoice_id,
        docbasetype,
        c_tax_rate,
+       vatCode,
        c_doctype_name,
        MIN(fact_acct_id) AS fact_acct_id,
        MIN(fact_acct_id) AS rv_datev_export_fact_acct_invoice_id,
@@ -74,6 +76,7 @@ FROM (
                 fa.record_id                                                                     AS c_invoice_id,
                 fa.docbasetype,
                 t.rate                                                                           AS c_tax_rate,
+                fa.vatCode,
                 dt.name                                                                          AS c_doctype_name,
                 fa.fact_acct_id,
                 fa.fact_acct_id                                                                  AS rv_datev_export_fact_acct_invoice_id,
@@ -110,6 +113,7 @@ GROUP BY DebitOrCreditIndicator,
          c_invoice_id,
          docbasetype,
          c_tax_rate,
+         vatcode,
          c_doctype_name,
          ad_client_id,
          ad_org_id

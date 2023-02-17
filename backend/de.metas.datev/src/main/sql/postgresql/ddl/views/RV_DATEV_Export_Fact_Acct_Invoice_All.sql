@@ -4,6 +4,7 @@ DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice_All
 CREATE OR REPLACE VIEW RV_DATEV_Export_Fact_Acct_Invoice_All
             (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, GrandTotal, taxamt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype,
              c_tax_rate,
+                vatCode,
              c_doctype_name,
              fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id)
 AS
@@ -48,6 +49,7 @@ SELECT CASE
        fa.record_id                                                                     AS c_invoice_id,
        fa.docbasetype,
        t.rate                                                                           AS c_tax_rate,
+       fa.vatcode,
        dt.name                                                                          AS c_doctype_name,
        fa.fact_acct_id,
        fa.fact_acct_id                                                                  AS rv_datev_export_fact_acct_invoice_id,
