@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerStats;
@@ -48,6 +49,8 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -93,6 +96,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -122,6 +126,7 @@ public class DeliveryPlanningService
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
 
@@ -722,11 +727,22 @@ public class DeliveryPlanningService
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
-
 	}
 
 	public void updateICFromDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		deliveryPlanningRepository.updateICFromDeliveryPlanningId(deliveryPlanningId);
+		final I_M_Delivery_Planning currentDeliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(currentDeliveryPlanning.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			return;
+		}
+		final Timestamp minLoadingDateFromCompletedDeliveryInstructions = deliveryPlanningRepository.getMinLoadingDateFromCompletedDeliveryInstructions(orderLineId);
+		final ImmutableList<I_C_Invoice_Candidate> relatedICs = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId)
+				.stream()
+				.filter(ic -> !ic.isProcessed())
+				.peek(ic -> ic.setActualLoadingDate(minLoadingDateFromCompletedDeliveryInstructions))
+				.collect(ImmutableList.toImmutableList());
+		invoiceCandDAO.saveAll(relatedICs);
 	}
 }

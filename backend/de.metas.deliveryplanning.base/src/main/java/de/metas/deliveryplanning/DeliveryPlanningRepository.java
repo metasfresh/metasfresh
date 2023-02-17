@@ -32,8 +32,6 @@ import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.CountryId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -63,6 +61,7 @@ import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
@@ -84,7 +83,6 @@ public class DeliveryPlanningRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -594,15 +592,10 @@ public class DeliveryPlanningRepository
 				.anyMatch();
 	}
 
-	public void updateICFromDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	@Nullable
+	public Timestamp getMinLoadingDateFromCompletedDeliveryInstructions(@NonNull final OrderLineId orderLineId)
 	{
-		final I_M_Delivery_Planning currentDeliveryPlanning = getById(deliveryPlanningId);
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(currentDeliveryPlanning.getC_OrderLine_ID());
-		if (orderLineId == null)
-		{
-			return;
-		}
-		final Timestamp minLoadingDateFromCompletedDeliveryInstructions = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.andCollectChildren(I_M_ShipperTransportation.COLUMN_M_Delivery_Planning_ID)
@@ -613,12 +606,5 @@ public class DeliveryPlanningRepository
 				.stream()
 				.min(Timestamp::compareTo)
 				.orElse(null);
-
-		final ImmutableList<I_C_Invoice_Candidate> relatedICs = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId)
-				.stream()
-				.filter(ic -> !ic.isProcessed())
-				.peek(ic -> ic.setActualLoadingDate(minLoadingDateFromCompletedDeliveryInstructions))
-				.collect(ImmutableList.toImmutableList());
-		invoiceCandDAO.saveAll(relatedICs);
 	}
 }
