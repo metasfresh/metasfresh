@@ -146,6 +146,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutAndLineId inoutLineId)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId);
+	}
+
+	@Override
 	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
 	{
 		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);

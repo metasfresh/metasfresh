@@ -71,6 +71,8 @@ public interface IInOutBL extends ISingletonService
 
 	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
+
 	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
 
 	/**

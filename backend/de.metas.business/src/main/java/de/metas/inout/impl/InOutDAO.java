@@ -98,6 +98,12 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutAndLineId inoutLineId)
+	{
+		return load(inoutLineId.getInOutLineId(), I_M_InOutLine.class);
+	}
+
+	@Override
 	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
 		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
@@ -106,7 +112,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> List<T> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds, final Class<T> returnType)
 	{
-		if(inoutLineIds.isEmpty())
+		if (inoutLineIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -504,7 +510,7 @@ public class InOutDAO implements IInOutDAO
 	@Nullable
 	public static ForexContractRef extractForeignContractRef(final I_M_InOut record)
 	{
-		if(!record.isFEC())
+		if (!record.isFEC())
 		{
 			return null;
 		}
