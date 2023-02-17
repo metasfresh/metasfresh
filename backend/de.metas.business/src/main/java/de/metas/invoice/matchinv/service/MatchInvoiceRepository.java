@@ -2,6 +2,7 @@ package de.metas.invoice.matchinv.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceLineId;
@@ -48,18 +49,14 @@ public class MatchInvoiceRepository
 		return fromRecord(record);
 	}
 
-	static MatchInv fromRecord(@NonNull final I_M_MatchInv record)
+	public static MatchInv fromRecord(@NonNull final I_M_MatchInv record)
 	{
 		final MatchInvType type = MatchInvType.ofCode(record.getType());
 
 		final MatchInvCostPart costPart;
 		if (type.isCost())
 		{
-			costPart = MatchInvCostPart.builder()
-					.inoutCostId(InOutCostId.ofRepoId(record.getM_InOut_Cost_ID()))
-					.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
-					.costAmount(Money.of(record.getCostAmount(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-					.build();
+			costPart = extractMatchInvCostPart(record);
 		}
 		else
 		{
@@ -72,6 +69,7 @@ public class MatchInvoiceRepository
 				.inoutLineId(InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.dateTrx(record.getDateTrx().toInstant())
 				.dateAcct(record.getDateAcct().toInstant())
 				.posted(record.isPosted())
 				.updatedByUserId(UserId.ofRepoIdOrSystem(record.getUpdatedBy()))
@@ -85,6 +83,25 @@ public class MatchInvoiceRepository
 				.type(type)
 				.costPart(costPart)
 				.build();
+	}
+
+	private static MatchInvCostPart extractMatchInvCostPart(final @NonNull I_M_MatchInv record)
+	{
+		return MatchInvCostPart.builder()
+				.inoutCostId(InOutCostId.ofRepoId(record.getM_InOut_Cost_ID()))
+				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
+				.costAmount(Money.of(record.getCostAmount(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.build();
+	}
+
+	static void updateRecord(@NonNull final I_M_MatchInv record, @NonNull final MatchInvCostPart from)
+	{
+		record.setM_InOut_Cost_ID(from.getInoutCostId().getRepoId());
+		record.setC_Cost_Type_ID(from.getCostTypeId().getRepoId());
+		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
+		record.setC_Currency_ID(from.getCostAmount().getCurrencyId().getRepoId());
+		record.setCostAmount(from.getCostAmount().toBigDecimal());
 	}
 
 	public Optional<MatchInv> first(@NonNull final MatchInvQuery query)

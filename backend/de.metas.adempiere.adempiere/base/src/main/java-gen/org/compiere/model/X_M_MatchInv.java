@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1244080011L;
+	private static final long serialVersionUID = 118859417L;
 
     /** Standard Constructor */
     public X_M_MatchInv (final Properties ctx, final int M_MatchInv_ID, @Nullable final String trxName)
@@ -244,6 +244,33 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
+
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
+	{
+		if (M_CostElement_ID < 1) 
+			set_Value (COLUMNNAME_M_CostElement_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+	}
+
+	@Override
+	public int getM_CostElement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
 	}
 
 	@Override

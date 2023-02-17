@@ -37,6 +37,7 @@ public class MatchInv
 
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull SOTrx soTrx;
+	@NonNull Instant dateTrx;
 	@NonNull Instant dateAcct;
 	boolean posted;
 	@NonNull UserId updatedByUserId;
@@ -57,6 +58,7 @@ public class MatchInv
 			@NonNull final InOutAndLineId inoutLineId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final SOTrx soTrx,
+			@NonNull final Instant dateTrx,
 			@NonNull final Instant dateAcct,
 			final boolean posted,
 			@NonNull final UserId updatedByUserId,
@@ -72,6 +74,7 @@ public class MatchInv
 		this.clientAndOrgId = clientAndOrgId;
 		this.soTrx = soTrx;
 		this.dateAcct = dateAcct;
+		this.dateTrx = dateTrx;
 		this.posted = posted;
 		this.updatedByUserId = updatedByUserId;
 		this.productId = productId;

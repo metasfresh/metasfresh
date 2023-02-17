@@ -384,6 +384,33 @@ public interface I_M_MatchInv
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostElement_ID (int M_CostElement_ID);
+
+	/**
+	 * Get Cost Element.
+	 * Product Cost Element
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostElement_ID();
+
+	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
+
+	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
+
+	ModelColumn<I_M_MatchInv, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_MatchInv.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
 	 * Set Shipment/Receipt Costs.
 	 *
 	 * <br>Type: Search

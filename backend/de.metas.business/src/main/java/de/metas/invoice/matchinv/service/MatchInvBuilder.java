@@ -121,10 +121,7 @@ public class MatchInvBuilder
 		final MatchInvCostPart inoutCost = getInoutCost();
 		if (inoutCost != null)
 		{
-			matchInv.setM_InOut_Cost_ID(inoutCost.getInoutCostId().getRepoId());
-			matchInv.setC_Cost_Type_ID(inoutCost.getCostTypeId().getRepoId());
-			matchInv.setC_Currency_ID(inoutCost.getCostAmount().getCurrencyId().getRepoId());
-			matchInv.setCostAmount(inoutCost.getCostAmount().toBigDecimal());
+			MatchInvoiceRepository.updateRecord(matchInv, inoutCost);
 		}
 
 		// Quantity
@@ -340,7 +337,7 @@ public class MatchInvBuilder
 		final boolean materialReturns = isMaterialReturns();
 		if (creditMemoInvoice != materialReturns)
 		{
-			// NOTE: we are not throwing exception because this will push caller code to handle this exception, or to do the checkings before,
+			// NOTE: we are not throwing exception because this will push caller code to handle this exception, or to do the checking before,
 			// which makes no sense.
 
 			// throw new MatchInvException("Cannot mix regular documents with credit memos / material returns.");
