@@ -38,6 +38,7 @@ import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 @Value
@@ -94,7 +95,6 @@ public class Tax
 		this.orgId = orgId;
 		this.validFrom = validFrom;
 		this.countryId = countryId;
-
 		this.toCountryId = toCountryId;
 		this.typeOfDestCountry = typeOfDestCountry;
 		this.taxCategoryId = taxCategoryId;
@@ -114,6 +114,8 @@ public class Tax
 	{
 		return C_TAX_ID_NO_TAX_FOUND == taxId.getRepoId();
 	}
+
+	public boolean isZeroTax() {return this.rate.signum() == 0;}
 
 	/**
 	 * Calculate base amount, excluding tax
@@ -152,7 +154,7 @@ public class Tax
 			return BigDecimal.ZERO;
 		}
 
-		BigDecimal multiplier = rate.divide(Env.ONEHUNDRED, 12, BigDecimal.ROUND_HALF_UP);
+		BigDecimal multiplier = rate.divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
 
 		final BigDecimal taxAmt;
 		if (isWholeTax)
@@ -168,11 +170,11 @@ public class Tax
 		// $106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
 		{
 			multiplier = multiplier.add(BigDecimal.ONE);
-			final BigDecimal base = amount.divide(multiplier, 12, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal base = amount.divide(multiplier, 12, RoundingMode.HALF_UP);
 			taxAmt = amount.subtract(base);
 		}
 
-		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, BigDecimal.ROUND_HALF_UP);
+		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, RoundingMode.HALF_UP);
 
 		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}]", amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt);
 
