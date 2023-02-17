@@ -2,6 +2,7 @@ package de.metas.invoice.service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostPrice;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -14,6 +15,7 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -376,4 +378,5 @@ public interface IInvoiceBL extends ISingletonService
 	String getLocationEmail(InvoiceId invoiceId);
 
 	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
 }

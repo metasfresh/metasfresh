@@ -40,7 +40,10 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductPrice;
@@ -64,6 +67,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
+
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
 	public MovingAverageInvoiceCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
 		super(utils);
@@ -86,23 +92,34 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
-
-		final I_C_OrderLine orderLine = Optional.of(matchInv)
-				.map(I_M_MatchInv::getC_InvoiceLine)
-				.map(I_C_InvoiceLine::getC_OrderLine)
-				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInvId));
-
 		final InOutId inoutId = InOutId.ofRepoId(matchInv.getM_InOut_ID());
+
 		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(inoutId);
-
-		final CostAmount amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
-
 		final CurrentCost currentCost = utils.getCurrentCost(request);
+		if (matchInv.isSOTrx())
+		{
+			final I_C_OrderLine orderLine = Optional.of(matchInv)
+					.map(I_M_MatchInv::getC_InvoiceLine)
+					.map(I_C_InvoiceLine::getC_OrderLine)
+					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInvId));
 
-		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
-				CostDetailPreviousAmounts.of(currentCost));
+			final CostAmount amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
+
+			return utils.createCostDetailRecordNoCostsChanged(
+					request.withAmount(amtConv),
+					CostDetailPreviousAmounts.of(currentCost));
+		}
+		else
+		{
+			final I_C_InvoiceLine invoiceLine =
+
+			final CostAmount amtConv = getMAInvoiceCostAmountInAcctCurrency(invoiceLineId);
+			return utils.createCostDetailRecordWithChangedCosts(
+					request.withAmount(amtConv),
+					CostDetailPreviousAmounts.of(currentCost));
+		}
 	}
+
 
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
@@ -349,5 +366,14 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				amt,
 				() -> currencyConversionContext,
 				acctSchemaId);
+	}
+
+
+	private CostAmount getMAInvoiceCostAmountInAcctCurrency(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		// TODO: 17/02/2023  add the logic from 2.2.4.1
+		return null;
+
+		invoiceLineBL.getCostPrice(invoiceLineId);
 	}
 }

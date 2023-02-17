@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
+import de.metas.costing.CostPrice;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
@@ -14,6 +15,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -23,6 +25,8 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -36,6 +40,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
@@ -68,6 +73,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MTax;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -567,4 +573,63 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		return Quantity.of(qtyInvoiced, stockUOM);
 	}
+
+
+	@Override
+	public CostPrice getCostPrice(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		invoiceBL.getBy
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+
+
+		UomId priceUomId = UomId.ofRepoId(orderLine.getPrice_UOM_ID());
+		if (priceUomId == null)
+		{
+			priceUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		}
+
+		final BigDecimal priceActual = orderLine.getPriceActual();
+		if (!isTaxIncluded(orderLine))
+		{
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.money(Money.of(priceActual, currencyId))
+					.build();
+		}
+
+		final int taxId = orderLine.getC_Tax_ID();
+		if (taxId <= 0)
+		{
+			// shall not happen
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.money(Money.of(priceActual, currencyId))
+					.build();
+		}
+
+		final MTax tax = MTax.get(Env.getCtx(), taxId);
+		if (tax.isZeroTax())
+		{
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.money(Money.of(priceActual, currencyId))
+					.build();
+		}
+
+		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
+		final BigDecimal taxAmt = taxBL.calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
+		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(priceUomId)
+				.money(Money.of(priceActualWithoutTax, currencyId))
+				.build();
+	}
+
 }
