@@ -35,6 +35,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
@@ -421,6 +422,18 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		updater.accept(costRecord);
 		saveRecord(costRecord);
+	}
+
+	public boolean hasCostsInCurrency(@NonNull final I_C_AcctSchema acctSchema, @NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Org_ID, acctSchema.getAD_Org_ID())
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchema.getC_AcctSchema_ID())
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.anyMatch();
 	}
 
 }
