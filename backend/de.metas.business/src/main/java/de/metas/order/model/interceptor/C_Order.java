@@ -68,12 +68,14 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -99,6 +101,8 @@ public class C_Order
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
@@ -552,6 +556,48 @@ public class C_Order
 		}
 	}
 
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_M_Warehouse_ID })
+	public void markAsDropShipIfDropShipWarehouse(@NonNull final I_C_Order order)
+	{
+		if (order.getM_Warehouse_ID() <= 0)
+		{
+			return;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+
+		if (!warehouseBL.isDropShipWarehouse(warehouseId, orgId))
+		{
+			return;
+		}
+
+		if (!order.isDropShip())
+		{
+			order.setIsDropShip(true);
+		}
+	}
+
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_IsDropShip, I_C_Order.COLUMNNAME_M_Warehouse_ID })
+	public void setBillToDefaultLocationAsDefaultIfDropShipSO(@NonNull final I_C_Order order)
+	{
+		if (!validOrder(order))
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location billToLocation = Optional.ofNullable(bpartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder()
+																													  .bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+																													  .type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+																													  .build()))
+				.orElseThrow(() -> new AdempiereException("No BillTo Address found for BPartner!")
+						.appendParametersToMessage()
+						.setParameter(I_C_Order.COLUMNNAME_C_BPartner_ID, order.getC_BPartner_ID())
+						.setParameter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID()));
+
+		order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+	}
+
 	private void validateSupplierApprovals(final I_C_Order order)
 	{
 		if (order.isSOTrx())
@@ -580,5 +626,28 @@ public class C_Order
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
 		}
+	}
+
+	private boolean validOrder(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			//only sales orders are relevant
+			return false;
+		}
+
+		if (!order.isDropShip())
+		{
+			//only dropShip orders are relevant
+			return false;
+		}
+
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			//no billToDefault location exists if no partner is assigned
+			return false;
+		}
+
+		return true;
 	}
 }
