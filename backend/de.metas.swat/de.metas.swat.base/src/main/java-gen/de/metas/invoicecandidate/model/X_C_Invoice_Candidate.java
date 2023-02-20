@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1619935458L;
+	private static final long serialVersionUID = -619456444L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -33,6 +33,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setActualLoadingDate (final @Nullable java.sql.Timestamp ActualLoadingDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_ActualLoadingDate, ActualLoadingDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getActualLoadingDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ActualLoadingDate);
 	}
 
 	@Override
@@ -821,9 +833,9 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
 	{
 		if (C_VAT_Code_ID < 1) 
-			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_VAT_Code_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
+			set_ValueNoCheck (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
 	}
 
 	@Override
@@ -1206,6 +1218,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
+	@Override
+	public void setInvoiceAdditionalText (final @Nullable java.lang.String InvoiceAdditionalText)
+	{
+		set_Value (COLUMNNAME_InvoiceAdditionalText, InvoiceAdditionalText);
+	}
+
+	@Override
+	public java.lang.String getInvoiceAdditionalText() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
+	}
+
 	/** 
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
@@ -1421,6 +1445,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isMaterialTracking() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMaterialTracking);
+	}
+
+	@Override
+	public void setIsNotShowOriginCountry (final boolean IsNotShowOriginCountry)
+	{
+		set_Value (COLUMNNAME_IsNotShowOriginCountry, IsNotShowOriginCountry);
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
 	}
 
 	@Override
@@ -2493,29 +2529,5 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-	@Override
-	public void setInvoiceAdditionalText (final @Nullable java.lang.String InvoiceAdditionalText)
-	{
-		set_Value (COLUMNNAME_InvoiceAdditionalText, InvoiceAdditionalText);
-	}
-
-	@Override
-	public java.lang.String getInvoiceAdditionalText()
-	{
-		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
-	}
-
-	@Override
-	public void setIsNotShowOriginCountry (final boolean IsNotShowOriginCountry)
-	{
-		set_Value (COLUMNNAME_IsNotShowOriginCountry, IsNotShowOriginCountry);
-	}
-
-	@Override
-	public boolean isNotShowOriginCountry()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
 	}
 }
