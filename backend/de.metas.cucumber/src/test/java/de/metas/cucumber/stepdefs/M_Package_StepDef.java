@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cucumber.stepdefs.deliveryplanning.M_ShipperTransportation_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
