@@ -961,8 +961,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 3                          | 100            | 100            | 0                              | 100              | 100                   | 97              | 97                   | 0                   | true          |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 1000002     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 97          | true      | 1                | 1               | 97             | 0            |
@@ -1060,8 +1060,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0                          | 150            | 150            | 0                              | 150              | 150                   | 152             | 152                  | 0                   | true          |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 1000002     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 152         | true      | 1                | 1               | 152            | 0            |
