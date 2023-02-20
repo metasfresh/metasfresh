@@ -21,7 +21,6 @@ import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
-import de.metas.costing.CostPrice;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyConversionContext;
@@ -174,7 +173,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-	private IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -193,10 +191,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
 
-
 	@Override
 	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		return invoiceDAO.getByIdInTrx(invoiceId);
 	}
 
@@ -1976,6 +1974,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public I_C_InvoiceLine getLineById(final InvoiceLineId invoiceLineId)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		return invoiceDAO.getLineById(invoiceLineId);
 	}
 
