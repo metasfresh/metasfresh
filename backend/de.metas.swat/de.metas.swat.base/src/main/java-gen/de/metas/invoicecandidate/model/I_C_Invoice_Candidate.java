@@ -19,6 +19,27 @@ public interface I_C_Invoice_Candidate
 
 
 	/**
+	 * Set Act Load Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setActualLoadingDate (@Nullable java.sql.Timestamp ActualLoadingDate);
+
+	/**
+	 * Get Act Load Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getActualLoadingDate();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ActualLoadingDate = new ModelColumn<>(I_C_Invoice_Candidate.class, "ActualLoadingDate", null);
+	String COLUMNNAME_ActualLoadingDate = "ActualLoadingDate";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
