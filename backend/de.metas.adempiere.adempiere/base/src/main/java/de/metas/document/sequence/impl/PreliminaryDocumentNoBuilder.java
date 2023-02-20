@@ -5,7 +5,9 @@ import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.BillToCountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -18,6 +20,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,9 +69,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	private final AtomicBoolean _built = new AtomicBoolean(false);
 	private DocSequenceId _oldSequence_ID = null;  // lazy
 
-	/* package */ PreliminaryDocumentNoBuilder()
+	private final List<BillToCountryIdProvider> billToCountryIdProviders;
+
+	/* package */ PreliminaryDocumentNoBuilder(final List<BillToCountryIdProvider> billToCountryIdProviders)
 	{
 		super();
+		this.billToCountryIdProviders = billToCountryIdProviders;
 	}
 
 	@Override
@@ -109,7 +115,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		if (isDocNoControlled)
 		{
 			final DocTypeSequenceMap newDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
-			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), null); //TODO
+			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 			final boolean isNewDocumentNo = isNewDocumentNo() || !DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
 			if (isNewDocumentNo)
@@ -193,7 +199,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		}
 
 		final DocTypeSequenceMap oldDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
-		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), null);//TODO
+		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 	}
 
 	private Properties getCtx()
@@ -336,5 +342,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		final Object documentModel = getDocumentModel();
 		final Optional<java.util.Date> date = InterfaceWrapperHelper.getValue(documentModel, dateColumnName);
 		return date.orElse(null);
+	}
+
+	private CountryId getCountryId()
+	{
+		BillToCountryIdProvider.ProviderResult billToProviderResult = BillToCountryIdProvider.ProviderResult.EMPTY;
+		for(final BillToCountryIdProvider billToCountryIdProvider : billToCountryIdProviders)
+		{
+			billToProviderResult = billToCountryIdProvider.computeValueInfo(getDocumentModel());
+			if(billToProviderResult.hasCountryId())
+			{
+				break;
+			}
+		}
+		return billToProviderResult.getCountryIdOrNull();
 	}
 }

@@ -510,7 +510,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 					.setSkipGenerateDocumentNo(!isFailOnError());
 		}
 
-		DocSequenceId docSequenceId;
+		final DocSequenceId docSequenceId;
 		if (useDefiniteSequence)
 		{
 			if (!docType.isOverwriteSeqOnComplete())

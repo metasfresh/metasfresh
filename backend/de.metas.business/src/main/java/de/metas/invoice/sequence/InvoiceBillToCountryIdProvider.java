@@ -23,7 +23,6 @@
 package de.metas.invoice.sequence;
 
 import de.metas.document.sequence.BillToCountryIdProvider;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Check;
@@ -39,23 +38,40 @@ public class InvoiceBillToCountryIdProvider implements BillToCountryIdProvider
 {
 
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	public ProviderResult computeValueInfo(final Evaluatee eval)
 	{
-		String test = InterfaceWrapperHelper.getModelTableName(eval);
 		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(eval)))
 		{
 			return ProviderResult.EMPTY;
 		}
 
-		String test2 = eval.get_ValueAsString(I_C_Invoice.COLUMNNAME_IsSOTrx);
 		if(Objects.equals(eval.get_ValueAsString(I_C_Invoice.COLUMNNAME_IsSOTrx), "N"))
 		{
 			return ProviderResult.EMPTY;
 		}
+
 		final LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(eval.get_ValueAsInt(I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID, 0));
+		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId should be present");
+
+		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));
+	}
+
+	@Override
+	public ProviderResult computeValueInfo(final Object documentModel)
+	{
+		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(documentModel)))
+		{
+			return ProviderResult.EMPTY;
+		}
+
+		if(Objects.equals(InterfaceWrapperHelper.getValueOrNull(documentModel, I_C_Invoice.COLUMNNAME_IsSOTrx), "N"))
+		{
+			return ProviderResult.EMPTY;
+		}
+
+		final LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(InterfaceWrapperHelper.getValueOrNull(documentModel, I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID));
 		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId should be present");
 
 		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));

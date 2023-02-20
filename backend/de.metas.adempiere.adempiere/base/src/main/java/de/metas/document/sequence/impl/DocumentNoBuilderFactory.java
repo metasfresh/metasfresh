@@ -67,7 +67,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	@Override
 	public IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder()
 	{
-		return new PreliminaryDocumentNoBuilder();
+		return new PreliminaryDocumentNoBuilder(billToCountryIdProviders);
 	}
 
 	@Override

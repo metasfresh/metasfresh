@@ -35,7 +35,7 @@ public interface BillToCountryIdProvider
 	@Value
 	class ProviderResult
 	{
-		public static final BillToCountryIdProvider.ProviderResult EMPTY = null;
+		public static final BillToCountryIdProvider.ProviderResult EMPTY = new BillToCountryIdProvider.ProviderResult(null);
 
 		public static BillToCountryIdProvider.ProviderResult of(@NonNull final CountryId countryId)
 		{
@@ -61,4 +61,5 @@ public interface BillToCountryIdProvider
 	}
 
 	BillToCountryIdProvider.ProviderResult computeValueInfo(Evaluatee eval);
+	BillToCountryIdProvider.ProviderResult computeValueInfo(Object documentModel);
 }
