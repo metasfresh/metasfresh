@@ -105,10 +105,10 @@ class M_CostElement
 		// FIXME: this shall go in some DAO/Repository
 		final String productCategoriesUsingCostingMethod = queryBL
 				.createQueryBuilder(I_M_Product_Category_Acct.class)
-				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_AD_Client_ID, clientId)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costingMethod.getCode())
-				.andCollect(I_M_Product_Category_Acct.COLUMN_M_Product_Category_ID)
-				.orderBy(I_M_Product_Category.COLUMN_Name)
+				.andCollect(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, I_M_Product_Category.class)
+				.orderBy(I_M_Product_Category.COLUMNNAME_Name)
 				.create()
 				.setLimit(50)
 				.listDistinct(I_M_Product_Category.COLUMNNAME_Name, String.class)

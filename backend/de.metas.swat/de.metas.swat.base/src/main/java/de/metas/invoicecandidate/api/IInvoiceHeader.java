@@ -99,4 +99,8 @@ public interface IInvoiceHeader
 
 	@Nullable
 	LocalDate getOverrideDueDate();
+
+	void setC_PaymentInstruction_ID(int C_PaymentInstruction_ID);
+
+	int getC_PaymentInstruction_ID();
 }
