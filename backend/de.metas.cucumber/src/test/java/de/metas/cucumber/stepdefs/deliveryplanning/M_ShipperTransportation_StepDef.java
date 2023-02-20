@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.deliveryplanning;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
