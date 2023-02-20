@@ -168,8 +168,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			alloc.setM_InOutLine(null);
 			alloc.setIsActive(false); // NOTE: deactivating the line because we assume this method was called when a shipment was voided/reversed.
 			alloc.setDescription("Deactivated because the shipment line "
-					+ shipmentLine
-					+ " was voided or reversed. ");
+										 + shipmentLine
+										 + " was voided or reversed. ");
 			InterfaceWrapperHelper.save(alloc);
 		}
 	}
@@ -220,15 +220,16 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		{
 			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 			hu.setIsActive(true);
-
-			final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
-
-			if (locator.isAfterPickingLocator())
+			if (hu.getM_Locator_ID() > 0)
 			{
-				final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+				final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
+				if (locator.isAfterPickingLocator())
+				{
+					final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 
-				// Restore default locator
-				hu.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+					// Restore default locator
+					hu.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+				}
 			}
 		}
 
