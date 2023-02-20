@@ -620,6 +620,33 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class);
+	}
+
+	@Override
+	public void setC_PaymentInstruction(final org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class, C_PaymentInstruction);
+	}
+
+	@Override
+	public void setC_PaymentInstruction_ID (final int C_PaymentInstruction_ID)
+	{
+		if (C_PaymentInstruction_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentInstruction_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentInstruction_ID, C_PaymentInstruction_ID);
+	}
+
+	@Override
+	public int getC_PaymentInstruction_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentInstruction_ID);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -1267,7 +1294,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
 	}
-	/** 
+	/**
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
