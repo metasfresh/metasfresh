@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import de.metas.location.CountryId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -72,12 +73,27 @@ public final class DocTypeSequenceMap
 				.toString();
 	}
 
-	public DocSequenceId getDocNoSequenceId(final ClientId adClientId, final OrgId adOrgId)
+	public DocSequenceId getDocNoSequenceId(final ClientId adClientId, final OrgId adOrgId, final CountryId countryId)
 	{
 		if (!docTypeSequences.isEmpty())
 		{
-			final ArrayKey key = mkKey(adClientId, adOrgId);
-			final DocTypeSequence docTypeSequence = docTypeSequences.get(key);
+			ArrayKey key = mkKey(adClientId, adOrgId, countryId);
+			DocTypeSequence docTypeSequence = docTypeSequences.get(key);
+			if (docTypeSequence == null)
+			{
+				key = mkKey(adClientId, OrgId.ANY, countryId);
+				docTypeSequence = docTypeSequences.get(key);
+			}
+			if (docTypeSequence == null)
+			{
+				key = mkKey(adClientId, adOrgId, null);
+				docTypeSequence = docTypeSequences.get(key);
+			}
+			if (docTypeSequence == null)
+			{
+				key = mkKey(adClientId, OrgId.ANY, null);
+				docTypeSequence = docTypeSequences.get(key);
+			}
 			if (docTypeSequence != null)
 			{
 				return docTypeSequence.getDocSequenceId();
@@ -87,9 +103,9 @@ public final class DocTypeSequenceMap
 		return defaultDocNoSequenceId;
 	}
 
-	private static ArrayKey mkKey(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
+	private static ArrayKey mkKey(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId, @Nullable final CountryId countryId)
 	{
-		return Util.mkKey(adClientId, adOrgId);
+		return Util.mkKey(adClientId, adOrgId, countryId);
 	}
 
 	public static final class Builder
@@ -106,10 +122,10 @@ public final class DocTypeSequenceMap
 			return new DocTypeSequenceMap(this);
 		}
 
-		public void addDocSequenceId(final ClientId adClientId, final OrgId adOrgId, final DocSequenceId docSequenceId)
+		public void addDocSequenceId(final ClientId adClientId, final OrgId adOrgId, final DocSequenceId docSequenceId, final CountryId countryId)
 		{
-			final DocTypeSequence docTypeSequence = new DocTypeSequence(adClientId, adOrgId, docSequenceId);
-			final ArrayKey key = mkKey(docTypeSequence.getAdClientId(), docTypeSequence.getAdOrgId());
+			final DocTypeSequence docTypeSequence = new DocTypeSequence(adClientId, adOrgId, docSequenceId, countryId);
+			final ArrayKey key = mkKey(docTypeSequence.getAdClientId(), docTypeSequence.getAdOrgId(), docTypeSequence.getCountryId());
 
 			docTypeSequences.put(key, docTypeSequence);
 		}
@@ -122,20 +138,23 @@ public final class DocTypeSequenceMap
 	}
 
 	@Value
-	private static final class DocTypeSequence
+	private static class DocTypeSequence
 	{
-		private final ClientId adClientId;
-		private final OrgId adOrgId;
-		private final DocSequenceId docSequenceId;
+		ClientId adClientId;
+		OrgId adOrgId;
+		DocSequenceId docSequenceId;
+		CountryId countryId;
 
 		private DocTypeSequence(
 				@Nullable final ClientId adClientId,
 				@Nullable final OrgId adOrgId,
-				@NonNull final DocSequenceId docSequenceId)
+				@NonNull final DocSequenceId docSequenceId,
+				@Nullable final CountryId countryId)
 		{
 			this.adClientId = adClientId != null ? adClientId : ClientId.SYSTEM;
 			this.adOrgId = adOrgId != null ? adOrgId : OrgId.ANY;
 			this.docSequenceId = docSequenceId;
+			this.countryId = countryId;
 		}
 	}
 }

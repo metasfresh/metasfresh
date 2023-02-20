@@ -28,6 +28,7 @@ import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.BillToCountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -89,8 +90,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private boolean _failOnError = false; // default=false, for backward compatibility
 	private boolean _usePreliminaryDocumentNo = false; // default=false, for backward compatibility
 
-	DocumentNoBuilder()
+	private final List<BillToCountryIdProvider> billToCountryIdProviders;
+
+	DocumentNoBuilder(List<BillToCountryIdProvider> billToCountryIdProviders)
 	{
+		this.billToCountryIdProviders = billToCountryIdProviders;
 	}
 
 	@Override
@@ -506,7 +510,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 					.setSkipGenerateDocumentNo(!isFailOnError());
 		}
 
-		final DocSequenceId docSequenceId;
+		DocSequenceId docSequenceId;
 		if (useDefiniteSequence)
 		{
 			if (!docType.isOverwriteSeqOnComplete())
@@ -523,8 +527,19 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 		else
 		{
+
+			BillToCountryIdProvider.ProviderResult billToProviderResult = BillToCountryIdProvider.ProviderResult.EMPTY;
+			for(final BillToCountryIdProvider billToCountryIdProvider : billToCountryIdProviders)
+			{
+				billToProviderResult = billToCountryIdProvider.computeValueInfo(_evalContext);
+				if(billToProviderResult.hasCountryId())
+				{
+					break;
+				}
+			}
+
 			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), billToProviderResult.getCountryIdOrNull());
 			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);

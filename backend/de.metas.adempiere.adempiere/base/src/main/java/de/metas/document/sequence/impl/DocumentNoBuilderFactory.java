@@ -5,9 +5,11 @@ package de.metas.document.sequence.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.document.sequence.BillToCountryIdProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IClientOrgAware;
@@ -31,6 +33,7 @@ import lombok.NonNull;
 public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 {
 	private final List<ValueSequenceInfoProvider> additionalProviders;
+	private final List<BillToCountryIdProvider> billToCountryIdProviders = new ArrayList<>();
 
 	public DocumentNoBuilderFactory(@NonNull final Optional<List<ValueSequenceInfoProvider>> providers)
 	{
@@ -54,6 +57,12 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 			return ProviderResult.of(documentSequenceInfo);
 		};
 	};
+
+	@Override
+	public void registerBillToCountryProvider(@NonNull final BillToCountryIdProvider billToCountryIdProvider)
+	{
+		this.billToCountryIdProviders.add(billToCountryIdProvider);
+	}
 
 	@Override
 	public IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder()
@@ -100,7 +109,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	@Override
 	public DocumentNoBuilder createDocumentNoBuilder()
 	{
-		return new DocumentNoBuilder();
+		return new DocumentNoBuilder(billToCountryIdProviders);
 	}
 
 	@Override

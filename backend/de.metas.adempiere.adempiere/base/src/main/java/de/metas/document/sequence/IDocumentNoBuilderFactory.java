@@ -10,6 +10,8 @@ public interface IDocumentNoBuilderFactory extends ISingletonService
 {
 	IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder();
 
+	void registerBillToCountryProvider(BillToCountryIdProvider billToCountryIdProvider);
+
 	/**
 	 * Convenience method to create and prepare the builder for a given tableName.<br>
 	 * (There doesn't have to be a "real" AD_Table).

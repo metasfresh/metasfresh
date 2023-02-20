@@ -109,7 +109,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		if (isDocNoControlled)
 		{
 			final DocTypeSequenceMap newDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
-			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), null); //TODO
 			final boolean isNewDocumentNo = isNewDocumentNo() || !DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
 			if (isNewDocumentNo)
@@ -193,7 +193,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		}
 
 		final DocTypeSequenceMap oldDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
-		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), null);//TODO
 	}
 
 	private Properties getCtx()

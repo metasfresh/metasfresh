@@ -9,6 +9,7 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.JavaClassId;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -26,6 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_DocType_CountryBased;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_Sequence_No;
 import org.compiere.model.I_C_DocType;
@@ -197,7 +199,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return retrieveDocTypeSequenceMap(ctx, docTypeId);
 	}
 
-	@Cached(cacheName = I_C_DocType_Sequence.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
+	@Cached(cacheName = I_C_DocType_Sequence.Table_Name + "#and#" + I_AD_DocType_CountryBased.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
 	public DocTypeSequenceMap retrieveDocTypeSequenceMap(@CacheCtx final Properties ctx, final int docTypeId)
 	{
 		final DocTypeSequenceMap.Builder docTypeSequenceMapBuilder = DocTypeSequenceMap.builder();
@@ -218,7 +220,23 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			final ClientId adClientId = ClientId.ofRepoId(docTypeSequenceDef.getAD_Client_ID());
 			final OrgId adOrgId = OrgId.ofRepoId(docTypeSequenceDef.getAD_Org_ID());
 			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeSequenceDef.getDocNoSequence_ID());
-			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId);
+			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, null);
+		}
+
+		final List<I_AD_DocType_CountryBased> docTypeCountryBasedSequenceDefs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_DocType_CountryBased.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_DocType_CountryBased.COLUMNNAME_C_DocType_ID, docTypeId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_AD_DocType_CountryBased.class);
+
+		for (final I_AD_DocType_CountryBased docTypeCountryBasedSequenceDef : docTypeCountryBasedSequenceDefs)
+		{
+			final ClientId adClientId = ClientId.ofRepoId(docTypeCountryBasedSequenceDef.getAD_Client_ID());
+			final OrgId adOrgId = OrgId.ofRepoId(docTypeCountryBasedSequenceDef.getAD_Org_ID());
+			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeCountryBasedSequenceDef.getDocNoSequence_ID());
+			final CountryId countryId = CountryId.ofRepoId(docTypeCountryBasedSequenceDef.getC_Country_ID());
+			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId);
 		}
 
 		return docTypeSequenceMapBuilder.build();
