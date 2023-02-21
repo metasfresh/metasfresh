@@ -39,13 +39,9 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.ICurrencyBL;
+import de.metas.costing.methods.MovingAverageInvoiceAmts;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
-import de.metas.order.OrderLineId;
-import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -517,6 +513,29 @@ public class CostingService implements ICostingService
 		}
 
 		return result;
+	}
+
+
+
+	public Stream<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+	{
+		final CostElement costElement = request.getCostElement();
+		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
+				.stream()
+				.map(handler -> {
+					try
+					{
+						return handler.createCOGS(request);
+					}
+					catch (final Exception ex)
+					{
+						throw AdempiereException.wrapIfNeeded(ex)
+								.setParameter("request", request)
+								.appendParametersToMessage();
+					}
+				})
+				.filter(Optional::isPresent)
+				.map(Optional::get);
 	}
 
 	@Override

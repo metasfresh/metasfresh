@@ -28,7 +28,12 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
+import de.metas.costing.methods.MovingAverageInvoiceAmts;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
@@ -37,18 +42,27 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -61,6 +75,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
@@ -84,6 +99,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	// services
 	private static final Logger logger = LogManager.getLogger(Doc_MatchInv.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final transient IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -288,6 +305,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// If both accounts Not Invoiced Receipts and Inventory Clearing are equal
 		// then remove the posting
 		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr_NotInvoicedReceipts, cr_InventoryClearing, this::isInterOrg);
+		if (CostingMethod.MovingAverageInvoice.equals(as.getCosting().getCostingMethod()))
+		{
+			services.
+		}
 
 		//
 		// Invoice Price Variance difference
@@ -466,7 +487,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return _receiptLine;
 	}
 
-	private I_M_InOut getReceipt() {return _receipt;}
+	private I_M_InOut getReceipt()
+	{
+		return _receipt;
+	}
 
 	private int getReceipt_Org_ID()
 	{
@@ -566,21 +590,50 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
+
 		return services
 				.createCostDetail(CostDetailCreateRequest.builder()
-						.acctSchemaId(as.getId())
-						.clientId(getClientId())
-						.orgId(getOrgId())
-						.productId(getProductId())
-						.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
-						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
-						.qty(matchQty)
-						.amt(matchAmt)
-						.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
-						.date(getDateAcct().toInstant(services::getTimeZone))
-						.description(getDescription())
-						.build())
+										  .acctSchemaId(as.getId())
+										  .clientId(getClientId())
+										  .orgId(getOrgId())
+										  .productId(getProductId())
+										  .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
+										  .documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
+										  .qty(matchQty)
+										  .amt(matchAmt)
+										  .currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
+										  .date(getDateAcct().toInstant(services::getTimeZone))
+										  .description(getDescription())
+										  .build())
 				.getTotalAmountToPost(as);
+	}
+
+	private MovingAverageInvoiceAmts getCOGSAmt(final AcctSchema as)
+	{
+		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
+
+		final CostAmount matchAmt = CostAmount.of(getInvoiceLineMatchedAmt(), getInvoiceCurrencyId());
+
+		final I_M_InOutLine receiptLine = getReceiptLine();
+		final I_M_InOut receipt = inOutBL.getById(InOutId.ofRepoId(receiptLine.getM_InOut_ID()));
+		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
+		final Quantity matchQty = isReturnTrx ? getQty().negate() : getQty();
+
+		final I_M_MatchInv matchInv = getM_MatchInv();
+		return services.getco(CostDetailCreateRequest.builder()
+										   .acctSchemaId(as.getId())
+										   .clientId(getClientId())
+										   .orgId(getOrgId())
+										   .productId(getProductId())
+										   .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
+										   .documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
+										   .qty(matchQty)
+										   .amt(matchAmt)
+										   .currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
+										   .date(getDateAcct().toInstant(services::getTimeZone))
+										   .description(getDescription())
+										   .build());
+
 	}
 
 }   // Doc_MatchInv

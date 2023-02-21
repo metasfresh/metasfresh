@@ -46,6 +46,8 @@ public interface CostingMethodHandler
 
 	MoveCostsResult createMovementCosts(@NonNull MoveCostsRequest request);
 
+	Optional<MovingAverageInvoiceAmts> createCOGS(CostDetailCreateRequest request);
+
 	void voidCosts(CostDetailVoidRequest request);
 
 	CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(CostDetail costDetail, CurrentCost currentCost);

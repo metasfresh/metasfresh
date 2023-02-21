@@ -1,9 +1,11 @@
 package de.metas.costing;
 
+import de.metas.costing.methods.MovingAverageInvoiceAmts;
 import de.metas.i18n.ExplainedOptional;
 import lombok.NonNull;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -44,6 +46,8 @@ public interface ICostingService
 	Optional<CostPrice> getCurrentCostPrice(
 			CostSegment costSegment,
 			CostingMethod costingMethod);
+
+	Optional<MovingAverageInvoiceAmts> createCOGS(@NonNull CostDetailCreateRequest request);
 
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }
