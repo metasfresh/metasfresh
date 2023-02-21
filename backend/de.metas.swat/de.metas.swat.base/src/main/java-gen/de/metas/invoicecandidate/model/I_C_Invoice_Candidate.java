@@ -3746,4 +3746,29 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Payment Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentInstruction_ID (int C_PaymentInstruction_ID);
+
+	/**
+	 * Get Payment Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentInstruction_ID();
+
+	@Nullable org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction();
+
+	void setC_PaymentInstruction(@Nullable org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentInstruction> COLUMN_C_PaymentInstruction_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PaymentInstruction_ID", org.compiere.model.I_C_PaymentInstruction.class);
+	String COLUMNNAME_C_PaymentInstruction_ID = "C_PaymentInstruction_ID";
 }
