@@ -16,7 +16,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
@@ -51,16 +50,18 @@ public class C_AcctSchema
 {
 	private final IAcctSchemaDAO acctSchemaDAO;
 	private final ICostElementRepository costElementRepo;
-	private final CurrentCostsRepository currentCostsRepository = SpringContextHolder.instance.getBean(CurrentCostsRepository.class);
+	private final CurrentCostsRepository currentCostsRepository;
 
 	private final static AdMessageKey MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS = AdMessageKey.of("de.metas.acct.AcctSchema.hasCosts");
 
 	public C_AcctSchema(
 			@NonNull final IAcctSchemaDAO acctSchemaDAO,
-			@NonNull final ICostElementRepository costElementRepo)
+			@NonNull final ICostElementRepository costElementRepo,
+			@NonNull final CurrentCostsRepository currentCostsRepository)
 	{
 		this.acctSchemaDAO = acctSchemaDAO;
 		this.costElementRepo = costElementRepo;
+		this.currentCostsRepository = currentCostsRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -147,7 +148,8 @@ public class C_AcctSchema
 		final PO po = InterfaceWrapperHelper.getPO(acctSchema);
 
 		final CurrencyId previousCurrencyId = CurrencyId.ofRepoIdOrNull(po.get_ValueOldAsInt(I_C_AcctSchema.COLUMNNAME_C_Currency_ID));
-		if (previousCurrencyId != null && currentCostsRepository.hasCostsInCurrency(acctSchema, previousCurrencyId))
+
+		if (previousCurrencyId != null && currentCostsRepository.hasCostsInCurrency(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()), previousCurrencyId))
 		{
 			throw new AdempiereException(MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS);
 		}
