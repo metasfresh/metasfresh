@@ -2,7 +2,8 @@
 Feature: Import Invoice Candidates via DataImportRestController
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2022-09-01T13:30:13+02:00[Europe/Berlin]
     And  metasfresh initially has no I_Invoice_Candidate data
@@ -45,9 +46,12 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | billBPUser_1          | BillBPartnerContact_1 | billBpartner_1               | billBPLocation_1                      |
+    And metasfresh contains C_Activity:
+      | C_Activity_ID.Identifier | Value         | Name         |
+      | activity                 | ActivityValue | ActivityName |
     And store DataImport string requestBody in context
-      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.OrgCode | OPT.X12DE355 | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule |
-      | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               |
+      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.OrgCode | OPT.X12DE355 | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | OPT.C_Activity_Value |
+      | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               | ActivityValue        |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -61,8 +65,8 @@ Feature: Import Invoice Candidates via DataImportRestController
       | AD_Org_ID.Identifier | Value |
       | importOrg            | 001   |
     And I_Invoice_Candidate is found: searching by product value
-      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | I_IsImported |
-      | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | importOrg            | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |
+      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | I_IsImported | OPT.C_Activity_ID.Identifier |
+      | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | importOrg            | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |          activity                    |
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.DateOrdered | OPT.QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | InvoiceRule |
       | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | importOrg            | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | D           |
