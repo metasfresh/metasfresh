@@ -47,11 +47,11 @@ Feature: Import Invoice Candidates via DataImportRestController
       | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | billBPUser_1          | BillBPartnerContact_1 | billBpartner_1               | billBPLocation_1                      |
     And metasfresh contains C_Activity:
-      | C_Activity_ID.Identifier | Value         | Name         |
-      | activity                 | ActivityValue | ActivityName |
+      | C_Activity_ID.Identifier | Value                | Name                |
+      | activity                 | ActivityValue_210222 | ActivityName_210222 |
     And store DataImport string requestBody in context
       | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.OrgCode | OPT.X12DE355 | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | OPT.C_Activity_Value |
-      | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               | ActivityValue        |
+      | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | 001         | PCE          | true    | ARI             | EA             | 2022-08-26             | DescriptionTest | PORef           | D               | ActivityValue_210222 |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
@@ -66,7 +66,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | importOrg            | 001   |
     And I_Invoice_Candidate is found: searching by product value
       | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | I_IsImported | OPT.C_Activity_ID.Identifier |
-      | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | importOrg            | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |          activity                    |
+      | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | importOrg            | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            | activity                     |
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.DateOrdered | OPT.QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | InvoiceRule |
       | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | importOrg            | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | D           |
@@ -129,6 +129,7 @@ Feature: Import Invoice Candidates via DataImportRestController
   _And DocBaseType + DocSubType don't reference any existing C_DocType
   _And qtyOrdered and qtyDelivered have different signs
   _And orgCode and uomCode don't match any records
+  _And C_Activity_Value doesn't match any records
   _When importing the record
   _Then processing errors are saved in I_ErrorMsg column
     Given metasfresh contains M_Products:
@@ -147,14 +148,14 @@ Feature: Import Invoice Candidates via DataImportRestController
       | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | billBPUser_3          | BillBPartnerContact_3 | billBpartner_3               | billBPLocation_3                      |
     And store DataImport string requestBody in context
-      | OPT.Bill_BPartner_Value       | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | OPT.M_Product_Value                | QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.OrgCode | OPT.X12DE355 |
-      | someNonExistingBPValue_280822 | billBPLocation_3            | billBPUser_3            | someNonExistingProductValue_280822 | 2          | -2               | true    | ARI             | VI             | 005         | PCR          |
+      | OPT.Bill_BPartner_Value       | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | OPT.M_Product_Value                | QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.DocBaseType | OPT.DocSubType | OPT.OrgCode | OPT.X12DE355 | OPT.C_Activity_Value |
+      | someNonExistingBPValue_280822 | billBPLocation_3            | billBPUser_3            | someNonExistingProductValue_280822 | 2          | -2               | true    | ARI             | VI             | 005         | PCR          | SomeNonExistingValue |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '400' status code
 
     Then I_Invoice_Candidate is found: searching by product value
-      | M_Product_Value                    | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                                                                                                                                                                                                                                                                        |
-      | someNonExistingProductValue_280822 | iInvoiceCandidate_3               | E            | ERR = Mandatory C_Invoice_Candidate.Bill_BPartner_ID is missing!, ERR = M_Product_ID is missing!, ERR = C_DocType_ID not found for provided ( DocBaseType, DocSubType, IsSOTrx )!, ERR = Could not find any matching AD_Org_ID for provided OrgCode !, ERR = Could not find any matching C_UOM_ID for provided UOMCode !, ERR = QtyOrdered and QtyDelivered must have the same sign!, |
+      | M_Product_Value                    | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+      | someNonExistingProductValue_280822 | iInvoiceCandidate_3               | E            | ERR = Mandatory C_Invoice_Candidate.Bill_BPartner_ID is missing!, ERR = M_Product_ID is missing!, ERR = C_DocType_ID not found for provided ( DocBaseType, DocSubType, IsSOTrx )!, ERR = Could not find any matching AD_Org_ID for provided OrgCode !, ERR = Could not find any matching C_UOM_ID for provided UOMCode !, ERR = QtyOrdered and QtyDelivered must have the same sign!, ERR = Could not find any matching C_Activity_ID for provided activity value!, |
 
 
   @from:cucumber

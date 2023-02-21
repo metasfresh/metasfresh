@@ -187,10 +187,7 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setRecord_ID(recordReference.getRecord_ID());
 		}
 
-		if (ic.getActivityId() != null)
-		{
-			icRecord.setC_Activity_ID(ic.getActivityId().getRepoId());
-		}
+		icRecord.setC_Activity_ID(ActivityId.toRepoId(ic.getActivityId()));
 
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
@@ -258,6 +255,7 @@ public class ExternallyReferencedCandidateRepository
 		return result.build();
 	}
 
+	@NonNull
 	private ExternallyReferencedCandidate forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
