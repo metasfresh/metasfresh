@@ -6,7 +6,7 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -50,14 +50,14 @@ public class C_AcctSchema
 {
 	private final IAcctSchemaDAO acctSchemaDAO;
 	private final ICostElementRepository costElementRepo;
-	private final CurrentCostsRepository currentCostsRepository;
+	private final ICurrentCostsRepository currentCostsRepository;
 
 	private final static AdMessageKey MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS = AdMessageKey.of("de.metas.acct.AcctSchema.hasCosts");
 
 	public C_AcctSchema(
 			@NonNull final IAcctSchemaDAO acctSchemaDAO,
 			@NonNull final ICostElementRepository costElementRepo,
-			@NonNull final CurrentCostsRepository currentCostsRepository)
+			@NonNull final ICurrentCostsRepository currentCostsRepository)
 	{
 		this.acctSchemaDAO = acctSchemaDAO;
 		this.costElementRepo = costElementRepo;
