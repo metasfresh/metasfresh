@@ -231,6 +231,8 @@ public class I_Invoice_Candidate_StepDef
 			softly.assertThat(invoiceCandidate.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
 		}
 
+		softly.assertAll();
+
 		final String iInvoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 		iInvoiceCandidateTable.putOrReplace(iInvoiceCandIdentifier, invoiceCandidate);
 	}
