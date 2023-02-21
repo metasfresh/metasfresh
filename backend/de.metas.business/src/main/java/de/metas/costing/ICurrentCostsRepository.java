@@ -1,14 +1,16 @@
 package de.metas.costing;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.money.CurrencyId;
+import lombok.NonNull;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -58,4 +60,6 @@ public interface ICurrentCostsRepository
 	List<CurrentCost> getByCostSegmentAndCostElements(CostSegment costSegment, Set<CostElementId> costElementIds);
 
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
+
+	boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId);
 }

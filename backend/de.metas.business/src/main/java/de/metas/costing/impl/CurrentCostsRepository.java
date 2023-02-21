@@ -423,4 +423,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		saveRecord(costRecord);
 	}
 
+	public boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.anyMatch();
+	}
+
 }
