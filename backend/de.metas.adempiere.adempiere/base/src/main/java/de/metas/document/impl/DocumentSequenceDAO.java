@@ -1,5 +1,6 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeSequenceMap;
@@ -25,6 +26,7 @@ import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_DocType_CountryBased;
@@ -93,7 +95,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.map(DocumentSequenceDAO::toDocumentSequenceInfo);
 	}
 
-	private DocumentSequenceInfo createDocumentSequence(ClientId adClientId, String sequenceName)
+	private DocumentSequenceInfo createDocumentSequence(final ClientId adClientId, final String sequenceName)
 	{
 		final I_AD_Sequence record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Sequence.class);
 		InterfaceWrapperHelper.setValue(record, I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId);
@@ -147,7 +149,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		{
 			return StringExpressionCompiler.instance.compile(expr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed compiling '{}' string expression. Using it as is", expr, ex);
 			return ConstantStringExpression.ofNullable(expr);
@@ -199,8 +201,20 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		return retrieveDocTypeSequenceMap(ctx, docTypeId);
 	}
 
-	@Cached(cacheName = I_C_DocType_Sequence.Table_Name + "#and#" + I_AD_DocType_CountryBased.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
+	private final CCache<Integer, DocTypeSequenceMap>
+			docTypeSequenceMapCache = CCache.<Integer, DocTypeSequenceMap> builder()
+			.cacheName(I_C_DocType_Sequence.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
+			.additionalTableNameToResetFor(I_C_DocType_Sequence.Table_Name)
+			.additionalTableNameToResetFor(I_AD_DocType_CountryBased.Table_Name)
+			.initialCapacity(500)
+			.build();
+
 	public DocTypeSequenceMap retrieveDocTypeSequenceMap(@CacheCtx final Properties ctx, final int docTypeId)
+	{
+		return docTypeSequenceMapCache.getOrLoad(docTypeId, () -> retrieveDocTypeSequenceMap0(ctx, docTypeId));
+	}
+
+	public DocTypeSequenceMap retrieveDocTypeSequenceMap0(final Properties ctx, final int docTypeId)
 	{
 		final DocTypeSequenceMap.Builder docTypeSequenceMapBuilder = DocTypeSequenceMap.builder();
 

@@ -73,7 +73,7 @@ public final class DocTypeSequenceMap
 				.toString();
 	}
 
-	public DocSequenceId getDocNoSequenceId(final ClientId adClientId, final OrgId adOrgId, final CountryId countryId)
+	public DocSequenceId getDocNoSequenceId(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId, @Nullable final CountryId countryId)
 	{
 		if (!docTypeSequences.isEmpty())
 		{
