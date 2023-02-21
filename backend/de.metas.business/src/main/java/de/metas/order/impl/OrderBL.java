@@ -94,6 +94,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -145,6 +147,7 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
 	{
@@ -1250,4 +1253,68 @@ public class OrderBL implements IOrderBL
 		order.setIsOnConsignment(isOnConsignment);
 		save(order);
 	}
+
+	@Override
+	public void markAsDropShipIfDropShipWarehouse(@NonNull final I_C_Order order)
+	{
+		if (order.isDropShip())
+		{
+			return;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+
+		if (!warehouseBL.isDropShipWarehouse(warehouseId, orgId))
+		{
+			return;
+		}
+
+		order.setIsDropShip(true);
+
+	}
+
+	@Override
+	public void setBillToDefaultLocationAsDefaultIfDropShipSO(@NonNull final I_C_Order order)
+	{
+		if (!validOrder(order))
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location billToLocation = Optional.ofNullable(bpartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder()
+																													  .bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+																													  .type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+																													  .build()))
+				.orElseThrow(() -> new AdempiereException("No BillTo Address found for BPartner!")
+						.appendParametersToMessage()
+						.setParameter(de.metas.adempiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID, order.getC_BPartner_ID())
+						.setParameter(de.metas.adempiere.model.I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID()));
+
+		order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+	}
+
+	private boolean validOrder(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			//only sales orders are relevant
+			return false;
+		}
+
+		if (!order.isDropShip())
+		{
+			//only dropShip orders are relevant
+			return false;
+		}
+
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			//no billToDefault location exists if no partner is assigned
+			return false;
+		}
+
+		return true;
+	}
 }
+

@@ -556,46 +556,15 @@ public class C_Order
 		}
 	}
 
-	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_M_Warehouse_ID })
-	public void markAsDropShipIfDropShipWarehouse(@NonNull final I_C_Order order)
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_M_Warehouse_ID, I_C_Order.COLUMNNAME_IsDropShip })
+	public void handleDropShipRelatedColumns(@NonNull final I_C_Order order)
 	{
-		if (order.getM_Warehouse_ID() <= 0)
+		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
 		{
-			return;
+			orderBL.markAsDropShipIfDropShipWarehouse(order);
 		}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
-		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
-
-		if (!warehouseBL.isDropShipWarehouse(warehouseId, orgId))
-		{
-			return;
-		}
-
-		if (!order.isDropShip())
-		{
-			order.setIsDropShip(true);
-		}
-	}
-
-	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_IsDropShip, I_C_Order.COLUMNNAME_M_Warehouse_ID })
-	public void setBillToDefaultLocationAsDefaultIfDropShipSO(@NonNull final I_C_Order order)
-	{
-		if (!validOrder(order))
-		{
-			return;
-		}
-
-		final I_C_BPartner_Location billToLocation = Optional.ofNullable(bpartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder()
-																													  .bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-																													  .type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
-																													  .build()))
-				.orElseThrow(() -> new AdempiereException("No BillTo Address found for BPartner!")
-						.appendParametersToMessage()
-						.setParameter(I_C_Order.COLUMNNAME_C_BPartner_ID, order.getC_BPartner_ID())
-						.setParameter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID()));
-
-		order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+		orderBL.setBillToDefaultLocationAsDefaultIfDropShipSO(order);
 	}
 
 	private void validateSupplierApprovals(final I_C_Order order)
@@ -626,28 +595,5 @@ public class C_Order
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
 		}
-	}
-
-	private boolean validOrder(@NonNull final I_C_Order order)
-	{
-		if (!order.isSOTrx())
-		{
-			//only sales orders are relevant
-			return false;
-		}
-
-		if (!order.isDropShip())
-		{
-			//only dropShip orders are relevant
-			return false;
-		}
-
-		if (order.getC_BPartner_ID() <= 0)
-		{
-			//no billToDefault location exists if no partner is assigned
-			return false;
-		}
-
-		return true;
 	}
 }
