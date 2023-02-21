@@ -41,6 +41,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -141,6 +142,7 @@ public class ImportInvoiceCandidatesService
 				.userInChargeId(UserId.ofRepoIdOrNull(record.getAD_User_InCharge_ID()))
 				.recordReference(recordReference)
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.build();
 	}
 

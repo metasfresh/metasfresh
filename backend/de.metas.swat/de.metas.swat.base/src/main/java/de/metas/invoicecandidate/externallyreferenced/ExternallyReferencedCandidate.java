@@ -35,6 +35,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
@@ -76,7 +77,8 @@ public class ExternallyReferencedCandidate
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
 				.soTrx(newIC.getSoTrx())
-				.invoiceDetailItems(newIC.getInvoiceDetailItems());
+				.invoiceDetailItems(newIC.getInvoiceDetailItems())
+				.activityId(newIC.getActivityId());
 	}
 
 	private final OrgId orgId;
@@ -135,6 +137,9 @@ public class ExternallyReferencedCandidate
 
 	private UserId userInChargeId;
 
+	@Nullable
+	private ActivityId activityId;
+
 	private List<InvoiceDetailItem> invoiceDetailItems;
 
 	/**
@@ -170,6 +175,7 @@ public class ExternallyReferencedCandidate
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final UserId userInChargeId,
+			@Nullable final ActivityId activityId,
 			@Nullable final String lineDescription,
 			@Nullable final String descriptionBottom,
 			@Nullable final TableRecordReference recordReference,
@@ -202,6 +208,7 @@ public class ExternallyReferencedCandidate
 		this.lineDescription = lineDescription;
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
+		this.activityId = activityId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 

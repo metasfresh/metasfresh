@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
@@ -42,6 +43,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -68,6 +70,7 @@ public class I_Invoice_Candidate_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_UOM_StepDefData uomTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_Activity_StepDefData activityTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -80,7 +83,8 @@ public class I_Invoice_Candidate_StepDef
 			@NonNull final AD_User_StepDefData contactTable,
 			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_UOM_StepDefData uomTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.iInvoiceCandidateTable = iInvoiceCandidateTable;
 		this.bpartnerTable = bpartnerTable;
@@ -90,6 +94,7 @@ public class I_Invoice_Candidate_StepDef
 		this.docTypeTable = docTypeTable;
 		this.uomTable = uomTable;
 		this.orgTable = orgTable;
+		this.activityTable = activityTable;
 	}
 
 	@And("I_Invoice_Candidate is found: searching by product value")
@@ -216,6 +221,13 @@ public class I_Invoice_Candidate_StepDef
 		else
 		{
 			assertThat(invoiceCandidate.getC_UOM_ID()).isEqualTo(product.getC_UOM_ID());
+		}
+
+		final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(activityIdentifier))
+		{
+			final I_C_Activity activity = activityTable.get(activityIdentifier);
+			assertThat(invoiceCandidate.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
 		}
 
 		final String iInvoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);

@@ -31,6 +31,7 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -47,6 +48,8 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_B
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_Activity_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_Activity_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_DocType_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_UOM_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Default_OrgCode;
@@ -81,6 +84,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		dbUpdateUOM(selection);
 		dbUpdateDocBaseType(selection);
 		dbUpdateInvoiceRule(selection);
+		dbUpdateActivity(selection);
 
 		dbUpdateErrorMessages(selection);
 	}
@@ -237,6 +241,26 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
+	private static void dbUpdateActivity(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sqlActivityId = "SELECT " + COLUMNNAME_C_Activity_ID
+				+ " FROM " + I_C_Activity.Table_Name + " a"
+				+ " WHERE a." + COLUMNNAME_Value + " = i." + COLUMNNAME_C_Activity_Value
+				+ " AND a." + COLUMNNAME_AD_Client_ID + " = i." + COLUMNNAME_AD_Client_ID
+				+ " AND a." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND a." + COLUMNNAME_IsActive + "= 'Y'"
+				+ " ORDER BY a." + COLUMNNAME_AD_Org_ID + " DESC"
+				+ " LIMIT 1";
+
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_C_Activity_ID + " = (" + sqlActivityId + ")"
+				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ " AND i." + COLUMNNAME_C_Activity_ID + " IS NULL "
+				+ selection.toSqlWhereClause("i");
+
+		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
 		final String missingMandatoryFieldMessage = "Mandatory " + I_C_Invoice_Candidate.Table_Name + ".";
@@ -270,6 +294,9 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		updateUOMErrorMessage(selection);
 
 		updateQtyErrormessage(selection);
+
+		//No C_Activity_ID
+		updateActivityErrorMessage(selection);
 	}
 
 	private void updateErrorMessage(
@@ -378,5 +405,21 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void updateActivityErrorMessage(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Could not find any matching C_Activity_ID for provided activity value !" + ", '"
+				+ " WHERE i." + COLUMNNAME_C_Activity_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_C_Activity_Value + " IS NOT NULL "
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ selection.toSqlWhereClause("i");
+
+		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No " + COLUMNNAME_C_Activity_ID + " = {}", no);
+		}
 	}
 }

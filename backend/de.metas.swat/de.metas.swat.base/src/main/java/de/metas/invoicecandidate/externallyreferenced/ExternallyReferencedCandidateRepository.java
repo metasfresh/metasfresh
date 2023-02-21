@@ -49,6 +49,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -186,6 +187,11 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setRecord_ID(recordReference.getRecord_ID());
 		}
 
+		if (ic.getActivityId() != null)
+		{
+			icRecord.setC_Activity_ID(ic.getActivityId().getRepoId());
+		}
+
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 
@@ -317,6 +323,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+
+		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
 
 		return candidate.build();
 	}
