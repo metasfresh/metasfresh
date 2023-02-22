@@ -27,6 +27,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,6 +43,7 @@ import java.util.List;
 public class C_DocType_Sequence
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private static final AdMessageKey MSG_COUNTRY_ID_PROVIDER_DOESNT_EXIST_FOR_DOCBASETYPE = AdMessageKey.of("C_DocType_Sequence_countryId_provider_missing");
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE},
 			ifColumnsChanged = I_C_DocType_Sequence.COLUMNNAME_C_Country_ID)
@@ -59,7 +61,7 @@ public class C_DocType_Sequence
 				return;
 			}
 		}
-		throw new AdempiereException("This Document Base Type doesn't support country-based-Sequences, pls select country 'none'");
+		throw new AdempiereException(MSG_COUNTRY_ID_PROVIDER_DOESNT_EXIST_FOR_DOCBASETYPE);
 	}
 
 }

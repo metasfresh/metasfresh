@@ -1,7 +1,7 @@
 package de.metas.document.sequence.impl;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
@@ -114,8 +114,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		final boolean isDocNoControlled = newDocType.isDocNoControlled();
 		if (isDocNoControlled)
 		{
-			final DocTypeSequenceMap newDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
-			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
+			final DocTypeSequenceList newDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
+			final DocSequenceId newDocSequenceId = newDocTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 			final boolean isNewDocumentNo = isNewDocumentNo() || !DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
 			if (isNewDocumentNo)
@@ -198,8 +198,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 			return null;
 		}
 
-		final DocTypeSequenceMap oldDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
-		return oldDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
+		final DocTypeSequenceList oldDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
+		return oldDocTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 	}
 
 	private Properties getCtx()

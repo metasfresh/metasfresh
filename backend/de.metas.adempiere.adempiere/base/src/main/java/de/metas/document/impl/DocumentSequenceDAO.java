@@ -2,7 +2,7 @@ package de.metas.document.impl;
 
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
@@ -192,7 +192,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 	}
 
 	@Override
-	public DocTypeSequenceMap retrieveDocTypeSequenceMap(final I_C_DocType docType)
+	public DocTypeSequenceList retrieveDocTypeSequenceMap(final I_C_DocType docType)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(docType);
 		final int docTypeId = docType.getC_DocType_ID();
@@ -200,9 +200,9 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 	}
 
 	@Cached(cacheName = I_C_DocType_Sequence.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
-	public DocTypeSequenceMap retrieveDocTypeSequenceMap(@CacheCtx final Properties ctx, final int docTypeId)
+	public DocTypeSequenceList retrieveDocTypeSequenceMap(@CacheCtx final Properties ctx, final int docTypeId)
 	{
-		final DocTypeSequenceMap.Builder docTypeSequenceMapBuilder = DocTypeSequenceMap.builder();
+		final DocTypeSequenceList.Builder docTypeSequenceMapBuilder = DocTypeSequenceList.builder();
 
 		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, ITrx.TRXNAME_None);
 		final DocSequenceId docNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getDocNoSequence_ID());
@@ -212,6 +212,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.createQueryBuilder(I_C_DocType_Sequence.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID, docTypeId)
 				.addOnlyActiveRecordsFilter()
+				.orderBy().addColumn(I_C_DocType_Sequence.COLUMN_SeqNo, Direction.Ascending, Nulls.Last).endOrderBy()
 				.create()
 				.list(I_C_DocType_Sequence.class);
 

@@ -24,7 +24,7 @@ package de.metas.document.sequence.impl;
 
 import com.google.common.base.Suppliers;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
@@ -538,8 +538,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 				}
 			}
 
-			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), providerResult.getCountryIdOrNull());
+			final DocTypeSequenceList docTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
+			docSequenceId = docTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), providerResult.getCountryIdOrNull());
 			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);
