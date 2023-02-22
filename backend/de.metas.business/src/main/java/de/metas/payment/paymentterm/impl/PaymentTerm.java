@@ -37,11 +37,11 @@ import javax.annotation.Nullable;
 public class PaymentTerm
 {
 	@NonNull private final PaymentTermId id;
-	@NonNull private final String value;
-	@NonNull private final String name;
 	@NonNull private final OrgId orgId;
 	@NonNull private final ClientId clientId;
 
+	@Nullable private final String value;
+	@Nullable private final String name;
 	@Nullable private final Percent discount;
 	@Nullable private final Percent discount2;
 	@Nullable private final String netDay;
