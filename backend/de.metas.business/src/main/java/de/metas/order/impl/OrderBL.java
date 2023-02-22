@@ -1250,5 +1250,26 @@ public class OrderBL implements IOrderBL
 		order.setIsOnConsignment(isOnConsignment);
 		save(order);
 	}
-}
 
+	public boolean isUseDefaultBillToLocationForBPartner(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			//only sales orders are relevant
+			return false;
+		}
+
+		if (!order.isDropShip())
+		{
+			//only dropShip orders are relevant
+			return false;
+		}
+
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
+}

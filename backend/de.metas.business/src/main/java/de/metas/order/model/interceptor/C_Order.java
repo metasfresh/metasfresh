@@ -567,7 +567,7 @@ public class C_Order
 			setDropShipFlag(order);
 		}
 
-		if (isUseDefaultBillToLocationForBPartner(order))
+		if (orderBL.isUseDefaultBillToLocationForBPartner(order))
 		{
 			setDefaultBillToBPartnerLocation(order);
 		}
@@ -634,27 +634,5 @@ public class C_Order
 		{
 			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
 		}
-	}
-
-	private static boolean isUseDefaultBillToLocationForBPartner(@NonNull final I_C_Order order)
-	{
-		if (!order.isSOTrx())
-		{
-			//only sales orders are relevant
-			return false;
-		}
-
-		if (!order.isDropShip())
-		{
-			//only dropShip orders are relevant
-			return false;
-		}
-
-		if (order.getC_BPartner_ID() <= 0)
-		{
-			return false;
-		}
-
-		return true;
 	}
 }

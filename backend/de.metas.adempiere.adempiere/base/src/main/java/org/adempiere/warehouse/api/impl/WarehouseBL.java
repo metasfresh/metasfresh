@@ -61,7 +61,7 @@ public class WarehouseBL implements IWarehouseBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -240,7 +240,6 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
 	}
 
-
 	@Override
 	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
 	{
@@ -280,7 +279,7 @@ public class WarehouseBL implements IWarehouseBL
 	@Override
 	public boolean isDropShipWarehouse(@NonNull final WarehouseId warehouseId, @NonNull final OrgId adOrgId)
 	{
-		final WarehouseId dropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(adOrgId);
+		final WarehouseId dropShipWarehouseId = orgDAO.getOrgDropshipWarehouseId(adOrgId);
 
 		return warehouseId.equals(dropShipWarehouseId);
 	}
