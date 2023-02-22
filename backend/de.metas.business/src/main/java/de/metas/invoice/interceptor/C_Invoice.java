@@ -12,11 +12,10 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
-import de.metas.invoice.sequence.InvoiceBillToCountryIdProvider;
+import de.metas.invoice.sequence.InvoiceCountryIdProvider;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -37,7 +36,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -87,7 +85,7 @@ public class C_Invoice // 03771
 	@Init
 	void init()
 	{
-		Services.get(IDocumentNoBuilderFactory.class).registerBillToCountryProvider(new InvoiceBillToCountryIdProvider());
+		Services.get(IDocumentNoBuilderFactory.class).registerCountryIdProvider(new InvoiceCountryIdProvider());
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })

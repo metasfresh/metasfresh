@@ -28,7 +28,7 @@ import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.sequence.BillToCountryIdProvider;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -90,11 +90,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private boolean _failOnError = false; // default=false, for backward compatibility
 	private boolean _usePreliminaryDocumentNo = false; // default=false, for backward compatibility
 
-	private final List<BillToCountryIdProvider> billToCountryIdProviders;
+	private final List<ICountryIdProvider> countryIdProviders;
 
-	DocumentNoBuilder(List<BillToCountryIdProvider> billToCountryIdProviders)
+	DocumentNoBuilder(final @NonNull List<ICountryIdProvider> countryIdProviders)
 	{
-		this.billToCountryIdProviders = billToCountryIdProviders;
+		this.countryIdProviders = countryIdProviders;
 	}
 
 	@Override
@@ -528,18 +528,18 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		else
 		{
 
-			BillToCountryIdProvider.ProviderResult billToProviderResult = BillToCountryIdProvider.ProviderResult.EMPTY;
-			for(final BillToCountryIdProvider billToCountryIdProvider : billToCountryIdProviders)
+			ICountryIdProvider.ProviderResult providerResult = ICountryIdProvider.ProviderResult.EMPTY;
+			for(final ICountryIdProvider countryIdProvider : countryIdProviders)
 			{
-				billToProviderResult = billToCountryIdProvider.computeValueInfo(_evalContext);
-				if(billToProviderResult.hasCountryId())
+				providerResult = countryIdProvider.computeValueInfo(_evalContext);
+				if(providerResult.hasCountryId())
 				{
 					break;
 				}
 			}
 
 			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), billToProviderResult.getCountryIdOrNull());
+			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId(), providerResult.getCountryIdOrNull());
 			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);

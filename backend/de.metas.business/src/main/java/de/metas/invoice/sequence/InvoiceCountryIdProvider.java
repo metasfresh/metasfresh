@@ -22,7 +22,8 @@
 
 package de.metas.invoice.sequence;
 
-import de.metas.document.sequence.BillToCountryIdProvider;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Check;
@@ -31,13 +32,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Evaluatee;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 
-public class InvoiceBillToCountryIdProvider implements BillToCountryIdProvider
+public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
 
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
 
 	@Override
 	public ProviderResult computeValueInfo(final Evaluatee eval)
@@ -66,14 +70,29 @@ public class InvoiceBillToCountryIdProvider implements BillToCountryIdProvider
 			return ProviderResult.EMPTY;
 		}
 
-		if(Objects.equals(InterfaceWrapperHelper.getValueOrNull(documentModel, I_C_Invoice.COLUMNNAME_IsSOTrx), "N"))
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(documentModel, I_C_Invoice.class);
+		if(!invoice.isSOTrx())
 		{
 			return ProviderResult.EMPTY;
 		}
 
-		final LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(InterfaceWrapperHelper.getValueOrNull(documentModel, I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID));
-		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId should be present");
+		LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(invoice.getC_BPartner_Location_Value_ID());
+		if(bpartnerLocationValueId == null)
+		{
+			bpartnerLocationValueId = LocationId.ofRepoIdOrNull(invoice.getC_BPartner_Location_ID());
+		}
+
+		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId or bpartnerLocationId should be present");
 
 		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));
+	}
+
+	@Override
+	public boolean isHandled(final DocBaseAndSubType docBaseAndSubType)
+	{
+		final String docBaseTypeCode = docBaseAndSubType.getDocBaseType().getCode();
+
+		return INVOICE_DOCBASETYPES.contains(docBaseTypeCode);
+
 	}
 }

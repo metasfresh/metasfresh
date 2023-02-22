@@ -5,7 +5,7 @@ import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.sequence.BillToCountryIdProvider;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
@@ -69,12 +69,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 	private final AtomicBoolean _built = new AtomicBoolean(false);
 	private DocSequenceId _oldSequence_ID = null;  // lazy
 
-	private final List<BillToCountryIdProvider> billToCountryIdProviders;
+	private final List<ICountryIdProvider> countryIdProviders;
 
-	/* package */ PreliminaryDocumentNoBuilder(final List<BillToCountryIdProvider> billToCountryIdProviders)
+	/* package */ PreliminaryDocumentNoBuilder(final List<ICountryIdProvider> countryIdProviders)
 	{
 		super();
-		this.billToCountryIdProviders = billToCountryIdProviders;
+		this.countryIdProviders = countryIdProviders;
 	}
 
 	@Override
@@ -346,10 +346,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 	private CountryId getCountryId()
 	{
-		BillToCountryIdProvider.ProviderResult billToProviderResult = BillToCountryIdProvider.ProviderResult.EMPTY;
-		for(final BillToCountryIdProvider billToCountryIdProvider : billToCountryIdProviders)
+		ICountryIdProvider.ProviderResult billToProviderResult = ICountryIdProvider.ProviderResult.EMPTY;
+		for(final ICountryIdProvider countryIdProvider : countryIdProviders)
 		{
-			billToProviderResult = billToCountryIdProvider.computeValueInfo(getDocumentModel());
+			billToProviderResult = countryIdProvider.computeValueInfo(getDocumentModel());
 			if(billToProviderResult.hasCountryId())
 			{
 				break;

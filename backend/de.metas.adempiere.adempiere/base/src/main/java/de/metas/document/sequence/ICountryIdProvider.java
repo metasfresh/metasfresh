@@ -22,6 +22,7 @@
 
 package de.metas.document.sequence;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.location.CountryId;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,16 +31,16 @@ import org.compiere.util.Evaluatee;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-public interface BillToCountryIdProvider
+public interface ICountryIdProvider
 {
 	@Value
 	class ProviderResult
 	{
-		public static final BillToCountryIdProvider.ProviderResult EMPTY = new BillToCountryIdProvider.ProviderResult(null);
+		public static final ICountryIdProvider.ProviderResult EMPTY = new ICountryIdProvider.ProviderResult(null);
 
-		public static BillToCountryIdProvider.ProviderResult of(@NonNull final CountryId countryId)
+		public static ICountryIdProvider.ProviderResult of(@NonNull final CountryId countryId)
 		{
-			return new BillToCountryIdProvider.ProviderResult(countryId);
+			return new ICountryIdProvider.ProviderResult(countryId);
 		}
 
 		Optional<CountryId> countryId;
@@ -60,6 +61,8 @@ public interface BillToCountryIdProvider
 		}
 	}
 
-	BillToCountryIdProvider.ProviderResult computeValueInfo(Evaluatee eval);
-	BillToCountryIdProvider.ProviderResult computeValueInfo(Object documentModel);
+	ICountryIdProvider.ProviderResult computeValueInfo(Evaluatee eval);
+	ICountryIdProvider.ProviderResult computeValueInfo(Object documentModel);
+
+	boolean isHandled(DocBaseAndSubType docBaseAndSubType);
 }

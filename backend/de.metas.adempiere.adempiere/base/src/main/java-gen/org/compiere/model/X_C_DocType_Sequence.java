@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType_Sequence extends org.compiere.model.PO implements I_C_DocType_Sequence, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1426352122L;
+	private static final long serialVersionUID = -1980434955L;
 
     /** Standard Constructor */
     public X_C_DocType_Sequence (final Properties ctx, final int C_DocType_Sequence_ID, @Nullable final String trxName)
@@ -116,5 +116,17 @@ public class X_C_DocType_Sequence extends org.compiere.model.PO implements I_C_D
 	public int getDocNoSequence_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DocNoSequence_ID);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

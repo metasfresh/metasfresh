@@ -14,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -220,7 +221,8 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			final OrgId adOrgId = OrgId.ofRepoId(docTypeSequenceDef.getAD_Org_ID());
 			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeSequenceDef.getDocNoSequence_ID());
 			final CountryId countryId = CountryId.ofRepoId(docTypeSequenceDef.getC_Country_ID());
-			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId);
+			final SeqNo seqNo = SeqNo.ofInt(docTypeSequenceDef.getSeqNo());
+			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId, seqNo);
 		}
 
 		return docTypeSequenceMapBuilder.build();
