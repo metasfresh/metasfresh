@@ -59,7 +59,7 @@ public final class DocTypeSequenceList
 	private final ArrayList<DocTypeSequence> docTypeSequences;
 	private final DocSequenceId defaultDocNoSequenceId;
 
-	private DocTypeSequenceList(final Builder builder)
+	private DocTypeSequenceList(@NonNull final Builder builder)
 	{
 		docTypeSequences = builder.docTypeSequences;
 		defaultDocNoSequenceId = builder.defaultDocNoSequenceId;
@@ -111,6 +111,9 @@ public final class DocTypeSequenceList
 			return new DocTypeSequenceList(this);
 		}
 
+		/**
+		 * We assume that this method is called in the right order of SeqNos (ascending)
+		 */
 		public void addDocSequenceId(final ClientId adClientId, final OrgId adOrgId, final DocSequenceId docSequenceId, final CountryId countryId, final SeqNo seqNo)
 		{
 			final DocTypeSequence docTypeSequence = new DocTypeSequence(adClientId, adOrgId, docSequenceId, countryId, seqNo);

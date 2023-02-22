@@ -538,7 +538,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 				}
 			}
 
-			final DocTypeSequenceList docTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
+			final DocTypeSequenceList docTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceList(docType);
 			docSequenceId = docTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), providerResult.getCountryIdOrNull());
 			if (docSequenceId == null)
 			{

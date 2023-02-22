@@ -28,6 +28,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Evaluatee;
@@ -44,7 +45,7 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
 
 	@Override
-	public ProviderResult computeValueInfo(final Evaluatee eval)
+	public ProviderResult computeValueInfo(@NonNull final Evaluatee eval)
 	{
 		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(eval)))
 		{
@@ -88,7 +89,7 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 	}
 
 	@Override
-	public boolean isHandled(final DocBaseAndSubType docBaseAndSubType)
+	public boolean isHandled(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
 		final String docBaseTypeCode = docBaseAndSubType.getDocBaseType().getCode();
 

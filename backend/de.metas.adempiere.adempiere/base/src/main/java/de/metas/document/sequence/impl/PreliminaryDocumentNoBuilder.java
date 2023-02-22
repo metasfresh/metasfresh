@@ -114,7 +114,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 		final boolean isDocNoControlled = newDocType.isDocNoControlled();
 		if (isDocNoControlled)
 		{
-			final DocTypeSequenceList newDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
+			final DocTypeSequenceList newDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceList(newDocType);
 			final DocSequenceId newDocSequenceId = newDocTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 			final boolean isNewDocumentNo = isNewDocumentNo() || !DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
@@ -198,7 +198,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 			return null;
 		}
 
-		final DocTypeSequenceList oldDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceMap(oldDocType);
+		final DocTypeSequenceList oldDocTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceList(oldDocType);
 		return oldDocTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), getCountryId());
 	}
 

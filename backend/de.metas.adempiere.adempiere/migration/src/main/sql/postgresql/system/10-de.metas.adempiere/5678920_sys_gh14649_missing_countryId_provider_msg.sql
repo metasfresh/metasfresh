@@ -12,3 +12,23 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 UPDATE AD_Message SET MsgType='E',Updated=TO_TIMESTAMP('2023-02-22 15:01:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545241
 ;
 
+
+-- Value: C_DocType_Sequence_countryId_provider_missing
+-- 2023-02-22T14:55:06.951Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2023-02-22 15:55:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545241
+;
+
+-- Value: C_DocType_Sequence_countryId_provider_missing
+-- 2023-02-22T15:06:01.572Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Diese Belegart unterstützt keine Sequenzen auf Basis von Ländern. Bitte wählen Sie kein Land.',Updated=TO_TIMESTAMP('2023-02-22 16:06:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545241
+;
+
+-- Value: C_DocType_Sequence_countryId_provider_missing
+-- 2023-02-22T15:06:07.797Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Diese Belegart unterstützt keine Sequenzen auf Basis von Ländern. Bitte wählen Sie kein Land.',Updated=TO_TIMESTAMP('2023-02-22 16:06:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545241
+;
+
+-- 2023-02-22T15:06:07.799Z
+UPDATE AD_Message SET MsgText='Diese Belegart unterstützt keine Sequenzen auf Basis von Ländern. Bitte wählen Sie kein Land.' WHERE AD_Message_ID=545241
+;
+

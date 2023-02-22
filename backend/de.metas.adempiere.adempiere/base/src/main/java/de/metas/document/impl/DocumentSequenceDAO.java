@@ -192,21 +192,21 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 	}
 
 	@Override
-	public DocTypeSequenceList retrieveDocTypeSequenceMap(final I_C_DocType docType)
+	public DocTypeSequenceList retrieveDocTypeSequenceList(final I_C_DocType docType)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(docType);
 		final int docTypeId = docType.getC_DocType_ID();
-		return retrieveDocTypeSequenceMap(ctx, docTypeId);
+		return retrieveDocTypeSequenceList(ctx, docTypeId);
 	}
 
 	@Cached(cacheName = I_C_DocType_Sequence.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
-	public DocTypeSequenceList retrieveDocTypeSequenceMap(@CacheCtx final Properties ctx, final int docTypeId)
+	public DocTypeSequenceList retrieveDocTypeSequenceList(@CacheCtx final Properties ctx, final int docTypeId)
 	{
-		final DocTypeSequenceList.Builder docTypeSequenceMapBuilder = DocTypeSequenceList.builder();
+		final DocTypeSequenceList.Builder docTypeSequenceListBuilder = DocTypeSequenceList.builder();
 
 		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, ITrx.TRXNAME_None);
 		final DocSequenceId docNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getDocNoSequence_ID());
-		docTypeSequenceMapBuilder.defaultDocNoSequenceId(docNoSequenceId);
+		docTypeSequenceListBuilder.defaultDocNoSequenceId(docNoSequenceId);
 
 		final List<I_C_DocType_Sequence> docTypeSequenceDefs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_DocType_Sequence.class, ctx, ITrx.TRXNAME_None)
@@ -223,10 +223,10 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeSequenceDef.getDocNoSequence_ID());
 			final CountryId countryId = CountryId.ofRepoId(docTypeSequenceDef.getC_Country_ID());
 			final SeqNo seqNo = SeqNo.ofInt(docTypeSequenceDef.getSeqNo());
-			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId, seqNo);
+			docTypeSequenceListBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId, seqNo);
 		}
 
-		return docTypeSequenceMapBuilder.build();
+		return docTypeSequenceListBuilder.build();
 	}
 
 	//
