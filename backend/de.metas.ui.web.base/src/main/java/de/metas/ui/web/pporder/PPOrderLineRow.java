@@ -9,15 +9,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
 import de.metas.handlingunits.pporder.api.PPOrderQtyStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.quantity.Quantitys;
-import de.metas.ui.web.window.datatypes.ColorValue;
-import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.uom.UOMConversionContext;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
@@ -27,11 +22,14 @@ import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -39,6 +37,8 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -113,6 +113,7 @@ public class PPOrderLineRow implements IViewRow
 	private final JSONLookupValue product;
 
 	@ViewColumn(captionKey = "Code", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20))
+	@Getter
 	private final String code;
 
 	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
