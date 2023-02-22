@@ -19,12 +19,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_DocType_Sequence ADD CONSTRAINT CCountry_CDocTypeSequence FOREIGN KEY (C_Country_ID) REFERENCES public.C_Country DEFERRABLE INITIALLY DEFERRED
 ;
 
-DROP INDEX c_doctype_sequence_uq
-;
-
-CREATE UNIQUE INDEX c_doctype_sequence_uq ON c_doctype_sequence (seqno, c_doctype_id, ad_client_id, ad_org_id, coalesce(c_country_id,0))
-;
-
 -- Field: Belegart(135,D) -> Sequence(540744,D) -> Land
 -- Column: C_DocType_Sequence.C_Country_ID
 -- 2023-02-21T10:52:46.448Z
@@ -90,6 +84,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2023-02-21T13:53:47.843Z
 /* DDL */ SELECT public.db_alter_table('C_DocType_Sequence','ALTER TABLE public.C_DocType_Sequence ADD COLUMN SeqNo NUMERIC(10) DEFAULT 0 NOT NULL')
+;
+
+DROP INDEX c_doctype_sequence_uq
+;
+
+CREATE UNIQUE INDEX c_doctype_sequence_uq ON c_doctype_sequence (seqno, c_doctype_id, ad_client_id, ad_org_id, coalesce(c_country_id,0))
 ;
 
 -- Field: Belegart(135,D) -> Sequence(540744,D) -> Reihenfolge
