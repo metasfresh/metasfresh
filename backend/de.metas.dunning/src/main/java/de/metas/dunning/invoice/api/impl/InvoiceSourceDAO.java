@@ -81,7 +81,9 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class)
 				.setJoinOr()
 				.addEqualsFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, null)
-				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, Operator.LESS, dunningDate);
+				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, Operator.LESS, dunningDate)
+				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.LESS, dunningDate);
+				;
 
 		return queryBL.createQueryBuilder(I_C_Dunning.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()

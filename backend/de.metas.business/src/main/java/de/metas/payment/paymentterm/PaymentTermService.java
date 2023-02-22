@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import javax.annotation.Nullable;
 
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaymentTerm;
@@ -70,7 +71,7 @@ public class PaymentTermService
 			@NonNull final Percent discount)
 	{
 		final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-		final I_C_PaymentTerm basePaymentTermRecord = paymentTermRepository.getById(basePaymentTermId);
+		final PaymentTerm basePaymentTerm = paymentTermRepository.getById(basePaymentTermId);
 
 		// see if the designed payment term already exists
 		final I_C_PaymentTerm existingDerivedPaymentTermRecord = Services.get(IQueryBL.class)
@@ -78,19 +79,13 @@ public class PaymentTermService
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsValid, true)
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount, discount.toBigDecimal())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTermRecord.getAD_Client_ID())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTermRecord.getAD_Org_ID())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTermRecord.getDiscount2())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_DiscountDays2, basePaymentTermRecord.getDiscountDays2())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AfterDelivery, basePaymentTermRecord.isAfterDelivery())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthCutoff, basePaymentTermRecord.getFixMonthCutoff())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthDay, basePaymentTermRecord.getFixMonthDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_FixMonthOffset, basePaymentTermRecord.getFixMonthOffset())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_GraceDays, basePaymentTermRecord.getGraceDays())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDueFixed, basePaymentTermRecord.isDueFixed())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsNextBusinessDay, basePaymentTermRecord.isNextBusinessDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDay, basePaymentTermRecord.getNetDay())
-				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, basePaymentTermRecord.getNetDays())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, basePaymentTerm.getClientId())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, basePaymentTerm.getOrgId())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Discount2, basePaymentTerm.getDiscount2())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_DiscountDays2, basePaymentTerm.getDiscountDays2())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_GraceDays, basePaymentTerm.getGraceDays())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDay, basePaymentTerm.getNetDay())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, basePaymentTerm.getNetDays())
 				.orderBy().addColumn(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID).endOrderBy()
 				.create()
 				.first();
@@ -100,10 +95,10 @@ public class PaymentTermService
 		}
 
 		final I_C_PaymentTerm newPaymentTerm = newInstance(I_C_PaymentTerm.class);
-		InterfaceWrapperHelper.copyValues(basePaymentTermRecord, newPaymentTerm);
+		InterfaceWrapperHelper.copyValues(basePaymentTerm, newPaymentTerm);
 		newPaymentTerm.setDiscount(discount.toBigDecimal());
 
-		final String newName = basePaymentTermRecord.getName() + " (=>" + discount.toBigDecimal() + " %)";
+		final String newName = basePaymentTerm.getName() + " (=>" + discount.toBigDecimal() + " %)";
 		newPaymentTerm.setName(newName);
 		saveRecord(newPaymentTerm);
 

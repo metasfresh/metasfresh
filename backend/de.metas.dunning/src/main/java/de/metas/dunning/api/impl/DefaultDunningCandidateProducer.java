@@ -22,6 +22,7 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningCandidateProducer;
