@@ -272,4 +272,10 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	{
 		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
+
+	@Override
+	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

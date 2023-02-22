@@ -1,6 +1,7 @@
 package de.metas.costing.methods;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -212,5 +213,12 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 						.amount(costElement, inboundResult.getAmt())
 						.build())
 				.build();
+	}
+
+
+	@Override
+	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+	{
+		return Optional.empty();
 	}
 }

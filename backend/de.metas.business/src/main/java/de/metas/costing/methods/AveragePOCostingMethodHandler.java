@@ -350,4 +350,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				() -> currencyConversionContext,
 				acctSchemaId);
 	}
+
+
+	@Override
+	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+	{
+		return Optional.empty();
+	}
 }

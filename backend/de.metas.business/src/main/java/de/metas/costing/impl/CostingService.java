@@ -8,6 +8,7 @@ import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCOGS;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
@@ -53,6 +54,7 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +62,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -177,6 +180,27 @@ public class CostingService implements ICostingService
 				.costSegment(costSegment)
 				.amounts(amountsByCostElement)
 				.build();
+	}
+
+	private static AggregatedCOGS toAggregatedMovingAverageInvoiceAmts(final List<MovingAverageInvoiceAmts> movingAverageInvoiceAmts)
+	{
+		Check.assumeNotEmpty(movingAverageInvoiceAmts, "movingAverageInvoiceAmts is not empty");
+
+		final CostSegment costSegment = movingAverageInvoiceAmts
+				.stream()
+				.map(MovingAverageInvoiceAmts::getCostSegment)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + movingAverageInvoiceAmts)));
+
+		final ConcurrentMap<CostElement, MovingAverageInvoiceAmts> amountsByCostElement = movingAverageInvoiceAmts
+				.stream()
+				.collect(Collectors.toConcurrentMap(MovingAverageInvoiceAmts::getCostElement, Function.identity()));// mergeFunction
+
+		return AggregatedCOGS.builder()
+				.costSegment(costSegment)
+				.amounts(amountsByCostElement)
+				.build();
+
 	}
 
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
@@ -324,7 +348,7 @@ public class CostingService implements ICostingService
 		if (costingMethodHandlers.isEmpty())
 		{
 			throw new AdempiereException("No " + CostingMethodHandler.class.getName() + " found for " + costingMethod
-					+ ". Available costing methods are: " + this.costingMethodHandlers.keySet());
+												 + ". Available costing methods are: " + this.costingMethodHandlers.keySet());
 		}
 		return costingMethodHandlers;
 	}
@@ -482,6 +506,8 @@ public class CostingService implements ICostingService
 				.map(AggregatedCostPrice::getTotalPrice);
 	}
 
+
+
 	@Override
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
@@ -515,9 +541,33 @@ public class CostingService implements ICostingService
 		return result;
 	}
 
+	@Override
+	@Nullable
+	public AggregatedCOGS createCOGS(@NonNull final CostDetailCreateRequest request)
+	{
+		return createAggregateCOGSOrEmpty(request).orElse(null);
+	}
+	private ExplainedOptional<AggregatedCOGS> createAggregateCOGSOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
+		final ImmutableList<MovingAverageInvoiceAmts> movingAverageInvoiceAmts = Stream.of(request)
+				.flatMap(this::explodeAcctSchemas)
+				.map(this::convertToAcctSchemaCurrency)
+				.flatMap(this::explodeCostElements)
+				.flatMap(this::createCOGSFromHandlers)
+				.collect(ImmutableList.toImmutableList());
 
+		if (movingAverageInvoiceAmts.isEmpty())
+		{
+			return ExplainedOptional.emptyBecause("No COGS created for " + request);
+		}
+		else
+		{
 
-	public Stream<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+			return ExplainedOptional.of(toAggregatedMovingAverageInvoiceAmts(movingAverageInvoiceAmts));
+		}
+	}
+
+	private Stream<MovingAverageInvoiceAmts> createCOGSFromHandlers(final CostDetailCreateRequest request)
 	{
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
@@ -592,9 +642,9 @@ public class CostingService implements ICostingService
 
 		//
 		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-				.qty(currentCost.getCurrentQty())
-				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-				.build());
+												  .qty(currentCost.getCurrentQty())
+												  .costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
+												  .build());
 
 		//
 		return result.build();

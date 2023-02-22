@@ -22,7 +22,9 @@
 
 package de.metas.costing.methods;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -31,9 +33,13 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostTypeId;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
@@ -72,9 +78,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
+
 
 	public MovingAverageInvoiceCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -362,7 +372,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
-	public Optional<MovingAverageInvoiceAmts>  createCOGS(final CostDetailCreateRequest request)
+	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
 	{
 		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
@@ -422,10 +432,27 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final Money cogsAdjustment = differenceGRIR.subtract(merchandiseStockAdjustmentProportion);
 
+		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
+
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), request.getAcctSchemaId());
+		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
+
+		final CostSegment costSegment = CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(request.getAcctSchemaId())
+				.costTypeId(costTypeId)
+				.productId(request.getProductId())
+				.clientId(request.getClientId())
+				.orgId(request.getOrgId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.build();
+
 		return Optional.of(MovingAverageInvoiceAmts.builder()
-				.adjustmentProportion(CostAmount.ofMoney(adjustmentProportion))
-				.cogs(CostAmount.ofMoney(cogsAdjustment))
-				.build());
+								   .adjustmentProportion(CostAmount.ofMoney(adjustmentProportion))
+								   .cogs(CostAmount.ofMoney(cogsAdjustment))
+								   .costElement(request.getCostElement())
+								   .costSegment(costSegment)
+								   .build());
 	}
 
 	@Override

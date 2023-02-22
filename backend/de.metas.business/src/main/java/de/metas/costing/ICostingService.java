@@ -47,7 +47,7 @@ public interface ICostingService
 			CostSegment costSegment,
 			CostingMethod costingMethod);
 
-	Optional<MovingAverageInvoiceAmts> createCOGS(@NonNull CostDetailCreateRequest request);
+	AggregatedCOGS createCOGS(@NonNull CostDetailCreateRequest request);
 
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }

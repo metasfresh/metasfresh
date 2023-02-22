@@ -14,6 +14,8 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.business
@@ -106,6 +108,12 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
 	{
 		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+	{
 		throw new UnsupportedOperationException();
 	}
 }

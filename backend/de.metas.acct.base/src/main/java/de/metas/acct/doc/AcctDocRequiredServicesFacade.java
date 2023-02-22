@@ -17,6 +17,7 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.costing.AggregatedCOGS;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
@@ -293,7 +294,7 @@ public class AcctDocRequiredServicesFacade
 		return costingService.moveCosts(request);
 	}
 
-	public Optional<MovingAverageInvoiceAmts> createCOGS(@NonNull final CostDetailCreateRequest request)
+	public AggregatedCOGS createCOGS(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCOGS(request);
 	}
