@@ -221,7 +221,8 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			final ClientId adClientId = ClientId.ofRepoId(docTypeSequenceDef.getAD_Client_ID());
 			final OrgId adOrgId = OrgId.ofRepoId(docTypeSequenceDef.getAD_Org_ID());
 			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeSequenceDef.getDocNoSequence_ID());
-			final CountryId countryId = CountryId.ofRepoId(docTypeSequenceDef.getC_Country_ID());
+			final int repoCountryId = docTypeSequenceDef.getC_Country_ID();
+			final CountryId countryId = repoCountryId != 0 ? CountryId.ofRepoId(repoCountryId) : null;
 			final SeqNo seqNo = SeqNo.ofInt(docTypeSequenceDef.getSeqNo());
 			docTypeSequenceListBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId, seqNo);
 		}
