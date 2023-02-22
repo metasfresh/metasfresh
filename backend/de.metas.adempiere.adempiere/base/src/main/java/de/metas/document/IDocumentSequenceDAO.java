@@ -23,7 +23,7 @@ public interface IDocumentSequenceDAO extends ISingletonService
 	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
 
 	@Deprecated
-	default DocumentSequenceInfo retriveDocumentSequenceInfo(int adSequenceRepoId)
+	default DocumentSequenceInfo retriveDocumentSequenceInfo(final int adSequenceRepoId)
 	{
 		final DocSequenceId adSequenceId = DocSequenceId.ofRepoIdOrNull(adSequenceRepoId);
 		return adSequenceId != null ? retriveDocumentSequenceInfo(adSequenceId) : null;
@@ -32,7 +32,7 @@ public interface IDocumentSequenceDAO extends ISingletonService
 	String retrieveDocumentNoByYear(int AD_Sequence_ID, Date date);
 
 	/** @return document type sequence map */
-	DocTypeSequenceMap retrieveDocTypeSequenceMap(I_C_DocType docType);
+	DocTypeSequenceList retrieveDocTypeSequenceList(I_C_DocType docType);
 
 	String retrieveDocumentNo(int AD_Sequence_ID);
 
