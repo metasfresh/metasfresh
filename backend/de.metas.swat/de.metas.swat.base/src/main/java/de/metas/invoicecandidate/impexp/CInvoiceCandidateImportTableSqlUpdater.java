@@ -417,7 +417,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No " + COLUMNNAME_C_Activity_ID + " = {}", no);
