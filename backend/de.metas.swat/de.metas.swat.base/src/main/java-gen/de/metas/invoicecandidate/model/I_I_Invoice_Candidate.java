@@ -1,8 +1,9 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_Invoice_Candidate
  *  @author metasfresh (generated)
@@ -151,6 +152,49 @@ public interface I_I_Invoice_Candidate
 	int getBill_User_ID();
 
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Activity search key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_Value (@Nullable java.lang.String C_Activity_Value);
+
+	/**
+	 * Get Activity search key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getC_Activity_Value();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_C_Activity_Value = new ModelColumn<>(I_I_Invoice_Candidate.class, "C_Activity_Value", null);
+	String COLUMNNAME_C_Activity_Value = "C_Activity_Value";
 
 	/**
 	 * Set Data import.
