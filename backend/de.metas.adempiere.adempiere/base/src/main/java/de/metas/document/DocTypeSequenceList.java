@@ -1,23 +1,16 @@
 package de.metas.document;
 
-import java.util.ArrayList;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import de.metas.location.CountryId;
-import de.metas.util.lang.SeqNo;
-import org.adempiere.service.ClientId;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 /*
  * #%L
