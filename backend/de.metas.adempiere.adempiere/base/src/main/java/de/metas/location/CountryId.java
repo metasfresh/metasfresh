@@ -39,6 +39,7 @@ import java.util.Objects;
 public class CountryId implements RepoIdAware
 {
 	public static final CountryId SWITZERLAND = new CountryId(107);
+	public static final CountryId NONE = new CountryId(0);
 
 	@JsonCreator
 	@NonNull
@@ -50,7 +51,7 @@ public class CountryId implements RepoIdAware
 	@Nullable
 	public static CountryId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new CountryId(repoId) : null;
+		return repoId >= 0 ? new CountryId(repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final CountryId id)
@@ -62,7 +63,7 @@ public class CountryId implements RepoIdAware
 
 	private CountryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Country_ID");
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "C_Country_ID");
 	}
 
 	@Override
