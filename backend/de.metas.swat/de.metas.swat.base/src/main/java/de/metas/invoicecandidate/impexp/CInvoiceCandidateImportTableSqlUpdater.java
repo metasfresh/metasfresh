@@ -256,6 +256,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " SET " + COLUMNNAME_C_Activity_ID + " = (" + sqlActivityId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_C_Activity_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_C_Activity_Value + " IS NOT NULL "
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
