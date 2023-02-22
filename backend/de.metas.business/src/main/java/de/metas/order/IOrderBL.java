@@ -283,8 +283,4 @@ public interface IOrderBL extends ISingletonService
 
 	void updateIsOnConsignmentFromLines(OrderId orderId);
 
-	void markAsDropShipIfDropShipWarehouse(I_C_Order order);
-
-	void setBillToDefaultLocationAsDefaultIfDropShipSO(I_C_Order order);
-
 }

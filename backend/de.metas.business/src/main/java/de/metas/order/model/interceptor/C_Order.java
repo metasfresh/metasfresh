@@ -556,15 +556,21 @@ public class C_Order
 		}
 	}
 
-	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_M_Warehouse_ID, I_C_Order.COLUMNNAME_IsDropShip })
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_M_Warehouse_ID,
+			I_C_Order.COLUMNNAME_IsDropShip,
+			I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void handleDropShipRelatedColumns(@NonNull final I_C_Order order)
 	{
 		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
 		{
-			orderBL.markAsDropShipIfDropShipWarehouse(order);
+			setDropShipFlag(order);
 		}
 
-		orderBL.setBillToDefaultLocationAsDefaultIfDropShipSO(order);
+		if (isUseDefaultBillToLocationForBPartner(order))
+		{
+			setDefaultBillToBPartnerLocation(order);
+		}
 	}
 
 	private void validateSupplierApprovals(final I_C_Order order)
@@ -595,5 +601,60 @@ public class C_Order
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
 		}
+	}
+
+	private void setDropShipFlag(@NonNull final I_C_Order order)
+	{
+		if (order.isDropShip())
+		{
+			return;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+
+		if (warehouseId == null)
+		{
+			return;
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+
+		order.setIsDropShip(warehouseBL.isDropShipWarehouse(warehouseId, orgId));
+	}
+
+	private void setDefaultBillToBPartnerLocation(@NonNull final I_C_Order order)
+	{
+		final IBPartnerDAO.BPartnerLocationQuery billToQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+				.build();
+
+		final I_C_BPartner_Location billToLocation = bpartnerDAO.retrieveBPartnerLocation(billToQuery);
+		if (billToLocation != null)
+		{
+			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
+		}
+	}
+
+	private static boolean isUseDefaultBillToLocationForBPartner(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			//only sales orders are relevant
+			return false;
+		}
+
+		if (!order.isDropShip())
+		{
+			//only dropShip orders are relevant
+			return false;
+		}
+
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			return false;
+		}
+
+		return true;
 	}
 }
