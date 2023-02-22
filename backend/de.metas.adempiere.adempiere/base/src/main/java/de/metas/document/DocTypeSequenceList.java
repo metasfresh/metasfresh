@@ -83,7 +83,7 @@ public final class DocTypeSequenceList
 				}
 				if (docTypeSequence.getCountryId().equals(countryId)
 						|| docTypeSequence.getCountryId() == null
-						|| docTypeSequence.getCountryId().equals(CountryId.ofRepoId(0)))
+						|| docTypeSequence.getCountryId().equals(CountryId.NONE))
 				{
 					return docTypeSequence.getDocSequenceId();
 				}
