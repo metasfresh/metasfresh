@@ -259,7 +259,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_C_Activity_Value + " IS NOT NULL "
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
