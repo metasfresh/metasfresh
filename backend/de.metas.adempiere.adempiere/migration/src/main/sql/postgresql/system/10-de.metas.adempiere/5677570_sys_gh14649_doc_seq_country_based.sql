@@ -22,9 +22,6 @@ ALTER TABLE C_DocType_Sequence ADD CONSTRAINT CCountry_CDocTypeSequence FOREIGN 
 DROP INDEX c_doctype_sequence_uq
 ;
 
-CREATE UNIQUE INDEX c_doctype_sequence_uq ON c_doctype_sequence (c_doctype_id, ad_client_id, ad_org_id, coalesce(c_country_id,0))
-;
-
 -- Field: Belegart(135,D) -> Sequence(540744,D) -> Land
 -- Column: C_DocType_Sequence.C_Country_ID
 -- 2023-02-21T10:52:46.448Z
