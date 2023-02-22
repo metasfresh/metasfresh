@@ -49,6 +49,11 @@ public class C_DocType_Sequence
 			ifColumnsChanged = I_C_DocType_Sequence.COLUMNNAME_C_Country_ID)
 	public void isHandledByCountryIdProvider(final I_C_DocType_Sequence doctypeSequenceRecord)
 	{
+		if(doctypeSequenceRecord.getC_Country_ID() == 0)
+		{
+			return;
+		}
+
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 		final List<ICountryIdProvider> countryIdProviders = documentNoFactory.getCountryIdProviders();
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(doctypeSequenceRecord.getC_DocType_ID());
@@ -61,7 +66,8 @@ public class C_DocType_Sequence
 				return;
 			}
 		}
-		throw new AdempiereException(MSG_COUNTRY_ID_PROVIDER_DOESNT_EXIST_FOR_DOCBASETYPE);
+
+		throw new AdempiereException(MSG_COUNTRY_ID_PROVIDER_DOESNT_EXIST_FOR_DOCBASETYPE).markAsUserValidationError();
 	}
 
 }
