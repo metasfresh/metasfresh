@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14652](https://github.com/metasfresh/metasfresh/issues/14652) Import Data File with C_Activity
   * [#14632](https://github.com/metasfresh/metasfresh/issues/14632) Add C_Invoice_Candidate.ActualLoadingDate and populate from earliest M_ShipperTransportation 
   * [#14542](https://github.com/metasfresh/metasfresh/issues/14542) When importing inventory, different CUs that are in the same TU get summed up incorrectly
   * [#14596](https://github.com/metasfresh/metasfresh/issues/14596) SAP Partner ID in Business Partner location is set to null after credit limit import
