@@ -21,6 +21,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -410,5 +411,15 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		updater.accept(costRecord);
 		saveRecord(costRecord);
+	}
+
+	public boolean hasCostsInCurrency(final @NonNull AcctSchemaId acctSchemaId, @NonNull final CurrencyId currencyId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_Currency_ID, currencyId)
+				.create()
+				.anyMatch();
 	}
 }
