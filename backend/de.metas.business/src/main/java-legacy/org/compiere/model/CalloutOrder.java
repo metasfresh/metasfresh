@@ -24,7 +24,6 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
 import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.CoalesceUtil;
@@ -34,7 +33,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -113,7 +111,7 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
-	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -456,6 +454,9 @@ public class CalloutOrder extends CalloutEngine
 				 * Integer(i)); }
 				 */
 				int shipTo_ID = rs.getInt("C_BPartner_Location_ID");
+				// metas (2009 0027 G1): setting billTo location. Why has it
+				// been selected above when it isn't used?
+				final int billTo_ID = rs.getInt("Bill_Location_ID");
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong
 				// to different BP)
@@ -473,11 +474,13 @@ public class CalloutOrder extends CalloutEngine
 						// metas end
 					}
 				}
-				order.setC_BPartner_Location_ID(shipTo_ID <= 0 ? -1 : shipTo_ID);
 
-				// metas (2009 0027 G1): setting billTo location. Why has it
-				// been selected above when it isn't used?
-				final int billTo_ID = rs.getInt("Bill_Location_ID");
+				final int computedBPartnerLocationId = billTo_ID > 0 && orderBL.isUseDefaultBillToLocationForBPartner(order)
+						? billTo_ID
+						: (shipTo_ID <= 0 ? -1 : shipTo_ID);
+
+				order.setC_BPartner_Location_ID(computedBPartnerLocationId);
+
 				if (billTo_ID <= 0)
 				{
 					order.setBill_Location_ID(-1);

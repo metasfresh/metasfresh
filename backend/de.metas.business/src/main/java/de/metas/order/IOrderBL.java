@@ -286,4 +286,8 @@ public interface IOrderBL extends ISingletonService
 
 	void updateIsOnConsignmentFromLines(OrderId orderId);
 
+	/**
+	 * @return {@code true} if metasfresh should use the default-billTo-location for {@code C_Order.C_BPartner_Location_ID}
+	 */
+	boolean isUseDefaultBillToLocationForBPartner(@NonNull I_C_Order order);
 }
