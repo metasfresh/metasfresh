@@ -33,7 +33,7 @@ Feature: Order to delivery instructions
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standardCategory                 | attributeSetConvenienceSalate    |
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | Name          |
+      | M_Shipper_ID.Identifier | OPT.Name      |
       | shipper_DHL             | Dhl           |
       | shipper_DPD             | DPD - Classic |
 

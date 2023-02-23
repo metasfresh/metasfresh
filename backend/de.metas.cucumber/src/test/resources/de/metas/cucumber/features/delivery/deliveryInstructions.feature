@@ -33,8 +33,8 @@ Feature: Generate delivery instructions from delivery plannings
       | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID.Identifier |
       | warehouseStd              | StdWarehouse | warehouseStdLocation                  |
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | Name |
-      | shipper_DHL             | Dhl  |
+      | M_Shipper_ID.Identifier | OPT.Name |
+      | shipper_DHL             | Dhl      |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
       | orderDI_SO | true    | customer                 | 2023-02-02  | 2023-02-10T00:00:00Z | customerLocation                      |
