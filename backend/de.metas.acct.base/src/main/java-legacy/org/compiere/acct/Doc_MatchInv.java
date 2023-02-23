@@ -300,7 +300,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			final MovingAverageInvoiceAmts cogsAmt = getCOGSAmt(as);
 			if (cogsAmt != null)
 			{
-				// create lines
+
+				// final Money grir = cogsAmt.getGrir();
+				// if(grir.isGreaterThan())
+
 			}
 		}
 

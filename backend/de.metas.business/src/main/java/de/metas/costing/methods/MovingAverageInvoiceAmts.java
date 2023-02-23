@@ -25,6 +25,7 @@ package de.metas.costing.methods;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
+import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,9 +34,10 @@ import lombok.Value;
 @Builder
 public class MovingAverageInvoiceAmts
 {
-	@NonNull CostAmount adjustmentProportion;
+	@NonNull Money grir;
 
-	@NonNull CostAmount cogs;
+	@NonNull Money adjustmentProportion;
+	@NonNull Money cogs;
 
 	@NonNull CostElement costElement;
 
@@ -43,12 +45,14 @@ public class MovingAverageInvoiceAmts
 
 	public MovingAverageInvoiceAmts add(@NonNull final MovingAverageInvoiceAmts amtToAdd)
 	{
-		final CostAmount addedCogs = cogs.add(amtToAdd.getCogs());
-		final CostAmount addedAdjProportion = adjustmentProportion.add(amtToAdd.getAdjustmentProportion());
+		final Money addedGrir = grir.add((amtToAdd.getGrir()));
+		final Money addedCogs = cogs.add(amtToAdd.getCogs());
+		final Money addedAdjProportion = adjustmentProportion.add(amtToAdd.getAdjustmentProportion());
 
 		return MovingAverageInvoiceAmts.builder()
 				.costSegment(costSegment)
 				.costElement(costElement)
+				.grir(addedGrir)
 				.cogs(addedCogs)
 				.adjustmentProportion(addedAdjProportion)
 				.build();

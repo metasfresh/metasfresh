@@ -85,7 +85,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
 
-
 	public MovingAverageInvoiceCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
 		super(utils);
@@ -118,7 +117,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
+		final Optional<MovingAverageInvoiceAmts> cogs = createCOGS(request);
 		return createCostDetailAndAdjustCurrentCosts(request);
+		
+		
 
 		// return utils.createCostDetailRecordWithChangedCosts(
 		// 		request.withAmount(amtConv),
@@ -378,7 +380,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 		final InOutId inoutId = InOutId.ofRepoId(matchInv.getM_InOut_ID());
 
-		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(inoutId);
+		//final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(inoutId);
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
 		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID()));
@@ -448,8 +450,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.build();
 
 		return Optional.of(MovingAverageInvoiceAmts.builder()
-								   .adjustmentProportion(CostAmount.ofMoney(adjustmentProportion))
-								   .cogs(CostAmount.ofMoney(cogsAdjustment))
+								   .adjustmentProportion(adjustmentProportion)
+								   .grir(invoicedAmt)
+								   .cogs(cogsAdjustment)
 								   .costElement(request.getCostElement())
 								   .costSegment(costSegment)
 								   .build());
