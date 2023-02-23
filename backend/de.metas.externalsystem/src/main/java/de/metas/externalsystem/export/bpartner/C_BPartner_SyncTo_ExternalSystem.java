@@ -119,7 +119,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	@NonNull
 	private Iterator<I_C_BPartner> getSelectedBPartnerRecords()
 	{
-		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class);
+		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveActiveSelectedRecordsQueryBuilder(I_C_BPartner.class);
 
 		return bPartnerQuery
 				.create()

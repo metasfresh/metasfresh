@@ -1,8 +1,12 @@
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.JavaProcess;
@@ -11,6 +15,7 @@ import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,8 +44,13 @@ import java.util.List;
 
 public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements IProcessPrecondition
 {
+	private static final AdMessageKey MSG_HU_WITH_BLOCKED_PARTNER = AdMessageKey.of("CannotReceiveHUWithBlockedPartner");
+
+	private final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
+	
 	protected final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	protected final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	protected ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
@@ -63,6 +73,11 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		if (receiptSchedule.isPackagingMaterial())
 		{
 			return ProcessPreconditionsResolution.reject("not applying for packing materials");
+		}
+		
+		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(receiptSchedule.getC_BPartner_ID())))
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_HU_WITH_BLOCKED_PARTNER));
 		}
 
 		return ProcessPreconditionsResolution.accept();

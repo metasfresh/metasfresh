@@ -979,7 +979,22 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * Retrieves the records which where selected and attached to this process execution, i.e.
+	 * Retrieves the active records which where selected and attached to this process execution, i.e.
+	 * <ul>
+	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
+	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used, even if it is inactive
+	 * <li>else an exception is thrown
+	 * </ul>
+	 *
+	 * @return query builder which will provide selected record(s)
+	 */
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveActiveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
+	{
+		return retrieveSelectedRecordsQueryBuilder(modelClass, true);
+	}
+
+	/**
+	 * Retrieves all records (active and inactive) which where selected and attached to this process execution, i.e.
 	 * <ul>
 	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
 	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used
@@ -988,41 +1003,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * @return query builder which will provide selected record(s)
 	 */
-	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveAllSelectedRecordsQueryBuilder(@NonNull final Class<ModelType> modelClass)
 	{
-		final ProcessInfo pi = getProcessInfo();
-		final String tableName = pi.getTableNameOrNull();
-		final int singleRecordId = pi.getRecord_ID();
-
-		final IContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(getCtx());
-		final IQueryBuilder<ModelType> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(modelClass, tableName, contextProvider);
-
-		//
-		// Try fetching the selected records from AD_PInstance's WhereClause.
-		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
-		if (selectionQueryFilter != null)
-		{
-			queryBuilder.filter(selectionQueryFilter)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient();
-		}
-		//
-		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
-		else if (tableName != null && singleRecordId >= 0)
-		{
-			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-			queryBuilder.addEqualsFilter(keyColumnName, singleRecordId);
-			// .addOnlyActiveRecordsFilter() // NOP, return it as is
-			// .addOnlyContextClient(); // NOP, return it as is
-		}
-		else
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
-
-		return queryBuilder;
+		return retrieveSelectedRecordsQueryBuilder(modelClass, false);
 	}
-
+	
 	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
 	 * If this exception is thrown:
@@ -1055,5 +1040,45 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final UserId getLoggedUserId()
 	{
 		return Env.getLoggedUserId();
+	}
+
+	@NonNull
+	private <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass, final boolean onlyActiveRecords)
+	{
+		final ProcessInfo pi = getProcessInfo();
+		final String tableName = pi.getTableNameOrNull();
+		final int singleRecordId = pi.getRecord_ID();
+
+		final IContextAware contextProvider = PlainContextAware.newWithThreadInheritedTrx(getCtx());
+		final IQueryBuilder<ModelType> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(modelClass, tableName, contextProvider);
+
+		//
+		// Try fetching the selected records from AD_PInstance's WhereClause.
+		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
+		if (selectionQueryFilter != null)
+		{
+			queryBuilder.filter(selectionQueryFilter)
+					.addOnlyContextClient();
+
+			if (onlyActiveRecords)
+			{
+				queryBuilder.addOnlyActiveRecordsFilter();
+			}
+		}
+		//
+		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.
+		else if (tableName != null && singleRecordId >= 0)
+		{
+			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+			queryBuilder.addEqualsFilter(keyColumnName, singleRecordId);
+			// .addOnlyActiveRecordsFilter() // NOP, return it as is
+			// .addOnlyContextClient(); // NOP, return it as is
+		}
+		else
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		return queryBuilder;
 	}
 }
