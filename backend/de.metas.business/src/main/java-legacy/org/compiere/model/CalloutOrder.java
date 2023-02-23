@@ -331,13 +331,18 @@ public class CalloutOrder extends CalloutEngine
 			orderBL.setBPLocation(order, bpartner);
 		}
 
-		if (!orderBL.setBillLocation(order))
+
+		if(order.getBill_Location_ID() <= 0)
 		{
-			final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
-			calloutField.fireDataStatusEEvent(
-					localizedMessage,
-					localizedMessage, // this appears onHover
-					true);
+			final boolean isBillLocationSet = orderBL.setBillLocation(order);
+			if (!isBillLocationSet)
+			{
+				final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
+				calloutField.fireDataStatusEEvent(
+						localizedMessage,
+						localizedMessage, // this appears onHover
+						true);
+			}
 		}
 
 		return NO_ERROR;
