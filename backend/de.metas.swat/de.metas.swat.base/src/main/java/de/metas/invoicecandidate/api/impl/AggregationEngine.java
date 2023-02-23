@@ -505,6 +505,7 @@ public final class AggregationEngine
 
 			invoiceHeader.setInvoiceAdditionalText(icRecord.getInvoiceAdditionalText());
 			invoiceHeader.setNotShowOriginCountry(icRecord.isNotShowOriginCountry());
+			invoiceHeader.setC_PaymentInstruction_ID(icRecord.getC_PaymentInstruction_ID());
 
 			getSectionCodeId(icRecord, headerAggregationId)
 					.ifPresent(sectionCodeId -> invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId)));

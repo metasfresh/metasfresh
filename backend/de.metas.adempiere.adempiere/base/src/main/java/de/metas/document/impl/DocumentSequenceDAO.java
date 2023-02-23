@@ -2,17 +2,19 @@ package de.metas.document.impl;
 
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.JavaClassId;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -99,7 +101,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.map(DocumentSequenceDAO::toDocumentSequenceInfo);
 	}
 
-	private DocumentSequenceInfo createDocumentSequence(ClientId adClientId, String sequenceName)
+	private DocumentSequenceInfo createDocumentSequence(final ClientId adClientId, final String sequenceName)
 	{
 		final I_AD_Sequence record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Sequence.class);
 		InterfaceWrapperHelper.setValue(record, I_AD_Sequence.COLUMNNAME_AD_Client_ID, adClientId);
@@ -154,7 +156,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 		{
 			return StringExpressionCompiler.instance.compile(expr);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed compiling '{}' string expression. Using it as is", expr, ex);
 			return ConstantStringExpression.ofNullable(expr);
@@ -215,26 +217,27 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 	}
 
 	@Override
-	public DocTypeSequenceMap retrieveDocTypeSequenceMap(final I_C_DocType docType)
+	public DocTypeSequenceList retrieveDocTypeSequenceList(final I_C_DocType docType)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(docType);
 		final int docTypeId = docType.getC_DocType_ID();
-		return retrieveDocTypeSequenceMap(ctx, docTypeId);
+		return retrieveDocTypeSequenceList(ctx, docTypeId);
 	}
 
 	@Cached(cacheName = I_C_DocType_Sequence.Table_Name + "#by#" + I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID)
-	public DocTypeSequenceMap retrieveDocTypeSequenceMap(@CacheCtx final Properties ctx, final int docTypeId)
+	public DocTypeSequenceList retrieveDocTypeSequenceList(@CacheCtx final Properties ctx, final int docTypeId)
 	{
-		final DocTypeSequenceMap.Builder docTypeSequenceMapBuilder = DocTypeSequenceMap.builder();
+		final DocTypeSequenceList.Builder docTypeSequenceListBuilder = DocTypeSequenceList.builder();
 
 		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, ITrx.TRXNAME_None);
 		final DocSequenceId docNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getDocNoSequence_ID());
-		docTypeSequenceMapBuilder.defaultDocNoSequenceId(docNoSequenceId);
+		docTypeSequenceListBuilder.defaultDocNoSequenceId(docNoSequenceId);
 
 		final List<I_C_DocType_Sequence> docTypeSequenceDefs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_DocType_Sequence.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_DocType_Sequence.COLUMNNAME_C_DocType_ID, docTypeId)
 				.addOnlyActiveRecordsFilter()
+				.orderBy().addColumn(I_C_DocType_Sequence.COLUMN_SeqNo, Direction.Ascending, Nulls.Last).endOrderBy()
 				.create()
 				.list(I_C_DocType_Sequence.class);
 
@@ -243,10 +246,13 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 			final ClientId adClientId = ClientId.ofRepoId(docTypeSequenceDef.getAD_Client_ID());
 			final OrgId adOrgId = OrgId.ofRepoId(docTypeSequenceDef.getAD_Org_ID());
 			final DocSequenceId docSequenceId = DocSequenceId.ofRepoId(docTypeSequenceDef.getDocNoSequence_ID());
-			docTypeSequenceMapBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId);
+			final int repoCountryId = docTypeSequenceDef.getC_Country_ID();
+			final CountryId countryId = repoCountryId != 0 ? CountryId.ofRepoId(repoCountryId) : null;
+			final SeqNo seqNo = SeqNo.ofInt(docTypeSequenceDef.getSeqNo());
+			docTypeSequenceListBuilder.addDocSequenceId(adClientId, adOrgId, docSequenceId, countryId, seqNo);
 		}
 
-		return docTypeSequenceMapBuilder.build();
+		return docTypeSequenceListBuilder.build();
 	}
 
 	//

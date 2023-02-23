@@ -102,6 +102,8 @@ public class InvoiceHeaderImplBuilder
 	private String invoiceAdditionalText;
 	private boolean notShowOriginCountry;
 
+	private int C_PaymentInstruction_ID;
+
 	InvoiceHeaderImplBuilder()
 	{
 	}
@@ -161,6 +163,7 @@ public class InvoiceHeaderImplBuilder
 
 		invoiceHeader.setInvoiceAdditionalText(getInvoiceAdditionalText());
 		invoiceHeader.setNotShowOriginCountry(isNotShowOriginCountry());
+		invoiceHeader.setC_PaymentInstruction_ID(getC_PaymentInstruction_ID());
 
 		return invoiceHeader;
 	}
@@ -644,5 +647,15 @@ public class InvoiceHeaderImplBuilder
 	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
 	{
 		this.notShowOriginCountry = notShowOriginCountry;
+	}
+
+	public int getC_PaymentInstruction_ID()
+	{
+		return C_PaymentInstruction_ID;
+	}
+
+	public void setC_PaymentInstruction_ID(final int c_PaymentInstruction_ID)
+	{
+		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
 }
