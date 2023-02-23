@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14645](https://github.com/metasfresh/metasfresh/issues/14645) Order Window Ivict adaptions (Billto Default, Drop Shipment)
   * [#14649](https://github.com/metasfresh/metasfresh/issues/14649) country-based doctype sequences
   * [#14672](https://github.com/metasfresh/metasfresh/issues/14672) Sort by serial number 
   * [#14663](https://github.com/metasfresh/metasfresh/issues/14663) Prevent changing account schema currency if there are current costs in that currency
