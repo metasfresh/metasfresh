@@ -422,5 +422,4 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.create()
 				.anyMatch();
 	}
-
 }
