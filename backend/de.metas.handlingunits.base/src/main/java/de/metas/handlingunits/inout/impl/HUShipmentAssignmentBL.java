@@ -235,7 +235,6 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		{
 			huStatusBL.setHUStatus(huContext, hu, status);
 			hu.setIsActive(true);
-
 			if (hu.getM_Locator_ID() > 0)
 			{
 				final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
@@ -244,7 +243,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 					final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 
 					// Restore default locator
-					hu.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
+				hu.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
 				}
 			}
 		}
