@@ -79,16 +79,16 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 
 		final ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> dunningGraceFilter = queryBL
 				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class)
+				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.LESS, dunningDate)
 				.setJoinOr()
 				.addEqualsFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, null)
-				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, Operator.LESS, dunningDate)
-				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.LESS, dunningDate);
-				;
+				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, Operator.LESS, dunningDate);
 
 		return queryBL.createQueryBuilder(I_C_Dunning.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_C_Dunning_ID, dunningLevel.getC_Dunning_ID()) // Dunning Level is for current assigned Dunning
+
 
 				.andCollectChildren(I_C_Dunning_Candidate_Invoice_v1.COLUMN_C_Dunning_ID)
 				.addOnlyActiveRecordsFilter()
