@@ -57,7 +57,7 @@ SELECT CASE
        fa.ad_org_id
 FROM fact_acct fa
          JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
-         JOIN fact_acct fa2 ON fa2.fact_acct_id = fa.counterpart_fact_acct_id
+         JOIN fact_acct fa2 ON (fa2.fact_acct_id = fa.counterpart_fact_acct_id OR fa2.counterpart_fact_acct_id = fa.fact_acct_id)
          JOIN c_elementvalue ev2 ON ev2.c_elementvalue_id = fa2.account_id
          JOIN c_bpartner bp ON bp.c_bpartner_id = fa.c_bpartner_id
          LEFT JOIN c_activity a ON a.c_activity_id = COALESCE(fa.c_activity_id, fa2.c_activity_id)
