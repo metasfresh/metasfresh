@@ -87,4 +87,6 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	WarehouseId getIdByLocatorRepoId(int locatorId);
+
+	boolean isDropShipWarehouse(@NonNull WarehouseId warehouseId,@NonNull OrgId adOrgId);
 }
