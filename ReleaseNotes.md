@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14672](https://github.com/metasfresh/metasfresh/issues/14672) Sort by serial number 
+  * [#14663](https://github.com/metasfresh/metasfresh/issues/14663) Prevent changing account schema currency if there are current costs in that currency
   * [#14448](https://github.com/metasfresh/metasfresh/issues/14448) product notice not translated on PO
   * [#14652](https://github.com/metasfresh/metasfresh/issues/14652) Import Data File with C_Activity
   * [#14632](https://github.com/metasfresh/metasfresh/issues/14632) Add C_Invoice_Candidate.ActualLoadingDate and populate from earliest M_ShipperTransportation 
