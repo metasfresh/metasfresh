@@ -126,7 +126,10 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 public class OrderBL implements IOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(OrderBL.class);
+
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
+	private static final String SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION = "de.metas.order.impl.UseDefaultBillToLocationAsOrderDefaultLocation";
+
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyDeliveredSum = new ModelDynAttributeAccessor<>("QtyDeliveredSum", BigDecimal.class);
@@ -1253,6 +1256,11 @@ public class OrderBL implements IOrderBL
 
 	public boolean isUseDefaultBillToLocationForBPartner(@NonNull final I_C_Order order)
 	{
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION, false))
+		{
+			return false;
+		}
+
 		if (!order.isSOTrx())
 		{
 			//only sales orders are relevant
