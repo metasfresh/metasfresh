@@ -1,18 +1,24 @@
 package de.metas.acct.model.validator;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
 import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
 
@@ -42,11 +48,16 @@ import org.compiere.util.Env;
 public class C_AcctSchema
 {
 	private final ICostElementRepository costElementRepo;
+	private final ICurrentCostsRepository currentCostsRepository;
+
+	private final static AdMessageKey MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS = AdMessageKey.of("de.metas.acct.AcctSchema.hasCosts");
 
 	public C_AcctSchema(
-			@NonNull final ICostElementRepository costElementRepo)
+			@NonNull final ICostElementRepository costElementRepo,
+			@NonNull final ICurrentCostsRepository currentCostsRepository)
 	{
 		this.costElementRepo = costElementRepo;
+		this.currentCostsRepository = currentCostsRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -103,6 +114,19 @@ public class C_AcctSchema
 		if (acctSchema.getCostingMethod() == null)
 		{
 			acctSchema.setCostingMethod(CostingMethod.StandardCosting.getCode());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_AcctSchema.COLUMNNAME_C_Currency_ID)
+	public void checkCurrency(final I_C_AcctSchema acctSchema)
+	{
+		final PO po = InterfaceWrapperHelper.getPO(acctSchema);
+
+		final CurrencyId previousCurrencyId = CurrencyId.ofRepoIdOrNull(po.get_ValueOldAsInt(I_C_AcctSchema.COLUMNNAME_C_Currency_ID));
+
+		if (previousCurrencyId != null && currentCostsRepository.hasCostsInCurrency(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()), previousCurrencyId))
+		{
+			throw new AdempiereException(MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS);
 		}
 	}
 }

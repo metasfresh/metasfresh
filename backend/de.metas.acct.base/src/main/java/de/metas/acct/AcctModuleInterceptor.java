@@ -23,6 +23,7 @@ import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.elementvalue.MElementValueTreeSupport;
 import de.metas.impexp.processing.IImportProcessFactory;
@@ -83,16 +84,20 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final TreeNodeService treeNodeService;
 	private final ProductActivityProvider productActivityProvider;
 
+	private final ICurrentCostsRepository currentCostsRepository;
+
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
 	public AcctModuleInterceptor(
 			@NonNull final ICostElementRepository costElementRepo,
 			@NonNull final TreeNodeService treeNodeService,
-			@NonNull final ProductActivityProvider productActivityProvider)
+			@NonNull final ProductActivityProvider productActivityProvider,
+			@NonNull final ICurrentCostsRepository currentCostsRepository)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
 		this.productActivityProvider = productActivityProvider;
+		this.currentCostsRepository = currentCostsRepository;
 	}
 
 	@Override
@@ -138,7 +143,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(costElementRepo));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo, currentCostsRepository));
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
