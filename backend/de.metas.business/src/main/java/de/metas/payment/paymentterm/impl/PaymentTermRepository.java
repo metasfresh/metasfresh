@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import de.metas.costing.CostElement;
-import de.metas.costing.CostElementId;
-import de.metas.costing.impl.CostElementRepository;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -21,7 +18,6 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_M_CostElement;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -29,7 +25,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
