@@ -200,15 +200,15 @@
             <exclusions>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
-                    <artifactId>bcmail-jdk17</artifactId>
+                    <artifactId>bcmail-jdk14</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
-                    <artifactId>bcprov-jdk17</artifactId>
+                    <artifactId>bcprov-jdk14</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
-                    <artifactId>bctsp-jdk17</artifactId>
+                    <artifactId>bctsp-jdk14</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -268,13 +268,6 @@
             <artifactId>google-maps-services</artifactId>
             <version>0.10.1</version>
             <scope>compile</scope>
-        </dependency>
-
-        <!-- J2EE -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
