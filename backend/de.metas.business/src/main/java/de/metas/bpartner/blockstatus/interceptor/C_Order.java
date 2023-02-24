@@ -20,44 +20,45 @@
  * #L%
  */
 
-package de.metas.bpartner.blockstatus;
+package de.metas.bpartner.blockstatus.interceptor;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_M_InOut.class)
+@Interceptor(I_C_Order.class)
 @Component
-public class M_InOut
+public class C_Order
 {
-	private static final AdMessageKey MSG_INOUT_WITH_BLOCKED_PARTNER = AdMessageKey.of("CannotCompleteInOutWithBlockedPartner");
+	private static final AdMessageKey MSG_ORDER_WITH_BLOCKED_PARTNER = AdMessageKey.of("CannotCompleteOrderWithBlockedPartner");
 
 	private final BPartnerBlockStatusService bPartnerBlockStatusService;
 
-	public M_InOut(@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
+	public C_Order(@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
 	{
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_InOut.COLUMNNAME_DocStatus)
-	public void validateBPartnerBlockedStatus(@NonNull final I_M_InOut inout)
+			ifColumnsChanged = I_C_Order.COLUMNNAME_DocStatus)
+	public void validateBPartnerBlockedStatus(final I_C_Order order)
 	{
-		if (!DocStatus.ofCode(inout.getDocStatus()).isCompleted())
+		if (!DocStatus.ofCode(order.getDocStatus()).isCompleted())
 		{
 			return;
 		}
 
-		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(inout.getC_BPartner_ID())))
+		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(order.getC_BPartner_ID())))
 		{
-			throw new AdempiereException(MSG_INOUT_WITH_BLOCKED_PARTNER)
+			throw new AdempiereException(MSG_ORDER_WITH_BLOCKED_PARTNER)
 					.markAsUserValidationError();
 		}
 	}

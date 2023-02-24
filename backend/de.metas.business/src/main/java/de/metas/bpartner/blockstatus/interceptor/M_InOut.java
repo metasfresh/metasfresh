@@ -20,44 +20,45 @@
  * #L%
  */
 
-package de.metas.bpartner.blockstatus;
+package de.metas.bpartner.blockstatus.interceptor;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_C_Invoice.class)
+@Interceptor(I_M_InOut.class)
 @Component
-public class C_Invoice
+public class M_InOut
 {
-	private static final AdMessageKey MSG_INVOICE_WITH_BLOCKED_PARTNER = AdMessageKey.of("CannotCompleteInvoiceWithBlockedPartner");
+	private static final AdMessageKey MSG_INOUT_WITH_BLOCKED_PARTNER = AdMessageKey.of("CannotCompleteInOutWithBlockedPartner");
 
 	private final BPartnerBlockStatusService bPartnerBlockStatusService;
 
-	public C_Invoice(@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
+	public M_InOut(@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
 	{
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_Invoice.COLUMNNAME_DocStatus)
-	public void validateBPartnerBlockedStatus(@NonNull final I_C_Invoice invoiceRecord)
+			ifColumnsChanged = I_M_InOut.COLUMNNAME_DocStatus)
+	public void validateBPartnerBlockedStatus(@NonNull final I_M_InOut inout)
 	{
-		if (!DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted())
+		if (!DocStatus.ofCode(inout.getDocStatus()).isCompleted())
 		{
 			return;
 		}
 
-		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID())))
+		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(inout.getC_BPartner_ID())))
 		{
-			throw new AdempiereException(MSG_INVOICE_WITH_BLOCKED_PARTNER)
+			throw new AdempiereException(MSG_INOUT_WITH_BLOCKED_PARTNER)
 					.markAsUserValidationError();
 		}
 	}
