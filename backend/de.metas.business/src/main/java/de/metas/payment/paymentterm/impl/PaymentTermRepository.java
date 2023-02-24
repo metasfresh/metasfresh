@@ -170,7 +170,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		final ImmutableList<PaymentTerm> paymentTerms = queryBL
 				.createQueryBuilder(I_C_PaymentTerm.class)
 				.addOnlyActiveRecordsFilter()
-				.orderBy(I_C_PaymentTerm.COLUMNNAME_IsDefault)
 				.create()
 				.stream(I_C_PaymentTerm.class)
 				.map(PaymentTermRepository::toPaymentTerm)

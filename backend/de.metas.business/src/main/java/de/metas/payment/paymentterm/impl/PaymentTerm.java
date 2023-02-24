@@ -36,21 +36,21 @@ import javax.annotation.Nullable;
 @Value
 public class PaymentTerm
 {
-	@NonNull private final PaymentTermId id;
-	@NonNull private final OrgId orgId;
-	@NonNull private final ClientId clientId;
+	@NonNull PaymentTermId id;
+	@NonNull OrgId orgId;
+	@NonNull ClientId clientId;
 
-	@Nullable private final String value;
-	@Nullable private final String name;
-	@Nullable private final Percent discount;
-	@Nullable private final Percent discount2;
-	@Nullable private final String netDay;
+	@Nullable String value;
+	@Nullable String name;
+	@Nullable Percent discount;
+	@Nullable Percent discount2;
+	@Nullable String netDay;
 
-	private final int discountDays;
-	private final int discountDays2;
-	private final int graceDays;
-	private final int netDays;
-	private final boolean allowOverrideDueDate;
-	private final boolean _default;
+	int discountDays;
+	int discountDays2;
+	int graceDays;
+	int netDays;
+	boolean allowOverrideDueDate;
+	boolean _default;
 }
 

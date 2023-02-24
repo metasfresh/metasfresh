@@ -23,7 +23,6 @@ package de.metas.dunning.invoice.api.impl;
  */
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -61,8 +60,8 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)
 	{
 
-		final Instant payDate =  date != null ? TimeUtil.asInstant(date) : SystemTime.asInstant();
-		return TimeUtil.getDaysBetween(payDate, TimeUtil.asInstant(dueDate));
+		final Date payDate =  date != null ? date : SystemTime.asDate();
+		return TimeUtil.getDaysBetween(payDate, dueDate);
 	}
 
 	@Override
