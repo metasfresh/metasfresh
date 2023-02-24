@@ -135,7 +135,7 @@ public abstract class C_Project_SyncTo_ExternalSystem extends JavaProcess implem
 	@NonNull
 	private Iterator<I_C_Project> getSelectedProjectRecords()
 	{
-		final IQueryBuilder<I_C_Project> projectQuery = retrieveSelectedRecordsQueryBuilder(I_C_Project.class);
+		final IQueryBuilder<I_C_Project> projectQuery = retrieveActiveSelectedRecordsQueryBuilder(I_C_Project.class);
 
 		return projectQuery
 				.create()
