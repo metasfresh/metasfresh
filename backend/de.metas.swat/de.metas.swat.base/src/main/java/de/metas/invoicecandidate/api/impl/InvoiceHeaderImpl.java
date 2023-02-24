@@ -109,6 +109,8 @@ import java.util.List;
 
 	private boolean notShowOriginCountry;
 
+	private int C_PaymentInstruction_ID;
+
 	@Setter @Getter @Nullable ForexContractRef forexContractRef;
 
 	/* package */ InvoiceHeaderImpl()
@@ -440,5 +442,17 @@ import java.util.List;
 	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
 	{
 		this.notShowOriginCountry = notShowOriginCountry;
+	}
+
+	@Override
+	public void setC_PaymentInstruction_ID(final int C_PaymentInstruction_ID)
+	{
+		this.C_PaymentInstruction_ID = C_PaymentInstruction_ID;
+	}
+
+	@Override
+	public int getC_PaymentInstruction_ID()
+	{
+		return C_PaymentInstruction_ID;
 	}
 }

@@ -62,7 +62,7 @@ public class CountryId implements RepoIdAware
 
 	private CountryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Country_ID");
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "C_Country_ID");
 	}
 
 	@Override
