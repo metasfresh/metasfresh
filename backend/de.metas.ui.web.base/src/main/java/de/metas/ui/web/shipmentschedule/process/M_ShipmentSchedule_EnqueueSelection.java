@@ -25,6 +25,8 @@ package de.metas.ui.web.shipmentschedule.process;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.forex.ForexContractService;
 import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
@@ -77,6 +79,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
+	private final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
 
 	@Param(parameterName = "QuantityType", mandatory = true)
@@ -126,7 +129,9 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class)
 				.stream()
-				.anyMatch(sched -> sched.isActive() && !sched.isProcessed());
+				.anyMatch(sched -> sched.isActive() &&
+						!sched.isProcessed() &&
+						!bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(sched.getC_BPartner_ID())));
 
 		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnprocessedSchedule);
 	}

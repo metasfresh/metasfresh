@@ -136,6 +136,13 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not received");
 		}
 
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(deliveryPlanningId);
+
+		if (existsBlockedPartnerDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -184,6 +191,8 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 
 	private I_M_Inventory generateInventoryDocument(@NonNull final DocTypeId doctypeId, @NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		deliveryPlanningService.validateDeliveryPlanning(deliveryPlanningId);
+
 		final DeliveryPlanningReceiptInfo receiptInfo = deliveryPlanningService.getReceiptInfo(deliveryPlanningId);
 		final InOutId inOutId = receiptInfo.getReceiptId();
 		Check.assumeNotNull(inOutId, "InOutId shall be set, because of isReceived() check in preconditions");

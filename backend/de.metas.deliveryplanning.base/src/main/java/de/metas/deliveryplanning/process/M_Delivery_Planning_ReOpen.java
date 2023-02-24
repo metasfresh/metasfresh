@@ -54,6 +54,13 @@ public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessP
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllOpen));
 		}
 
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+
+		if (existsBlockedPartnerDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

@@ -631,7 +631,7 @@ public final class ProcessInfo implements Serializable
 	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
 	 * <p>
 	 * task 03685
-	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
+	 * @see JavaProcess#retrieveActiveSelectedRecordsQueryBuilder(Class)
 	 */
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
