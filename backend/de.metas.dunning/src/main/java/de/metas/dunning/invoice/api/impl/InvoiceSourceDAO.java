@@ -93,7 +93,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 				.andCollectChildren(I_C_Dunning_Candidate_Invoice_v1.COLUMN_C_Dunning_ID)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
-				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.GREATER, dunningDate)
+				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.LESS, dunningDate)
 				.filter(dunningGraceFilter) // Validate Dunning Grace (if any)
 
 				.orderBy()
