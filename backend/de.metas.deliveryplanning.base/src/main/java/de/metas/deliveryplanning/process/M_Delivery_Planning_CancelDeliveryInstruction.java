@@ -59,6 +59,13 @@ public class M_Delivery_Planning_CancelDeliveryInstruction extends JavaProcess i
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_WhithOutReleaseNo));
 		}
 
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+
+		if (existsBlockedPartnerDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

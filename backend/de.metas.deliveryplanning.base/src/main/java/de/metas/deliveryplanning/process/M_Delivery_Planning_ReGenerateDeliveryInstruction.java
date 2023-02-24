@@ -58,6 +58,13 @@ public class M_Delivery_Planning_ReGenerateDeliveryInstruction extends JavaProce
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_NoForwarder));
 		}
 
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		
+		if (existsBlockedPartnerDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner));
+		}
+		
 		final boolean isExistsOpenDeliveryPlannings = deliveryPlanningService.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		if (!isExistsOpenDeliveryPlannings)
