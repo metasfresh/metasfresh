@@ -23,19 +23,15 @@ package de.metas.dunning.invoice.api;
  */
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 
-import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.ISingletonService;
 
-import javax.annotation.Nullable;
 
 /**
  * DAO methods related to {@link I_C_Invoice}s

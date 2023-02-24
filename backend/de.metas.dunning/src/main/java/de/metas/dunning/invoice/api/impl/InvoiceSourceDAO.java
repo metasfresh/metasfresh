@@ -22,20 +22,16 @@ package de.metas.dunning.invoice.api.impl;
  * #L%
  */
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.organization.InstantAndOrgId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
@@ -46,7 +42,6 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
