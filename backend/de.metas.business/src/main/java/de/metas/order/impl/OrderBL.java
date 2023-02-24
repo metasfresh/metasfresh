@@ -64,6 +64,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -1256,7 +1257,8 @@ public class OrderBL implements IOrderBL
 
 	public boolean isUseDefaultBillToLocationForBPartner(@NonNull final I_C_Order order)
 	{
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION, false))
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION, false, clientAndOrgId))
 		{
 			return false;
 		}
