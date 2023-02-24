@@ -22,11 +22,16 @@ package de.metas.dunning.invoice.api.impl;
  * #L%
  */
 
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.organization.InstantAndOrgId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -46,6 +51,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
 	@Override
@@ -56,12 +63,11 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	}
 
 	@Override
-	public int retrieveDueDays(
-			@NonNull final PaymentTermId paymentTermId,
-			final Date dateInvoiced,
-			final Date date)
+	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)
 	{
-		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId.getRepoId(), dateInvoiced, date);
+
+		final Instant payDate =  date != null ? TimeUtil.asInstant(date) : SystemTime.asInstant();
+		return TimeUtil.getDaysBetween(payDate, TimeUtil.asInstant(dueDate));
 	}
 
 	@Override
