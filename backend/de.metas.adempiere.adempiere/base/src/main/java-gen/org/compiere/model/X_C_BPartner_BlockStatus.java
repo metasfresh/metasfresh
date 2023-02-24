@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_BlockStatus extends org.compiere.model.PO implements I_C_BPartner_BlockStatus, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 820302162L;
+	private static final long serialVersionUID = 1926548310L;
 
     /** Standard Constructor */
     public X_C_BPartner_BlockStatus (final Properties ctx, final int C_BPartner_BlockStatus_ID, @Nullable final String trxName)
@@ -83,6 +83,18 @@ public class X_C_BPartner_BlockStatus extends org.compiere.model.PO implements I
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setIsCurrent (final boolean IsCurrent)
+	{
+		set_Value (COLUMNNAME_IsCurrent, IsCurrent);
+	}
+
+	@Override
+	public boolean isCurrent() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCurrent);
 	}
 
 	@Override

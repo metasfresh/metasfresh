@@ -71,7 +71,7 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
 		}
 
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlanning(deliveryPlanningId);
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(deliveryPlanningId);
 
 		if (existsBlockedPartnerDeliveryPlannings)
 		{

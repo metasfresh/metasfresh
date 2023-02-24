@@ -73,7 +73,7 @@ public interface I_C_BPartner_BlockStatus
 	String COLUMNNAME_BlockStatus = "BlockStatus";
 
 	/**
-	 * Set BPartner Block Status.
+	 * Set Block status.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -82,7 +82,7 @@ public interface I_C_BPartner_BlockStatus
 	void setC_BPartner_BlockStatus_ID (int C_BPartner_BlockStatus_ID);
 
 	/**
-	 * Get BPartner Block Status.
+	 * Get Block status.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -160,6 +160,27 @@ public interface I_C_BPartner_BlockStatus
 
 	ModelColumn<I_C_BPartner_BlockStatus, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BPartner_BlockStatus.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Current Valid Version.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCurrent (boolean IsCurrent);
+
+	/**
+	 * Get Current Valid Version.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCurrent();
+
+	ModelColumn<I_C_BPartner_BlockStatus, Object> COLUMN_IsCurrent = new ModelColumn<>(I_C_BPartner_BlockStatus.class, "IsCurrent", null);
+	String COLUMNNAME_IsCurrent = "IsCurrent";
 
 	/**
 	 * Set Reason.

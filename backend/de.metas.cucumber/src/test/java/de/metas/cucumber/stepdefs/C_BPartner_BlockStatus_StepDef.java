@@ -119,7 +119,7 @@ public class C_BPartner_BlockStatus_StepDef
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerTable.get(bpartnerIdentifier).getC_BPartner_ID());
 
-		final Optional<BPartnerBlockStatus> bPartnerBlockStatus = bPartnerBlockStatusService.retrieveLatestByBPartnerId(bPartnerId);
+		final Optional<BPartnerBlockStatus> bPartnerBlockStatus = bPartnerBlockStatusService.retrieveBlockedByBPartnerId(bPartnerId);
 		assertThat(bPartnerBlockStatus).isPresent();
 
 		final String bPartnerBlockStatusIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_BlockStatus_ID + "." + TABLECOLUMN_IDENTIFIER);

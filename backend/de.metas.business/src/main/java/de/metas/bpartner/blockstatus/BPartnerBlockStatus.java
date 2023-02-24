@@ -44,6 +44,8 @@ public class BPartnerBlockStatus
 
 	@Nullable String reason;
 	
+	boolean isCurrent;
+	
 	public boolean isBlocked()
 	{
 		return status.isBlocked();

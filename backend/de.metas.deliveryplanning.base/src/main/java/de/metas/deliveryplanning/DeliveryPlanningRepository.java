@@ -50,6 +50,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -345,8 +346,7 @@ public class DeliveryPlanningRepository
 
 	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
@@ -362,8 +362,7 @@ public class DeliveryPlanningRepository
 
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
@@ -379,8 +378,7 @@ public class DeliveryPlanningRepository
 
 	public boolean isExistsClosedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
 				.create()
 				.anyMatch();
@@ -388,8 +386,7 @@ public class DeliveryPlanningRepository
 
 	public boolean isExistsOpenDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
 				.create()
 				.anyMatch();
@@ -397,8 +394,7 @@ public class DeliveryPlanningRepository
 
 	public boolean isExistNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Shipper_ID, null)
 				.create()
 				.anyMatch();
@@ -406,8 +402,7 @@ public class DeliveryPlanningRepository
 
 	public boolean isExistDeliveryPlanningsWithoutReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo, null)
 				.create()
 				.anyMatch();
@@ -415,8 +410,7 @@ public class DeliveryPlanningRepository
 
 	public boolean isExistDeliveryPlanningsWithReleaseNo(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.addNotNull(I_M_Delivery_Planning.COLUMNNAME_ReleaseNo)
 				.create()
 				.anyMatch();
@@ -499,10 +493,16 @@ public class DeliveryPlanningRepository
 
 	public Iterator<I_M_Delivery_Planning> extractDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
-				.filter(selectedDeliveryPlanningsFilter)
+		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
 				.create()
 				.iterate(I_M_Delivery_Planning.class);
+	}
+
+	@NonNull
+	public IQueryBuilder<I_M_Delivery_Planning> getDeliveryPlanningQueryBuilder(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter);
 	}
 
 	private Iterator<I_M_Delivery_Planning> retrieveForDeliveryInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)

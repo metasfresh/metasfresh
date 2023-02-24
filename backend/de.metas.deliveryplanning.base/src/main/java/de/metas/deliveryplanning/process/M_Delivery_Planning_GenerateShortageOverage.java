@@ -135,7 +135,7 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not received");
 		}
 
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlanning(deliveryPlanningId);
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(deliveryPlanningId);
 
 		if (existsBlockedPartnerDeliveryPlannings)
 		{

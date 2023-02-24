@@ -88,6 +88,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_BlockStatus;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -577,9 +578,9 @@ public class DeliveryPlanningService
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository.excludeUnsuitableForInstruction(selectedDeliveryPlanningsFilter);
-
-		validateDeliveryPlannings(deliveryPlanningsSuitableForInstruction);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository
+				.excludeUnsuitableForInstruction(selectedDeliveryPlanningsFilter)
+				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(deliveryPlanningsSuitableForInstruction);
 		while (deliveryPlanningIterator.hasNext())
@@ -627,9 +628,9 @@ public class DeliveryPlanningService
 
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
-
-		validateDeliveryPlannings(dpFilter);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
+				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
+				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
@@ -659,10 +660,10 @@ public class DeliveryPlanningService
 
 	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
-
-		validateDeliveryPlannings(dpFilter);
-
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
+				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
+				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
+		
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
@@ -763,29 +764,22 @@ public class DeliveryPlanningService
 
 	public boolean isExistsBlockedPartnerDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlannings = deliveryPlanningRepository.extractDeliveryPlannings(selectedDeliveryPlanningsFilter);
-		while (deliveryPlannings.hasNext())
-		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlannings.next();
-			if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID())))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return deliveryPlanningRepository.getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
+				.addInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery())
+				.create()
+				.anyMatch();
 	}
 
-	public boolean isExistsBlockedPartnerDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public boolean hasBlockedBPartner(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 
 		return bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()));
 	}
-	
+
 	public void validateDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		if (isExistsBlockedPartnerDeliveryPlanning(deliveryPlanningId))
+		if (hasBlockedBPartner(deliveryPlanningId))
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_BlockedPartner);
 		}

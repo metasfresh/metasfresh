@@ -27,7 +27,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_BlockStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -36,6 +39,7 @@ import java.util.Optional;
 public class BPartnerBlockStatusService
 {
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull
 	private final BPartnerBlockStatusRepository bPartnerBlockStatusRepository;
@@ -48,25 +52,33 @@ public class BPartnerBlockStatusService
 	@NonNull
 	public BPartnerBlockStatus createBPartnerBlockStatus(@NonNull final CreateBPartnerBlockStatusRequest request)
 	{
-		final BPartnerBlockStatus bPartnerBlockStatus = bPartnerBlockStatusRepository.create(request);
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final BPartnerBlockStatus status = bPartnerBlockStatusRepository.create(request);
 
-		updateBPartnerRecord(bPartnerBlockStatus);
+			updateBPartnerRecord(status);
 
-		return bPartnerBlockStatus;
+			return status;
+		});
 	}
 
 	public boolean isBPartnerBlocked(@NonNull final BPartnerId bPartnerId)
 	{
-		return retrieveLatestByBPartnerId(bPartnerId)
+		return retrieveBlockedByBPartnerId(bPartnerId)
 				.map(BPartnerBlockStatus::isBlocked)
 				.orElse(false);
 	}
 
 	@VisibleForTesting
 	@NonNull
-	public Optional<BPartnerBlockStatus> retrieveLatestByBPartnerId(@NonNull final BPartnerId bPartnerId)
+	public Optional<BPartnerBlockStatus> retrieveBlockedByBPartnerId(@NonNull final BPartnerId bPartnerId)
 	{
-		return bPartnerBlockStatusRepository.retrieveLatestByBPartnerId(bPartnerId);
+		return bPartnerBlockStatusRepository.retrieveBlockedByBPartnerId(bPartnerId);
+	}
+
+	@NonNull
+	public IQuery<I_C_BPartner_BlockStatus> getBlockedBPartnerQuery()
+	{
+		return bPartnerBlockStatusRepository.getBlockedBPartnerQuery();
 	}
 
 	private void updateBPartnerRecord(@NonNull final BPartnerBlockStatus status)
