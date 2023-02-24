@@ -42,6 +42,7 @@ import de.metas.elementvalue.ElementValue;
 import de.metas.elementvalue.ElementValueService;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.inout.IInOutDAO;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceService;
@@ -575,6 +576,8 @@ public class JsonInvoiceService
 			@NonNull final JsonCreateInvoiceRequestItemHeader invoiceHeader,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		validateInvoiceTypeMatchesTrx(invoiceHeader);
+
 		final ClientAndOrgId clientAndOrgId = getClientAndOrgId(invoiceHeader.getOrgCode());
 
 		final ZoneId zoneId = orgDAO.getTimeZone(clientAndOrgId.getOrgId());
@@ -816,6 +819,23 @@ public class JsonInvoiceService
 		return Optional.ofNullable(RestUtils.retrieveOrgIdOrDefault(orgCode))
 				.filter(OrgId::isRegular)
 				.orElseThrow(() -> new AdempiereException("Cannot find the orgId from either orgCode=" + orgCode + " or the current user's context."));
+	}
+
+	private static void validateInvoiceTypeMatchesTrx(@NonNull final JsonCreateInvoiceRequestItemHeader requestItemHeader)
+	{
+		final String docBaseType = requestItemHeader.getInvoiceDocType().getDocBaseType();
+
+		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(docBaseType);
+		final SOTrx soTrx = SOTrx.ofNameNotNull(requestItemHeader.getSoTrx());
+
+		if (!invoiceDocBaseType.getSoTrx().equals(soTrx))
+		{
+			throw new AdempiereException("Doc type doesn't match provided transaction type!")
+					.appendParametersToMessage()
+					.setParameter("ExternalHeaderId", requestItemHeader.getExternalHeaderId())
+					.setParameter("SOTrx", requestItemHeader.getSoTrx())
+					.setParameter("DocBaseType", docBaseType);
+		}
 	}
 
 	@Value
