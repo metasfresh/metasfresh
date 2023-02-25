@@ -477,4 +477,14 @@ public class HUInOutBL implements IHUInOutBL
 		}
 	}
 
+	public boolean isServiceRepair(@NonNull final org.compiere.model.I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt).docSubType(X_C_DocType.DOCSUBTYPE_SR)
+				.isSOTrx(false)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
 }
