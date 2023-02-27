@@ -307,6 +307,24 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
+	@And("^the (shipment|material receipt) identified by (.*) is (completed) and the following exception is thrown: (.*)")
+	public void complete_inOut_expect_exception(
+			@NonNull final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
+			@NonNull final String action,
+			@NonNull final String exceptionMessage)
+	{
+		try
+		{
+			shipment_action(model_UNUSED, shipmentIdentifier, action);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getMessage()).contains(exceptionMessage);
+		}
+	}
+	
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
 	{

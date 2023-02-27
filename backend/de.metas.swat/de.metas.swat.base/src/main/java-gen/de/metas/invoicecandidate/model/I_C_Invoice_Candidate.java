@@ -19,6 +19,27 @@ public interface I_C_Invoice_Candidate
 
 
 	/**
+	 * Set Act Load Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setActualLoadingDate (@Nullable java.sql.Timestamp ActualLoadingDate);
+
+	/**
+	 * Get Act Load Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getActualLoadingDate();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ActualLoadingDate = new ModelColumn<>(I_C_Invoice_Candidate.class, "ActualLoadingDate", null);
+	String COLUMNNAME_ActualLoadingDate = "ActualLoadingDate";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -1165,7 +1186,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Date Promised.
+	 * Set Date Promised From.
 	 * Date Order was promised
 	 *
 	 * <br>Type: Date
@@ -1177,7 +1198,7 @@ public interface I_C_Invoice_Candidate
 	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Date Promised.
+	 * Get Date Promised From.
 	 * Date Order was promised
 	 *
 	 * <br>Type: Date
@@ -1684,6 +1705,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
+	 * Set Additional Text for Invoice.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceAdditionalText (@Nullable java.lang.String InvoiceAdditionalText);
+
+	/**
+	 * Get Additional Text for Invoice.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceAdditionalText();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoiceAdditionalText = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoiceAdditionalText", null);
+	String COLUMNNAME_InvoiceAdditionalText = "InvoiceAdditionalText";
+
+	/**
 	 * Set Invoice Rule.
 	 * Frequency and method of invoicing
 	 *
@@ -2011,6 +2053,29 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsMaterialTracking = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsMaterialTracking", null);
 	String COLUMNNAME_IsMaterialTracking = "IsMaterialTracking";
+
+	/**
+	 * Set Do not show Country of Origin.
+	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNotShowOriginCountry (boolean IsNotShowOriginCountry);
+
+	/**
+	 * Get Do not show Country of Origin.
+	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNotShowOriginCountry();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsNotShowOriginCountry = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsNotShowOriginCountry", null);
+	String COLUMNNAME_IsNotShowOriginCountry = "IsNotShowOriginCountry";
 
 	/**
 	 * Set Packaging Material .
@@ -3683,46 +3748,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
-	 * Set Additional Text for Invoice.
+	 * Set Payment Instruction.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInvoiceAdditionalText (@Nullable java.lang.String InvoiceAdditionalText);
+	void setC_PaymentInstruction_ID (int C_PaymentInstruction_ID);
 
 	/**
-	 * Get Additional Text for Invoice.
+	 * Get Payment Instruction.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getInvoiceAdditionalText();
+	int getC_PaymentInstruction_ID();
 
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoiceAdditionalText = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoiceAdditionalText", null);
-	String COLUMNNAME_InvoiceAdditionalText = "InvoiceAdditionalText";
+	@Nullable org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction();
 
-	/**
-	 * Set Do not show Country of Origin.
-	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsNotShowOriginCountry (boolean IsNotShowOriginCountry);
+	void setC_PaymentInstruction(@Nullable org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction);
 
-	/**
-	 * Get Do not show Country of Origin.
-	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isNotShowOriginCountry();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsNotShowOriginCountry = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsNotShowOriginCountry", null);
-	String COLUMNNAME_IsNotShowOriginCountry = "IsNotShowOriginCountry";
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentInstruction> COLUMN_C_PaymentInstruction_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PaymentInstruction_ID", org.compiere.model.I_C_PaymentInstruction.class);
+	String COLUMNNAME_C_PaymentInstruction_ID = "C_PaymentInstruction_ID";
 }

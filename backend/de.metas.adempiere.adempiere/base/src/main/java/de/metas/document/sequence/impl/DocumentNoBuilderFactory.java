@@ -5,9 +5,11 @@ package de.metas.document.sequence.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.document.sequence.ICountryIdProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.IClientOrgAware;
@@ -31,6 +33,7 @@ import lombok.NonNull;
 public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 {
 	private final List<ValueSequenceInfoProvider> additionalProviders;
+	private final List<ICountryIdProvider> countryIdProviders = new ArrayList<>();
 
 	public DocumentNoBuilderFactory(@NonNull final Optional<List<ValueSequenceInfoProvider>> providers)
 	{
@@ -56,9 +59,21 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	};
 
 	@Override
+	public void registerCountryIdProvider(@NonNull final ICountryIdProvider countryIdProvider)
+	{
+		this.countryIdProviders.add(countryIdProvider);
+	}
+
+	@Override
+	public List<ICountryIdProvider> getCountryIdProviders()
+	{
+		return countryIdProviders;
+	}
+
+	@Override
 	public IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder()
 	{
-		return new PreliminaryDocumentNoBuilder();
+		return new PreliminaryDocumentNoBuilder(countryIdProviders);
 	}
 
 	@Override
@@ -100,7 +115,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	@Override
 	public DocumentNoBuilder createDocumentNoBuilder()
 	{
-		return new DocumentNoBuilder();
+		return new DocumentNoBuilder(countryIdProviders);
 	}
 
 	@Override

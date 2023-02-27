@@ -351,6 +351,19 @@ public class C_Order_StepDef
 		}
 	}
 
+	@And("^the order identified by (.*) is (completed) and the following exception is thrown: (.*)$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final String exceptionMessage)
+	{
+		try {
+			order_action(orderIdentifier, action);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getMessage()).contains(exceptionMessage);
+		}
+	}
+
 	@Given("generate PO from SO is invoked with parameters:")
 	public void generate_PO_from_SO_invoked(@NonNull final DataTable dataTable)
 	{

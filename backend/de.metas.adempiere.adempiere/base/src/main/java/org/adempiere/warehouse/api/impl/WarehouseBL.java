@@ -32,6 +32,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -60,6 +61,7 @@ public class WarehouseBL implements IWarehouseBL
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -272,6 +274,14 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@Override
+	public boolean isDropShipWarehouse(@NonNull final WarehouseId warehouseId, @NonNull final OrgId adOrgId)
+	{
+		final WarehouseId dropShipWarehouseId = orgDAO.getOrgDropshipWarehouseId(adOrgId);
+
+		return warehouseId.equals(dropShipWarehouseId);
 	}
 
 	@Override

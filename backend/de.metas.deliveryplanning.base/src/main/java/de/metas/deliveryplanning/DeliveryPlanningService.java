@@ -22,8 +22,10 @@
 
 package de.metas.deliveryplanning;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatsService;
@@ -48,6 +50,8 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -84,6 +88,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_BlockStatus;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -93,6 +98,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -112,6 +118,7 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_NoForwarder = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoForwarder");
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllHaveReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllHaveReleaseNo");
 	public static final AdMessageKey MSG_M_Delivery_Planning_WhithOutReleaseNo = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.WhithOutReleaseNo");
+	public static final AdMessageKey MSG_M_Delivery_Planning_BlockedPartner = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NoBlockedPartner");
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
@@ -122,8 +129,10 @@ public class DeliveryPlanningService
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 	private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
+	private final BPartnerBlockStatusService bPartnerBlockStatusService;
 
 	private final BPartnerStatsService bPartnerStatsService;
 
@@ -146,12 +155,14 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService,
 			@NonNull final BPartnerStatsService bPartnerStatsService,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final BPartnerBlockStatusService bPartnerBlockStatusService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 		this.deliveryStatusColorPaletteService = deliveryStatusColorPaletteService;
 		this.bPartnerStatsService = bPartnerStatsService;
 		this.moneyService = moneyService;
+		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 	}
 
 	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
@@ -260,6 +271,8 @@ public class DeliveryPlanningService
 
 	public void createAdditionalDeliveryPlannings(@NonNull final DeliveryPlanningId deliveryPlanningId, final int additionalLines)
 	{
+		validateDeliveryPlanning(deliveryPlanningId);
+
 		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId);
@@ -330,11 +343,13 @@ public class DeliveryPlanningService
 
 	public void closeSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
+		validateDeliveryPlannings(selectedDeliveryPlanningsFilter);
 		deliveryPlanningRepository.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
+		validateDeliveryPlannings(selectedDeliveryPlanningsFilter);
 		deliveryPlanningRepository.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 
@@ -563,7 +578,9 @@ public class DeliveryPlanningService
 
 	public void generateDeliveryInstructions(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository.excludeUnsuitableForInstruction(selectedDeliveryPlanningsFilter);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> deliveryPlanningsSuitableForInstruction = deliveryPlanningRepository
+				.excludeUnsuitableForInstruction(selectedDeliveryPlanningsFilter)
+				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(deliveryPlanningsSuitableForInstruction);
 		while (deliveryPlanningIterator.hasNext())
@@ -611,7 +628,9 @@ public class DeliveryPlanningService
 
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
+				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
+				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
 
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 		while (deliveryPlanningIterator.hasNext())
@@ -641,8 +660,10 @@ public class DeliveryPlanningService
 
 	public void cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
-		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter);
-
+		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
+				.excludeDeliveryPlanningsWithoutInstruction(selectedDeliveryPlanningsFilter)
+				.addNotInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery());
+		
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
 
 		while (deliveryPlanningIterator.hasNext())
@@ -722,6 +743,53 @@ public class DeliveryPlanningService
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+	}
 
+	public void updateICFromDeliveryPlanningId(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning currentDeliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(currentDeliveryPlanning.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			return;
+		}
+		final Timestamp minLoadingDateFromCompletedDeliveryInstructions = deliveryPlanningRepository.getMinLoadingDateFromCompletedDeliveryInstructions(orderLineId);
+		final ImmutableList<I_C_Invoice_Candidate> relatedICs = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId)
+				.stream()
+				.filter(ic -> !ic.isProcessed())
+				.peek(ic -> ic.setActualLoadingDate(minLoadingDateFromCompletedDeliveryInstructions))
+				.collect(ImmutableList.toImmutableList());
+		invoiceCandDAO.saveAll(relatedICs);
+	}
+
+	public boolean isExistsBlockedPartnerDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return deliveryPlanningRepository.getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
+				.addInSubQueryFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, I_C_BPartner_BlockStatus.COLUMNNAME_C_BPartner_ID, bPartnerBlockStatusService.getBlockedBPartnerQuery())
+				.create()
+				.anyMatch();
+	}
+
+	public boolean hasBlockedBPartner(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+
+		return bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()));
+	}
+
+	public void validateDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		if (hasBlockedBPartner(deliveryPlanningId))
+		{
+			throw new AdempiereException(MSG_M_Delivery_Planning_BlockedPartner);
+		}
+	}
+
+	private void validateDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		if (isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter))
+		{
+			throw new AdempiereException(MSG_M_Delivery_Planning_BlockedPartner);
+		}
 	}
 }
