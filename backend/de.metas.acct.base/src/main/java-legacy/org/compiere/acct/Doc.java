@@ -1,12 +1,14 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.DefaultAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -22,7 +24,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.CostElementId;
-import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
@@ -60,7 +61,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MNote;
@@ -76,6 +76,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -1217,6 +1218,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		return getDateAcct().toTimestamp(services::getTimeZone);
 	}
+
+	@NonNull
+	protected final Instant getDateAcctAsInstant() {return getDateAcct().toInstant(services::getTimeZone);}
 
 	protected final void setDateAcct(@NonNull final Timestamp dateAcct)
 	{

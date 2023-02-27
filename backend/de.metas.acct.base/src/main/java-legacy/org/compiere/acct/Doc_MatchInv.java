@@ -29,6 +29,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
@@ -611,13 +612,17 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final MatchInvType type = matchInv.getType();
 		final Money amtMatched;
+		final CostElement costElement;
 		if (type.isMaterial())
 		{
 			amtMatched = getInvoiceLineMatchedAmt();
+			costElement = null;
 		}
 		else if (type.isCost())
 		{
-			amtMatched = matchInv.getCostPartNotNull().getCostAmount();
+			final MatchInvCostPart costPart = matchInv.getCostPartNotNull();
+			amtMatched = costPart.getCostAmount();
+			costElement = services.getCostElementById(costPart.getCostElementId());
 		}
 		else
 		{
@@ -632,10 +637,11 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.productId(matchInv.getProductId())
 						.attributeSetInstanceId(matchInv.getAsiId())
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
+						.costElement(costElement)
 						.qty(qtyMatched)
 						.amt(CostAmount.ofMoney(amtMatched))
 						.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
-						.date(getDateAcct().toInstant(services::getTimeZone))
+						.date(getDateAcctAsInstant())
 						.description(getDescription())
 						.build())
 				.getTotalAmountToPost(acctSchema);

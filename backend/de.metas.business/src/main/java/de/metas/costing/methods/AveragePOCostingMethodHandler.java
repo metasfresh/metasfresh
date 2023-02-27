@@ -61,6 +61,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private final MatchInvoiceService matchInvoiceService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+
 	public AveragePOCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils,
 			@NonNull final MatchInvoiceService matchInvoiceService)
@@ -99,6 +100,16 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
+				CostDetailPreviousAmounts.of(currentCost));
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request,
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
@@ -145,7 +156,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return result;
 	}
-
 
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)

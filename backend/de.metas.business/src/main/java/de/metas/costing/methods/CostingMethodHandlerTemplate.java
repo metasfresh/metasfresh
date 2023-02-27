@@ -94,7 +94,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
 		{
-			return createCostForMatchInvoice(request);
+			final CostElement costElement = request.getCostElement();
+			if (costElement == null || costElement.isMaterialElement())
+			{
+				return createCostForMatchInvoice(request);
+			}
+			else
+			{
+				return createCostForMatchInvoice_NonMaterialCosts(request);
+			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InOutLine))
 		{
@@ -145,6 +153,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
