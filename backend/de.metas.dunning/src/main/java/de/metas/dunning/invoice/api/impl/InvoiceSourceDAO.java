@@ -27,10 +27,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
@@ -41,10 +41,11 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
@@ -56,12 +57,11 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	}
 
 	@Override
-	public int retrieveDueDays(
-			@NonNull final PaymentTermId paymentTermId,
-			final Date dateInvoiced,
-			final Date date)
+	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)
 	{
-		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId.getRepoId(), dateInvoiced, date);
+
+		final Date payDate =  date != null ? date : SystemTime.asDate();
+		return TimeUtil.getDaysBetween(dueDate, payDate);
 	}
 
 	@Override
@@ -83,14 +83,17 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 				.addEqualsFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, null)
 				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, Operator.LESS, dunningDate);
 
+
 		return queryBL.createQueryBuilder(I_C_Dunning.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_C_Dunning_ID, dunningLevel.getC_Dunning_ID()) // Dunning Level is for current assigned Dunning
 
+
 				.andCollectChildren(I_C_Dunning_Candidate_Invoice_v1.COLUMN_C_Dunning_ID)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
+				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.LESS, dunningDate)
 				.filter(dunningGraceFilter) // Validate Dunning Grace (if any)
 
 				.orderBy()
