@@ -23,6 +23,7 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  */
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -246,6 +247,11 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		im11.setC_UOM_ID(partialQty1_32.getUOMQtyNotNull().getUomId().getRepoId());
 		im11.setM_InOut_ID(iol11.getM_InOut_ID());
 		im11.setM_InOutLine(iol11);
+		im11.setM_Product_ID(iol11.getM_Product_ID());
+		im11.setC_Invoice_ID(123); // dummy
+		im11.setC_InvoiceLine_ID(123); // dummy
+		im11.setDateTrx(SystemTime.asDayTimestamp());
+		im11.setDateAcct(SystemTime.asDayTimestamp());
 		InterfaceWrapperHelper.save(im11);
 
 		// makes no sense, because currently revalidation would fail anyways, because it tries to get the invoice's docStatus and we don't have any
