@@ -112,9 +112,4 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
-	{
-		throw new UnsupportedOperationException();
-	}
 }

@@ -26,7 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
-import de.metas.costing.methods.MovingAverageInvoiceAmts;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -49,12 +49,12 @@ public class AggregatedCOGS
 	CostSegment costSegment;
 
 	@Getter(AccessLevel.NONE)
-	ImmutableMap<CostElement, MovingAverageInvoiceAmts> amountsPerElement;
+	ImmutableMap<CostElement, CostAmountDetailed> amountsPerElement;
 
 	@Builder
 	private AggregatedCOGS(
 			@NonNull final CostSegment costSegment,
-			@NonNull @Singular final Map<CostElement, MovingAverageInvoiceAmts> amounts)
+			@NonNull @Singular final Map<CostElement, CostAmountDetailed> amounts)
 	{
 		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
@@ -67,9 +67,9 @@ public class AggregatedCOGS
 		return amountsPerElement.keySet();
 	}
 
-	public MovingAverageInvoiceAmts getMovingAverageInvoiceAmtsForCostElement(final CostElement costElement)
+	public CostAmountDetailed getMovingAverageInvoiceAmtsForCostElement(final CostElement costElement)
 	{
-		final MovingAverageInvoiceAmts amt = amountsPerElement.get(costElement);
+		final CostAmountDetailed amt = amountsPerElement.get(costElement);
 		if (amt == null)
 		{
 			throw new AdempiereException("No cost amount for " + costElement + " in " + this);
@@ -85,7 +85,7 @@ public class AggregatedCOGS
 		}
 
 		// merge amounts maps; will fail in case of duplicate cost elements
-		final ImmutableMap<CostElement, MovingAverageInvoiceAmts> amountsNew = ImmutableMap.<CostElement, MovingAverageInvoiceAmts>builder()
+		final ImmutableMap<CostElement, CostAmountDetailed> amountsNew = ImmutableMap.<CostElement, CostAmountDetailed>builder()
 				.putAll(amountsPerElement)
 				.putAll(other.amountsPerElement)
 				.build();
@@ -100,7 +100,7 @@ public class AggregatedCOGS
 			throw new AdempiereException("Cannot add cost results when the cost segment is not matching: " + this + ", " + other);
 		}
 
-		final Map<CostElement, MovingAverageInvoiceAmts> amountsNew = new HashMap<>(amountsPerElement);
+		final Map<CostElement, CostAmountDetailed> amountsNew = new HashMap<>(amountsPerElement);
 		other.amountsPerElement.forEach((costElement, amtToAdd) -> {
 			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
 		});
@@ -109,7 +109,7 @@ public class AggregatedCOGS
 	}
 
 
-	public MovingAverageInvoiceAmts getTotalAmountToPost(@NonNull final AcctSchema as)
+	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
 	{
 		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
 		return getTotalAmount(acctSchemaCosting.getCostingMethod(), acctSchemaCosting.getPostOnlyCostElementIds())
@@ -117,7 +117,7 @@ public class AggregatedCOGS
 	}
 
 	@VisibleForTesting
-	Optional<MovingAverageInvoiceAmts> getTotalAmount(
+	Optional<CostAmountDetailed> getTotalAmount(
 			@NonNull final CostingMethod costingMethod,
 			final Set<CostElementId> onlyCostElementIds)
 	{
@@ -125,7 +125,7 @@ public class AggregatedCOGS
 				.stream()
 				.filter(costElement -> isCostElementMatching(costElement, costingMethod, onlyCostElementIds))
 				.map(this::getMovingAverageInvoiceAmtsForCostElement)
-				.reduce(MovingAverageInvoiceAmts::add);
+				.reduce(CostAmountDetailed::add);
 		// .orElseThrow(() -> new AdempiereException("No costs found for " + costingMethod + ", onlyCostElementIds=" + onlyCostElementIds + " in " + this));
 	}
 

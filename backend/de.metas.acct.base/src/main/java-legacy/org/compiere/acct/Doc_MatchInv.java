@@ -31,7 +31,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.methods.MovingAverageInvoiceAmts;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
@@ -253,16 +253,16 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		facts.add(fact);
 		setC_Currency_ID(as.getCurrencyId());
 
-		final CostAmount costs = getCreateCostDetails(as);
+		final CostAmountDetailed costs = getCreateCostDetails(as);
 
 		//
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
-				.setCurrencyId(costs.getCurrencyId())
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
 				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
-				.setAmtSource(costs.getValue(), null)
+				.setAmtSource(costs.getMainAmt(), null)
 				.setQty(getQty())
 				.buildAndAdd();
 		updateFromReceiptLine(dr_NotInvoicedReceipts);
@@ -295,17 +295,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// If both accounts Not Invoiced Receipts and Inventory Clearing are equal
 		// then remove the posting
 		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr_NotInvoicedReceipts, cr_InventoryClearing, this::isInterOrg);
-		if (CostingMethod.MovingAverageInvoice.equals(as.getCosting().getCostingMethod()))
-		{
-			final MovingAverageInvoiceAmts cogsAmt = getCOGSAmt(as);
-			if (cogsAmt != null)
-			{
-
-				// final Money grir = cogsAmt.getGrir();
-				// if(grir.isGreaterThan())
-
-			}
-		}
+		//
 
 		//
 		// Invoice Price Variance difference
@@ -574,7 +564,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setAD_Org_ID(receiptLine.getAD_Org_ID());
 	}
 
-	private CostAmount getCreateCostDetails(final AcctSchema as)
+	private CostAmountDetailed getCreateCostDetails(final AcctSchema as)
 	{
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
@@ -602,35 +592,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 										  .description(getDescription())
 										  .build())
 				.getTotalAmountToPost(as);
-	}
-
-	private @Nullable MovingAverageInvoiceAmts getCOGSAmt(final AcctSchema as)
-	{
-		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
-
-		final CostAmount matchAmt = CostAmount.of(getInvoiceLineMatchedAmt(), getInvoiceCurrencyId());
-
-		final I_M_InOutLine receiptLine = getReceiptLine();
-		final I_M_InOut receipt = inOutBL.getById(InOutId.ofRepoId(receiptLine.getM_InOut_ID()));
-		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
-		final Quantity matchQty = isReturnTrx ? getQty().negate() : getQty();
-
-		final I_M_MatchInv matchInv = getM_MatchInv();
-		final AggregatedCOGS cogs = services.createCOGS(CostDetailCreateRequest.builder()
-																.acctSchemaId(as.getId())
-																.clientId(getClientId())
-																.orgId(getOrgId())
-																.productId(getProductId())
-																.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
-																.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
-																.qty(matchQty)
-																.amt(matchAmt)
-																.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
-																.date(getDateAcct().toInstant(services::getTimeZone))
-																.description(getDescription())
-																.build());
-		return cogs == null ? null : cogs.getTotalAmountToPost(as);
-
 	}
 
 }   // Doc_MatchInv

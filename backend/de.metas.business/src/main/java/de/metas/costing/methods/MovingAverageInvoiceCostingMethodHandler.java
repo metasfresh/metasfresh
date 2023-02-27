@@ -22,7 +22,6 @@
 
 package de.metas.costing.methods;
 
-import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostAmount;
@@ -33,10 +32,7 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostTypeId;
-import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.IProductCostingBL;
@@ -117,10 +113,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final Optional<MovingAverageInvoiceAmts> cogs = createCOGS(request);
+		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailes(request);
 		return createCostDetailAndAdjustCurrentCosts(request);
-		
-		
 
 		// return utils.createCostDetailRecordWithChangedCosts(
 		// 		request.withAmount(amtConv),
@@ -373,8 +367,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.build();
 	}
 
-	@Override
-	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
+	private CostAmountDetailed computeCostAmountDetailes(final CostDetailCreateRequest request)
 	{
 		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
@@ -434,28 +427,11 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final Money cogsAdjustment = differenceGRIR.subtract(merchandiseStockAdjustmentProportion);
 
-		final AcctSchema acctSchema = acctSchemaRepo.getById(request.getAcctSchemaId());
+		return CostAmountDetailed.builder()
+				.mainAmt(CostAmount.ofMoney(invoicedAmt))
+				.costAdjustmentAmt(CostAmount.ofMoney(differenceGRIR))
 
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), request.getAcctSchemaId());
-		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
-
-		final CostSegment costSegment = CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(request.getAcctSchemaId())
-				.costTypeId(costTypeId)
-				.productId(request.getProductId())
-				.clientId(request.getClientId())
-				.orgId(request.getOrgId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build();
-
-		return Optional.of(MovingAverageInvoiceAmts.builder()
-								   .adjustmentProportion(adjustmentProportion)
-								   .grir(invoicedAmt)
-								   .cogs(cogsAdjustment)
-								   .costElement(request.getCostElement())
-								   .costSegment(costSegment)
-								   .build());
 	}
 
 	@Override

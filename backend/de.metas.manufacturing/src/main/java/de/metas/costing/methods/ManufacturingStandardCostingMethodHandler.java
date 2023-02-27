@@ -481,10 +481,4 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	{
 		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
-
-	@Override
-	public Optional<MovingAverageInvoiceAmts> createCOGS(final CostDetailCreateRequest request)
-	{
-		throw new UnsupportedOperationException();
-	}
 }

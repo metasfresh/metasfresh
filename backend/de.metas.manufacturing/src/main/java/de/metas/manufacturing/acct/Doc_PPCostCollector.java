@@ -23,6 +23,7 @@ package de.metas.manufacturing.acct;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
@@ -38,7 +39,6 @@ import lombok.NonNull;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
-import de.metas.acct.Account;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
@@ -233,7 +233,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
-			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final CostAmount costsReceived = costs.divide(qtyTotal, CurrencyPrecision.ofInt(12))
 					.multiply(qtyReceived)
 					.roundToPrecisionIfNeeded(as.getStandardPrecision());
@@ -284,7 +284,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
-			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
 			if (fact != null)
 			{
@@ -320,7 +320,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
-			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Account credit = docLine.getAccountForCostElement(as, element);
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyMoved);
 			if (fact != null)
@@ -359,7 +359,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
-			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
 			if (fact != null)
 			{
