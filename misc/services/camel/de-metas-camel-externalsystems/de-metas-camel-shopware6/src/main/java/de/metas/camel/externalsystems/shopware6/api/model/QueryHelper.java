@@ -71,7 +71,7 @@ public class QueryHelper
 	{
 		return MultiQueryRequest.builder()
 				.filter(JsonQuery.builder()
-								.field(Shopware6Constants.FIELD_PRODUCT_ID)
+								.field(FIELD_PRODUCT_ID)
 								.queryType(QueryType.EQUALS)
 								.value(parentId)
 								.build())
