@@ -61,7 +61,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	{
 
 		final Date payDate =  date != null ? date : SystemTime.asDate();
-		return TimeUtil.getDaysBetween(payDate, dueDate);
+		return TimeUtil.getDaysBetween(dueDate, payDate);
 	}
 
 	@Override
