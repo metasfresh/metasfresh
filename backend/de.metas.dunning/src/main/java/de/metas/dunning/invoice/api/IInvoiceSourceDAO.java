@@ -30,8 +30,8 @@ import org.compiere.model.I_C_Invoice;
 
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.ISingletonService;
+
 
 /**
  * DAO methods related to {@link I_C_Invoice}s
@@ -43,7 +43,7 @@ public interface IInvoiceSourceDAO extends ISingletonService
 {
 	Timestamp retrieveDueDate(org.compiere.model.I_C_Invoice invoice);
 
-	int retrieveDueDays(PaymentTermId paymentTermId, Date dateInvoiced, Date date);
+	int computeDueDays(Date dueDate, Date date);
 
 	Iterator<I_C_Dunning_Candidate_Invoice_v1> retrieveDunningCandidateInvoices(IDunningContext context);
 }
