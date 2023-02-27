@@ -108,7 +108,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 	protected Stream<I_M_ReceiptSchedule> streamReceiptSchedulesToReceive()
 	{
-		return retrieveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
+		return retrieveActiveSelectedRecordsQueryBuilder(I_M_ReceiptSchedule.class)
 				.create()
 				.stream(I_M_ReceiptSchedule.class);
 	}

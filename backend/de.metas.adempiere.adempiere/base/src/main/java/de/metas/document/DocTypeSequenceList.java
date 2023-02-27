@@ -1,21 +1,16 @@
 package de.metas.document;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 /*
  * #%L
@@ -45,21 +40,21 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class DocTypeSequenceMap
+public final class DocTypeSequenceList
 {
 	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final DocTypeSequenceMap EMPTY = builder().build();
+	public static final DocTypeSequenceList EMPTY = builder().build();
 
-	private final Map<ArrayKey, DocTypeSequence> docTypeSequences;
+	private final ArrayList<DocTypeSequence> docTypeSequences;
 	private final DocSequenceId defaultDocNoSequenceId;
 
-	private DocTypeSequenceMap(final Builder builder)
+	private DocTypeSequenceList(@NonNull final Builder builder)
 	{
-		docTypeSequences = ImmutableMap.copyOf(builder.docTypeSequences);
+		docTypeSequences = builder.docTypeSequences;
 		defaultDocNoSequenceId = builder.defaultDocNoSequenceId;
 	}
 
@@ -72,46 +67,51 @@ public final class DocTypeSequenceMap
 				.toString();
 	}
 
-	public DocSequenceId getDocNoSequenceId(final ClientId adClientId, final OrgId adOrgId)
+	public DocSequenceId getDocNoSequenceId(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId, @Nullable final CountryId countryId)
 	{
 		if (!docTypeSequences.isEmpty())
 		{
-			final ArrayKey key = mkKey(adClientId, adOrgId);
-			final DocTypeSequence docTypeSequence = docTypeSequences.get(key);
-			if (docTypeSequence != null)
+			for (final DocTypeSequence docTypeSequence : docTypeSequences)
 			{
-				return docTypeSequence.getDocSequenceId();
+				if (!docTypeSequence.getAdClientId().equals(adClientId))
+				{
+					continue;
+				}
+				if (!(docTypeSequence.getAdOrgId().equals(adOrgId) || docTypeSequence.getAdOrgId().equals(OrgId.ANY)))
+				{
+					continue;
+				}
+				if (docTypeSequence.getCountryId().equals(countryId) || docTypeSequence.getCountryId() == null)
+				{
+					return docTypeSequence.getDocSequenceId();
+				}
 			}
 		}
-
 		return defaultDocNoSequenceId;
-	}
-
-	private static ArrayKey mkKey(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
-	{
-		return Util.mkKey(adClientId, adOrgId);
 	}
 
 	public static final class Builder
 	{
-		private final Map<ArrayKey, DocTypeSequence> docTypeSequences = new HashMap<>();
+		private final ArrayList<DocTypeSequence> docTypeSequences = new ArrayList<>();
 		private DocSequenceId defaultDocNoSequenceId = null;
 
 		private Builder()
 		{
 		}
 
-		public DocTypeSequenceMap build()
+		public DocTypeSequenceList build()
 		{
-			return new DocTypeSequenceMap(this);
+			return new DocTypeSequenceList(this);
 		}
 
-		public void addDocSequenceId(final ClientId adClientId, final OrgId adOrgId, final DocSequenceId docSequenceId)
+		/**
+		 * We assume that this method is called in the right order of SeqNos (ascending)
+		 */
+		public void addDocSequenceId(final ClientId adClientId, final OrgId adOrgId, final DocSequenceId docSequenceId, final CountryId countryId, final SeqNo seqNo)
 		{
-			final DocTypeSequence docTypeSequence = new DocTypeSequence(adClientId, adOrgId, docSequenceId);
-			final ArrayKey key = mkKey(docTypeSequence.getAdClientId(), docTypeSequence.getAdOrgId());
+			final DocTypeSequence docTypeSequence = new DocTypeSequence(adClientId, adOrgId, docSequenceId, countryId, seqNo);
 
-			docTypeSequences.put(key, docTypeSequence);
+			docTypeSequences.add(docTypeSequence);
 		}
 
 		public Builder defaultDocNoSequenceId(final DocSequenceId defaultDocNoSequenceId)
@@ -122,20 +122,26 @@ public final class DocTypeSequenceMap
 	}
 
 	@Value
-	private static final class DocTypeSequence
+	private static class DocTypeSequence
 	{
-		private final ClientId adClientId;
-		private final OrgId adOrgId;
-		private final DocSequenceId docSequenceId;
+		ClientId adClientId;
+		OrgId adOrgId;
+		DocSequenceId docSequenceId;
+		CountryId countryId;
+		SeqNo seqNo;
 
 		private DocTypeSequence(
 				@Nullable final ClientId adClientId,
 				@Nullable final OrgId adOrgId,
-				@NonNull final DocSequenceId docSequenceId)
+				@NonNull final DocSequenceId docSequenceId,
+				@Nullable final CountryId countryId,
+				@NonNull final SeqNo seqNo)
 		{
 			this.adClientId = adClientId != null ? adClientId : ClientId.SYSTEM;
 			this.adOrgId = adOrgId != null ? adOrgId : OrgId.ANY;
 			this.docSequenceId = docSequenceId;
+			this.countryId = countryId;
+			this.seqNo = seqNo;
 		}
 	}
 }
