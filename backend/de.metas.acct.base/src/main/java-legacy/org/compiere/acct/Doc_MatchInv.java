@@ -19,6 +19,7 @@ package org.compiere.acct;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -26,11 +27,9 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.costing.AggregatedCOGS;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingMethod;
 import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
@@ -255,6 +254,103 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final CostAmountDetailed costs = getCreateCostDetails(as);
 
+		if (costs.getCostAdjustmentAmt().isZero())
+		{
+			createFactLinesWithNoDifference(as, fact, costs);
+		}
+		else
+		{
+			createFactLinesWithCostAdjustment(as, fact, costs);
+		}
+
+		return facts;
+	}   // createFact
+
+	private void createFactLinesWithCostAdjustment(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
+	{
+		final CostAmount cr_mainAmt;
+		final CostAmount cr_costAdjustment;
+		final CostAmount cr_alreadyShipped;
+
+		final CostAmount dr_mainAmt;
+		final CostAmount dr_costAdjustment;
+		final CostAmount dr_alreadyShipped;
+
+		final boolean adjustmentDoneInCredit = costs.getCostAdjustmentAmt().signum() > 0; // received amount is greater than the invoiced amount
+
+		if (adjustmentDoneInCredit)
+		{
+			cr_mainAmt = costs.getMainAmt();
+			cr_costAdjustment = costs.getCostAdjustmentAmt();
+			cr_alreadyShipped = costs.getAlreadyShippedAmt();
+
+			dr_mainAmt = cr_mainAmt.add(cr_costAdjustment).add(cr_alreadyShipped);
+			dr_costAdjustment = null;
+			dr_alreadyShipped = null;
+		}
+		else
+		{
+			dr_mainAmt = costs.getMainAmt();
+			dr_costAdjustment = costs.getCostAdjustmentAmt();
+			dr_alreadyShipped = costs.getAlreadyShippedAmt();
+
+			cr_mainAmt = dr_mainAmt.add(dr_costAdjustment).add(dr_alreadyShipped);
+			cr_costAdjustment = null;
+			cr_alreadyShipped = null;
+		}
+
+		//
+		// NotInvoicedReceipt DR
+		// From Receipt
+		final FactLine notInvoicedReceipts = fact.createLine()
+				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
+				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
+				.setAmtSource(dr_mainAmt, cr_mainAmt)
+				.setQty(getQty())
+				.buildAndAdd();
+		updateFromReceiptLine(notInvoicedReceipts);
+
+		// //
+		// // InventoryClearing CR
+		// // From Invoice
+		// final FactLine inventoryClearing = fact.createLine()
+		// 		.setAccount(docLine.getInventoryClearingAccount(as))
+		// 		.setCurrencyId(getInvoiceCurrencyId())
+		// 		.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+		// 		.setAmtSource(dr_costAdjustment, cr_costAdjustment)
+		// 		.setQty(getQty().negate())
+		// 		.buildAndAdd();
+		// updateFromInvoiceLine(inventoryClearing);
+
+		//
+		// Merchandise Stock aka P_Asset CR
+
+		final FactLine costAdjustment = fact.createLine()
+				.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
+				.setCurrencyId(getInvoiceCurrencyId())
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(dr_costAdjustment, cr_costAdjustment)
+				.setQty(getQty().negate()) // TODO signum
+				.buildAndAdd();
+		updateFromInvoiceLine(costAdjustment);
+
+		//
+		// Already shipped aka P_COGS CR
+
+		final FactLine alreadyShipped = fact.createLine()
+				.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
+				.setCurrencyId(getInvoiceCurrencyId())
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(dr_alreadyShipped, cr_alreadyShipped)
+				.setQty(getQty().negate()) // TODO signum
+				.buildAndAdd();
+		updateFromInvoiceLine(alreadyShipped);
+
+	}
+
+	private void createFactLinesWithNoDifference(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
+	{
 		//
 		// NotInvoicedReceipt DR
 		// From Receipt
@@ -300,9 +396,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Invoice Price Variance difference
 		createFacts_InvoicePriceVariance(fact, dr_NotInvoicedReceipts, cr_InventoryClearing);
-
-		return facts;
-	}   // createFact
+	}
 
 	/**
 	 * Create the InvoicePriceVariance fact line
