@@ -104,7 +104,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
+	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
+
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 

@@ -5,6 +5,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.common.util.TryAndWaitUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -15,7 +16,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -119,18 +119,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Prepare
 		prepareSelectionForEnqueueing(pinstanceId);
 		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will updated right now (see below)
+		// * the ones which are in our selection, we will update right now (see below)
 		// * the other ones will be updated later, asynchronously
 
 		//
-		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
-		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
-		invoiceCandBL.updateInvalid()
-				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setLockedBy(icLock)
-				.setTaggedWithAnyTag()
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
-				.update();
+		// !!! Do not invoke invoiceCandBL.updateInvalid() at this point! (there was code at this place which did this) !!!
+		// It causes race-conditions and is not needed anymore.
+
+		// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
+		waitForInvoiceCandidatesUpdated(pinstanceId);
 
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
@@ -158,7 +155,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// I.e. even if someone changes some values, that's nothing to bother us here
 		final Iterator<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForSelectionStableOrdering(pinstanceId);
 
-		while(invoiceCandidates.hasNext() )
+		while (invoiceCandidates.hasNext())
 		{
 			final I_C_Invoice_Candidate icRecord = invoiceCandidates.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
@@ -226,6 +223,24 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
 				icLock);
+	}
+
+	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
+	{
+		try
+		{
+			TryAndWaitUtil.tryAndWait(
+					3600 /*let's wait a full hour*/,
+					1000 /*check once a second*/,
+					() -> invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(pinstanceId),
+					null);
+		}
+		catch (final InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("AD_PInstance_ID (ICs-selection)", pinstanceId.getRepoId());
+		}
 	}
 
 	/**
@@ -304,7 +319,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Update POReference (task 07978)
 		final String poReference = invoicingParams.getPOReference();
-		if (!Check.isEmpty(poReference, true))
+		if (Check.isNotBlank(poReference))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
 		}
