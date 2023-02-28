@@ -218,7 +218,6 @@ public class QuerySelectionHelper
 				ctx.getTrxName())
 						.setParameters(querySelectionUUID)
 						.setSqlFrom(selectionSqlFrom)
-						.setOrderBy(selectionOrderBy)
-				.setOrderBy(SELECTION_LINE_ALIAS);
+						.setOrderBy(selectionOrderBy);
 	}
 }
