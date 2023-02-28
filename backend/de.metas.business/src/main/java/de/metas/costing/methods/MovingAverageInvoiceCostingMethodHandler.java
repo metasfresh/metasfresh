@@ -74,12 +74,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
-	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-
-	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
 
 	public MovingAverageInvoiceCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -101,59 +97,14 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
-		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
-
-		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID()));
-
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(matchInv.getC_Invoice_ID());
-		final CurrencyConversionContext currencyConversionContext = invoiceBL.getCurrencyConversionCtx(invoiceBL.getById(invoiceId));
-
-		final CostAmount amtConv = getInvoiceLineCostAmountInAcctCurrency(invoiceLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
-
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
 		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailed(request);
-		return createCostDetailAndAdjustCurrentCosts(request);
 
-		// return utils.createCostDetailRecordWithChangedCosts(
-		// 		request.withAmount(amtConv),
-		// 		CostDetailPreviousAmounts.of(currentCost));
+		return utils.createCostDetailRecordWithChangedCosts(
+				request.withAmount(costAmountDetailed),
+				CostDetailPreviousAmounts.of(currentCost));
 
-		// final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
-		// final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
-		// final InOutId inoutId = InOutId.ofRepoId(matchInv.getM_InOut_ID());
-		//
-		// final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(inoutId);
-		// final CurrentCost currentCost = utils.getCurrentCost(request);
-		// final I_C_OrderLine orderLine = Optional.of(matchInv)
-		// 		.map(I_M_MatchInv::getC_InvoiceLine)
-		// 		.map(I_C_InvoiceLine::getC_OrderLine)
-		// 		.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInvId));
-		//
-		// if (matchInv.isSOTrx())
-		// {
-		// 	final CostAmount amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
-		//
-		// 	return utils.createCostDetailRecordNoCostsChanged(
-		// 			request.withAmount(amtConv),
-		// 			CostDetailPreviousAmounts.of(currentCost));
-		// }
-		// else
-		// {
-		// 	final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID()));
-		//
-		// 	final CostAmount amtConv = getMAInvoiceCostAmountInAcctCurrency(invoiceLine,
-		// 																	orderLine,
-		// 																	currentCost,
-		// 																	request.getQty(),
-		// 																	request.getAcctSchemaId(),
-		// 																	currencyConversionContext);
-		//
-		// 	return utils.createCostDetailRecordWithChangedCosts(
-		// 			request.withAmount(amtConv),
-		// 			CostDetailPreviousAmounts.of(currentCost));
-		// }
 	}
 
 	@Override
@@ -175,7 +126,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			final CostAmount currentCostPrice = currentCost.getCostPrice().toCostAmount();
 			final CostAmount amt = currentCostPrice.multiply(request.getQty());
-
 			// NOTE: expect conversion to do nothing because the current cost price shall already be in accounting currency
 			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 		}
@@ -204,7 +154,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
 		final Quantity requestQty = request.getQty();
-
 		final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
 
 		final boolean isInboundTrx = requestQty.signum() >= 0;
@@ -251,7 +200,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				if (costAmountDetailed.getMainAmt().isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-
 					requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
 				}
 				else
@@ -401,11 +349,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final ProductPrice purchaseOrderPrice = orderLineBL.getCostPrice(orderLine);
 
 		final CostAmount merchandiseStock = CostAmount.ofProductPrice(purchaseOrderPrice).multiply(receiptQty.toBigDecimal()).roundToPrecisionIfNeeded(currentCost.getPrecision());
-		; // 2.421,06€
 
 		final CostAmount invoicedAmt = request.getAmt().getMainAmt();
 
-		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt); // e.g. 1032,60€
+		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt);
 
 		final CostAmount adjustmentProportion = amtDifference.isZero() || receiptQty.isZero()
 				? CostAmount.zero(currentCost.getCurrencyId())
@@ -461,92 +408,5 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				amt,
 				() -> currencyConversionContext,
 				acctSchemaId);
-	}
-
-	private CostAmount getInvoiceLineCostAmountInAcctCurrency(
-			@NonNull final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine,
-			@NonNull final Quantity qty,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CurrencyConversionContext currencyConversionContext)
-	{
-		final ProductPrice costPriceConv = utils.convertToUOM(
-				invoiceLineBL.getCostPrice(invoiceLine),
-				qty.getUomId());
-
-		final CostAmount amt = CostAmount.ofProductPrice(costPriceConv).multiply(qty);
-
-		return utils.convertToAcctSchemaCurrency(
-				amt,
-				() -> currencyConversionContext,
-				acctSchemaId);
-	}
-
-	private CostAmount getMAInvoiceCostAmountInAcctCurrency(final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine,
-			@NonNull final I_C_OrderLine orderLine,
-			@NonNull final CurrentCost currentCost,
-			@NonNull final Quantity qty,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CurrencyConversionContext currencyConversionContext)
-	{
-		// TODO: 17/02/2023  add the logic from 2.2.4.1
-
-		// 		• Initial Cost Price: 0 PCE Stock
-		// • Purchase Order: 0.6725€, 3600 TO
-		// • Goods Receipt: 3600 TO
-		// • Vendor Invoice: 0.3857€, 3600 TO
-
-		final ProductPrice invoiceLineCostPrice = invoiceLineBL.getCostPrice(invoiceLine);
-		final ProductPrice purchaseOrderPrice = orderLineBL.getCostPrice(orderLine);
-		final Quantity purchaseOrderQty;
-
-		final Quantity receiptQty = inoutBL.retrieveCompleteOrClosedLinesForOrderLine(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
-				.stream()
-				.map(line -> Quantitys.create(line.getMovementQty(), UomId.ofRepoId(line.getC_UOM_ID())))
-				.reduce(Quantity::add)
-				.orElse(Quantitys.createZero(UomId.ofRepoId(orderLine.getC_UOM_ID())));
-
-		final Money purchaseInvoicePrice = invoiceLineCostPrice.toMoney();
-		final Quantity purchaseInvoiceQty = Quantitys.create(invoiceLine.getQtyInvoiced(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
-
-		final Money merchandiseStock = purchaseOrderPrice.toMoney().multiply(receiptQty.toBigDecimal()); // 2.421,06€
-		// aka Product_Asset; see Goods receipt posted with PO Price;
-
-		final Money invoicedAmt = purchaseInvoicePrice.multiply(purchaseInvoiceQty.toBigDecimal()); // 1388,46€ (0.3857€ x 3600 TO)
-		// TODO: check if it's 	invoiceLine.getQtyInvoicedInPriceUOM() instead
-
-		final Money differenceGRIR = merchandiseStock.subtract(invoicedAmt); // e.g. 1032,60€
-
-		if (differenceGRIR.isZero())
-		{
-			return getCostAmountInAcctCurrency(orderLine, qty, acctSchemaId, currencyConversionContext);
-		}
-
-		final Money adjustmentProportion = differenceGRIR.multiply(BigDecimal.ONE.divide(receiptQty.toBigDecimal(), 4, RoundingMode.HALF_UP));// todo: avoid div by 0 !
-		// todo: take care of precision !
-		// The adjustment proportion is calculated based on the quantity of units in material receipt (in
-		// this case 1032,60€ / 3600TO = 0,2868€
-
-		// The proportion is distributed onto the current stock quantity, but only to the maximum quantity
-		// of units in goods receipt (in this case the current stock quantity is 2678,793TO, which is
-		// lower than the 3600TO from goods receipt, this leads to 2678,793 * 0,2868€ = 768,37€ this
-		// is the proportion of merchandise stock adjustment)
-
-		final Quantity currentQty = currentCost.getCurrentQty();
-
-		final Quantity qtyToDistribute = currentQty.min(receiptQty);
-
-		final Money merchandiseStockAdjustmentProportion = adjustmentProportion.multiply(qtyToDistribute.toBigDecimal()); // 768,37€
-
-		// The difference in GR/IR between Goods receipt and Vendor invoice of 1032,60€ and the
-		// Merchandise stock adjustment proportion is the amount which is used for COGS adjustment
-		// (in this case 1032,60€ – 768,37€)
-
-		final Money cogsAdjustment = differenceGRIR.subtract(merchandiseStockAdjustmentProportion);
-
-		return utils.convertToAcctSchemaCurrency(
-				CostAmount.ofMoney(cogsAdjustment),
-				() -> currencyConversionContext,
-				acctSchemaId);
-
 	}
 }
