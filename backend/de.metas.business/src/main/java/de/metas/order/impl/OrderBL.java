@@ -1225,12 +1225,10 @@ public class OrderBL implements IOrderBL
 		return getById(orderId).getDocumentNo();
 	}
 
-	@NonNull
+	@Override
 	public DocStatus getDocStatus(@NonNull final OrderId orderId)
 	{
-		final I_C_Order order = getById(orderId);
-
-		return DocStatus.ofCode(order.getDocStatus());
+		return DocStatus.ofNullableCodeOrUnknown(getById(orderId).getDocStatus());
 	}
 
 	@Override
@@ -1285,11 +1283,5 @@ public class OrderBL implements IOrderBL
 		}
 
 		return true;
-	}
-
-	@Override
-	public DocStatus getDocStatus(@NonNull final OrderId orderId)
-	{
-		return DocStatus.ofNullableCodeOrUnknown(getById(orderId).getDocStatus());
 	}
 }

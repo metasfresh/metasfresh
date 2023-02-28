@@ -306,6 +306,4 @@ public interface IOrderBL extends ISingletonService
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		return Quantitys.create(orderLine.getQtyEntered(), uomId);
 	}
-
-	DocStatus getDocStatus(OrderId orderId);
 }
