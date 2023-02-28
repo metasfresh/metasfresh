@@ -176,10 +176,10 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
-				.amt(amt)
-				.qty(qty)
-				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
+																		.amt(CostAmountDetailed.builder().mainAmt(amt).build())
+																		.qty(qty)
+																		.changingCosts(true)
+																		.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
 		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 
@@ -209,9 +209,9 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
-				.amt(amt)
-				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
+																		.amt(CostAmountDetailed.builder().mainAmt(amt).build())
+																		.changingCosts(true)
+																		.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
 		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 
@@ -231,9 +231,9 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
-				.amt(amt)
-				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
+																		.amt(CostAmountDetailed.builder().mainAmt(amt).build())
+																		.changingCosts(true)
+																		.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
 		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 

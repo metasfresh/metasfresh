@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
@@ -170,19 +171,21 @@ public final class CurrentCost
 	 * @param qty qty
 	 */
 	public void addWeightedAverage(
-			@NonNull final CostAmount amt,
+			@NonNull final CostAmountDetailed amt,
 			@NonNull final Quantity qty,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		assertCostCurrency(amt);
 
-		if (qty.signum() == 0 && amt.signum() != 0)
+		final CostAmount mainAmount = amt.getMainAmt();
+		assertCostCurrency(mainAmount);
+
+		if (qty.signum() == 0 && mainAmount.signum() != 0)
 		{
 			throw new AdempiereException("Qty shall not be zero when amount is non zero: " + amt);
 		}
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
-		final CostAmount newAmt = currentAmt.add(amt);
+		final CostAmount newAmt = currentAmt.add(mainAmount);
 
 		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, costSegment.getProductId(), uomId);
 		final Quantity newQty = currentQty.add(qtyConv);
@@ -193,7 +196,7 @@ public final class CurrentCost
 		}
 		currentQty = newQty;
 
-		addCumulatedAmtAndQty(amt, qtyConv);
+		addCumulatedAmtAndQty(mainAmount, qtyConv);
 	}
 
 	private void addCumulatedAmtAndQty(

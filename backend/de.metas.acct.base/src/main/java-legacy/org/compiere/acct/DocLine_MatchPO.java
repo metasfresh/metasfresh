@@ -7,6 +7,7 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
@@ -159,7 +160,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 						.attributeSetInstanceId(getAttributeSetInstanceId())
 						.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
 						.qty(qty)
-						.amt(amt)
+						.amt(CostAmountDetailed.builder().mainAmt(amt).build())
 						.currencyConversionContext(getCurrencyConversionContext())
 						.date(getReceiptDateAcct())
 						.description(getOrderLine().getDescription())

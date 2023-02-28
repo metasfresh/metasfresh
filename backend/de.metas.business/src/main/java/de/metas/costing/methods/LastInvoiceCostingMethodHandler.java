@@ -60,7 +60,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
-		final CostAmount amt = request.getAmt();
+		final CostAmount amt = request.getAmt().getMainAmt();
 		final Quantity qty = request.getQty();
 		final boolean isOutboundTrx = qty.signum() < 0;
 
@@ -92,7 +92,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 
-		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt(), utils.getQuantityUOMConverter());
+		currentCosts.addToCurrentQtyAndCumulate(request.getQty(), request.getAmt().getMainAmt(), utils.getQuantityUOMConverter());
 
 		utils.saveCurrentCost(currentCosts);
 

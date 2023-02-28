@@ -1,11 +1,13 @@
 package org.compiere.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
@@ -15,7 +17,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
@@ -145,7 +146,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 									.attributeSetInstanceId(getAttributeSetInstanceId())
 									.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 									.qty(getQty())
-									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+									.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // N/A
 									.currencyConversionContext(getCurrencyConversionContext(as))
 									.date(getDateAcctAsInstant())
 									.build())
@@ -179,7 +180,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 									.attributeSetInstanceId(getAttributeSetInstanceId())
 									.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 									.qty(getQty())
-									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
+									.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // expect to be calculated
 									.currencyConversionContext(getCurrencyConversionContext(as))
 									.date(getDateAcctAsInstant())
 									.build())

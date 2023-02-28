@@ -65,6 +65,18 @@ public class CostAmountDetailed
 									  alreadyShippedAmt.add(amtToAdd.alreadyShippedAmt));
 	}
 
+	public CostAmountDetailed negateMainAmount()
+	{
+		if (mainAmt.signum() == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return new CostAmountDetailed(mainAmt.negate(), costAdjustmentAmt, alreadyShippedAmt);
+		}
+	}
 }
+
 
 

@@ -20,7 +20,6 @@ import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -162,7 +161,7 @@ public class CostDetailService implements ICostDetailService
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(costDetail))
 				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
-				.amt(CostAmountDetailed.builder().mainAmt(costDetail.getAmt()).build())
+				.amt(costDetail.getAmt())
 				.qty(costDetail.getQty())
 				.build();
 	}

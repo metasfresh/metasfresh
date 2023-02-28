@@ -12,6 +12,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -84,8 +85,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setM_CostElement_ID(cd.getCostElementId().getRepoId());
 		record.setM_Product_ID(cd.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(cd.getAttributeSetInstanceId().getRepoId());
-		record.setAmt(cd.getAmt().getValue());
-		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
+		record.setAmt(cd.getAmt().getMainAmt().getValue());
+		record.setC_Currency_ID(cd.getAmt().getMainAmt().getCurrencyId().getRepoId());
 
 		record.setQty(cd.getQty().toBigDecimal());
 		record.setC_UOM_ID(cd.getQty().getUomId().getRepoId());
@@ -310,6 +311,9 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
 		final Quantity qty = Quantity.of(record.getQty(), productUOM);
 
+		final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder()
+				.mainAmt(amt)
+				.build();
 		return CostDetail.builder()
 				.id(CostDetailId.ofRepoId(record.getM_CostDetail_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
@@ -318,19 +322,19 @@ public class CostDetailRepository implements ICostDetailRepository
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-				.amt(amt)
+				.amt(costAmountDetailed)
 				.qty(qty)
 				.changingCosts(record.isChangingCosts())
 				.previousAmounts(CostDetailPreviousAmounts.builder()
-						.costPrice(CostPrice.builder()
-								.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), currencyId))
-								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
-								.uomId(UomId.ofRepoId(productUOM.getC_UOM_ID())) // TODO: introduce M_CostDetail.Prev_CurrentQty_UOM_ID
-								.build())
-						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
-						.cumulatedAmt(CostAmount.of(record.getPrev_CumulatedAmt(), currencyId))
-						.cumulatedQty(Quantity.of(record.getPrev_CumulatedQty(), productUOM))
-						.build())
+										 .costPrice(CostPrice.builder()
+															.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), currencyId))
+															.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
+															.uomId(UomId.ofRepoId(productUOM.getC_UOM_ID())) // TODO: introduce M_CostDetail.Prev_CurrentQty_UOM_ID
+															.build())
+										 .qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
+										 .cumulatedAmt(CostAmount.of(record.getPrev_CumulatedAmt(), currencyId))
+										 .cumulatedQty(Quantity.of(record.getPrev_CumulatedQty(), productUOM))
+										 .build())
 				.documentRef(extractDocumentRef(record))
 				.description(record.getDescription())
 				.dateAcct(record.getDateAcct().toInstant())

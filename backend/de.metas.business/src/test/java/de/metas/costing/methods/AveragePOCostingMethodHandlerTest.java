@@ -277,7 +277,7 @@ public class AveragePOCostingMethodHandlerTest
 		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(100, euroCurrencyId))
+								.amt(createCostAmountDetailed(100, euroCurrencyId))
 								.explicitCostPrice(null)
 								.qty(Quantity.of(10, eachUOM))
 								.build())
@@ -291,6 +291,15 @@ public class AveragePOCostingMethodHandlerTest
 		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
 	}
 
+	private CostAmountDetailed createCostAmountDetailed(final int intValue, final CurrencyId euroCurrencyId)
+	{
+		final CostAmount mainAmount = CostAmount.of(intValue, euroCurrencyId);
+
+		return CostAmountDetailed.builder()
+				.mainAmt(mainAmount)
+				.build();
+	}
+
 	@Test
 	public void inventoryNoQtyAndWithPrice_NoExplicitCostPrice()
 	{
@@ -300,7 +309,7 @@ public class AveragePOCostingMethodHandlerTest
 		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(100, euroCurrencyId))
+								.amt(createCostAmountDetailed(100, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build())
 				.get();
@@ -322,7 +331,7 @@ public class AveragePOCostingMethodHandlerTest
 		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(0, euroCurrencyId))
+								.amt(createCostAmountDetailed(0, euroCurrencyId))
 								.explicitCostPrice(CostAmount.of(100, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build())
@@ -346,7 +355,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
@@ -365,7 +374,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
@@ -390,7 +399,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
@@ -409,7 +418,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
@@ -435,7 +444,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
@@ -454,7 +463,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
@@ -481,7 +490,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
@@ -500,7 +509,7 @@ public class AveragePOCostingMethodHandlerTest
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-									.amt(CostAmount.of(0, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
 					.get();
@@ -530,7 +539,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
+										.amt(createCostAmountDetailed(0, euroCurrencyId))
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
@@ -549,7 +558,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
+										.amt(createCostAmountDetailed(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-10, eachUOM))
 										.build())
 						.get();
@@ -567,7 +576,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofMatchPOId(1))
-										.amt(CostAmount.of(10 * 15, euroCurrencyId))
+										.amt(createCostAmountDetailed(10*15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
 						.get();
@@ -586,7 +595,7 @@ public class AveragePOCostingMethodHandlerTest
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
 										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(+100, euroCurrencyId))
+										.amt(createCostAmountDetailed(+100, euroCurrencyId))
 										.qty(Quantity.of(+10, eachUOM))
 										.build())
 						.get();
@@ -611,7 +620,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
+										.amt(createCostAmountDetailed(0, euroCurrencyId))
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
@@ -630,7 +639,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
+										.amt(createCostAmountDetailed(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-10, eachUOM))
 										.build())
 						.get();
@@ -649,7 +658,7 @@ public class AveragePOCostingMethodHandlerTest
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
 										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(+100, euroCurrencyId))
+										.amt(createCostAmountDetailed(+100, euroCurrencyId))
 										.qty(Quantity.of(+10, eachUOM))
 										.build())
 						.get();
@@ -667,7 +676,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofMatchPOId(1))
-										.amt(CostAmount.of(10 * 15, euroCurrencyId))
+										.amt(createCostAmountDetailed(10*15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
 						.get();
@@ -692,7 +701,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
+										.amt(createCostAmountDetailed(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-100, eachUOM))
 										.build())
 						.get();
@@ -710,7 +719,7 @@ public class AveragePOCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofMatchPOId(1))
-										.amt(CostAmount.of(10 * 15, euroCurrencyId))
+										.amt(createCostAmountDetailed(10*15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
 						.get();
@@ -729,7 +738,7 @@ public class AveragePOCostingMethodHandlerTest
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
 										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
+										.amt(createCostAmountDetailed(0, euroCurrencyId))
 										.qty(Quantity.of(+100, eachUOM))
 										.build())
 						.get();
@@ -785,7 +794,7 @@ public class AveragePOCostingMethodHandlerTest
 				handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(13, euroCurrencyId))
+								.amt(createCostAmountDetailed(13, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build());
 
@@ -819,7 +828,7 @@ public class AveragePOCostingMethodHandlerTest
 				handler.createOrUpdateCost(
 						costDetailCreateRequest()
 								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-								.amt(CostAmount.of(0, euroCurrencyId))
+								.amt(createCostAmountDetailed(0, euroCurrencyId))
 								.explicitCostPrice(CostAmount.of(13, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build());

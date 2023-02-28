@@ -9,6 +9,7 @@ import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.invoice.MatchInvId;
 import de.metas.money.CurrencyId;
@@ -39,7 +40,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class CostDetailRepositoryTest
@@ -88,7 +89,7 @@ class CostDetailRepositoryTest
 				.costElementId(costElementId)
 				.productId(ProductId.ofRepoId(3))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(4))
-				.amt(CostAmount.of("100", currencyId))
+				.amt(createCostAmountDetailed(100, currencyId))
 				.qty(Quantity.of("10", uomKg))
 				.changingCosts(true)
 				.previousAmounts(zeroPreviousAmounts())
@@ -106,7 +107,7 @@ class CostDetailRepositoryTest
 				.costElementId(CostElementId.ofRepoId(2))
 				.productId(ProductId.ofRepoId(3))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(4))
-				.amt(CostAmount.of("100", currencyId))
+				.amt(createCostAmountDetailed(100, currencyId))
 				.qty(Quantity.of("10", uomKg))
 				.changingCosts(true)
 				.previousAmounts(zeroPreviousAmounts())
@@ -200,5 +201,15 @@ class CostDetailRepositoryTest
 			final CostingDocumentRef costingDocumentRef2 = CostDetailRepository.extractDocumentRef(costDetail);
 			assertThat(costingDocumentRef2).isEqualTo(costingDocumentRef);
 		}
+	}
+
+
+	private CostAmountDetailed createCostAmountDetailed(final int intValue, final CurrencyId euroCurrencyId)
+	{
+		final CostAmount mainAmount = CostAmount.of(intValue, euroCurrencyId);
+
+		return CostAmountDetailed.builder()
+				.mainAmt(mainAmount)
+				.build();
 	}
 }

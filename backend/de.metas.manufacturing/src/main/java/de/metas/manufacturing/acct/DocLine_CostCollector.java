@@ -3,6 +3,7 @@
  */
 package de.metas.manufacturing.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -14,6 +15,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -22,7 +24,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
-import de.metas.acct.Account;
 import org.compiere.util.DB;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -137,7 +138,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // N/A
 							.date(getDateAcctAsInstant())
 							.build());
 		}

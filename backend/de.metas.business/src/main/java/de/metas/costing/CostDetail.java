@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -52,7 +53,7 @@ public class CostDetail
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
-	CostAmount amt;
+	CostAmountDetailed amt;
 	Quantity qty;
 
 	boolean changingCosts;
@@ -75,7 +76,7 @@ public class CostDetail
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
-			@NonNull final CostAmount amt,
+			@NonNull final CostAmountDetailed amt,
 			@NonNull final Quantity qty,
 			final boolean changingCosts,
 			final CostDetailPreviousAmounts previousAmounts,
@@ -99,7 +100,7 @@ public class CostDetail
 		this.dateAcct = dateAcct;
 
 		if (this.previousAmounts != null
-				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getCurrencyId()))
+				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getMainAmt().getCurrencyId()))
 		{
 			throw new AdempiereException("Previous amounts shall have same currency as the amount: " + this);
 		}

@@ -302,26 +302,26 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// NotInvoicedReceipt DR
 		// From Receipt
-		final FactLine notInvoicedReceipts = fact.createLine()
+		final FactLine dr_notInvoicedReceipts = fact.createLine()
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setCurrencyId(costs.getMainAmt().getCurrencyId())
 				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
-				.setAmtSource(dr_mainAmt, cr_mainAmt)
+				.setAmtSource(dr_mainAmt, null)
 				.setQty(getQty())
 				.buildAndAdd();
-		updateFromReceiptLine(notInvoicedReceipts);
+		updateFromReceiptLine(dr_notInvoicedReceipts);
 
-		// //
-		// // InventoryClearing CR
-		// // From Invoice
-		// final FactLine inventoryClearing = fact.createLine()
-		// 		.setAccount(docLine.getInventoryClearingAccount(as))
-		// 		.setCurrencyId(getInvoiceCurrencyId())
-		// 		.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-		// 		.setAmtSource(dr_costAdjustment, cr_costAdjustment)
-		// 		.setQty(getQty().negate())
-		// 		.buildAndAdd();
-		// updateFromInvoiceLine(inventoryClearing);
+		//
+		// InventoryClearing CR
+		// From Invoice
+		final FactLine cr_notInvoicedReceipts = fact.createLine()
+				.setAccount(docLine.getInventoryClearingAccount(as))
+				.setCurrencyId(getInvoiceCurrencyId())
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(null, cr_mainAmt)
+				.setQty(getQty().negate())
+				.buildAndAdd();
+		updateFromInvoiceLine(cr_notInvoicedReceipts);
 
 		//
 		// Merchandise Stock aka P_Asset CR
@@ -680,7 +680,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 										  .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
 										  .documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 										  .qty(matchQty)
-										  .amt(matchAmt)
+										  .amt(CostAmountDetailed.builder().mainAmt(matchAmt).build())
 										  .currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
 										  .date(getDateAcct().toInstant(services::getTimeZone))
 										  .description(getDescription())

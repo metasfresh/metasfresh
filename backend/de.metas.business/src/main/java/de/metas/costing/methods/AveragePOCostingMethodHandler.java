@@ -99,8 +99,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
+		final CostAmountDetailed amtConvDetailed = CostAmountDetailed.builder().mainAmt(amtConv).build();
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
+				request.withAmount(amtConvDetailed),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
@@ -127,8 +128,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 		}
 
+		final CostAmountDetailed amtConvDetailed = CostAmountDetailed.builder().mainAmt(amtConv).build();
+
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
+				request.withAmount(amtConvDetailed),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
@@ -159,7 +162,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			final CostAmount requestAmt = request.getAmt();
 
 			if (request.getDocumentRef().isInventoryLine())
 			{
@@ -167,7 +169,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 						? explicitCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision())
 						: currentCosts.getCostPrice().multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 
-				requestEffective = request.withAmount(effectiveAmt);
+				requestEffective = request.withAmount(CostAmountDetailed.builder().mainAmt(effectiveAmt).build());
 
 				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
 				{
@@ -185,10 +187,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			else
 			{
-				if (requestAmt.isZero() && !request.isReversal())
+				final CostAmountDetailed requestAmt = request.getAmt();
+				if (requestAmt.getMainAmt().isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-					requestEffective = request.withAmountAndQty(amt, qty);
+					requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
 				}
 				else
 				{
@@ -205,7 +208,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			requestEffective = request.withAmountAndQty(amt, qty);
+			requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
@@ -248,7 +251,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getOutboundDocumentRef())
 				.costElement(costElement)
-				.amt(outboundAmt)
+				.amt(CostAmountDetailed.builder().mainAmt(outboundAmt).build())
 				.qty(outboundQty)
 				.date(request.getDate())
 				.build();
@@ -260,7 +263,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getInboundDocumentRef())
 				.costElement(costElement)
-				.amt(outboundAmt.negate())
+				.amt(CostAmountDetailed.builder().mainAmt(outboundAmt.negate()).build())
 				.qty(outboundQty.negate())
 				.date(request.getDate())
 				.build();
@@ -305,13 +308,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
-						.costSegment(outboundSegmentAndElement.toCostSegment())
-						.amount(costElement, outboundResult.getAmt())
-						.build())
+									   .costSegment(outboundSegmentAndElement.toCostSegment())
+									   .amount(costElement, outboundResult.getAmt())
+									   .build())
 				.inboundCosts(AggregatedCostAmount.builder()
-						.costSegment(inboundSegmentAndElement.toCostSegment())
-						.amount(costElement, inboundResult.getAmt())
-						.build())
+									  .costSegment(inboundSegmentAndElement.toCostSegment())
+									  .amount(costElement, inboundResult.getAmt())
+									  .build())
 				.build();
 	}
 
@@ -323,7 +326,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
 		if (isInboundTrx)
 		{
-			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate(), utils.getQuantityUOMConverter());
+			currentCosts.addWeightedAverage(CostAmountDetailed.builder().mainAmt(request.getAmt().negate()).build(), qty.negate(), utils.getQuantityUOMConverter());
 		}
 		else
 		{

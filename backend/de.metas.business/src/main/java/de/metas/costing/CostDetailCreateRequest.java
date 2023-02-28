@@ -2,6 +2,7 @@ package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -57,7 +58,7 @@ public class CostDetailCreateRequest
 	 */
 	CostingDocumentRef initialDocumentRef;
 	CostElement costElement;
-	CostAmount amt;
+	CostAmountDetailed amt;
 	Quantity qty;
 	@Nullable CurrencyConversionContext currencyConversionContext;
 	Instant date;
@@ -75,7 +76,7 @@ public class CostDetailCreateRequest
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final CostingDocumentRef initialDocumentRef,
 			@Nullable final CostElement costElement,
-			@NonNull final CostAmount amt,
+			@NonNull final CostAmountDetailed amt,
 			@NonNull final Quantity qty,
 			@Nullable final CurrencyConversionContext currencyConversionContext,
 			@NonNull final Instant date,
@@ -150,7 +151,7 @@ public class CostDetailCreateRequest
 		return toBuilder().costElement(costElement).build();
 	}
 
-	public CostDetailCreateRequest withAmount(@NonNull final CostAmount amt)
+	public CostDetailCreateRequest withAmount(@NonNull final CostAmountDetailed amt)
 	{
 		if (Objects.equals(this.amt, amt))
 		{
@@ -161,7 +162,7 @@ public class CostDetailCreateRequest
 	}
 
 	public CostDetailCreateRequest withAmountAndQty(
-			@NonNull final CostAmount amt,
+			@NonNull final CostAmountDetailed amt,
 			@NonNull final Quantity qty)
 	{
 		if (Objects.equals(this.amt, amt)

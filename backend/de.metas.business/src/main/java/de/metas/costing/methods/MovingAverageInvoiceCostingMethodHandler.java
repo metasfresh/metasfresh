@@ -175,12 +175,17 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			final CostAmount currentCostPrice = currentCost.getCostPrice().toCostAmount();
 			final CostAmount amt = currentCostPrice.multiply(request.getQty());
+
 			// NOTE: expect conversion to do nothing because the current cost price shall already be in accounting currency
 			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
 		}
 
+		final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder()
+				.mainAmt(amtConv)
+				.build();
+
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
+				request.withAmount(costAmountDetailed),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
@@ -199,6 +204,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
 		final Quantity requestQty = request.getQty();
+
 		final Quantity qty = utils.convertToUOM(requestQty, currentCostPrice.getUomId(), request.getProductId());
 
 		final boolean isInboundTrx = requestQty.signum() >= 0;
@@ -211,7 +217,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			final CostAmount requestAmt = request.getAmt();
 
 			if (request.getDocumentRef().isInventoryLine())
 			{
@@ -219,7 +224,11 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 						? explicitCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision())
 						: currentCosts.getCostPrice().multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 
-				requestEffective = request.withAmount(effectiveAmt);
+				final CostAmountDetailed effectiveAmountDetailed = CostAmountDetailed.builder()
+						.mainAmt(effectiveAmt)
+						.build();
+
+				requestEffective = request.withAmount(effectiveAmountDetailed);
 
 				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
 				{
@@ -237,14 +246,17 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 			else
 			{
-				if (requestAmt.isZero() && !request.isReversal())
+				final CostAmountDetailed costAmountDetailed = computeCostAmountDetailed(request);
+
+				if (costAmountDetailed.getMainAmt().isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-					requestEffective = request.withAmountAndQty(amt, qty);
+
+					requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
 				}
 				else
 				{
-					requestEffective = request.withQty(qty);
+					requestEffective = request.withAmountAndQty(costAmountDetailed, qty);
 				}
 			}
 
@@ -257,7 +269,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			requestEffective = request.withAmountAndQty(amt, qty);
+			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(amt).build();
+			requestEffective = request.withAmountAndQty(costAmountDetailed, qty);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		}
@@ -300,7 +313,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getOutboundDocumentRef())
 				.costElement(costElement)
-				.amt(outboundAmt)
+				.amt(CostAmountDetailed.builder().mainAmt(outboundAmt).build())
 				.qty(outboundQty)
 				.date(request.getDate())
 				.build();
@@ -312,7 +325,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getInboundDocumentRef())
 				.costElement(costElement)
-				.amt(outboundAmt.negate())
+				.amt(CostAmountDetailed.builder().mainAmt(outboundAmt.negate()).build())
 				.qty(outboundQty.negate())
 				.date(request.getDate())
 				.build();
@@ -387,15 +400,17 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final ProductPrice purchaseOrderPrice = orderLineBL.getCostPrice(orderLine);
 
-		final CostAmount merchandiseStock = CostAmount.ofProductPrice(purchaseOrderPrice).multiply(receiptQty.toBigDecimal()).roundToPrecisionIfNeeded(currentCost.getPrecision());; // 2.421,06€
+		final CostAmount merchandiseStock = CostAmount.ofProductPrice(purchaseOrderPrice).multiply(receiptQty.toBigDecimal()).roundToPrecisionIfNeeded(currentCost.getPrecision());
+		; // 2.421,06€
 
-		final CostAmount invoicedAmt = request.getAmt();
+		final CostAmount invoicedAmt = request.getAmt().getMainAmt();
 
 		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt); // e.g. 1032,60€
 
 		final CostAmount adjustmentProportion = amtDifference.isZero() || receiptQty.isZero()
 				? CostAmount.zero(currentCost.getCurrencyId())
-				: amtDifference.multiply(BigDecimal.ONE.divide(receiptQty.toBigDecimal())).roundToPrecisionIfNeeded(currentCost.getPrecision());
+				: amtDifference.divide(receiptQty.toBigDecimal(), currentCost.getPrecision())
+				.roundToPrecisionIfNeeded(currentCost.getPrecision());
 
 		final Quantity qtyToDistribute = currentCost.getCurrentQty().min(receiptQty);
 
@@ -416,13 +431,15 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
 		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+
+		final CostAmountDetailed negateAmount = CostAmountDetailed.builder().mainAmt(request.getAmt().negate()).build();
 		if (isInboundTrx)
 		{
-			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate(), utils.getQuantityUOMConverter());
+			currentCosts.addWeightedAverage(negateAmount, qty.negate(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
-			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
+			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), negateAmount.getMainAmt(), utils.getQuantityUOMConverter());
 		}
 
 		utils.saveCurrentCost(currentCosts);

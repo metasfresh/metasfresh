@@ -184,7 +184,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		currentCosts.setOwnCostPrice(explicitCostPrice);
-		currentCosts.addCumulatedAmt(request.getAmt());
+		currentCosts.addCumulatedAmt(request.getAmt().getMainAmt());
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
 				request,
@@ -211,7 +211,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final CurrencyPrecision precision = currentCost.getPrecision();
 
 		final Quantity qty = costDetail.getQty();
-		final CostAmount oldCostAmount = costDetail.getAmt();
+		final CostAmount oldCostAmount = costDetail.getAmt().getMainAmt();
 		final CostAmount oldCostPrice = qty.signum() != 0
 				? oldCostAmount.divide(qty, precision)
 				: oldCostAmount;
@@ -221,9 +221,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
 				: newCostPrice.roundToPrecisionIfNeeded(precision);
 
+		final CostAmountDetailed newCostAmountDetailed= CostAmountDetailed.builder().mainAmt(newCostAmount).build();
 		if (costDetail.isInboundTrx())
 		{
-			currentCost.addWeightedAverage(newCostAmount, qty, utils.getQuantityUOMConverter());
+			currentCost.addWeightedAverage(newCostAmountDetailed, qty, utils.getQuantityUOMConverter());
 		}
 		else
 		{

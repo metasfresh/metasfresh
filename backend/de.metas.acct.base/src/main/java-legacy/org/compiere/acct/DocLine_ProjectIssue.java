@@ -1,14 +1,14 @@
 package org.compiere.acct;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_ProjectIssue;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.quantity.Quantity;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ProjectIssue;
 
 /*
  * #%L
@@ -64,7 +64,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build())// N/A
 							.date(getDateAcctAsInstant())
 							.build())
 					.getTotalAmountToPost(as).getMainAmt();

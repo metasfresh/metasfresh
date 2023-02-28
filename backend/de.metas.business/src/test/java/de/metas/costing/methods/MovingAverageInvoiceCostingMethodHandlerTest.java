@@ -93,214 +93,324 @@ import static org.assertj.core.api.Assertions.*;
 public class MovingAverageInvoiceCostingMethodHandlerTest
 {
 
-		private CostElementRepository costElementRepo;
-		private CurrentCostsRepository currentCostsRepo;
-		private MovingAverageInvoiceCostingMethodHandler handler;
+	private CostElementRepository costElementRepo;
+	private CurrentCostsRepository currentCostsRepo;
+	private MovingAverageInvoiceCostingMethodHandler handler;
 
-		private OrgId orgId1;
-		private CurrencyId euroCurrencyId;
-		private I_C_UOM eachUOM;
+	private OrgId orgId1;
+	private CurrencyId euroCurrencyId;
+	private I_C_UOM eachUOM;
 
-		private static final CostTypeId costTypeId = CostTypeId.ofRepoId(1);
-		private CostElement costElement;
-		private AcctSchemaId acctSchemaId;
-		private AcctSchema acctSchema;
-		private ProductId productId;
+	private static final CostTypeId costTypeId = CostTypeId.ofRepoId(1);
+	private CostElement costElement;
+	private AcctSchemaId acctSchemaId;
+	private AcctSchema acctSchema;
+	private ProductId productId;
 
-		private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
+	private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 
-		@BeforeEach
-		public void beforeEach()
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
+
+		final Properties ctx = Env.getCtx();
+		Env.setClientId(ctx, ClientId.METASFRESH);
+
+		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
+		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
+		final CostDetailRepository costDetailsRepo = new CostDetailRepository();
+		final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
+		final CostingMethodHandlerUtils handlerUtils = new CostingMethodHandlerUtils(
+				new CurrencyRepository(),
+				currentCostsRepo,
+				costDetailsService);
+
+		handler = new MovingAverageInvoiceCostingMethodHandler(handlerUtils);
+
+		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
+		eachUOM = BusinessTestHelper.createUomEach();
+
+		costElement = createMovingAverageInvoiceCostElement();
+		acctSchemaId = createAcctSchema();
+		acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+
+		productId = createProduct();
+	}
+
+	private CostElement createMovingAverageInvoiceCostElement()
+	{
+		final I_M_CostElement record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(CostingMethod.MovingAverageInvoice.name());
+		record.setCostElementType(CostElementType.Material.getCode());
+		record.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
+		record.setIsCalculated(false);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
+		return costElementRepo.getById(costElementId);
+	}
+
+	private AcctSchemaId createAcctSchema()
+	{
+		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
+		acctSchemaRecord.setName("Test AcctSchema");
+		acctSchemaRecord.setC_Currency_ID(euroCurrencyId.getRepoId());
+		acctSchemaRecord.setM_CostType_ID(costTypeId.getRepoId());
+		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
+		acctSchemaRecord.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
+		acctSchemaRecord.setSeparator("-");
+		acctSchemaRecord.setTaxCorrectionType(TaxCorrectionType.NONE.getCode());
+		saveRecord(acctSchemaRecord);
+
+		final I_C_AcctSchema_GL acctSchemaGL = newInstance(I_C_AcctSchema_GL.class);
+		acctSchemaGL.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		acctSchemaGL.setIntercompanyDueFrom_Acct(1);
+		acctSchemaGL.setIntercompanyDueTo_Acct(1);
+		acctSchemaGL.setIncomeSummary_Acct(1);
+		acctSchemaGL.setRetainedEarning_Acct(1);
+		acctSchemaGL.setPPVOffset_Acct(1);
+		saveRecord(acctSchemaGL);
+
+		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);
+		acctSchemaDefault.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		acctSchemaDefault.setRealizedGain_Acct(1);
+		acctSchemaDefault.setRealizedLoss_Acct(1);
+		acctSchemaDefault.setUnrealizedGain_Acct(1);
+		acctSchemaDefault.setUnrealizedLoss_Acct(1);
+		saveRecord(acctSchemaDefault);
+
+		return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
+	}
+
+	private ProductId createProduct()
+	{
+		final I_M_Product_Category productCategory = newInstanceOutOfTrx(I_M_Product_Category.class);
+		saveRecord(productCategory);
+
+		final I_M_Product_Category_Acct productCategoryAcct = newInstanceOutOfTrx(I_M_Product_Category_Acct.class);
+		productCategoryAcct.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		productCategoryAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
+		saveRecord(productCategoryAcct);
+
+		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
+		product.setValue("product");
+		product.setName("product");
+		product.setC_UOM_ID(eachUOM.getC_UOM_ID());
+		product.setProductType(ProductType.Item.getCode());
+		product.setIsStocked(true);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		saveRecord(product);
+
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	private static Instant instant(final String localDate)
+	{
+		return LocalDate.parse(localDate).atStartOfDay(ZONE_ID).toInstant();
+	}
+
+	private CostDetailCreateRequest.CostDetailCreateRequestBuilder costDetailCreateRequest()
+	{
+		return CostDetailCreateRequest.builder()
+				.acctSchemaId(acctSchemaId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(orgId1)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElement(costElement)
+				.date(instant("2020-08-13"));
+	}
+
+	@NonNull
+	private CurrentCost getCurrentCost(final OrgId orgId)
+	{
+		final CurrentCost currentCost = getCurrentCostOrNull(orgId);
+		if (currentCost == null)
 		{
-			AdempiereTestHelper.get().init();
-
-			orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
-
-			final Properties ctx = Env.getCtx();
-			Env.setClientId(ctx, ClientId.METASFRESH);
-
-			costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
-			currentCostsRepo = new CurrentCostsRepository(costElementRepo);
-			final CostDetailRepository costDetailsRepo = new CostDetailRepository();
-			final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
-			final CostingMethodHandlerUtils handlerUtils = new CostingMethodHandlerUtils(
-					new CurrencyRepository(),
-					currentCostsRepo,
-					costDetailsService);
-
-			handler = new MovingAverageInvoiceCostingMethodHandler(handlerUtils);
-
-			euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
-			eachUOM = BusinessTestHelper.createUomEach();
-
-			costElement = createMovingAverageInvoiceCostElement();
-			acctSchemaId = createAcctSchema();
-			acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
-
-			productId = createProduct();
+			throw new AssertionError("No current costs found for " + orgId);
 		}
+		return currentCost;
+	}
 
-		private CostElement createMovingAverageInvoiceCostElement()
+	private CurrentCost getCurrentCostOrNull(final OrgId orgId)
+	{
+		final CostSegment costSegment = costSegment(orgId);
+
+		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.MovingAverageInvoice);
+		if (currentCosts.isEmpty())
 		{
-			final I_M_CostElement record = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
-			record.setAD_Org_ID(OrgId.ANY.getRepoId());
-			record.setName(CostingMethod.MovingAverageInvoice.name());
-			record.setCostElementType(CostElementType.Material.getCode());
-			record.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
-			record.setIsCalculated(false);
-			InterfaceWrapperHelper.saveRecord(record);
-
-			final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
-			return costElementRepo.getById(costElementId);
+			return null;
 		}
-
-		private AcctSchemaId createAcctSchema()
+		else if (currentCosts.size() == 1)
 		{
-			final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
-			acctSchemaRecord.setName("Test AcctSchema");
-			acctSchemaRecord.setC_Currency_ID(euroCurrencyId.getRepoId());
-			acctSchemaRecord.setM_CostType_ID(costTypeId.getRepoId());
-			acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
-			acctSchemaRecord.setCostingMethod(CostingMethod.MovingAverageInvoice.getCode());
-			acctSchemaRecord.setSeparator("-");
-			acctSchemaRecord.setTaxCorrectionType(TaxCorrectionType.NONE.getCode());
-			saveRecord(acctSchemaRecord);
-
-			final I_C_AcctSchema_GL acctSchemaGL = newInstance(I_C_AcctSchema_GL.class);
-			acctSchemaGL.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
-			acctSchemaGL.setIntercompanyDueFrom_Acct(1);
-			acctSchemaGL.setIntercompanyDueTo_Acct(1);
-			acctSchemaGL.setIncomeSummary_Acct(1);
-			acctSchemaGL.setRetainedEarning_Acct(1);
-			acctSchemaGL.setPPVOffset_Acct(1);
-			saveRecord(acctSchemaGL);
-
-			final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);
-			acctSchemaDefault.setC_AcctSchema_ID(acctSchemaRecord.getC_AcctSchema_ID());
-			acctSchemaDefault.setRealizedGain_Acct(1);
-			acctSchemaDefault.setRealizedLoss_Acct(1);
-			acctSchemaDefault.setUnrealizedGain_Acct(1);
-			acctSchemaDefault.setUnrealizedLoss_Acct(1);
-			saveRecord(acctSchemaDefault);
-
-			return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
+			return currentCosts.get(0);
 		}
-
-		private ProductId createProduct()
+		else
 		{
-			final I_M_Product_Category productCategory = newInstanceOutOfTrx(I_M_Product_Category.class);
-			saveRecord(productCategory);
-
-			final I_M_Product_Category_Acct productCategoryAcct = newInstanceOutOfTrx(I_M_Product_Category_Acct.class);
-			productCategoryAcct.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-			productCategoryAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
-			saveRecord(productCategoryAcct);
-
-			final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
-			product.setValue("product");
-			product.setName("product");
-			product.setC_UOM_ID(eachUOM.getC_UOM_ID());
-			product.setProductType(ProductType.Item.getCode());
-			product.setIsStocked(true);
-			product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-			saveRecord(product);
-
-			return ProductId.ofRepoId(product.getM_Product_ID());
+			throw new AdempiereException("Got multiple current costs for " + costSegment + ": " + currentCosts);
 		}
+	}
 
-		private static Instant instant(final String localDate)
+	private CostSegment costSegment(final OrgId orgId)
+	{
+		return CostSegment.builder()
+				.costingLevel(CostingLevel.Client)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(costTypeId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(orgId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.build();
+	}
+
+	@Test
+	public void inventoryWithQtyAndPrice_NotExplicitCostPrice()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+						costDetailCreateRequest()
+								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+								.amt(createCostAmountDetailed(100, euroCurrencyId))
+								.explicitCostPrice(null)
+								.qty(Quantity.of(10, eachUOM))
+								.build())
+				.get();
+
+		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+		final CurrentCost currentCost = getCurrentCost(orgId1);
+		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
+	}
+
+	@Test
+	public void inventoryNoQtyAndWithPrice_NoExplicitCostPrice()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+						costDetailCreateRequest()
+								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+								.amt(createCostAmountDetailed(100, euroCurrencyId))
+								.qty(Quantity.of(0, eachUOM))
+								.build())
+				.get();
+
+		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+
+		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
+	}
+
+	@Test
+	public void inventoryWithNoQtyAndWithPrice_ExplicitCostPrice()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+						costDetailCreateRequest()
+								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+								.amt(createCostAmountDetailed(0, euroCurrencyId))
+								.explicitCostPrice(CostAmount.of(100, euroCurrencyId))
+								.qty(Quantity.of(0, eachUOM))
+								.build())
+				.get();
+
+		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+
+		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("100");
+	}
+
+	@Test
+	public void initCostsTwice()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
 		{
-			return LocalDate.parse(localDate).atStartOfDay(ZONE_ID).toInstant();
-		}
-
-		private CostDetailCreateRequest.CostDetailCreateRequestBuilder costDetailCreateRequest()
-		{
-			return CostDetailCreateRequest.builder()
-					.acctSchemaId(acctSchemaId)
-					.clientId(ClientId.METASFRESH)
-					.orgId(orgId1)
-					.productId(productId)
-					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-					.costElement(costElement)
-					.date(instant("2020-08-13"));
-		}
-
-		@NonNull
-		private CurrentCost getCurrentCost(final OrgId orgId)
-		{
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId);
-			if (currentCost == null)
-			{
-				throw new AssertionError("No current costs found for " + orgId);
-			}
-			return currentCost;
-		}
-
-		private CurrentCost getCurrentCostOrNull(final OrgId orgId)
-		{
-			final CostSegment costSegment = costSegment(orgId);
-
-			final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.MovingAverageInvoice);
-			if (currentCosts.isEmpty())
-			{
-				return null;
-			}
-			else if (currentCosts.size() == 1)
-			{
-				return currentCosts.get(0);
-			}
-			else
-			{
-				throw new AdempiereException("Got multiple current costs for " + costSegment + ": " + currentCosts);
-			}
-		}
-
-		private CostSegment costSegment(final OrgId orgId)
-		{
-			return CostSegment.builder()
-					.costingLevel(CostingLevel.Client)
-					.acctSchemaId(acctSchemaId)
-					.costTypeId(costTypeId)
-					.clientId(ClientId.METASFRESH)
-					.orgId(orgId)
-					.productId(productId)
-					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-					.build();
-		}
-
-		@Test
-		public void inventoryWithQtyAndPrice_NotExplicitCostPrice()
-		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-			// Initial inventory with Price=10 and Qty=0
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(100, euroCurrencyId))
-									.explicitCostPrice(null)
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
+									.qty(Quantity.of(0, eachUOM))
+									.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+
+			final CurrentCost currentCost = getCurrentCost(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+		}
+
+		// Initial inventory with Price=15 and Qty=0
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
+									.qty(Quantity.of(0, eachUOM))
+									.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+
+			final CurrentCost currentCost = getCurrentCost(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+		}
+	}
+
+	@Test
+	public void initCostsAfterInitWithStock_ExplicitCost_NoQty()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
 
-		@Test
-		public void inventoryNoQtyAndWithPrice_NoExplicitCostPrice()
+		// Initial inventory with Price=15 and Qty=0
 		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-			// Initial inventory with Price=10 and Qty=0
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(100, euroCurrencyId))
+									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
 					.get();
@@ -309,21 +419,69 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+			// The cost price was not changed because of the existing qty
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
+	}
 
-		@Test
-		public void inventoryWithNoQtyAndWithPrice_ExplicitCostPrice()
+	@Test
+	public void initCostsAfterInitWithStock_ExplicitCost_WithQty()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
 		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-			// Initial inventory with Price=10 and Qty=0
 			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 							costDetailCreateRequest()
 									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(100, euroCurrencyId))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
+									.qty(Quantity.of(10, eachUOM))
+									.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+		}
+
+		// Initial inventory with Price=15 and Qty=10
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
+									.qty(Quantity.of(10, eachUOM))
+									.build())
+					.get();
+
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
+			// The cost price was not changed because of the existing qty
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5");
+		}
+	}
+
+	@Test
+	public void initCost_Then_Init_Qty()
+	{
+		assertThat(getCurrentCostOrNull(orgId1)).isNull();
+
+		// Initial inventory with Price=10 and Qty=0
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
 					.get();
@@ -331,13 +489,38 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("100");
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
 
+		// Initial inventory with Price=0 and Qty=10
+		{
+			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+							costDetailCreateRequest()
+									.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+									.amt(createCostAmountDetailed(0, euroCurrencyId))
+									.qty(Quantity.of(10, eachUOM))
+									.build())
+					.get();
+
+			// The amount is the current explicit cost multiplied by the existing qty
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
+			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+			// The cost price was not changed because it was not explicit
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+		}
+	}
+
+	@Nested
+	public class scenarios
+	{
 		@Test
-		public void initCostsTwice()
+		@DisplayName("case 1: cost init, shipment, receipt, shipment reversal")
+		public void case1()
 		{
 			assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
@@ -346,7 +529,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
+										.amt(createCostAmountDetailed(0, euroCurrencyId))
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
@@ -360,102 +543,30 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
-			// Initial inventory with Price=15 and Qty=0
+			// Shipment
 			{
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
-										.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
-										.qty(Quantity.of(0, eachUOM))
+										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
+										.amt(createCostAmountDetailed(0, euroCurrencyId)) // to be calculated
+										.qty(Quantity.of(-10, eachUOM))
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
-			}
-		}
-
-		@Test
-		public void initCostsAfterInitWithStock_ExplicitCost_NoQty()
-		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-			// Initial inventory with Price=10 and Qty=0
-			{
-				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-								costDetailCreateRequest()
-										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-										.qty(Quantity.of(10, eachUOM))
-										.build())
-						.get();
-
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
-
-				final CurrentCost currentCost = getCurrentCost(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
-			// Initial inventory with Price=15 and Qty=0
+			// Receipt
 			{
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
-										.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
-										.qty(Quantity.of(0, eachUOM))
-										.build())
-						.get();
-
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
-
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-				// The cost price was not changed because of the existing qty
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-			}
-		}
-
-		@Test
-		public void initCostsAfterInitWithStock_ExplicitCost_WithQty()
-		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-			// Initial inventory with Price=10 and Qty=0
-			{
-				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-								costDetailCreateRequest()
-										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-										.qty(Quantity.of(10, eachUOM))
-										.build())
-						.get();
-
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
-
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-			}
-
-			// Initial inventory with Price=15 and Qty=10
-			{
-				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-								costDetailCreateRequest()
-										.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-										.amt(CostAmount.of(0, euroCurrencyId))
-										.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
+										.documentRef(CostingDocumentRef.ofMatchPOId(1))
+										.amt(createCostAmountDetailed(10*15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
 						.get();
@@ -463,16 +574,34 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+			}
+
+			// Shipment reversal
+			{
+				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+								costDetailCreateRequest()
+										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
+										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
+										.amt(createCostAmountDetailed(+100, euroCurrencyId))
+										.qty(Quantity.of(+10, eachUOM))
+										.build())
+						.get();
+
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
-				// The cost price was not changed because of the existing qty
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
 			}
 		}
 
-
 		@Test
-		public void initCost_Then_Init_Qty()
+		@DisplayName("case 2: cost init, shipment, shipment reversal, receipt")
+		public void case2()
 		{
 			assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
@@ -481,7 +610,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
 										.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-										.amt(CostAmount.of(0, euroCurrencyId))
+										.amt(createCostAmountDetailed(0, euroCurrencyId))
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
@@ -495,357 +624,237 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
 
-			// Initial inventory with Price=0 and Qty=10
+			// Shipment
 			{
 				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
 								costDetailCreateRequest()
-										.documentRef(CostingDocumentRef.ofInventoryLineId(2))
-										.amt(CostAmount.of(0, euroCurrencyId))
+										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
+										.amt(createCostAmountDetailed(0, euroCurrencyId)) // to be calculated
+										.qty(Quantity.of(-10, eachUOM))
+										.build())
+						.get();
+
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
+
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+			}
+
+			// Shipment reversal
+			{
+				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+								costDetailCreateRequest()
+										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
+										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
+										.amt(createCostAmountDetailed(+100, euroCurrencyId))
+										.qty(Quantity.of(+10, eachUOM))
+										.build())
+						.get();
+
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+			}
+
+			// Receipt
+			{
+				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+								costDetailCreateRequest()
+										.documentRef(CostingDocumentRef.ofMatchPOId(1))
+										.amt(createCostAmountDetailed(10*15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
 						.get();
 
-				// The amount is the current explicit cost multiplied by the existing qty
-				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
-				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-				// The cost price was not changed because it was not explicit
-				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
 			}
 		}
 
-@Nested
-public class scenarios
-{
-	@Test
-	@DisplayName("case 1: cost init, shipment, receipt, shipment reversal")
-	public void case1()
-	{
-		assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-		// Initial inventory with Price=10 and Qty=0
+		@Test
+		@DisplayName("case 3: shipment, receipt, shipment reversal")
+		public void case3()
 		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-									.qty(Quantity.of(0, eachUOM))
-									.build())
-					.get();
+			assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			// Shipment
+			{
+				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+								costDetailCreateRequest()
+										.documentRef(CostingDocumentRef.ofShipmentLineId(1))
+										.amt(createCostAmountDetailed(0, euroCurrencyId)) // to be calculated
+										.qty(Quantity.of(-100, eachUOM))
+										.build())
+						.get();
 
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-		}
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-100");
 
-		// Shipment
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
-									.qty(Quantity.of(-10, eachUOM))
-									.build())
-					.get();
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
+			}
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
+			// Receipt
+			{
+				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+								costDetailCreateRequest()
+										.documentRef(CostingDocumentRef.ofMatchPOId(1))
+										.amt(createCostAmountDetailed(10*15, euroCurrencyId))
+										.qty(Quantity.of(10, eachUOM))
+										.build())
+						.get();
 
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-		}
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
-		// Receipt
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofMatchPOId(1))
-									.amt(CostAmount.of(10 * 15, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
-									.build())
-					.get();
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
+			}
 
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			// Shipment reversal
+			{
+				final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
+								costDetailCreateRequest()
+										.documentRef(CostingDocumentRef.ofShipmentLineId(2))
+										.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
+										.amt(createCostAmountDetailed(0, euroCurrencyId))
+										.qty(Quantity.of(+100, eachUOM))
+										.build())
+						.get();
 
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
-		}
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("100");
 
-		// Shipment reversal
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofShipmentLineId(2))
-									.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-									.amt(CostAmount.of(+100, euroCurrencyId))
-									.qty(Quantity.of(+10, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
+				final CurrentCost currentCost = getCurrentCost(orgId1);
+				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("110");
+				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1.3636"); // (10x15 + 100x0) / (10 + 100) = 150 / 110 = 1.3636
+			}
 		}
 	}
 
-	@Test
-	@DisplayName("case 2: cost init, shipment, shipment reversal, receipt")
-	public void case2()
-	{
-		assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-		// Initial inventory with Price=10 and Qty=0
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
-									.qty(Quantity.of(0, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-		}
-
-		// Shipment
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
-									.qty(Quantity.of(-10, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-		}
-
-		// Shipment reversal
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofShipmentLineId(2))
-									.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-									.amt(CostAmount.of(+100, euroCurrencyId))
-									.qty(Quantity.of(+10, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
-		}
-
-		// Receipt
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofMatchPOId(1))
-									.amt(CostAmount.of(10 * 15, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
-		}
-	}
-
-	@Test
-	@DisplayName("case 3: shipment, receipt, shipment reversal")
-	public void case3()
-	{
-		assertThat(getCurrentCostOrNull(orgId1)).isNull();
-
-		// Shipment
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofShipmentLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
-									.qty(Quantity.of(-100, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-100");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
-		}
-
-		// Receipt
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofMatchPOId(1))
-									.amt(CostAmount.of(10 * 15, euroCurrencyId))
-									.qty(Quantity.of(10, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
-		}
-
-		// Shipment reversal
-		{
-			final CostDetailCreateResult costDetailResult = handler.createOrUpdateCost(
-							costDetailCreateRequest()
-									.documentRef(CostingDocumentRef.ofShipmentLineId(2))
-									.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(1))
-									.amt(CostAmount.of(0, euroCurrencyId))
-									.qty(Quantity.of(+100, eachUOM))
-									.build())
-					.get();
-
-			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("100");
-
-			final CurrentCost currentCost = getCurrentCost(orgId1);
-			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("110");
-			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1.3636"); // (10x15 + 100x0) / (10 + 100) = 150 / 110 = 1.3636
-		}
-	}
-}
-
-@Nested
-public class createMovementCosts
-{
 	@Nested
-	public class sameSegment
+	public class createMovementCosts
 	{
-		@Test
-		public void noInitialCostPrice_noInitialQty()
+		@Nested
+		public class sameSegment
 		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
+			@Test
+			public void noInitialCostPrice_noInitialQty()
+			{
+				assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
-			final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
-																			   .acctSchemaId(acctSchemaId)
-																			   .clientId(ClientId.METASFRESH)
-																			   .costElement(costElement)
-																			   .date(instant("2020-08-14"))
-																			   .productId(productId)
-																			   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-																			   .qtyToMove(Quantity.of(100, eachUOM))
-																			   //
-																			   .outboundOrgId(orgId1)
-																			   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																			   //
-																			   .inboundOrgId(orgId1)
-																			   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																			   //
-																			   .build());
+				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
+																				   .acctSchemaId(acctSchemaId)
+																				   .clientId(ClientId.METASFRESH)
+																				   .costElement(costElement)
+																				   .date(instant("2020-08-14"))
+																				   .productId(productId)
+																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
+																				   .qtyToMove(Quantity.of(100, eachUOM))
+																				   //
+																				   .outboundOrgId(orgId1)
+																				   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+																				   //
+																				   .inboundOrgId(orgId1)
+																				   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+																				   //
+																				   .build());
 
-			assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-			assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-		}
+				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+			}
 
-		@Test
-		public void withInitialCostPrice_noInitialQty()
-		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
+			@Test
+			public void withInitialCostPrice_noInitialQty()
+			{
+				assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
-			// Initial inventory with Price=10 and Qty=0
-			handler.createOrUpdateCost(
-					costDetailCreateRequest()
-							.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-							.amt(CostAmount.of(13, euroCurrencyId))
-							.qty(Quantity.of(0, eachUOM))
-							.build());
+				// Initial inventory with Price=10 and Qty=0
+				handler.createOrUpdateCost(
+						costDetailCreateRequest()
+								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+								.amt(createCostAmountDetailed(13, euroCurrencyId))
+								.qty(Quantity.of(0, eachUOM))
+								.build());
 
-			final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
-																			   .acctSchemaId(acctSchemaId)
-																			   .clientId(ClientId.METASFRESH)
-																			   .costElement(costElement)
-																			   .date(instant("2020-08-14"))
-																			   .productId(productId)
-																			   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-																			   .qtyToMove(Quantity.of(100, eachUOM))
-																			   //
-																			   .outboundOrgId(orgId1)
-																			   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																			   //
-																			   .inboundOrgId(orgId1)
-																			   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																			   //
-																			   .build());
+				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
+																				   .acctSchemaId(acctSchemaId)
+																				   .clientId(ClientId.METASFRESH)
+																				   .costElement(costElement)
+																				   .date(instant("2020-08-14"))
+																				   .productId(productId)
+																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
+																				   .qtyToMove(Quantity.of(100, eachUOM))
+																				   //
+																				   .outboundOrgId(orgId1)
+																				   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+																				   //
+																				   .inboundOrgId(orgId1)
+																				   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+																				   //
+																				   .build());
 
-			assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-			assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-		}
+				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+			}
 
-		@Test
-		public void withInitialCostPrice_noInitialQty_ExplicitCostPrice()
-		{
-			assertThat(getCurrentCostOrNull(orgId1)).isNull();
+			@Test
+			public void withInitialCostPrice_noInitialQty_ExplicitCostPrice()
+			{
+				assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
-			// Initial inventory with Price=10 and Qty=0
-			handler.createOrUpdateCost(
-					costDetailCreateRequest()
-							.documentRef(CostingDocumentRef.ofInventoryLineId(1))
-							.amt(CostAmount.of(0, euroCurrencyId))
-							.explicitCostPrice(CostAmount.of(13, euroCurrencyId))
-							.qty(Quantity.of(0, eachUOM))
-							.build());
+				// Initial inventory with Price=10 and Qty=0
+				handler.createOrUpdateCost(
+						costDetailCreateRequest()
+								.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+								.amt(createCostAmountDetailed(0, euroCurrencyId))
+								.explicitCostPrice(CostAmount.of(13, euroCurrencyId))
+								.qty(Quantity.of(0, eachUOM))
+								.build());
 
-			final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
-																			   .acctSchemaId(acctSchemaId)
-																			   .clientId(ClientId.METASFRESH)
-																			   .costElement(costElement)
-																			   .date(instant("2020-08-14"))
-																			   .productId(productId)
-																			   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-																			   .qtyToMove(Quantity.of(100, eachUOM))
-																			   //
-																			   .outboundOrgId(orgId1)
-																			   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																			   //
-																			   .inboundOrgId(orgId1)
-																			   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																			   //
-																			   .build());
+				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
+																				   .acctSchemaId(acctSchemaId)
+																				   .clientId(ClientId.METASFRESH)
+																				   .costElement(costElement)
+																				   .date(instant("2020-08-14"))
+																				   .productId(productId)
+																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
+																				   .qtyToMove(Quantity.of(100, eachUOM))
+																				   //
+																				   .outboundOrgId(orgId1)
+																				   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+																				   //
+																				   .inboundOrgId(orgId1)
+																				   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+																				   //
+																				   .build());
 
-			assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("-1300");
-			assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("+1300");
+				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("-1300");
+				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("+1300");
+			}
+
 		}
 
 	}
 
-}
+
+	private CostAmountDetailed createCostAmountDetailed(final int intValue, final CurrencyId euroCurrencyId)
+	{
+		final CostAmount mainAmount = CostAmount.of(intValue, euroCurrencyId);
+
+		return CostAmountDetailed.builder()
+				.mainAmt(mainAmount)
+				.build();
+	}
 }

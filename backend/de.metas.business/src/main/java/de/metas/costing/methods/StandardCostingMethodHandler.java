@@ -65,7 +65,12 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmountAndQty(amt, qty), previousCosts);
+		final CostAmountDetailed costAmountDetailed = CostAmountDetailed
+				.builder()
+				.mainAmt(amt)
+				.build();
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmountAndQty(costAmountDetailed, qty), previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 		utils.saveCurrentCost(currentCosts);
@@ -81,8 +86,13 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
+
+		final CostAmountDetailed costAmountDetailed = CostAmountDetailed
+				.builder()
+				.mainAmt(amt)
+				.build();
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmountAndQty(amt, qty),
+				request.withAmountAndQty(costAmountDetailed, qty),
 				previousCosts);
 	}
 
@@ -95,7 +105,12 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = utils.convertToUOM(request.getQty(), currentCosts.getUomId(), request.getProductId());
 		final CostAmount amt = currentCosts.getCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmountAndQty(amt, qty), previousCosts);
+		final CostAmountDetailed costAmountDetailed = CostAmountDetailed
+				.builder()
+				.mainAmt(amt)
+				.build();
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmountAndQty(costAmountDetailed, qty), previousCosts);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt);
 
@@ -139,7 +154,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getOutboundDocumentRef())
 				.costElement(costElement)
-				.amt(outboundAmt)
+				.amt(CostAmountDetailed.builder().mainAmt(outboundAmt).build())
 				.qty(outboundQty)
 				.date(request.getDate())
 				.build();
@@ -162,7 +177,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getInboundDocumentRef())
 				.costElement(costElement)
-				.amt(inboundAmt)
+				.amt(CostAmountDetailed.builder().mainAmt(inboundAmt).build())
 				.qty(inboundQty)
 				.date(request.getDate())
 				.build();
@@ -203,13 +218,13 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
-						.costSegment(outboundSegmentAndElement.toCostSegment())
-						.amount(costElement, outboundResult.getAmt())
-						.build())
+									   .costSegment(outboundSegmentAndElement.toCostSegment())
+									   .amount(costElement, outboundResult.getAmt())
+									   .build())
 				.inboundCosts(AggregatedCostAmount.builder()
-						.costSegment(inboundSegmentAndElement.toCostSegment())
-						.amount(costElement, inboundResult.getAmt())
-						.build())
+									  .costSegment(inboundSegmentAndElement.toCostSegment())
+									  .amount(costElement, inboundResult.getAmt())
+									  .build())
 				.build();
 	}
 }
