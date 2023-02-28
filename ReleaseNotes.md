@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14706](https://github.com/metasfresh/metasfresh/issues/14706) Import Shopware Product Variants  
   * [#14683](https://github.com/metasfresh/metasfresh/issues/14683) Partner Block and Release 
   * [#14645](https://github.com/metasfresh/metasfresh/issues/14645) Order Window Ivict adaptions (Billto Default, Drop Shipment)
   * [#14649](https://github.com/metasfresh/metasfresh/issues/14649) country-based doctype sequences
