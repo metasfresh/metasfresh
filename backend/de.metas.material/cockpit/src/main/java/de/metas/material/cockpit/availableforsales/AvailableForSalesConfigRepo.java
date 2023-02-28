@@ -57,9 +57,9 @@ public class AvailableForSalesConfigRepo
 		final I_MD_AvailableForSales_Config configRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_AvailableForSales_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_AvailableForSales_Config.COLUMN_AD_Client_ID, query.getClientId())
-				.addInArrayFilter(I_MD_AvailableForSales_Config.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-				.orderByDescending(I_MD_AvailableForSales_Config.COLUMN_AD_Org_ID)
+				.addEqualsFilter(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Client_ID, query.getClientId())
+				.addInArrayFilter(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+				.orderByDescending(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Org_ID)
 				.create()
 				.first();
 

@@ -64,8 +64,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
-				.newBlock()
-				.newWorkpackage()
+				.newWorkPackage()
 				.setC_Async_Batch_ID(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
@@ -73,7 +72,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
 				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId)
 				.end()
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
@@ -138,18 +137,20 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	public void printLabels(
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<PackageLabels> packageLabels,
-			final DeliveryOrderRepository deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		packageLabels.stream()
-				.map(PackageLabels::getDefaultPackageLabel)
-				.forEach(packageLabel -> printLabel(deliveryOrder, packageLabel, deliveryOrderRepo, asyncBatchId));
+		for (final PackageLabels packageLabel : packageLabels)
+		{
+			final PackageLabel defaultPackageLabel = packageLabel.getDefaultPackageLabel();
+			printLabel(deliveryOrder, defaultPackageLabel, deliveryOrderRepo, asyncBatchId);
+		}
 	}
 
 	private void printLabel(
 			final DeliveryOrder deliveryOrder,
 			final PackageLabel packageLabel,
-			final DeliveryOrderRepository deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);

@@ -1,16 +1,17 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.Instant;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -60,7 +61,9 @@ public class CommissionTriggerDocument
 
 	CommissionPoints invoicedCommissionPoints;
 
-	Percent tradedCommissionPercent;
+	Quantity totalQtyInvolved;
+
+	CurrencyId documentCurrencyId;
 
 	@Builder
 	private CommissionTriggerDocument(
@@ -75,7 +78,8 @@ public class CommissionTriggerDocument
 			@NonNull final CommissionPoints forecastCommissionPoints,
 			@NonNull final CommissionPoints commissionPointsToInvoice,
 			@NonNull final CommissionPoints invoicedCommissionPoints,
-			@NonNull final Percent tradedCommissionPercent)
+			@NonNull final Quantity totalQtyInvolved,
+			@NonNull final CurrencyId documentCurrencyId)
 	{
 		this.triggerType = triggerType;
 		this.orgId = orgId;
@@ -86,10 +90,11 @@ public class CommissionTriggerDocument
 		this.commissionDate = commissionDate;
 		this.updated = updated;
 
-		this.tradedCommissionPercent = tradedCommissionPercent;
 		this.invoicedCommissionPoints = invoicedCommissionPoints;
 		this.commissionPointsToInvoice = commissionPointsToInvoice;
 		this.forecastCommissionPoints = forecastCommissionPoints;
+		this.totalQtyInvolved = totalQtyInvolved;
+		this.documentCurrencyId = documentCurrencyId;
 	}
 
 }

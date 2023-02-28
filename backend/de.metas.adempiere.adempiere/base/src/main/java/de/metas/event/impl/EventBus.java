@@ -22,22 +22,11 @@ package de.metas.event.impl;
  * #L%
  */
 
-import java.util.IdentityHashMap;
-
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
@@ -77,7 +66,6 @@ final class EventBus implements IEventBus
 		logger.error(errmsg, exception);
 	};
 
-	private static final String PROP_Body = "body";
 	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
 
 	@Getter
@@ -186,6 +174,12 @@ final class EventBus implements IEventBus
 			return;
 		}
 
+		if (subscribedEventListener2GuavaListener.get(listener) != null)
+		{
+			logger.warn("Attempt to register a listener that was already registered. Ignored. \n Bus: {} \n Listener: {}", this, listener);
+			return;
+		}
+
 		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
 
 		subscribedEventListener2GuavaListener.put(listener, listenerAdapter);
@@ -226,10 +220,12 @@ final class EventBus implements IEventBus
 	public void postObject(@NonNull final Object obj)
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
+		final QueueWorkPackageId workpackageQueueRepoId = obj instanceof IQueueWorkPackageIdProvider ? ((IQueueWorkPackageIdProvider)obj).getQueueWorkPackageId() : null;
 		postEvent(Event.builder()
-						  .putProperty(PROP_Body, json)
-						  .shallBeLogged()
-						  .build());
+				.withBody(json)
+				.setQueueWorkPackageId(workpackageQueueRepoId)
+				.shallBeLogged()
+				.build());
 	}
 
 	@Override
@@ -291,7 +287,7 @@ final class EventBus implements IEventBus
 			{
 				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
-				final String json = event.getPropertyAsString(PROP_Body);
+				final String json = event.getBody();
 				final T obj = jsonDeserializer.readValue(json);
 				eventConsumer.accept(obj);
 			}
@@ -309,17 +305,17 @@ final class EventBus implements IEventBus
 		public void onEvent(@NonNull final Event event)
 		{
 			micrometerEventBusStatsCollector.incrementEventsDequeued();
-			
+
 			micrometerEventBusStatsCollector
 					.getEventProcessingTimer()
 					.record(() ->
-							{
-								try (final MDCCloseable ignored = EventMDC.putEvent(event))
-								{
-									logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-									invokeEventListener(this.eventListener, event);
-								}
-							});
+					{
+						try (final MDCCloseable ignored = EventMDC.putEvent(event))
+						{
+							logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+							invokeEventListener(this.eventListener, event);
+						}
+					});
 		}
 	}
 

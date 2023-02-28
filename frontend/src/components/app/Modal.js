@@ -126,7 +126,8 @@ class Modal extends Component {
     const msgBody = JSON.parse(websocketMsg.body);
     const { stale } = msgBody;
     if (stale) {
-      const { dispatch, windowId, docId, tabId, rowId } = this.props;
+      const { dispatch, windowId, docId, tabId, rowId, isAdvanced } =
+        this.props;
 
       dispatch(
         fireUpdateData({
@@ -135,6 +136,7 @@ class Modal extends Component {
           tabId,
           rowId,
           isModal: true,
+          fetchAdvancedFields: isAdvanced,
         })
       );
     }

@@ -1,7 +1,12 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import java.util.Arrays;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.marketing.gateway.cleverreach.restapi.models.ErrorResponse;
+import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
+import de.metas.util.JSONObjectMapper;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -15,13 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.marketing.gateway.cleverreach.restapi.models.ErrorResponse;
-import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
-import de.metas.util.JSONObjectMapper;
-import lombok.NonNull;
+import java.util.Arrays;
+import java.util.Objects;
 
 /*
  * #%L
@@ -57,7 +57,8 @@ public class CleverReachLowLevelClient
 
 	private final String authToken;
 
-	private CleverReachLowLevelClient(@NonNull final String authToken)
+	@VisibleForTesting
+	public CleverReachLowLevelClient(@NonNull final String authToken)
 	{
 		this.authToken = authToken;
 	}
@@ -75,15 +76,15 @@ public class CleverReachLowLevelClient
 		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "POST");
-				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
-				final MDCCloseable paramValuesMDC = MDC.putCloseable("login", login.withoutPassword().toString()))
+		try (final MDCCloseable ignored = MDC.putCloseable("httpMethod", "POST");
+				final MDCCloseable ignored1 = MDC.putCloseable("url", url);
+				final MDCCloseable ignored2 = MDC.putCloseable("login", login.withoutPassword().toString()))
 		{
 			final RestTemplate restTemplate = new RestTemplate();
-			final String authToken = restTemplate.postForObject(
+			final String authToken = Objects.requireNonNull(restTemplate.postForObject(
 					url,
 					new HttpEntity<>(login, httpHeaders),
-					String.class);
+					String.class));
 
 			return authToken.replaceAll("\"", ""); // the string comes complete within '"' which we need to remove
 		}
@@ -101,9 +102,9 @@ public class CleverReachLowLevelClient
 			@NonNull final String urlPathAndParams,
 			@NonNull final Object... paramValues)
 	{
-		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "GET");
-				final MDCCloseable urlMDC = MDC.putCloseable("urlPathAndParams", urlPathAndParams);
-				final MDCCloseable paramValuesMDC = MDC.putCloseable("paramValues", Arrays.toString(paramValues)))
+		try (final MDCCloseable ignored = MDC.putCloseable("httpMethod", "GET");
+				final MDCCloseable ignored1 = MDC.putCloseable("urlPathAndParams", urlPathAndParams);
+				final MDCCloseable ignored2 = MDC.putCloseable("paramValues", Arrays.toString(paramValues)))
 		{
 			final RestTemplate restTemplate = createRestTemplate();
 			final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
@@ -130,9 +131,9 @@ public class CleverReachLowLevelClient
 			@NonNull final ParameterizedTypeReference<O> returnType,
 			@NonNull final String url)
 	{
-		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "POST");
-				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
-				final MDCCloseable requestBodyMDC = MDC.putCloseable("requestBody", requestBody.toString()))
+		try (final MDCCloseable ignored = MDC.putCloseable("httpMethod", "POST");
+				final MDCCloseable ignored1 = MDC.putCloseable("url", url);
+				final MDCCloseable ignored2 = MDC.putCloseable("requestBody", requestBody.toString()))
 		{
 			final RestTemplate restTemplate = createRestTemplate();
 			final HttpEntity<I> entity = new HttpEntity<>(requestBody, createHeaders());
@@ -159,9 +160,9 @@ public class CleverReachLowLevelClient
 			@NonNull final ParameterizedTypeReference<O> returnType,
 			@NonNull final String url)
 	{
-		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "PUT");
-				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
-				final MDCCloseable requestBodyMDC = MDC.putCloseable("requestBody", requestBody.toString()))
+		try (final MDCCloseable ignored = MDC.putCloseable("httpMethod", "PUT");
+				final MDCCloseable ignored1 = MDC.putCloseable("url", url);
+				final MDCCloseable ignored2 = MDC.putCloseable("requestBody", requestBody.toString()))
 		{
 			final RestTemplate restTemplate = createRestTemplate();
 			final HttpEntity<I> entity = new HttpEntity<>(requestBody, createHeaders());
@@ -185,8 +186,8 @@ public class CleverReachLowLevelClient
 
 	public void delete(@NonNull final String url)
 	{
-		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "DELETE");
-				final MDCCloseable urlMDC = MDC.putCloseable("url", url))
+		try (final MDCCloseable ignored = MDC.putCloseable("httpMethod", "DELETE");
+				final MDCCloseable ignored1 = MDC.putCloseable("url", url))
 		{
 			final RestTemplate restTemplate = createRestTemplate();
 			final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
@@ -203,9 +204,7 @@ public class CleverReachLowLevelClient
 
 	private RestTemplate createRestTemplate()
 	{
-		final RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder().rootUri(BASE_URL);
-		final RestTemplate restTemplate = restTemplateBuilder.build();
-		return restTemplate;
+		return new RestTemplateBuilder().rootUri(BASE_URL).build();
 	}
 
 	private HttpHeaders createHeaders()

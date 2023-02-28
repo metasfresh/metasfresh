@@ -45,7 +45,7 @@ public interface IPrintingQueueBL extends ISingletonService
 	 */
 	I_C_Printing_Queue enqueue(I_AD_Archive printOut);
 
-	void printArchive(PrintArchiveParameters printArchiveParameters);
+	void printArchive(@NonNull PrintArchiveParameters printArchiveParameters);
 
 	void registerHandler(IPrintingQueueHandler handler);
 

@@ -25,11 +25,13 @@ package de.metas.handlingunits.hutransaction;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IHUTrxDAO extends ISingletonService
 {
@@ -48,17 +50,20 @@ public interface IHUTrxDAO extends ISingletonService
 	/**
 	 * Retrieves counterpart transaction.
 	 *
-	 * @param trxLine
 	 * @return counterpart transaction; never returns null
 	 */
 	I_M_HU_Trx_Line retrieveCounterpartTrxLine(I_M_HU_Trx_Line trxLine);
 
 	/**
-	 * Retrieve all the {@link I_M_HU_Trx_Line} that reference the given {@code hu} with their {@code M_HU_ID} column.
-	 * 
-	 * @param hu
-	 * @return
+	 * Retrieve all the {@link I_M_HU_Trx_Line} that reference the given {@code huId} with their {@code M_HU_ID} column.
 	 */
+	List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHuId(@NonNull HuId huId);
+
+	/**
+	 * Retrieve all the {@link I_M_HU_Trx_Line} that reference the given {@code hu} with their {@code M_HU_ID} column.
+	 * @deprecated please consider using {@link #retrieveReferencingTrxLinesForHuId(HuId)} instead.
+	 */
+	@Deprecated
 	List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHU(I_M_HU hu);
 
 }

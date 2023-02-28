@@ -39,8 +39,6 @@ public interface IExpressionCompiler<V, ET extends IExpression<? extends V>>
 	/**
 	 * Compiles given expression.
 	 * 
-	 * @param context
-	 * @param expressionStr
 	 * @return compiled expression
 	 */
 	ET compile(ExpressionContext context, String expressionStr);
@@ -48,7 +46,6 @@ public interface IExpressionCompiler<V, ET extends IExpression<? extends V>>
 	/**
 	 * Same as {@link #compile(ExpressionContext, String)} but using no context.
 	 * 
-	 * @param expressionStr
 	 * @return compiled expression
 	 */
 	default ET compile(final String expressionStr)

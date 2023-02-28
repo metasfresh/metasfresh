@@ -1,0 +1,9 @@
+{
+  "externalSystemConfigType": "GRSSignum",
+  "externalSystemChildConfigValue": "childValue",
+  "serviceValue": "defaultRestAPIGRS",
+  "jsonStatusRequest": {
+    "status": "Active",
+    "adPInstanceId": 123
+  }
+}

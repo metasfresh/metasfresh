@@ -11,6 +11,8 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -44,19 +46,14 @@ public interface ISourceHuDAO extends ISingletonService
 	/**
 	 * Return {@code true} if the given HU is referenced by an active {@link I_M_Source_HU}.<br>
 	 * Note that we use the ID for performance reasons.
-	 *
-	 * @param huId
-	 * @return
 	 */
 	boolean isSourceHu(HuId huId);
 
+	@Nullable
 	I_M_Source_HU retrieveSourceHuMarkerOrNull(I_M_HU hu);
 
 	/**
 	 * Returns those fine picking source HUs whose location and product match any the given query.
-	 *
-	 * @param query
-	 * @return
 	 */
 	List<I_M_HU> retrieveActiveSourceHus(MatchingSourceHusQuery query);
 

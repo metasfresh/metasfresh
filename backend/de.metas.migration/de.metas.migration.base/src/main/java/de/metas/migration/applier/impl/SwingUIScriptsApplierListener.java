@@ -34,7 +34,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,10 +82,10 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 				"<html><body>"
 						+ "Script failed to run. Shall we add it to ignore list?<br/><br/>"
 						+ "<pre>"
-						+ StringEscapeUtils.escapeHtml(exceptionMessage)
+						+ StringEscapeUtils.escapeHtml3(exceptionMessage)
 						+ "</pre>"
 						+ "<br/>"
-						+ "Script File: <a href=\"" + file.toURI() + "\">" + StringEscapeUtils.escapeHtml(file.toString()) + "</a><br/>"
+						+ "Script File: <a href=\"" + file.toURI() + "\">" + StringEscapeUtils.escapeHtml3(file.toString()) + "</a><br/>"
 						+ "</body></html>";
 
 		final ScriptFailedResolution response = uiAsk("Add script to ignore list?",

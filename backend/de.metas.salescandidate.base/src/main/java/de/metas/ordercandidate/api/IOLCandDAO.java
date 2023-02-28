@@ -44,6 +44,8 @@ public interface IOLCandDAO extends ISingletonService
 
 	<T extends I_C_OLCand> List<T> retrieveOLCands(I_C_OrderLine ol, Class<T> clazz);
 
+	<T extends I_C_OLCand> List<T> retrieveOLCands(OrderLineId orderLineId, Class<T> clazz);
+
 	/**
 	 * Loads the order line candidates whose AD_Table_ID and Record_ID columns match the given parameters.
 	 *

@@ -28,6 +28,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -38,7 +39,7 @@ public class ContractsDAO implements IContractsDAO
 {
 	@Override
 	public List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(
-			@NonNull String typeConditions,
+			@NonNull final String typeConditions,
 			@NonNull final QueryLimit limit)
 	{
 		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters */ )
@@ -49,7 +50,7 @@ public class ContractsDAO implements IContractsDAO
 	}
 
 	@Override
-	public IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions, final boolean ignoreDateFilter)
+	public IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(@NonNull final String typeConditions, final boolean ignoreDateFilter)
 	{
 		final Timestamp now = SystemTime.asTimestamp();
 
@@ -98,11 +99,10 @@ public class ContractsDAO implements IContractsDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQuery<I_C_Flatrate_Conditions> flatrateConditionsThatRequireInvoicing = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+		return queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_IsCreateNoInvoice, false) // the column name is Create*No*Invoice
 				.create();
-		return flatrateConditionsThatRequireInvoicing;
 	}
 
 	private IQuery<I_C_Invoice_Candidate> createQueryForICsThatReferenceTerms()
@@ -129,15 +129,14 @@ public class ContractsDAO implements IContractsDAO
 	@Override
 	public BigDecimal retrieveSubscriptionProgressQtyForTerm(@NonNull final I_C_Flatrate_Term term)
 	{
-		final BigDecimal qty = Services.get(IQueryBL.class)
+
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.create()
 				.aggregate(I_C_SubscriptionProgress.COLUMN_Qty, Aggregate.SUM, BigDecimal.class);
-
-		return qty;
 	}
 
 	@Override
@@ -164,6 +163,7 @@ public class ContractsDAO implements IContractsDAO
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#BPartnerId")
 	@Override
+	@Nullable
 	public I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
@@ -180,6 +180,7 @@ public class ContractsDAO implements IContractsDAO
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#BPartnerId")
 	@Override
+	@Nullable
 	public I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)

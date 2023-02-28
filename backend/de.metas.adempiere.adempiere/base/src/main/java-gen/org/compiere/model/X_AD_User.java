@@ -37,19 +37,19 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAD_BoilerPlate_Default_ID (final int AD_BoilerPlate_Default_ID)
 	{
-		if (AD_BoilerPlate_Default_ID < 1) 
+		if (AD_BoilerPlate_Default_ID < 1)
 			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, AD_BoilerPlate_Default_ID);
 	}
 
 	@Override
-	public int getAD_BoilerPlate_Default_ID() 
+	public int getAD_BoilerPlate_Default_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_Default_ID);
 	}
 
-	/** 
+	/**
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
 	 */
@@ -138,7 +138,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
-	/** 
+	/**
 	 * Alberta_Gender AD_Reference_ID=541317
 	 * Reference name: Gender_List
 	 */
@@ -157,12 +157,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("Alberta_Gender is virtual column");	}
 
 	@Override
-	public java.lang.String getAlberta_Gender() 
+	public java.lang.String getAlberta_Gender()
 	{
 		return get_ValueAsString(COLUMNNAME_Alberta_Gender);
 	}
 
-	/** 
+	/**
 	 * AlbertaTitle AD_Reference_ID=541318
 	 * Reference name: Title_List
 	 */
@@ -293,14 +293,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_Flatrate_Conditions_Default_ID (final int C_Flatrate_Conditions_Default_ID)
 	{
-		if (C_Flatrate_Conditions_Default_ID < 1) 
+		if (C_Flatrate_Conditions_Default_ID < 1)
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, C_Flatrate_Conditions_Default_ID);
 	}
 
 	@Override
-	public int getC_Flatrate_Conditions_Default_ID() 
+	public int getC_Flatrate_Conditions_Default_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_Default_ID);
 	}
@@ -345,6 +345,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getC_Job_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Job_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1)
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -433,33 +460,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
-	}
-
-	@Override
 	public void setDelDate (final @Nullable java.sql.Timestamp DelDate)
 	{
 		set_Value (COLUMNNAME_DelDate, DelDate);
@@ -493,6 +493,30 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setEMail2 (final @Nullable java.lang.String EMail2)
+	{
+		set_Value (COLUMNNAME_EMail2, EMail2);
+	}
+
+	@Override
+	public java.lang.String getEMail2()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail2);
+	}
+
+	@Override
+	public void setEMail3 (final @Nullable java.lang.String EMail3)
+	{
+		set_Value (COLUMNNAME_EMail3, EMail3);
+	}
+
+	@Override
+	public java.lang.String getEMail3()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail3);
 	}
 
 	@Override

@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inoutcandidate.shippertransportation.ShipperDeliveryService;
 import de.metas.invoice.InvoiceService;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -58,15 +60,18 @@ public class AutoProcessingOLCandService
 	private final OrderService orderService;
 	private final ShipmentService shipmentService;
 	private final InvoiceService invoiceService;
+	private final ShipperDeliveryService shipperDeliveryService;
 
 	public AutoProcessingOLCandService(
-			final OrderService orderService,
-			final ShipmentService shipmentService,
-			final InvoiceService invoiceService)
+			final @NonNull OrderService orderService,
+			final @NonNull ShipmentService shipmentService,
+			final @NonNull InvoiceService invoiceService, 
+			final @NonNull ShipperDeliveryService shipperDeliveryService)
 	{
 		this.orderService = orderService;
 		this.shipmentService = shipmentService;
 		this.invoiceService = invoiceService;
+		this.shipperDeliveryService = shipperDeliveryService;
 	}
 
 	public void processOLCands(final @NonNull ProcessOLCandsRequest request)
@@ -91,7 +96,12 @@ public class AutoProcessingOLCandService
 
 		if (request.isShip())
 		{
-			shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
+			final Set<InOutId> generatedInOutIds = shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
+
+			for (final InOutId inOutId : generatedInOutIds)
+			{
+				shipperDeliveryService.createTransportationAndPackagesForShipment(inOutId);
+			}
 		}
 
 		if (request.isInvoice())

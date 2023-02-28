@@ -143,7 +143,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setRecord_ID(olcRecord.getC_OLCand_ID());
 
 		ic.setPOReference(olcRecord.getPOReference());
-
 		// product
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olcRecord);
 		ic.setM_Product_ID(ProductId.toRepoId(productId));
@@ -183,8 +182,15 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIsSOTrx(true);
 
 		ic.setPresetDateInvoiced(olcRecord.getPresetDateInvoiced());
-		ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
-
+		if (olcRecord.getC_DocTypeInvoice_ID() > 0)
+		{
+			ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
+		}
+		else
+		{
+			setDefaultInvoiceDocType(ic);
+		}
+		
 		// 07442 activity and tax
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
@@ -198,7 +204,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
-				ctx,
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
@@ -212,6 +217,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
 		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
+
+		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);
@@ -271,8 +278,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_OLCand olc = TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
-		return olc;
+		return TableRecordCacheLocal.getReferencedValue(ic, I_C_OLCand.class);
 	}
 
 	/**

@@ -12,6 +12,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,6 +28,8 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeListValueTrxRestriction;
+import org.adempiere.mm.attributes.AttributeSetAttribute;
+import org.adempiere.mm.attributes.AttributeSetAttributeIdsList;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -67,8 +70,12 @@ public class AttributeDAO implements IAttributeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private CCache<Integer, AttributesMap> attributesMapCache = CCache.<Integer, AttributesMap>builder()
+	private final CCache<Integer, AttributesMap> attributesMapCache = CCache.<Integer, AttributesMap>builder()
 			.tableName(I_M_Attribute.Table_Name)
+			.build();
+
+	private final CCache<AttributeSetId, AttributeSetAttributeIdsList> attributeSetAttributeIdsListsCache = CCache.<AttributeSetId, AttributeSetAttributeIdsList>builder()
+			.tableName(I_M_AttributeUse.Table_Name)
 			.build();
 
 	@Override
@@ -96,13 +103,21 @@ public class AttributeDAO implements IAttributeDAO
 		}
 	}
 
-	@Override
-	@Cached(cacheName = I_M_AttributeUse.Table_Name + "#by#M_AttributeSet_ID", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public List<AttributeId> getAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
+	private AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
 		if (attributeSetId.isNone())
 		{
-			return ImmutableList.of();
+			return AttributeSetAttributeIdsList.EMPTY;
+		}
+
+		return attributeSetAttributeIdsListsCache.getOrLoad(attributeSetId, this::retrieveAttributeIdsByAttributeSetId);
+	}
+
+	private AttributeSetAttributeIdsList retrieveAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
+	{
+		if (attributeSetId.isNone())
+		{
+			return AttributeSetAttributeIdsList.EMPTY;
 		}
 
 		return queryBL
@@ -114,9 +129,19 @@ public class AttributeDAO implements IAttributeDAO
 				.create()
 				.list()
 				.stream()
-				.map(attributeUse -> AttributeId.ofRepoId(attributeUse.getM_Attribute_ID()))
-				.distinct()
-				.collect(ImmutableList.toImmutableList());
+				.map(AttributeDAO::toAttributeSetAttribute)
+				.collect(AttributeSetAttributeIdsList.collect());
+	}
+
+	private static AttributeSetAttribute toAttributeSetAttribute(final I_M_AttributeUse record)
+	{
+		return AttributeSetAttribute.builder()
+				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
+				.seqNo(record.getSeqNo())
+				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
+				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
+				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))
+				.build();
 	}
 
 	@Override
@@ -153,7 +178,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_Attribute> getAttributesByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
-		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId);
+		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId).getAttributeIdsInOrder();
 		if (attributeIds.isEmpty())
 		{
 			return ImmutableList.of();
@@ -471,7 +496,7 @@ public class AttributeDAO implements IAttributeDAO
 
 	private Comparator<I_M_AttributeInstance> createAttributeInstanceOrderComparator(final AttributeSetId attributeSetId)
 	{
-		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId);
+		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId).getAttributeIdsInOrder();
 		if (attributeIds.isEmpty())
 		{
 			return Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID);
@@ -703,13 +728,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public boolean containsAttribute(@NonNull final AttributeSetId attributeSetId, @NonNull final AttributeId attributeId)
 	{
-		if (attributeSetId.isNone())
-		{
-			return false;
-		}
-
-		final List<AttributeId> attributeIds = getAttributeIdsByAttributeSetId(attributeSetId);
-		return attributeIds.contains(attributeId);
+		return getAttributeIdsByAttributeSetId(attributeSetId).contains(attributeId);
 	}
 
 	@Override
@@ -722,6 +741,12 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		return getAttributeById(attributeId);
+	}
+
+	@Override
+	public Optional<AttributeSetAttribute> getAttributeSetAttributeId(final AttributeSetId attributeSetId, final AttributeId attributeId)
+	{
+		return getAttributeIdsByAttributeSetId(attributeSetId).getByAttributeId(attributeId);
 	}
 
 	@Override
@@ -853,6 +878,28 @@ public class AttributeDAO implements IAttributeDAO
 		final I_M_AttributeSetInstance asiTargetRecord = copy(asiSourceRecord);
 
 		return AttributeSetInstanceId.ofRepoId(asiTargetRecord.getM_AttributeSetInstance_ID());
+	}
+
+	@Override
+	public boolean nullSafeASIEquals(
+			@Nullable final AttributeSetInstanceId firstASIId,
+			@Nullable final AttributeSetInstanceId secondASIId)
+	{
+		if (firstASIId == null && secondASIId == null)
+		{
+			return true;
+		}
+
+		if ((firstASIId == null && secondASIId != null)
+				|| (secondASIId == null && firstASIId != null))
+		{
+			return false;
+		}
+
+		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
+		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
+
+		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	private static final class AttributeListValueMap

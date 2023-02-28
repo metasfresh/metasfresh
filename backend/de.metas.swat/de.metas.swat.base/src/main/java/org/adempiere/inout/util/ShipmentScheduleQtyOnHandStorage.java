@@ -91,6 +91,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		return toStockDetails(stockResult);
 	}
 
+	@Nullable
 	private StockDataMultiQuery toMultiQueryOrNull(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
 		final Set<StockDataQuery> stockDataQueries = shipmentSchedules
@@ -189,7 +190,7 @@ public class ShipmentScheduleQtyOnHandStorage
 				: Optional.empty();
 	}
 
-	private static final ImmutableList<ShipmentScheduleAvailableStockDetail> toStockDetails(final Collection<StockDataItem> result)
+	private static ImmutableList<ShipmentScheduleAvailableStockDetail> toStockDetails(final Collection<StockDataItem> result)
 	{
 		return result
 				.stream()
@@ -229,7 +230,7 @@ public class ShipmentScheduleQtyOnHandStorage
 			availableStockDetails.addAll(getStockDetailsMatching(mainProductQuery));
 
 			//
-			// Picking
+			// Picking (=> for "Trading BOM" feature)
 			final PPOrderId pickFromOrderId = PPOrderId.ofRepoIdOrNull(sched.getPickFrom_Order_ID());
 			availableStockDetails.addAll(createPickFromStockDetails(mainProductQuery, pickFromOrderId));
 

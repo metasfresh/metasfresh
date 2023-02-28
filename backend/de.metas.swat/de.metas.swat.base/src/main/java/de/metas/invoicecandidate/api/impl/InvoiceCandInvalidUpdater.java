@@ -23,8 +23,10 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
@@ -41,6 +43,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -63,6 +66,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -202,7 +206,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 								if (!icRecord.isError())
 								{
 									logger.debug("Updated invoice candidate");
-									result.addInvoiceCandidate(icRecord);
+									result.addInvoiceCandidate();
 									final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 									if (trxManager.isActive(currentTrx))
 									{
@@ -281,7 +285,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			headerKeys.asMap().forEach(this::processAsync);
 		}
 
-		private void processAsync(String headerKey, Collection<Integer> processedRecords)
+		private void processAsync(final String headerKey, final Collection<Integer> processedRecords)
 		{
 			final Collection<I_C_Invoice_Candidate> refreshedAssociatedInvoiceCandidates = invoiceCandBL.getRefreshedAssociatedInvoiceCandidates(invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(), headerKey, getTrxName()), processedRecords);
 			invoiceCandDAO.saveAll(refreshedAssociatedInvoiceCandidates);
@@ -334,15 +338,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			// 07814-IT2 only from now on we have the correct QtyDelivered
 			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
 			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+			invoiceCandidateHandlerBL.setPickedData(icRecord);
 		}
 
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		//
-		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
-		if (!icRecord.isApprovalForInvoicing())
+		// Update Price and Quantity only if...
+		final TaxId taxId = TaxId.ofRepoIdOrNull(icRecord.getC_Tax_ID());
+		final boolean noTax = taxId == null || taxId.isNoTaxId();
+		final boolean updatePriceAndTax = !icRecord.isApprovalForInvoicing() // ... this invoice candidate was NOT yet approved for invoicing (08610)
+				|| noTax; // ... or if the IC has no tax and therefore can't be invoiced either way
+		if (updatePriceAndTax)
 		{
 			try
 			{
@@ -398,6 +406,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	{
 		if (orderLine == null)
 		{
+			final ImmutableList<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLForInvoiceCandidate(ic);
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciols.stream()
+														 .map(I_C_InvoiceCandidate_InOutLine::getC_InvoiceCandidate_InOutLine_ID)
+														 .collect(ImmutableList.toImmutableList()), ic.getC_Invoice_Candidate_ID()));
+
+			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
+			{
+				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineById(inOutLineId);
+
+				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
+			}
+
 			return; // nothing to do
 		}
 
@@ -413,6 +437,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 				iciol.setC_Invoice_Candidate(ic);
 			}
+
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
+												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
+			
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
@@ -527,7 +556,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		private int countOk = 0;
 		private int countErrors = 0;
 
-		public void addInvoiceCandidate(@SuppressWarnings("unused") final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate()
 		{
 			countOk++;
 		}

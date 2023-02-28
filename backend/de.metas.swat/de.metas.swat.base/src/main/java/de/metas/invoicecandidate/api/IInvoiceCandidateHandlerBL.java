@@ -97,4 +97,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	void setInvoiceScheduleAndDateToInvoice(I_C_Invoice_Candidate ic);
 
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
+
+	void setPickedData(I_C_Invoice_Candidate ic);
 }

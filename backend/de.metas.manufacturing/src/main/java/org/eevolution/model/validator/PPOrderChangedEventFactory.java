@@ -1,17 +1,5 @@
 package org.eevolution.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import de.metas.uom.IUOMConversionBL;
-import de.metas.util.Services;
-import org.eevolution.model.I_PP_Order;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
@@ -19,9 +7,20 @@ import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDes
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor.ChangedPPOrderLineDescriptorBuilder;
 import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderChangedEvent.PPOrderChangedEventBuilder;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.eevolution.model.I_PP_Order;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
 /*
  * #%L
@@ -82,13 +81,13 @@ public class PPOrderChangedEventFactory
 		final List<PPOrderLine> linesWithProductBomLine = linesWithAndWithoutProductBomLineId.get(true);
 		linesWithProductBomLine.forEach(line -> {
 			final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
-					.issueOrReceiveDate(line.getIssueOrReceiveDate())
-					.productDescriptor(line.getProductDescriptor())
+					.issueOrReceiveDate(line.getPpOrderLineData().getIssueOrReceiveDate())
+					.productDescriptor(line.getPpOrderLineData().getProductDescriptor())
 					.oldPPOrderLineId(line.getPpOrderLineId())
-					.oldQtyRequired(line.getQtyRequired())
-					.oldQtyDelivered(line.getQtyDelivered());
+					.oldQtyRequired(line.getPpOrderLineData().getQtyRequired())
+					.oldQtyDelivered(line.getPpOrderLineData().getQtyDelivered());
 
-			productBomLineId2ChangeBuilder.put(line.getProductBomLineId(), builder);
+			productBomLineId2ChangeBuilder.put(line.getPpOrderLineData().getProductBomLineId(), builder);
 		});
 	}
 
@@ -101,33 +100,34 @@ public class PPOrderChangedEventFactory
 
 		return PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
-				.oldDatePromised(oldPPOrder.getDatePromised())
+				.oldDatePromised(oldPPOrder.getPpOrderData().getDatePromised())
 				.oldDocStatus(oldPPOrder.getDocStatus())
-				.oldQtyRequired(oldPPOrder.getQtyRequired())
-				.oldQtyDelivered(oldPPOrder.getQtyDelivered());
+				.oldQtyRequired(oldPPOrder.getPpOrderData().getQtyRequired())
+				.oldQtyDelivered(oldPPOrder.getPpOrderData().getQtyDelivered());
 	}
 
 	private Map<Boolean, List<PPOrderLine>> collectLinesWithAndWithoutProductBomLineId(@NonNull final PPOrder ppOrder)
 	{
 		return ppOrder.getLines()
 				.stream()
-				.collect(Collectors.partitioningBy(line -> line.getProductBomLineId() > 0));
+				.collect(Collectors.partitioningBy(line -> line.getPpOrderLineData().getProductBomLineId() > 0));
 	}
 
 	public PPOrderChangedEvent inspectPPOrderAfterChange()
 	{
 		final PPOrder updatedPPOrder = ppOrderConverter.toPPOrder(ppOrderRecord);
+		final PPOrderData ppOrderData = updatedPPOrder.getPpOrderData();
 		eventBuilder.ppOrderAfterChanges(updatedPPOrder);
 
-		eventBuilder.newDatePromised(updatedPPOrder.getDatePromised());
+		eventBuilder.newDatePromised(ppOrderData.getDatePromised());
 		eventBuilder.newDocStatus(updatedPPOrder.getDocStatus());
 
-		eventBuilder.newQtyRequired(updatedPPOrder.getQtyRequired());
-		eventBuilder.newQtyDelivered(updatedPPOrder.getQtyDelivered());
+		eventBuilder.newQtyRequired(ppOrderData.getQtyRequired());
+		eventBuilder.newQtyDelivered(ppOrderData.getQtyDelivered());
 
 		for (final PPOrderLine updatedPPOrderLine : updatedPPOrder.getLines())
 		{
-			final int productBomLineId = updatedPPOrderLine.getProductBomLineId();
+			final int productBomLineId = updatedPPOrderLine.getPpOrderLineData().getProductBomLineId();
 			if (!productBomLineId2ChangeBuilder.containsKey(productBomLineId))
 			{
 				eventBuilder.newPPOrderLine(updatedPPOrderLine);
@@ -136,8 +136,8 @@ public class PPOrderChangedEventFactory
 			{
 				productBomLineId2ChangeBuilder.get(productBomLineId)
 						.newPPOrderLineId(updatedPPOrderLine.getPpOrderLineId())
-						.newQtyRequired(updatedPPOrderLine.getQtyRequired())
-						.newQtyDelivered(updatedPPOrderLine.getQtyDelivered());
+						.newQtyRequired(updatedPPOrderLine.getPpOrderLineData().getQtyRequired())
+						.newQtyDelivered(updatedPPOrderLine.getPpOrderLineData().getQtyDelivered());
 			}
 		}
 

@@ -6,7 +6,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -43,14 +42,12 @@ public final class ExplainedOptional<T>
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
 	{
-		final T value = null;
-		return new ExplainedOptional<>(value, explanation);
+		return new ExplainedOptional<>(null, explanation);
 	}
 
 	public static <T> ExplainedOptional<T> of(@NonNull final T value)
 	{
-		final ITranslatableString explanation = null;
-		return new ExplainedOptional<>(value, explanation);
+		return new ExplainedOptional<>(value, null);
 	}
 
 	private final T value;
@@ -76,30 +73,9 @@ public final class ExplainedOptional<T>
 				.toString();
 	}
 
-	public ExplainedOptional<T> withExplanation(@NonNull final ITranslatableString explanation)
-	{
-		if (Objects.equals(this.explanation, explanation))
-		{
-			return this;
-		}
-
-		return new ExplainedOptional<>(value, explanation);
-	}
-
-	public ExplainedOptional<T> withExplanation(@NonNull final String explanation)
-	{
-		return withExplanation(TranslatableStrings.anyLanguage(explanation));
-	}
-
 	public ITranslatableString getExplanation()
 	{
 		return explanation != null ? explanation : TranslatableStrings.empty();
-	}
-
-	@Nullable
-	public T orElseNull()
-	{
-		return orElse(null);
 	}
 
 	@Nullable
@@ -108,7 +84,7 @@ public final class ExplainedOptional<T>
 		return value != null ? value : other;
 	}
 
-	public T get()
+	public T orElseThrow()
 	{
 		if (value != null)
 		{
@@ -118,6 +94,11 @@ public final class ExplainedOptional<T>
 		{
 			throw new AdempiereException(explanation);
 		}
+	}
+
+	public T get()
+	{
+		return orElseThrow();
 	}
 
 	public boolean isPresent()
@@ -154,6 +135,7 @@ public final class ExplainedOptional<T>
 		return this;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public ExplainedOptional<T> ifAbsent(@NonNull final Consumer<ITranslatableString> consumer)
 	{
 		if (!isPresent())
@@ -161,5 +143,19 @@ public final class ExplainedOptional<T>
 			consumer.accept(explanation);
 		}
 		return this;
+	}
+
+	public <R> R resolve(
+			@NonNull final Function<T, R> mapPresent,
+			@NonNull final Function<ITranslatableString, R> mapAbsent)
+	{
+		if (isPresent())
+		{
+			return mapPresent.apply(value);
+		}
+		else
+		{
+			return mapAbsent.apply(explanation);
+		}
 	}
 }

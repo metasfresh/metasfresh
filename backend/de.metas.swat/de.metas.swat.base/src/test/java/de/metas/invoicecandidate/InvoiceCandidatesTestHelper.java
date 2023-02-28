@@ -44,10 +44,10 @@ public class InvoiceCandidatesTestHelper
 {
 	/**
 	 * Creates all missing invoice candidates
-	 * 
+	 *
 	 * Helper method to invoke {@link IInvoiceCandidateHandler#retrieveAllModelsWithMissingCandidates(QueryLimit)} and then
 	 * {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)} for retrieved models.
-	 * 
+	 *
 	 * @return invoice candidates
 	 */
 	public static List<I_C_Invoice_Candidate> createMissingCandidates(@NonNull final IInvoiceCandidateHandler handler, @NonNull final QueryLimit limit)

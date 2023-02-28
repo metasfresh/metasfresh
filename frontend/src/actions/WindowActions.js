@@ -238,6 +238,23 @@ export function initDataSuccess({
   };
 }
 
+function initDataNotFound(windowId) {
+  return (dispose) => {
+    dispose(getWindowBreadcrumb(windowId));
+    dispose(
+      initDataSuccess({
+        data: {},
+        docId: 'notfound',
+        includedTabsInfo: {},
+        scope: 'master',
+        saveStatus: { saved: true },
+        standardActions: [],
+        validStatus: {},
+      })
+    );
+  };
+}
+
 export function updateMasterData(data) {
   return {
     type: UPDATE_MASTER_DATA,
@@ -389,14 +406,17 @@ export function indicatorState(state) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowId, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowId, docId, query)
+    const tableId = getTableId({ windowId, tabId, docId });
+    dispatch(updateTabTable({ tableId, pending: true }));
+    return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
-        const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };
 
-        dispatch(updateTabTable(tableId, tableData));
+        dispatch(
+          updateTabTable({ tableId, tableResponse: tableData, pending: false })
+        );
 
         return Promise.resolve(response);
       })
@@ -469,18 +489,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
           docId: docId,
           fetchAdvancedFields: isAdvanced,
         }).catch((e) => {
-          dispatch(getWindowBreadcrumb(windowType));
-          dispatch(
-            initDataSuccess({
-              data: {},
-              docId: 'notfound',
-              includedTabsInfo: {},
-              scope: 'master',
-              saveStatus: { saved: true },
-              standardActions: [],
-              validStatus: {},
-            })
-          );
+          dispatch(initDataNotFound(windowType));
 
           return { status: e.status, message: e.statusText };
         });
@@ -677,7 +686,13 @@ export function createWindow({
                 tabId,
                 ...tab,
               };
-              dispatch(updateTabTable(tableId, tableData));
+              dispatch(
+                updateTabTable({
+                  tableId,
+                  tableResponse: tableData,
+                  pending: false,
+                })
+              );
             });
           }
           /** post get layout action triggered for the inlineTab case */
@@ -973,19 +988,31 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-    }).then((response) => {
-      dispatch(
-        mapDataToState({
-          data: response.data,
-          isModal,
-          rowId,
-          documentId,
-          windowId,
-          fetchAdvancedFields,
-        })
-      );
-    });
+    })
+      .then((response) => {
+        dispatch(
+          mapDataToState({
+            data: response.data,
+            isModal,
+            rowId,
+            documentId,
+            windowId,
+            fetchAdvancedFields,
+          })
+        );
+      })
+      .catch((axiosError) => {
+        if (is404(axiosError) && !tabId) {
+          dispatch(initDataNotFound(windowId));
+        }
+
+        return axiosError;
+      });
   };
+}
+
+function is404(axiosError) {
+  return axiosError?.response?.status === 404;
 }
 
 // TODO: Check if all cases are valid. Especially if `scope` is `master`, or

@@ -24,7 +24,9 @@ package org.adempiere.service;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import lombok.NonNull;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
@@ -46,13 +48,14 @@ public interface IClientDAO extends ISingletonService
 		return getById(ClientId.ofRepoId(adClientId));
 	}
 
+	List<I_AD_Client> getByIds(@NonNull Set<ClientId> adClientIds);
+
 	@Deprecated
 	I_AD_Client retriveClient(Properties ctx, int adClientId);
 
 	/**
 	 * Retrieves currently login {@link I_AD_Client}.
 	 *
-	 * @param ctx
 	 * @return context client
 	 * @see Env#getAD_Client_ID(Properties)
 	 */
@@ -69,4 +72,6 @@ public interface IClientDAO extends ISingletonService
 	ClientEMailConfig getEMailConfigById(ClientId clientId);
 
 	boolean isMultilingualDocumentsEnabled(ClientId adClientId);
+
+	String getClientNameById(@NonNull ClientId clientId);
 }

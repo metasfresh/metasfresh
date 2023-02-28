@@ -1,12 +1,6 @@
 package de.metas.material.dispo.service.event.handler.purchasecandidate;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -18,6 +12,10 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateEvent;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ public final class PurchaseCandidateCreatedHandler
 	}
 
 	@Override
-	public Collection<Class<? extends PurchaseCandidateCreatedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PurchaseCandidateCreatedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PurchaseCandidateCreatedEvent.class);
 	}

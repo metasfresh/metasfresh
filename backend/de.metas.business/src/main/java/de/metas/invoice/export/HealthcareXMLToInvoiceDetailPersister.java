@@ -129,9 +129,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 		}
 
 		// referrer
-		setReferrerDetails(tiers.getReferrer(), invoiceWithDetails, LABEL_PREFIX_REFERRER);
-		setIfNotBlank(invoiceWithDetails, tiers.getReferrer().getZsr(), LABEL_REFERRER_ZSR);
-		setIfNotBlank(invoiceWithDetails, tiers.getReferrer().getEanParty(), LABEL_REFERRER_GLN);
+		setReferrerDetailsIfNotNull(tiers.getReferrer(), invoiceWithDetails, LABEL_PREFIX_REFERRER);
 
 		setInsuranceIfNotBlank(invoiceWithDetails, tiers.getInsurance());
 
@@ -171,7 +169,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 
 	private void setInsuranceIfNotBlank(
 			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			final XmlInsurance insurance)
+			@Nullable final XmlInsurance insurance)
 	{
 		if (insurance == null)
 		{
@@ -234,13 +232,18 @@ public class HealthcareXMLToInvoiceDetailPersister
 		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, patient.getPerson());
 	}
 
-	private void setReferrerDetails(
-			@NonNull final XmlReferrer referrer,
+	private void setReferrerDetailsIfNotNull(
+			@Nullable final XmlReferrer referrer,
 			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
 			@NonNull final String labelPrefix)
 	{
-		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getPerson());
-		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getCompany());
+		if (referrer != null)
+		{
+			setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getPerson());
+			setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getCompany());
+			setIfNotBlank(invoiceWithDetails, referrer.getZsr(), LABEL_REFERRER_ZSR);
+			setIfNotBlank(invoiceWithDetails, referrer.getEanParty(), LABEL_REFERRER_GLN);
+		}
 	}
 
 	private void setPersonDetailsIfNotNull(

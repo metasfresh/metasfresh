@@ -192,4 +192,8 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public int size()
+	{
+		return recordRefs.size();
+	}
 }
