@@ -119,8 +119,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setCurrencyId(outboundCosts.getCurrencyId())
-				.setAmtSourceDrOrCr(outboundCosts.getValue()) // from (-) CR
+				.setAmtSourceDrOrCr(outboundCosts.toMoney()) // from (-) CR
 				.setQty(line.getQty().negate()) // outgoing
 				.locatorId(line.getM_Locator_ID())
 				.activityId(line.getActivityFromId())
@@ -132,8 +131,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setCurrencyId(inboundCosts.getCurrencyId())
-				.setAmtSourceDrOrCr(inboundCosts.getValue()) // to (+) DR
+				.setAmtSourceDrOrCr(inboundCosts.toMoney()) // to (+) DR
 				.setQty(line.getQty()) // incoming
 				.locatorId(line.getM_LocatorTo_ID())
 				.activityId(line.getActivityId())

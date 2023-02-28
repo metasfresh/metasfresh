@@ -6,6 +6,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
@@ -93,6 +94,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -123,6 +125,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -154,6 +157,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -186,6 +190,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -214,6 +219,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, -1, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -245,6 +251,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(false)
@@ -281,6 +288,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User2", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)

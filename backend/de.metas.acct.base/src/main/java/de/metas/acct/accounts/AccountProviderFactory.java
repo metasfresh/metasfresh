@@ -21,6 +21,7 @@ public class AccountProviderFactory
 	private final ChargeAccountsRepository chargeAccountsRepository;
 	private final WarehouseAccountsRepository warehouseAccountsRepository;
 	private final ProjectAccountsRepository projectAccountsRepository;
+	private final CostElementAccountsRepository costElementAccountsRepository;
 
 	public AccountProviderFactory(
 			@NonNull final ProductAccountsRepository productAccountsRepository,
@@ -31,7 +32,8 @@ public class AccountProviderFactory
 			@NonNull final BankAccountAcctRepository bankAccountAcctRepository,
 			@NonNull final ChargeAccountsRepository chargeAccountsRepository,
 			@NonNull final WarehouseAccountsRepository warehouseAccountsRepository,
-			@NonNull final ProjectAccountsRepository projectAccountsRepository)
+			@NonNull final ProjectAccountsRepository projectAccountsRepository,
+			@NonNull final CostElementAccountsRepository costElementAccountsRepository)
 	{
 		this.productAccountsRepository = productAccountsRepository;
 		this.productCategoryAccountsRepository = productCategoryAccountsRepository;
@@ -42,6 +44,7 @@ public class AccountProviderFactory
 		this.chargeAccountsRepository = chargeAccountsRepository;
 		this.warehouseAccountsRepository = warehouseAccountsRepository;
 		this.projectAccountsRepository = projectAccountsRepository;
+		this.costElementAccountsRepository = costElementAccountsRepository;
 	}
 
 	public AccountProvider.AccountProviderBuilder newAccountProvider()
@@ -58,6 +61,7 @@ public class AccountProviderFactory
 				.chargeAccountsRepository(chargeAccountsRepository)
 				.warehouseAccountsRepository(warehouseAccountsRepository)
 				.projectAccountsRepository(projectAccountsRepository)
+				.costElementAccountsRepository(costElementAccountsRepository)
 				;
 	}
 

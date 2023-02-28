@@ -143,7 +143,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> subQueryBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Payment.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Payment.class));
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_Fact_Acct.COLUMNNAME_Record_ID, subQueryBuilder.create()) // has no accounting

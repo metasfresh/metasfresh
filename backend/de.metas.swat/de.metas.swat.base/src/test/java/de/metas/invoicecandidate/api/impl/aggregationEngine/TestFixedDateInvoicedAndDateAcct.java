@@ -1,33 +1,27 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-
-import de.metas.business.BusinessTestHelper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_PaymentTerm;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_PaymentTerm;
+import org.junit.Test;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -51,23 +45,21 @@ import de.metas.money.MoneyService;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		//
-		CurrencyRepository.class,
-		MoneyService.class,
-		InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineTestBase
 {
+	@Override
+	public void init()
+	{
+		super.init();
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+	}
+
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()
 	{
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
-
 
 		return createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -76,7 +68,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 				.setSOTrx(true);
 	}
 
-	/** Verifies that the "param" dateInvoiced takes precedence over the IC's "preset" dateInvoiced. */
+	/**
+	 * Verifies that the "param" dateInvoiced takes precedence over the IC's "preset" dateInvoiced.
+	 */
 	@Test
 	public void test_using_dateInvoicedParam()
 	{
@@ -88,6 +82,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
@@ -110,6 +105,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
 				.build();
@@ -124,7 +120,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 	}
 
-	/** Verifies that the IC's "preset" dateInvoiced takes precedence over the IC's dateInvoiced. */
+	/**
+	 * Verifies that the IC's "preset" dateInvoiced takes precedence over the IC's dateInvoiced.
+	 */
 	@Test
 	public void test_using_presetDateInvoiced()
 	{
@@ -138,6 +136,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 13))
 				.build();
 
@@ -151,7 +150,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}
 
-	/** Verifies that the "param" DueDateOverride is used */
+	/**
+	 * Verifies that the "param" DueDateOverride is used
+	 */
 	@Test
 	public void test_using_dateDateDueOverrideParam()
 	{
@@ -166,6 +167,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
 				.build();
 

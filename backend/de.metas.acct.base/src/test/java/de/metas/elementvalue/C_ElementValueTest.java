@@ -25,7 +25,7 @@ package de.metas.elementvalue;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.acct.interceptor.C_ElementValue;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNode;
 import de.metas.treenode.TreeNodeRepository;

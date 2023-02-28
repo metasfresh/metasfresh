@@ -562,7 +562,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	@NonNull
 	@Override
-	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
 

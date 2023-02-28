@@ -16,6 +16,7 @@ import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFac
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.material.MovementType;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductActivityProvider;
@@ -113,6 +114,7 @@ public class M_InOutLine_HandlerTest
 
 		inout = newInstance(I_M_InOut.class);
 		inout.setIsSOTrx(true);
+		inout.setMovementType(MovementType.CustomerShipment.getCode());
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		inout.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());

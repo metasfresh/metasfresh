@@ -131,6 +131,12 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
+	public CostElement getCostElementById(@NonNull final CostElementId costElementId)
+	{
+		return costElementsRepo.getById(costElementId);
+	}
+
+	@Override
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return createCostDetailOrEmpty(request).orElseThrow();
@@ -299,21 +305,20 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
-		return request.isAllCostElements()
-				? getAllCostElements(request.getClientId())
+		return request.isAllMaterialCostElements()
+				? getMaterialCostingMethods(request.getClientId())
 				: ImmutableList.of(request.getCostElement());
 	}
 
 	private List<CostElement> extractCostElements(final MoveCostsRequest request)
 	{
-		return request.isAllCostElements()
-				? getAllCostElements(request.getClientId())
+		return request.isAllMaterialCostElements()
+				? getMaterialCostingMethods(request.getClientId())
 				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
 	}
 
-	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
+	private List<CostElement> getMaterialCostingMethods(@NonNull final ClientId clientId)
 	{
-		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
 		return costElementsRepo.getMaterialCostingMethods(clientId);
 	}
 

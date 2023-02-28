@@ -45,7 +45,6 @@ import java.util.List;
  * </pre>
  *
  * @author Jorg Janke
- * @version $Id: Doc_MatchPO.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 {
@@ -152,10 +151,11 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		//
 		// Product PPV
-		final FactLine cr = fact.createLine(null,
-				docLine.getAccount(ProductAcctType.P_PurchasePriceVariance_Acct, as),
-				difference.getCurrencyId(),
-				difference.negateIf(isReturnTrx).getValue());
+		final FactLine cr = fact.createLine()
+				.setDocLine(null)
+				.setAccount(docLine.getAccount(ProductAcctType.P_PurchasePriceVariance_Acct, as))
+				.setAmtSourceDrOrCr(difference.negateIf(isReturnTrx).toMoney())
+				.buildAndAdd();
 		if (cr != null)
 		{
 			cr.setQty(docLine.getQty().negateIf(isReturnTrx));
@@ -164,10 +164,11 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		//
 		// PPV Offset
-		final FactLine dr = fact.createLine(null,
-				getGLAccount(GLAccountType.PPVOffset, as),
-				difference.getCurrencyId(),
-				difference.negateIfNot(isReturnTrx).getValue());
+		final FactLine dr = fact.createLine()
+				.setDocLine(null)
+				.setAccount(getGLAccount(GLAccountType.PPVOffset, as))
+				.setAmtSourceDrOrCr(difference.negateIfNot(isReturnTrx).toMoney())
+				.buildAndAdd();
 		if (dr != null)
 		{
 			dr.setQty(docLine.getQty().negateIfNot(isReturnTrx));

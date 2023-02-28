@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import de.metas.costing.methods.CostAmountDetailed;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -45,7 +44,7 @@ import lombok.Value;
  */
 
 @Value
-public final class AggregatedCostAmount
+public class AggregatedCostAmount
 {
 	@Getter(AccessLevel.NONE)
 	CostSegment costSegment;
@@ -110,6 +109,29 @@ public final class AggregatedCostAmount
 		return new AggregatedCostAmount(costSegment, amountsNew);
 	}
 
+	@VisibleForTesting
+	public AggregatedCostAmount retainOnlyAccountable(@NonNull final AcctSchema as)
+	{
+		final AcctSchemaCosting costing = as.getCosting();
+		final CostingMethod costingMethod = costing.getCostingMethod();
+		final ImmutableSet<CostElementId> postOnlyCostElementIds = costing.getPostOnlyCostElementIds();
+
+		final LinkedHashMap<CostElement, CostAmount> amountsPerElementNew = new LinkedHashMap<>();
+		amountsPerElement.forEach((costElement, costAmount) -> {
+			if (isCostElementMatching(costElement, costingMethod, postOnlyCostElementIds))
+			{
+				amountsPerElementNew.put(costElement, costAmount);
+			}
+		});
+
+		if (amountsPerElementNew.size() == amountsPerElement.size())
+		{
+			return this;
+		}
+
+		return new AggregatedCostAmount(costSegment, amountsPerElementNew);
+	}
+
 	public CostAmountDetailed getTotalAmountToPost(@NonNull final AcctSchema as)
 	{
 		final AcctSchemaCosting acctSchemaCosting = as.getCosting();
@@ -135,18 +157,7 @@ public final class AggregatedCostAmount
 			@NonNull final CostingMethod costingMethod,
 			final Set<CostElementId> onlyCostElementIds)
 	{
-		if (!costingMethod.equals(costElement.getCostingMethod()))
-		{
-			return false;
-		}
-
-		if (onlyCostElementIds != null
-				&& !onlyCostElementIds.isEmpty()
-				&& !onlyCostElementIds.contains(costElement.getId()))
-		{
-			return false;
-		}
-
-		return true;
+		return costingMethod.equals(costElement.getCostingMethod())
+				&& (onlyCostElementIds == null || onlyCostElementIds.isEmpty() || onlyCostElementIds.contains(costElement.getId()));
 	}
 }
