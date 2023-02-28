@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.DBException;
+import org.compiere.model.IQuery;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -101,9 +102,11 @@ import lombok.NonNull;
 	 *
 	 * @return ORDER BY clause or ""
 	 */
-	private static String buildOrderByKeyColumns(final String tableName)
+	private static String buildOrderByKeyColumns(@NonNull final String tableName)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final POInfo poInfo = Check.assumeNotNull(
+				POInfo.getPOInfo(tableName),
+				"POInfo for tableName={} may not be null", tableName);
 
 		final StringBuilder orderBy = new StringBuilder();
 		for (final String keyColumnName : poInfo.getKeyColumnNames())

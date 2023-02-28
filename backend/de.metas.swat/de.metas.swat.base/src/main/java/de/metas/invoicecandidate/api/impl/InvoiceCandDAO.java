@@ -62,7 +62,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -137,7 +136,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
@@ -164,16 +162,20 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
+	public final Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(
+			@NonNull final PInstanceId selectionId,
+			@NonNull final IContextAware contextAware)
 	{
 		// Note that we can't filter by IsError in the where clause, because it wouldn't work with pagination.
 		// Background is that the number of candidates with "IsError=Y" might increase during the run.
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.setOnlySelection(pinstanceId);
-
-		return retrieveInvoiceCandidates(queryBuilder);
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, contextAware)
+				.setOnlySelection(selectionId)
+				.clearOrderBys() // be sure to specify no ordering, because we want the iterator to be ordered by C_Invoice_Candidate_ID - and not by any other column that might change on the fly.
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterate(I_C_Invoice_Candidate.class);
 	}
 
 	@Override
@@ -193,33 +195,30 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
-	@Override
-	public <T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(
-			@NonNull final IQueryBuilder<T> queryBuilder)
+
+	public Iterator<I_C_Invoice_Candidate> retrieveIcForSelectionStableOrdering(@NonNull final PInstanceId pInstanceId)
 	{
-		//
-		// Make sure we are retrieving in a order which is friendly for processing
-		final IQueryOrderByBuilder<T> orderBy = queryBuilder.orderBy();
-		orderBy
-				.clear()
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOnlySelection(pInstanceId)
+				.clearOrderBys()
 				//
 				// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
-				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
 				//
 				// We need to aggregate by DateInvoiced too
-				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
-				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateAcct)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateAcct)
 				//
 				// task 08241: return ICs with a set Bill_User_ID first, because, we can aggregate ICs with different Bill_User_IDs into one invoice, however, if there are any ICs with a Bill_User_ID
 				// set, and others with no Bill_User_ID, then we want the Bill_User_ID to end up in the C_Invoice (header) record.
-				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID, Direction.Ascending, Nulls.Last)
-				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID);
-		//
-		// Retrieve invoice candidates
-		return queryBuilder.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				//
+				// we require a guaranteed iterator to make sure that the ordering is not changed from this point onwards
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
-				.iterate(queryBuilder.getModelClass());
+				.iterate(I_C_Invoice_Candidate.class);
 	}
 
 	@Override
