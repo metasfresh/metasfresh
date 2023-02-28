@@ -30,6 +30,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.text.TokenizedStringBuilder;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 	private BigDecimal totalNetAmtToInvoiceChecksum = null;
 
 	@Override
-	public InvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(@NonNull final BigDecimal totalNetAmtToInvoiceChecksum)
+	public InvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(@Nullable final BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		this.totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 		return this;
