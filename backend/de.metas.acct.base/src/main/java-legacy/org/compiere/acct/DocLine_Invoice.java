@@ -22,6 +22,7 @@ package org.compiere.acct;
  * #L%
  */
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
@@ -40,7 +41,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.quantity.Quantity;
-import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -48,12 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import de.metas.acct.Account;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MTax;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -64,13 +60,12 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(DocLine_Invoice.class);
-	private final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+	private final MatchInvoiceService matchInvoiceService;
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final transient IProductDAO producDAO = Services.get(IProductDAO.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
@@ -78,11 +73,12 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private Quantity _qtyInvoiced = null; // lazy
 	private Quantity _qtyReceivedInStockUOM = null; // lazy
 
-	private final String SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema = "M_Product_Acct_Consider_CompensationSchema";
+	private static final String SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema = "M_Product_Acct_Consider_CompensationSchema";
 
 	public DocLine_Invoice(final I_C_InvoiceLine invoiceLine, final Doc_Invoice doc)
 	{
 		super(InterfaceWrapperHelper.getPO(invoiceLine), doc);
+		this.matchInvoiceService = doc.getServices().getMatchInvoiceService();
 
 		setIsTaxIncluded(invoiceBL.isTaxIncluded(invoiceLine));
 
@@ -98,15 +94,15 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		final TaxId taxId = getTaxId().orElse(null);
 		if (taxId != null && isTaxIncluded())
 		{
-			final MTax tax = MTax.get(Env.getCtx(), taxId.getRepoId());
+			final Tax tax = services.getTaxById(taxId);
 			if (!tax.isZeroTax())
 			{
 				final int taxPrecision = doc.getStdPrecision();
-				final BigDecimal lineTaxAmt = taxBL.calculateTax(tax, lineNetAmt, true, taxPrecision);
+				final BigDecimal lineTaxAmt = tax.calculateTax(lineNetAmt, true, taxPrecision);
 				logger.debug("LineNetAmt={} - LineTaxAmt={}", lineNetAmt, lineTaxAmt);
 				lineNetAmt = lineNetAmt.subtract(lineTaxAmt);
 
-				final BigDecimal priceListTax = taxBL.calculateTax(tax, priceList, true, taxPrecision);
+				final BigDecimal priceListTax = tax.calculateTax(priceList, true, taxPrecision);
 				priceList = priceList.subtract(priceListTax);
 
 				_includedTaxAmt = lineTaxAmt;
@@ -202,7 +198,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private Quantity getQtyInvoiced()
 	{
 		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-		if(_qtyInvoiced == null)
+		if (_qtyInvoiced == null)
 		{
 			_qtyInvoiced = invoiceBL.getQtyInvoicedStockUOM(invoiceLine);
 		}
@@ -261,22 +257,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 
 		return lineNetAmt.multiply(qtyReceivedMultiplier)
 				.setScale(getStdPrecision(), RoundingMode.HALF_UP);
-	}
-
-	/**
-	 * Checks if invoice reposting is needed when given <code>matchInv</code> was created.
-	 *
-	 * @return true if invoice reposting is needed
-	 */
-	public static boolean isInvoiceRepostingRequired(final I_M_MatchInv matchInv)
-	{
-		// Reposting is required if a M_MatchInv was created for a purchase invoice.
-		// ... because we book the matched quantity on InventoryClearing and on Expense the not matched quantity
-
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(matchInv.getC_Invoice_ID()));
-
-		return !invoice.isSOTrx();
 	}
 
 	@Override
@@ -347,6 +327,6 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			return null;
 		}
 
-		return producDAO.retrieveProductCategoryForGroupTemplateId(groupTemplateId);
+		return productDAO.retrieveProductCategoryForGroupTemplateId(groupTemplateId);
 	}
 }
