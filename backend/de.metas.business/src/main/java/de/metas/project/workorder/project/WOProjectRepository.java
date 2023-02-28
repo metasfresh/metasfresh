@@ -202,6 +202,7 @@ public class WOProjectRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Project.class)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Parent_ID, projectId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
 				.create()
 				.stream()
 				.map(WOProjectRepository::ofRecord)
