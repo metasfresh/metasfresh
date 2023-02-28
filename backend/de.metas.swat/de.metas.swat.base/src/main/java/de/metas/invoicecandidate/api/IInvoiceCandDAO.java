@@ -136,7 +136,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 * 
+	 *
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
@@ -155,14 +155,14 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.
-	 * 
+	 *
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
 	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
-	 * 
+	 *
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCand(I_C_Invoice_Candidate ic);
@@ -170,7 +170,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Invalidates the given collection of invoice candidates.<br>
 	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
-	 * 
+	 *
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCands(List<I_C_Invoice_Candidate> ics);
@@ -282,14 +282,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
-
-	/**
-
-	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/13376
-	 */
-	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
 
 	/**
 	 * @return also returns inactive records (intended use is for deletion)
