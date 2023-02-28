@@ -40,11 +40,17 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,6 +59,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
@@ -318,15 +325,14 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 	private CostAmountDetailed computeCostAmountDetailedForMatchInv(final CostDetailCreateRequest request)
 	{
-		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
-		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
+		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(matchInv.getC_Invoice_ID(), matchInv.getC_InvoiceLine_ID()));
+		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(matchInv.getInvoiceLineId());
 
 		final I_C_OrderLine orderLine = Optional.of(invoiceLine.getC_OrderLine())
-				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv.getM_MatchInv_ID()));
+				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv.getId()));
 
 		final Quantity receiptQty = inoutBL.retrieveCompleteOrClosedLinesForOrderLine(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 				.stream()

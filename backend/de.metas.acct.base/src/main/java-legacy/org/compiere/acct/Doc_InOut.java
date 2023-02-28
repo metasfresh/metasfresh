@@ -328,7 +328,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final AggregatedCostAmount aggregatedCosts = line.getCreateReceiptCosts(as).retainOnlyAccountable(as);
 		for (final CostElement costElement : aggregatedCosts.getCostElements())
 		{
-			final CostAmount costs = aggregatedCosts.getCostAmountForCostElement(costElement);
+			final CostAmount costs = aggregatedCosts.getCostAmountForCostElement(costElement).getMainAmt();
 			facts.add(createFacts_PurchasingReceiptLine(as, line, costElement, costs));
 		}
 
@@ -395,7 +395,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmountToPost(as);
+		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmountToPost(as).getMainAmt();
 
 		//
 		// NotInvoicedReceipt DR

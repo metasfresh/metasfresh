@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
+import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -31,6 +32,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
@@ -42,12 +44,18 @@ import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.IOrderLineBL;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
@@ -90,6 +98,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	// services
 	private static final Logger logger = LogManager.getLogger(Doc_MatchInv.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final transient IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -103,6 +113,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	private I_C_InvoiceLine _invoiceLine = null;
 	private I_C_Invoice _invoice = null;
+	/**
+	 * Invoice line net amount, excluding taxes, in invoice's currency
+	 */
 	private boolean isCreditMemoInvoice;
 	/**
 	 * Invoice line net amount, excluding taxes, in invoice's currency
@@ -186,7 +199,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return Money.of(invoiceLineNetAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 	}
 
-	I_M_MatchInv getMatchInvRecord() {return getModel(I_M_MatchInv.class);}
+	I_M_MatchInv getMatchInvRecord()
+	{
+		return getModel(I_M_MatchInv.class);
+	}
 
 	private Quantity getQty()
 	{
@@ -282,8 +298,56 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			createFactLinesWithCostAdjustment(as, fact, costs);
 		}
 
-		return facts;
+		return ImmutableList.of(fact);
 	}   // createFact
+
+	private void createFactLinesWithNoDifference(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
+	{
+		//
+		// NotInvoicedReceipt DR
+		// From Receipt
+		final FactLine dr_NotInvoicedReceipts = fact.createLine()
+				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
+				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
+				.setAmtSource(costs.getMainAmt(), null)
+				.setQty(getQty())
+				.buildAndAdd();
+		updateFromReceiptLine(dr_NotInvoicedReceipts);
+
+		//
+		// InventoryClearing CR
+		// From Invoice
+		final FactLine cr_InventoryClearing = fact.createLine()
+				.setAccount(docLine.getInventoryClearingAccount(as))
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(null, getInvoiceLineMatchedAmt())
+				.setQty(getQty().negate())
+				.buildAndAdd();
+		updateFromInvoiceLine(cr_InventoryClearing);
+
+		//
+		// AZ Goodwill
+		// Desc: Source Not Balanced problem because Currency is Difference - PO=CNY but AP=USD
+		// see also Fact.java: checking for isMultiCurrency()
+		if (dr_NotInvoicedReceipts != null
+				&& cr_InventoryClearing != null
+				&& !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
+		{
+			setIsMultiCurrency();
+		}
+
+		//
+		// Avoid usage of clearing accounts
+		// If both accounts Not Invoiced Receipts and Inventory Clearing are equal
+		// then remove the posting
+		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr_NotInvoicedReceipts, cr_InventoryClearing, this::isInterOrg);
+		//
+
+		//
+		// Invoice Price Variance difference
+		createFacts_Material_InvoicePriceVariance(fact, dr_NotInvoicedReceipts, cr_InventoryClearing);
+	}
 
 	private void createFactLinesWithCostAdjustment(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
 	{
@@ -321,49 +385,52 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// NotInvoicedReceipt DR
 		// From Receipt
-		final FactLine dr_NotInvoicedReceipts = fact.createLine()
+		final FactLine dr_notInvoicedReceipts = fact.createLine()
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
-				.setCurrencyId(costs.getCurrencyId())
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
 				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
-				.setAmtSource(costs.getValue(), null)
+				.setAmtSource(dr_mainAmt, null)
 				.setQty(getQty())
 				.buildAndAdd();
-		updateFromReceiptLine(dr_NotInvoicedReceipts);
+		updateFromReceiptLine(dr_notInvoicedReceipts);
 
 		//
 		// InventoryClearing CR
 		// From Invoice
-		final FactLine cr_InventoryClearing = fact.createLine()
+		final FactLine cr_notInvoicedReceipts = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-				.setAmtSource(null, getInvoiceLineMatchedAmt())
+				.setAmtSource(null, cr_mainAmt)
 				.setQty(getQty().negate())
 				.buildAndAdd();
-		updateFromInvoiceLine(cr_InventoryClearing);
+		updateFromInvoiceLine(cr_notInvoicedReceipts);
 
 		//
-		// AZ Goodwill
-		// Desc: Source Not Balanced problem because Currency is Difference - PO=CNY but AP=USD
-		// see also Fact.java: checking for isMultiCurrency()
-		if (dr_NotInvoicedReceipts != null
-				&& cr_InventoryClearing != null
-				&& !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
-		{
-			setIsMultiCurrency();
-		}
+		// Merchandise Stock aka P_Asset CR
+
+		final FactLine costAdjustment = fact.createLine()
+				.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(dr_costAdjustment, cr_costAdjustment)
+				.setQty(getQty().negate()) // TODO signum
+				.buildAndAdd();
+		updateFromInvoiceLine(costAdjustment);
 
 		//
-		// Avoid usage of clearing accounts
-		// If both accounts Not Invoiced Receipts and Inventory Clearing are equal
-		// then remove the posting
-		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr_NotInvoicedReceipts, cr_InventoryClearing, this::isInterOrg);
+		// Already shipped aka P_COGS CR
 
-		//
-		// Invoice Price Variance difference
-		createFacts_InvoicePriceVariance(fact, dr_NotInvoicedReceipts, cr_InventoryClearing);
+		final FactLine alreadyShipped = fact.createLine()
+				.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
+				.setCurrencyId(costs.getMainAmt().getCurrencyId())
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(dr_alreadyShipped, cr_alreadyShipped)
+				.setQty(getQty().negate()) // TODO signum
+				.buildAndAdd();
+		updateFromInvoiceLine(alreadyShipped);
 
-		return facts;
-	}   // createFact
+	}
 
 	/**
 	 * Create the InvoicePriceVariance fact line
@@ -442,7 +509,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 		setC_Currency_ID(as.getCurrencyId());
 
-		final Money costs = getCreateCostDetails(as).toMoney();
+		final Money costs = getCreateCostDetails(as).getMainAmt().toMoney();
 
 		//
 		// P_CostClearing_Acct DR
@@ -519,16 +586,28 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 	}
 
-	private I_C_InvoiceLine getInvoiceLine() {return _invoiceLine;}
+	private I_C_InvoiceLine getInvoiceLine()
+	{
+		return _invoiceLine;
+	}
 
-	private I_C_Invoice getInvoice() {return _invoice;}
+	private I_C_Invoice getInvoice()
+	{
+		return _invoice;
+	}
 
-	private OrgId getInvoice_Org_ID() {return OrgId.ofRepoId(getInvoiceLine().getAD_Org_ID());}
+	private OrgId getInvoice_Org_ID()
+	{
+		return OrgId.ofRepoId(getInvoiceLine().getAD_Org_ID());
+	}
 
 	/**
 	 * @return total invoice line net amount, excluding taxes, in invoice's currency
 	 */
-	private Money getInvoiceLineNetAmt() {return this.invoiceLineNetAmt;}
+	private Money getInvoiceLineNetAmt()
+	{
+		return this.invoiceLineNetAmt;
+	}
 
 	private Money getInvoiceLineMatchedAmt()
 	{
@@ -561,18 +640,33 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	/**
 	 * @return total qty that was invoiced by linked invoice line
 	 */
-	private BigDecimal getQtyInvoiced() {return getInvoiceLine().getQtyInvoiced();}
+	private BigDecimal getQtyInvoiced()
+	{
+		return getInvoiceLine().getQtyInvoiced();
+	}
 
-	private I_M_InOutLine getReceiptLine() {return _receiptLine;}
+	private I_M_InOutLine getReceiptLine()
+	{
+		return _receiptLine;
+	}
 
-	private I_M_InOut getReceipt() {return _receipt;}
+	private I_M_InOut getReceipt()
+	{
+		return _receipt;
+	}
 
-	private OrgId getReceipt_Org_ID() {return OrgId.ofRepoId(getReceiptLine().getAD_Org_ID());}
+	private OrgId getReceipt_Org_ID()
+	{
+		return OrgId.ofRepoId(getReceiptLine().getAD_Org_ID());
+	}
 
 	/**
 	 * @return total qty that was received by linked receipt line
 	 */
-	private BigDecimal getQtyReceived() {return getReceiptLine().getMovementQty();}
+	private BigDecimal getQtyReceived()
+	{
+		return getReceiptLine().getMovementQty();
+	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
@@ -675,20 +769,20 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		return services
 				.createCostDetail(CostDetailCreateRequest.builder()
-						.acctSchemaId(acctSchema.getId())
-						.clientId(matchInv.getClientId())
-						.orgId(matchInv.getOrgId())
-						.productId(matchInv.getProductId())
-						.attributeSetInstanceId(matchInv.getAsiId())
-						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
-						.costElement(costElement)
-						.qty(qtyMatched)
-						.amt(CostAmount.ofMoney(amtMatched))
-						.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
-						.date(getDateAcctAsInstant())
-						.description(getDescription())
-						.build())
-				.getTotalAmountToPost(acctSchema);
+										  .acctSchemaId(as.getId())
+										  .clientId(matchInv.getClientId())
+										  .orgId(matchInv.getOrgId())
+										  .productId(matchInv.getProductId())
+										  .attributeSetInstanceId(matchInv.getAsiId())
+										  .documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
+										  .costElement(costElement)
+										  .qty(qtyMatched)
+										  .amt(CostAmountDetailed.builder().mainAmt(CostAmount.ofMoney(amtMatched)).build())
+										  .currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
+										  .date(getDateAcctAsInstant())
+										  .description(getDescription())
+										  .build())
+				.getTotalAmountToPost(as);
 	}
 
 }   // Doc_MatchInv

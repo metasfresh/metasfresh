@@ -1,11 +1,14 @@
 package de.metas.costing;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.costing.methods.CostAmountDetailed;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -86,7 +89,7 @@ public class AggregatedCostAmount
 		}
 
 		// merge amounts maps; will fail in case of duplicate cost elements
-		final ImmutableMap<CostElement, CostAmountDetailed> amountsNew = ImmutableMap.<CostElement, CostAmountDetailed> builder()
+		final ImmutableMap<CostElement, CostAmountDetailed> amountsNew = ImmutableMap.<CostElement, CostAmountDetailed>builder()
 				.putAll(amountsPerElement)
 				.putAll(other.amountsPerElement)
 				.build();
@@ -116,7 +119,7 @@ public class AggregatedCostAmount
 		final CostingMethod costingMethod = costing.getCostingMethod();
 		final ImmutableSet<CostElementId> postOnlyCostElementIds = costing.getPostOnlyCostElementIds();
 
-		final LinkedHashMap<CostElement, CostAmount> amountsPerElementNew = new LinkedHashMap<>();
+		final LinkedHashMap<CostElement, CostAmountDetailed> amountsPerElementNew = new LinkedHashMap<>();
 		amountsPerElement.forEach((costElement, costAmount) -> {
 			if (isCostElementMatching(costElement, costingMethod, postOnlyCostElementIds))
 			{

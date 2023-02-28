@@ -1,5 +1,7 @@
 package org.compiere.acct;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.AggregatedCostAmount;
@@ -7,6 +9,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
@@ -18,7 +21,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
@@ -138,12 +140,11 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-							.acctSchemaId(as.getId())
-							.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-							.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-							.date(getDateAcctAsInstant())
-							.build())
-					.getTotalAmountToPost(as).getMainAmt();
+					.acctSchemaId(as.getId())
+					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
+					.date(getDateAcctAsInstant())
+					.build());
 		}
 		else
 		{
@@ -163,7 +164,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			// Material costs:
 			AggregatedCostAmount result = services.createCostDetail(
 					requestBuilder
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // N/A
 							.build());
 
 			//
@@ -173,7 +174,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 				final AggregatedCostAmount nonMaterialCosts = services.createCostDetail(
 						requestBuilder
 								.costElement(services.getCostElementById(inoutCost.getCostElementId()))
-								.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
+								.amt(CostAmountDetailed.builder().mainAmt(CostAmount.ofMoney(inoutCost.getCostAmount())).build())
 								.build());
 
 				result = result.merge(nonMaterialCosts);
