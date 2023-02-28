@@ -284,6 +284,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
 	/**
+	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
+	 *
+	 * task https://github.com/metasfresh/metasfresh/issues/13376
+	 */
+	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
+
+	/**
 	 * @return also returns inactive records (intended use is for deletion)
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
