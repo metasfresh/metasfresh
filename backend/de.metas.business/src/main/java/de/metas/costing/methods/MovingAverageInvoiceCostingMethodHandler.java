@@ -23,7 +23,6 @@
 package de.metas.costing.methods;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -35,20 +34,17 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductPrice;
@@ -63,8 +59,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -99,10 +93,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	{
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailed(request);
+		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailedForMatchInv(request);
 
 		return utils.createCostDetailRecordWithChangedCosts(
-				request.withAmount(costAmountDetailed),
+				request.withAmountAndQty(costAmountDetailed, Quantity.zero(request.getQty().getUOM())),
 				CostDetailPreviousAmounts.of(currentCost));
 
 	}
@@ -166,6 +160,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
+			final CostAmountDetailed requestAmt = request.getAmt();
 
 			if (request.getDocumentRef().isInventoryLine())
 			{
@@ -195,16 +190,14 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 			else
 			{
-				final CostAmountDetailed costAmountDetailed = computeCostAmountDetailed(request);
-
-				if (costAmountDetailed.getMainAmt().isZero() && !request.isReversal())
+				if (requestAmt.getMainAmt().isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 					requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
 				}
 				else
 				{
-					requestEffective = request.withAmountAndQty(costAmountDetailed, qty);
+					requestEffective = request.withQty(qty);
 				}
 			}
 
@@ -328,7 +321,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.build();
 	}
 
-	private CostAmountDetailed computeCostAmountDetailed(final CostDetailCreateRequest request)
+	private CostAmountDetailed computeCostAmountDetailedForMatchInv(final CostDetailCreateRequest request)
 	{
 		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
