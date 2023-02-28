@@ -33,6 +33,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -70,7 +71,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLCreateInvoicesTest
@@ -150,10 +151,10 @@ public class InvoiceCandBLCreateInvoicesTest
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
-		
+
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
+		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices(MatchInvoiceService.newInstanceForJUnitTesting());
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();

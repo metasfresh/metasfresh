@@ -32,6 +32,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -92,7 +93,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /**
  * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
@@ -131,6 +132,7 @@ public final class AggregationEngine
 	//
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
+	private final MatchInvoiceService matchInvoiceService;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
@@ -146,7 +148,8 @@ public final class AggregationEngine
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
 	@Builder
 	private AggregationEngine(
-			final IBPartnerBL bpartnerBL,
+			@Nullable final MatchInvoiceService matchInvoiceService,
+			@Nullable final IBPartnerBL bpartnerBL,
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
@@ -155,7 +158,8 @@ public final class AggregationEngine
 			@Nullable final ForexContractRef forexContractRef,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
 	{
-		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
+		this.bpartnerBL = coalesceNotNull(bpartnerBL, () -> Services.get(IBPartnerBL.class));
+		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, () -> SpringContextHolder.instance.getBean(MatchInvoiceService.class));
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
@@ -336,6 +340,7 @@ public final class AggregationEngine
 		if (lineAggregator == null)
 		{
 			lineAggregator = aggregationBL.createInvoiceLineAggregatorInstance(icRecord);
+			lineAggregator.setMatchInvoiceService(matchInvoiceService);
 			headerAndAggregators.setLineAggregator(invoiceCandidateAggId, lineAggregator);
 		}
 

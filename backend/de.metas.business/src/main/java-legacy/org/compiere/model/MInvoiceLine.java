@@ -30,14 +30,12 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -134,7 +132,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	/**
 	 * Static Logger
 	 */
-	private static Logger s_log = LogManager.getLogger(MInvoiceLine.class);
+	private static final Logger s_log = LogManager.getLogger(MInvoiceLine.class);
 
 	/**
 	 * Tax
@@ -1753,12 +1751,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
 		// task FRESH-273
 		il.setIsPackagingMaterial(true);
-	}
-
-	@Deprecated
-	public StockQtyAndUOMQty getMatchedQty()
-	{
-		return Services.get(IMatchInvDAO.class).retrieveQtyMatched(this);
 	}
 
 	// metas: begin

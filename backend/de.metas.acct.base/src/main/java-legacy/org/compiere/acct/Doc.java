@@ -1,12 +1,14 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.accounts.CostElementAccountType;
 import de.metas.acct.accounts.DefaultAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -18,8 +20,10 @@ import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
+import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
@@ -57,7 +61,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MNote;
@@ -73,6 +76,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -143,8 +147,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	@Getter(AccessLevel.PROTECTED)
-	protected final AcctDocRequiredServicesFacade services;
-
+	@NonNull protected final AcctDocRequiredServicesFacade services;
 
 	private static final Logger log = LogManager.getLogger(Doc.class);
 
@@ -231,7 +234,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private LocalDateAndOrgId _dateAcct = null;
 	private LocalDateAndOrgId _dateDoc = null;
 	/**
-	 *
 	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
 	 */
 	private boolean m_MultiCurrency = false;
@@ -1049,6 +1051,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getAccountProvider().getGLAccount(as, acctType);
 	}
 
+	public Account getCostElementAccount(
+			@NonNull final AcctSchema acctSchema,
+			@NonNull final CostElementId costElementId,
+			@NonNull final CostElementAccountType acctType)
+	{
+		return getAccountProvider().getCostElementAccount(acctSchema.getId(), costElementId, acctType);
+	}
+
 	protected final AccountProvider getAccountProvider()
 	{
 		AccountProvider accountProvider = this._accountProvider;
@@ -1208,6 +1218,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		return getDateAcct().toTimestamp(services::getTimeZone);
 	}
+
+	@NonNull
+	protected final Instant getDateAcctAsInstant() {return getDateAcct().toInstant(services::getTimeZone);}
 
 	protected final void setDateAcct(@NonNull final Timestamp dateAcct)
 	{
@@ -1379,6 +1392,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	protected final int getC_BPartner_Location_ID()
 	{
 		return getValueAsIntOrZero("C_BPartner_Location_ID");
+	}
+
+	protected final BPartnerLocationId getBPartnerLocationId()
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(getBPartnerId(), getC_BPartner_Location_ID());
 	}
 
 	@Nullable

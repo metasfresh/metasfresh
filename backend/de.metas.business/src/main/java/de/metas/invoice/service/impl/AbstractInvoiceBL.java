@@ -50,12 +50,12 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
-import de.metas.invoice.service.IMatchInvBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -77,7 +77,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -114,7 +113,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
@@ -127,10 +125,12 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -172,6 +172,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -193,7 +194,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
 	{
-		return Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+		return invoiceDAO.getByIdInTrx(invoiceId);
+	}
+
+	@Override
+	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return invoiceDAO.getByIdsInTrx(invoiceIds);
+	}
+
+	@Override
+	public I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId)
+	{
+		return invoiceDAO.retrieveLineById(invoiceLineId);
 	}
 
 	@Override
@@ -887,7 +900,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void ensureUOMsAreNotNull(final @NonNull InvoiceId invoiceId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId); // // TODO tbp: create this method!
 		for (final I_C_InvoiceLine line : lines)
@@ -909,8 +921,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
 		renumberLines(lines, step);
 	}
@@ -1401,7 +1411,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
@@ -1501,7 +1510,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return isInvoice(docBaseType);
 	}
 
-	private boolean isInvoice(final String docBaseType)
+	private static boolean isInvoice(final String docBaseType)
 	{
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
 		return invoiceDocBaseType != null && (invoiceDocBaseType.equals(InvoiceDocBaseType.CustomerInvoice) || invoiceDocBaseType.equals(InvoiceDocBaseType.VendorInvoice));
@@ -1510,9 +1519,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
-		final String docBaseType = docType.getDocBaseType();
-		return isCreditMemo(docBaseType);
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
+		return InvoiceDocBaseType.ofCode(docType.getDocBaseType()).isCreditMemo();
 	}
 
 	@Override
@@ -1525,7 +1533,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isARCreditMemo(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = getC_DocType(invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(docType.getDocBaseType());
 		return invoiceDocBaseType.isCustomerCreditMemo();
 	}
@@ -1533,8 +1541,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = getC_DocType(invoice);
-
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice);
 		return isAdjustmentCharge(docType);
 	}
 
@@ -1674,8 +1681,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void updateInvoiceLineIsReadOnlyFlags(@NonNull final I_C_Invoice invoice, final I_C_InvoiceLine... invoiceLines)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
 		final boolean saveLines;
 		final List<I_C_InvoiceLine> linesToUpdate;
 		if (Check.isEmpty(invoiceLines))
@@ -1785,16 +1790,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-		final int reversalInvoiceId = invoice.getReversal_ID();
-		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
-		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
+		final org.compiere.model.I_C_Invoice reversalInvoice = Check.assumeNotNull(invoice.getReversal(), "Invoice {} has a reversal", invoice);
+		Check.assume(reversalInvoice.getC_Invoice_ID() > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		// services
-		final IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
-		final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
@@ -1805,7 +1806,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			//
 			// Retrieve the reversal invoice line
-			final I_C_InvoiceLine reversalLine = invoiceDAO.retrieveReversalLine(il, reversalInvoiceId);
+			final I_C_InvoiceLine reversalLine = invoiceDAO.retrieveReversalLine(il, reversalInvoice.getC_Invoice_ID());
 
 			// 08809
 			// Also set the Attribute Set Instance in the reversal line
@@ -1814,23 +1815,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			//
 			// Create M_MatchInv reversal records, linked to reversal invoice line and original inout line.
-			final List<I_M_MatchInv> matchInvs = matchInvDAO.retrieveForInvoiceLine(il);
-			for (final I_M_MatchInv matchInv : matchInvs)
-			{
-				final I_M_InOutLine inoutLine = matchInv.getM_InOutLine();
-
-				final StockQtyAndUOMQty qtyToMatchExact = StockQtyAndUOMQtys.create(
-						matchInv.getQty().negate(), ProductId.ofRepoId(inoutLine.getM_Product_ID()),
-						matchInv.getQtyInUOM().negate(), UomId.ofRepoId(matchInv.getC_UOM_ID()));
-
-				matchInvBL.createMatchInvBuilder()
-						.setContext(reversalLine)
-						.setC_InvoiceLine(reversalLine)
-						.setM_InOutLine(inoutLine)
-						.setDateTrx(reversalInvoice.getDateInvoiced())
-						.setQtyToMatchExact(qtyToMatchExact)
-						.build();
-			}
+			final Timestamp reversalDateInvoiced = reversalInvoice.getDateInvoiced();
+			final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(il.getC_Invoice_ID(), il.getC_InvoiceLine_ID());
+			matchInvoiceService.createReversals(invoiceLineId, reversalLine, reversalDateInvoiced);
 		}
 	}
 
@@ -1909,7 +1896,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Nullable
 	public String getLocationEmail(@NonNull final InvoiceId invoiceId)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IBPartnerDAO partnersRepo = Services.get(IBPartnerDAO.class);
 
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
@@ -1963,5 +1949,17 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return conversionCtx;
+	}
+
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		return Services.get(IInvoiceLineBL.class).getQtyInvoicedStockUOM(invoiceLine);
+	}
+
+	@Override
+	public Instant getDateAcct(@NonNull final InvoiceId invoiceId)
+	{
+		return getById(invoiceId).getDateAcct().toInstant();
 	}
 }

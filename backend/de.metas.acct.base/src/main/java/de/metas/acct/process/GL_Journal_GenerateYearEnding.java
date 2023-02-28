@@ -217,7 +217,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, p_acctSchemaId)
 				.addInSubQueryFilter(I_Fact_Acct.COLUMNNAME_Account_ID, I_C_ElementValue.COLUMNNAME_C_ElementValue_ID, expenseAndRevenueAccountsQuery)
 				//
-				.aggregateOnColumn(I_Fact_Acct.COLUMN_Account_ID);
+				.aggregateOnColumn(I_Fact_Acct.COLUMNNAME_Account_ID, I_C_ElementValue.class);
 
 		aggregateOnAccountBuilder.sum(DYNATTR_AmtAcctDr, I_Fact_Acct.COLUMN_AmtAcctDr);
 		aggregateOnAccountBuilder.sum(DYNATTR_AmtAcctCr, I_Fact_Acct.COLUMN_AmtAcctCr);

@@ -231,8 +231,8 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	protected final DocumentIdsSelection getSelectedRowIds()
 	{
-		Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
-		return _viewRowIdsSelection.getRowIds();
+		final ViewRowIdsSelection viewRowIdsSelection = Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
+		return viewRowIdsSelection.getRowIds();
 	}
 
 	@OverridingMethodsMustInvokeSuper

@@ -29,6 +29,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
@@ -65,7 +66,7 @@ import java.util.Properties;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -128,7 +129,9 @@ public class AveragePOCostingMethodHandlerTest
 				currentCostsRepo,
 				costDetailsService);
 
-		handler = new AveragePOCostingMethodHandler(handlerUtils);
+		handler = new AveragePOCostingMethodHandler(
+				handlerUtils,
+				MatchInvoiceService.newInstanceForJUnitTesting());
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 		eachUOM = BusinessTestHelper.createUomEach();

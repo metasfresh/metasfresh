@@ -59,7 +59,7 @@ import static java.math.BigDecimal.ZERO;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class Money
+public class Money implements Comparable<Money>
 {
 	public static Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
 	{
@@ -176,11 +176,14 @@ public class Money
 		return signum() >= 0 ? this : zero(currencyId);
 	}
 
+	public Money abs() {return withValue(value.abs());}
+
 	public static void assertSameCurrency(final Money... moneys)
 	{
 		getCommonCurrencyIdOfAll(moneys);
 	}
 
+	@NonNull
 	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
 	{
 		return CurrencyId.getCommonCurrencyIdOfAll(Money::getCurrencyId, "Money", moneys);
@@ -256,6 +259,13 @@ public class Money
 				: this;
 	}
 
+	public Money divide(@NonNull final Money divisor, @NonNull final CurrencyPrecision precision)
+	{
+		assertCurrencyIdMatching(divisor);
+		final BigDecimal resultingValue = this.value.divide(divisor.value, precision.toInt(), precision.getRoundingMode());
+		return of(resultingValue, this.currencyId);
+	}
+
 	public Money min(@NonNull final Money other)
 	{
 		assertCurrencyIdMatching(other);
@@ -276,23 +286,26 @@ public class Money
 		}
 	}
 
-	public boolean isLessThanOrEqualTo(@NonNull final Money other)
+	public void assertCurrencyId(@NonNull final CurrencyId expectedCurrencyId)
 	{
-		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) <= 0;
+		if (!Objects.equals(currencyId, expectedCurrencyId))
+		{
+			throw new AdempiereException("Amount has invalid currencyId: " + this + ". Expected: " + expectedCurrencyId);
+		}
 	}
 
-	public boolean isGreaterThanOrEqualTo(@NonNull final Money other)
+	@Override
+	public int compareTo(@NonNull final Money other)
 	{
 		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) >= 0;
+		return this.value.compareTo(other.value);
 	}
 
-	public boolean isGreaterThan(@NonNull final Money other)
-	{
-		assertCurrencyIdMatching(other);
-		return this.value.compareTo(other.value) > 0;
-	}
+	public boolean isLessThanOrEqualTo(@NonNull final Money other) {return compareTo(other) <= 0;}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Money other) {return compareTo(other) >= 0;}
+
+	public boolean isGreaterThan(@NonNull final Money other) {return compareTo(other) > 0;}
 
 	public boolean isEqualByComparingTo(@Nullable final Money other)
 	{
@@ -333,6 +346,16 @@ public class Money
 	public Money round(@NonNull final CurrencyPrecision precision)
 	{
 		return withValue(precision.round(this.value));
+	}
+
+	public Money round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)
+	{
+		final CurrencyPrecision precision = precisionProvider.apply(currencyId);
+		if (precision == null)
+		{
+			throw new AdempiereException("No precision was returned by " + precisionProvider + " for " + currencyId);
+		}
+		return round(precision);
 	}
 
 	private Money withValue(@NonNull final BigDecimal newValue)

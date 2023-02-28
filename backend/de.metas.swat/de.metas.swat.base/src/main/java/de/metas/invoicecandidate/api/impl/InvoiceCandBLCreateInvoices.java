@@ -23,9 +23,10 @@ import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
 import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -150,7 +151,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
 	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
+	private final transient MatchInvoiceService matchInvoiceService;
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
@@ -166,6 +167,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Boolean _ignoreInvoiceSchedule = null;
 	private InvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
+
+	public InvoiceCandBLCreateInvoices(
+			@Nullable final MatchInvoiceService matchInvoiceService)
+	{
+
+		this.matchInvoiceService = matchInvoiceService != null ? matchInvoiceService : SpringContextHolder.instance.getBean(MatchInvoiceService.class);
+	}
 
 	/**
 	 * Implementations of this interface are responsible for converting a given {@link IInvoiceHeader} to an {@link I_C_Invoice} with lines and process it.
@@ -784,11 +792,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 							final I_C_InvoiceCandidate_InOutLine icIol = iciolToUpdate.getC_InvoiceCandidate_InOutLine();
 							final I_M_InOutLine inOutLine = icIol.getM_InOutLine();
 
-							matchInvBL.createMatchInvBuilder()
-									.setContext(invoiceLine)
-									.setC_InvoiceLine(invoiceLine)
-									.setM_InOutLine(inOutLine)
-									.setDateTrx(invoice.getDateInvoiced())
+							matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
+									.invoiceLine(invoiceLine)
+									.inoutLine(inOutLine)
+									.dateTrx(invoice.getDateInvoiced())
 									.build();
 						}
 					}
@@ -957,6 +964,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		final InvoicingParams invoicingParams = getInvoicingParams();
 
 		return AggregationEngine.builder()
+				.matchInvoiceService(matchInvoiceService)
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)

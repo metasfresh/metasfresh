@@ -124,8 +124,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.P_Asset_Acct, as))
-				.setCurrencyId(costs.getCurrencyId())
-				.setAmtSourceDrOrCr(costs.getValue())
+				.setAmtSourceDrOrCr(costs.toMoney())
 				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
 				.buildAndAdd();
@@ -136,8 +135,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(invDiff)
-				.setCurrencyId(costs.getCurrencyId())
-				.setAmtSourceDrOrCr(costs.getValue().negate())
+				.setAmtSourceDrOrCr(costs.toMoney().negate())
 				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())
 				.buildAndAdd();

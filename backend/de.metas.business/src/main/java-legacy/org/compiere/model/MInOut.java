@@ -42,14 +42,15 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -1377,6 +1378,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	@Override
 	public String completeIt()
 	{
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+
 		// Re-Check
 		if (!m_justPrepared)
 		{
@@ -1654,14 +1657,13 @@ public class MInOut extends X_M_InOut implements IDocument
 				iLine = MInvoiceLine.getOfInOutLine(sLine);
 				if (iLine != null && iLine.getM_Product_ID() > 0)
 				{
-					final boolean matchInvCreated = Services.get(IMatchInvBL.class).createMatchInvBuilder()
-							.setContext(this)
-							.setC_InvoiceLine(iLine)
-							.setM_InOutLine(sLine)
-							.setDateTrx(getMovementDate())
-							.setConsiderQtysAlreadyMatched(false) // backward compatibility
-							.setAllowQtysOfOppositeSigns(true) // backward compatibility
-							.setSkipIfMatchingsAlreadyExist(true) // backward compatibility
+					final boolean matchInvCreated = matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
+							.invoiceLine(iLine)
+							.inoutLine(sLine)
+							.dateTrx(getMovementDate())
+							.considerQtysAlreadyMatched(false) // backward compatibility
+							.allowQtysOfOppositeSigns() // backward compatibility
+							.skipIfMatchingsAlreadyExist() // backward compatibility
 							.build();
 
 					// Update matched invoice line's ASI
@@ -2202,7 +2204,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		//
 		// Delete invoice matching records
 		// (no matter is IsSOTrx or not, because we are creating them for both cases)
-		Services.get(IInOutBL.class).deleteMatchInvs(this);
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+		matchInvoiceService.deleteByInOutId(InOutId.ofRepoId(getM_InOut_ID()));
 
 		// reverse/unlink Matching
 		deleteOrUnLinkMatchPOs();
@@ -2299,19 +2302,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
-		{
-			if (matchPO.getC_InvoiceLine_ID() <= 0)
-			{
-				matchPO.setProcessed(false);
-				InterfaceWrapperHelper.delete(matchPO);
-			}
-			else
-			{
-				matchPO.setM_InOutLine_ID(-1);
-				InterfaceWrapperHelper.save(matchPO);
-			}
-		}
+		Services.get(IMatchPOBL.class).unlink(InOutId.ofRepoId(getM_InOut_ID()));
 	}
 
 	@Override
@@ -2432,7 +2423,8 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// task 09266: delete MatchInvs also on reactivate
-			Services.get(IInOutBL.class).deleteMatchInvs(this);
+			final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+			matchInvoiceService.deleteByInOutId(InOutId.ofRepoId(getM_InOut_ID()));
 
 			// task 09266: unlink or delete MatchPOs also on reactivate
 			deleteOrUnLinkMatchPOs();

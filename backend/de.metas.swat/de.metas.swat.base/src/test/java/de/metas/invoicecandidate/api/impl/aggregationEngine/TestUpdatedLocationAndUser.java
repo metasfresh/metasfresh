@@ -8,6 +8,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
@@ -32,7 +33,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -95,6 +96,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -126,6 +128,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -158,6 +161,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -191,6 +195,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -220,6 +225,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newUserId = createNewDefaultUser(partnerId, -1, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -252,6 +258,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(false)
@@ -289,6 +296,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		createNewDefaultUser(partnerId, newLocationId, "User2", true);
 
 		final AggregationEngine engine = AggregationEngine.builder()
+				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)

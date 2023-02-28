@@ -117,6 +117,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -164,6 +165,12 @@ public class OrderBL implements IOrderBL
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
 		return orderDAO.getById(orderId);
+	}
+
+	@Override
+	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
+	{
+		return orderDAO.getOrderLinesByIds(orderAndLineIds);
 	}
 
 	@Override
@@ -1278,5 +1285,11 @@ public class OrderBL implements IOrderBL
 		}
 
 		return true;
+	}
+
+	@Override
+	public DocStatus getDocStatus(@NonNull final OrderId orderId)
+	{
+		return DocStatus.ofNullableCodeOrUnknown(getById(orderId).getDocStatus());
 	}
 }

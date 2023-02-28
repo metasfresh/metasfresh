@@ -68,6 +68,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -97,6 +98,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.TableRecordMDC;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -276,6 +278,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -724,7 +727,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public IInvoiceGenerator generateInvoices()
 	{
-		return new InvoiceCandBLCreateInvoices();
+		return new InvoiceCandBLCreateInvoices(matchInvoiceServiceHolder.get());
 	}
 
 	@Override
@@ -2152,7 +2155,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				if (inout != null)
 				{
-					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					if (MovementType.isMaterialReturn(inout.getMovementType()))
 					{
 						qty = qty.negate();
 					}

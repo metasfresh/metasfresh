@@ -1,12 +1,12 @@
 package org.compiere.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
+import de.metas.invoice.matchinv.MatchInv;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
-import org.compiere.model.I_M_MatchInv;
 
 /*
  * #%L
@@ -33,11 +33,12 @@ import org.compiere.model.I_M_MatchInv;
 final class DocLine_MatchInv extends DocLine<Doc_MatchInv>
 {
 
-	public DocLine_MatchInv(final I_M_MatchInv matchInv, final Doc_MatchInv doc)
+	public DocLine_MatchInv(final Doc_MatchInv doc)
 	{
-		super(InterfaceWrapperHelper.getPO(matchInv), doc);
-		
-		final Quantity qty = Quantity.of(matchInv.getQty(), getProductStockingUOM());
+		super(InterfaceWrapperHelper.getPO(doc.getMatchInvRecord()), doc);
+
+		final MatchInv matchInv = doc.getMatchInv();
+		final Quantity qty = matchInv.getQty().getStockQty();
 		setQty(qty, false);
 	}
 

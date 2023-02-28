@@ -141,6 +141,11 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		return addNotEqualsFilter(columnName, value);
 	}
 
+	default RT addIsNull(final String columnName)
+	{
+		return addEqualsFilter(columnName, null);
+	}
+
 	default RT addNotNull(final String columnName)
 	{
 		return addNotEqualsFilter(columnName, null);
