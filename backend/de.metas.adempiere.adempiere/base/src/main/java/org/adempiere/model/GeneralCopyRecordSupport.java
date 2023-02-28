@@ -73,7 +73,7 @@ import java.util.StringTokenizer;
  */
 public class GeneralCopyRecordSupport implements CopyRecordSupport
 {
-	private static final transient Logger log = LogManager.getLogger(GeneralCopyRecordSupport.class);
+	private static final Logger log = LogManager.getLogger(GeneralCopyRecordSupport.class);
 
 	public static final String COLUMNNAME_Value = "Value";
 	public static final String COLUMNNAME_Name = "Name";
@@ -261,7 +261,6 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	@OverridingMethodsMustInvokeSuper
 	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
 	{
 		//
@@ -290,7 +289,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			for (final I_AD_Table childTableSuggested : retrieveChildTablesForParentColumn(keyColumnName))
 			{
 				final ImmutableList.Builder<String> orderByColumnNames = ImmutableList.builder();
-				final POInfo childPOInfo = POInfo.getPOInfo(childTableSuggested.getTableName());
+				final POInfo childPOInfo = POInfo.getPOInfoNotNull(childTableSuggested.getTableName());
 				if (childPOInfo.hasColumnName("Line"))
 				{
 					orderByColumnNames.add("Line");
@@ -729,6 +728,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return _parentPO;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	@Nullable
 	protected final <T> T getParentModel(final Class<T> modelType)
 	{
