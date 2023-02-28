@@ -14,16 +14,21 @@ import de.metas.order.costs.OrderCostTypeId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.annotation.Nullable;
 
-@Data
+@Getter
+@EqualsAndHashCode
+@ToString
 public class InOutCost
 {
 	@NonNull private final InOutCostId id;
-	@Nullable InOutCostId reversalId;
+	@Setter @Nullable InOutCostId reversalId;
 
 	@NonNull private final OrgId orgId;
 	@NonNull private final OrderCostDetailId orderCostDetailId;
@@ -84,5 +89,10 @@ public class InOutCost
 	{
 		this.costAmountInvoiced = this.costAmountInvoiced.add(amtToAdd);
 		this.isInvoiced = this.costAmount.isEqualByComparingTo(this.costAmountInvoiced);
+	}
+
+	public Money getCostAmountToInvoice()
+	{
+		return costAmount.subtract(costAmountInvoiced);
 	}
 }

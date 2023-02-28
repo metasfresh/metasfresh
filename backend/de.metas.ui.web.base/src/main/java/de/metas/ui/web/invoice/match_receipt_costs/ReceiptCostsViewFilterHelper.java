@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostTypeId;
+import de.metas.order.costs.inout.InOutCostQuery;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -53,22 +54,16 @@ class ReceiptCostsViewFilterHelper
 				.displayName(TranslatableStrings.adElementOrMessage(fieldName));
 	}
 
-	public static ReceiptCostRowsQuery toRowsQuery(final @Nullable DocumentFilter filter)
+	public static InOutCostQuery toInOutCostQuery(@Nullable final DocumentFilter filter)
 	{
-		final ReceiptCostRowsQuery.ReceiptCostRowsQueryBuilder rowsQuery = ReceiptCostRowsQuery.builder()
-				.queryLimit(QueryLimit.ONE_HUNDRED);
-
-		if (filter != null)
-		{
-			BPartnerId.optionalOfRepoId(filter.getParameterValueAsInt(ReceiptCostsViewFilterHelper.PARAM_C_BPartner_ID, -1))
-					.ifPresent(rowsQuery::bpartnerId);
-			OrderId.optionalOfRepoId(filter.getParameterValueAsInt(ReceiptCostsViewFilterHelper.PARAM_C_Order_ID, -1))
-					.ifPresent(rowsQuery::orderId);
-			OrderCostTypeId.optionalOfRepoId(filter.getParameterValueAsInt(ReceiptCostsViewFilterHelper.PARAM_C_Cost_Type_ID, -1))
-					.ifPresent(rowsQuery::costTypeId);
-		}
-
-		return rowsQuery.build();
+		return InOutCostQuery.builder()
+				.limit(QueryLimit.ONE_HUNDRED)
+				.bpartnerId(filter != null ? BPartnerId.ofRepoIdOrNull(filter.getParameterValueAsInt(PARAM_C_BPartner_ID, -1)) : null)
+				.orderId(filter != null ? OrderId.ofRepoIdOrNull(filter.getParameterValueAsInt(PARAM_C_Order_ID, -1)) : null)
+				.costTypeId(filter != null ? OrderCostTypeId.ofRepoIdOrNull(filter.getParameterValueAsInt(PARAM_C_Cost_Type_ID, -1)) : null)
+				.includeReversed(false)
+				.onlyWithOpenAmountToInvoice(true)
+				.build();
 	}
 
 }

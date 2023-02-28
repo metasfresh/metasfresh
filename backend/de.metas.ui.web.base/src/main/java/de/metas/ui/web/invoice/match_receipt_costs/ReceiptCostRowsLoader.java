@@ -2,6 +2,7 @@ package de.metas.ui.web.invoice.match_receipt_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyRepository;
+import de.metas.money.Money;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import lombok.Builder;
@@ -46,14 +47,16 @@ class ReceiptCostRowsLoader
 
 	private ReceiptCostRow toReceiptCostRow(final InOutCost inoutCost)
 	{
+		final Money costAmountToInvoice = inoutCost.getCostAmountToInvoice();
+
 		return ReceiptCostRow.builder()
 				.inoutCostId(inoutCost.getId())
 				.bpartner(bpartnerLookup.findById(inoutCost.getBpartnerId()))
 				.purchaseOrder(orderLookup.findById(inoutCost.getOrderId()))
 				.receipt(inoutLookup.findById(inoutCost.getReceiptId()))
 				.costType(costTypeLookup.findById(inoutCost.getCostTypeId()))
-				.currency(currencyRepository.getCurrencyCodeById(inoutCost.getCostAmount().getCurrencyId()).toThreeLetterCode())
-				.costAmount(inoutCost.getCostAmount().toBigDecimal())
+				.currency(currencyRepository.getCurrencyCodeById(costAmountToInvoice.getCurrencyId()).toThreeLetterCode())
+				.costAmountToInvoice(costAmountToInvoice.toBigDecimal())
 				.build();
 	}
 }

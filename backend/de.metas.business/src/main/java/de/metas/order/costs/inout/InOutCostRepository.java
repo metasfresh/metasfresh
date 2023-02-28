@@ -104,7 +104,7 @@ public class InOutCostRepository
 	{
 		record.setReversal_ID(InOutCostId.toRepoId(from.getReversalId()));
 		record.setCostAmountInvoiced(from.getCostAmountInvoiced().toBigDecimal());
-		record.setIsInvoiced(record.isInvoiced());
+		record.setIsInvoiced(from.isInvoiced());
 	}
 
 	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
@@ -158,6 +158,10 @@ public class InOutCostRepository
 		if (!query.isIncludeReversed())
 		{
 			queryBuilder.addIsNull(I_M_InOut_Cost.COLUMNNAME_Reversal_ID);
+		}
+		if (query.isOnlyWithOpenAmountToInvoice())
+		{
+			queryBuilder.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_IsInvoiced, false);
 		}
 
 		return queryBuilder.create();

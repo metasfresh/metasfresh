@@ -32,6 +32,8 @@ public class ReceiptCostsView_CreateMatchInv extends ReceiptCostsViewBasedProces
 				.inoutCostIds(inoutCostIds)
 				.build());
 
+		view.invalidateAll();
+
 		return MSG_OK;
 	}
 }

@@ -5,7 +5,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.edi.model.I_C_Order;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
-import de.metas.order.costs.inout.InOutCostQuery;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.Builder;
@@ -13,6 +13,8 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Cost_Type;
 import org.compiere.model.I_M_InOut;
+
+import javax.annotation.Nullable;
 
 class ReceiptCostRowsRepository
 {
@@ -37,21 +39,21 @@ class ReceiptCostRowsRepository
 		this.costTypeLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Cost_Type.Table_Name);
 	}
 
-	public ReceiptCostRowsData query(@NonNull final ReceiptCostRowsQuery query)
+	public ReceiptCostRowsData query(@NonNull final DocumentFilter filter)
 	{
-		final ImmutableList<InOutCost> inoutCosts = orderCostService.stream(
-						InOutCostQuery.builder()
-								.limit(query.getQueryLimit())
-								.bpartnerId(query.getBpartnerId())
-								.orderId(query.getOrderId())
-								.costTypeId(query.getCostTypeId())
-								.includeReversed(false)
-								.build())
+		return ReceiptCostRowsData.builder()
+				.repository(this)
+				.filter(filter)
+				.build();
+	}
+
+	ImmutableList<ReceiptCostRow> retrieveRows(final @Nullable DocumentFilter filter)
+	{
+		final ImmutableList<InOutCost> inoutCosts = orderCostService
+				.stream(ReceiptCostsViewFilterHelper.toInOutCostQuery(filter))
 				.collect(ImmutableList.toImmutableList());
 
-		return ReceiptCostRowsData.builder()
-				.rows(newLoader().loadRows(inoutCosts))
-				.build();
+		return newLoader().loadRows(inoutCosts);
 	}
 
 	private ReceiptCostRowsLoader newLoader()

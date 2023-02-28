@@ -92,16 +92,10 @@ public class ReceiptCostsViewFactory implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(WINDOW_ID);
 
-		final DocumentFilterDescriptor filterDescriptor = getFilterDescriptor();
-		final DocumentFilter filter = getEffectiveFilter(request);
-
-		final ReceiptCostRowsData rows = rowsRepo.query(ReceiptCostsViewFilterHelper.toRowsQuery(filter));
-
 		return ReceiptCostsView.builder()
 				.viewId(viewId)
-				.rowsData(rows)
-				.filterDescriptor(filterDescriptor)
-				.filter(filter)
+				.rowsData(rowsRepo.query(getEffectiveFilter(request)))
+				.filterDescriptor(getFilterDescriptor())
 				.invoiceLineId(getInvoiceLineId(request))
 				.relatedProcess(createProcessDescriptor(10, ReceiptCostsView_CreateMatchInv.class))
 				.build();

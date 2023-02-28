@@ -3,7 +3,6 @@ package de.metas.ui.web.invoice.match_receipt_costs;
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -22,22 +21,18 @@ public class ReceiptCostsView extends AbstractCustomView<ReceiptCostRow>
 {
 	@Getter private final InvoiceLineId invoiceLineId;
 	@NonNull private final ImmutableList<RelatedProcessDescriptor> relatedProcesses;
-	private final DocumentFilterList filters;
 
 	@Builder
 	private ReceiptCostsView(
 			final @NonNull ViewId viewId,
 			final @NonNull ReceiptCostRowsData rowsData,
 			final @NonNull DocumentFilterDescriptor filterDescriptor,
-			final @Nullable DocumentFilter filter,
 			final @NonNull InvoiceLineId invoiceLineId,
 			final @NonNull @Singular ImmutableList<RelatedProcessDescriptor> relatedProcesses)
 	{
 		super(viewId, null, rowsData, ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor));
-		this.filters = DocumentFilterList.ofNullable(filter);
 		this.invoiceLineId = invoiceLineId;
 		this.relatedProcesses = relatedProcesses;
-
 	}
 
 	@Nullable
@@ -48,7 +43,7 @@ public class ReceiptCostsView extends AbstractCustomView<ReceiptCostRow>
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors() {return relatedProcesses;}
 
 	@Override
-	public DocumentFilterList getFilters() {return filters;}
+	public DocumentFilterList getFilters() {return DocumentFilterList.ofNullable(getRowsData().getFilter());}
 
 	@Override
 	protected ReceiptCostRowsData getRowsData() {return (ReceiptCostRowsData)super.getRowsData();}

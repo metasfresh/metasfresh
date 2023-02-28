@@ -34,7 +34,7 @@ public class ReceiptCostRow implements IViewRow
 	private final String currency;
 
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Amount, captionKey = "CostAmount")
-	private final BigDecimal costAmount;
+	private final BigDecimal costAmountToInvoice;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ReceiptCostRow> values;
 	private final DocumentId rowId;
@@ -48,14 +48,14 @@ public class ReceiptCostRow implements IViewRow
 			final LookupValue receipt,
 			final LookupValue costType,
 			final String currency,
-			final BigDecimal costAmount)
+			final BigDecimal costAmountToInvoice)
 	{
 		this.bpartner = bpartner;
 		this.purchaseOrder = purchaseOrder;
 		this.receipt = receipt;
 		this.costType = costType;
 		this.currency = currency;
-		this.costAmount = costAmount;
+		this.costAmountToInvoice = costAmountToInvoice;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ReceiptCostRow.class);
 		this.rowId = DocumentId.of(inoutCostId);

@@ -1,31 +1,38 @@
 package de.metas.ui.web.invoice.match_receipt_costs;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.template.IRowsData;
-import de.metas.ui.web.view.template.ImmutableRowsIndex;
+import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
-import java.util.List;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public class ReceiptCostRowsData implements IRowsData<ReceiptCostRow>
 {
-	private final ImmutableRowsIndex<ReceiptCostRow> index;
+	@NonNull private final ReceiptCostRowsRepository repository;
+	@Getter @Nullable private final DocumentFilter filter;
+	@NonNull private final SynchronizedRowsIndexHolder<ReceiptCostRow> rowsHolder;
 
 	@Builder
 	private ReceiptCostRowsData(
-			@NonNull final List<ReceiptCostRow> rows)
+			@NonNull final ReceiptCostRowsRepository repository,
+			@Nullable final DocumentFilter filter)
 	{
-		this.index = ImmutableRowsIndex.of(rows);
+		this.repository = repository;
+		this.filter = filter;
+		this.rowsHolder = SynchronizedRowsIndexHolder.of(repository.retrieveRows(filter));
 	}
 
 	@Override
 	public Map<DocumentId, ReceiptCostRow> getDocumentId2TopLevelRows()
 	{
-		return index.getDocumentId2TopLevelRows();
+		return rowsHolder.getDocumentId2TopLevelRows();
 	}
 
 	@Override
@@ -37,6 +44,6 @@ public class ReceiptCostRowsData implements IRowsData<ReceiptCostRow>
 	@Override
 	public void invalidateAll()
 	{
-
+		rowsHolder.setRows(repository.retrieveRows(filter));
 	}
 }

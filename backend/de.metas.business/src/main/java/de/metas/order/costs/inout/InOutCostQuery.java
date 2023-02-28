@@ -18,6 +18,6 @@ public class InOutCostQuery
 	@Nullable BPartnerId bpartnerId;
 	@Nullable OrderId orderId;
 	@Nullable OrderCostTypeId costTypeId;
-
 	boolean includeReversed;
+	boolean onlyWithOpenAmountToInvoice;
 }
