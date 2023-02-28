@@ -111,7 +111,7 @@ public class QuerySelectionHelper
 		final String orderBy = query.getOrderBy();
 
 		final StringBuilder sqlRowNumber = new StringBuilder("row_number() OVER (");
-		if (!Check.isEmpty(orderBy, true))
+		if (Check.isNotBlank(orderBy))
 		{
 			sqlRowNumber.append("ORDER BY ").append(orderBy);
 		}
