@@ -981,7 +981,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * Return a simple wrapper over a JDBC {@link ResultSet}. It is the caller responsibility to call the close method to release the underlying database resources.
 	 *
 	 * @return POResultSet
-	 * @throws DBException
 	 */
 	public <ET extends PO> POResultSet<ET> scroll() throws DBException
 	{
