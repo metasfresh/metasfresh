@@ -245,6 +245,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14651](https://github.com/metasfresh/metasfresh/issues/14651) Solve on-prem ExternalSys-Other-API problems  
   * [#14381](https://github.com/metasfresh/metasfresh/issues/14381) Set C_doctypeTarget_ID as filter in C_Order
   * [#14366](https://github.com/metasfresh/metasfresh/pull/14366) POInfoColumn.ValueMin, ValueMax: trim blank to null
   * [#14346](https://github.com/metasfresh/metasfresh/issues/14346) Propagate `POReference` from PO to MR
