@@ -106,7 +106,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		// Here we just need the "set" if ICs and prepare them one by one.
+		// Here we just need a"set" of ICs and prepare them one by one...the ordering doesn't matter.
 		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
 		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pinstanceId);
 
