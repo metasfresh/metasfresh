@@ -66,6 +66,7 @@ public class CreateMatchInvoiceCommand
 				inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID())
 		);
 
+		// TODO: use invoiceLineNetAmt when computing how much to allocate
 		final Money invoiceLineNetAmt = getInvoiceLineNetAmt();
 
 		for (final InOutCost inoutCost : inoutCosts)
@@ -81,6 +82,7 @@ public class CreateMatchInvoiceCommand
 					.inoutCost(MatchInvCostPart.builder()
 							.inoutCostId(inoutCost.getId())
 							.costTypeId(inoutCost.getCostTypeId())
+							.costElementId(inoutCost.getCostElementId())
 							.costAmount(costAmountOpen)
 							.build())
 					.qtyToMatchExact(receiptQty)
