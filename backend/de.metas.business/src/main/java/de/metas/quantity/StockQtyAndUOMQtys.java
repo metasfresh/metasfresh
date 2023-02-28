@@ -1,16 +1,6 @@
 package de.metas.quantity;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
@@ -23,6 +13,12 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -54,18 +50,13 @@ public class StockQtyAndUOMQtys
 	 */
 	public static StockQtyAndUOMQty createZero(@NonNull final ProductId productId, @Nullable final UomId uomId)
 	{
-		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
+		return StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.createZero(productId));
+				.stockQty(Quantitys.createZero(productId))
+				.uomQty(uomId != null ? Quantitys.createZero(uomId) : null)
+				.build();
 
-		if (uomId != null)
-		{
-			final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-			final I_C_UOM uomRecord = uomDao.getById(uomId);
-			result.uomQty(Quantity.zero(uomRecord));
-		}
-
-		return validate(result.build());
+		// NOTE: no need to validate(result) because we created valid (using product's stocking UOM)
 	}
 
 	public StockQtyAndUOMQty ofQtyInStockUOM(
@@ -79,7 +70,7 @@ public class StockQtyAndUOMQtys
 
 	/**
 	 * @param qtyInUOM may be {@code null} only if {@code uomId} is {@code null}.
-	 * @param uomId may be {@code null} in which case the result will contain no {@code uomQty}.
+	 * @param uomId    may be {@code null} in which case the result will contain no {@code uomQty}.
 	 */
 	public StockQtyAndUOMQty create(
 			@NonNull final BigDecimal qtyInStockUOM,
@@ -172,7 +163,7 @@ public class StockQtyAndUOMQtys
 
 	/**
 	 * @param stockQtyInAnyUom converted to the product's stock UOM is needed
-	 * @param uomQty added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
+	 * @param uomQty           added to the new {@link StockQtyAndUOMQty} as-is. May be {@code null}.
 	 */
 	public StockQtyAndUOMQty createConvert(
 			@NonNull final Quantity stockQtyInAnyUom,
@@ -189,7 +180,9 @@ public class StockQtyAndUOMQtys
 						.build());
 	}
 
-	/** @return the sum of the given quantities; See {@link Quantitys#add(UOMConversionContext, Quantity, Quantity)} for the result's uomQty's UOM. */
+	/**
+	 * @return the sum of the given quantities; See {@link Quantitys#add(UOMConversionContext, Quantity, Quantity)} for the result's uomQty's UOM.
+	 */
 	public StockQtyAndUOMQty add(
 			@NonNull final StockQtyAndUOMQty firstAugent,
 			@NonNull final StockQtyAndUOMQty secondAugent)
@@ -261,7 +254,7 @@ public class StockQtyAndUOMQtys
 		final IProductBL productBL = Services.get(IProductBL.class);
 
 		final UomId productStockUomId = productBL.getStockUOMId(qtys.getProductId());
-		if (!Objects.equals(productStockUomId, qtys.getStockQty().getUomId()))
+		if (!UomId.equals(productStockUomId, qtys.getStockQty().getUomId()))
 		{
 			throw new AdempiereException("Product's stock UOM does not match stockQty's UOM")
 					.appendParametersToMessage()
@@ -272,20 +265,6 @@ public class StockQtyAndUOMQtys
 		// That can happen if e.g. stock UOM and price UOM are PCE, but the catch UOM is KGM!
 
 		return qtys;
-	}
-
-	public static ProductId extractCommonProductId(@NonNull final StockQtyAndUOMQty... qtys)
-	{
-		final ImmutableList<ProductId> differentValues = CollectionUtils.extractDistinctElements(
-				CollectionUtils.asSet(qtys),
-				StockQtyAndUOMQty::getProductId);
-		if (differentValues.size() > 1)
-		{
-			throw new AdempiereException("The given StockQtyAndUOMQtys have different productIds")
-					.appendParametersToMessage()
-					.setParameter("differentValues", differentValues);
-		}
-		return differentValues.get(0);
 	}
 
 	public static void assumeCommonProductAndUom(@NonNull final StockQtyAndUOMQty... qtys)
@@ -334,22 +313,5 @@ public class StockQtyAndUOMQtys
 				qtysToCompare1.getUOMQtyNotNull().getUomId());
 
 		return uomQty1.compareTo(uomQty2) >= 0 ? qtysToCompare1 : qtysToCompare2;
-	}
-
-	public int compareUomQty(
-			@NonNull final StockQtyAndUOMQty qtysToCompare1,
-			@NonNull final StockQtyAndUOMQty qtysToCompare2)
-	{
-		final Quantity uomQty1 = qtysToCompare1.getUOMQtyNotNull();
-
-		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
-				qtysToCompare2.getUOMQtyNotNull(),
-				UOMConversionContext.of(productId),
-				qtysToCompare1.getUOMQtyNotNull().getUomId());
-
-		return uomQty1.compareTo(uomQty2);
 	}
 }

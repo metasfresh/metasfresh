@@ -1,7 +1,9 @@
 package org.compiere.acct;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
@@ -9,9 +11,11 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
+import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,6 +23,8 @@ import de.metas.acct.Account;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+
+import java.util.List;
 
 /*
  * #%L
@@ -44,17 +50,23 @@ import org.compiere.util.DB;
 
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
+	@Getter
+	@NonNull private final ImmutableList<InOutCost> inoutCosts;
+
 	/**
 	 * Outside Processing
 	 */
-	private Integer ppCostCollectorId = null;
+	private Integer ppCostCollectorId = null; // lazy
 
 	@Builder
 	private DocLine_InOut(
 			@NonNull final I_M_InOutLine inoutLine,
+			@NonNull final List<InOutCost> inoutCosts,
 			@NonNull final Doc_InOut doc)
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
+
+		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
 
 		final Quantity qty = Quantity.of(inoutLine.getMovementQty(), getProductStockingUOM());
 		setQty(qty, doc.isSOTrx());
@@ -122,34 +134,52 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostAmount getCreateReceiptCosts(final AcctSchema as)
+	public AggregatedCostAmount getCreateReceiptCosts(final AcctSchema as)
 	{
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-							.acctSchemaId(as.getId())
-							.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-							.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
-							.date(getDateAcctAsInstant())
-							.build())
-					.getTotalAmountToPost(as);
+					.acctSchemaId(as.getId())
+					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
+					.date(getDateAcctAsInstant())
+					.build());
 		}
 		else
 		{
-			return services.createCostDetail(
-							CostDetailCreateRequest.builder()
-									.acctSchemaId(as.getId())
-									.clientId(getClientId())
-									.orgId(getOrgId())
-									.productId(getProductId())
-									.attributeSetInstanceId(getAttributeSetInstanceId())
-									.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-									.qty(getQty())
-									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
-									.currencyConversionContext(getCurrencyConversionContext(as))
-									.date(getDateAcctAsInstant())
-									.build())
-					.getTotalAmountToPost(as);
+			final CostDetailCreateRequest.CostDetailCreateRequestBuilder requestBuilder = CostDetailCreateRequest.builder()
+					.acctSchemaId(as.getId())
+					.clientId(getClientId())
+					.orgId(getOrgId())
+					.productId(getProductId())
+					.attributeSetInstanceId(getAttributeSetInstanceId())
+					.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+					.qty(getQty())
+					//.amt(null)
+					.currencyConversionContext(getCurrencyConversionContext(as))
+					.date(getDateAcctAsInstant());
+
+			//
+			// Material costs:
+			AggregatedCostAmount result = services.createCostDetail(
+					requestBuilder
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							.build());
+
+			//
+			// Additional costs
+			for (final InOutCost inoutCost : inoutCosts)
+			{
+				final AggregatedCostAmount nonMaterialCosts = services.createCostDetail(
+						requestBuilder
+								.costElement(services.getCostElementById(inoutCost.getCostElementId()))
+								.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
+								.build());
+
+				result = result.merge(nonMaterialCosts);
+			}
+
+			return result;
 		}
 	}
 

@@ -283,4 +283,18 @@ public class WarehouseBL implements IWarehouseBL
 
 		return warehouseId.equals(dropShipWarehouseId);
 	}
+
+	@Override
+	public Optional<LocationId> getLocationIdByLocatorRepoId(final int locatorRepoId)
+	{
+		final WarehouseId warehouseId = getIdByLocatorRepoId(locatorRepoId);
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return Optional.ofNullable(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()));
+	}
+
+	@Override
+	public OrgId getOrgIdByLocatorRepoId(final int locatorId)
+	{
+		return warehouseDAO.retrieveOrgIdByLocatorId(locatorId);
+	}
 }

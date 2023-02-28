@@ -17,8 +17,8 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
@@ -57,7 +57,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
@@ -67,6 +66,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Comparator;
@@ -107,7 +107,6 @@ public class InOutBL implements IInOutBL
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -147,6 +146,18 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutAndLineId inoutLineId)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId);
+	}
+
+	@Override
+	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
+	{
+		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);
+	}
+
+	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final I_M_InOut inOut = inOutLine.getM_InOut();
@@ -165,7 +176,7 @@ public class InOutBL implements IInOutBL
 
 		if (pricingSystem == null)
 		{
-			if (isReturnMovementType(inOut.getMovementType()))
+			if (MovementType.isMaterialReturn(inOut.getMovementType()))
 			{
 				// 08358
 				// in case no pricing system was found for the current IsSOTrx AND we are dealing with leergut inouts
@@ -284,7 +295,7 @@ public class InOutBL implements IInOutBL
 		return priceListDAO.getPricingSystemById(pricingSystemId);
 	}
 
-	private boolean isReversal(final int recordId, final int recordReversalId)
+	private static boolean isReversal(final int recordId, final int recordReversalId)
 	{
 		if (recordId <= 0)
 		{
@@ -315,20 +326,16 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public boolean isReversal(final I_M_InOut inout)
+	public boolean isReversal(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "inout not null");
-
 		final int recordId = inout.getM_InOut_ID();
 		final int recordReversalId = inout.getReversal_ID();
 		return isReversal(recordId, recordReversalId);
 	}
 
 	@Override
-	public boolean isReversal(final org.compiere.model.I_M_InOutLine inoutLine)
+	public boolean isReversal(@NonNull final org.compiere.model.I_M_InOutLine inoutLine)
 	{
-		Check.assumeNotNull(inoutLine, "inoutLine not null");
-
 		final int recordId = inoutLine.getM_InOutLine_ID();
 		final int recordReversalId = inoutLine.getReversalLine_ID();
 		return isReversal(recordId, recordReversalId);
@@ -376,19 +383,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public boolean isReturnMovementType(final String movementType)
-	{
-		return X_M_InOut.MOVEMENTTYPE_CustomerReturns.equals(movementType)
-				|| X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(movementType);
-	}
-
-	@Override
 	public BigDecimal negateIfReturnMovmenType(
 			@NonNull final I_M_InOutLine iol,
 			@NonNull final BigDecimal qty)
 	{
 		final I_M_InOut inoutRecord = InterfaceWrapperHelper.load(iol.getM_InOut_ID(), I_M_InOut.class);
-		if (isReturnMovementType(inoutRecord.getMovementType()))
+		if (MovementType.isMaterialReturn(inoutRecord.getMovementType()))
 		{
 			return qty.negate();
 		}
@@ -506,29 +506,6 @@ public class InOutBL implements IInOutBL
 
 			return Integer.compare(line1No, line2No);
 		};
-	}
-
-	@Override
-	public void deleteMatchInvs(final I_M_InOut inout)
-	{
-		final List<I_M_MatchInv> matchInvs = matchInvDAO.retrieveForInOut(inout);
-		for (final I_M_MatchInv matchInv : matchInvs)
-		{
-			matchInv.setProcessed(false);
-			InterfaceWrapperHelper.delete(matchInv);
-		}
-	}
-
-	@Override
-	public void deleteMatchInvsForInOutLine(final I_M_InOutLine iol)
-	{
-		//
-		// Delete M_MatchInvs (08627)
-		for (final I_M_MatchInv matchInv : matchInvDAO.retrieveForInOutLine(iol))
-		{
-			matchInv.setProcessed(false); // delete it even if it's processed, because all M_MatchInv are processed on save new.
-			InterfaceWrapperHelper.delete(matchInv);
-		}
 	}
 
 	@Override
@@ -667,5 +644,11 @@ public class InOutBL implements IInOutBL
 		}
 
 		return conversionCtx;
+	}
+
+	@Override
+	public Instant getDateAcct(@NonNull final InOutId inoutId)
+	{
+		return getById(inoutId).getDateAcct().toInstant();
 	}
 }

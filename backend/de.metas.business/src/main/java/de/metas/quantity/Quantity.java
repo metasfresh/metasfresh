@@ -817,4 +817,10 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		return toBigDecimal().intValueExact();
 	}
+
+	public Percent percentageOf(@NonNull Quantity whole)
+	{
+		assertSameUOM(this, whole);
+		return Percent.of(toBigDecimal(), whole.toBigDecimal());
+	}
 }

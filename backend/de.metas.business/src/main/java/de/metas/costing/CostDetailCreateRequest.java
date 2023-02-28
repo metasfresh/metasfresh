@@ -46,24 +46,24 @@ import java.util.Objects;
 @EqualsAndHashCode(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
 public class CostDetailCreateRequest
 {
-	AcctSchemaId acctSchemaId;
-	ClientId clientId;
-	OrgId orgId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
-	CostingDocumentRef documentRef;
+	@Nullable AcctSchemaId acctSchemaId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull CostingDocumentRef documentRef;
 	/**
 	 * Initial document reference (in case of reversal)
 	 */
-	CostingDocumentRef initialDocumentRef;
-	CostElement costElement;
-	CostAmount amt;
-	Quantity qty;
+	@Nullable CostingDocumentRef initialDocumentRef;
+	@Nullable CostElement costElement;
+	@NonNull CostAmount amt;
+	@NonNull Quantity qty;
 	@Nullable CurrencyConversionContext currencyConversionContext;
-	Instant date;
-	String description;
+	@NonNull Instant date;
+	@Nullable String description;
 
-	CostAmount explicitCostPrice;
+	@Nullable CostAmount explicitCostPrice;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -120,7 +120,7 @@ public class CostDetailCreateRequest
 		return getCostElement().getId();
 	}
 
-	public boolean isAllCostElements()
+	public boolean isAllMaterialCostElements()
 	{
 		return costElement == null;
 	}
@@ -220,10 +220,9 @@ public class CostDetailCreateRequest
 				//
 				.documentRef(getDocumentRef())
 				.description(getDescription())
-				.dateAcct(getDate())
-				;
+				.dateAcct(getDate());
 
-		if (!isAllCostElements())
+		if (!isAllMaterialCostElements())
 		{
 			costDetail.costElementId(getCostElementId());
 		}

@@ -1132,11 +1132,11 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Get Source Amounts with account
 		final List<I_Fact_Acct> invoiceFactLines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, 318) // C_Invoice
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, line.getC_Invoice_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, as.getId())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // header lines like tax or total
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, PostingType.Actual.getCode())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, 318) // C_Invoice
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, line.getC_Invoice_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, as.getId())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, null) // header lines like tax or total
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, PostingType.Actual.getCode())
 				.orderBy()
 				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID)
 				.endOrderBy()

@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
@@ -31,11 +32,11 @@ import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.MatchInvId;
 import de.metas.invoice.acct.InvoiceAcct;
+import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,7 +44,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
@@ -81,7 +81,7 @@ import java.util.Set;
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
@@ -105,6 +105,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	public Doc_Invoice(final AcctDocContext ctx)
 	{
 		super(ctx);
+		this.matchInvoiceService = ctx.getServices().getMatchInvoiceService();
 	}
 
 	Optional<InvoiceAcct> getInvoiceAccounts()
@@ -201,8 +202,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}    // loadTaxes
 
@@ -416,7 +415,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (taxAmt != null && taxAmt.signum() != 0)
 			{
 				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-													getCurrencyId(), null, taxAmt);
+						getCurrencyId(), null, taxAmt);
 				if (tl != null)
 				{
 					tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -437,13 +436,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
 					fact.createLine(line,
-									line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
-									getCurrencyId(), dAmt, null);
+							line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
+							getCurrencyId(), dAmt, null);
 				}
 			}
 			fact.createLine(line,
-							line.getAccount(ProductAcctType.P_Revenue_Acct, as),
-							getCurrencyId(), null, lineAmt);
+					line.getAccount(ProductAcctType.P_Revenue_Acct, as),
+					getCurrencyId(), null, lineAmt);
 			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
@@ -453,8 +452,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		});
 
 		// Receivables DR
@@ -529,7 +528,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (taxAmt != null && taxAmt.signum() != 0)
 			{
 				final FactLine tl = fact.createLine(null, docTax.getTaxDueAcct(as),
-													getCurrencyId(), taxAmt, null);
+						getCurrencyId(), taxAmt, null);
 				if (tl != null)
 				{
 					tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -540,7 +539,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocLine_Invoice line : getDocLines())
 		{
 			BigDecimal lineAmt = line.getAmtSource();
-			BigDecimal dAmt = null;
+			BigDecimal dAmt;
 			if (as.isPostTradeDiscount())
 			{
 				final BigDecimal discount = line.getDiscount();
@@ -549,13 +548,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
 					fact.createLine(line,
-									line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
-									getCurrencyId(), null, dAmt);
+							line.getAccount(ProductAcctType.P_TradeDiscountGrant_Acct, as),
+							getCurrencyId(), null, dAmt);
 				}
 			}
 			fact.createLine(line,
-							line.getAccount(ProductAcctType.P_Revenue_Acct, as),
-							getCurrencyId(), lineAmt, null);
+					line.getAccount(ProductAcctType.P_Revenue_Acct, as),
+					getCurrencyId(), lineAmt, null);
 			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
@@ -564,8 +563,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+			fl.setLocationFromOrg(fl.getOrgId(), true);      // from Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), false);  // to Loc
 		});
 
 		// Receivables CR
@@ -637,9 +636,9 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocTax docTax : getTaxes())
 		{
 			final FactLine tl = fact.createLine(null,
-												docTax.getAccount(as),  // account
-												getCurrencyId(),
-												docTax.getTaxAmt(), null); // DR/CR
+					docTax.getAccount(as),  // account
+					getCurrencyId(),
+					docTax.getTaxAmt(), null); // DR/CR
 			if (tl != null)
 			{
 				tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -666,18 +665,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (line.isItem())  // stockable item
 			{
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine(line,
-								line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as),
-								getCurrencyId(),
-								amtReceived, null,  // DR/CR
-								line.getQtyReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
+						.setAmtSource(getCurrencyId(), amtReceived, null)
+						.setQty(line.getQtyReceivedAbs())
+						.buildAndAdd();
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine(line,
-								line.getAccount(ProductAcctType.P_Expense_Acct, as),
-								getCurrencyId(),
-								amtNotReceived, null,  // DR/CR
-								line.getQtyNotReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
+						.setAmtSource(getCurrencyId(), amtNotReceived, null)
+						.setQty(line.getQtyNotReceivedAbs())
+						.buildAndAdd();
 			}
 			else // service
 			{
@@ -692,8 +693,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
+			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
 		});
 
 		// Liability CR
@@ -765,7 +766,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocTax docTax : getTaxes())
 		{
 			final FactLine tl = fact.createLine(null, docTax.getAccount(as),
-												getCurrencyId(), null, docTax.getTaxAmt());
+					getCurrencyId(), null, docTax.getTaxAmt());
 			if (tl != null)
 			{
 				tl.setC_Tax_ID(docTax.getC_Tax_ID());
@@ -791,18 +792,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			if (line.isItem())  // stockable item
 			{
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
-				fact.createLine(line,
-								line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as),
-								getCurrencyId(),
-								null, amtReceived,  // DR/CR
-								line.getQtyReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_InventoryClearing_Acct, as))
+						.setAmtSource(getCurrencyId(), null, amtReceived)
+						.setQty(line.getQtyReceivedAbs())
+						.buildAndAdd();
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
-				fact.createLine(line,
-								line.getAccount(ProductAcctType.P_Expense_Acct, as),
-								getCurrencyId(),
-								null, amtNotReceived,  // DR/CR
-								line.getQtyNotReceivedAbs());
+				fact.createLine()
+						.setDocLine(line)
+						.setAccount(line.getAccount(ProductAcctType.P_Expense_Acct, as))
+						.setAmtSource(getCurrencyId(), null, amtNotReceived)
+						.setQty(line.getQtyNotReceivedAbs())
+						.buildAndAdd();
 			}
 			else // service
 			{
@@ -817,8 +820,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 		// Set Locations
 		fact.forEach(fl -> {
-			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
-			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
+			fl.setLocationFromBPartner(getBPartnerLocationId(), true);  // from Loc
+			fl.setLocationFromOrg(fl.getOrgId(), false);    // to Loc
 		});
 
 		// Liability DR
@@ -874,7 +877,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		postDependingMatchInvsIfNeeded();
 	}
 
-	private final void postDependingMatchInvsIfNeeded()
+	private void postDependingMatchInvsIfNeeded()
 	{
 		if (!Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
@@ -894,12 +897,17 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInvoiceLines(invoiceLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
-	public static void unpost(final I_C_Invoice invoice)
+	public static void unpostIfNeeded(final I_C_Invoice invoice)
 	{
+		if (!invoice.isPosted())
+		{
+			return;
+		}
+
 		// Make sure the period is open
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		MPeriod.testPeriodOpen(ctx, invoice.getDateAcct(), invoice.getC_DocType_ID(), invoice.getAD_Org_ID());

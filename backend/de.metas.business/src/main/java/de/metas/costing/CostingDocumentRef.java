@@ -3,7 +3,7 @@ package de.metas.costing;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.invoice.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.order.MatchPOId;
 import de.metas.project.ProjectIssueId;
 import de.metas.util.lang.RepoIdAware;
