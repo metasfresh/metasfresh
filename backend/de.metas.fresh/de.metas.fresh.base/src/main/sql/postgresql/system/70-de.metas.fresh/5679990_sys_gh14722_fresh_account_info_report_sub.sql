@@ -1,72 +1,27 @@
--- Function: report.fresh_account_info_report_sub(numeric, date, date, numeric, character varying, character varying, character varying, numeric)
-
--- DROP FUNCTION report.fresh_account_info_report_sub(numeric, date, date, numeric, character varying, character varying, character varying, numeric);
--- DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,date, date, numeric, character varying, character varying, character varying, numeric);
-
 DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
                                                              numeric,
                                                              numeric,
                                                              numeric,
+                                                             date,
+                                                             date,
                                                              numeric,
-                                                             character varying,
-                                                             character varying,
-                                                             character varying,
+                                                             varchar,
+                                                             varchar,
+                                                             varchar,
                                                              numeric)
 ;
 
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
-                                                             numeric,
-                                                             date,
-                                                             date,
-                                                             numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             character varying,
-                                                             character varying,
-                                                             character varying,
-                                                             numeric)
-;
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
-                                                             numeric,
-                                                             date,
-                                                             date,
-                                                             numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             character varying,
-                                                             character varying,
-                                                             character varying,
-                                                             numeric)
-;
-
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
-    IN account_start_id      numeric, --$1
-    IN account_end_id        numeric, --$2
-    IN C_Period_Start_ID     numeric, --$3
-    IN C_Period_End_ID       numeric, --$4
-    IN StartDate             date, --$5
-    IN EndDate               date, --$6
-    IN c_activity_id         numeric, --$7
-    IN displayvoiddocuments  character varying, --$8
-    IN showcurrencyexchange  character varying, --$9
-    IN showonlyemptyactivity character varying, --$10
-    IN ad_org_id             numeric) --$11
-;
-
-CREATE OR REPLACE FUNCTION report.fresh_account_info_report_sub(
-    p_account_start_id      numeric,
-    p_account_end_id        numeric,
-    p_period_start_id       numeric,
-    p_period_end_id         numeric,
-    p_startdate             date,
-    p_enddate               date,
-    p_activity_id           numeric,
-    p_displayvoiddocuments  character varying,
-    p_showcurrencyexchange  character varying,
-    p_showonlyemptyactivity character varying,
-    p_org_id                numeric)
+CREATE FUNCTION report.fresh_account_info_report_sub(p_account_start_id      numeric,
+                                                     p_account_end_id        numeric,
+                                                     p_period_start_id       numeric,
+                                                     p_period_end_id         numeric,
+                                                     p_startdate             date,
+                                                     p_enddate               date,
+                                                     p_activity_id           numeric,
+                                                     p_displayvoiddocuments  character varying,
+                                                     p_showcurrencyexchange  character varying,
+                                                     p_showonlyemptyactivity character varying,
+                                                     p_org_id                numeric)
     RETURNS TABLE
             (
                 dateacct               date,
@@ -95,6 +50,8 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report_sub(
                 vat_code               text,
                 tax_rate_name          text
             )
+    STABLE
+    LANGUAGE sql
 AS
 $$
 SELECT fa.DateAcct::Date,
@@ -247,7 +204,7 @@ WHERE CASE
               TRUE
                                               ELSE
               (
-                      fa.DocStatus NOT IN ('CL', 'VO', 'RE')
+                  fa.DocStatus NOT IN ('CL', 'VO', 'RE')
                   )
       END
 
@@ -267,230 +224,7 @@ ORDER BY fa.Param_Acct_Value,
          fa.DateAcct::Date,
          fa.Fact_Acct_ID
 $$
-    LANGUAGE sql STABLE
 ;
 
-
--- Function: report.fresh_account_info_report(numeric, date, date, numeric, character varying, character varying, character varying, numeric)
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
-                                                         date,
-                                                         date,
-                                                         numeric,
-                                                         character varying,
-                                                         character varying,
-                                                         character varying,
-                                                         numeric)
-;
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
-                                                         numeric,
-                                                         numeric,
-                                                         numeric,
-                                                         numeric,
-                                                         character varying,
-                                                         character varying,
-                                                         character varying,
-                                                         numeric)
-;
-
-DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
-    IN account_from_id       numeric,
-    IN account_to_id         numeric,
-    IN C_Period_Start_ID     numeric,
-    IN C_Period_End_ID       numeric,
-    IN StartDate             date,
-    IN EndDate               date,
-    IN c_activity_id         numeric,
-    IN displayvoiddocuments  character varying,
-    IN showcurrencyexchange  character varying,
-    IN showonlyemptyactivity character varying,
-    IN ad_org_id             numeric)
-;
-
-CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
-    IN account_from_id       numeric,
-    IN account_to_id         numeric,
-    IN C_Period_Start_ID     numeric,
-    IN C_Period_End_ID       numeric,
-    IN StartDate             date,
-    IN EndDate               date,
-    IN c_activity_id         numeric,
-    IN displayvoiddocuments  character varying,
-    IN showcurrencyexchange  character varying,
-    IN showonlyemptyactivity character varying,
-    IN ad_org_id             numeric)
-    RETURNS TABLE
-            (
-                dateacct             date,
-                fact_acct_id         numeric,
-                bp_name              text,
-                description          text,
-                account2_id          text,
-                a_value              text,
-                amtacctdr            numeric,
-                amtacctcr            numeric,
-                saldo                numeric,
-                param_acct_value     text,
-                param_acct_name      text,
-                param_end_date       date,
-                param_start_date     date,
-                param_activity_value text,
-                param_activity_name  text,
-                overallcount         bigint,
-                unionorder           integer,
-                docstatus            text,
-                eurosaldo            numeric,
-                containseur          boolean,
-                ad_org_id            numeric,
-                vat_code             text,
-                tax_rate_name        text
-            )
-AS
-$$
-SELECT DateAcct,
-       Fact_Acct_ID,
-       BP_Name,
-       Description,
-       Account2_ID,
-       a_Value,
-       AmtAcctDr,
-       AmtAcctCr,
-       Saldo,
-       Param_Acct_Value,
-       Param_Acct_Name,
-       Param_End_Date,
-       Param_Start_Date,
-       Param_Activity_Value,
-       Param_Activity_Name,
-       COUNT(0) OVER () AS overallcount,
-       2                AS UnionOrder,
-       DocStatus,
-       NULL::numeric,
-       NULL::boolean,
-       ad_org_id,
-       vat_code,
-       tax_rate_name
-FROM report.fresh_Account_Info_Report_Sub(p_account_start_id := account_from_id,
-                                          p_account_end_id := account_to_id,
-                                          p_period_start_id := c_period_start_id,
-                                          p_period_end_id := c_period_end_id,
-                                          p_startdate := startdate,
-                                          p_enddate := enddate,
-                                          p_activity_id := c_activity_id,
-                                          p_displayvoiddocuments := displayvoiddocuments,
-                                          p_showcurrencyexchange := showcurrencyexchange,
-                                          p_showonlyemptyactivity := showonlyemptyactivity,
-                                          p_org_id := ad_org_id)
-WHERE Fact_Acct_ID IS NOT NULL
-UNION ALL
-SELECT DISTINCT NULL::date,
-                NULL::numeric,
-                NULL,
-                'Anfangssaldo',
-                NULL::text,
-                NULL::text,
-                NULL::numeric,
-                NULL::numeric,
-                CarrySaldo,
-                Param_Acct_Value,
-                Param_Acct_Name,
-                Param_End_Date,
-                Param_Start_Date,
-                Param_Activity_Value,
-                Param_Activity_Name,
-                COUNT(0) OVER () AS overallcount,
-                1,
-                NULL::text,
-                NULL::numeric,
-                NULL::boolean,
-                ad_org_id,
-                vat_code,
-                tax_rate_name
-FROM report.fresh_Account_Info_Report_Sub(p_account_start_id := account_from_id,
-                                          p_account_end_id := account_to_id,
-                                          p_period_start_id := c_period_start_id,
-                                          p_period_end_id := c_period_end_id,
-                                          p_startdate := startdate,
-                                          p_enddate := enddate,
-                                          p_activity_id := c_activity_id,
-                                          p_displayvoiddocuments := displayvoiddocuments,
-                                          p_showcurrencyexchange := showcurrencyexchange,
-                                          p_showonlyemptyactivity := showonlyemptyactivity,
-                                          p_org_id := ad_org_id)
-UNION ALL
-SELECT DISTINCT NULL::date,
-                NULL::numeric,
-                NULL,
-                'Summe',
-                NULL::text,
-                NULL::text,
-                AmtAcctDrEnd,
-                AmtAcctCrEnd,
-                CarrySaldo,
-                Param_Acct_Value,
-                Param_Acct_Name,
-                Param_End_Date,
-                Param_Start_Date,
-                Param_Activity_Value,
-                Param_Activity_Name,
-                COUNT(0) OVER () AS overallcount,
-                3,
-                NULL::text,
-                NULL::numeric,
-                NULL::boolean,
-                ad_org_id,
-                vat_code,
-                tax_rate_name
-FROM report.fresh_Account_Info_Report_Sub(p_account_start_id := account_from_id,
-                                          p_account_end_id := account_to_id,
-                                          p_period_start_id := c_period_start_id,
-                                          p_period_end_id := c_period_end_id,
-                                          p_startdate := startdate,
-                                          p_enddate := enddate,
-                                          p_activity_id := c_activity_id,
-                                          p_displayvoiddocuments := displayvoiddocuments,
-                                          p_showcurrencyexchange := showcurrencyexchange,
-                                          p_showonlyemptyactivity := showonlyemptyactivity,
-                                          p_org_id := ad_org_id)
-UNION ALL
-(SELECT DISTINCT NULL::date,
-                 NULL::numeric,
-                 NULL,
-                 'Summe in EUR',
-                 NULL::text,
-                 NULL::text,
-                 NULL::numeric,
-                 NULL::numeric,
-                 NULL::numeric,
-                 Param_Acct_Value,
-                 Param_Acct_Name,
-                 Param_End_Date,
-                 Param_Start_Date,
-                 Param_Activity_Value,
-                 Param_Activity_Name,
-                 COUNT(0) OVER () AS overallcount,
-                 4,
-                 NULL::text,
-                 EuroSaldo,
-                 containsEUR,
-                 ad_org_id,
-                 vat_code,
-                 tax_rate_name
- FROM report.fresh_Account_Info_Report_Sub(p_account_start_id := account_from_id,
-                                           p_account_end_id := account_to_id,
-                                           p_period_start_id := c_period_start_id,
-                                           p_period_end_id := c_period_end_id,
-                                           p_startdate := startdate,
-                                           p_enddate := enddate,
-                                           p_activity_id := c_activity_id,
-                                           p_displayvoiddocuments := displayvoiddocuments,
-                                           p_showcurrencyexchange := showcurrencyexchange,
-                                           p_showonlyemptyactivity := showonlyemptyactivity,
-                                           p_org_id := ad_org_id)
- WHERE containsEUR = 'Y')
-ORDER BY Param_Acct_Value, UnionOrder, DateAcct,
-         Fact_Acct_ID
-$$
-    LANGUAGE sql STABLE
+ALTER FUNCTION report.fresh_account_info_report_sub(numeric, numeric, numeric, numeric, date, date, numeric, varchar, varchar, varchar, numeric) OWNER TO metasfresh
 ;
