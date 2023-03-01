@@ -48,6 +48,8 @@ import java.util.Properties;
 	private String _trxName;
 	private InvoiceCandRecomputeTag _recomputeTagToUseForTagging;
 	private ILock _lockedBy = null;
+
+	@Nullable
 	private InvoiceCandRecomputeTag _taggedWith = null;
 	private int _limit = -1;
 	private InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = null;
@@ -80,8 +82,7 @@ import java.util.Properties;
 	@Override
 	public void deleteAllTaggedAndInvalidateCache()
 	{
-		final Collection<Integer> onlyInvoiceCandidateIds = null; // i.e. ALL
-		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, onlyInvoiceCandidateIds);
+		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, null /*null means "ALL"*/);
 	}
 
 	@Override
@@ -165,7 +166,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setLockedBy(ILock lockedBy)
+	public InvoiceCandRecomputeTagger setLockedBy(final ILock lockedBy)
 	{
 		this._lockedBy = lockedBy;
 		return this;
@@ -177,7 +178,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setTaggedWith(final InvoiceCandRecomputeTag tag)
+	public InvoiceCandRecomputeTagger setTaggedWith(@Nullable final InvoiceCandRecomputeTag tag)
 	{
 		_taggedWith = tag;
 		return this;
@@ -195,13 +196,15 @@ import java.util.Properties;
 		return setTaggedWith(null);
 	}
 
-	/* package */InvoiceCandRecomputeTag getTaggedWith()
+	/* package */
+	@Nullable
+	InvoiceCandRecomputeTag getTaggedWith()
 	{
 		return _taggedWith;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setLimit(int limit)
+	public InvoiceCandRecomputeTagger setLimit(final int limit)
 	{
 		this._limit = limit;
 		return this;

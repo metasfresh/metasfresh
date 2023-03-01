@@ -39,7 +39,6 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -1207,6 +1206,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, pinstanceId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOnlySelection(selectionId)
+				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.anyMatch();
 	}
