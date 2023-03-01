@@ -42,19 +42,6 @@ import java.util.List;
  */
 public class WEBUI_M_HU_MoveToAnotherWarehouse_InclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Template
 {
-	@ProcessParamLookupValuesProvider(parameterName = I_M_Locator.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	@Override
-	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
-	{
-		return super.getAvailableWarehouses(evalCtx);
-	}
-
-	@ProcessParamLookupValuesProvider(parameterName = I_M_Locator.COLUMNNAME_M_Locator_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
-	@Override
-	protected LookupValuesList getAvailableLocators(final LookupDataSourceContext evalCtx)
-	{
-		return super.getAvailableLocators(evalCtx);
-	}
 
 	@Override
 	public ProcessPreconditionsResolution checkHUsEligible(final List<I_M_HU> hus)
