@@ -163,7 +163,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				// Fail if the invoice candidate has issues
 				if (isFailOnInvoiceCandidateError() && icRecord.isError())
 				{
-					throw new AdempiereException(icRecord.getErrorMsg())
+					throw new AdempiereException(Check.assumeNotNull(icRecord.getErrorMsg(), "At this point, the errorMsg can't be null; icRecord={}", icRecord))
 							.setParameter("invoiceCandidate", icRecord);
 				}
 
@@ -183,9 +183,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				final IWorkpackagePrioStrategy priorityToUse;
 				if (_priority == null)
 				{
-					if (!Check.isEmpty(icRecord.getPriority()))
+					if (Check.isNotBlank(icRecord.getPriority()))
 					{
-						priorityToUse = ConstantWorkpackagePrio.fromString(icRecord.getPriority());
+						priorityToUse = ConstantWorkpackagePrio.fromString(Check.assumeNotNull(icRecord.getPriority(), ""));
 					}
 					else
 					{
@@ -232,7 +232,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			TryAndWaitUtil.tryAndWait(
 					3600 /*let's wait a full hour*/,
 					1000 /*check once a second*/,
-					() -> invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(pinstanceId),
+					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(pinstanceId),
 					null);
 		}
 		catch (final InterruptedException e)
