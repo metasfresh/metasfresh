@@ -95,6 +95,32 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	private IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
+		//trxManager.runInNewTrx(() ->
+							   { // prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular UpdateInvalidInvoiceCandidatesWorkpackageProcessor
+			// Here we just need the "set" if ICs and prepare them one by one.
+			// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
+			final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pinstanceId);
+
+			//
+			// Create invoice candidates changes checker.
+			final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
+			icChangesChecker.setBeforeChanges(unorderedICs);
+
+			//
+			// Prepare
+			updateSelectionBeforeEnqueueing(pinstanceId);
+			// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
+			// * the ones which are in our selection, we will update right now (see below)
+			// * the other ones will be updated later, asynchronously
+
+			ensureICsAreUpdated(pinstanceId);
+			//
+			// Make sure there are no changes in amounts or relevant fields (if that is required)
+			icChangesChecker.assertNoChanges(unorderedICs);
+		}
+		//);
+		trxManager.commit(ITrx.TRXNAME_ThreadInherited);
+
 		final ILock icLock = InvoiceCandidateLockingUtil.lockInvoiceCandidatesForSelection(pinstanceId);
 		try (final ILockAutoCloseable ignored = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{
@@ -107,27 +133,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			@NonNull final PInstanceId pinstanceId)
 	{
 		trxManager.assertThreadInheritedTrxExists();
-
-		// Here we just need the "set" if ICs and prepare them one by one.
-		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
-		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pinstanceId);
-
-		//
-		// Create invoice candidates changes checker.
-		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
-		icChangesChecker.setBeforeChanges(unorderedICs);
-
-		//
-		// Prepare
-		prepareSelectionForEnqueueing(pinstanceId);
-		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will update right now (see below)
-		// * the other ones will be updated later, asynchronously
-
-		ensureICsAreUpdated(icLock, pinstanceId);
-		//
-		// Make sure there are no changes in amounts or relevant fields (if that is required)
-		icChangesChecker.assertNoChanges(unorderedICs);
 
 		//
 		// Create workpackages.
@@ -221,16 +226,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				icLock);
 	}
 
-	private void ensureICsAreUpdated(final @NonNull ILock icLock, final @NonNull PInstanceId pinstanceId)
+	private void ensureICsAreUpdated(final @NonNull PInstanceId pinstanceId)
 	{
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
 			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
 			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
 			invoiceCandBL.updateInvalid()
 					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
-					.setLockedBy(icLock)
 					.setTaggedWithAnyTag()
 					.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
 					.update();
@@ -298,7 +302,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		return true;
 	}
 
-	private void prepareSelectionForEnqueueing(final PInstanceId selectionId)
+	private void updateSelectionBeforeEnqueueing(@NonNull final PInstanceId selectionId)
 	{
 		//
 		// Check incomplete compensation groups
