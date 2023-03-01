@@ -44,7 +44,6 @@ import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductPrice;
@@ -67,7 +66,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	private final MatchInvoiceService matchInvoiceService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
-	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public MovingAverageInvoiceCostingMethodHandler(

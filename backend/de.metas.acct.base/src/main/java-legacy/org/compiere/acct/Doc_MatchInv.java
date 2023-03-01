@@ -44,18 +44,15 @@ import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.IOrderLineBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
@@ -98,9 +95,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	// services
 	private static final Logger logger = LogManager.getLogger(Doc_MatchInv.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final transient IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
@@ -113,9 +107,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	private I_C_InvoiceLine _invoiceLine = null;
 	private I_C_Invoice _invoice = null;
-	/**
-	 * Invoice line net amount, excluding taxes, in invoice's currency
-	 */
 	private boolean isCreditMemoInvoice;
 	/**
 	 * Invoice line net amount, excluding taxes, in invoice's currency

@@ -657,10 +657,4 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
 	}
-
-	@Override
-	public I_C_InvoiceLine getLineById(final InvoiceLineId invoiceLineId)
-	{
-		return load(invoiceLineId, I_C_InvoiceLine.class);
-	}
 }

@@ -14,8 +14,6 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.business

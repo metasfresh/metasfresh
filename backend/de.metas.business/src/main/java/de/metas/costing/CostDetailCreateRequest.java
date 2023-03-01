@@ -56,15 +56,15 @@ public class CostDetailCreateRequest
 	/**
 	 * Initial document reference (in case of reversal)
 	 */
-	CostingDocumentRef initialDocumentRef;
-	CostElement costElement;
-	CostAmountDetailed amt;
-	Quantity qty;
+	@Nullable CostingDocumentRef initialDocumentRef;
+	@Nullable CostElement costElement;
+	@NonNull CostAmountDetailed amt;
+	@NonNull Quantity qty;
 	@Nullable CurrencyConversionContext currencyConversionContext;
-	Instant date;
-	String description;
+	@NonNull Instant date;
+	@Nullable String description;
 
-	CostAmount explicitCostPrice;
+	@Nullable CostAmount explicitCostPrice;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(

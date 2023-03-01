@@ -97,6 +97,4 @@ public interface IInvoiceLineBL extends ISingletonService
 	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
 
 	Quantity getQtyInvoicedStockUOM(org.compiere.model.I_C_InvoiceLine invoiceLine);
-
-	ProductPrice getCostPrice(final I_C_InvoiceLine invoiceLine);
 }
