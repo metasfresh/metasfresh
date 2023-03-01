@@ -245,6 +245,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14700](https://github.com/metasfresh/metasfresh/issues/14700) Delivery Planning Generate Goods Issue without stock should not be possible
   * [#14651](https://github.com/metasfresh/metasfresh/issues/14651) Solve on-prem ExternalSys-Other-API problems  
   * [#14381](https://github.com/metasfresh/metasfresh/issues/14381) Set C_doctypeTarget_ID as filter in C_Order
   * [#14366](https://github.com/metasfresh/metasfresh/pull/14366) POInfoColumn.ValueMin, ValueMax: trim blank to null
