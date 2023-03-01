@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -80,5 +81,21 @@ public final class ImpFormat
 	public String getImportKeyColumnName()
 	{
 		return getImportTableDescriptor().getKeyColumnName();
+	}
+
+	@NonNull
+	public String getDelimiter()
+	{
+		switch (formatType)
+		{
+			case COMMA_SEPARATED:
+				return ",";
+			case TAB_SEPARATED:
+				return "\t";
+			case SEMICOLON_SEPARATED:
+				return ";";
+			default:
+				throw new AdempiereException("Format type: " + formatType + "not supported!");
+		}
 	}
 }

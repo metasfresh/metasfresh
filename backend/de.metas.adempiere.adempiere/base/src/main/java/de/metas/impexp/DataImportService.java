@@ -1,16 +1,6 @@
 package de.metas.impexp;
 
-import java.util.Optional;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Stopwatch;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -22,13 +12,23 @@ import de.metas.impexp.format.ImpFormatRepository;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.impexp.processing.ImportProcessResult;
+import de.metas.impexp.util.GenerateCSVTemplate;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.report.ReportResultData;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -214,5 +214,14 @@ public class DataImportService
 				.setLoggable(Loggables.get())
 				.setParameters(request.getAdditionalParameters())
 				.deleteImportRecords(request);
+	}
+
+	@NonNull
+	public ReportResultData generateTemplate(@NonNull final DataImportConfigId dataImportConfigId)
+	{
+		final DataImportConfig dataImportConfig = dataImportConfigsRepo.getById(dataImportConfigId);
+		final ImpFormat importFormat = importFormatsRepo.getById(dataImportConfig.getImpFormatId());
+
+		return GenerateCSVTemplate.generateCSVTemplate(importFormat);
 	}
 }

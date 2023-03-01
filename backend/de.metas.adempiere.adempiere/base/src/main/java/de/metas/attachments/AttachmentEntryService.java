@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -394,6 +395,27 @@ public class AttachmentEntryService
 			final byte[] data)
 	{
 		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
+	}
+
+	@NonNull
+	public AttachmentEntry getUniqueByReferenceRecord(@NonNull final TableRecordReference recordReference)
+	{
+		final List<AttachmentEntry> attachmentEntries = getByReferencedRecord(recordReference);
+
+		if (attachmentEntries.size() > 1)
+		{
+			throw new AdempiereException("Expected to find only an attachment entry for the tableRecordReference, but multiple entries matched!")
+					.appendParametersToMessage()
+					.setParameter(TableRecordReference.COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
+					.setParameter(TableRecordReference.COLUMNNAME_Record_ID, recordReference.getRecord_ID());
+		}
+
+		return attachmentEntries.get(0);
+	}
+
+	public boolean atLeastOnAttachmentForRecordReference(@NonNull final TableRecordReference recordReference)
+	{
+		return getByReferencedRecord(recordReference).size() >= 1;
 	}
 
 	@NonNull

@@ -408,6 +408,13 @@ public final class ProcessInfo implements Serializable
 		return TableRecordReference.of(adTableId, recordId);
 	}
 
+	@NonNull
+	public TableRecordReference getRecordRefNotNull()
+	{
+		return Optional.ofNullable(getRecordRefOrNull())
+				.orElseThrow(() -> new AdempiereException("TableRecordReference expected not to be missing!"));
+	}
+
 	public boolean isRecordSet()
 	{
 		return getTable_ID() > 0 && getRecord_ID() > 0;

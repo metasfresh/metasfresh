@@ -22,7 +22,11 @@
 
 package de.metas.document.archive.interceptor;
 
-import de.metas.common.util.CoalesceUtil;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.blockfile.BPartnerBlockFile;
+import de.metas.bpartner.blockfile.BPartnerBlockFileId;
+import de.metas.bpartner.blockfile.BPartnerBlockFileRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.order.IOrderDAO;
@@ -31,13 +35,16 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_MultiRef;
+import org.compiere.model.I_C_BPartner_Block_File;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -49,12 +56,19 @@ import static de.metas.util.FileUtil.getFileExtension;
 public class AD_Attachment_MultiRef
 {
 	private final ArchiveFileNameService archiveFileNameService;
+	private final AttachmentEntryService attachmentEntryService;
+	private final BPartnerBlockFileRepository blockFileRepository;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	public AD_Attachment_MultiRef(@NonNull final ArchiveFileNameService archiveFileNameService)
+	public AD_Attachment_MultiRef(
+			@NonNull final ArchiveFileNameService archiveFileNameService,
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final BPartnerBlockFileRepository blockFileRepository)
 	{
 		this.archiveFileNameService = archiveFileNameService;
+		this.attachmentEntryService = attachmentEntryService;
+		this.blockFileRepository = blockFileRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
@@ -85,5 +99,33 @@ public class AD_Attachment_MultiRef
 
 			record.setFileName_Override(archiveFileNameService.computeFileName(computeFileNameRequest));
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void overrideBPBlockFileName(@NonNull final I_AD_Attachment_MultiRef record)
+	{
+		final TableRecordReference tableRecordReference = TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID());
+		final I_AD_AttachmentEntry attachmentEntry = record.getAD_AttachmentEntry();
+
+		if (!tableRecordReference.getTableName().equals(I_C_BPartner_Block_File.Table_Name))
+		{
+			return;
+		}
+
+		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getByReferencedRecord(tableRecordReference);
+		if (attachmentEntries.size() >= 1)
+		{
+			throw new AdempiereException("Business partner block file already has one file attached!")
+					.appendParametersToMessage()
+					.setParameter(I_C_BPartner_Block_File.COLUMNNAME_C_BPartner_Block_File_ID, tableRecordReference.getRecord_ID());
+		}
+
+		final BPartnerBlockFile blockFile = blockFileRepository.getById(BPartnerBlockFileId.ofRepoId(tableRecordReference.getRecord_ID()));
+
+		final String fileBaseName = getFileBaseName(attachmentEntry.getFileName());
+
+		blockFileRepository.update(blockFile.toBuilder()
+										   .fileName(fileBaseName)
+										   .build());
 	}
 }
