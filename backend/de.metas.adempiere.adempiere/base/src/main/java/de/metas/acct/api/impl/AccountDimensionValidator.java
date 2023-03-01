@@ -22,17 +22,6 @@ package de.metas.acct.api.impl;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.util.NumberUtils;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.X_C_AcctSchema_Element;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -43,8 +32,17 @@ import de.metas.acct.api.AcctSchemaValidCombinationOptions;
 import de.metas.acct.api.IAccountDimensionValidator;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ValidCombination;
+
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 
 /* package */class AccountDimensionValidator implements IAccountDimensionValidator
 {
@@ -172,11 +170,9 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * @param accountDimension
-	 * @param elementType      see {@link X_C_AcctSchema_Element}.ELEMENTTYPE_*
 	 * @return segment's value (ID)
 	 */
-	private final Object getSegmentValue(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
+	private Object getSegmentValue(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
 	{
 		Check.assumeNotNull(elementType, "elementType not null");
 
@@ -230,7 +226,7 @@ import lombok.NonNull;
 		}
 		else if (elementType.equals(AcctSchemaElementType.Order))
 		{
-			return accountDimension.getC_Order_ID();
+			return accountDimension.getSalesOrderId();
 		}
 		else if (elementType.equals(AcctSchemaElementType.SectionCode))
 		{

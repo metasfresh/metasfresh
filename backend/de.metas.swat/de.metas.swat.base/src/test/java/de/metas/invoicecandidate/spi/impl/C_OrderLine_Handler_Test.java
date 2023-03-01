@@ -27,15 +27,14 @@ import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.WarehouseId;
+import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -66,9 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /*
  * #%L
@@ -217,14 +214,16 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
 
 		ic1.setC_Order_ID(orderLine1.getC_Order_ID());
+		ic1.setC_OrderSO_ID(orderLine1.getC_OrderSO_ID());
 		save(ic1);
 		ic2.setC_Order_ID(orderLine2.getC_Order_ID());
+		ic2.setC_OrderSO_ID(orderLine2.getC_OrderSO_ID());
 		save(ic2);
 
 		final String key1 = headerAggregationKeyBuilder.buildKey(ic1);
 		final String key2 = headerAggregationKeyBuilder.buildKey(ic2);
 
-		assertEquals(key1, key2);
+		Assertions.assertThat(key2).isEqualTo(key1);
 	}
 
 	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
@@ -240,18 +239,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
 				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
 
-		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						order1,
-						(TaxCategoryId)null,
+						null,
 						oL1.getM_Product_ID(),
 						order1.getDatePromised(),
 						OrgId.ofRepoId(order1.getAD_Org_ID()),
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
 						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
 						SOTrx.ofBoolean(order1.isSOTrx()),
-								(VatCodeId)null))
+						null))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
@@ -378,17 +376,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		final List<I_C_Invoice_Candidate> candidates = InvoiceCandidatesTestHelper.createMissingCandidates(orderLineHandler, QueryLimit.ofInt(5));
 
-		assertEquals(2, candidates.size());
+		Assertions.assertThat(candidates).hasSize(2);
 
 		final I_C_Invoice_Candidate cand1 = candidates.get(0);
 		final I_C_Invoice_Candidate cand2 = candidates.get(1);
 
 		// Check that we create both SO and PO candidates
-		assertEquals(cand1.isSOTrx(), !cand2.isSOTrx());
+		Assertions.assertThat(!cand2.isSOTrx()).isEqualTo(cand1.isSOTrx());
 
 		// Check that the candidates are for the correct order lines
-		assertTrue(cand1.isSOTrx() ? cand1.getC_OrderLine_ID() == oL1.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL1.getC_OrderLine_ID());
-		assertTrue(cand2.isSOTrx() ? cand1.getC_OrderLine_ID() == oL2.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL2.getC_OrderLine_ID());
+		Assertions.assertThat(cand1.isSOTrx() ? cand1.getC_OrderLine_ID() == oL1.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL1.getC_OrderLine_ID()).isTrue();
+		Assertions.assertThat(cand2.isSOTrx() ? cand1.getC_OrderLine_ID() == oL2.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL2.getC_OrderLine_ID()).isTrue();
 	}
 
 	@Test
@@ -429,8 +427,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1));
 		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.getC_Invoice_Candidates().get(0);
 
-		assertThat(invoiceCandidate.getPresetDateInvoiced()).isEqualTo(orderLine1.getPresetDateInvoiced());
-		assertThat(invoiceCandidate.getPresetDateInvoiced()).isEqualTo(TimeUtil.asTimestamp(presetDateInvoiced));
+		assertThat(invoiceCandidate.getPresetDateInvoiced())
+				.isEqualTo(orderLine1.getPresetDateInvoiced())
+				.isEqualTo(TimeUtil.asTimestamp(presetDateInvoiced));
 	}
 
 	@Test

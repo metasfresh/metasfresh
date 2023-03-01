@@ -652,11 +652,11 @@ public final class FactLine extends X_Fact_Acct
 		// Order
 		if (m_docLine != null)
 		{
-			setC_Order_ID(m_docLine.getOrderId());
+			setC_Order_ID(m_docLine.getSalesOrderId());
 		}
 		if (getC_Order_ID() <= 0)
 		{
-			setC_Order_ID(m_doc.getOrderId());
+			setC_Order_ID(m_doc.getSalesOrderId());
 		}
 
 		// SectionCode
@@ -1175,8 +1175,6 @@ public final class FactLine extends X_Fact_Acct
 	{
 		if (newRecord)
 		{
-			log.debug(toString());
-			//
 			getAD_Org_ID();
 			getC_SalesRegion_ID();
 			// Set Default Account Info
@@ -1212,11 +1210,11 @@ public final class FactLine extends X_Fact_Acct
 			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
 			}
-			if (getC_Order_ID() == 0)
+			if (getC_Order_ID() <= 0)
 			{
 				setC_Order_ID(m_acct.getC_Order_ID());
 			}
-			if (getM_SectionCode_ID() == 0)
+			if (getM_SectionCode_ID() <= 0)
 			{
 				setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
 			}
@@ -1554,7 +1552,7 @@ public final class FactLine extends X_Fact_Acct
 		setC_Project_ID(dimension.getProjectId());
 		setC_Campaign_ID(dimension.getCampaignId());
 		setC_Activity_ID(dimension.getActivityId());
-		setC_Order_ID(dimension.getOrderId());
+		setC_Order_ID(dimension.getSalesOrderId());
 		setM_SectionCode_ID(dimension.getSectionCodeId());
 		setM_Product_ID(dimension.getProductId());
 	}

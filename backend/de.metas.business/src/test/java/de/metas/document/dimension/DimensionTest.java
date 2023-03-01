@@ -9,15 +9,15 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-class DimensionTest
+public class DimensionTest
 {
-	private static Dimension newFullyPopulatedDimension()
+	public static Dimension newFullyPopulatedDimension()
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoId(1))
 				.campaignId(2)
 				.activityId(ActivityId.ofRepoId(3))
-				.orderId(OrderId.ofRepoId(4))
+				.salesOrderId(OrderId.ofRepoId(4))
 				.sectionCodeId(SectionCodeId.ofRepoId(5))
 				.productId(ProductId.ofRepoId(6))
 				.user1_ID(7)
@@ -42,7 +42,7 @@ class DimensionTest
 		{
 			Dimension empty = Dimension.builder().build();
 			final Dimension fullyPopulated = newFullyPopulatedDimension();
-			Assertions.assertThat(empty.fallbackTo(fullyPopulated)).isEqualTo(fullyPopulated);
+			Assertions.assertThat(empty.fallbackTo(fullyPopulated)).isSameAs(fullyPopulated);
 		}
 
 		@Test
@@ -50,7 +50,21 @@ class DimensionTest
 		{
 			Dimension empty = Dimension.builder().build();
 			final Dimension fullyPopulated = newFullyPopulatedDimension();
-			Assertions.assertThat(fullyPopulated.fallbackTo(empty)).isEqualTo(fullyPopulated);
+			Assertions.assertThat(fullyPopulated.fallbackTo(empty)).isSameAs(fullyPopulated);
 		}
+
+		@Test
+		void partiallyPopulated_fallbackTo_partiallyPopulated()
+		{
+			final Dimension dim1 = Dimension.builder().productId(ProductId.ofRepoId(1)).build();
+			final Dimension dim2 = Dimension.builder().sectionCodeId(SectionCodeId.ofRepoId(2)).build();
+
+			Assertions.assertThat(dim1.fallbackTo(dim2))
+					.isEqualTo(Dimension.builder()
+							.productId(ProductId.ofRepoId(1))
+							.sectionCodeId(SectionCodeId.ofRepoId(2))
+							.build());
+		}
+
 	}
 }

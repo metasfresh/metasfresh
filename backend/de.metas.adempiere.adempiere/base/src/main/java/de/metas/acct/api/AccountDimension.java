@@ -151,7 +151,7 @@ public final class AccountDimension
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
 	}
 
-	public int getC_Order_ID()
+	public int getSalesOrderId()
 	{
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Order),0);
 	}

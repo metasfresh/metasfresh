@@ -22,6 +22,7 @@ package org.adempiere.acct.api.impl;
  * #L%
  */
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
@@ -29,7 +30,6 @@ import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.Check;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 
@@ -145,7 +145,7 @@ public class FactAcctBL implements IFactAcctBL
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.Order))
 		{
-			fa.setC_Order_ID(dim.getC_Order_ID());
+			fa.setC_Order_ID(dim.getSalesOrderId());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
 		{

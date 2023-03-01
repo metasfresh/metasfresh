@@ -1438,9 +1438,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	@Nullable
-	protected final OrderId getOrderId()
+	protected final OrderId getSalesOrderId()
 	{
-		return OrderId.ofRepoIdOrNull(getValueAsIntOrZero("C_Order_ID"));
+		return CoalesceUtil.coalesceSuppliers(
+				() -> OrderId.ofRepoIdOrNull(getValueAsIntOrZero("C_OrderSO_ID")),
+				() -> OrderId.ofRepoIdOrNull(getValueAsIntOrZero("C_Order_ID"))
+		);
 	}
 
 	protected final int getC_Campaign_ID()
