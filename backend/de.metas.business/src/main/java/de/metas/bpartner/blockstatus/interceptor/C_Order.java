@@ -25,11 +25,10 @@ package de.metas.bpartner.blockstatus.interceptor;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -47,15 +46,9 @@ public class C_Order
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_Order.COLUMNNAME_DocStatus)
-	public void validateBPartnerBlockedStatus(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void validateBPartnerBlockedStatus(@NonNull final I_C_Order order)
 	{
-		if (!DocStatus.ofCode(order.getDocStatus()).isCompleted())
-		{
-			return;
-		}
-
 		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(order.getC_BPartner_ID())))
 		{
 			throw new AdempiereException(MSG_ORDER_WITH_BLOCKED_PARTNER)
