@@ -83,7 +83,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
@@ -304,7 +303,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
@@ -379,6 +378,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Nullable
 	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		if (!invoiceBL.isInvoice(invoice))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());

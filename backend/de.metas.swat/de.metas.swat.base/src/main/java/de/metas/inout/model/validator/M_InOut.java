@@ -4,6 +4,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.IEventBusFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
@@ -11,6 +12,7 @@ import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.inout.location.InOutLocationsUpdater;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
 import de.metas.util.Services;
@@ -19,7 +21,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -29,6 +30,7 @@ import java.util.List;
 public class M_InOut
 {
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+	private final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
 	@Init
 	public void onInit()
@@ -64,15 +66,12 @@ public class M_InOut
 		}
 	}
 
-	/**
-	 * Reverse {@link I_M_MatchInv} assignments.
-	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REACTIVATE })
-	public void removeMatchInvAssignments(final I_M_InOut inoutRecord)
+	public void deleteMatchInvs(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IInOutBL.class).deleteMatchInvs(inoutRecord); // task 08531
+			matchInvoiceService.deleteByInOutId(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
 		}
 	}
 

@@ -50,6 +50,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
@@ -128,7 +129,7 @@ public class MovingAverageInvoiceCostingMethodHandlerTest
 					currentCostsRepo,
 					costDetailsService);
 
-			handler = new MovingAverageInvoiceCostingMethodHandler(handlerUtils);
+			handler = new MovingAverageInvoiceCostingMethodHandler(handlerUtils, MatchInvoiceService.newInstanceForJUnitTesting());
 
 			euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 			eachUOM = BusinessTestHelper.createUomEach();

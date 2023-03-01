@@ -6,7 +6,6 @@ import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.ProductActivityProvider;
 import de.metas.acct.impexp.AccountImportProcess;
@@ -68,7 +67,6 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
-	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
@@ -138,25 +136,23 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo));
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema(acctSchemaDAO, costElementRepo));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_GL());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Default());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element());
 
-		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_BP_BankAccount()); // 08354
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.interceptor.C_ValidCombination(accountBL));
 
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine());
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_Journal(importProcessFactory));
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalBatch());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());
+		engine.addModelValidator(new de.metas.acct.interceptor.C_TaxDeclaration());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(postingService, factAcctDAO));
-		//
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution());
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_Distribution());
+		engine.addModelValidator(new de.metas.acct.interceptor.GL_DistributionLine());
 	}
 
 	@Override

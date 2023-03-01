@@ -14,11 +14,13 @@ import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -35,8 +37,10 @@ import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
@@ -127,6 +131,10 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
+
+	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Create a credit memo for the given invoice.
@@ -376,4 +384,8 @@ public interface IInvoiceBL extends ISingletonService
 	String getLocationEmail(InvoiceId invoiceId);
 
 	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_Invoice invoice);
+
+	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	Instant getDateAcct(InvoiceId invoiceId);
 }

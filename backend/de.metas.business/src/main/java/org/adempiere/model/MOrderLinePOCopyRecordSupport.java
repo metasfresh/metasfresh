@@ -1,5 +1,6 @@
 package org.adempiere.model;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
@@ -13,6 +14,7 @@ import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -29,7 +31,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
 	 */
 	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<I_C_OrderLine>()
-			.addPredicate(orderLine -> isNotFreightCost(orderLine));
+			.addPredicate(MOrderLinePOCopyRecordSupport::isNotFreightCost);
 
 	private static boolean isNotFreightCost(final @NonNull I_C_OrderLine orderLine)
 	{
@@ -116,5 +118,11 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		orderCompensationGroupNew.setPP_Product_BOM_ID(-1); // don't copy the Quotation BOM; another one has to be created
 		InterfaceWrapperHelper.save(orderCompensationGroupNew);
 		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
+	}
+
+	@Override
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	{
+		return ImmutableList.of();
 	}
 }

@@ -29,6 +29,8 @@ import java.util.Optional;
 
 public interface ICostingService
 {
+	CostElement getCostElementById(@NonNull CostElementId costElementId);
+
 	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
 
 	ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);

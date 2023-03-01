@@ -31,12 +31,12 @@ import lombok.Value;
 @Value
 public class CostElement
 {
-	CostElementId id;
-	String name;
-	CostElementType costElementType;
-	CostingMethod costingMethod;
+	@NonNull CostElementId id;
+	@NonNull String name;
+	@NonNull CostElementType costElementType;
+	@NonNull CostingMethod costingMethod;
 	boolean allowUserChangingCurrentCosts;
-	ClientId clientId;
+	@NonNull ClientId clientId;
 
 	@Builder
 	private CostElement(
@@ -55,12 +55,12 @@ public class CostElement
 		this.clientId = clientId;
 	}
 
-	public boolean isMaterialCostingMethod()
+	public boolean isMaterialElement()
 	{
-		return getCostElementType().isMaterial()
-				&& getCostingMethod() != null;
+		return getCostElementType().isMaterial();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isActivityControlElement()
 	{
 		return getCostElementType().isActivityControlElement();

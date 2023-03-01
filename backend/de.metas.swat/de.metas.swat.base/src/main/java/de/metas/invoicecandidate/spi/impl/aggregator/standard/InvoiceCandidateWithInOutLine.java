@@ -1,62 +1,36 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
-import static de.metas.util.Check.fail;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Set;
-
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_InOutLine;
-
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.inout.IInOutBL;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_M_InOutLine;
+
+import java.math.BigDecimal;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.fail;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 public final class InvoiceCandidateWithInOutLine
 {
 	// services
-	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService;
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
@@ -75,8 +49,12 @@ public final class InvoiceCandidateWithInOutLine
 	@Getter
 	private final InvoiceCandidateId invoicecandidateId;
 
-	public InvoiceCandidateWithInOutLine(@NonNull final IInvoiceLineAggregationRequest request)
+	public InvoiceCandidateWithInOutLine(
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final IInvoiceLineAggregationRequest request)
 	{
+		this.matchInvoiceService = matchInvoiceService;
+
 		this.ic = request.getC_Invoice_Candidate();
 		this.iciol = request.getC_InvoiceCandidate_InOutLine();
 		this.allocateRemainingQty = request.isAllocateRemainingQty();
@@ -122,8 +100,11 @@ public final class InvoiceCandidateWithInOutLine
 		{
 			return zero;
 		}
-
-		return matchInvDAO.retrieveQtysInvoiced(iciol.getM_InOutLine(), zero);
+		else
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+			return matchInvoiceService.getMaterialQtyMatched(inoutLineId, zero);
+		}
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyShipped()
@@ -164,7 +145,7 @@ public final class InvoiceCandidateWithInOutLine
 						stockQty, productId,
 						uomQty, UomId.ofRepoId(iciol.getC_UOM_ID()));
 
-		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
+		if (MovementType.isMaterialReturn(inOutLine.getM_InOut().getMovementType()))
 		{
 			return deliveredQty.negate();
 		}

@@ -1,16 +1,8 @@
 package de.metas.costing;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.util.Check;
@@ -20,6 +12,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ import lombok.Value;
  */
 
 @Value
-public final class AggregatedCostAmount
+public class AggregatedCostAmount
 {
 	@Getter(AccessLevel.NONE)
 	CostSegment costSegment;
@@ -86,7 +86,7 @@ public final class AggregatedCostAmount
 		}
 
 		// merge amounts maps; will fail in case of duplicate cost elements
-		final ImmutableMap<CostElement, CostAmount> amountsNew = ImmutableMap.<CostElement, CostAmount> builder()
+		final ImmutableMap<CostElement, CostAmount> amountsNew = ImmutableMap.<CostElement, CostAmount>builder()
 				.putAll(amountsPerElement)
 				.putAll(other.amountsPerElement)
 				.build();
@@ -102,11 +102,32 @@ public final class AggregatedCostAmount
 		}
 
 		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amountsPerElement);
-		other.amountsPerElement.forEach((costElement, amtToAdd) -> {
-			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
-		});
+		other.amountsPerElement.forEach((costElement, amtToAdd) -> amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd));
 
 		return new AggregatedCostAmount(costSegment, amountsNew);
+	}
+
+	@VisibleForTesting
+	public AggregatedCostAmount retainOnlyAccountable(@NonNull final AcctSchema as)
+	{
+		final AcctSchemaCosting costing = as.getCosting();
+		final CostingMethod costingMethod = costing.getCostingMethod();
+		final ImmutableSet<CostElementId> postOnlyCostElementIds = costing.getPostOnlyCostElementIds();
+
+		final LinkedHashMap<CostElement, CostAmount> amountsPerElementNew = new LinkedHashMap<>();
+		amountsPerElement.forEach((costElement, costAmount) -> {
+			if (isCostElementMatching(costElement, costingMethod, postOnlyCostElementIds))
+			{
+				amountsPerElementNew.put(costElement, costAmount);
+			}
+		});
+
+		if (amountsPerElementNew.size() == amountsPerElement.size())
+		{
+			return this;
+		}
+
+		return new AggregatedCostAmount(costSegment, amountsPerElementNew);
 	}
 
 	public CostAmount getTotalAmountToPost(@NonNull final AcctSchema as)
@@ -134,18 +155,7 @@ public final class AggregatedCostAmount
 			@NonNull final CostingMethod costingMethod,
 			final Set<CostElementId> onlyCostElementIds)
 	{
-		if (!costingMethod.equals(costElement.getCostingMethod()))
-		{
-			return false;
-		}
-
-		if (onlyCostElementIds != null
-				&& !onlyCostElementIds.isEmpty()
-				&& !onlyCostElementIds.contains(costElement.getId()))
-		{
-			return false;
-		}
-
-		return true;
+		return costingMethod.equals(costElement.getCostingMethod())
+				&& (onlyCostElementIds == null || onlyCostElementIds.isEmpty() || onlyCostElementIds.contains(costElement.getId()));
 	}
 }

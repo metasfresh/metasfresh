@@ -65,7 +65,9 @@ CREATE VIEW Fact_Acct_Transactions_View
              userelementstring7,
              m_sectioncode_id,
              c_order_id,
-             balance)
+             balance,
+             m_costelement_id
+                )
 AS
 SELECT fact.fact_acct_id,
        fact.ad_client_id,
@@ -130,10 +132,8 @@ SELECT fact.fact_acct_id,
        fact.userelementstring7,
        fact.m_sectioncode_id,
        fact.c_order_id,
-       acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance
+       acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance,
+       fact.m_costelement_id
 FROM fact_acct fact
 ;
 
-ALTER TABLE Fact_Acct_Transactions_View
-    OWNER TO metasfresh
-;

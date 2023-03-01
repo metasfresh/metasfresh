@@ -53,6 +53,7 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.CountryId;
+import de.metas.material.MovementType;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -526,9 +527,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.build();
 	}
 
-	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo)
+	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo, MovementType movementType)
 	{
 		final I_M_InOut inOut = inOut(documentNo, I_M_InOut.class);
+		inOut.setMovementType(movementType.getCode());
+		inOut.setIsSOTrx(movementType.isOutboundTransaction());
 		inOut.setC_BPartner_ID(bpartnerId);
 		inOut.setC_Order_ID(orderId);
 

@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.PostingException;
@@ -10,6 +11,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
+import de.metas.costing.CostElementId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -39,6 +41,7 @@ public class AccountProvider
 	@NonNull private final ChargeAccountsRepository chargeAccountsRepository;
 	@NonNull private final WarehouseAccountsRepository warehouseAccountsRepository;
 	@NonNull private final ProjectAccountsRepository projectAccountsRepository;
+	@NonNull private final CostElementAccountsRepository costElementAccountsRepository;
 	@Nullable private final AccountProviderExtension extension;
 
 	@Builder(toBuilder = true)
@@ -54,7 +57,7 @@ public class AccountProvider
 			@NonNull final ChargeAccountsRepository chargeAccountsRepository,
 			@NonNull final WarehouseAccountsRepository warehouseAccountsRepository,
 			@NonNull final ProjectAccountsRepository projectAccountsRepository,
-			//
+			@NonNull final CostElementAccountsRepository costElementAccountsRepository,
 			@Nullable final AccountProviderExtension extension)
 	{
 		this.bpartnerDAO = bpartnerDAO;
@@ -68,6 +71,7 @@ public class AccountProvider
 		this.chargeAccountsRepository = chargeAccountsRepository;
 		this.warehouseAccountsRepository = warehouseAccountsRepository;
 		this.projectAccountsRepository = projectAccountsRepository;
+		this.costElementAccountsRepository = costElementAccountsRepository;
 		this.extension = extension;
 	}
 
@@ -294,4 +298,15 @@ public class AccountProvider
 		}
 	}
 
+	public Account getCostElementAccount(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final CostElementAccountType acctType)
+	{
+		final AccountId accountId = costElementAccountsRepository
+				.getAccounts(costElementId, acctSchemaId)
+				.getAccountId(acctType);
+
+		return Account.of(accountId, acctType.getColumnName());
+	}
 }

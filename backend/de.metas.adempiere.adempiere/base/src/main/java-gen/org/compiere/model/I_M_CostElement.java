@@ -78,20 +78,20 @@ public interface I_M_CostElement
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCostingMethod (@Nullable java.lang.String CostingMethod);
+	void setCostingMethod (java.lang.String CostingMethod);
 
 	/**
 	 * Get Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCostingMethod();
+	java.lang.String getCostingMethod();
 
 	ModelColumn<I_M_CostElement, Object> COLUMN_CostingMethod = new ModelColumn<>(I_M_CostElement.class, "CostingMethod", null);
 	String COLUMNNAME_CostingMethod = "CostingMethod";

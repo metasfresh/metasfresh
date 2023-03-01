@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.greeting.GreetingRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -151,7 +152,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
+		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices(MatchInvoiceService.newInstanceForJUnitTesting());
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
