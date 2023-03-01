@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
