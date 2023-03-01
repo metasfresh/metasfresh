@@ -150,7 +150,7 @@ public class CurrentCostTest
 					.currentQty("1")
 					.build();
 
-			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(0, currencyId)).build();
+			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(10, currencyId)).build();
 
 			currentCost.addWeightedAverage(
 					costAmountDetailed,
