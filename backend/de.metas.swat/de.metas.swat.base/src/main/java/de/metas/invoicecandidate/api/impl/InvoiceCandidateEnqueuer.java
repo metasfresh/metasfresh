@@ -16,6 +16,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -30,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.MDC.MDCCloseable;
@@ -122,13 +124,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// * the ones which are in our selection, we will update right now (see below)
 		// * the other ones will be updated later, asynchronously
 
-		//
-		// !!! Do not invoke invoiceCandBL.updateInvalid() at this point! (there was code at this place which did this) !!!
-		// It causes race-conditions and is not needed anymore.
-
-		// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
-		waitForInvoiceCandidatesUpdated(pinstanceId);
-
+		ensureICsAreUpdated(icLock, pinstanceId);
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
 		icChangesChecker.assertNoChanges(unorderedICs);
@@ -223,6 +219,27 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
 				icLock);
+	}
+
+	private void ensureICsAreUpdated(final @NonNull ILock icLock, final @NonNull PInstanceId pinstanceId)
+	{
+		if(Adempiere.isUnitTestMode())
+		{
+			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
+			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
+			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
+			invoiceCandBL.updateInvalid()
+					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+					.setLockedBy(icLock)
+					.setTaggedWithAnyTag()
+					.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
+					.update();
+		}
+		else
+		{
+			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
+			waitForInvoiceCandidatesUpdated(pinstanceId);
+		}
 	}
 
 	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
