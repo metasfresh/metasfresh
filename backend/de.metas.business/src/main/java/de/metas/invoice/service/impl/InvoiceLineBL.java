@@ -23,8 +23,6 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -38,7 +36,6 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
@@ -71,7 +68,6 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MTax;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -202,14 +198,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			}
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-												 .fromCountryId(countryFromId)
-												 .orgId(orgId)
-												 .bPartnerLocationId(partnerLocationId)
-												 .dateOfInterest(taxDate)
-												 .taxCategoryId(taxCategoryId)
-												 .soTrx(SOTrx.ofBoolean(isSOTrx))
-												 .vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
-												 .build());
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(partnerLocationId)
+					.dateOfInterest(taxDate)
+					.taxCategoryId(taxCategoryId)
+					.soTrx(SOTrx.ofBoolean(isSOTrx))
+					.vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
+					.build());
 
 			if (tax == null)
 			{
@@ -559,6 +555,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
 				stockUOMId);
 	}
+
 
 	@NonNull
 	@Override
