@@ -56,23 +56,23 @@ public class AggregatedCostAmountTest
 				.amount(createCostElement(7, CostingMethod.MovingAverageInvoice),  CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
 				.build();
 
-		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, null).get())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, null).get().getMainAmt())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, ImmutableSet.of()).get())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, ImmutableSet.of()).get().getMainAmt())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, costElementIds(2, 4)).get())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, costElementIds(2, 4)).get().getMainAmt())
 				.isEqualTo(CostAmount.of(101, currencyId));
 
 
-		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, null).get())
+		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, null).get().getMainAmt())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, ImmutableSet.of()).get())
+		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, ImmutableSet.of()).get().getMainAmt())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, costElementIds(5, 7)).get())
+		assertThat(amt.getTotalAmount(CostingMethod.MovingAverageInvoice, costElementIds(5, 7)).get().getMainAmt())
 				.isEqualTo(CostAmount.of(101, currencyId));
 	}
 

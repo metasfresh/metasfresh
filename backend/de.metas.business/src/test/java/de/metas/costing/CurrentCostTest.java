@@ -133,7 +133,7 @@ public class CurrentCostTest
 		{
 			final CurrentCost currentCost = currentCost().build();
 
-			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(0, currencyId)).build();
+			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(10, currencyId)).build();
 			assertThatThrownBy(() -> currentCost.addWeightedAverage(
 					costAmountDetailed,
 					Quantity.of(0, uomEach),
