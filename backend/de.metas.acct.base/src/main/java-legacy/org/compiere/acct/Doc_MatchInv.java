@@ -287,19 +287,80 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 		setC_Currency_ID(as.getCurrencyId());
 
-		final CostAmountDetailed costs = getCreateCostDetails(as);
+		final CostAmountDetailed costAmountDetailed = getCreateCostDetails(as);
 
-		if (costs.getCostAdjustmentAmt().isZero())
+		final boolean existsAlreadyShipped = !costAmountDetailed.getAlreadyShippedAmt().isZero();
+		final boolean existsCostAdjustment = !costAmountDetailed.getCostAdjustmentAmt().isZero();
+
+		if (existsAlreadyShipped)
 		{
-			createFactLinesWithNoDifference(as, fact, costs);
+			createFactLinesWithAlreadyShippedAndCostAdjutment(as, fact, costAmountDetailed);
+		}
+		else if (existsCostAdjustment)
+		{
+			createFactLinesWithCostAdjustment(as, fact, costAmountDetailed);
 		}
 		else
 		{
-			createFactLinesWithCostAdjustment(as, fact, costs);
+			createFactLinesWithNoDifference(as, fact, costAmountDetailed);
 		}
 
 		return ImmutableList.of(fact);
 	}   // createFact
+
+	private void createFactLinesWithCostAdjustment(final AcctSchema as, final Fact fact, final CostAmountDetailed costAmountDetailed)
+	{
+		final CostAmount cr_mainAmt = costAmountDetailed.getMainAmt();
+
+		final CostAmount dr_mainAmt = costAmountDetailed.getMainAmt().add((costAmountDetailed.getCostAdjustmentAmt()));
+
+		final CurrencyId currencyId = costAmountDetailed.getMainAmt().getCurrencyId();
+
+		//
+		// NotInvoicedReceipt DR
+		// From Receipt
+		final FactLine dr_NotInvoicedReceipts = fact.createLine()
+				.setAccount(docLine.getInventoryClearingAccount(as))
+				.setCurrencyId(currencyId)
+				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
+				.setAmtSource(dr_mainAmt, null)
+				.setQty(getQty())
+				.buildAndAdd();
+		updateFromReceiptLine(dr_NotInvoicedReceipts);
+
+		//
+		// InventoryClearing CR
+		// From Invoice
+		final FactLine cr_InventoryClearing = fact.createLine()
+				.setAccount(docLine.getInventoryClearingAccount(as))
+				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
+				.setAmtSource(null, cr_mainAmt)
+				.setQty(getQty().negate())
+				.buildAndAdd();
+		updateFromInvoiceLine(cr_InventoryClearing);
+
+		//
+		// AZ Goodwill
+		// Desc: Source Not Balanced problem because Currency is Difference - PO=CNY but AP=USD
+		// see also Fact.java: checking for isMultiCurrency()
+		if (dr_NotInvoicedReceipts != null
+				&& cr_InventoryClearing != null
+				&& !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
+		{
+			setIsMultiCurrency();
+		}
+
+		//
+		// Avoid usage of clearing accounts
+		// If both accounts Not Invoiced Receipts and Inventory Clearing are equal
+		// then remove the posting
+		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr_NotInvoicedReceipts, cr_InventoryClearing, this::isInterOrg);
+		//
+
+		//
+		// Invoice Price Variance difference
+		createFacts_Material_InvoicePriceVariance(fact, dr_NotInvoicedReceipts, cr_InventoryClearing);
+	}
 
 	private void createFactLinesWithNoDifference(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
 	{
@@ -349,7 +410,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		createFacts_Material_InvoicePriceVariance(fact, dr_NotInvoicedReceipts, cr_InventoryClearing);
 	}
 
-	private void createFactLinesWithCostAdjustment(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
+	private void createFactLinesWithAlreadyShippedAndCostAdjutment(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
 	{
 		final CostAmount cr_mainAmt;
 		final CostAmount cr_costAdjustment;
@@ -371,7 +432,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			dr_costAdjustment = null;
 			dr_alreadyShipped = null;
 		}
-		else
+		else // TODO
 		{
 			dr_mainAmt = costs.getMainAmt();
 			dr_costAdjustment = costs.getCostAdjustmentAmt();
