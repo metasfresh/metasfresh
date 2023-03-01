@@ -23,13 +23,7 @@ package de.metas.ui.web.handlingunits.process;
  */
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-
 import java.util.List;
 
 /**
