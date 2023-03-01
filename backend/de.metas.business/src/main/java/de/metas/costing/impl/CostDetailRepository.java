@@ -78,6 +78,10 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostDetail cd = costDetailBuilder.build();
 		Check.assumeNull(cd.getId(), "RepoId shall NOT be set for {}", cd);
 
+		final CostAmount amountToSet = cd.getAmt().getCostAdjustmentAmt().signum() != 0 ?
+				cd.getAmt().getCostAdjustmentAmt()
+				: cd.getAmt().getMainAmt();
+
 		final I_M_CostDetail record = newInstance(I_M_CostDetail.class);
 		Check.assumeEquals(cd.getClientId().getRepoId(), record.getAD_Client_ID(), "AD_Client_ID");
 		record.setAD_Org_ID(cd.getOrgId().getRepoId());
@@ -85,8 +89,9 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setM_CostElement_ID(cd.getCostElementId().getRepoId());
 		record.setM_Product_ID(cd.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(cd.getAttributeSetInstanceId().getRepoId());
-		record.setAmt(cd.getAmt().getMainAmt().getValue());
-		record.setC_Currency_ID(cd.getAmt().getMainAmt().getCurrencyId().getRepoId());
+
+		record.setAmt(amountToSet.getValue());
+		record.setC_Currency_ID(amountToSet.getCurrencyId().getRepoId());
 
 		record.setQty(cd.getQty().toBigDecimal());
 		record.setC_UOM_ID(cd.getQty().getUomId().getRepoId());

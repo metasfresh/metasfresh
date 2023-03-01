@@ -353,7 +353,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				: amtDifference.divide(receiptQty.toBigDecimal(), currentCost.getPrecision())
 				.roundToPrecisionIfNeeded(currentCost.getPrecision());
 
-		final Quantity qtyToDistribute = currentCost.getCurrentQty().min(receiptQty);
+		final Quantity qtyToDistribute = currentCost.getCumulatedQty().min(receiptQty);
 
 		final CostAmount costAdjustmentAmt = adjustmentProportion.multiply(qtyToDistribute.toBigDecimal());
 
