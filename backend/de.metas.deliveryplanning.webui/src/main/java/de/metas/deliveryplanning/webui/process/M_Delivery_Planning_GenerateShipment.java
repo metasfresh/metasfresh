@@ -3,6 +3,7 @@ package de.metas.deliveryplanning.webui.process;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -35,6 +36,10 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 	@Param(parameterName = PARAM_Qty, mandatory = true)
 	private BigDecimal p_QtyBD;
 
+	private static final String PARAM_QtyToDeliver = "QtyTotalOpen";
+	@Param(parameterName = PARAM_QtyToDeliver, mandatory = true)
+	private BigDecimal p_QtyToDeliverBD;
+
 	@NestedParams
 	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
 
@@ -54,7 +59,19 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 
 	@Nullable
 	@Override
-	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter) {return p_FECParams.getParameterDefaultValue(parameter.getColumnName(), getContracts());}
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if(parameter.getColumnName().equals(PARAM_QtyToDeliver))
+		{
+			final ShipmentScheduleId shipmentScheduleId = helper.getShipmentInfo(getDeliveryPlanningId()).getShipmentScheduleId();
+			return helper.getQtyToDeliverByShipmentScheduleId(shipmentScheduleId);
+		}
+		else
+		{
+			return p_FECParams.getParameterDefaultValue(parameter.getColumnName(), getContracts());
+		}
+
+	}
 
 	@Override
 	public void onParameterChanged(final String parameterName)
