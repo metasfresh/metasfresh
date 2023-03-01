@@ -16,9 +16,13 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
+import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -57,6 +61,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 				.huReceiptScheduleBL(Services.get(IHUReceiptScheduleBL.class))
 				.forexContractService(SpringContextHolder.instance.getBean(ForexContractService.class))
 				.forexContractLookup(LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name))
+				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
+				.shipmentScheduleEffectiveBL(Services.get(IShipmentScheduleEffectiveBL.class))
 				.build();
 	}
 
@@ -65,6 +71,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 	private final IHUReceiptScheduleBL huReceiptScheduleBL;
 	private final ForexContractService forexContractService;
 	private final LookupDataSource forexContractLookup;
+	private final IShipmentScheduleBL shipmentScheduleBL;
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL;
 
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningReceiptInfo>> receiptInfos = new HashMap<>();
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfos = new HashMap<>();
@@ -73,19 +81,25 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	private final HashMap<OrderAndLineId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfosByPurchaseOrderLineId = new HashMap<>();
 
+	private static final AdMessageKey MSG_ERROR_GOODS_ISSUE_QUANTITY = AdMessageKey.of("GoodsIssueQuantityParameterError");
+
 	@Builder
 	private DeliveryPlanningGenerateProcessesHelper(
 			@NonNull final DeliveryPlanningService deliveryPlanningService,
 			@NonNull final IOrderBL orderBL,
 			@NonNull final IHUReceiptScheduleBL huReceiptScheduleBL,
 			@NonNull final ForexContractService forexContractService,
-			@NonNull final LookupDataSource forexContractLookup)
+			@NonNull final LookupDataSource forexContractLookup,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
 		this.orderBL = orderBL;
 		this.huReceiptScheduleBL = huReceiptScheduleBL;
 		this.forexContractService = forexContractService;
 		this.forexContractLookup = forexContractLookup;
+		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleEffectiveBL = shipmentScheduleEffectiveBL;
 	}
 
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -268,7 +282,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	public void generateShipment(DeliveryPlanningGenerateShipmentRequest request)
+	public void generateShipment(final DeliveryPlanningGenerateShipmentRequest request)
 	{
 		final DeliveryPlanningId deliveryPlanningId = request.getDeliveryPlanningId();
 		final DeliveryPlanningShipmentInfo shipmentInfo = deliveryPlanningService.getShipmentInfo(deliveryPlanningId);
@@ -278,6 +292,12 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 
 		final ShipmentScheduleId shipmentScheduleId = shipmentInfo.getShipmentScheduleId();
+		final BigDecimal qtyToDeliverBD = getQtyToDeliverByShipmentScheduleId(shipmentScheduleId);
+		final DeliveryRule deliveryRule = getDeliveryRuleByShipmentScheduleId(shipmentScheduleId);
+		if( request.getQtyToShipBD().compareTo(qtyToDeliverBD) > 0 && !deliveryRule.isForce())
+		{
+			throw new AdempiereException(MSG_ERROR_GOODS_ISSUE_QUANTITY);
+		}
 
 		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -304,7 +324,17 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 	}
 
-	public DeliveryPlanningGenerateReceiptResult generateReceipt(DeliveryPlanningGenerateReceiptRequest request)
+	public BigDecimal getQtyToDeliverByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleBL.getById(shipmentScheduleId));
+	}
+
+	private DeliveryRule getDeliveryRuleByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleEffectiveBL.getDeliveryRule(shipmentScheduleBL.getById(shipmentScheduleId));
+	}
+
+	public DeliveryPlanningGenerateReceiptResult generateReceipt(final DeliveryPlanningGenerateReceiptRequest request)
 	{
 		final DeliveryPlanningId deliveryPlanningId = request.getDeliveryPlanningId();
 		final DeliveryPlanningReceiptInfo receiptInfo = getReceiptInfo(deliveryPlanningId);
