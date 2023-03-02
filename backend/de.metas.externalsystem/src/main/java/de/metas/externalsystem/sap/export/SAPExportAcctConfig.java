@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,21 @@
  * #L%
  */
 
-package de.metas.rest_api.process.request;
+package de.metas.externalsystem.sap.export;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.document.DocTypeId;
+import de.metas.process.AdProcessId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JSONProcessParam.JSONProcessParamBuilder.class)
-public class JSONProcessParam
+public class SAPExportAcctConfig
 {
-	@JsonProperty("name")
-	String name;
+	@NonNull
+	AdProcessId processId;
 
-	@JsonProperty("value")
-	String value;
+	@NonNull
+	DocTypeId docTypeId;
 }

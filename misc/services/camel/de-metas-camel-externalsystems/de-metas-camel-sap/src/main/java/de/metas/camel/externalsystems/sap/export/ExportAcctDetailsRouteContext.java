@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-camel-sap
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,16 @@
  * #L%
  */
 
-package de.metas.rest_api.process.response;
+package de.metas.camel.externalsystems.sap.export;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.v1.JsonError;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = RunProcessResponse.RunProcessResponseBuilder.class)
-public class RunProcessResponse
+public class ExportAcctDetailsRouteContext
 {
-	@JsonProperty(value = "pinstanceID")
-	String pInstanceID;
-
-	@JsonProperty(value = "summary")
-	String summary;
-
-	@JsonProperty(value = "errors")
-	JsonError errors;
+	@NonNull
+	SAPCredentials credentials;
 }
