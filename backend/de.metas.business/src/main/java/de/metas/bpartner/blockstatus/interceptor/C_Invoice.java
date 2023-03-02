@@ -49,6 +49,7 @@ public class C_Invoice
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void validateBPartnerBlockedStatus(@NonNull final I_C_Invoice invoiceRecord)
 	{
+		// dev-note: in case of REVERSECORRECT do not validate the BPartner
 		if (invoiceRecord.getReversal() != null)
 		{
 			return;

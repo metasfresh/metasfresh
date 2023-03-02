@@ -49,6 +49,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE )
 	public void validateBPartnerBlockedStatus(@NonNull final I_M_InOut inout)
 	{
+		// dev-note: in case of REVERSECORRECT do not validate the BPartner
 		if (inout.getReversal() != null)
 		{
 			return;
