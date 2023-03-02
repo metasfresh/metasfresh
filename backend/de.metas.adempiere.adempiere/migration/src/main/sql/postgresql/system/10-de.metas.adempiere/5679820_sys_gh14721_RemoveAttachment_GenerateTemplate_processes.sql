@@ -826,3 +826,239 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 
+
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T05:31:34.377Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586278,152,0,10,542318,'Action',TO_TIMESTAMP('2023-03-02 07:31:34','YYYY-MM-DD HH24:MI:SS'),100,'N','','D',0,255,'','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Aktion',0,0,TO_TIMESTAMP('2023-03-02 07:31:34','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2023-03-02T05:31:34.379Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=586278 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2023-03-02T05:31:34.384Z
+/* DDL */  select update_Column_Translation_From_AD_Element(152)
+;
+
+-- 2023-03-02T05:31:35.184Z
+/* DDL */ SELECT public.db_alter_table('I_BPartner_BlockStatus','ALTER TABLE public.I_BPartner_BlockStatus ADD COLUMN Action VARCHAR(255) NOT NULL')
+;
+
+-- Column: I_BPartner_BlockStatus.BlockStatus
+-- 2023-03-02T05:31:45.452Z
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2023-03-02 07:31:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=586263
+;
+
+-- 2023-03-02T05:31:46.238Z
+INSERT INTO t_alter_column values('i_bpartner_blockstatus','BlockStatus','VARCHAR(10)',null,null)
+;
+
+-- 2023-03-02T05:31:46.244Z
+INSERT INTO t_alter_column values('i_bpartner_blockstatus','BlockStatus',null,'NULL',null)
+;
+
+-- 2023-03-02T06:02:32.196Z
+UPDATE AD_ImpFormat_Row SET AD_Column_ID=586278,Updated=TO_TIMESTAMP('2023-03-02 08:02:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541830
+;
+
+-- Field: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T05:43:43.767Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,586278,712771,0,546843,0,TO_TIMESTAMP('2023-03-02 07:43:43','YYYY-MM-DD HH24:MI:SS'),100,'',0,'D','',0,'Y','Y','Y','N','N','N','N','N','Aktion',0,20,0,1,1,TO_TIMESTAMP('2023-03-02 07:43:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-03-02T05:43:43.771Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=712771 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-03-02T05:43:43.797Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(152)
+;
+
+-- 2023-03-02T05:43:43.814Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=712771
+;
+
+-- 2023-03-02T05:43:43.820Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(712771)
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T05:44:05.549Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,712771,0,546843,615967,550420,'F',TO_TIMESTAMP('2023-03-02 07:44:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Aktion',40,0,0,TO_TIMESTAMP('2023-03-02 07:44:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T05:44:19.756Z
+UPDATE AD_UI_Element SET SeqNo=20,Updated=TO_TIMESTAMP('2023-03-02 07:44:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615967
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Sperrstatus
+-- Column: I_BPartner_BlockStatus.BlockStatus
+-- 2023-03-02T05:44:23.318Z
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2023-03-02 07:44:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615947
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Grund
+-- Column: I_BPartner_BlockStatus.Reason
+-- 2023-03-02T05:44:27.480Z
+UPDATE AD_UI_Element SET SeqNo=40,Updated=TO_TIMESTAMP('2023-03-02 07:44:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615948
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T05:44:41.955Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2023-03-02 07:44:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615967
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T05:45:42.911Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615967
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Sperrstatus
+-- Column: I_BPartner_BlockStatus.BlockStatus
+-- 2023-03-02T05:45:42.917Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615947
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 10 -> main.Grund
+-- Column: I_BPartner_BlockStatus.Reason
+-- 2023-03-02T05:45:42.920Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615948
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 20 -> import.Importiert
+-- Column: I_BPartner_BlockStatus.I_IsImported
+-- 2023-03-02T05:45:42.925Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615937
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 20 -> import.Import-Fehlermeldung
+-- Column: I_BPartner_BlockStatus.I_ErrorMsg
+-- 2023-03-02T05:45:42.928Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615938
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 20 -> import.Daten Import
+-- Column: I_BPartner_BlockStatus.C_DataImport_ID
+-- 2023-03-02T05:45:42.931Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615941
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 20 -> flags.Verarbeitet
+-- Column: I_BPartner_BlockStatus.Processed
+-- 2023-03-02T05:45:42.934Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615945
+;
+
+-- UI Element: Import Business Partner block status(541683,D) -> Import BPartner Block Status(546843,D) -> main -> 20 -> org.Sektion
+-- Column: I_BPartner_BlockStatus.AD_Org_ID
+-- 2023-03-02T05:45:42.936Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2023-03-02 07:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615943
+;
+
+-- Field: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T06:04:03.665Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,586278,712772,0,546844,0,TO_TIMESTAMP('2023-03-02 08:04:03','YYYY-MM-DD HH24:MI:SS'),100,'',0,'D','',0,'Y','Y','Y','N','N','N','N','N','Aktion',0,10,0,1,1,TO_TIMESTAMP('2023-03-02 08:04:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-03-02T06:04:03.668Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=712772 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2023-03-02T06:04:03.674Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(152)
+;
+
+-- 2023-03-02T06:04:03.686Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=712772
+;
+
+-- 2023-03-02T06:04:03.692Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(712772)
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T06:04:19.521Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,712772,0,546844,615968,550424,'F',TO_TIMESTAMP('2023-03-02 08:04:19','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Aktion',40,0,0,TO_TIMESTAMP('2023-03-02 08:04:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T06:04:27.691Z
+UPDATE AD_UI_Element SET SeqNo=20,Updated=TO_TIMESTAMP('2023-03-02 08:04:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615968
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Sperrstatus
+-- Column: I_BPartner_BlockStatus.BlockStatus
+-- 2023-03-02T06:04:30.602Z
+UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2023-03-02 08:04:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615961
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Grund
+-- Column: I_BPartner_BlockStatus.Reason
+-- 2023-03-02T06:04:34.481Z
+UPDATE AD_UI_Element SET SeqNo=40,Updated=TO_TIMESTAMP('2023-03-02 08:04:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615962
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Aktion
+-- Column: I_BPartner_BlockStatus.Action
+-- 2023-03-02T06:05:29.389Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2023-03-02 08:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615968
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Sperrstatus
+-- Column: I_BPartner_BlockStatus.BlockStatus
+-- 2023-03-02T06:05:29.393Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2023-03-02 08:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615961
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 10 -> main.Grund
+-- Column: I_BPartner_BlockStatus.Reason
+-- 2023-03-02T06:05:29.396Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2023-03-02 08:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615962
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 20 -> import.Importiert
+-- Column: I_BPartner_BlockStatus.I_IsImported
+-- 2023-03-02T06:05:29.399Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2023-03-02 08:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615952
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 20 -> import.Import-Fehlermeldung
+-- Column: I_BPartner_BlockStatus.I_ErrorMsg
+-- 2023-03-02T06:05:29.401Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2023-03-02 08:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615953
+;
+
+-- UI Element: Change Business Partner Block(541682,D) -> Import BPartner Block Status(546844,D) -> main -> 20 -> org.Sektion
+-- Column: I_BPartner_BlockStatus.AD_Org_ID
+-- 2023-03-02T06:05:29.403Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2023-03-02 08:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=615958
+;
+
+-- Value: de.metas.bpartner.blockfile.FileAlreadyAttached
+-- 2023-03-02T10:26:16.914Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545248,0,TO_TIMESTAMP('2023-03-02 12:26:16','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Business partner block change already has one file attached!','E',TO_TIMESTAMP('2023-03-02 12:26:16','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.bpartner.blockfile.FileAlreadyAttached')
+;
+
+-- 2023-03-02T10:26:16.924Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545248 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.bpartner.blockfile.BPartnerBlockChangeProcessed
+-- 2023-03-02T10:28:06.008Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545249,0,TO_TIMESTAMP('2023-03-02 12:28:05','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Business partner block change has already been processed!','E',TO_TIMESTAMP('2023-03-02 12:28:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.bpartner.blockfile.BPartnerBlockChangeProcessed')
+;
+
+-- 2023-03-02T10:28:06.012Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545249 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+

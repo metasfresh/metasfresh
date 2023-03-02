@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_I_BPartner_BlockStatus extends org.compiere.model.PO implements I_I_BPartner_BlockStatus, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -417880400L;
+	private static final long serialVersionUID = 508680666L;
 
     /** Standard Constructor */
     public X_I_BPartner_BlockStatus (final Properties ctx, final int I_BPartner_BlockStatus_ID, @Nullable final String trxName)
@@ -54,6 +32,18 @@ public class X_I_BPartner_BlockStatus extends org.compiere.model.PO implements I
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAction (final java.lang.String Action)
+	{
+		set_Value (COLUMNNAME_Action, Action);
+	}
+
+	@Override
+	public java.lang.String getAction() 
+	{
+		return get_ValueAsString(COLUMNNAME_Action);
 	}
 
 	@Override
@@ -81,7 +71,7 @@ public class X_I_BPartner_BlockStatus extends org.compiere.model.PO implements I
 	/** Unblocked = UB */
 	public static final String BLOCKSTATUS_Unblocked = "UB";
 	@Override
-	public void setBlockStatus (final java.lang.String BlockStatus)
+	public void setBlockStatus (final @Nullable java.lang.String BlockStatus)
 	{
 		set_Value (COLUMNNAME_BlockStatus, BlockStatus);
 	}

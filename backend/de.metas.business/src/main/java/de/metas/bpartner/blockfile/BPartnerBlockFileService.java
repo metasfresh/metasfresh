@@ -22,22 +22,87 @@
 
 package de.metas.bpartner.blockfile;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.impexp.blockstatus.BPartnerBlockStatusImportProcess;
+import de.metas.common.util.Check;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.util.FileUtil.getFileBaseName;
 
 @Service
 public class BPartnerBlockFileService
 {
 	private final BPartnerBlockFileRepository bPartnerBlockFileRepository;
+	private final AttachmentEntryService attachmentEntryService;
 
-	public BPartnerBlockFileService(@NonNull final BPartnerBlockFileRepository bPartnerBlockFileRepository)
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final AdMessageKey MSG_FILE_ALREADY_ATTACHED = AdMessageKey.of("de.metas.bpartner.blockfile.FileAlreadyAttached");
+	private static final AdMessageKey MSG_BUSINESS_PARTNER_BLOCK_CHANGE_PROCESSED = AdMessageKey.of("de.metas.bpartner.blockfile.BPartnerBlockChangeProcessed");
+
+	public BPartnerBlockFileService(
+			@NonNull final BPartnerBlockFileRepository bPartnerBlockFileRepository,
+			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
 		this.bPartnerBlockFileRepository = bPartnerBlockFileRepository;
+		this.attachmentEntryService = attachmentEntryService;
 	}
 
 	@NonNull
 	public BPartnerBlockFile getById(@NonNull final BPartnerBlockFileId id)
 	{
 		return bPartnerBlockFileRepository.getById(id);
+	}
+
+	public void overrideFileName(
+			@NonNull final TableRecordReference tableRecordReference,
+			@Nullable final String fileNameOverride)
+	{
+		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getByReferencedRecord(tableRecordReference);
+		if (attachmentEntries.size() >= 1)
+		{
+			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_FILE_ALREADY_ATTACHED);
+
+			throw new AdempiereException(translatableMsgText)
+					.markAsUserValidationError();
+		}
+
+		final BPartnerBlockFile blockFile = bPartnerBlockFileRepository.getById(BPartnerBlockFileId.ofRepoId(tableRecordReference.getRecord_ID()));
+		if (blockFile.isProcessed())
+		{
+			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_BUSINESS_PARTNER_BLOCK_CHANGE_PROCESSED);
+
+			throw new AdempiereException(translatableMsgText)
+					.markAsUserValidationError();
+		}
+
+		Optional.ofNullable(getFileBaseName(fileNameOverride))
+				.ifPresent(fileName -> bPartnerBlockFileRepository.update(blockFile.toBuilder()
+																				  .fileName(fileName)
+																				  .build()));
+	}
+
+	public void updateImportFlags(@NonNull final BPartnerBlockStatusImportProcess.BPBlockStatusGroupKey bpBlockStatusGroupKey, final boolean processed)
+	{
+		Check.assumeNotNull(bpBlockStatusGroupKey.getBPartnerBlockFileId(), "BPartnerBlockFileId cannot be missing at this stage!");
+
+		final BPartnerBlockFile bPartnerBlockFile = getById(bpBlockStatusGroupKey.getBPartnerBlockFileId());
+
+		bPartnerBlockFileRepository.update(bPartnerBlockFile.toBuilder()
+												   .isProcessed(processed)
+												   .isError(!processed)
+												   .build());
 	}
 }

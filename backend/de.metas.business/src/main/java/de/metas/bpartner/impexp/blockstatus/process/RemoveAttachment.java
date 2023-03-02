@@ -59,7 +59,6 @@ public class RemoveAttachment extends JavaProcess implements IProcessPreconditio
 		}
 
 		final boolean fileAttached = attachmentEntryService.atLeastOnAttachmentForRecordReference(blockFile.getId().toRecordRef());
-
 		if (!fileAttached)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No file attached!");

@@ -37,6 +37,7 @@ import org.compiere.util.DB;
 import javax.annotation.Nullable;
 
 import static org.compiere.model.I_C_BP_Customer_Acct.COLUMNNAME_AD_Org_ID;
+import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_Action;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_BlockStatus;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_I_ErrorMsg;
@@ -95,14 +96,14 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 		final String sql = "UPDATE " + I_I_BPartner_BlockStatus.Table_Name + " i "
 				+ " SET " + COLUMNNAME_BlockStatus + " = "
 				+ " CASE "
-				+ " 	WHEN i." + COLUMNNAME_BlockStatus + " = 'Block'"
+				+ " 	WHEN i." + COLUMNNAME_Action + " = 'Block'"
 				+ "     	THEN '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Blocked + "'"
-				+ "     WHEN i." + COLUMNNAME_BlockStatus + " = 'Unblock'"
+				+ "     WHEN i." + COLUMNNAME_Action + " = 'Unblock'"
 				+ "         THEN '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Unblocked + "'"
-				+ "     ELSE i." + COLUMNNAME_BlockStatus
+				+ "     ELSE NULL"
 				+ " END "
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND i." + COLUMNNAME_BlockStatus + " NOT IN ('" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Blocked + "', '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Unblocked + "')"
+				+ " AND i." + COLUMNNAME_Action + " NOT IN ('" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Blocked + "', '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Unblocked + "')"
 				+ selection.toSqlWhereClause("i");
 
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
@@ -137,7 +138,7 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 	{
 		final String sqlUpdateImportTable = "UPDATE " + I_I_BPartner_BlockStatus.Table_Name + " i "
 				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Provided " + COLUMNNAME_BlockStatus + " not supported!,'"
-				+ " WHERE i." + COLUMNNAME_BlockStatus + " NOT IN ('" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Blocked + "', '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Unblocked + "')"
+				+ " WHERE i." + COLUMNNAME_BlockStatus + " IS NULL "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 

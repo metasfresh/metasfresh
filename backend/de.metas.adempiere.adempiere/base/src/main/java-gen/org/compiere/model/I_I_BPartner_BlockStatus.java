@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -38,6 +16,29 @@ public interface I_I_BPartner_BlockStatus
 //	/** AD_Table_ID=542318 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+
+	/**
+	 * Set Action.
+	 * Zeigt die durchzuführende Aktion an
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAction (java.lang.String Action);
+
+	/**
+	 * Get Action.
+	 * Zeigt die durchzuführende Aktion an
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAction();
+
+	ModelColumn<I_I_BPartner_BlockStatus, Object> COLUMN_Action = new ModelColumn<>(I_I_BPartner_BlockStatus.class, "Action", null);
+	String COLUMNNAME_Action = "Action";
 
 	/**
 	 * Get Client.
@@ -97,19 +98,19 @@ public interface I_I_BPartner_BlockStatus
 	 * Set Block status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBlockStatus (java.lang.String BlockStatus);
+	void setBlockStatus (@Nullable java.lang.String BlockStatus);
 
 	/**
 	 * Get Block status.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getBlockStatus();
+	@Nullable java.lang.String getBlockStatus();
 
 	ModelColumn<I_I_BPartner_BlockStatus, Object> COLUMN_BlockStatus = new ModelColumn<>(I_I_BPartner_BlockStatus.class, "BlockStatus", null);
 	String COLUMNNAME_BlockStatus = "BlockStatus";
@@ -215,7 +216,7 @@ public interface I_I_BPartner_BlockStatus
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Import BP Block Status.
+	 * Set Import BPartner Block Status.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -224,7 +225,7 @@ public interface I_I_BPartner_BlockStatus
 	void setI_BPartner_BlockStatus_ID (int I_BPartner_BlockStatus_ID);
 
 	/**
-	 * Get Import BP Block Status.
+	 * Get Import BPartner Block Status.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
