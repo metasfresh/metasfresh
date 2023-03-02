@@ -24,31 +24,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_OrderLine ADD CONSTRAINT COrderSO_COrderLine FOREIGN KEY (C_OrderSO_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
 ;
 
--- Field: Purchase Order(541595,de.metas.ab182) -> PO Line(546551,de.metas.ab182) -> Order
--- Column: C_OrderLine.C_OrderSO_ID
--- 2023-03-01T07:41:23.297Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,586272,712751,0,546551,TO_TIMESTAMP('2023-03-01 09:41:23','YYYY-MM-DD HH24:MI:SS'),100,'Order',10,'de.metas.ab182','The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you close an order, unshipped (backordered) quantities are cancelled.','Y','N','N','N','N','N','N','N','Order',TO_TIMESTAMP('2023-03-01 09:41:23','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
--- 2023-03-01T07:41:23.299Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=712751 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
--- 2023-03-01T07:41:23.301Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(543479) 
-;
 
--- 2023-03-01T07:41:23.316Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=712751
-;
 
--- 2023-03-01T07:41:23.317Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(712751)
-;
 
--- UI Element: Purchase Order(541595,de.metas.ab182) -> PO Line(546551,de.metas.ab182) -> main -> 10 -> main.Order
--- Column: C_OrderLine.C_OrderSO_ID
--- 2023-03-01T07:42:12.090Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,712751,0,546551,549739,615949,'F',TO_TIMESTAMP('2023-03-01 09:42:11','YYYY-MM-DD HH24:MI:SS'),100,'Order','The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you close an order, unshipped (backordered) quantities are cancelled.','Y','N','Y','N','N','Order',340,0,0,TO_TIMESTAMP('2023-03-01 09:42:11','YYYY-MM-DD HH24:MI:SS'),100)
-;
+
+
+
 
