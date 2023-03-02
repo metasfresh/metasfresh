@@ -72,9 +72,7 @@ public class RemoveAttachment extends JavaProcess implements IProcessPreconditio
 	{
 		final TableRecordReference tableRecordReference = getProcessInfo().getRecordRefNotNull();
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.getUniqueByReferenceRecord(tableRecordReference);
-
-		attachmentEntryService.unattach(tableRecordReference, attachmentEntry);
+		attachmentEntryService.removeAttachment(tableRecordReference);
 
 		return MSG_OK;
 	}

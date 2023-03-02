@@ -418,6 +418,13 @@ public class AttachmentEntryService
 		return getByReferencedRecord(recordReference).size() >= 1;
 	}
 
+	public void removeAttachment(@NonNull final TableRecordReference tableRecordReference)
+	{
+		final AttachmentEntry attachmentEntry = getUniqueByReferenceRecord(tableRecordReference);
+
+		unattach(tableRecordReference, attachmentEntry);
+	}
+
 	@NonNull
 	public Stream<EmailAttachment> streamEmailAttachments(@NonNull final TableRecordReference recordRef, @Nullable final String tagName)
 	{
