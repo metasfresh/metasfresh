@@ -1275,12 +1275,6 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		if (!order.isDropShip())
-		{
-			//only dropShip orders are relevant
-			return false;
-		}
-
 		if (order.getC_BPartner_ID() <= 0)
 		{
 			return false;

@@ -25,11 +25,10 @@ package de.metas.bpartner.blockstatus.interceptor;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -47,11 +46,11 @@ public class C_Invoice
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_Invoice.COLUMNNAME_DocStatus)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void validateBPartnerBlockedStatus(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		if (!DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted())
+		// dev-note: in case of REVERSECORRECT do not validate the BPartner
+		if (invoiceRecord.getReversal() != null)
 		{
 			return;
 		}
