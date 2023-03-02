@@ -798,10 +798,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	@Nullable
 	protected OrderId getSalesOrderId()
 	{
-		return CoalesceUtil.coalesceSuppliers(
-				() -> OrderId.ofRepoIdOrNull(getValue("C_OrderSO_ID")),
-				() -> OrderId.ofRepoIdOrNull(getValue("C_Order_ID"))
-		);
+		return OrderId.ofRepoIdOrNull(getValue("C_OrderSO_ID"));
 	}
 
 	public SectionCodeId getSectionCodeId()
