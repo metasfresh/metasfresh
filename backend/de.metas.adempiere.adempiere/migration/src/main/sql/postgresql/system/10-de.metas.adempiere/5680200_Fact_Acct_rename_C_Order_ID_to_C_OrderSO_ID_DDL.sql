@@ -1,6 +1,11 @@
 DROP VIEW IF EXISTS Fact_Acct_Transactions_View
 ;
 
+ALTER TABLE Fact_Acct
+    RENAME COLUMN c_order_id TO C_OrderSO_ID
+;
+
+
 CREATE VIEW Fact_Acct_Transactions_View
             (fact_acct_id,
              ad_client_id,
