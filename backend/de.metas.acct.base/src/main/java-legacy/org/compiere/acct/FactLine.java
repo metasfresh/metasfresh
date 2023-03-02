@@ -1272,7 +1272,7 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
-				.setC_Order_ID(getC_Order_ID())
+				.setSalesOrderId(getC_Order_ID())
 				.setM_SectionCode_ID(getM_SectionCode_ID())
 				.build();
 	}

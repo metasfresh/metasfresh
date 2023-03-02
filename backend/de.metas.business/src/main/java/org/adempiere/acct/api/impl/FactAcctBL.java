@@ -66,7 +66,7 @@ public class FactAcctBL implements IFactAcctBL
 				.setC_Project_ID(fa.getC_Project_ID())
 				.setC_Campaign_ID(fa.getC_Campaign_ID())
 				.setC_Activity_ID(fa.getC_Activity_ID())
-				.setC_Order_ID(fa.getC_Order_ID())
+				.setSalesOrderId(fa.getC_Order_ID())
 				.setM_SectionCode_ID(fa.getM_SectionCode_ID())
 				.setUser1_ID(fa.getUser1_ID())
 				.setUser2_ID(fa.getUser2_ID())
@@ -143,7 +143,7 @@ public class FactAcctBL implements IFactAcctBL
 		{
 			fa.setC_Activity_ID(dim.getC_Activity_ID());
 		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Order))
+		if (dim.isSegmentValueSet(AcctSegmentType.SalesOrder))
 		{
 			fa.setC_Order_ID(dim.getSalesOrderId());
 		}

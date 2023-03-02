@@ -253,7 +253,7 @@ public class AccountBL implements IAccountBL
 					fullyQualified = false;
 				}
 			}
-			else if (AcctSchemaElementType.Order.equals(elementType))
+			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
 			{
 				if (account.getC_Order_ID() > 0)
 				{

@@ -224,7 +224,7 @@ import java.util.Set;
 		{
 			return accountDimension.getC_Activity_ID();
 		}
-		else if (elementType.equals(AcctSchemaElementType.Order))
+		else if (elementType.equals(AcctSchemaElementType.SalesOrder))
 		{
 			return accountDimension.getSalesOrderId();
 		}

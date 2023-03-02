@@ -118,7 +118,7 @@ public class C_AcctSchema_Element
 			{
 				errorField = COLUMNNAME_C_SalesRegion_ID;
 			}
-			else if(AcctSchemaElementType.Order.equals(elementType) && record.getC_Order_ID() <= 0)
+			else if(AcctSchemaElementType.SalesOrder.equals(elementType) && record.getC_Order_ID() <= 0)
 			{
 				errorField = COLUMNNAME_C_Order_ID;
 			}
@@ -168,7 +168,7 @@ public class C_AcctSchema_Element
 			{
 				updateData(COLUMNNAME_C_Project_ID, element.getC_Project_ID(), element);
 			}
-			else if (AcctSchemaElementType.Order.equals(elementType))
+			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
 			{
 				updateData(COLUMNNAME_C_Order_ID, element.getC_Order_ID(), element);
 			}
