@@ -2238,9 +2238,9 @@ public class TimeUtil
 		{
 			return null;
 		}
-		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MIN);
+		final LocalDateTime startOfDay = localDate.atTime(LocalTime.MIN);
 
-		return asInstant(endOfDay, zoneId);
+		return asInstant(startOfDay, zoneId);
 	}
 
 	@Nullable
