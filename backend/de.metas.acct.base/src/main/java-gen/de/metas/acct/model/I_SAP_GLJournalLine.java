@@ -120,31 +120,31 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Sales order.
+	 * Set Order.
 	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Order_ID (int C_Order_ID);
+	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Sales order.
+	 * Get Order.
 	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Order_ID();
+	int getC_OrderSO_ID();
 
-	@Nullable org.compiere.model.I_C_Order getC_Order();
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
 
-	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
 
-	ModelColumn<I_SAP_GLJournalLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+	ModelColumn<I_SAP_GLJournalLine, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Get Created.
@@ -379,6 +379,27 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_PostingSign = new ModelColumn<>(I_SAP_GLJournalLine.class, "PostingSign", null);
 	String COLUMNNAME_PostingSign = "PostingSign";
+
+	/**
+	 * Set Determine tax base.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_DetermineTaxBase (boolean SAP_DetermineTaxBase);
+
+	/**
+	 * Get Determine tax base.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSAP_DetermineTaxBase();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_SAP_DetermineTaxBase = new ModelColumn<>(I_SAP_GLJournalLine.class, "SAP_DetermineTaxBase", null);
+	String COLUMNNAME_SAP_DetermineTaxBase = "SAP_DetermineTaxBase";
 
 	/**
 	 * Set GL Journal (SAP).
