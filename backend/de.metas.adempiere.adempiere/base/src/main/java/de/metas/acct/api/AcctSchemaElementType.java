@@ -59,7 +59,7 @@ public enum AcctSchemaElementType
 	UserElementString5(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString5, I_C_ValidCombination.COLUMNNAME_UserElementString5),//
 	UserElementString6(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString6, I_C_ValidCombination.COLUMNNAME_UserElementString6),//
 	UserElementString7(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString7, I_C_ValidCombination.COLUMNNAME_UserElementString7),//
-	SalesOrder(X_C_AcctSchema_Element.ELEMENTTYPE_Order, I_C_ValidCombination.COLUMNNAME_C_Order_ID),//
+	SalesOrder(X_C_AcctSchema_Element.ELEMENTTYPE_SalesOrder, I_C_ValidCombination.COLUMNNAME_C_OrderSO_ID),//
 	SectionCode(X_C_AcctSchema_Element.ELEMENTTYPE_SectionCode, I_C_ValidCombination.COLUMNNAME_M_SectionCode_ID)
 	;
 

@@ -1212,7 +1212,7 @@ public final class FactLine extends X_Fact_Acct
 			}
 			if (getC_Order_ID() <= 0)
 			{
-				setC_Order_ID(m_acct.getC_Order_ID());
+				setC_Order_ID(m_acct.getC_OrderSO_ID());
 			}
 			if (getM_SectionCode_ID() <= 0)
 			{

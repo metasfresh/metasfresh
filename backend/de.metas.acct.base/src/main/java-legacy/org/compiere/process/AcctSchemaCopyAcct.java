@@ -229,7 +229,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 
 			else if (elementType.equals(AcctSchemaElementType.SalesOrder))
 			{
-				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_Order_ID());
+				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_OrderSO_ID());
 			}
 			else if (elementType.equals(AcctSchemaElementType.SectionCode))
 			{
