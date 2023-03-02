@@ -17,6 +17,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -51,6 +52,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner;
+
 final class DeliveryPlanningGenerateProcessesHelper
 {
 	public static DeliveryPlanningGenerateProcessesHelper newInstance()
@@ -63,6 +66,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 				.forexContractLookup(LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name))
 				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
 				.shipmentScheduleEffectiveBL(Services.get(IShipmentScheduleEffectiveBL.class))
+				.msgBL(Services.get(IMsgBL.class))
 				.build();
 	}
 
@@ -73,6 +77,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 	private final LookupDataSource forexContractLookup;
 	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL;
+	private final IMsgBL msgBL;
 
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningReceiptInfo>> receiptInfos = new HashMap<>();
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfos = new HashMap<>();
@@ -91,7 +96,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 			@NonNull final ForexContractService forexContractService,
 			@NonNull final LookupDataSource forexContractLookup,
 			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
-			@NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL)
+			@NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL,
+			@NonNull final IMsgBL msgBL)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
 		this.orderBL = orderBL;
@@ -100,6 +106,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		this.forexContractLookup = forexContractLookup;
 		this.shipmentScheduleBL = shipmentScheduleBL;
 		this.shipmentScheduleEffectiveBL = shipmentScheduleEffectiveBL;
+		this.msgBL = msgBL;
 	}
 
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -235,6 +242,12 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	private ProcessPreconditionsResolution checkEligibleToCreateShipment(@NonNull final DeliveryPlanningShipmentInfo shipmentInfo)
 	{
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(shipmentInfo.getDeliveryPlanningId());
+		if (existsBlockedPartnerDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
+		}
+
 		if (shipmentInfo.isShipped())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Already shipped");
@@ -265,6 +278,12 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	private ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningReceiptInfo receiptInfo)
 	{
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(receiptInfo.getDeliveryPlanningId());
+		if (existsBlockedPartnerDeliveryPlannings)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
+		}
+		
 		if (receiptInfo.isReceived())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Already received");
@@ -285,6 +304,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 	public void generateShipment(final DeliveryPlanningGenerateShipmentRequest request)
 	{
 		final DeliveryPlanningId deliveryPlanningId = request.getDeliveryPlanningId();
+		deliveryPlanningService.validateDeliveryPlanning(deliveryPlanningId);
+
 		final DeliveryPlanningShipmentInfo shipmentInfo = deliveryPlanningService.getShipmentInfo(deliveryPlanningId);
 		if (shipmentInfo.isShipped())
 		{
@@ -294,7 +315,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		final ShipmentScheduleId shipmentScheduleId = shipmentInfo.getShipmentScheduleId();
 		final BigDecimal qtyToDeliverBD = getQtyToDeliverByShipmentScheduleId(shipmentScheduleId);
 		final DeliveryRule deliveryRule = getDeliveryRuleByShipmentScheduleId(shipmentScheduleId);
-		if( request.getQtyToShipBD().compareTo(qtyToDeliverBD) > 0 && !deliveryRule.isForce())
+		if (request.getQtyToShipBD().compareTo(qtyToDeliverBD) > 0 && !deliveryRule.isForce())
 		{
 			throw new AdempiereException(MSG_ERROR_GOODS_ISSUE_QUANTITY);
 		}
@@ -305,13 +326,13 @@ final class DeliveryPlanningGenerateProcessesHelper
 						ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
 								.adPInstanceId(request.getAdPInstanceId())
 								.queryFilters(Services.get(IQueryBL.class).createCompositeQueryFilter(I_M_ShipmentSchedule.class)
-										.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId))
+													  .addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId))
 								.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 								.completeShipments(true)
 								.fixedShipmentDate(request.getDeliveryDate())
 								.qtysToDeliverOverride(ImmutableMap.<ShipmentScheduleId, BigDecimal>builder()
-										.put(shipmentScheduleId, request.getQtyToShipBD())
-										.build())
+															   .put(shipmentScheduleId, request.getQtyToShipBD())
+															   .build())
 								.forexContractRef(request.getForexContractRef())
 								.deliveryPlanningId(deliveryPlanningId)
 								.b2bReceiptId(request.getB2bReceiptId())
@@ -337,6 +358,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 	public DeliveryPlanningGenerateReceiptResult generateReceipt(final DeliveryPlanningGenerateReceiptRequest request)
 	{
 		final DeliveryPlanningId deliveryPlanningId = request.getDeliveryPlanningId();
+		deliveryPlanningService.validateDeliveryPlanning(deliveryPlanningId);
+
 		final DeliveryPlanningReceiptInfo receiptInfo = getReceiptInfo(deliveryPlanningId);
 		if (receiptInfo.isReceived())
 		{

@@ -24,11 +24,10 @@ package de.metas.bpartner.blockstatus.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -47,11 +46,11 @@ public class M_InOut
 		this.bPartnerBlockStatusService = bPartnerBlockStatusService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_InOut.COLUMNNAME_DocStatus)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE )
 	public void validateBPartnerBlockedStatus(@NonNull final I_M_InOut inout)
 	{
-		if (!DocStatus.ofCode(inout.getDocStatus()).isCompleted())
+		// dev-note: in case of REVERSECORRECT do not validate the BPartner
+		if (inout.getReversal() != null)
 		{
 			return;
 		}
