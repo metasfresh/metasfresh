@@ -1327,7 +1327,7 @@ public class TimeUtil
 		}
 		else
 		{
-			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
 			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
@@ -1695,7 +1695,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj,zoneId).toLocalDate();
+			return asLocalDateTime(obj, zoneId).toLocalDate();
 		}
 	}
 
@@ -1962,7 +1962,7 @@ public class TimeUtil
 	@Nullable
 	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
 	{
-		if(localDate == null)
+		if (localDate == null)
 		{
 			return null;
 		}
@@ -2234,7 +2234,7 @@ public class TimeUtil
 	@Nullable
 	public static Instant asStartOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
 	{
-		if(localDate == null)
+		if (localDate == null)
 		{
 			return null;
 		}
@@ -2246,7 +2246,7 @@ public class TimeUtil
 	@Nullable
 	public static Instant asStartOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
 	{
-		if(instant == null)
+		if (instant == null)
 		{
 			return null;
 		}
@@ -2258,7 +2258,7 @@ public class TimeUtil
 	@Nullable
 	public static Instant asEndOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
 	{
-		if(instant == null)
+		if (instant == null)
 		{
 			return null;
 		}
