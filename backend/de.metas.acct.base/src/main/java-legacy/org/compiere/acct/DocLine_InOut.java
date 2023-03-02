@@ -1,6 +1,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.AggregatedCostAmount;
@@ -10,6 +11,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
@@ -19,7 +21,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
@@ -101,8 +102,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 
 	public final I_C_OrderLine getOrderLineOrNull()
 	{
-		return getModel(I_M_InOutLine.class)
-				.getC_OrderLine();
+		return getInOutLine().getC_OrderLine();
+	}
+
+	private I_M_InOutLine getInOutLine()
+	{
+		return getModel(I_M_InOutLine.class);
 	}
 
 	/**
@@ -223,5 +228,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	private CurrencyConversionContext getCurrencyConversionContext(final AcctSchema as)
 	{
 		return getDoc().getCurrencyConversionContext(as);
+	}
+
+	@Override
+	protected OrderId getSalesOrderId()
+	{
+		final I_M_InOutLine inoutLine = getInOutLine();
+		return OrderId.ofRepoIdOrNull(inoutLine.getC_OrderSO_ID());
 	}
 }

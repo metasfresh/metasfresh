@@ -33,6 +33,7 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -328,5 +329,12 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		}
 
 		return productDAO.retrieveProductCategoryForGroupTemplateId(groupTemplateId);
+	}
+
+	@Override
+	protected OrderId getSalesOrderId()
+	{
+		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
+		return OrderId.ofRepoIdOrNull(invoiceLine.getC_OrderSO_ID());
 	}
 }

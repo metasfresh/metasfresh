@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -724,8 +723,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
-				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
-				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
+				dimensionService.updateRecord(invoiceLine, dimensionService.getFromRecord(cand));
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it

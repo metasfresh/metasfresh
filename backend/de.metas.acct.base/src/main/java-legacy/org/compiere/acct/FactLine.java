@@ -1555,5 +1555,16 @@ public final class FactLine extends X_Fact_Acct
 		setC_Order_ID(dimension.getSalesOrderId());
 		setM_SectionCode_ID(dimension.getSectionCodeId());
 		setM_Product_ID(dimension.getProductId());
+		setUser1_ID(dimension.getUser1_ID());
+		setUser2_ID(dimension.getUser2_ID());
+		setUserElement1_ID(dimension.getUserElement1Id());
+		setUserElement2_ID(dimension.getUserElement2Id());
+		setUserElementString1(dimension.getUserElementString1());
+		setUserElementString2(dimension.getUserElementString2());
+		setUserElementString3(dimension.getUserElementString3());
+		setUserElementString4(dimension.getUserElementString4());
+		setUserElementString5(dimension.getUserElementString5());
+		setUserElementString6(dimension.getUserElementString6());
+		setUserElementString7(dimension.getUserElementString7());
 	}
 }    // FactLine

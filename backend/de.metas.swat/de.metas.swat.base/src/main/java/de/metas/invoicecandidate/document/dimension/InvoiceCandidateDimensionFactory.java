@@ -71,7 +71,7 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
-		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

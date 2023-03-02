@@ -476,10 +476,15 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		receiptLine.setQualityNote(qualityNote);
 		receiptLine.setIsInDispute(isInDispute);
 
-		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
-		if (orderLine != null)
+		// Copy C_Project_ID from order.
+		// Avoid overriding because the project might be already set from M_ReceiptSchedule (via DimensionService copy)
+		if(receiptLine.getC_Project_ID() <= 0)
 		{
-			receiptLine.setC_Project_ID(orderLine.getC_Project_ID());
+			final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
+			if (orderLine != null)
+			{
+				receiptLine.setC_Project_ID(orderLine.getC_Project_ID());
+			}
 		}
 
 		//

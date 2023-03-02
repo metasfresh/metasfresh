@@ -1,16 +1,15 @@
-package de.metas.invoicecandidate.document.dimension;
+package de.metas.document.dimension;
 
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionTest;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class InvoiceCandidateDimensionFactoryTest
+class InOutLineDimensionFactoryTest
 {
 	@BeforeEach
 	void beforeEach()
@@ -21,17 +20,16 @@ class InvoiceCandidateDimensionFactoryTest
 	@Test
 	void get_and_set()
 	{
-		final InvoiceCandidateDimensionFactory dimensionFactory = new InvoiceCandidateDimensionFactory();
+		final InOutLineDimensionFactory dimensionFactory = new InOutLineDimensionFactory();
 
-		final I_C_Invoice_Candidate record = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
+		final I_M_InOutLine record = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+		record.setM_Product_ID(9000002);
 		final Dimension dimension = DimensionTest.newFullyPopulatedDimension();
 		dimensionFactory.updateRecord(record, dimension);
 
 		final Dimension dimensionFromRecord = dimensionFactory.getFromRecord(record);
 		final Dimension dimensionFromRecordExpected = dimension.toBuilder()
-				.productId(null)
-				.user1_ID(0)
-				.user2_ID(0)
+				.productId(ProductId.ofRepoId(9000002))
 				.userElement1Id(0)
 				.userElement2Id(0)
 				.build();
@@ -42,9 +40,9 @@ class InvoiceCandidateDimensionFactoryTest
 	@Test
 	void fieldsThatShallNotBeOverridden()
 	{
-		final InvoiceCandidateDimensionFactory dimensionFactory = new InvoiceCandidateDimensionFactory();
+		final InOutLineDimensionFactory dimensionFactory = new InOutLineDimensionFactory();
 
-		final I_C_Invoice_Candidate record = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
+		final I_M_InOutLine record = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		record.setC_Order_ID(9000001);
 		record.setM_Product_ID(9000002);
 
@@ -53,5 +51,4 @@ class InvoiceCandidateDimensionFactoryTest
 		assertThat(record.getC_Order_ID()).isEqualTo(9000001);
 		assertThat(record.getM_Product_ID()).isEqualTo(9000002);
 	}
-
 }

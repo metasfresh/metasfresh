@@ -795,6 +795,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
 	}
 
+	@Nullable
 	protected OrderId getSalesOrderId()
 	{
 		return CoalesceUtil.coalesceSuppliers(
