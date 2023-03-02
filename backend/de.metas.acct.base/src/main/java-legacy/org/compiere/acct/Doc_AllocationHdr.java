@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
@@ -41,7 +42,6 @@ import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
@@ -892,8 +892,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
-		final Money allocationSourceOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtSource(), line.getCurrencyId());
-		createRealizedGainLossFactLine(line, fact, factLine, allocationSourceOnPaymentDate);
+		final Money allocationAcctOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtAcct(), factLine.getAcctSchema().getCurrencyId());
+		createRealizedGainLossFactLine(line, fact, factLine, allocationAcctOnPaymentDate);
 	}
 
 	/**
@@ -998,8 +998,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Get how much was booked for invoice, on allocation's date
 		final boolean isDR = invoiceFactLine.getAmtAcctDr().signum() != 0;
-		final Money allocationAcctOnInvoiceDate = isDR ? Money.of(invoiceFactLine.getAmtSourceDr(), invoiceFactLine.getCurrencyId())
-				: Money.of(invoiceFactLine.getAmtSourceCr(), invoiceFactLine.getCurrencyId());
+		final Money allocationAcctOnInvoiceDate = isDR 
+				? Money.of(invoiceFactLine.getAmtAcctDr(), as.getCurrencyId())
+				: Money.of(invoiceFactLine.getAmtAcctCr(), as.getCurrencyId());
 
 		//
 		// Calculate our currency gain/loss by subtracting how much was booked at invoice time and how much shall be booked at payment time.
