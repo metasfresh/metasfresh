@@ -2230,4 +2230,40 @@ public class TimeUtil
 	{
 		return timestamp2.getTime() - timestamp1.getTime();
 	}
+
+	@Nullable
+	public static Instant asStartOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
+	{
+		if(localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MIN);
+
+		return asInstant(endOfDay, zoneId);
+	}
+
+	@Nullable
+	public static Instant asStartOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		if(instant == null)
+		{
+			return null;
+		}
+
+		final LocalDate localDate = asLocalDate(instant, zoneId);
+		return asStartOfDayInstant(localDate, zoneId);
+	}
+
+	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		if(instant == null)
+		{
+			return null;
+		}
+
+		final LocalDate localDate = asLocalDate(instant, zoneId);
+		return asEndOfDayInstant(localDate, zoneId);
+	}
 }    // TimeUtil
