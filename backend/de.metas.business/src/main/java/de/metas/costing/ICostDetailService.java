@@ -38,7 +38,7 @@ public interface ICostDetailService
 
 	boolean hasCostDetailsForProductId(ProductId productId);
 
-	Optional<CostDetail> getExistingCostDetail(CostDetailCreateRequest request);
+	Optional<List<CostDetail>> getExistingCostDetails(CostDetailCreateRequest request);
 
 	Stream<CostDetail> streamAllCostDetailsAfter(CostDetail costDetail);
 

@@ -78,10 +78,26 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostDetail cd = costDetailBuilder.build();
 		Check.assumeNull(cd.getId(), "RepoId shall NOT be set for {}", cd);
 
-		final CostAmount amountToSet = cd.getAmt().getCostAdjustmentAmt().signum() != 0 ?
-				cd.getAmt().getCostAdjustmentAmt()
-				: cd.getAmt().getMainAmt();
+		final boolean hasCostAdjustment = cd.getAmt().getCostAdjustmentAmt().signum() != 0;
 
+		if(hasCostAdjustment)
+		{
+
+			// cost details for the main amount. Doesn't change costs
+			createCostDetailsRecord(cd.withChangingCosts(false), cd.getAmt().getMainAmt());
+
+			// cost details for the cost adjustment. Change costs if required. This cost is the relevant one, so return it.
+			return createCostDetailsRecord(cd.withQty(cd.getQty().toZero()), cd.getAmt().getCostAdjustmentAmt());
+		}
+
+		else
+		{
+			return createCostDetailsRecord(cd, cd.getAmt().getMainAmt());
+		}
+	}
+
+	private static CostDetail createCostDetailsRecord(final CostDetail cd, final CostAmount amountToSet)
+	{
 		final I_M_CostDetail record = newInstance(I_M_CostDetail.class);
 		Check.assumeEquals(cd.getClientId().getRepoId(), record.getAD_Client_ID(), "AD_Client_ID");
 		record.setAD_Org_ID(cd.getOrgId().getRepoId());

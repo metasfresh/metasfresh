@@ -96,7 +96,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailedForMatchInv(request);
 
 		return utils.createCostDetailRecordWithChangedCosts(
-				request.withAmountAndQty(costAmountDetailed, Quantity.zero(request.getQty().getUOM())),
+				request.withAmount(costAmountDetailed),
 				CostDetailPreviousAmounts.of(currentCost));
 
 	}

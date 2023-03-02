@@ -53,9 +53,12 @@ public class CostDetail
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
+	@With
 	CostAmountDetailed amt;
+	@With
 	Quantity qty;
 
+	@With
 	boolean changingCosts;
 
 	CostDetailPreviousAmounts previousAmounts;

@@ -1,6 +1,7 @@
 package de.metas.costing.methods;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.Check;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
@@ -16,6 +17,8 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -70,17 +73,70 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
-		if (existingCostDetail != null)
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request).orElse(Collections.emptyList());
+		if (!existingCostDetails.isEmpty())
 		{
+			// at this moment there can't be more than 2 costs for one document and element
+			Check.assume(existingCostDetails.size() <= 2, "More than 2 costing details for the same document and costing element: " + request);
+			final CostDetail existingCostDetail;
+
+			if (existingCostDetails.size() == 2)
+			{
+				final CostDetail costAdjustmentDetail = existingCostDetails.stream().filter(cd -> isCostAdjustmentDetail(cd))
+						.findFirst()
+						.orElseThrow(() -> new AdempiereException("More than 1 non-adjustment costing details for the same document and costing element : " + request));
+
+				final CostDetail mainCostDetail = existingCostDetails.stream().filter(cd -> !isCostAdjustmentDetail(cd))
+						.findFirst()
+						.orElseThrow(() -> new AdempiereException("More than 1 adjustment costing details for the same document and costing element : " + request));
+
+				final CostAmount previousAmount = mainCostDetail.getPreviousAmounts().getCumulatedAmt();
+				final CostAmount documentAmount = mainCostDetail.getAmt().getMainAmt();
+				final CostAmount costAdjustmentAmount = costAdjustmentDetail.getAmt().getMainAmt();
+
+				final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder()
+						.mainAmt(documentAmount)
+						.costAdjustmentAmt(costAdjustmentAmount)
+						.alreadyShippedAmt(previousAmount.subtract(documentAmount.add(costAdjustmentAmount)))
+						.build();
+
+				existingCostDetail = mainCostDetail.withAmt(costAmountDetailed);
+			}
+
+			else
+			{
+				existingCostDetail = existingCostDetails.get(0);
+			}
 			// make sure DateAcct is up-to-date
-			existingCostDetail = utils.updateDateAcct(existingCostDetail, request.getDate());
+
+			utils.updateDateAcct(existingCostDetail, request.getDate());
 			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
 		}
+
 		else
 		{
 			return Optional.ofNullable(createCostOrNull(request));
 		}
+	}
+
+	private boolean isCostAdjustmentDetail(@NonNull final CostDetail cd)
+	{
+		if (!cd.getQty().isZero())
+		{
+			return false;
+		}
+
+		if (cd.getAmt().getMainAmt().isZero())
+		{
+			return false;
+		}
+
+		if (!cd.isChangingCosts())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
@@ -185,12 +241,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected CostDetailCreateResult createCostForProjectIssue(@SuppressWarnings("unused") final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(
+			@SuppressWarnings("unused") final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	protected CostDetailCreateResult createCostRevaluationLine(@NonNull final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostRevaluationLine(
+			@NonNull final CostDetailCreateRequest request)
 	{
 		if (!request.getQty().isZero())
 		{
@@ -251,7 +309,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
 				: newCostPrice.roundToPrecisionIfNeeded(precision);
 
-		final CostAmountDetailed newCostAmountDetailed= CostAmountDetailed.builder().mainAmt(newCostAmount).build();
+		final CostAmountDetailed newCostAmountDetailed = CostAmountDetailed.builder().mainAmt(newCostAmount).build();
 		if (costDetail.isInboundTrx())
 		{
 			currentCost.addWeightedAverage(newCostAmountDetailed, qty, utils.getQuantityUOMConverter());
