@@ -213,7 +213,7 @@ public class SAPGLJournalLoaderAndSaver
 		return Dimension.builder()
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.build();
 	}
@@ -308,7 +308,7 @@ public class SAPGLJournalLoaderAndSaver
 	{
 		lineRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(dimension.getSectionCodeId()));
 		lineRecord.setM_Product_ID(ProductId.toRepoId(dimension.getProductId()));
-		lineRecord.setC_Order_ID(OrderId.toRepoId(dimension.getOrderId()));
+		lineRecord.setC_OrderSO_ID(OrderId.toRepoId(dimension.getSalesOrderId()));
 		lineRecord.setC_Activity_ID(ActivityId.toRepoId(dimension.getActivityId()));
 	}
 

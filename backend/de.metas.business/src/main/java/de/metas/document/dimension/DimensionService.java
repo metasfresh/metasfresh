@@ -24,9 +24,11 @@ package de.metas.document.dimension;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,11 +36,13 @@ import java.util.List;
 @Service
 public class DimensionService
 {
+	private static final Logger logger = LogManager.getLogger(DimensionService.class);
 	private final ImmutableMap<String, DimensionFactory<?>> factoriesByTableName;
 
 	public DimensionService(@NonNull final List<DimensionFactory<?>> factories)
 	{
 		factoriesByTableName = Maps.uniqueIndex(factories, DimensionFactory::getHandledTableName);
+		logger.info("Factories: {}", this.factoriesByTableName);
 	}
 
 	public Dimension getFromRecord(@NonNull final Object record)
@@ -53,14 +57,13 @@ public class DimensionService
 		getFactory(tableName).updateRecord(record, from);
 	}
 
+	@NonNull
 	private DimensionFactory<Object> getFactory(final String tableName)
 	{
-		@SuppressWarnings("unchecked")
-		final DimensionFactory<Object> factory = (DimensionFactory<Object>)factoriesByTableName.get(tableName);
-
-		if(factory == null)
+		@SuppressWarnings("unchecked") final DimensionFactory<Object> factory = (DimensionFactory<Object>)factoriesByTableName.get(tableName);
+		if (factory == null)
 		{
-			throw new AdempiereException("No "+DimensionFactory.class+" found for "+ tableName);
+			throw new AdempiereException("No " + DimensionFactory.class.getSimpleName() + " found for " + tableName);
 		}
 		return factory;
 	}

@@ -38,18 +38,22 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInOut;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
@@ -482,6 +486,19 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		return inOutBL.getCurrencyConversionContext(inout);
+	}
+
+	@Nullable
+	@Override
+	protected OrderId getSalesOrderId()
+	{
+		final Optional<OrderId> optionalSalesOrderId = CollectionUtils.extractSingleElementOrDefault(
+				getDocLines(),
+				docLine -> Optional.ofNullable(docLine.getSalesOrderId()),
+				Optional.empty());
+
+		//noinspection DataFlowIssue
+		return optionalSalesOrderId.orElse(null);
 	}
 
 }   // Doc_InOut

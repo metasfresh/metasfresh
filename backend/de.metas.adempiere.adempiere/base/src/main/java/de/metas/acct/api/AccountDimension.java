@@ -151,9 +151,9 @@ public final class AccountDimension
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
 	}
 
-	public int getC_Order_ID()
+	public int getSalesOrderId()
 	{
-		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Order),0);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesOrder),0);
 	}
 
 	public int getM_SectionCode_ID()
@@ -374,9 +374,9 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_Order_ID(final int C_Order_ID)
+		public Builder setSalesOrderId(final int C_OrderSO_ID)
 		{
-			setSegmentValue(AcctSegmentType.Order, C_Order_ID);
+			setSegmentValue(AcctSegmentType.SalesOrder, C_OrderSO_ID);
 			return this;
 		}
 

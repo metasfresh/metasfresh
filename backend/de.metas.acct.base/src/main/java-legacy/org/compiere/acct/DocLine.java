@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.base.MoreObjects;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
@@ -50,7 +51,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
@@ -795,9 +795,10 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
 	}
 
-	public OrderId getOrderId()
+	@Nullable
+	protected OrderId getSalesOrderId()
 	{
-		return OrderId.ofRepoIdOrNull(getValue("C_Order_ID"));
+		return OrderId.ofRepoIdOrNull(getValue("C_OrderSO_ID"));
 	}
 
 	public SectionCodeId getSectionCodeId()

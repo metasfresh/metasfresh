@@ -403,6 +403,33 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -1332,11 +1359,6 @@ public interface I_C_InvoiceLine
 	 */
 	int getUser1_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser1();
-
-	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
-
-	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_InvoiceLine.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -1357,11 +1379,6 @@ public interface I_C_InvoiceLine
 	 */
 	int getUser2_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser2();
-
-	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
-
-	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_InvoiceLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**

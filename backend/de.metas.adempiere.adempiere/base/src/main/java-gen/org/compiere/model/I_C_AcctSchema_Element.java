@@ -236,11 +236,6 @@ public interface I_C_AcctSchema_Element
 	 */
 	int getC_ElementValue_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue();
-
-	void setC_ElementValue(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue);
-
-	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_ElementValue_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
 	/**
@@ -271,31 +266,31 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
-	 * Set Sales order.
+	 * Set Order.
 	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Order_ID (int C_Order_ID);
+	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Sales order.
+	 * Get Order.
 	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Order_ID();
+	int getC_OrderSO_ID();
 
-	@Nullable org.compiere.model.I_C_Order getC_Order();
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
 
-	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
 
-	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Set Project.

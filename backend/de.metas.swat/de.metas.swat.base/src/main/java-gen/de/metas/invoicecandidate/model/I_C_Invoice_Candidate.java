@@ -1,9 +1,8 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -855,6 +854,58 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
+	 * Set Payment Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentInstruction_ID (int C_PaymentInstruction_ID);
+
+	/**
+	 * Get Payment Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentInstruction_ID();
+
+	@Nullable org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction();
+
+	void setC_PaymentInstruction(@Nullable org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentInstruction> COLUMN_C_PaymentInstruction_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PaymentInstruction_ID", org.compiere.model.I_C_PaymentInstruction.class);
+	String COLUMNNAME_C_PaymentInstruction_ID = "C_PaymentInstruction_ID";
+
+	/**
 	 * Set Zahlungsbedingung eff..
 	 *
 	 * <br>Type: Search
@@ -1661,8 +1712,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
 
 	/**
-	 * Set IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Set Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1671,8 +1722,8 @@ public interface I_C_Invoice_Candidate
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Get Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2010,7 +2061,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Invoice manually allocated.
-	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2020,7 +2070,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Invoice manually allocated.
-	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -3746,29 +3795,4 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set Payment Instruction.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PaymentInstruction_ID (int C_PaymentInstruction_ID);
-
-	/**
-	 * Get Payment Instruction.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PaymentInstruction_ID();
-
-	@Nullable org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction();
-
-	void setC_PaymentInstruction(@Nullable org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction);
-
-	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentInstruction> COLUMN_C_PaymentInstruction_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_PaymentInstruction_ID", org.compiere.model.I_C_PaymentInstruction.class);
-	String COLUMNNAME_C_PaymentInstruction_ID = "C_PaymentInstruction_ID";
 }
