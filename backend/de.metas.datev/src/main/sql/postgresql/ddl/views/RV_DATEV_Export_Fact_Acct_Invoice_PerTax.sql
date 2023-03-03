@@ -84,7 +84,10 @@ FROM (
                 fa.ad_org_id
          FROM fact_acct fa
                   JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
-                  JOIN fact_acct fa2 ON fa2.fact_acct_id = fa.counterpart_fact_acct_id
+             -- We cannot join using Counterpart_Fact_Acct_ID, because fact_accts with a zero amount don't have then set,
+             -- see org.compiere.acct.Fact.save(org.compiere.acct.FactTrxLines)
+             -- Therefore, the fact_accts for an invoice with price=0 would never be exported
+                  JOIN fact_acct fa2 ON fa2.c_tax_id IS NULL AND fa2.ad_table_id = fa.ad_table_id AND fa2.record_id = fa.record_id
                   JOIN c_elementvalue ev2 ON ev2.c_elementvalue_id = fa2.account_id
                   JOIN c_bpartner bp ON bp.c_bpartner_id = fa.c_bpartner_id
                   LEFT JOIN c_activity a ON a.c_activity_id = COALESCE(fa.c_activity_id, fa2.c_activity_id)
@@ -95,7 +98,8 @@ FROM (
 
          WHERE fa.ad_table_id = get_table_id('C_Invoice'::character varying)
      ) d
-WHERE amt <> taxamt
+WHERE true
+    and (amt <> taxamt OR (amt=0 and taxamt=0))
 GROUP BY DebitOrCreditIndicator,
          currency,
          dr_account,
@@ -117,5 +121,4 @@ GROUP BY DebitOrCreditIndicator,
          c_doctype_name,
          ad_client_id,
          ad_org_id
-;
 ;
