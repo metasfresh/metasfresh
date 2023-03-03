@@ -290,14 +290,17 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	private void createFactLines(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
 	{
+		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
+		final CostAmount totalCosts = costs.getMainAmt().add(costs.getCostAdjustmentAmt().add(costs.getAlreadyShippedAmt()));
+		final CurrencyId currencyId = totalCosts.getCurrencyId();
 		//
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)) // main
-				.setCurrencyId(costs.getMainAmt().getCurrencyId())
+				.setCurrencyId(currencyId)
 				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
-				.setAmtSource(costs.getMainAmt(), null)
+				.setAmtSource(totalCosts, null)
 				.setQty(getQty())
 				.buildAndAdd();
 		updateFromReceiptLine(dr_NotInvoicedReceipts);
@@ -308,7 +311,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final FactLine cr_InventoryClearing = fact.createLine()
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-				.setAmtSource(null, getInvoiceLineMatchedAmt()) // constanta la toate 3
+				.setAmtSource(null, invoiceLineMatchedAmt)
 				.setQty(getQty().negate())
 				.buildAndAdd();
 		updateFromInvoiceLine(cr_InventoryClearing);
@@ -322,10 +325,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 			final FactLine costAdjustment = fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
-					.setCurrencyId(costs.getMainAmt().getCurrencyId())
+					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSourceDrOrCr(costs.getCostAdjustmentAmt().toMoney())
-					.setQty(getQty().negate())
+					.setAmtSourceDrOrCr(costs.getCostAdjustmentAmt().toMoney().negate())
+					.setQty(getQty())
 					.buildAndAdd();
 			updateFromInvoiceLine(costAdjustment);
 		}
@@ -336,10 +339,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		{
 			final FactLine alreadyShipped = fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
-					.setCurrencyId(costs.getMainAmt().getCurrencyId())
+					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSourceDrOrCr(costs.getAlreadyShippedAmt().toMoney())
-					.setQty(getQty().negate()) // TODO signum
+					.setAmtSourceDrOrCr(costs.getAlreadyShippedAmt().toMoney().negate())
+					.setQty(getQty())
 					.buildAndAdd();
 			updateFromInvoiceLine(alreadyShipped);
 		}
@@ -368,7 +371,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// Invoice Price Variance difference
 		final FactLine ipvFactLine = createFact_Material_InvoicePriceVariance(fact);
 
-		if(getInvoiceLineMatchedAmt().isGreaterThan(costs.getMainAmt().toMoney()))
+		if (ipvFactLine != null && invoiceLineMatchedAmt.isGreaterThan(totalCosts.toMoney()))
 		{
 			ipvFactLine.invertDrAndCrAmounts();
 			//ipvFactLine.negateDrAndCrAmounts();
