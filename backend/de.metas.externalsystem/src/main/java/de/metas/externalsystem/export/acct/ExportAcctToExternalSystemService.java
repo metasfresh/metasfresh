@@ -23,6 +23,7 @@
 package de.metas.externalsystem.export.acct;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -85,6 +86,13 @@ public abstract class ExportAcctToExternalSystemService extends ExportToExternal
 														 recordReference.getTableName() + "_" + recordReference.getRecord_ID());
 
 		syncFactAcctDebouncer.add(recordReference);
+	}
+
+	@VisibleForTesting
+	@Override
+	public int getCurrentPendingItems()
+	{
+		return this.syncFactAcctDebouncer.getCurrentBufferSize();
 	}
 
 	@Override
