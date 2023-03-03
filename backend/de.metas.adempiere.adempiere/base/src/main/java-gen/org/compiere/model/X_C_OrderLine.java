@@ -66,6 +66,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setBase_Commission_Points_Per_Price_UOM(@Nullable final BigDecimal Base_Commission_Points_Per_Price_UOM)
+	{
+
+	}
+
+	@Override
+	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
+	{
+		return null;
+	}
+
+	@Override
 	public void setBase_PricingSystem_ID (final int Base_PricingSystem_ID)
 	{
 		if (Base_PricingSystem_ID < 1) 
@@ -849,6 +861,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getInvoicableQtyBasedOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	@Override
+	public void setIsDeliveryClosed(final boolean IsDeliveryClosed)
+	{
+
+	}
+
+	@Override
+	public boolean isDeliveryClosed()
+	{
+		return false;
 	}
 
 	@Override
@@ -1830,6 +1854,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtInfo);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setTraded_Commission_Percent(@Nullable final BigDecimal Traded_Commission_Percent)
+	{
+
+	}
+
+	@Override
+	public BigDecimal getTraded_Commission_Percent()
+	{
+		return null;
 	}
 
 	@Override

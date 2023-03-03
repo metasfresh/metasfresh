@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1821821924L;
+	private static final long serialVersionUID = -510412756L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -117,6 +117,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isApprovalForInvoicing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_ApprovalForInvoicing);
+	}
+
+	@Override
+	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
+	{
+		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
+	}
+
+	@Override
+	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -389,6 +402,29 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_DocTypeInvoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeInvoice_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_Invoicing_Pool_ID, org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	}
+
+	@Override
+	public void setC_DocType_Invoicing_Pool(final org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_Invoicing_Pool_ID, org.compiere.model.I_C_DocType_Invoicing_Pool.class, C_DocType_Invoicing_Pool);
+	}
+
+	@Override
+	public void setC_DocType_Invoicing_Pool_ID (final int C_DocType_Invoicing_Pool_ID)
+	{
+		throw new IllegalArgumentException ("C_DocType_Invoicing_Pool_ID is virtual column");	}
+
+	@Override
+	public int getC_DocType_Invoicing_Pool_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
 
 	@Override
@@ -1395,6 +1431,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+	}
+
+	@Override
 	public void setIsEdiInvoicRecipient (final boolean IsEdiInvoicRecipient)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsEdiInvoicRecipient, IsEdiInvoicRecipient);
@@ -1455,6 +1503,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsInEffect (final boolean IsInEffect)
+	{
+		set_Value (COLUMNNAME_IsInEffect, IsInEffect);
+	}
+
+	@Override
+	public boolean isInEffect() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInEffect);
+	}
+
+	@Override
 	public void setIsInOutApprovedForInvoicing (final boolean IsInOutApprovedForInvoicing)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsInOutApprovedForInvoicing, IsInOutApprovedForInvoicing);
@@ -1464,6 +1524,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isInOutApprovedForInvoicing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInOutApprovedForInvoicing);
+	}
+
+	@Override
+	public void setIsInterimInvoice (final boolean IsInterimInvoice)
+	{
+		set_Value (COLUMNNAME_IsInterimInvoice, IsInterimInvoice);
+	}
+
+	@Override
+	public boolean isInterimInvoice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoice);
 	}
 
 	@Override
@@ -2081,6 +2153,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
+	@Override
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
+	{
+		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+	}
+
+	@Override
+	public java.lang.String getProductDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductDescription);
+	}
+
 	/** 
 	 * ProductType AD_Reference_ID=270
 	 * Reference name: M_Product_ProductType
@@ -2502,7 +2586,20 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
+	public void setTraded_Commission_Percent (final @Nullable BigDecimal Traded_Commission_Percent)
+	{
+		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
+	}
+
+	@Override
+	public BigDecimal getTraded_Commission_Percent()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementString1 (final @Nullable String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}

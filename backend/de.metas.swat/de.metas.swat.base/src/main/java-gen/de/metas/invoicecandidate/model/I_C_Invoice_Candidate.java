@@ -157,6 +157,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Approved for Invoicing.
+	 * After an invoice candidate has been approved for invoicing, its prices and taxes are no longer updated automatically from the corresponding purchase or sales order line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -166,6 +167,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Approved for Invoicing.
+	 * After an invoice candidate has been approved for invoicing, its prices and taxes are no longer updated automatically from the corresponding purchase or sales order line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -175,6 +177,29 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ApprovalForInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "ApprovalForInvoicing", null);
 	String COLUMNNAME_ApprovalForInvoicing = "ApprovalForInvoicing";
+
+	/**
+	 * Set Base Commission Points Per Price UOM.
+	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBase_Commission_Points_Per_Price_UOM (@Nullable BigDecimal Base_Commission_Points_Per_Price_UOM);
+
+	/**
+	 * Get Base Commission Points Per Price UOM.
+	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBase_Commission_Points_Per_Price_UOM();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new ModelColumn<>(I_C_Invoice_Candidate.class, "Base_Commission_Points_Per_Price_UOM", null);
+	String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
 
 	/**
 	 * Set Bill Business Partner.
@@ -530,6 +555,34 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
+	 * Set Invoicing Pool.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setC_DocType_Invoicing_Pool_ID (int C_DocType_Invoicing_Pool_ID);
+
+	/**
+	 * Get Invoicing Pool.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getC_DocType_Invoicing_Pool_ID();
+
+	@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool();
+
+	@Deprecated
+	void setC_DocType_Invoicing_Pool(@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
+
+	/**
 	 * Set Flatrate Term.
 	 *
 	 * <br>Type: TableDir
@@ -854,8 +907,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Order.
-	 * Order
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -864,8 +916,7 @@ public interface I_C_Invoice_Candidate
 	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Order.
-	 * Order
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1712,8 +1763,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
 
 	/**
-	 * Set Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1722,8 +1773,8 @@ public interface I_C_Invoice_Candidate
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1911,6 +1962,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
+
+	/**
 	 * Set EDI INVOIC Receipient.
 	 *
 	 * <br>Type: YesNo
@@ -2018,6 +2090,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInDispute = "IsInDispute";
 
 	/**
+	 * Set In Effect.
+	 * Invoice candidates that are not in effect are no longer eligible for invoicing. Normally, an invoice candidates goes out of effect when the source document is reopened.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInEffect (boolean IsInEffect);
+
+	/**
+	 * Get In Effect.
+	 * Invoice candidates that are not in effect are no longer eligible for invoicing. Normally, an invoice candidates goes out of effect when the source document is reopened.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInEffect();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInEffect = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInEffect", null);
+	String COLUMNNAME_IsInEffect = "IsInEffect";
+
+	/**
 	 * Set Approve in/out shipment.
 	 *
 	 * <br>Type: YesNo
@@ -2037,6 +2132,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInOutApprovedForInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInOutApprovedForInvoicing", null);
 	String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
+
+	/**
+	 * Set Interim Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInterimInvoice (boolean IsInterimInvoice);
+
+	/**
+	 * Get Interim Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInterimInvoice();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInterimInvoice = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInterimInvoice", null);
+	String COLUMNNAME_IsInterimInvoice = "IsInterimInvoice";
 
 	/**
 	 * Set Invoicing error.
@@ -2061,6 +2177,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2070,6 +2187,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Invoice manually allocated.
+	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2970,6 +3088,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
+	 * Set Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
+
+	/**
+	 * Get Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductDescription();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductDescription", null);
+	String COLUMNNAME_ProductDescription = "ProductDescription";
+
+	/**
 	 * Set Product Type.
 	 * Type of product
 	 *
@@ -3623,6 +3764,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_TotalOfOrderExcludingDiscount = new ModelColumn<>(I_C_Invoice_Candidate.class, "TotalOfOrderExcludingDiscount", null);
 	String COLUMNNAME_TotalOfOrderExcludingDiscount = "TotalOfOrderExcludingDiscount";
+
+	/**
+	 * Set Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTraded_Commission_Percent (@Nullable BigDecimal Traded_Commission_Percent);
+
+	/**
+	 * Get Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTraded_Commission_Percent();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_Traded_Commission_Percent = new ModelColumn<>(I_C_Invoice_Candidate.class, "Traded_Commission_Percent", null);
+	String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
 
 	/**
 	 * Get Updated.
