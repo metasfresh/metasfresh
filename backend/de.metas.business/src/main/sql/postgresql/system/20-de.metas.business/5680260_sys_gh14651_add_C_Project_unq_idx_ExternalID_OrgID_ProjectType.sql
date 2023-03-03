@@ -78,4 +78,7 @@ CREATE UNIQUE INDEX ExternalID_OrgID_with_null_project_type ON C_Project (Extern
 ;
 
 
+-- 2023-03-03T06:33:46.032Z
+DROP INDEX IF EXISTS externalid_orgid_projecttype_nullable
+;
 
