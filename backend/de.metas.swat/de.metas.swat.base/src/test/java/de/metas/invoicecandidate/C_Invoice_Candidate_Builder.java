@@ -221,6 +221,7 @@ public class C_Invoice_Candidate_Builder
 
 			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 			ic.setC_Order_ID(orderLine.getC_Order_ID());
+			ic.setC_OrderSO_ID(orderLine.getC_OrderSO_ID());
 			ic.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 			ic.setRecord_ID(orderLine.getC_OrderLine_ID());
 			ic.setPriceActual(priceActual);
@@ -312,9 +313,6 @@ public class C_Invoice_Candidate_Builder
 	 * If not set,
 	 * then either {@link AbstractICTestSupport#pricingSystem_PO} or {@link AbstractICTestSupport#pricingSystem_SO} are used,
 	 * depending on {@link #isSOTrx}.
-	 *
-	 * @param M_PricingSystem_ID
-	 * @return
 	 */
 	public C_Invoice_Candidate_Builder setM_PricingSystem_ID(final int M_PricingSystem_ID)
 	{
@@ -378,8 +376,6 @@ public class C_Invoice_Candidate_Builder
 	}
 
 	/**
-	 * @param instanceName
-	 * @return
 	 * @see POJOWrapper#setInstanceName(Object, String)
 	 */
 	public C_Invoice_Candidate_Builder setInstanceName(final String instanceName)

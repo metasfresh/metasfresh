@@ -19,7 +19,7 @@ import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Campaign_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_ElementValue_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Location_ID;
-import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_OrderSO_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_SalesRegion_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_IsMandatory;
@@ -117,9 +117,9 @@ public class C_AcctSchema_Element
 			{
 				errorField = COLUMNNAME_C_SalesRegion_ID;
 			}
-			else if(AcctSchemaElementType.Order.equals(elementType) && record.getC_Order_ID() <= 0)
+			else if(AcctSchemaElementType.SalesOrder.equals(elementType) && record.getC_OrderSO_ID() <= 0)
 			{
-				errorField = COLUMNNAME_C_Order_ID;
+				errorField = COLUMNNAME_C_OrderSO_ID;
 			}
 			else if(AcctSchemaElementType.SectionCode.equals(elementType) && record.getM_SectionCode_ID() <= 0)
 			{
@@ -167,9 +167,9 @@ public class C_AcctSchema_Element
 			{
 				updateData(COLUMNNAME_C_Project_ID, element.getC_Project_ID(), element);
 			}
-			else if (AcctSchemaElementType.Order.equals(elementType))
+			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
 			{
-				updateData(COLUMNNAME_C_Order_ID, element.getC_Order_ID(), element);
+				updateData(COLUMNNAME_C_OrderSO_ID, element.getC_OrderSO_ID(), element);
 			}
 			else if (AcctSchemaElementType.SectionCode.equals(elementType))
 			{

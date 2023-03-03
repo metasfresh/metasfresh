@@ -207,7 +207,6 @@ public abstract class ReceiptScheduleTestBase
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -370,7 +369,7 @@ public abstract class ReceiptScheduleTestBase
 		orderLine.setM_Product_ID(product.getM_Product_ID());
 		// orderLine.setC_UOM_ID(productUOM != null ? productUOM.getC_UOM_ID() : -1);
 		// 07090: when setting a priceActual, we also need to specify a PriceUOM
-		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+		orderLine.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 
 		//
 		// Quantities

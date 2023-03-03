@@ -47,7 +47,7 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_OrderSO_ID(OrderId.toRepoId(from.getOrderId()));
+		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
@@ -66,7 +66,7 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())

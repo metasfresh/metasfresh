@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2011207627L;
+	private static final long serialVersionUID = 910106133L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -77,30 +77,30 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order()
+	public org.compiere.model.I_C_Order getC_OrderSO()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
 	}
 
 	@Override
-	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
 	}
 
 	@Override
-	public void setC_Order_ID (final int C_Order_ID)
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_Order_ID < 1) 
-			set_Value (COLUMNNAME_C_Order_ID, null);
+		if (C_OrderSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_Order_ID() 
+	public int getC_OrderSO_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
 
 	@Override
@@ -257,6 +257,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public java.lang.String getPostingSign() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostingSign);
+	}
+
+	@Override
+	public void setSAP_DetermineTaxBase (final boolean SAP_DetermineTaxBase)
+	{
+		set_Value (COLUMNNAME_SAP_DetermineTaxBase, SAP_DetermineTaxBase);
+	}
+
+	@Override
+	public boolean isSAP_DetermineTaxBase() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_SAP_DetermineTaxBase);
 	}
 
 	@Override

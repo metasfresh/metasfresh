@@ -128,7 +128,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final @NonNull QueryLimit limit_IGNORED)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -344,6 +344,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setPresetDateInvoiced(orderLine.getPresetDateInvoiced());
 
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
+		ic.setC_OrderSO_ID(orderLine.getC_OrderSO_ID());
 
 		setC_PaymentTerm(ic, orderLine);
 

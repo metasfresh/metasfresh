@@ -33,6 +33,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
+import de.metas.document.dimension.Dimension;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -566,14 +567,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		fl.setC_Activity_ID(invoiceLine.getC_Activity_ID());
-		fl.setC_Order_ID(invoiceLine.getC_Order_ID());
-		fl.setM_SectionCode_ID(invoiceLine.getM_SectionCode_ID());
-		fl.setC_Campaign_ID(invoiceLine.getC_Campaign_ID());
-		fl.setC_Project_ID(invoiceLine.getC_Project_ID());
 		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
-		fl.setUser1_ID(invoiceLine.getUser1_ID());
-		fl.setUser2_ID(invoiceLine.getUser2_ID());
+
+		final Dimension invoiceLineDimension = services.extractDimensionFromModel(invoiceLine);
+		fl.setFromDimension(invoiceLineDimension);
 	}
 
 	private void updateFromReceiptLine(@Nullable final FactLine fl)
@@ -584,22 +581,12 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 
 		final I_M_InOutLine receiptLine = getReceiptLine();
+		fl.setAD_Org_ID(receiptLine.getAD_Org_ID()); // Org for cross charge
 		fl.setAD_OrgTrx_ID(receiptLine.getAD_OrgTrx_ID());
-		fl.setC_Project_ID(receiptLine.getC_Project_ID());
-		fl.setC_Activity_ID(receiptLine.getC_Activity_ID());
-		fl.setC_Order_ID(receiptLine.getC_Order_ID());
-		fl.setM_SectionCode_ID(receiptLine.getM_SectionCode_ID());
-		fl.setC_Campaign_ID(receiptLine.getC_Campaign_ID());
-		// fl.setC_SalesRegion_ID(receiptLine.getC_SalesRegion_ID());
-		// fl.setC_LocFrom_ID(receiptLine.getC_LocFrom_ID());
-		// fl.setC_LocTo_ID(receiptLine.getC_LocTo_ID());
-		// fl.setM_Product_ID(receiptLine.getM_Product_ID());
 		fl.setM_Locator_ID(receiptLine.getM_Locator_ID());
-		fl.setUser1_ID(receiptLine.getUser1_ID());
-		fl.setUser2_ID(receiptLine.getUser2_ID());
 		fl.setC_UOM_ID(receiptLine.getC_UOM_ID());
-		// Org for cross charge
-		fl.setAD_Org_ID(receiptLine.getAD_Org_ID());
+
+		fl.setFromDimension(services.extractDimensionFromModel(receiptLine));
 	}
 
 	private CostAmount getCreateCostDetails(final AcctSchema acctSchema)

@@ -23,14 +23,16 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.MapReduceAggregator;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -43,7 +45,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
@@ -83,6 +84,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final transient IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 
+	@Getter(AccessLevel.PACKAGE)
 	private final I_C_Order purchaseOrder;
 
 	private final String purchaseQtySource;
@@ -93,7 +95,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@Nullable
 	private final TaxId taxId;
 
-	private final IdentityHashMap<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
+	private final IdentityHashMap<I_C_OrderLine, ArrayList<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
 	/**
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
@@ -228,10 +230,14 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@Override
 	protected void closeGroup(final I_C_OrderLine purchaseOrderLine)
 	{
-		final Set<OrderId> salesOrdersToBeClosed = new HashSet<>();
+		final List<I_C_OrderLine> salesOrderLines = purchaseOrderLine2saleOrderLines.get(purchaseOrderLine);
+
+		final OrderId singleSalesOrderId = extractSingleOrderIdOrNull(salesOrderLines);
+		purchaseOrderLine.setC_OrderSO_ID(OrderId.toRepoId(singleSalesOrderId));
 		InterfaceWrapperHelper.save(purchaseOrderLine);
 
-		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
+		final HashSet<OrderId> salesOrdersToBeClosed = new HashSet<>();
+		for (final I_C_OrderLine salesOrderLine : salesOrderLines)
 		{
 			orderDAO.allocatePOLineToSOLine(
 					OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()),
@@ -277,14 +283,12 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		purchaseOrderLine2saleOrderLines.get(purchaseOrderLine).add(salesOrderLine); // no NPE, because the list for this key was added in createGroup()
 	}
 
-	I_C_Order getPurchaseOrder()
+	@Nullable
+	private static OrderId extractSingleOrderIdOrNull(final List<I_C_OrderLine> orderLines)
 	{
-		return purchaseOrder;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
+		return CollectionUtils.extractSingleElementOrDefault(
+				orderLines,
+				orderLine -> OrderId.ofRepoId(orderLine.getC_Order_ID()),
+				null);
 	}
 }

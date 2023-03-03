@@ -29,7 +29,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
@@ -215,8 +214,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
 
 		ic1.setC_Order_ID(orderLine1.getC_Order_ID());
+		ic1.setC_OrderSO_ID(orderLine1.getC_OrderSO_ID());
 		save(ic1);
 		ic2.setC_Order_ID(orderLine2.getC_Order_ID());
+		ic2.setC_OrderSO_ID(orderLine2.getC_OrderSO_ID());
 		save(ic2);
 
 		final String key1 = headerAggregationKeyBuilder.buildKey(ic1);
@@ -238,7 +239,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
 				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
 
-		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						order1,
@@ -249,7 +249,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
 						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
 						SOTrx.ofBoolean(order1.isSOTrx()),
-								(VatCodeId)null))
+						null))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

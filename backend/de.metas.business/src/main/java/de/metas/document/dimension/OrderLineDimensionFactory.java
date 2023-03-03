@@ -44,11 +44,18 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 	@NonNull
 	public Dimension getFromRecord(@NonNull final I_C_OrderLine record)
 	{
+		OrderId salesOrderId = OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID());
+		if (salesOrderId == null
+				&& record.getC_Order().isSOTrx())
+		{
+			salesOrderId = OrderId.ofRepoId(record.getC_Order_ID());
+		}
+
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.salesOrderId(salesOrderId)
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
@@ -69,6 +76,7 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
