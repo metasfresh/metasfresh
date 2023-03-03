@@ -25,6 +25,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.order.OrderId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.NumberUtils;
@@ -193,7 +194,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int User2_ID = 0;
 		int UserElement1_ID = 0;
 		int UserElement2_ID = 0;
-		int C_Order_ID = 0;
+		OrderId C_OrderSO_ID = null;
 		int M_SectionCode_ID = 0;
 		//
 		// Active Elements
@@ -226,9 +227,9 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				C_Activity_ID = sourceAccount.getC_Activity_ID();
 			}
 
-			else if (elementType.equals(AcctSchemaElementType.Order))
+			else if (elementType.equals(AcctSchemaElementType.SalesOrder))
 			{
-				C_Order_ID = sourceAccount.getC_Order_ID();
+				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_OrderSO_ID());
 			}
 			else if (elementType.equals(AcctSchemaElementType.SectionCode))
 			{
@@ -279,12 +280,13 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		final MAccount account = MAccount.get(getCtx(), AD_Client_ID, AD_Org_ID,
-											  acctSchemaId, Account_ID, C_SubAcct_ID,
-											  M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
-											  C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
-											  C_Project_ID, C_Campaign_ID, C_Activity_ID,
-											  User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
-											  C_Order_ID, M_SectionCode_ID);
+				acctSchemaId, Account_ID, C_SubAcct_ID,
+				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
+				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
+				C_Project_ID, C_Campaign_ID, C_Activity_ID,
+				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
+				OrderId.toRepoId(C_OrderSO_ID),
+				M_SectionCode_ID);
 
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
 	}    // createAccount
@@ -292,7 +294,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 	public List<AccountInfo> getAccountInfos(final Object acctAwareModel)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(acctAwareModel);
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
 
 		final List<AccountInfo> list = new ArrayList<>();
 		for (int columnIndex = 0; columnIndex < poInfo.getColumnCount(); columnIndex++)
@@ -304,9 +306,9 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				final AccountId accountId = AccountId.ofRepoIdOrNull(NumberUtils.asInt(accountIdObj, -1));
 
 				list.add(AccountInfo.builder()
-								 .columnName(columnName)
-								 .accountId(accountId)
-								 .build());
+						.columnName(columnName)
+						.accountId(accountId)
+						.build());
 			}
 		}
 		return list;

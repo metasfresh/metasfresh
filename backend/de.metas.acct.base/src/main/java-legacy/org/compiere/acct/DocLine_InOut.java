@@ -12,6 +12,7 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
@@ -102,8 +103,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 
 	public final I_C_OrderLine getOrderLineOrNull()
 	{
-		return getModel(I_M_InOutLine.class)
-				.getC_OrderLine();
+		return getInOutLine().getC_OrderLine();
+	}
+
+	private I_M_InOutLine getInOutLine()
+	{
+		return getModel(I_M_InOutLine.class);
 	}
 
 	/**
@@ -226,5 +231,12 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	private CurrencyConversionContext getCurrencyConversionContext(final AcctSchema as)
 	{
 		return getDoc().getCurrencyConversionContext(as);
+	}
+
+	@Override
+	protected OrderId getSalesOrderId()
+	{
+		final I_M_InOutLine inoutLine = getInOutLine();
+		return OrderId.ofRepoIdOrNull(inoutLine.getC_OrderSO_ID());
 	}
 }

@@ -43,6 +43,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
@@ -145,6 +147,7 @@ public class AcctDocRequiredServicesFacade
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 	private final ICostingService costingService;
+	private final DimensionService dimensionService;
 
 	public AcctDocRequiredServicesFacade(
 			@NonNull final GLCategoryRepository glCategoryRepository,
@@ -153,7 +156,8 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final AccountProviderFactory accountProviderFactory,
 			@NonNull final InvoiceAcctRepository invoiceAcctRepository,
 			@NonNull final MatchInvoiceService matchInvoiceService,
-			@NonNull final OrderCostService orderCostService)
+			@NonNull final OrderCostService orderCostService,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
@@ -162,6 +166,7 @@ public class AcctDocRequiredServicesFacade
 		this.invoiceAcctRepository = invoiceAcctRepository;
 		this.matchInvoiceService = matchInvoiceService;
 		this.orderCostService = orderCostService;
+		this.dimensionService = dimensionService;
 	}
 
 	public void fireBeforePostEvent(@NonNull final PO po)
@@ -418,5 +423,10 @@ public class AcctDocRequiredServicesFacade
 	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
 	{
 		return vatCodeDAO.findVATCode(request);
+	}
+
+	public Dimension extractDimensionFromModel(final Object model)
+	{
+		return dimensionService.getFromRecord(model);
 	}
 }

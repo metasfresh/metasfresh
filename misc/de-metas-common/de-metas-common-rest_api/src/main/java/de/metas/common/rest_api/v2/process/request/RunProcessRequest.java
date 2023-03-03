@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,22 @@
  * #L%
  */
 
-package de.metas.rest_api.process.response;
+package de.metas.common.rest_api.v2.process.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
 import lombok.Value;
 
-@Value
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Message
-{
-	@JsonProperty("message")
-	String message;
+import java.util.List;
 
-	public static Message of(@NonNull final String message)
-	{
-		return new Message(message);
-	}
+@Value
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = RunProcessRequest.RunProcessRequestBuilder.class)
+public class RunProcessRequest
+{
+	@JsonProperty("processParameters")
+	List<JSONProcessParam> processParameters;
 }

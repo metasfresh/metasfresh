@@ -41,6 +41,7 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_EXTERNAL_SERVICE_VALUE = "serviceValue";
 	public static final String HEADER_EXTERNAL_SYSTEM_REQUEST = "externalSystemRequest";
 	public static final String HEADER_HU_ID = "M_HU_ID";
+	public static final String HEADER_AD_Process_Value = "adProcessValue";
 
 	public static final String MF_API_BASE_URL_PROPERTY = "metasfresh.api.baseurl";
 
@@ -132,4 +133,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_CREATE_CONVERSION_RATE_CAMEL_URI = "metasfresh.create-conversion-rate-v2.camel.uri";
 	public static final String MF_CREATE_CONVERSION_RATE_V2_URI = "metasfresh.api.v2.currency.baseurl";
+
+	public static final String MF_INVOKE_AD_PROCESS = "To-MF_InvokeADProcess-Route";
+
+	public static final String MF_AD_PROCESS_V2_URI = "metasfresh.api.v2.process.baseurl";
 }

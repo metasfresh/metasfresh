@@ -652,11 +652,11 @@ public final class FactLine extends X_Fact_Acct
 		// Order
 		if (m_docLine != null)
 		{
-			setC_Order_ID(m_docLine.getOrderId());
+			setC_OrderSO_ID(m_docLine.getSalesOrderId());
 		}
-		if (getC_Order_ID() <= 0)
+		if (getC_OrderSO_ID() <= 0)
 		{
-			setC_Order_ID(m_doc.getOrderId());
+			setC_OrderSO_ID(m_doc.getSalesOrderId());
 		}
 
 		// SectionCode
@@ -1175,8 +1175,6 @@ public final class FactLine extends X_Fact_Acct
 	{
 		if (newRecord)
 		{
-			log.debug(toString());
-			//
 			getAD_Org_ID();
 			getC_SalesRegion_ID();
 			// Set Default Account Info
@@ -1212,11 +1210,11 @@ public final class FactLine extends X_Fact_Acct
 			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
 			}
-			if (getC_Order_ID() == 0)
+			if (getC_OrderSO_ID() <= 0)
 			{
-				setC_Order_ID(m_acct.getC_Order_ID());
+				setC_OrderSO_ID(m_acct.getC_OrderSO_ID());
 			}
-			if (getM_SectionCode_ID() == 0)
+			if (getM_SectionCode_ID() <= 0)
 			{
 				setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
 			}
@@ -1274,7 +1272,7 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
-				.setC_Order_ID(getC_Order_ID())
+				.setSalesOrderId(getC_OrderSO_ID())
 				.setM_SectionCode_ID(getM_SectionCode_ID())
 				.build();
 	}
@@ -1404,7 +1402,7 @@ public final class FactLine extends X_Fact_Acct
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
 			setC_Activity_ID(fact.getC_Activity_ID());
-			setC_Order_ID(fact.getC_Order_ID());
+			setC_OrderSO_ID(fact.getC_OrderSO_ID());
 			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 			setC_Campaign_ID(fact.getC_Campaign_ID());
 			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
@@ -1418,7 +1416,7 @@ public final class FactLine extends X_Fact_Acct
 			setC_Tax_ID(fact.getC_Tax_ID());
 			// Org for cross charge
 			setAD_Org_ID(fact.getAD_Org_ID());
-			setC_Order_ID(fact.getC_Order_ID());
+			setC_OrderSO_ID(fact.getC_OrderSO_ID());
 			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 
 			return true; // success
@@ -1537,9 +1535,9 @@ public final class FactLine extends X_Fact_Acct
 		super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
 	}
 
-	public void setC_Order_ID(@Nullable OrderId orderId)
+	public void setC_OrderSO_ID(@Nullable OrderId orderId)
 	{
-		super.setC_Order_ID(OrderId.toRepoId(orderId));
+		super.setC_OrderSO_ID(OrderId.toRepoId(orderId));
 	}
 
 	public void setC_DocType_ID(@Nullable DocTypeId docTypeId)
@@ -1554,8 +1552,19 @@ public final class FactLine extends X_Fact_Acct
 		setC_Project_ID(dimension.getProjectId());
 		setC_Campaign_ID(dimension.getCampaignId());
 		setC_Activity_ID(dimension.getActivityId());
-		setC_Order_ID(dimension.getOrderId());
+		setC_OrderSO_ID(dimension.getSalesOrderId());
 		setM_SectionCode_ID(dimension.getSectionCodeId());
 		setM_Product_ID(dimension.getProductId());
+		setUser1_ID(dimension.getUser1_ID());
+		setUser2_ID(dimension.getUser2_ID());
+		setUserElement1_ID(dimension.getUserElement1Id());
+		setUserElement2_ID(dimension.getUserElement2Id());
+		setUserElementString1(dimension.getUserElementString1());
+		setUserElementString2(dimension.getUserElementString2());
+		setUserElementString3(dimension.getUserElementString3());
+		setUserElementString4(dimension.getUserElementString4());
+		setUserElementString5(dimension.getUserElementString5());
+		setUserElementString6(dimension.getUserElementString6());
+		setUserElementString7(dimension.getUserElementString7());
 	}
 }    // FactLine

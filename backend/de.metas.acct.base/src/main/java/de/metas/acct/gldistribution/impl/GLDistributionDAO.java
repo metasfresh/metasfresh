@@ -1,11 +1,13 @@
 package de.metas.acct.gldistribution.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.gldistribution.IGLDistributionDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocTypeId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -16,13 +18,10 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.gldistribution.IGLDistributionDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 /*
  * #%L
@@ -125,7 +124,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 			{
 				continue;
 			}
-			if (!glDistribution.isAnyOrder() && glDistribution.getC_Order_ID() != dimension.getC_Order_ID())
+			if (!glDistribution.isAnyOrder() && glDistribution.getC_Order_ID() != dimension.getSalesOrderId())
 			{
 				continue;
 			}

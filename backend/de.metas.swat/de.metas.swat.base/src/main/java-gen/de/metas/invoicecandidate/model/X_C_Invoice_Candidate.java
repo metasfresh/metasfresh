@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -619456444L;
+	private static final long serialVersionUID = 1821821924L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -700,6 +700,60 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class);
+	}
+
+	@Override
+	public void setC_PaymentInstruction(final org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class, C_PaymentInstruction);
+	}
+
+	@Override
+	public void setC_PaymentInstruction_ID (final int C_PaymentInstruction_ID)
+	{
+		if (C_PaymentInstruction_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentInstruction_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentInstruction_ID, C_PaymentInstruction_ID);
+	}
+
+	@Override
+	public int getC_PaymentInstruction_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentInstruction_ID);
 	}
 
 	@Override
@@ -2529,32 +2583,5 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-	@Override
-	public org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class);
-	}
-
-	@Override
-	public void setC_PaymentInstruction(final org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class, C_PaymentInstruction);
-	}
-
-	@Override
-	public void setC_PaymentInstruction_ID (final int C_PaymentInstruction_ID)
-	{
-		if (C_PaymentInstruction_ID < 1)
-			set_Value (COLUMNNAME_C_PaymentInstruction_ID, null);
-		else
-			set_Value (COLUMNNAME_C_PaymentInstruction_ID, C_PaymentInstruction_ID);
-	}
-
-	@Override
-	public int getC_PaymentInstruction_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PaymentInstruction_ID);
 	}
 }

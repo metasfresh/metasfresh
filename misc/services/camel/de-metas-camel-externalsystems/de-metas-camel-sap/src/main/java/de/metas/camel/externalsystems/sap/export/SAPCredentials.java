@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-camel-sap
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,44 @@
  * #L%
  */
 
-package de.metas.rest_api.process.response;
+package de.metas.camel.externalsystems.sap.export;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JSONProcessParamBasicInfo.JSONProcessParamBasicInfoBuilder.class)
-public class JSONProcessParamBasicInfo
+public class SAPCredentials
 {
-	@JsonProperty("name")
-	String name;
+	@NonNull
+	String baseUrl;
 
-	@JsonProperty("columnName")
-	String columnName;
+	@NonNull
+	String postAcctDocumentsPath;
 
-	@JsonProperty("type")
-	String type;
+	@NonNull
+	String signedVersion;
 
-	@JsonProperty("description")
-	String description;
+	@NonNull
+	String signedPermissions;
+
+	@NonNull
+	String signature;
+
+	@NonNull
+	String apiVersion;
+
+	@NonNull
+	public String getPostAcctDocumentsURL()
+	{
+		return UriComponentsBuilder.fromHttpUrl(baseUrl + postAcctDocumentsPath)
+				.queryParam("api-version", apiVersion)
+				.queryParam("sp", signedPermissions)
+				.queryParam("sv", signedVersion)
+				.queryParam("sig", signature)
+				.build()
+				.toUriString();
+	}
 }

@@ -47,6 +47,7 @@
         <module>de-metas-camel-woocommerce</module>
         <module>de-metas-camel-grssignum</module>
         <module>de-metas-camel-sap-file-import</module>
+        <module>de-metas-camel-sap</module>
     </modules>
 
     <dependencies>

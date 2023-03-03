@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1815587035L;
+	private static final long serialVersionUID = -177110671L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -35,15 +35,39 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config()
+	public void setApiVersion (final @Nullable String ApiVersion)
 	{
-		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class);
+		set_Value (COLUMNNAME_ApiVersion, ApiVersion);
 	}
 
 	@Override
-	public void setExternalSystem_Config(final de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config)
+	public String getApiVersion()
 	{
-		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class, ExternalSystem_Config);
+		return get_ValueAsString(COLUMNNAME_ApiVersion);
+	}
+
+	@Override
+	public void setBaseURL (final @Nullable String BaseURL)
+	{
+		set_Value (COLUMNNAME_BaseURL, BaseURL);
+	}
+
+	@Override
+	public String getBaseURL()
+	{
+		return get_ValueAsString(COLUMNNAME_BaseURL);
+	}
+
+	@Override
+	public I_ExternalSystem_Config getExternalSystem_Config()
+	{
+		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class);
+	}
+
+	@Override
+	public void setExternalSystem_Config(final I_ExternalSystem_Config ExternalSystem_Config)
+	{
+		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class, ExternalSystem_Config);
 	}
 
 	@Override
@@ -77,13 +101,13 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
+	public void setExternalSystemValue (final String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
 
 	@Override
-	public java.lang.String getExternalSystemValue() 
+	public String getExternalSystemValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
@@ -98,5 +122,53 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	public boolean isCheckDescriptionForMaterialType() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCheckDescriptionForMaterialType);
+	}
+
+	@Override
+	public void setPost_Acct_Documents_Path (final @Nullable String Post_Acct_Documents_Path)
+	{
+		set_Value (COLUMNNAME_Post_Acct_Documents_Path, Post_Acct_Documents_Path);
+	}
+
+	@Override
+	public String getPost_Acct_Documents_Path()
+	{
+		return get_ValueAsString(COLUMNNAME_Post_Acct_Documents_Path);
+	}
+
+	@Override
+	public void setSignatureSAS (final @Nullable String SignatureSAS)
+	{
+		set_Value (COLUMNNAME_SignatureSAS, SignatureSAS);
+	}
+
+	@Override
+	public String getSignatureSAS()
+	{
+		return get_ValueAsString(COLUMNNAME_SignatureSAS);
+	}
+
+	@Override
+	public void setSignedPermissions (final @Nullable String SignedPermissions)
+	{
+		set_Value (COLUMNNAME_SignedPermissions, SignedPermissions);
+	}
+
+	@Override
+	public String getSignedPermissions()
+	{
+		return get_ValueAsString(COLUMNNAME_SignedPermissions);
+	}
+
+	@Override
+	public void setSignedVersion (final @Nullable String SignedVersion)
+	{
+		set_Value (COLUMNNAME_SignedVersion, SignedVersion);
+	}
+
+	@Override
+	public String getSignedVersion()
+	{
+		return get_ValueAsString(COLUMNNAME_SignedVersion);
 	}
 }

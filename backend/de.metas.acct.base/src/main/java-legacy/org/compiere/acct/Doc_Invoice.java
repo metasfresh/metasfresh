@@ -37,8 +37,10 @@ import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.order.OrderId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -899,6 +901,19 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
+	}
+
+	@Nullable
+	@Override
+	protected OrderId getSalesOrderId()
+	{
+		final Optional<OrderId> optionalSalesOrderId = CollectionUtils.extractSingleElementOrDefault(
+				getDocLines(),
+				docLine -> Optional.ofNullable(docLine.getSalesOrderId()),
+				Optional.empty());
+
+		//noinspection DataFlowIssue
+		return optionalSalesOrderId.orElse(null);
 	}
 
 	public static void unpostIfNeeded(final I_C_Invoice invoice)

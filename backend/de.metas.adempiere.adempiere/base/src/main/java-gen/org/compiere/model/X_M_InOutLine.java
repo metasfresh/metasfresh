@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -728128457L;
+	private static final long serialVersionUID = -1981949109L;
 
     /** Standard Constructor */
     public X_M_InOutLine (final Properties ctx, final int M_InOutLine_ID, @Nullable final String trxName)
@@ -202,6 +202,33 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getC_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
 
 	@Override
@@ -646,18 +673,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1()
-	{
-		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
-	{
-		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
-	}
-
-	@Override
 	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -670,18 +685,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getUser1_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User1_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ElementValue getUser2()
-	{
-		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
-	{
-		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
 	@Override

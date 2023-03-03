@@ -44,14 +44,12 @@ import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-@Service
 public abstract class ExportToExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExportToExternalSystemService.class);

@@ -37,31 +37,15 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class Dimension implements Comparable<Dimension>
 {
-	@With
-	@Nullable
-	ProjectId projectId;
-
+	@With @Nullable ProjectId projectId;
 	int campaignId;
-
-	@With
-	@Nullable
-	ActivityId activityId;
-
-	@With
-	@Nullable
-	OrderId orderId;
-
-	@With
-	@Nullable
-	SectionCodeId sectionCodeId;
-
-	@With
-	@Nullable
-	ProductId productId;
-
+	@With @Nullable ActivityId activityId;
+	@With @Nullable OrderId salesOrderId;
+	@With @Nullable SectionCodeId sectionCodeId;
+	@With @Nullable ProductId productId;
 
 	// todo propagation for these 2
 	int user1_ID;
@@ -70,40 +54,40 @@ public class Dimension implements Comparable<Dimension>
 	int userElement1Id;
 	int userElement2Id;
 
-	@Nullable
-	String userElementString1;
-	@Nullable
-	String userElementString2;
-	@Nullable
-	String userElementString3;
-	@Nullable
-	String userElementString4;
-	@Nullable
-	String userElementString5;
-	@Nullable
-	String userElementString6;
-	@Nullable
-	String userElementString7;
+	@Nullable String userElementString1;
+	@Nullable String userElementString2;
+	@Nullable String userElementString3;
+	@Nullable String userElementString4;
+	@Nullable String userElementString5;
+	@Nullable String userElementString6;
+	@Nullable String userElementString7;
 
-	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2)
-	{
-
-		return Objects.equals(d1, d2);
-	}
+	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2) {return Objects.equals(d1, d2);}
 
 	@Override
-	public int compareTo(@Nullable final Dimension o)
+	public int compareTo(@Nullable final Dimension other)
 	{
-		return this.equals(o) ? 0 : -1;
+		if (other == null)
+		{
+			return -1;
+		}
+		else if (this.equals(other))
+		{
+			return 0;
+		}
+		else
+		{
+			return this.toString().compareTo(other.toString());
+		}
 	}
 
 	public Dimension fallbackTo(@NonNull final Dimension other)
 	{
-		return builder()
+		final Dimension newDimension = builder()
 				.projectId(CoalesceUtil.coalesce(this.projectId, other.projectId))
 				.campaignId(CoalesceUtil.firstGreaterThanZero(this.campaignId, other.campaignId))
 				.activityId(CoalesceUtil.coalesce(this.activityId, other.activityId))
-				.orderId(CoalesceUtil.coalesce(this.orderId, other.orderId))
+				.salesOrderId(CoalesceUtil.coalesce(this.salesOrderId, other.salesOrderId))
 				.sectionCodeId(CoalesceUtil.coalesce(this.sectionCodeId, other.sectionCodeId))
 				.productId(CoalesceUtil.coalesce(this.productId, other.productId))
 				.user1_ID(CoalesceUtil.firstGreaterThanZero(this.user1_ID, other.user1_ID))
@@ -118,5 +102,18 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
 				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
 				.build();
+
+		if (newDimension.equals(this))
+		{
+			return this;
+		}
+		else if (newDimension.equals(other))
+		{
+			return other;
+		}
+		else
+		{
+			return newDimension;
+		}
 	}
 }

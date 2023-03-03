@@ -22,6 +22,7 @@ package org.adempiere.acct.api.impl;
  * #L%
  */
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
@@ -29,7 +30,6 @@ import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.Check;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 
@@ -66,7 +66,7 @@ public class FactAcctBL implements IFactAcctBL
 				.setC_Project_ID(fa.getC_Project_ID())
 				.setC_Campaign_ID(fa.getC_Campaign_ID())
 				.setC_Activity_ID(fa.getC_Activity_ID())
-				.setC_Order_ID(fa.getC_Order_ID())
+				.setSalesOrderId(fa.getC_OrderSO_ID())
 				.setM_SectionCode_ID(fa.getM_SectionCode_ID())
 				.setUser1_ID(fa.getUser1_ID())
 				.setUser2_ID(fa.getUser2_ID())
@@ -143,9 +143,9 @@ public class FactAcctBL implements IFactAcctBL
 		{
 			fa.setC_Activity_ID(dim.getC_Activity_ID());
 		}
-		if (dim.isSegmentValueSet(AcctSegmentType.Order))
+		if (dim.isSegmentValueSet(AcctSegmentType.SalesOrder))
 		{
-			fa.setC_Order_ID(dim.getC_Order_ID());
+			fa.setC_OrderSO_ID(dim.getSalesOrderId());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
 		{

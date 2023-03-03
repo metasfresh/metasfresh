@@ -50,7 +50,7 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
@@ -69,8 +69,8 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_Order_ID(OrderId.toRepoId(from.getOrderId()));
-		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
+		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

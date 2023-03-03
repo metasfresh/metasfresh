@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.process.request;
+package de.metas.common.rest_api.v2.process.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,9 +33,9 @@ import java.util.List;
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = RunProcessRequest.RunProcessRequestBuilder.class)
-public class RunProcessRequest
+@JsonDeserialize(builder = GetAvailableProcessesResponse.GetAvailableProcessesResponseBuilder.class)
+public class GetAvailableProcessesResponse
 {
-	@JsonProperty("processParameters")
-	List<JSONProcessParam> processParameters;
+	@JsonProperty("availableProcesses")
+	List<JSONProcessBasicInfo> availableProcesses;
 }

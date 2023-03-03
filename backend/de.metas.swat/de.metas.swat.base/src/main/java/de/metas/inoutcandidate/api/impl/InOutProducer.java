@@ -10,7 +10,6 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -624,8 +623,7 @@ public class InOutProducer implements IInOutProducer
 		// Contract
 		line.setC_Flatrate_Term_ID(rs.getC_Flatrate_Term_ID());
 
-		final Dimension receiptScheduleDimension = dimensionService.getFromRecord(rs);
-		dimensionService.updateRecord(line, receiptScheduleDimension);
+		dimensionService.updateRecord(line, dimensionService.getFromRecord(rs));
 	}
 
 	/**

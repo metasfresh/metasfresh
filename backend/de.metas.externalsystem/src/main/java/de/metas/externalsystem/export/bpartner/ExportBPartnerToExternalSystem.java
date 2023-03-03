@@ -47,7 +47,6 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -55,7 +54,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-@Service
 public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExportBPartnerToExternalSystem.class);
