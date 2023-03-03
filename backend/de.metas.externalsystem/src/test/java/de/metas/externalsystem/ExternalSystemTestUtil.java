@@ -30,6 +30,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMa
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_Acct_Export;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.product.ProductCategoryId;
@@ -184,8 +185,21 @@ public class ExternalSystemTestUtil
 		final I_ExternalSystem_Config_SAP childRecord = newInstance(I_ExternalSystem_Config_SAP.class);
 		childRecord.setExternalSystemValue(configValue);
 		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setBaseURL("baseURL");
+		childRecord.setApiVersion("ApiVersion");
+		childRecord.setSignatureSAS("Signature");
+		childRecord.setSignedPermissions("SignedPermissions");
+		childRecord.setSignedVersion("signedVersion");
+		childRecord.setPost_Acct_Documents_Path("Post_Acct_Documents_Path");
 
 		saveRecord(childRecord);
+
+		final I_ExternalSystem_Config_SAP_Acct_Export exportConfig = newInstance(I_ExternalSystem_Config_SAP_Acct_Export.class);
+		exportConfig.setExternalSystem_Config_SAP_ID(childRecord.getExternalSystem_Config_SAP_ID());
+		exportConfig.setC_DocType_ID(1);
+		exportConfig.setAD_Process_ID(2);
+
+		saveRecord(exportConfig);
 
 		return childRecord;
 	}
