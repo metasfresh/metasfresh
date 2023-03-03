@@ -1,3 +1,13 @@
+-- 2023-03-02T17:28:39.511Z
+DELETE FROM  AD_Index_Table_Trl WHERE AD_Index_Table_ID=540705
+;
+
+-- 2023-03-02T17:28:39.542Z
+DELETE FROM AD_Index_Table WHERE AD_Index_Table_ID=540705
+;
+
+
+
 -- 2023-03-02T17:36:02.175Z
 INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540727,0,203,TO_TIMESTAMP('2023-03-02 19:36:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','ExternalID_OrgID_ProjectType_NonNull','N',TO_TIMESTAMP('2023-03-02 19:36:02','YYYY-MM-DD HH24:MI:SS'),100,'C_ProjectType_ID IS NOT NULL and isactive = ''Y''')
 ;
@@ -44,5 +54,18 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 
 -- 2023-03-02T17:37:43.370Z
 CREATE UNIQUE INDEX ExternalID_OrgID_ProjectType_Nullable ON C_Project (ExternalId,AD_Org_ID,C_ProjectType_ID) WHERE C_ProjectType_ID IS NULL and isactive = 'Y'
+;
+
+
+-- 2023-03-03T06:33:39.076Z
+DELETE FROM AD_Index_Column WHERE AD_Index_Column_ID=541321
+;
+
+-- 2023-03-03T06:33:46.032Z
+DROP INDEX IF EXISTS externalid_orgid_projecttype_nullable
+;
+
+-- 2023-03-03T06:33:46.036Z
+CREATE UNIQUE INDEX ExternalID_OrgID_ProjectType_Nullable ON C_Project (ExternalId,AD_Org_ID) WHERE C_ProjectType_ID IS NULL and isactive = 'Y'
 ;
 
