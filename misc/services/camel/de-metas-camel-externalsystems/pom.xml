@@ -51,6 +51,7 @@
         <module>de-metas-camel-sap-file-import</module>
         <module>de-metas-camel-metasfresh</module>
         <module>com-adekia-exchange</module>
+        <module>de-metas-camel-sap</module>
     </modules>
 
     <dependencies>
