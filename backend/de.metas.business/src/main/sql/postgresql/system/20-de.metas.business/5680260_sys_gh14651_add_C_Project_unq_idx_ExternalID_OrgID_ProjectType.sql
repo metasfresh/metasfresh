@@ -69,3 +69,13 @@ DROP INDEX IF EXISTS externalid_orgid_projecttype_nullable
 CREATE UNIQUE INDEX ExternalID_OrgID_ProjectType_Nullable ON C_Project (ExternalId,AD_Org_ID) WHERE C_ProjectType_ID IS NULL and isactive = 'Y'
 ;
 
+-- 2023-03-03T06:47:00.674Z
+UPDATE AD_Index_Table SET Name='ExternalID_OrgID_with_null_project_type',Updated=TO_TIMESTAMP('2023-03-03 08:47:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540728
+;
+
+-- 2023-03-03T06:47:03.079Z
+CREATE UNIQUE INDEX ExternalID_OrgID_with_null_project_type ON C_Project (ExternalId,AD_Org_ID) WHERE C_ProjectType_ID IS NULL and isactive = 'Y'
+;
+
+
+
