@@ -100,6 +100,15 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				CostDetailPreviousAmounts.of(currentCost));
 
 	}
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		return utils.createCostDetailRecordNoCostsChanged(
+				request,
+				CostDetailPreviousAmounts.of(currentCost));
+	}
 
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
@@ -131,6 +140,21 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(costAmountDetailed),
 				CostDetailPreviousAmounts.of(currentCost));
+	}
+	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				CostDetailPreviousAmounts.of(currentCost));
+
+		utils.saveCurrentCost(currentCost);
+
+		return result;
 	}
 
 	@Override
