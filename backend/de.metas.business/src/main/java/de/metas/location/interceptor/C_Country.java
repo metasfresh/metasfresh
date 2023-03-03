@@ -5,6 +5,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
@@ -46,7 +47,8 @@ import java.util.Properties;
 @Component
 public class C_Country
 {
-	final CountryService countryService = SpringContextHolder.instance.getBean(CountryService.class);
+	private final CountryService countryService = SpringContextHolder.instance.getBean(CountryService.class);
+	private final int c_countryTableId = Services.get(IADTableDAO.class).retrieveTableId(I_C_Country.Table_Name);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onCreateCountry(final I_C_Country country)
@@ -64,7 +66,7 @@ public class C_Country
 
 			final I_M_Attribute countryAttribute = countryAttributeDAO.retrieveCountryAttribute(ctx);
 			final IAttributeValueGenerator generator = attributesService.getAttributeValueGenerator(countryAttribute);
-			generator.generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
+			generator.generateAttributeValue(ctx, c_countryTableId, country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -86,20 +88,16 @@ public class C_Country
 		setCountryAttributeAsActive(country, false);
 	}
 
-	private AttributeListValue setCountryAttributeAsActive(final I_C_Country country, final boolean isActive)
+	private void setCountryAttributeAsActive(final I_C_Country country, final boolean isActive)
 	{
 		final AttributeListValue existingAttributeValue = getAttributeValue(country);
 		if (existingAttributeValue != null)
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			return attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+			attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
 					.id(existingAttributeValue.getId())
 					.active(isActive)
 					.build());
-		}
-		else
-		{
-			return null;
 		}
 	}
 
@@ -109,20 +107,16 @@ public class C_Country
 		countryService.assertCountryValidDisplaySequence(country);
 	}
 
-	private AttributeListValue setCountryAttributeName(@NonNull final I_C_Country country)
+	private void setCountryAttributeName(@NonNull final I_C_Country country)
 	{
 		final AttributeListValue existingAttributeValue = getAttributeValue(country);
 		if (existingAttributeValue != null)
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-			return attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+			attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
 					.id(existingAttributeValue.getId())
 					.name(country.getName())
 					.build());
-		}
-		else
-		{
-			return null;
 		}
 	}
 

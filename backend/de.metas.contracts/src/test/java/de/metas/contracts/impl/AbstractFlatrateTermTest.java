@@ -103,7 +103,7 @@ public abstract class AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-	private final String sequence = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
+	private final static String SEQUENCE = "@BP@ @CON@ @A1@ @A2@ @A3@ @A4@ @P@ @C@ @CO@";
 	protected final static BigDecimal QTY_ONE = BigDecimal.ONE;
 	protected final static BigDecimal PRICE_TEN = BigDecimal.TEN;
 
@@ -279,12 +279,12 @@ public abstract class AbstractFlatrateTermTest
 	private void createCountryAndCountryArea()
 	{
 		country = newInstance(I_C_Country.class);
-		country.setAD_Org(helper.getOrg());
+		country.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		country.setAD_Language("de_DE");
 		country.setCountryCode("DE");
-		country.setDisplaySequence(sequence);
-		country.setDisplaySequenceLocal(sequence);
-		country.setCaptureSequence(sequence);
+		country.setDisplaySequence(SEQUENCE);
+		country.setDisplaySequenceLocal(SEQUENCE);
+		country.setCaptureSequence(SEQUENCE);
 		save(country);
 
 		final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class, country);
@@ -438,7 +438,7 @@ public abstract class AbstractFlatrateTermTest
 		return orderLineRecord;
 	}
 
-	protected I_C_Contract_Change createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
+	protected void createContractChange(@NonNull final I_C_Flatrate_Conditions flatrateConditions)
 	{
 		final I_C_Contract_Change contractChange = newInstance(I_C_Contract_Change.class);
 		contractChange.setAction(X_C_Contract_Change.ACTION_Statuswechsel);
@@ -448,6 +448,5 @@ public abstract class AbstractFlatrateTermTest
 		contractChange.setDeadLine(1);
 		contractChange.setDeadLineUnit(X_C_Contract_Change.DEADLINEUNIT_MonatE);
 		save(contractChange);
-		return contractChange;
 	}
 }
