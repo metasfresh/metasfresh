@@ -142,9 +142,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : false
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -163,9 +163,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
     "syncExternalReferencesToRabbitMQ" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendSubjectWhenCreatedByUserGroup" : false
+    "syncBPartnerToRabbitMQ" : true
   }
 ]
 
@@ -188,9 +188,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : true
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -250,7 +250,19 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
         "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
       },
-      "checkDescriptionForMaterialType" : false
+      "checkDescriptionForMaterialType" : false,
+      "baseURL" : "baseURL",
+      "postAcctDocumentsPath" : "Post_Acct_Documents_Path",
+      "signedVersion" : "signedVersion",
+      "signedPermissions" : "SignedPermissions",
+      "signature" : "Signature",
+      "apiVersion" : "ApiVersion",
+      "exportAcctConfigList" : [
+        {
+          "processId" : 2,
+          "docTypeId" : 1
+        }
+      ]
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -304,7 +316,19 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
       "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
     },
-    "checkDescriptionForMaterialType" : false
+    "checkDescriptionForMaterialType" : false,
+    "baseURL" : "baseURL",
+    "postAcctDocumentsPath" : "Post_Acct_Documents_Path",
+    "signedVersion" : "signedVersion",
+    "signedPermissions" : "SignedPermissions",
+    "signature" : "Signature",
+    "apiVersion" : "ApiVersion",
+    "exportAcctConfigList" : [
+      {
+        "processId" : 2,
+        "docTypeId" : 1
+      }
+    ]
   }
 ]
 
@@ -361,7 +385,19 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
         "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
       },
-      "checkDescriptionForMaterialType" : false
+      "checkDescriptionForMaterialType" : false,
+      "baseURL" : "baseURL",
+      "postAcctDocumentsPath" : "Post_Acct_Documents_Path",
+      "signedVersion" : "signedVersion",
+      "signedPermissions" : "SignedPermissions",
+      "signature" : "Signature",
+      "apiVersion" : "ApiVersion",
+      "exportAcctConfigList" : [
+        {
+          "processId" : 2,
+          "docTypeId" : 1
+        }
+      ]
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -589,9 +625,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
         "syncExternalReferencesToRabbitMQ" : false,
-        "syncBPartnerToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false
+        "syncBPartnerToRabbitMQ" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -653,7 +689,19 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           "targetDirectoryConversionRate" : "testSAPLocalFileConversionRateDirectory",
           "fileNamePatternConversionRate" : "ConversionRateLocalFile*"
         },
-        "checkDescriptionForMaterialType" : false
+        "checkDescriptionForMaterialType" : false,
+        "baseURL" : "baseURL",
+        "postAcctDocumentsPath" : "Post_Acct_Documents_Path",
+        "signedVersion" : "signedVersion",
+        "signedPermissions" : "SignedPermissions",
+        "signature" : "Signature",
+        "apiVersion" : "ApiVersion",
+        "exportAcctConfigList" : [
+          {
+            "processId" : 2,
+            "docTypeId" : 1
+          }
+        ]
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"

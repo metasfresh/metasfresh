@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
@@ -35,6 +36,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_Acct_Export;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -49,6 +51,7 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.SAPConfigMapper;
+import de.metas.externalsystem.sap.export.SAPExportAcctConfig;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
@@ -60,6 +63,7 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
@@ -219,7 +223,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -240,7 +244,7 @@ public class ExternalSystemConfigRepo
 		switch (externalSystemType)
 		{
 			case Alberta:
-					return getAlbertaConfigByQuery(query);
+				return getAlbertaConfigByQuery(query);
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
 			default:
@@ -578,7 +582,6 @@ public class ExternalSystemConfigRepo
 				.collect(ImmutableList.toImmutableList());
 	}
 
-
 	@NonNull
 	private Optional<ExternalSystemParentConfig> getAlbertaConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
 	{
@@ -861,6 +864,13 @@ public class ExternalSystemConfigRepo
 				.contentSourceSFTP(contentSourceSFTP)
 				.contentSourceLocalFile(contentSourceLocalFile)
 				.checkDescriptionForMaterialType(config.isCheckDescriptionForMaterialType())
+				.baseURL(config.getBaseURL())
+				.apiVersion(config.getApiVersion())
+				.postAcctDocumentsPath(config.getPost_Acct_Documents_Path())
+				.signature(config.getSignatureSAS())
+				.signedVersion(config.getSignedVersion())
+				.signedPermissions(config.getSignedPermissions())
+				.exportAcctConfigList(getSAPAcctConfigBySAPConfigId(sapConfigId))
 				.build();
 	}
 
@@ -884,5 +894,20 @@ public class ExternalSystemConfigRepo
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_SAP_LocalFile.class)
 				.map(SAPConfigMapper::buildContentSourceLocalFile);
+	}
+
+	@NonNull
+	private ImmutableList<SAPExportAcctConfig> getSAPAcctConfigBySAPConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP_Acct_Export.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_SAP_Acct_Export.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
+				.create()
+				.stream()
+				.map(exportConfigRecord -> SAPExportAcctConfig.builder()
+						.docTypeId(DocTypeId.ofRepoId(exportConfigRecord.getC_DocType_ID()))
+						.processId(AdProcessId.ofRepoId(exportConfigRecord.getAD_Process_ID()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 }

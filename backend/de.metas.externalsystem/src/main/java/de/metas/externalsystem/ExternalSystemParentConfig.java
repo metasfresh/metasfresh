@@ -76,7 +76,7 @@ public class ExternalSystemParentConfig
 		this.childConfig = childConfig;
 		this.active = active;
 		this.writeAudit = writeAudit;
-		
+
 		this.auditFileFolder = writeAudit
 				? Check.assumeNotNull(auditFileFolder, "If writeAudit==true, then auditFileFolder is set")
 				: null;

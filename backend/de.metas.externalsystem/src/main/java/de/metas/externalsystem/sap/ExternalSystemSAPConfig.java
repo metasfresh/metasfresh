@@ -22,15 +22,21 @@
 
 package de.metas.externalsystem.sap;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.sap.export.SAPExportAcctConfig;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
@@ -52,6 +58,27 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 
 	boolean checkDescriptionForMaterialType;
 
+	@Nullable
+	String baseURL;
+
+	@Nullable
+	String postAcctDocumentsPath;
+
+	@Nullable
+	String signedVersion;
+
+	@Nullable
+	String signedPermissions;
+
+	@Nullable
+	String signature;
+
+	@Nullable
+	String apiVersion;
+
+	@NonNull
+	ImmutableList<SAPExportAcctConfig> exportAcctConfigList;
+
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
@@ -59,7 +86,14 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@NonNull final String value,
 			@Nullable final SAPContentSourceSFTP contentSourceSFTP,
 			@Nullable final SAPContentSourceLocalFile contentSourceLocalFile,
-			final boolean checkDescriptionForMaterialType)
+			final boolean checkDescriptionForMaterialType,
+			@Nullable final ImmutableList<SAPExportAcctConfig> exportAcctConfigList,
+			@Nullable final String baseURL,
+			@Nullable final String postAcctDocumentsPath,
+			@Nullable final String signedVersion,
+			@Nullable final String signedPermissions,
+			@Nullable final String signature,
+			@Nullable final String apiVersion)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -67,11 +101,41 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.contentSourceSFTP = contentSourceSFTP;
 		this.contentSourceLocalFile = contentSourceLocalFile;
 		this.checkDescriptionForMaterialType = checkDescriptionForMaterialType;
+		this.exportAcctConfigList = CoalesceUtil.coalesceNotNull(exportAcctConfigList, ImmutableList.of());
+		this.postAcctDocumentsPath = postAcctDocumentsPath;
+		this.signedVersion = signedVersion;
+		this.signedPermissions = signedPermissions;
+		this.signature = signature;
+		this.baseURL = baseURL;
+		this.apiVersion = apiVersion;
 	}
 
 	@NonNull
 	public static ExternalSystemSAPConfig cast(@NonNull final IExternalSystemChildConfig childCondig)
 	{
 		return (ExternalSystemSAPConfig)childCondig;
+	}
+
+	@NonNull
+	public Optional<SAPExportAcctConfig> getExportConfigFor(@NonNull final DocTypeId docTypeId)
+	{
+		return exportAcctConfigList.stream()
+				.filter(config -> config.getDocTypeId().equals(docTypeId))
+				.findFirst();
+	}
+
+	public boolean isExportEnabledForDocType(@NonNull final DocTypeId docTypeId)
+	{
+		if (Check.isBlank(baseURL)
+				|| Check.isBlank(signature)
+				|| Check.isBlank(signedVersion)
+				|| Check.isBlank(signedPermissions)
+				|| Check.isBlank(postAcctDocumentsPath)
+				|| Check.isBlank(apiVersion))
+		{
+			return false;
+		}
+
+		return getExportConfigFor(docTypeId).isPresent();
 	}
 }

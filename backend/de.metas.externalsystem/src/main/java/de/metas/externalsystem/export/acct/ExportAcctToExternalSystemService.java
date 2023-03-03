@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,30 +20,24 @@
  * #L%
  */
 
-package de.metas.externalsystem.export.hu;
+package de.metas.externalsystem.export.acct;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
-import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -55,16 +49,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class ExportHUToExternalSystemService extends ExportToExternalSystemService
+public abstract class ExportAcctToExternalSystemService extends ExportToExternalSystemService
 {
-	private static final Logger logger = LogManager.getLogger(ExportHUToExternalSystemService.class);
+	private static final Logger logger = LogManager.getLogger(ExportAcctToExternalSystemService.class);
 
+	@NonNull
 	private final ExternalSystemConfigService externalSystemConfigService;
-	private final Debouncer<ExportHUCandidate> syncHuDebouncer;
 
-	protected final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull
+	private final Debouncer<TableRecordReference> syncFactAcctDebouncer;
 
-	protected ExportHUToExternalSystemService(
+	public ExportAcctToExternalSystemService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
@@ -75,29 +70,30 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 
 		this.externalSystemConfigService = externalSystemConfigService;
 
-		this.syncHuDebouncer = Debouncer.<ExportHUCandidate>builder()
-				.name("syncHuDebouncer")
+		this.syncFactAcctDebouncer = Debouncer.<TableRecordReference>builder()
+				.name("syncFactAcctDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.bufferMaxSize", 100))
 				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.debouncer.delayInMillis", 5000))
 				.distinct(true)
-				.consumer(this::exportCollectedHUsIfRequired)
+				.consumer(this::syncCollectedDocumentsIfRequired)
 				.build();
 	}
 
-	public void enqueueHUExport(@NonNull final ExportHUCandidate exportHUCandidate)
+	public void enqueueDocument(@NonNull final TableRecordReference recordReference)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("exportHUCandidate: {} enqueued to be synced.", exportHUCandidate);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("TableRecordReference: {} enqueued to be synced.",
+														 recordReference.getTableName() + "_" + recordReference.getRecord_ID());
 
-		syncHuDebouncer.add(exportHUCandidate);
+		syncFactAcctDebouncer.add(recordReference);
 	}
 
 	@Override
-	@VisibleForTesting
-	public Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
+	protected Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
 			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId,
-			@NonNull final TableRecordReference huRecordReference,
+			@NonNull final TableRecordReference recordReference,
 			@Nullable final PInstanceId pInstanceId)
 	{
+
 		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
 
 		if (!config.isActive())
@@ -106,38 +102,33 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 			return Optional.empty();
 		}
 
-		final ExternalSystemGRSSignumConfig grsSignumConfig = ExternalSystemGRSSignumConfig.cast(config.getChildConfig());
-
-		if (!grsSignumConfig.isHUsSyncEnabled())
+		if (!isSyncAcctRecordsEnabled(recordReference, config))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} HU export is disabled! No action is performed!", config.getChildConfig().getId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {}; isSyncAcctRecordsEnabled = false! No action is performed!", config.getChildConfig().getId());
 			return Optional.empty();
 		}
 
-		final HuId huId = huRecordReference.getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId);
-
-		final I_M_HU hu = handlingUnitsBL.getById(huId);
-
-		final String orgCode = orgDAO.getById(hu.getAD_Org_ID()).getValue();
+		final JsonMetasfreshId pinstanceId = CoalesceUtil.coalesceSuppliers(() -> JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)),
+																			() -> createPInstanceId(recordReference, config));
 
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
-								   .orgCode(orgCode)
-								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
+								   .orgCode(getOrgCode(recordReference))
+								   .adPInstanceId(pinstanceId)
 								   .command(getExternalCommand())
-								   .parameters(buildParameters(config.getChildConfig(), huId))
+								   .parameters(buildParameters(recordReference, config))
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
 	}
 
-	private void exportCollectedHUsIfRequired(@NonNull final Collection<ExportHUCandidate> huCandidates)
+	private void syncCollectedDocumentsIfRequired(@NonNull final Collection<TableRecordReference> tableRecordReferenceList)
 	{
-		if (huCandidates.isEmpty())
+		if (tableRecordReferenceList.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("HuId list to sync empty! No action is performed!");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("tableRecordReferenceList to sync is empty! No further action!");
 			return;
 		}
 
@@ -147,19 +138,31 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 			return; // nothing to do
 		}
 
-		for (final ExportHUCandidate exportHUCandidate : huCandidates)
+		for (final TableRecordReference recordReference : tableRecordReferenceList)
 		{
-			final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(exportHUCandidate.getHuId());
-
-			final TableRecordReference topLevelRef = TableRecordReference.of(I_M_HU.Table_Name, topLevelParent.getM_HU_ID());
-
-			exportToExternalSystemIfRequired(topLevelRef, () -> getAdditionalExternalSystemConfigIds(exportHUCandidate));
+			exportToExternalSystemIfRequired(recordReference, () -> getAdditionalExternalSystemConfigIds(recordReference));
 		}
 	}
 
-	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final HuId huId);
+	@Override
+	protected void runPreExportHook(final TableRecordReference recordReferenceToExport)
+	{
+	}
 
+	@NonNull
+	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull TableRecordReference recordReference);
+
+	@NonNull
+	protected abstract Map<String, String> buildParameters(@NonNull TableRecordReference recordReference, @NonNull ExternalSystemParentConfig config);
+
+	@NonNull
 	protected abstract String getExternalCommand();
 
-	protected abstract Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(@NonNull final ExportHUCandidate exportHUCandidate);
+	protected abstract boolean isSyncAcctRecordsEnabled(@NonNull TableRecordReference recordReference, @NonNull ExternalSystemParentConfig config);
+
+	@NonNull
+	protected abstract String getOrgCode(@NonNull TableRecordReference recordReference);
+
+	@Nullable
+	protected abstract JsonMetasfreshId createPInstanceId(@NonNull TableRecordReference recordReference, @NonNull ExternalSystemParentConfig config);
 }

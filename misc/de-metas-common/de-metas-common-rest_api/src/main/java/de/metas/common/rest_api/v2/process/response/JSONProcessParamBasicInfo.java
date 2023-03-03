@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,45 +20,29 @@
  * #L%
  */
 
-package de.metas.rest_api.process.response;
+package de.metas.common.rest_api.v2.process.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JSONProcessBasicInfo.JSONProcessBasicInfoBuilder.class)
-public class JSONProcessBasicInfo
+@JsonDeserialize(builder = JSONProcessParamBasicInfo.JSONProcessParamBasicInfoBuilder.class)
+public class JSONProcessParamBasicInfo
 {
-	@NonNull
-	@JsonProperty("processId")
-	String processId;
-
-	@NonNull
 	@JsonProperty("name")
 	String name;
 
-	@NonNull
-	@JsonProperty("value")
-	String value;
+	@JsonProperty("columnName")
+	String columnName;
 
-	@NonNull
 	@JsonProperty("type")
 	String type;
 
-	@Nullable
 	@JsonProperty("description")
 	String description;
-
-	@Nullable
-	@JsonProperty("parameters")
-	List<JSONProcessParamBasicInfo> parameters;
 }
