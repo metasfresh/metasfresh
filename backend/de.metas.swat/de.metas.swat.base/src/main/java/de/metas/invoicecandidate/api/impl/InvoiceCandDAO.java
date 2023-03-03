@@ -61,7 +61,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
@@ -794,7 +793,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.execute()
 				.getRowsInserted();
 
-		logger.info("Invalidated {} invoice candidates with chunkUUID={} and query={}", count, chunkUUID, icQuery);
+		logger.info("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
 
 		// collect the different C_Async_Batch_IDs (including null) of the ICs that we just created recompute-records for
 		final List<Integer> asyncBatchIDs = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
@@ -807,10 +806,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (count > 0)
 		{
 			// create an equ
-			asyncBatchIDs.stream()
-					.map(AsyncBatchId::ofRepoIdOrNone)
-					.map(asyncBatchId -> InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName(), AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId)))
-					.forEach(invoiceCandScheduler::scheduleForUpdate);
+			for (final Integer asyncBatchIdInt : asyncBatchIDs)
+			{
+				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNone(asyncBatchIdInt);
+				final InvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(
+						icQuery.getCtx(),
+						icQuery.getTrxName(),
+						AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId));
+				logger.info("Scheduling ICs with AsyncBatchId={} for update.", asyncBatchIdInt);
+				invoiceCandScheduler.scheduleForUpdate(request);
+			}
 		}
 		
 		return count;
@@ -1085,7 +1090,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Limit maximum number of invalid invoice candidates to tag for updating
 		if (tagRequest.getLimit() > 0)
 		{
-			queryBuilder.setLimit(tagRequest.getLimit());
+			queryBuilder.setLimit(QueryLimit.ofInt(tagRequest.getLimit()));
 		}
 
 		return queryBuilder;
@@ -1513,7 +1518,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (query.getProcessed() != null)
 		{
 			whereClause.append(" AND ").append(I_C_Invoice_Candidate.COLUMNNAME_Processed).append("=?");
-			params.add(query.getProcessed().booleanValue());
+			params.add(query.getProcessed());
 		}
 
 		// Exclude those with errors
