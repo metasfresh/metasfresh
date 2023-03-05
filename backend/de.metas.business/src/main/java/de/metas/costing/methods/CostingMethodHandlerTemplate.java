@@ -80,13 +80,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			Check.assume(existingCostDetails.size() <= 2, "More than 2 costing details for the same document and costing element: " + request);
 			final CostDetail existingCostDetail;
 
-			if (existingCostDetails.size() == 2)
+			if (existingCostDetails.size() >= 2)
 			{
+				final Optional<CostDetail> alreadyShippedDetail = existingCostDetails.stream().filter(cd-> isAlreadyShippedDetail(cd))
+						.findFirst();
 				final CostDetail costAdjustmentDetail = existingCostDetails.stream().filter(cd -> isCostAdjustmentDetail(cd))
 						.findFirst()
 						.orElseThrow(() -> new AdempiereException("More than 1 non-adjustment costing details for the same document and costing element : " + request));
 
-				final CostDetail mainCostDetail = existingCostDetails.stream().filter(cd -> !isCostAdjustmentDetail(cd))
+				final CostDetail mainCostDetail = existingCostDetails.stream().filter(cd -> !isCostAdjustmentDetail(cd) && !isAlreadyShippedDetail(cd))
 						.findFirst()
 						.orElseThrow(() -> new AdempiereException("More than 1 adjustment costing details for the same document and costing element : " + request));
 
@@ -97,7 +99,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder()
 						.mainAmt(documentAmount)
 						.costAdjustmentAmt(costAdjustmentAmount)
-						.alreadyShippedAmt(previousAmount.subtract(documentAmount.add(costAdjustmentAmount)))
+						.alreadyShippedAmt(alreadyShippedDetail.isPresent() ? alreadyShippedDetail.get().getAmt().getMainAmt() : documentAmount.toZero() )
 						.build();
 
 				existingCostDetail = mainCostDetail.withAmt(costAmountDetailed);
@@ -139,6 +141,26 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return true;
 	}
 
+
+	private boolean isAlreadyShippedDetail(@NonNull final CostDetail cd)
+	{
+		if (!cd.getQty().isZero())
+		{
+			return false;
+		}
+
+		if (cd.getAmt().getMainAmt().isZero())
+		{
+			return false;
+		}
+
+		if (cd.isChangingCosts())
+		{
+			return false;
+		}
+
+		return true;
+	}
 	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
 	{
 		//

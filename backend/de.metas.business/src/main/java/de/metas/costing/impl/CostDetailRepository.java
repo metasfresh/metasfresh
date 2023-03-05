@@ -80,9 +80,15 @@ public class CostDetailRepository implements ICostDetailRepository
 
 		final boolean hasCostAdjustment = cd.getAmt().getCostAdjustmentAmt().signum() != 0;
 
+
 		if(hasCostAdjustment)
 		{
-
+			final boolean hasAlreadyShipped = cd.getAmt().getAlreadyShippedAmt().signum() != 0;
+			if(hasAlreadyShipped)
+			{
+				// cost detail for already shipped. Don't change costs
+				createCostDetailsRecord(cd.withChangingCosts(false).withQty(cd.getQty().toZero()), cd.getAmt().getAlreadyShippedAmt());
+			}
 			// cost details for the main amount. Doesn't change costs
 			createCostDetailsRecord(cd.withChangingCosts(false), cd.getAmt().getMainAmt());
 

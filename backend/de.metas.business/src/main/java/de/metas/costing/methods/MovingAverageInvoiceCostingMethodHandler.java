@@ -368,7 +368,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CostAmount invoicedAmt = request.getAmt().getMainAmt();
 
-		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt);
+		final boolean isReversal = invoiceBL.isReversal(invoiceBL.getById(matchInv.getInvoiceId()));
+
+		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt.negateIf(isReversal));
 
 		final CostAmount adjustmentProportion = amtDifference.isZero() || receiptQty.isZero()
 				? CostAmount.zero(currentCost.getCurrencyId())
@@ -380,6 +382,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostAmount costAdjustmentAmt = adjustmentProportion.multiply(qtyToDistribute.toBigDecimal());
 
 		final CostAmount alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
+
 
 		return CostAmountDetailed.builder()
 				.mainAmt(invoicedAmt)

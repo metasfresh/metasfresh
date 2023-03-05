@@ -110,6 +110,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private I_C_InvoiceLine _invoiceLine = null;
 	private I_C_Invoice _invoice = null;
 	private boolean isCreditMemoInvoice;
+	private boolean isReversal;
 	/**
 	 * Invoice line net amount, excluding taxes, in invoice's currency
 	 */
@@ -159,6 +160,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			_invoiceLine = invoiceBL.getLineById(matchInv.getInvoiceLineId());
 			_invoice = invoiceBL.getById(InvoiceId.ofRepoId(_invoiceLine.getC_Invoice_ID()));
 			this.isCreditMemoInvoice = invoiceBL.isCreditMemo(_invoice);
+			this.isReversal = invoiceBL.isReversal(_invoice);
 			this.invoiceLineNetAmt = computeInvoiceLineNetAmt(_invoiceLine, _invoice);
 
 			// BP for NotInvoicedReceipts
@@ -287,11 +289,12 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return ImmutableList.of(fact);
 	}   // createFact
 
-
 	private void createFactLines(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
 	{
 		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
-		final CostAmount totalCosts = costs.getMainAmt().add(costs.getCostAdjustmentAmt().add(costs.getAlreadyShippedAmt()));
+		final CostAmount totalCosts = costs.getMainAmt()
+				.add(costs.getCostAdjustmentAmt().negateIf(isReversal))
+				.add(costs.getAlreadyShippedAmt().negateIf(isReversal));
 		final CurrencyId currencyId = totalCosts.getCurrencyId();
 		//
 		// NotInvoicedReceipt DR
@@ -312,7 +315,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.setAccount(docLine.getInventoryClearingAccount(as))
 				.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
 				.setAmtSource(null, invoiceLineMatchedAmt)
-				.setQty(getQty().negate())
+				.setQty(getQty())
 				.buildAndAdd();
 		updateFromInvoiceLine(cr_InventoryClearing);
 
@@ -327,7 +330,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
 					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSourceDrOrCr(costs.getCostAdjustmentAmt().toMoney().negate())
+					.setAmtSourceDrOrCr(costs.getCostAdjustmentAmt().negateIf(!isReversal).toMoney())
 					.setQty(getQty())
 					.buildAndAdd();
 			updateFromInvoiceLine(costAdjustment);
@@ -341,7 +344,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 					.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
 					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSourceDrOrCr(costs.getAlreadyShippedAmt().toMoney().negate())
+					.setAmtSourceDrOrCr(costs.getAlreadyShippedAmt().negateIf(!isReversal).toMoney())
 					.setQty(getQty())
 					.buildAndAdd();
 			updateFromInvoiceLine(alreadyShipped);
@@ -377,7 +380,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			//ipvFactLine.negateDrAndCrAmounts();
 		}
 	}
-
 
 	private FactLine createFact_Material_InvoicePriceVariance(@NonNull final Fact fact)
 	{
