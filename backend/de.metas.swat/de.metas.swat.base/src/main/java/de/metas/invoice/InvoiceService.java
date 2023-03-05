@@ -64,7 +64,7 @@ import static org.compiere.util.Env.getCtx;
 @Service
 public class InvoiceService
 {
-	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
+	private final static Logger logger = LogManager.getLogger(InvoiceService.class);
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -82,7 +82,7 @@ public class InvoiceService
 	{
 		if (shipmentLines.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines lit is empty; -> nothing to do");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines list is empty; -> nothing to do");
 			return ImmutableSet.of();
 		}
 		

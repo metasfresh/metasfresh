@@ -48,9 +48,7 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
-	 *
-	 * @return enqueueing result
-	 */
+     */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
@@ -67,38 +65,30 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Set to <code>true</code> if you want the enqueuer to make sure that the invoice candidates that will be enqueued shall not be changed.
-	 *
+	 * <p>
 	 * By default, if you are not setting a particular value the {@link #SYSCONFIG_FailOnChanges} (default {@link #DEFAULT_FailOnChanges}) will be used.
 	 */
 	IInvoiceCandidateEnqueuer setFailOnChanges(boolean failOnChanges);
 
 	/**
 	 * Sets invoicing parameters to be used.
-	 *
-	 * @param invoicingParams
 	 */
 	IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams);
 
 	/**
 	 * Sets the total net amount to invoice checksum.
-	 *
+	 * <p>
 	 * If the amount is not null and "FailOnChanges" is set then this checksum will be enforced on enqueued invoice candidates.
-	 *
-	 * @param totalNetAmtToInvoiceChecksum
 	 */
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);
 
 	/**
 	 * Sets the asyncBatch that will be used for grouping
-	 * @param asyncBatch
-	 * @return
 	 */
 	IInvoiceCandidateEnqueuer setC_Async_Batch(I_C_Async_Batch asyncBatch);
 
 	/**
 	 * Sets the priority to be used when processing the WPs
-	 * @param priority
-	 * @return
 	 */
 	IInvoiceCandidateEnqueuer setPriority(IWorkpackagePrioStrategy priority);
 }

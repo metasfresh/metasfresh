@@ -114,7 +114,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					}
 				});
 
-		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
+		//dev-note: acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
 
 		asyncBatch2Completion.put(id, new BatchProgress(lock, id));
@@ -205,12 +205,22 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (!isAsyncBatchObserved(asyncBatchId))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
 			return;
 		}
 
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
-
+		if(!asyncBatchProgress.isEnqueueingDone())
+		{
+			// Case: we have workpackages that happen to have this asyncBatchId and
+			// - are not the ones this observer will be waiting for
+			// - are enqueued and already processed from the supplier that shall enqueue the workpackages which we are waiting for.
+			//
+			// This case currently happens when we enqueue c_invoice_candidates for invoicing.
+			// There we update ICs on the fly and that causes additional UpdateInvoiceCandidate-WPs to be enqueued.
+			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - Observer for asyncBatchId={} is not yet marked as ready to process nofifyRequests", asyncBatchId.getRepoId());
+			return;
+		}
 		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 
