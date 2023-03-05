@@ -84,7 +84,34 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		setWorkpackageADPInstanceCreatorId = false;
 		_failOnInvoiceCandidateError = true;
 
+		prepareSelection(invoiceCandidatesSelectionId);
 		return enqueueSelection(invoiceCandidatesSelectionId);
+	}
+
+	@Override
+	public void prepareSelection(@NonNull final PInstanceId pInstanceId)
+	{
+		// Here we just need the "set" of ICs (in no particular order) and prepare them one by one.
+		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
+		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pInstanceId);
+
+		// Create invoice candidates changes checker.
+		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
+		icChangesChecker.setBeforeChanges(unorderedICs);
+
+		//
+		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
+		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
+		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
+		// * the ones which are in our selection, we will update right now (see below)
+		// * the other ones will be updated later, asynchronously
+
+		ensureICsAreUpdated(pInstanceId);
+
+		//
+		// Make sure there are no changes in amounts or relevant fields (if that is required)
+		icChangesChecker.assertNoChanges(unorderedICs);
+
 	}
 
 	@Override
@@ -95,29 +122,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	private IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
-		// prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular UpdateInvalidInvoiceCandidatesWorkpackageProcessor
-
-		// Here we just need the "set" of ICs (in no particular order) and prepare them one by one.
-		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
-		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pinstanceId);
-
-		// Create invoice candidates changes checker.
-		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
-		icChangesChecker.setBeforeChanges(unorderedICs);
-
-		//
-		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
-		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pinstanceId));
-		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will update right now (see below)
-		// * the other ones will be updated later, asynchronously
-
-		ensureICsAreUpdated(pinstanceId);
-
-		//
-		// Make sure there are no changes in amounts or relevant fields (if that is required)
-		icChangesChecker.assertNoChanges(unorderedICs);
-
 		final ILock icLock = InvoiceCandidateLockingUtil.lockInvoiceCandidatesForSelection(pinstanceId);
 		try (final ILockAutoCloseable ignored = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
 		{

@@ -210,17 +210,17 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		}
 
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
-		if(!asyncBatchProgress.isEnqueueingDone())
-		{
+		//if(!asyncBatchProgress.isEnqueueingDone())
+			//	{
 			// Case: we have workpackages that happen to have this asyncBatchId and
 			// - are not the ones this observer will be waiting for
 			// - are enqueued and already processed from the supplier that shall enqueue the workpackages which we are waiting for.
 			//
 			// This case currently happens when we enqueue c_invoice_candidates for invoicing.
 			// There we update ICs on the fly and that causes additional UpdateInvoiceCandidate-WPs to be enqueued.
-			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - Observer for asyncBatchId={} is not yet marked as ready to process nofifyRequests", asyncBatchId.getRepoId());
-			return;
-		}
+			//Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - Observer for asyncBatchId={} is not yet marked as ready to process nofifyRequests", asyncBatchId.getRepoId());
+			//return;
+			//}
 		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 

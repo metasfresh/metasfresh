@@ -32,6 +32,7 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 /**
  * Helper interface to mass-enqueue {@link I_C_Invoice_Candidate}s to be invoiced.
@@ -47,9 +48,21 @@ public interface IInvoiceCandidateEnqueuer
 	String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
 
 	/**
+	 * Prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular
+	 * {@link de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor}.
+	 */
+	void prepareSelection(@NonNull PInstanceId pInstanceId);
+
+	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
      */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
+
+	default IInvoiceCandidateEnqueueResult prepareAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		prepareSelection(pinstanceId);
+		return enqueueSelection(pinstanceId);
+	};
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 
