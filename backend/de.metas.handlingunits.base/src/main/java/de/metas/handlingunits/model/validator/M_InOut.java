@@ -44,8 +44,13 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
+import de.metas.project.service.ProjectService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,10 +58,12 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -70,6 +77,9 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
+	private static final AdMessageKey MSG_PROJECT_ACTIVE_REVERSE_NOT_POSSIBLE = AdMessageKey.of("project_still_active_reverse_not_possible");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
@@ -85,10 +95,13 @@ public class M_InOut
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 
+	private final ProjectService projectService;
+
 	public M_InOut(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade)
+			@NonNull final ReturnsServiceFacade returnsServiceFacade, @NonNull final ProjectService projectService)
 	{
 		this.returnsServiceFacade = returnsServiceFacade;
+		this.projectService = projectService;
 	}
 
 	@Init
@@ -351,6 +364,22 @@ public class M_InOut
 			returnsServiceFacade.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
 		}
 
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
+	public void beforeReverseCorrect(final de.metas.handlingunits.model.I_M_InOut returnInOut)
+	{
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(returnInOut.getC_Project_ID());
+		if (projectId == null)
+		{
+			return;
+		}
+		final I_C_Project project = projectService.getById(projectId);
+
+		if (!project.isActive())
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_PROJECT_ACTIVE_REVERSE_NOT_POSSIBLE));
+		}
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
