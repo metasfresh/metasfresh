@@ -208,13 +208,7 @@ public class CostingService implements ICostingService
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
 	{
-		if (request.getAmt().getMainAmt().isZero())
-		{
-			return request;
-		}
-
-		final CostAmountDetailed amtConv = utils.convertToAcctSchemaCurrency(request.getAmt(), request);
-		return request.withAmount(amtConv);
+		return request.withAmount(utils.convertToAcctSchemaCurrency(request.getAmt(), request));
 	}
 
 	@Override
@@ -264,7 +258,7 @@ public class CostingService implements ICostingService
 
 		return CostDetailVoidRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
-				.amt(costDetail.getAmt().getMainAmt())
+				.amt(costDetail.getAmt())
 				.qty(qty)
 				.build();
 	}
@@ -470,7 +464,7 @@ public class CostingService implements ICostingService
 				.initialDocumentRef(reversalRequest.getInitialDocumentRef())
 				.costElement(costElement)
 				.qty(costDetail.getQty().negate())
-				.amt(costDetail.getAmt().negateMainAmount())
+				.amt(costDetail.getAmt().negate())
 				// .currencyConversionTypeId(currencyConversionTypeId) // N/A
 				.date(reversalRequest.getDate())
 				.description(reversalRequest.getDescription())

@@ -29,6 +29,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -38,9 +39,9 @@ import javax.annotation.Nullable;
 @ToString
 public class CostAmountDetailed
 {
-	@NonNull CostAmount mainAmt;  // => // 1388,52 EUR
-	@NonNull CostAmount costAdjustmentAmt; // => P_Asset // 768.28 EUR
-	@NonNull CostAmount alreadyShippedAmt; // => P_COGS // 264.20 EUR
+	@NonNull CostAmount mainAmt;
+	@NonNull CostAmount costAdjustmentAmt;
+	@NonNull CostAmount alreadyShippedAmt;
 
 	@Builder
 	private CostAmountDetailed(
@@ -54,27 +55,29 @@ public class CostAmountDetailed
 		this.alreadyShippedAmt = alreadyShippedAmt != null ? alreadyShippedAmt : CostAmount.zero(currencyId);
 	}
 
-	public CostAmountDetailed add(@NonNull final CostAmountDetailed amtToAdd)
+	public static CostAmountDetailed ofAmtAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType type)
 	{
+		switch (type)
+		{
 
-		CostAmount.assertCurrencyMatching(mainAmt, costAdjustmentAmt, alreadyShippedAmt,
-										  amtToAdd.mainAmt, amtToAdd.costAdjustmentAmt, amtToAdd.alreadyShippedAmt);
-
-		return new CostAmountDetailed(mainAmt.add(amtToAdd.mainAmt),
-									  costAdjustmentAmt.add(amtToAdd.costAdjustmentAmt),
-									  alreadyShippedAmt.add(amtToAdd.alreadyShippedAmt));
+			case MAIN:
+				return builder().mainAmt(amt).build();
+			case ADJUSTMENT:
+				return builder().costAdjustmentAmt(amt).build();
+			case ALREADY_SHIPPED:
+				return builder().alreadyShippedAmt(amt).build();
+			default:
+				throw new AdempiereException("Unknown type: " + type);
+		}
 	}
 
-	public CostAmountDetailed negateMainAmount()
+	public CostAmountDetailed add(@NonNull final CostAmountDetailed amtToAdd)
 	{
-		if (mainAmt.signum() == 0)
-		{
-			return this;
-		}
-		else
-		{
-			return new CostAmountDetailed(mainAmt.negate(), costAdjustmentAmt, alreadyShippedAmt);
-		}
+		return builder()
+				.mainAmt(mainAmt.add(amtToAdd.mainAmt))
+				.costAdjustmentAmt(costAdjustmentAmt.add(amtToAdd.costAdjustmentAmt))
+				.alreadyShippedAmt(alreadyShippedAmt.add(amtToAdd.alreadyShippedAmt))
+				.build();
 	}
 }
 

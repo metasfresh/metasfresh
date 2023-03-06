@@ -917,4 +917,9 @@ public interface I_M_CostDetail
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	// TODO:
+	default void setType(String code) {}
+	// TODO:
+	default String getType() { return "M"; }
 }

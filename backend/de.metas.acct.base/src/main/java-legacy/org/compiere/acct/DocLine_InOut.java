@@ -9,7 +9,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderId;
@@ -169,7 +168,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			// Material costs:
 			AggregatedCostAmount result = services.createCostDetail(
 					requestBuilder
-							.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // N/A
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.build());
 
 			//
@@ -179,7 +178,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 				final AggregatedCostAmount nonMaterialCosts = services.createCostDetail(
 						requestBuilder
 								.costElement(services.getCostElementById(inoutCost.getCostElementId()))
-								.amt(CostAmountDetailed.builder().mainAmt(CostAmount.ofMoney(inoutCost.getCostAmount())).build())
+								.amt(CostAmount.ofMoney(inoutCost.getCostAmount()))
 								.build());
 
 				result = result.merge(nonMaterialCosts);
@@ -215,7 +214,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 									.attributeSetInstanceId(getAttributeSetInstanceId())
 									.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 									.qty(getQty())
-									.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // expect to be calculated
+									.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 									.currencyConversionContext(getCurrencyConversionContext(as))
 									.date(getDateAcctAsInstant())
 									.build())

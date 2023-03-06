@@ -15,7 +15,6 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -121,11 +120,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
-																	 .acctSchemaId(acctSchemaId)
-																	 .reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-																	 .initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
-																	 .date(getDateAcctAsInstant())
-																	 .build());
+					.acctSchemaId(acctSchemaId)
+					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
+					.date(getDateAcctAsInstant())
+					.build());
 		}
 		else
 		{
@@ -138,7 +137,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 							.qty(getQty())
-							.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build()) // N/A
+							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 							.date(getDateAcctAsInstant())
 							.build());
 		}

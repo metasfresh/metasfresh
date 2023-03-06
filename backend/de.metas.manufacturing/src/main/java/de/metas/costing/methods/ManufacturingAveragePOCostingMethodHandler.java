@@ -189,7 +189,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
-			requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
+			requestEffective = request.withAmountAndQty(amt, qty);
 		}
 		else
 		{
@@ -204,7 +204,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		// NOTE: outbound amounts are negative, so we have to negate it here in order to get a positive value
 		orderCosts.accumulateOutboundCostAmount(
 				costSegmentAndElement,
-				requestEffective.getAmt().getMainAmt().negate(),
+				requestEffective.getAmt().negate(),
 				requestEffective.getQty().negate(),
 				utils.getQuantityUOMConverter());
 
@@ -229,16 +229,16 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostPrice price = currentCosts.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(CostAmountDetailed.builder().mainAmt(amt).build(), qty);
+			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(amt, qty);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
-			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt().getMainAmt());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs
 		orderCosts.accumulateInboundCostAmount(
 				utils.extractCostSegmentAndElement(request),
-				request.getAmt().getMainAmt(),
+				request.getAmt(),
 				request.getQty(),
 				utils.getQuantityUOMConverter());
 

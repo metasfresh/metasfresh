@@ -739,19 +739,19 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		return services
 				.createCostDetail(CostDetailCreateRequest.builder()
-										  .acctSchemaId(as.getId())
-										  .clientId(matchInv.getClientId())
-										  .orgId(matchInv.getOrgId())
-										  .productId(matchInv.getProductId())
-										  .attributeSetInstanceId(matchInv.getAsiId())
-										  .documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
-										  .costElement(costElement)
-										  .qty(qtyMatched)
-										  .amt(CostAmountDetailed.builder().mainAmt(CostAmount.ofMoney(amtMatched)).build())
-										  .currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
-										  .date(getDateAcctAsInstant())
-										  .description(getDescription())
-										  .build())
+						.acctSchemaId(as.getId())
+						.clientId(matchInv.getClientId())
+						.orgId(matchInv.getOrgId())
+						.productId(matchInv.getProductId())
+						.attributeSetInstanceId(matchInv.getAsiId())
+						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
+						.costElement(costElement)
+						.qty(qtyMatched)
+						.amt(CostAmount.ofMoney(amtMatched))
+						.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
+						.date(getDateAcctAsInstant())
+						.description(getDescription())
+						.build())
 				.getTotalAmountToPost(as);
 	}
 

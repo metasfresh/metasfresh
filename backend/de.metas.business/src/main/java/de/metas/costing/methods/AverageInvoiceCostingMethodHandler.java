@@ -86,8 +86,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 
-			final CostAmountDetailed costAmountDetailed= CostAmountDetailed.builder().mainAmt(amt).build();
-			final CostDetailCreateRequest requestEffective = request.withAmount(costAmountDetailed);
+			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt);

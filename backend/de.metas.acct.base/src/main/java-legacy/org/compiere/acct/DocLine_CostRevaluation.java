@@ -6,7 +6,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costrevaluation.CostRevaluationLine;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import lombok.NonNull;
@@ -55,7 +54,7 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 									.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
 									.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
 									.qty(costRevaluationLine.getCurrentQty().toZero())
-									.amt(CostAmountDetailed.builder().mainAmt(costRevaluationLine.getDeltaAmountToBook()).build())
+									.amt(costRevaluationLine.getDeltaAmountToBook())
 									.explicitCostPrice(costRevaluationLine.getNewCostPrice())
 									.date(getDateAcctAsInstant())
 									.build())

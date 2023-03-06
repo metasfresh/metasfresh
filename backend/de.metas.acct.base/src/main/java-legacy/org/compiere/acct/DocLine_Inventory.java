@@ -5,7 +5,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -100,7 +99,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 									.attributeSetInstanceId(getAttributeSetInstanceId())
 									.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 									.qty(getQty())
-									.amt(CostAmountDetailed.builder().mainAmt(CostAmount.zero(as.getCurrencyId())).build())
+									.amt(CostAmount.zero(as.getCurrencyId()))
 									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
 									.date(getDateAcctAsInstant())
 									.build())
