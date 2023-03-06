@@ -23,22 +23,18 @@
 package de.metas.bpartner.impexp.blockstatus;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.blockfile.BPartnerBlockFileId;
-import de.metas.bpartner.blockfile.BPartnerBlockFileService;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.bpartner.blockstatus.BlockStatus;
 import de.metas.bpartner.blockstatus.CreateBPartnerBlockStatusRequest;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileId;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.impexp.processing.ImportGroupResult;
-import de.metas.impexp.processing.ImportProcessTemplate;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
@@ -48,22 +44,18 @@ import org.compiere.model.I_C_BPartner_BlockStatus;
 import org.compiere.model.I_I_BPartner_BlockStatus;
 import org.compiere.model.X_I_BPartner_BlockStatus;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Properties;
 
 /**
  * Imports {@link I_I_BPartner_BlockStatus} records to {@link org.compiere.model.I_C_BPartner_BlockStatus}.
  **/
-public class BPartnerBlockStatusImportProcess extends ImportProcessTemplate<I_I_BPartner_BlockStatus, BPartnerBlockStatusImportProcess.BPBlockStatusGroupKey>
+public class BPartnerBlockStatusImportProcess extends SimpleImportProcessTemplate<I_I_BPartner_BlockStatus>
 {
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
 	private final BPartnerBlockFileService bPartnerBlockFileService = SpringContextHolder.instance.getBean(BPartnerBlockFileService.class);
-
-	private BPBlockStatusGroupKey groupKey = null;
 
 	@Override
 	public Class<I_I_BPartner_BlockStatus> getImportModelClass()
@@ -88,18 +80,25 @@ public class BPartnerBlockStatusImportProcess extends ImportProcessTemplate<I_I_
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
-		final BPartnerBlockFileId bPartnerBlockFileId = BPartnerBlockFileId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID, -1));
-
-		BPartnerBlockStatusImportTableSqlUpdater.updateAndValidateBPBlockStatusImportTable(selection, bPartnerBlockFileId);
+		BPartnerBlockStatusImportTableSqlUpdater.updateAndValidateBPBlockStatusImportTable(selection);
 
 		final int countErrorRecords = BPartnerBlockStatusImportTableSqlUpdater.countRecordsWithErrors(selection);
+
 		getResultCollector().setCountImportRecordsWithValidationErrors(countErrorRecords);
 	}
 
 	@Override
-	protected BPBlockStatusGroupKey extractImportGroupKey(@NonNull final I_I_BPartner_BlockStatus importRecord)
+	protected ImportRecordResult importRecord(
+			final @NonNull IMutable<Object> stateHolder,
+			final @NonNull I_I_BPartner_BlockStatus importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
-		return BPBlockStatusGroupKey.of(importRecord);
+		bPartnerDAO.getBySAPBpartnerCode(importRecord.getSAP_BPartnerCode())
+				.stream()
+				.map(partner -> buildCreateBPBlockStatusRequest(importRecord, partner))
+				.forEach(bPartnerBlockStatusService::createBPartnerBlockStatus);
+
+		return ImportRecordResult.Inserted;
 	}
 
 	@Override
@@ -114,37 +113,17 @@ public class BPartnerBlockStatusImportProcess extends ImportProcessTemplate<I_I_
 		return new X_I_BPartner_BlockStatus(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	@Override
-	protected ImportGroupResult importRecords(
-			@NonNull final BPBlockStatusGroupKey bpBlockStatusGroupKey,
-			@NonNull final List<I_I_BPartner_BlockStatus> importRecords,
-			@NonNull final IMutable<Object> stateHolderNOTUSED)
-	{
-		importRecords.forEach(this::importRecord);
-
-		groupKey = bpBlockStatusGroupKey;
-
-		return ImportGroupResult.countInserted(importRecords.size());
-	}
-
 	protected void afterImport()
 	{
-		if (groupKey != null && groupKey.isBPBlockFileKey())
+		final BPartnerBlockFileId fileId = getParameters()
+				.getParameterAsId(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID, BPartnerBlockFileId.class);
+
+		if (fileId == null)
 		{
-			final boolean processed = BPartnerBlockStatusImportTableSqlUpdater.countRecordsWithErrors(getImportRecordsSelection()) == 0;
-
-			Check.assumeNotNull(groupKey, "BPartnerBlockFileId cannot be missing at this stage!");
-			bPartnerBlockFileService.updateImportFlags(groupKey, processed);
+			throw new AdempiereException("BPartnerBlockStatusImportProcess executed without a C_BPartner_Block_File_ID param!");
 		}
-	}
 
-	private void importRecord(@NonNull final I_I_BPartner_BlockStatus importRecord)
-	{
-		bPartnerDAO.getBySAPBpartnerCode(importRecord.getSAP_BPartnerCode())
-				.forEach(partner -> {
-					final CreateBPartnerBlockStatusRequest request = buildCreateBPBlockStatusRequest(importRecord, partner);
-					bPartnerBlockStatusService.createBPartnerBlockStatus(request);
-				});
+		bPartnerBlockFileService.recomputeFlags(fileId);
 	}
 
 	@NonNull
@@ -163,47 +142,5 @@ public class BPartnerBlockStatusImportProcess extends ImportProcessTemplate<I_I_
 				.bPartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
 				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
 				.build();
-	}
-
-	@Value
-	public static class BPBlockStatusGroupKey
-	{
-		@Nullable
-		SimpleImportProcessTemplate.RecordIdGroupKey recordIdGroupKey;
-
-		@Nullable
-		BPartnerBlockFileId bPartnerBlockFileId;
-
-		@Builder
-		private BPBlockStatusGroupKey(
-				@Nullable final SimpleImportProcessTemplate.RecordIdGroupKey recordIdGroupKey,
-				@Nullable final BPartnerBlockFileId bPartnerBlockFileId)
-		{
-			Check.assume((recordIdGroupKey == null && bPartnerBlockFileId != null) || (recordIdGroupKey != null && bPartnerBlockFileId == null),
-						 "Only one group key is allowed!");
-
-			this.recordIdGroupKey = recordIdGroupKey;
-			this.bPartnerBlockFileId = bPartnerBlockFileId;
-		}
-
-		@NonNull
-		private static BPBlockStatusGroupKey of(@NonNull final I_I_BPartner_BlockStatus importRecord)
-		{
-			if (importRecord.getC_BPartner_Block_File_ID() > 0)
-			{
-				return BPBlockStatusGroupKey.builder()
-						.bPartnerBlockFileId(BPartnerBlockFileId.ofRepoId(importRecord.getC_BPartner_Block_File_ID()))
-						.build();
-			}
-
-			return BPBlockStatusGroupKey.builder()
-					.recordIdGroupKey(SimpleImportProcessTemplate.RecordIdGroupKey.of(importRecord.getI_BPartner_BlockStatus_ID()))
-					.build();
-		}
-
-		private boolean isBPBlockFileKey()
-		{
-			return this.bPartnerBlockFileId != null;
-		}
 	}
 }

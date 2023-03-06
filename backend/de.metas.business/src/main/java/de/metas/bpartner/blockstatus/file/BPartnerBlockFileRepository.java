@@ -20,36 +20,29 @@
  * #L%
  */
 
-package de.metas.bpartner.blockfile;
+package de.metas.bpartner.blockstatus.file;
 
 import de.metas.impexp.config.DataImportConfigId;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Block_File;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class BPartnerBlockFileRepository
+class BPartnerBlockFileRepository
 {
 	@NonNull
-	public BPartnerBlockFile getById(@NonNull final BPartnerBlockFileId bPartnerBlockFileId)
+	public BPartnerBlockStatusFile getById(@NonNull final BPartnerBlockFileId bPartnerBlockFileId)
 	{
-		return Optional.ofNullable(load(bPartnerBlockFileId, I_C_BPartner_Block_File.class))
-				.map(this::ofRecord)
-				.orElseThrow(() -> new AdempiereException("Couldn't find any I_C_BPartner_Block_File record for provided id!")
-						.appendParametersToMessage()
-						.setParameter(I_C_BPartner_Block_File.COLUMNNAME_C_BPartner_Block_File_ID, bPartnerBlockFileId.getRepoId()));
+		return ofRecord(getRecordById(bPartnerBlockFileId));
 	}
 
 	@NonNull
-	public BPartnerBlockFile update(@NonNull final BPartnerBlockFile blockFileToUpdate)
+	public BPartnerBlockStatusFile save(@NonNull final BPartnerBlockStatusFile blockFileToUpdate)
 	{
-		final I_C_BPartner_Block_File record = load(blockFileToUpdate.getId(), I_C_BPartner_Block_File.class);
+		final I_C_BPartner_Block_File record = getRecordById(blockFileToUpdate.getId());
 
 		record.setFileName(blockFileToUpdate.getFileName());
 		record.setC_DataImport_ID(blockFileToUpdate.getDataImportConfigId().getRepoId());
@@ -62,9 +55,15 @@ public class BPartnerBlockFileRepository
 	}
 
 	@NonNull
-	private BPartnerBlockFile ofRecord(@NonNull final I_C_BPartner_Block_File record)
+	private I_C_BPartner_Block_File getRecordById(@NonNull final BPartnerBlockFileId id)
 	{
-		return BPartnerBlockFile.builder()
+		return InterfaceWrapperHelper.load(id, I_C_BPartner_Block_File.class);
+	}
+
+	@NonNull
+	private static BPartnerBlockStatusFile ofRecord(@NonNull final I_C_BPartner_Block_File record)
+	{
+		return BPartnerBlockStatusFile.builder()
 				.id(BPartnerBlockFileId.ofRepoId(record.getC_BPartner_Block_File_ID()))
 				.fileName(record.getFileName())
 				.dataImportConfigId(DataImportConfigId.ofRepoId(record.getC_DataImport_ID()))

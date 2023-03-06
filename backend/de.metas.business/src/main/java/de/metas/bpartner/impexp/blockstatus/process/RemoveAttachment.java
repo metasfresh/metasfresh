@@ -24,14 +24,15 @@ package de.metas.bpartner.impexp.blockstatus.process;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.blockfile.BPartnerBlockFile;
-import de.metas.bpartner.blockfile.BPartnerBlockFileId;
-import de.metas.bpartner.blockfile.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileId;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockStatusFile;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
@@ -52,13 +53,13 @@ public class RemoveAttachment extends JavaProcess implements IProcessPreconditio
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final BPartnerBlockFile blockFile = bPartnerBlockFileService.getById(BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId()));
-		if (blockFile.isProcessed())
+		final BPartnerBlockStatusFile blockFile = bPartnerBlockFileService.getById(BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId()));
+		if (blockFile.isImported())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("The file was already processed!");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The file was already imported!");
 		}
 
-		final boolean fileAttached = attachmentEntryService.atLeastOnAttachmentForRecordReference(blockFile.getId().toRecordRef());
+		final boolean fileAttached = attachmentEntryService.getUniqueByReferenceRecord(blockFile.getId().toRecordRef()).isPresent();
 		if (!fileAttached)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No file attached!");
@@ -72,7 +73,10 @@ public class RemoveAttachment extends JavaProcess implements IProcessPreconditio
 	{
 		final TableRecordReference tableRecordReference = getProcessInfo().getRecordRefNotNull();
 
-		attachmentEntryService.removeAttachment(tableRecordReference);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.getUniqueByReferenceRecord(tableRecordReference)
+				.orElseThrow(() -> new AdempiereException("No attachment found for BPartnerBlockFile_ID=" + tableRecordReference.getRecord_ID()));
+
+		attachmentEntryService.unattach(tableRecordReference, attachmentEntry);
 
 		return MSG_OK;
 	}

@@ -25,9 +25,9 @@ package de.metas.bpartner.impexp.blockstatus.process;
 import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.blockfile.BPartnerBlockFile;
-import de.metas.bpartner.blockfile.BPartnerBlockFileId;
-import de.metas.bpartner.blockfile.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileId;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockStatusFile;
 import de.metas.impexp.process.AttachmentImportCommand;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -35,7 +35,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
-import org.adempiere.util.api.IParams;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -58,13 +58,13 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final BPartnerBlockFile blockFile = bPartnerBlockFileService.getById(BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId()));
-		if (blockFile.isProcessed())
+		final BPartnerBlockStatusFile blockFile = bPartnerBlockFileService.getById(BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId()));
+		if (blockFile.isProcessed() || blockFile.isError())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("The file was already processed!");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The file was already imported!");
 		}
 
-		final boolean fileAttached = attachmentEntryService.atLeastOnAttachmentForRecordReference(blockFile.getId().toRecordRef());
+		final boolean fileAttached = attachmentEntryService.getUniqueByReferenceRecord(blockFile.getId().toRecordRef()).isPresent();
 
 		if (!fileAttached)
 		{
@@ -79,11 +79,20 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 	protected String doIt()
 	{
 		final BPartnerBlockFileId blockFileId = BPartnerBlockFileId.ofRepoId(getProcessInfo().getRecord_ID());
-		final BPartnerBlockFile blockFile = bPartnerBlockFileService.getById(blockFileId);
+		final BPartnerBlockStatusFile blockFile = bPartnerBlockFileService.getById(blockFileId);
+
+		if (blockFile.isProcessed())
+		{
+			//already processed, nothing to do
+			return MSG_OK;
+		}
 
 		final TableRecordReference tableRecordReference = getProcessInfo().getRecordRefNotNull();
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.getUniqueByReferenceRecord(tableRecordReference);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.getUniqueByReferenceRecord(tableRecordReference)
+				.orElseThrow(() -> new AdempiereException("No attachment found for BPartnerBlockStatusFileId=" + tableRecordReference.getRecord_ID()));
+
+		final Params blockFileIdParam = getBlockFileIdOverridingColumn();
 
 		AttachmentImportCommand.builder()
 				.attachmentEntryId(attachmentEntry.getId())
@@ -91,22 +100,18 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.userId(getUserId())
-				.additionalParameters(computeAdditionalParams())
+				.additionalParameters(blockFileIdParam)
+				.overrideColumnValues(blockFileIdParam)
 				.build()
 				.execute();
-
-		attachmentEntryService.unattach(blockFileId.toRecordRef(), attachmentEntry);
 
 		return MSG_OK;
 	}
 
 	@NonNull
-	private IParams computeAdditionalParams()
+	private Params getBlockFileIdOverridingColumn()
 	{
-		final ImmutableMap<String, Object> paramsMap = ImmutableMap.<String, Object>builder()
-				.put(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID, getProcessInfo().getRecord_ID())
-				.build();
-
-		return Params.ofMap(paramsMap);
+		return Params.ofMap(ImmutableMap.of(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID,
+											getProcessInfo().getRecord_ID()));
 	}
 }

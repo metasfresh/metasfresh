@@ -22,7 +22,7 @@
 
 package de.metas.document.archive.interceptor;
 
-import de.metas.bpartner.blockfile.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.order.IOrderDAO;
@@ -34,7 +34,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_MultiRef;
-import org.compiere.model.I_C_BPartner_Block_File;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -50,7 +49,6 @@ import static de.metas.util.FileUtil.getFileExtension;
 public class AD_Attachment_MultiRef
 {
 	private final ArchiveFileNameService archiveFileNameService;
-	private final BPartnerBlockFileService blockFileService;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -59,7 +57,6 @@ public class AD_Attachment_MultiRef
 			@NonNull final BPartnerBlockFileService blockFileService)
 	{
 		this.archiveFileNameService = archiveFileNameService;
-		this.blockFileService = blockFileService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
@@ -89,11 +86,6 @@ public class AD_Attachment_MultiRef
 					.build();
 
 			record.setFileName_Override(archiveFileNameService.computeFileName(computeFileNameRequest));
-		}
-
-		if (tableRecordReference.getTableName().equals(I_C_BPartner_Block_File.Table_Name))
-		{
-			blockFileService.overrideFileName(tableRecordReference, attachmentEntry.getFileName());
 		}
 	}
 }

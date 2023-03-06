@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.blockfile;
+package de.metas.bpartner.blockstatus.file;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

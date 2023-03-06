@@ -1,15 +1,16 @@
 package de.metas.impexp.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Import Format Definition
@@ -84,18 +85,18 @@ public final class ImpFormat
 	}
 
 	@NonNull
-	public String getDelimiter()
+	public String getHeader()
 	{
-		switch (formatType)
-		{
-			case COMMA_SEPARATED:
-				return ",";
-			case TAB_SEPARATED:
-				return "\t";
-			case SEMICOLON_SEPARATED:
-				return ";";
-			default:
-				throw new AdempiereException("Format type: " + formatType + "not supported!");
-		}
+		return columns
+				.stream()
+				.map(ImpFormatColumn::getName)
+				.collect(Collectors.joining(String.valueOf(formatType.getCellDelimiterChar())));
+
+	}
+
+	@NonNull
+	public String generateCSVFileName()
+	{
+		return "Template_" + getName() + "_" + SystemTime.asInstant() + ".csv";
 	}
 }

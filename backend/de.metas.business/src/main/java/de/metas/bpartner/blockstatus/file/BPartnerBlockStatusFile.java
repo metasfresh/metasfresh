@@ -20,21 +20,23 @@
  * #L%
  */
 
-package de.metas.bpartner.blockfile;
+package de.metas.bpartner.blockstatus.file;
 
 import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 @Value
 @Builder(toBuilder = true)
-public class BPartnerBlockFile
+public class BPartnerBlockStatusFile
 {
 	@NonNull
 	BPartnerBlockFileId id;
 
 	@NonNull
+	@With
 	String fileName;
 
 	@NonNull
@@ -43,4 +45,9 @@ public class BPartnerBlockFile
 	boolean isProcessed;
 
 	boolean isError;
+
+	public boolean isImported()
+	{
+		return isError || isProcessed;
+	}
 }

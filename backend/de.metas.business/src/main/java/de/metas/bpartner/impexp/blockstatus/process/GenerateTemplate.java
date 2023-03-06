@@ -22,9 +22,9 @@
 
 package de.metas.bpartner.impexp.blockstatus.process;
 
-import de.metas.bpartner.blockfile.BPartnerBlockFile;
-import de.metas.bpartner.blockfile.BPartnerBlockFileId;
-import de.metas.bpartner.blockfile.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileId;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
+import de.metas.bpartner.blockstatus.file.BPartnerBlockStatusFile;
 import de.metas.impexp.DataImportService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -58,7 +58,7 @@ public class GenerateTemplate extends JavaProcess implements IProcessPreconditio
 	protected String doIt() throws Exception
 	{
 		final BPartnerBlockFileId blockFileId = BPartnerBlockFileId.ofRepoId(getProcessInfo().getRecord_ID());
-		final BPartnerBlockFile blockFile = bPartnerBlockFileService.getById(blockFileId);
+		final BPartnerBlockStatusFile blockFile = bPartnerBlockFileService.getById(blockFileId);
 
 		final ReportResultData reportResultData = dataImportService.generateTemplate(blockFile.getDataImportConfigId());
 

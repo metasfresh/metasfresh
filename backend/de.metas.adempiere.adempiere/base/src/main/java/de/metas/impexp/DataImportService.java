@@ -12,7 +12,6 @@ import de.metas.impexp.format.ImpFormatRepository;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.impexp.processing.ImportProcessResult;
-import de.metas.impexp.util.GenerateCSVTemplate;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -26,8 +25,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /*
@@ -114,6 +115,7 @@ public class DataImportService
 				.userId(request.getUserId())
 				.completeDocuments(request.isCompleteDocuments())
 				.additionalParameters(request.getAdditionalParameters())
+				.overrideColumnValues(request.getOverrideColumnValues())
 				//
 				.dataImportConfigId(request.getDataImportConfigId())
 				.importFormat(importFormat)
@@ -222,6 +224,12 @@ public class DataImportService
 		final DataImportConfig dataImportConfig = dataImportConfigsRepo.getById(dataImportConfigId);
 		final ImpFormat importFormat = importFormatsRepo.getById(dataImportConfig.getImpFormatId());
 
-		return GenerateCSVTemplate.generateCSVTemplate(importFormat);
+		final byte[] headerBytes = importFormat.getHeader().getBytes(StandardCharsets.UTF_8);
+
+		return ReportResultData.builder()
+				.reportData(new ByteArrayResource(headerBytes))
+				.reportFilename(importFormat.generateCSVFileName())
+				.reportContentType("text/csv")
+				.build();
 	}
 }

@@ -398,31 +398,21 @@ public class AttachmentEntryService
 	}
 
 	@NonNull
-	public AttachmentEntry getUniqueByReferenceRecord(@NonNull final TableRecordReference recordReference)
+	public Optional<AttachmentEntry> getUniqueByReferenceRecord(@NonNull final TableRecordReference recordReference)
 	{
 		final List<AttachmentEntry> attachmentEntries = getByReferencedRecord(recordReference);
 
 		if (attachmentEntries.size() > 1)
 		{
-			throw new AdempiereException("Expected to find only an attachment entry for the tableRecordReference, but multiple entries matched!")
+			throw new AdempiereException("Expected to find only one attachment entry for the given TableRecordReference, but multiple entries matched!")
 					.appendParametersToMessage()
-					.setParameter(TableRecordReference.COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
+					.setParameter("TableName", recordReference.getTableName())
 					.setParameter(TableRecordReference.COLUMNNAME_Record_ID, recordReference.getRecord_ID());
 		}
 
-		return attachmentEntries.get(0);
-	}
-
-	public boolean atLeastOnAttachmentForRecordReference(@NonNull final TableRecordReference recordReference)
-	{
-		return getByReferencedRecord(recordReference).size() >= 1;
-	}
-
-	public void removeAttachment(@NonNull final TableRecordReference tableRecordReference)
-	{
-		final AttachmentEntry attachmentEntry = getUniqueByReferenceRecord(tableRecordReference);
-
-		unattach(tableRecordReference, attachmentEntry);
+		return Optional.of(attachmentEntries)
+				.filter(entries -> entries.size() == 1)
+				.map(entries -> entries.get(0));
 	}
 
 	@NonNull

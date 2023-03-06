@@ -22,7 +22,7 @@
 
 package de.metas.bpartner.impexp.blockstatus;
 
-import de.metas.bpartner.blockfile.BPartnerBlockFileId;
+import de.metas.bpartner.blockstatus.BlockStatus;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -31,15 +31,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner_BlockStatus;
-import org.compiere.model.X_C_BPartner_BlockStatus;
 import org.compiere.util.DB;
-
-import javax.annotation.Nullable;
 
 import static org.compiere.model.I_C_BP_Customer_Acct.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_Action;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_BlockStatus;
-import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_I_ErrorMsg;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_I_IsImported;
 import static org.compiere.model.I_I_BPartner_BlockStatus.COLUMNNAME_SAP_BPartnerCode;
@@ -49,11 +45,8 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerBlockStatusImportTableSqlUpdater.class);
 
-	public void updateAndValidateBPBlockStatusImportTable(
-			@NonNull final ImportRecordsSelection selection,
-			@Nullable final BPartnerBlockFileId bPartnerBlockFileId)
+	public void updateAndValidateBPBlockStatusImportTable(@NonNull final ImportRecordsSelection selection)
 	{
-		updateBPBlockFile(selection, bPartnerBlockFileId);
 		updateBlockStatus(selection);
 
 		validateSAPBPartnerCodeAndUpdateErrorMessageIfNeeded(selection);
@@ -68,50 +61,23 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
 	}
 
-	private void updateBPBlockFile(
-			@NonNull final ImportRecordsSelection selection,
-			@Nullable final BPartnerBlockFileId bPartnerBlockFileId)
-	{
-		if (bPartnerBlockFileId == null)
-		{
-			return;
-		}
-
-		final String sql = "UPDATE " + I_I_BPartner_BlockStatus.Table_Name + " i "
-				+ " SET " + COLUMNNAME_C_BPartner_Block_File_ID + " = " + bPartnerBlockFileId.getRepoId()
-				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND i." + COLUMNNAME_C_BPartner_Block_File_ID + " IS NULL "
-				+ selection.toSqlWhereClause("i");
-
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-
-		if (no != 0)
-		{
-			logger.warn(COLUMNNAME_C_BPartner_Block_File_ID + "couldn't be updated!");
-		}
-	}
-
 	private void updateBlockStatus(@NonNull final ImportRecordsSelection selection)
 	{
 		final String sql = "UPDATE " + I_I_BPartner_BlockStatus.Table_Name + " i "
 				+ " SET " + COLUMNNAME_BlockStatus + " = "
 				+ " CASE "
 				+ " 	WHEN i." + COLUMNNAME_Action + " = 'Block'"
-				+ "     	THEN '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Blocked + "'"
+				+ "     	THEN '" + BlockStatus.Blocked.getCode() + "'"
 				+ "     WHEN i." + COLUMNNAME_Action + " = 'Unblock'"
-				+ "         THEN '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Unblocked + "'"
+				+ "         THEN '" + BlockStatus.Unblocked.getCode() + "'"
 				+ "     ELSE NULL"
 				+ " END "
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
-				+ " AND i." + COLUMNNAME_Action + " NOT IN ('" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Blocked + "', '" + X_C_BPartner_BlockStatus.BLOCKSTATUS_Unblocked + "')"
 				+ selection.toSqlWhereClause("i");
 
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 
-		if (no != 0)
-		{
-			logger.warn(COLUMNNAME_BlockStatus + "couldn't be updated!");
-		}
+		logger.debug(COLUMNNAME_BlockStatus + " updated for {} records!", no);
 	}
 
 	private void validateSAPBPartnerCodeAndUpdateErrorMessageIfNeeded(@NonNull final ImportRecordsSelection selection)
@@ -130,14 +96,14 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No " + COLUMNNAME_SAP_BPartnerCode + " = {}", no);
+			logger.warn("No BPartner found by " + COLUMNNAME_SAP_BPartnerCode + " for {} rows", no);
 		}
 	}
 
 	private void validateBlockActionAndUpdateErrorMessageIfNeeded(@NonNull final ImportRecordsSelection selection)
 	{
 		final String sqlUpdateImportTable = "UPDATE " + I_I_BPartner_BlockStatus.Table_Name + " i "
-				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Provided " + COLUMNNAME_BlockStatus + " not supported!,'"
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Provided " + COLUMNNAME_Action + " not supported!,'"
 				+ " WHERE i." + COLUMNNAME_BlockStatus + " IS NULL "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
@@ -145,7 +111,7 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 		final int no = DB.executeUpdateEx(sqlUpdateImportTable, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
-			logger.warn("No " + COLUMNNAME_BlockStatus + " = {}", no);
+			logger.warn("No " + COLUMNNAME_BlockStatus + " found for {} rows!", no);
 		}
 	}
 }
