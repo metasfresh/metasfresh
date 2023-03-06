@@ -2,7 +2,6 @@ package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -21,7 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -70,21 +70,21 @@ public class CurrentCostTest
 	{
 		return CurrentCost.builder()
 				.costSegment(CostSegment.builder()
-									 .costingLevel(CostingLevel.Client)
-									 .acctSchemaId(AcctSchemaId.ofRepoId(1))
-									 .costTypeId(CostTypeId.ofRepoId(1))
-									 .clientId(ClientId.ofRepoId(1))
-									 .orgId(OrgId.ofRepoId(1))
-									 .productId(ProductId.ofRepoId(1))
-									 .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-									 .build())
+						.costingLevel(CostingLevel.Client)
+						.acctSchemaId(AcctSchemaId.ofRepoId(1))
+						.costTypeId(CostTypeId.ofRepoId(1))
+						.clientId(ClientId.ofRepoId(1))
+						.orgId(OrgId.ofRepoId(1))
+						.productId(ProductId.ofRepoId(1))
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.build())
 				.costElement(CostElement.builder()
-									 .id(CostElementId.ofRepoId(1))
-									 .name("cost element")
-									 .costElementType(CostElementType.Material)
-									 .costingMethod(CostingMethod.AveragePO)
-									 .clientId(ClientId.ofRepoId(1))
-									 .build())
+						.id(CostElementId.ofRepoId(1))
+						.name("cost element")
+						.costElementType(CostElementType.Material)
+						.costingMethod(CostingMethod.AveragePO)
+						.clientId(ClientId.ofRepoId(1))
+						.build())
 				.currencyId(currencyId)
 				.precision(CurrencyPrecision.ofInt(4))
 				.uom(uomEach)
@@ -101,13 +101,12 @@ public class CurrentCostTest
 		{
 			final CurrentCost currentCost = currentCost().build();
 
-			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(0, currencyId)).build();
 			currentCost.addWeightedAverage(
-					costAmountDetailed,
+					CostAmount.of(0, currencyId),
 					Quantity.of(0, uomEach),
 					QuantityUOMConverters.noConversion());
 
-			assertThat(currentCost).isEqualToComparingFieldByField(currentCost().build());
+			assertThat(currentCost).usingRecursiveComparison().isEqualTo(currentCost().build());
 		}
 
 		@Test
@@ -118,9 +117,8 @@ public class CurrentCostTest
 					.currentQty("1")
 					.build();
 
-			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(0, currencyId)).build();
 			currentCost.addWeightedAverage(
-					costAmountDetailed,
+					CostAmount.of(0, currencyId),
 					Quantity.of(10, uomEach),
 					QuantityUOMConverters.noConversion());
 
@@ -133,9 +131,8 @@ public class CurrentCostTest
 		{
 			final CurrentCost currentCost = currentCost().build();
 
-			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(10, currencyId)).build();
 			assertThatThrownBy(() -> currentCost.addWeightedAverage(
-					costAmountDetailed,
+					CostAmount.of(10, currencyId),
 					Quantity.of(0, uomEach),
 					QuantityUOMConverters.noConversion()))
 					.isInstanceOf(AdempiereException.class)
@@ -150,10 +147,8 @@ public class CurrentCostTest
 					.currentQty("1")
 					.build();
 
-			final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder().mainAmt(CostAmount.of(10, currencyId)).build();
-
 			currentCost.addWeightedAverage(
-					costAmountDetailed,
+					CostAmount.of(10, currencyId),
 					Quantity.of(10, uomEach),
 					QuantityUOMConverters.noConversion());
 

@@ -233,14 +233,4 @@ public class CostingMethodHandlerUtils
 					request.getOrgId());
 		}
 	}
-
-	public CostAmountDetailed convertToAcctSchemaCurrency(final CostAmountDetailed amt, final CostDetailCreateRequest request)
-	{
-		return CostAmountDetailed.builder()
-				.mainAmt(convertToAcctSchemaCurrency(amt.getMainAmt(), request))
-				.costAdjustmentAmt(convertToAcctSchemaCurrency(amt.getCostAdjustmentAmt(), request))
-				.alreadyShippedAmt(convertToAcctSchemaCurrency(amt.getAlreadyShippedAmt(), request))
-				.build();
-	}
-
 }
