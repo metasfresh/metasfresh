@@ -45,12 +45,12 @@ public class CostAmountDetailed
 
 	@Builder
 	private CostAmountDetailed(
-			@NonNull final CostAmount mainAmt,
+			@Nullable final CostAmount mainAmt,
 			@Nullable final CostAmount costAdjustmentAmt,
 			@Nullable final CostAmount alreadyShippedAmt)
 	{
 		final CurrencyId currencyId = CostAmount.getCommonCurrencyIdOfAll(mainAmt, costAdjustmentAmt, alreadyShippedAmt);
-		this.mainAmt = mainAmt;
+		this.mainAmt = mainAmt != null ? mainAmt : CostAmount.zero(currencyId);
 		this.costAdjustmentAmt = costAdjustmentAmt != null ? costAdjustmentAmt : CostAmount.zero(currencyId);
 		this.alreadyShippedAmt = alreadyShippedAmt != null ? alreadyShippedAmt : CostAmount.zero(currencyId);
 	}
