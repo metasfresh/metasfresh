@@ -24,7 +24,6 @@ package de.metas.costing.methods;
 
 import de.metas.costing.CostAmount;
 import de.metas.money.CurrencyId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -79,62 +78,6 @@ public class CostAmountDetailed
 				.costAdjustmentAmt(costAdjustmentAmt.add(amtToAdd.costAdjustmentAmt))
 				.alreadyShippedAmt(alreadyShippedAmt.add(amtToAdd.alreadyShippedAmt))
 				.build();
-	}
-
-	public static CostAmountDetailed sum(@Nullable final CostAmountDetailed... details)
-	{
-		if (details == null || details.length <= 0)
-		{
-			throw new AdempiereException("No details");
-		}
-
-		CostAmount mainAmtSum = null;
-		CostAmount costAdjustmentAmtSum = null;
-		CostAmount alreadyShippedAmtSum = null;
-
-		CostAmountDetailed lastDetailsConsidered = null;
-		int countDetailsConsidered = 0;
-
-		for (final CostAmountDetailed detail : details)
-		{
-			if (detail == null)
-			{
-				continue;
-			}
-
-			final CostAmount mainAmt = detail.getMainAmt();
-			final CostAmount costAdjustmentAmt = detail.getCostAdjustmentAmt();
-			final CostAmount alreadyShippedAmt = detail.getAlreadyShippedAmt();
-
-			mainAmtSum = mainAmtSum != null ? mainAmtSum.add(mainAmt) : mainAmt;
-			costAdjustmentAmtSum = costAdjustmentAmtSum != null ? costAdjustmentAmtSum.add(costAdjustmentAmt) : costAdjustmentAmt;
-			alreadyShippedAmtSum = alreadyShippedAmtSum != null ? alreadyShippedAmtSum.add(alreadyShippedAmt) : alreadyShippedAmt;
-
-			lastDetailsConsidered = detail;
-			countDetailsConsidered++;
-		}
-
-		if (countDetailsConsidered == 0)
-		{
-			throw new AdempiereException("No details");
-		}
-		else if (countDetailsConsidered == 1)
-		{
-			return Check.assumeNotNull(lastDetailsConsidered, "lastDetailsConsidered not null");
-		}
-		else
-		{
-			if (mainAmtSum == null)
-			{
-				mainAmtSum = CostAmount.zero(CostAmount.getCommonCurrencyIdOfAll(costAdjustmentAmtSum, alreadyShippedAmtSum));
-			}
-
-			return builder()
-					.mainAmt(mainAmtSum)
-					.costAdjustmentAmt(costAdjustmentAmtSum)
-					.alreadyShippedAmt(alreadyShippedAmtSum)
-					.build();
-		}
 	}
 }
 
