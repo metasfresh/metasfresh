@@ -26,6 +26,8 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -37,7 +39,9 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -50,8 +54,10 @@ import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -1488,9 +1494,10 @@ public final class MPayment extends X_C_Payment
 	public boolean allocateIt()
 	{
 		// Create invoice Allocation - See also MCash.completeIt
-		if (getC_Invoice_ID() > 0)
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(getC_Invoice_ID());
+		if (invoiceId != null)
 		{
-			return allocateInvoice();
+			return allocateInvoice(invoiceId);
 		}
 
 		if (getC_Order_ID() != 0)
@@ -1552,20 +1559,23 @@ public final class MPayment extends X_C_Payment
 	 *
 	 * @return true if allocated
 	 */
-	private boolean allocateInvoice()
+	private boolean allocateInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		// 04627 begin (commented out old code)
 		// calculate actual allocation
 		// BigDecimal allocationAmt = getPayAmt(); // underpayment
 		// when allocating an invoice, we don't want to allocate more than the invoice's open amount
-		final I_C_Invoice invoice = getC_Invoice();
+		final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceId, I_C_Invoice.class);
+
+		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
+		
 		final BigDecimal invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, false);
 
 		// note: zero is ok, but with negative, i don't see the case and don't know what to do
 		Check.errorIf(invoiceOpenAmt.signum() < 0, "{} has a negative open amount = {}", invoice, invoiceOpenAmt);
 		Check.errorIf(getPayAmt().signum() < 0, "{} has a negative PayAmt = {}", this, getPayAmt());
 
-		final BigDecimal allocationAmt = getPayAmt().min(invoiceOpenAmt);
+		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
 		// 04627 end
 
@@ -1596,13 +1606,11 @@ public final class MPayment extends X_C_Payment
 //		// @formatter:on
 		//
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-														getDateTrx(), getC_Currency_ID(),
+														getDateTrx(), invoiceCurrencyId.getRepoId(),
 														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
 
 		// task 09643
 		// When the Allocation has both invoice and payment, allocation's accounting date must e the max between the invoice date and payment date
-
-		if (invoice != null)
 		{
 			Timestamp dateAcct = getDateAcct();
 
@@ -1631,15 +1639,21 @@ public final class MPayment extends X_C_Payment
 
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
+
+		final BigDecimal allocationAmtInInvoiceCurrency = getAllocationAmtInInvoiceCurrency(alloc.getDateTrx(),
+																							invoiceOpenAmt,
+																							invoiceCurrencyId,
+																							CurrencyId.ofRepoId(getC_Currency_ID()));
+
 		MAllocationLine aLine = null;
 		if (isReceipt())
 		{
-			aLine = new MAllocationLine(alloc, allocationAmt,
+			aLine = new MAllocationLine(alloc, allocationAmtInInvoiceCurrency,
 										getDiscountAmt(), getWriteOffAmt(), getOverUnderAmt());
 		}
 		else
 		{
-			aLine = new MAllocationLine(alloc, allocationAmt.negate(),
+			aLine = new MAllocationLine(alloc, allocationAmtInInvoiceCurrency.negate(),
 										getDiscountAmt().negate(), getWriteOffAmt().negate(), getOverUnderAmt().negate());
 		}
 		aLine.setDocInfo(getC_BPartner_ID(), 0, getC_Invoice_ID());
@@ -2215,5 +2229,27 @@ public final class MPayment extends X_C_Payment
 			return getCreditCardVV();
 		}
 		return volatileCCData.creditCardVV;
+	}
+	
+	@NonNull
+	private BigDecimal getAllocationAmtInInvoiceCurrency(
+			@NonNull final Timestamp dateTrx,
+			@NonNull final BigDecimal invoiceOpenAmt,
+			@NonNull final CurrencyId invoiceCurrencyId,
+			@NonNull final CurrencyId paymentCurrencyId)
+	{
+		if (!invoiceCurrencyId.equals(paymentCurrencyId))
+		{
+			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+			final CurrencyConversionContext currencyConversionContext = currencyBL
+					.createCurrencyConversionContext(dateTrx.toInstant(), (CurrencyConversionTypeId)null, ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
+
+			final CurrencyConversionResult currencyConversionResult = currencyBL.convert(currencyConversionContext, getPayAmt(), paymentCurrencyId, invoiceCurrencyId);
+			return currencyConversionResult.getAmount().min(invoiceOpenAmt);	
+		}
+		else
+		{
+			return getPayAmt().min(invoiceOpenAmt);
+		}
 	}
 } // MPayment
