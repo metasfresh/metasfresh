@@ -87,7 +87,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setM_Product_ID(cd.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(cd.getAttributeSetInstanceId().getRepoId());
 
-		record.setType(cd.getAmtType().getCode());
+		record.setM_CostDetail_Type(cd.getAmtType().getCode());
 		record.setAmt(cd.getAmt().toBigDecimal());
 		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
 
@@ -322,7 +322,7 @@ public class CostDetailRepository implements ICostDetailRepository
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-				.amtType(CostAmountType.ofCode(record.getType()))
+				.amtType(CostAmountType.ofCode(record.getM_CostDetail_Type()))
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(record.isChangingCosts())

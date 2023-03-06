@@ -5,13 +5,15 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.X_M_CostDetail;
+import org.compiere.model.X_M_CostRevaluation_Detail;
 
 @AllArgsConstructor
 public enum CostAmountType implements ReferenceListAwareEnum
 {
-	MAIN("M"),
-	ADJUSTMENT("A"),
-	ALREADY_SHIPPED("S"),
+	MAIN(X_M_CostDetail.M_COSTDETAIL_TYPE_Main),
+	ADJUSTMENT(X_M_CostDetail.M_COSTDETAIL_TYPE_CostAdjustment),
+	ALREADY_SHIPPED(X_M_CostDetail.M_COSTDETAIL_TYPE_AlreadyShipped),
 	;
 
 	@Getter @NonNull final String code;
