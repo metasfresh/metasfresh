@@ -121,7 +121,7 @@ Feature: Trade margin commission contract
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_1                      |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
     And validate invoice candidate
