@@ -117,6 +117,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			amtDetailed = amtDetailed.add(alreadyShippedResult.getAmt());
 		}
 
+		if (!amtDetailed.getCostAdjustmentAmt().isZero())
+		{
+			currentCost.addWeightedAverage(amtDetailed.getCostAdjustmentAmt(), request.getQty().toZero(), utils.getQuantityUOMConverter());
+
+			utils.saveCurrentCost(currentCost);
+		}
+
 		return mainResult.withAmt(amtDetailed);
 	}
 
