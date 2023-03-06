@@ -397,8 +397,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		return CostAmountDetailed.builder()
 				.mainAmt(invoicedAmt)
-				.costAdjustmentAmt(costAdjustmentAmt)
-				.alreadyShippedAmt(alreadyShippedAmt)
+				.costAdjustmentAmt(costAdjustmentAmt.negateIf(isReversal))
+				.alreadyShippedAmt(alreadyShippedAmt.negateIf(isReversal))
 				.build();
 	}
 

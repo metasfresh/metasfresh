@@ -293,8 +293,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	{
 		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
 		final CostAmount totalCosts = costs.getMainAmt()
-				.add(costs.getCostAdjustmentAmt().negateIf(isReversal))
-				.add(costs.getAlreadyShippedAmt().negateIf(isReversal));
+				.add(costs.getCostAdjustmentAmt())
+				.add(costs.getAlreadyShippedAmt());
 		final CurrencyId currencyId = totalCosts.getCurrencyId();
 		//
 		// NotInvoicedReceipt DR
@@ -325,12 +325,44 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		if (!costs.getCostAdjustmentAmt().isZero())
 		{
+			final CostAmount costAdjustmentAmt = costs.getCostAdjustmentAmt();
+			final Money debitCostAdjutment;
+			final Money creditCostAdjustment;
+
+			if (costAdjustmentAmt.signum() > 0)
+			{
+				if (isReversal)
+				{
+					debitCostAdjutment = costAdjustmentAmt.negate().toMoney();
+					creditCostAdjustment = null;
+				}
+				else
+				{
+					debitCostAdjutment = null;
+					creditCostAdjustment = costAdjustmentAmt.toMoney();
+				}
+			}
+			else
+			{
+				if (isReversal)
+				{
+					debitCostAdjutment = null;
+					creditCostAdjustment = costAdjustmentAmt.toMoney();
+
+				}
+
+				else
+				{
+					debitCostAdjutment = costAdjustmentAmt.negate().toMoney();
+					creditCostAdjustment = null;
+				}
+			}
 
 			final FactLine costAdjustment = fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
 					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSourceDrOrCr(costs.getCostAdjustmentAmt().negateIf(!isReversal).toMoney())
+					.setAmtSource(debitCostAdjutment, creditCostAdjustment)
 					.setQty(getQty())
 					.buildAndAdd();
 			updateFromInvoiceLine(costAdjustment);
@@ -340,11 +372,44 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		if (!costs.getAlreadyShippedAmt().isZero())
 		{
+			final CostAmount alreadyShippedAmt = costs.getAlreadyShippedAmt();
+			final Money debitAlreadyShipped;
+			final Money creditAlreadyShipped;
+
+			if (alreadyShippedAmt.signum() > 0)
+			{
+				if (isReversal)
+				{
+					debitAlreadyShipped = alreadyShippedAmt.negate().toMoney();
+					creditAlreadyShipped = null;
+				}
+				else
+				{
+					debitAlreadyShipped = null;
+					creditAlreadyShipped = alreadyShippedAmt.toMoney();
+				}
+			}
+			else
+			{
+				if (isReversal)
+				{
+					debitAlreadyShipped = null;
+					creditAlreadyShipped = alreadyShippedAmt.toMoney();
+
+				}
+
+				else
+				{
+					debitAlreadyShipped = alreadyShippedAmt.negate().toMoney();
+					creditAlreadyShipped = null;
+				}
+			}
+
 			final FactLine alreadyShipped = fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
 					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSourceDrOrCr(costs.getAlreadyShippedAmt().negateIf(!isReversal).toMoney())
+					.setAmtSource(debitAlreadyShipped, creditAlreadyShipped)
 					.setQty(getQty())
 					.buildAndAdd();
 			updateFromInvoiceLine(alreadyShipped);
