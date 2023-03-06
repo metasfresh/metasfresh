@@ -18,6 +18,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -336,7 +337,7 @@ public class CostDetailRepository implements ICostDetailRepository
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
-		final Quantity qty = Quantity.of(record.getQty(), productUOM);
+		final Quantity qty = Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 
 		final CostAmountDetailed costAmountDetailed = CostAmountDetailed.builder()
 				.mainAmt(amt)
