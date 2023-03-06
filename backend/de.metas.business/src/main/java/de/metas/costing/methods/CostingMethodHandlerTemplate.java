@@ -1,7 +1,6 @@
 package de.metas.costing.methods;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.Check;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
@@ -76,22 +75,51 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request).orElse(Collections.emptyList());
 		if (!existingCostDetails.isEmpty())
 		{
-			// at this moment there can't be more than 2 costs for one document and element
-			Check.assume(existingCostDetails.size() <= 2, "More than 2 costing details for the same document and costing element: " + request);
+			CostDetail mainCostDetail = null;
+			CostDetail costAdjustmentDetail = null;
+			CostDetail alreadyShippedDetail = null;
+			for (final CostDetail existingCostDetail : existingCostDetails)
+			{
+				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
+				switch (amtType)
+				{
+					case MAIN:
+						if (mainCostDetail != null)
+						{
+							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
+						}
+						mainCostDetail = existingCostDetail;
+						break;
+					case ADJUSTMENT:
+						if (costAdjustmentDetail != null)
+						{
+							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
+						}
+						costAdjustmentDetail = existingCostDetail;
+						break;
+					case ALREADY_SHIPPED:
+						if (alreadyShippedDetail != null)
+						{
+							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
+						}
+						alreadyShippedDetail = existingCostDetail;
+						break;
+					default:
+						throw new AdempiereException("Unknown type: " + amtType);
+				}
+			}
 
-			final CostDetail mainCostDetail = existingCostDetails.stream().filter(cd -> cd.getAmtType().isMain())
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("More than 1 adjustment costing details for the same document and costing element : " + request));
-			final CostDetail costAdjustmentDetail = existingCostDetails.stream().filter(cd -> cd.getAmtType().isAdjustment())
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("More than 1 non-adjustment costing details for the same document and costing element : " + request));
-			final CostDetail alreadyShippedDetail = existingCostDetails.stream().filter(cd -> cd.getAmtType().isAlreadyShipped())
-					.findFirst()
-					.orElse(null);
+			if (mainCostDetail == null)
+			{
+				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
+			}
 
 			// make sure DateAcct is up-to-date
 			utils.updateDateAcct(mainCostDetail, request.getDate());
-			utils.updateDateAcct(costAdjustmentDetail, request.getDate());
+			if (costAdjustmentDetail != null)
+			{
+				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
+			}
 			if (alreadyShippedDetail != null)
 			{
 				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
@@ -101,7 +129,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 					utils.toCostDetailCreateResult(mainCostDetail)
 							.withAmt(CostAmountDetailed.builder()
 									.mainAmt(mainCostDetail.getAmt())
-									.costAdjustmentAmt(costAdjustmentDetail.getAmt())
+									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
 									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
 									.build())
 			);
