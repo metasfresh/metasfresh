@@ -103,7 +103,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setManualPriceEnabled(boolean manualPriceEnabled);
 
-	IEditablePricingContext setCountryId(CountryId countryId);
+	IEditablePricingContext setCountryId(@Nullable CountryId countryId);
 
 	IEditablePricingContext setFailIfNotCalculated();
 
