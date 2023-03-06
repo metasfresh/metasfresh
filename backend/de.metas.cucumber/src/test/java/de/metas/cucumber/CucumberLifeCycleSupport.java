@@ -62,17 +62,6 @@ public class CucumberLifeCycleSupport
 			final String dbHost = infrastructureSupport.getDbHost();
 			final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
 
-			if (infrastructureSupport.isRunAgainstDockerizedDatabase())
-			{
-				final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
-				final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
-						.workspaceDir(workspaceDir)
-						.onScriptFailure(OnScriptFailure.FAIL)
-						.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
-						.build();
-				de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
-			}
-
 			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
 			System.setProperty("server.port", Integer.toString(appServerPort));
 

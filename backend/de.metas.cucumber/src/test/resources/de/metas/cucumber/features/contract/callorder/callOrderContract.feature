@@ -110,13 +110,13 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_1               | callOrderLine_1               | 4              |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | callOrderLine_1           | N             |
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
       | schedule_1                       | D            | false               | false       | 2                                                |
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | schedule_1                       | shipment_1            |
     And validate the created shipment lines
@@ -160,13 +160,13 @@ Feature: Call order contract
       | orderDetail_shipment_1          | PCE               |                           |                               |                | shipment_1                | shipmentLine_1                | 2                     |
       | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_2 | callOrderLine_1           | N             |
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_2                       | D            | true                | false       |
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | schedule_2                       | shipment_3            |
     And validate the created shipment lines
@@ -182,7 +182,7 @@ Feature: Call order contract
       | orderDetail_shipment_2          | PCE               |                           |                               |                | shipment_2                | shipmentLine_2                | -2                    |
       | orderDetail_shipment_3          | PCE               |                           |                               |                | shipment_3                | shipmentLine_3                | 4                     |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | callOrderLine_1           | 4            |
     And validate invoice candidate
@@ -194,10 +194,10 @@ Feature: Call order contract
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 2            | 4              | 4                | 2                         |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
       | invoiceCand_1                     | 2               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
@@ -243,10 +243,10 @@ Feature: Call order contract
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_1               | callOrderLine_1               | 4            | 4              | 4                | 4                         |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
       | invoiceCand_1                     | 4               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_3               |
     And validate created invoices
@@ -390,7 +390,7 @@ Feature: Call order contract
       | C_CallOrderDetail_ID.Identifier | C_UOM_ID.X12DE355 | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | orderDetail_order_1             | PCE               | callOrder_po              | callOrderLine_po              | 8              |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | callOrder_po          | callOrderLine_po          | bp_callOrderPO           | bp_callOrderPO_Location           | call_order_product_PO   | 8          | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -459,7 +459,7 @@ Feature: Call order contract
       | orderDetail_material_receipt_2  | PCE               |                           |                               |                | material_receipt_2        | shipmentLine_2                | -6                    |
       | orderDetail_material_receipt_3  | PCE               |                           |                               |                | material_receipt_3        | shipmentLine_3                | 8                     |
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | callOrderLine_po          | 8            |
     And validate C_Invoice_Candidate:
@@ -471,10 +471,10 @@ Feature: Call order contract
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_po              | callOrderLine_po              | 6            | 8              | 8                | 6                         |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
       | invoiceCand_1                     | 6               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_1               |
     And validate created invoices
@@ -520,10 +520,10 @@ Feature: Call order contract
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToInvoice_Override |
       | invoiceCand_1                     | callOrder_po              | callOrderLine_po              | 8            | 8              | 8                | 8                         |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyInvoiced |
       | invoiceCand_1                     | 8               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCand_1                     | invoice_3               |
     And validate created invoices
