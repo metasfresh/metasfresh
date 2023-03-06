@@ -1,6 +1,5 @@
 package de.metas.costing.impl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -81,8 +79,8 @@ public class CostDetailService implements ICostDetailService
 			@NonNull final CostDetailPreviousAmounts previousCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
-													 .changingCosts(true)
-													 .previousAmounts(previousCosts));
+				.changingCosts(true)
+				.previousAmounts(previousCosts));
 
 		return toCostDetailCreateResult(costDetail);
 	}
@@ -93,8 +91,8 @@ public class CostDetailService implements ICostDetailService
 			@NonNull final CostDetailPreviousAmounts currentCosts)
 	{
 		final CostDetail costDetail = create(request.toCostDetailBuilder()
-													 .changingCosts(false)
-													 .previousAmounts(currentCosts));
+				.changingCosts(false)
+				.previousAmounts(currentCosts));
 
 		return toCostDetailCreateResult(costDetail);
 	}
@@ -118,17 +116,15 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public final Optional<List<CostDetail>> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
+	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
-		final ImmutableList<CostDetail> costDetails = costDetailsRepo.list(CostDetailQuery.builder()
-																				   .acctSchemaId(request.getAcctSchemaId())
-																				   .costElementId(request.getCostElementId()) // assume request's costing element is set
-																				   .documentRef(request.getDocumentRef())
-																				   // .productId(request.getProductId())
-																				   // .attributeSetInstanceId(request.getAttributeSetInstanceId())
-																				   .build());
-
-		return Optional.of(costDetails);
+		return costDetailsRepo.list(CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.costElementId(request.getCostElementId()) // assume request's costing element is set
+				.documentRef(request.getDocumentRef())
+				// .productId(request.getProductId())
+				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.build());
 	}
 
 	@Override
@@ -136,15 +132,15 @@ public class CostDetailService implements ICostDetailService
 	{
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), costDetail.getAcctSchemaId());
 		return costDetailsRepo.stream(CostDetailQuery.builder()
-											  .acctSchemaId(costDetail.getAcctSchemaId())
-											  .costElementId(costDetail.getCostElementId())
-											  .productId(costDetail.getProductId())
-											  .attributeSetInstanceId(costingLevel.effectiveValueOrNull(costDetail.getAttributeSetInstanceId()))
-											  .clientId(costingLevel.effectiveValue(costDetail.getClientId()))
-											  .orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
-											  .afterCostDetailId(costDetail.getId())
-											  .orderBy(CostDetailQuery.OrderBy.ID_ASC)
-											  .build());
+				.acctSchemaId(costDetail.getAcctSchemaId())
+				.costElementId(costDetail.getCostElementId())
+				.productId(costDetail.getProductId())
+				.attributeSetInstanceId(costingLevel.effectiveValueOrNull(costDetail.getAttributeSetInstanceId()))
+				.clientId(costingLevel.effectiveValue(costDetail.getClientId()))
+				.orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
+				.afterCostDetailId(costDetail.getId())
+				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
+				.build());
 	}
 
 	@Override

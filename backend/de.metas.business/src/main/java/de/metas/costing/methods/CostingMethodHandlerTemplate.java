@@ -16,7 +16,6 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -72,7 +71,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request).orElse(Collections.emptyList());
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
 		if (!existingCostDetails.isEmpty())
 		{
 			CostDetail mainCostDetail = null;

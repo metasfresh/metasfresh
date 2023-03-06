@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 /*
@@ -141,7 +140,7 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.toCostDetailCreateResult(costDetail);
 	}
 
-	public Optional<List<CostDetail>> getExistingCostDetails(final CostDetailCreateRequest request)
+	public List<CostDetail> getExistingCostDetails(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.getExistingCostDetails(request);
 	}
