@@ -102,9 +102,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
-		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will update right now (see below)
-		// * the other ones will be updated later, asynchronously
 
 		ensureICsAreUpdated(pInstanceId);
 
