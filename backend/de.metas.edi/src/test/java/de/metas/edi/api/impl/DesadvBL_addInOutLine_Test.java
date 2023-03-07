@@ -191,6 +191,7 @@ class DesadvBL_addInOutLine_Test
 		saveRecord(orderLineRecord);
 
 		inOutLineRecord = newInstance(I_M_InOutLine.class);
+		inOutLineRecord.setC_Order_ID(orderLineRecord.getC_Order_ID());
 		inOutLineRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
 		inOutLineRecord.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		inOutLineRecord.setMovementQty(new BigDecimal("84")); // in order-UOM this is 84 / 2 = 42; in catch-UOM this is 84 * 1.5 = 126

@@ -95,6 +95,11 @@ public class OrderAndLineId
 				: null;
 	}
 
+	public static int toOrderRepoId(final OrderAndLineId orderAndLineId)
+	{
+		return getOrderRepoIdOr(orderAndLineId, -1);
+	}
+
 	public static int getOrderRepoIdOr(final OrderAndLineId orderAndLineId, final int defaultValue)
 	{
 		return orderAndLineId != null ? orderAndLineId.getOrderRepoId() : defaultValue;
