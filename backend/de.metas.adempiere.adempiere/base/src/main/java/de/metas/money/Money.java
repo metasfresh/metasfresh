@@ -388,4 +388,10 @@ public class Money implements Comparable<Money>
 	}
 
 	public static boolean equals(@Nullable Money money1, @Nullable Money money2) {return Objects.equals(money1, money2);}
+
+	public Percent percentageOf(@NonNull final Money whole)
+	{
+		assertCurrencyIdMatching(whole);
+		return Percent.of(toBigDecimal(), whole.toBigDecimal());
+	}
 }
