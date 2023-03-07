@@ -370,10 +370,9 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final Quantity receiptQty = request.getQty(); // i.e. qty matched
 		final CostAmount receiptAmt = CostAmount.ofProductPrice(purchaseOrderPrice).multiply(receiptQty).roundToPrecisionIfNeeded(currentCost.getPrecision()); // P_Asset
 
-		final CostAmount invoicedAmt = request.getAmt();
-
 		final boolean isReversal = isReversal(matchInv.getInvoiceId());
-		final CostAmount amtDifference = receiptAmt.subtract(invoicedAmt.negateIf(isReversal));
+		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
+		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
 		final CostAmount priceDifference = amtDifference.isZero() || receiptQty.isZero()
 				? CostAmount.zero(currentCost.getCurrencyId())
@@ -385,9 +384,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		return CostAmountDetailed.builder()
 				.mainAmt(invoicedAmt)
-				.costAdjustmentAmt(costAdjustmentAmt.negateIf(!isReversal))
-				.alreadyShippedAmt(alreadyShippedAmt.negateIf(!isReversal))
-				.build();
+				.costAdjustmentAmt(costAdjustmentAmt)
+				.alreadyShippedAmt(alreadyShippedAmt)
+				.build()
+				.negateIf(isReversal);
 	}
 
 	private ProductPrice getPurchaseOrderPrice(final MatchInv matchInv)

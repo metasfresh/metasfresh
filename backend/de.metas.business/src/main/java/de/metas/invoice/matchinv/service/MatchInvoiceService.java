@@ -228,26 +228,24 @@ public class MatchInvoiceService
 						.type(MatchInvType.Cost)
 						.inoutCostId(inoutCostId)
 						.build());
-		if (matchInvs.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		Money result = null;
-
-		for (final MatchInv matchInv : matchInvs)
-		{
-			final Money costAmount = matchInv.getCostPartNotNull().getCostAmount();
-			if (result == null)
-			{
-				result = costAmount;
-			}
-			else
-			{
-				result = result.add(costAmount);
-			}
-		}
-
-		return Optional.ofNullable(result);
+		return sumCostAmounts(matchInvs);
 	}
+
+	public Optional<Money> getCostAmountMatched(final InvoiceLineId invoiceLineId)
+	{
+		final List<MatchInv> matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
+				.type(MatchInvType.Cost)
+				.invoiceLineId(invoiceLineId)
+				.build());
+
+		return sumCostAmounts(matchInvs);
+	}
+
+	private Optional<Money> sumCostAmounts(final List<MatchInv> matchInvs)
+	{
+		return matchInvs.stream()
+				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmount())
+				.reduce(Money::add);
+	}
+
 }

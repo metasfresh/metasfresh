@@ -69,9 +69,14 @@ public class OrderCostService
 				.execute();
 	}
 
+	public InOutCost getInOutCostsById(@NonNull final InOutCostId inoutCostId)
+	{
+		return inOutCostRepository.getById(inoutCostId);
+	}
+
 	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
 	{
-		return inOutCostRepository.getInOutCostsByIds(inoutCostIds);
+		return inOutCostRepository.getByIds(inoutCostIds);
 	}
 
 	public ImmutableList<InOutCost> getByReceiptId(@NonNull final InOutId receiptId)

@@ -339,7 +339,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		return facts;
 	}
 
-	private Fact createFacts_PurchasingReceiptLine(final AcctSchema as, final DocLine_InOut line, CostElement costElement, CostAmount costs)
+	private Fact createFacts_PurchasingReceiptLine(
+			@NonNull final AcctSchema as,
+			@NonNull final DocLine_InOut line,
+			@NonNull final CostElement costElement,
+			@NonNull final CostAmount costs)
 	{
 		final Fact fact = newFacts(as);
 
@@ -350,8 +354,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
 				.setQty(line.getQty()) // (+) Qty
+				.bpartnerId(line.getBPartnerId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(getBPartnerLocationId())
+				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
 				.costElement(costElement)
 				.buildAndAdd();
@@ -369,8 +374,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 						: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
 				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
 				.setQty(line.getQty().negate()) // (-) Qty
+				.bpartnerId(line.getBPartnerId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(getBPartnerLocationId())
+				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
 				.costElement(costElement)
 				.buildAndAdd();
