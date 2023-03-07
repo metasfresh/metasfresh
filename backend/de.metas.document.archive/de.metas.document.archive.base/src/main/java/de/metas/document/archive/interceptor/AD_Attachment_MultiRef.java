@@ -22,7 +22,6 @@
 
 package de.metas.document.archive.interceptor;
 
-import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.order.IOrderDAO;
@@ -52,9 +51,7 @@ public class AD_Attachment_MultiRef
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	public AD_Attachment_MultiRef(
-			@NonNull final ArchiveFileNameService archiveFileNameService,
-			@NonNull final BPartnerBlockFileService blockFileService)
+	public AD_Attachment_MultiRef(@NonNull final ArchiveFileNameService archiveFileNameService)
 	{
 		this.archiveFileNameService = archiveFileNameService;
 	}

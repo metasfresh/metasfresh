@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.Singular;
 
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,9 +90,9 @@ public final class ImpFormat
 	{
 		return columns
 				.stream()
+				.sorted(Comparator.comparing(ImpFormatColumn::getStartNo))
 				.map(ImpFormatColumn::getName)
 				.collect(Collectors.joining(String.valueOf(formatType.getCellDelimiterChar())));
-
 	}
 
 	@NonNull

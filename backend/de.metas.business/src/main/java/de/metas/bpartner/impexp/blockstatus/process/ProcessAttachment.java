@@ -65,7 +65,6 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 		}
 
 		final boolean fileAttached = attachmentEntryService.getUniqueByReferenceRecord(bPartnerBlockFileId.toRecordRef()).isPresent();
-
 		if (!fileAttached)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No file attached!");

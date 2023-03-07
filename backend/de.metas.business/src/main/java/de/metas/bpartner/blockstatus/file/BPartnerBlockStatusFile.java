@@ -29,7 +29,7 @@ import lombok.Value;
 import lombok.With;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class BPartnerBlockStatusFile
 {
 	@NonNull
