@@ -69,8 +69,8 @@ public class InOutCostCreateCommand
 
 		for (final I_M_InOutLine receiptLine : receiptLines)
 		{
-			final OrderAndLineId purchaseOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(receiptLine.getC_Order_ID(), receiptLine.getC_OrderLine_ID());
-			if (purchaseOrderAndLineId == null)
+			final OrderLineId purchaseOrderLineId = OrderLineId.ofRepoIdOrNull(receiptLine.getC_OrderLine_ID());
+			if (purchaseOrderLineId == null)
 			{
 				continue;
 			}
@@ -79,7 +79,6 @@ public class InOutCostCreateCommand
 
 			for (final OrderCost orderCost : orderCostsList)
 			{
-				final OrderLineId purchaseOrderLineId = purchaseOrderAndLineId.getOrderLineId();
 				final OrderCostDetail detail = orderCost.getDetailByOrderLineIdIfExists(purchaseOrderLineId).orElse(null);
 				if (detail == null)
 				{
@@ -100,7 +99,7 @@ public class InOutCostCreateCommand
 				inOutCostRepository.create(InOutCostCreateRequest.builder()
 						.orgId(OrgId.ofRepoId(receiptLine.getAD_Org_ID()))
 						.orderCostDetailId(addResult.getOrderCostDetailId())
-						.orderAndLineId(purchaseOrderAndLineId)
+						.orderAndLineId(OrderAndLineId.of(orderCost.getOrderId(), purchaseOrderLineId))
 						.receiptAndLineId(InOutAndLineId.ofRepoId(receiptLine.getM_InOut_ID(), receiptLine.getM_InOutLine_ID()))
 						.bpartnerId(orderCost.getBpartnerId())
 						.costTypeId(orderCost.getCostTypeId())
