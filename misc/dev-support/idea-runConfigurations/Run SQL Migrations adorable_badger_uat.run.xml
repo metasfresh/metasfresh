@@ -3,7 +3,7 @@
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="de.metas.migration.cli.workspace_migrate.Main" />
     <module name="de.metas.migration.cli" />
-    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/metasfresh" />
+    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$" />
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="true" />
       <option name="IS_SUBST" value="true" />
