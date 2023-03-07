@@ -9,7 +9,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverters;
 import lombok.Builder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -129,14 +127,19 @@ public class CurrentCostTest
 		@Test
 		public void nonZeroAmt_zeroQty()
 		{
-			final CurrentCost currentCost = currentCost().build();
+			final CurrentCost currentCost = currentCost()
+					.ownCostPrice("1000")
+					.currentQty("1")
+					.build();
 
-			assertThatThrownBy(() -> currentCost.addWeightedAverage(
-					CostAmount.of(10, currencyId),
+			currentCost.addWeightedAverage(
+					CostAmount.of(13, currencyId),
 					Quantity.of(0, uomEach),
-					QuantityUOMConverters.noConversion()))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Qty shall not be zero when amount is non zero");
+					QuantityUOMConverters.noConversion());
+
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1013"); // (1000x1 + 13) / (1 + 0)
+			assertThat(currentCost.getCurrentQty()).isEqualTo(Quantity.of(1, uomEach));
+
 		}
 
 		@Test
