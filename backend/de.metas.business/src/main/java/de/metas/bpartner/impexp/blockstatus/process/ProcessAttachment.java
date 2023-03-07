@@ -58,13 +58,13 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final BPartnerBlockStatusFile blockFile = bPartnerBlockFileService.getById(BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId()));
-		if (blockFile.isProcessed() || blockFile.isError())
+		final BPartnerBlockFileId bPartnerBlockFileId = BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId());
+		if (bPartnerBlockFileService.isImported(bPartnerBlockFileId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("The file was already imported!");
 		}
 
-		final boolean fileAttached = attachmentEntryService.getUniqueByReferenceRecord(blockFile.getId().toRecordRef()).isPresent();
+		final boolean fileAttached = attachmentEntryService.getUniqueByReferenceRecord(bPartnerBlockFileId.toRecordRef()).isPresent();
 
 		if (!fileAttached)
 		{
@@ -81,18 +81,10 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 		final BPartnerBlockFileId blockFileId = BPartnerBlockFileId.ofRepoId(getProcessInfo().getRecord_ID());
 		final BPartnerBlockStatusFile blockFile = bPartnerBlockFileService.getById(blockFileId);
 
-		if (blockFile.isProcessed())
-		{
-			//already processed, nothing to do
-			return MSG_OK;
-		}
-
 		final TableRecordReference tableRecordReference = getProcessInfo().getRecordRefNotNull();
 
 		final AttachmentEntry attachmentEntry = attachmentEntryService.getUniqueByReferenceRecord(tableRecordReference)
 				.orElseThrow(() -> new AdempiereException("No attachment found for BPartnerBlockStatusFileId=" + tableRecordReference.getRecord_ID()));
-
-		final Params blockFileIdParam = getBlockFileIdOverridingColumn();
 
 		AttachmentImportCommand.builder()
 				.attachmentEntryId(attachmentEntry.getId())
@@ -100,8 +92,7 @@ public class ProcessAttachment extends JavaProcess implements IProcessPreconditi
 				.clientId(getClientId())
 				.orgId(getOrgId())
 				.userId(getUserId())
-				.additionalParameters(blockFileIdParam)
-				.overrideColumnValues(blockFileIdParam)
+				.overrideColumnValues(getBlockFileIdOverridingColumn())
 				.build()
 				.execute();
 

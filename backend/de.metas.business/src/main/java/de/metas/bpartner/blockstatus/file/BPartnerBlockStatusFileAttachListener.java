@@ -43,7 +43,7 @@ import org.compiere.model.I_C_BPartner_Block_File;
  * Important: when renaming this class, please make sure to also update its {@link I_AD_JavaClass} record.
  */
 public class BPartnerBlockStatusFileAttachListener implements AttachmentListener
-{//todo av: register in DB via script
+{
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);

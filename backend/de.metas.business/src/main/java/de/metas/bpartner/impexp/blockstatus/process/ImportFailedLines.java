@@ -22,23 +22,24 @@
 
 package de.metas.bpartner.impexp.blockstatus.process;
 
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.blockstatus.file.BPartnerBlockFileId;
 import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_I_BPartner_BlockStatus;
+import org.compiere.util.Env;
 
-public class RemoveAttachment extends JavaProcess implements IProcessPrecondition
+public class ImportFailedLines extends JavaProcess implements IProcessPrecondition
 {
 	private final BPartnerBlockFileService bPartnerBlockFileService = SpringContextHolder.instance.getBean(BPartnerBlockFileService.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -52,30 +53,25 @@ public class RemoveAttachment extends JavaProcess implements IProcessPreconditio
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final BPartnerBlockFileId bPartnerBlockFileId = BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId());
-		if (bPartnerBlockFileService.isImported(bPartnerBlockFileId))
+		if (!bPartnerBlockFileService.hasUnprocessedRows(BPartnerBlockFileId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("The file was already imported!");
-		}
-
-		final boolean fileAttached = attachmentEntryService.getUniqueByReferenceRecord(bPartnerBlockFileId.toRecordRef()).isPresent();
-		if (!fileAttached)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No file attached!");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("All rows have been already processed!");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final TableRecordReference tableRecordReference = getProcessInfo().getRecordRefNotNull();
+		final BPartnerBlockFileId blockFileId = BPartnerBlockFileId.ofRepoId(getRecord_ID());
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.getUniqueByReferenceRecord(tableRecordReference)
-				.orElseThrow(() -> new AdempiereException("No attachment found for BPartnerBlockFile_ID=" + tableRecordReference.getRecord_ID()));
-
-		attachmentEntryService.unattach(tableRecordReference, attachmentEntry);
+		importProcessFactory.newImportProcessForTableName(I_I_BPartner_BlockStatus.Table_Name)
+				.setCtx(Env.getCtx())
+				.clientId(getClientId())
+				.selectedRecords(bPartnerBlockFileService.getUnprocessedRowsSelectionId(blockFileId))
+				.run();
 
 		return MSG_OK;
 	}

@@ -41,13 +41,4 @@ public class BPartnerBlockStatusFile
 
 	@NonNull
 	DataImportConfigId dataImportConfigId;
-
-	boolean isProcessed;
-
-	boolean isError;
-
-	public boolean isImported()
-	{
-		return isError || isProcessed;
-	}
 }

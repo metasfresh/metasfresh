@@ -46,8 +46,6 @@ class BPartnerBlockFileRepository
 
 		record.setFileName(blockFileToUpdate.getFileName());
 		record.setC_DataImport_ID(blockFileToUpdate.getDataImportConfigId().getRepoId());
-		record.setIsError(blockFileToUpdate.isError());
-		record.setProcessed(blockFileToUpdate.isProcessed());
 
 		saveRecord(record);
 
@@ -67,8 +65,6 @@ class BPartnerBlockFileRepository
 				.id(BPartnerBlockFileId.ofRepoId(record.getC_BPartner_Block_File_ID()))
 				.fileName(record.getFileName())
 				.dataImportConfigId(DataImportConfigId.ofRepoId(record.getC_DataImport_ID()))
-				.isProcessed(record.isProcessed())
-				.isError(record.isError())
 				.build();
 	}
 }

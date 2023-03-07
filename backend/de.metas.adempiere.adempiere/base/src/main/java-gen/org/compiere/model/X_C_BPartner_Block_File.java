@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Block_File extends org.compiere.model.PO implements I_C_BPartner_Block_File, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -139509953L;
+	private static final long serialVersionUID = -1142145841L;
 
     /** Standard Constructor */
     public X_C_BPartner_Block_File (final Properties ctx, final int C_BPartner_Block_File_ID, @Nullable final String trxName)
@@ -113,8 +91,7 @@ public class X_C_BPartner_Block_File extends org.compiere.model.PO implements I_
 	@Override
 	public void setIsError (final boolean IsError)
 	{
-		set_Value (COLUMNNAME_IsError, IsError);
-	}
+		throw new IllegalArgumentException ("IsError is virtual column");	}
 
 	@Override
 	public boolean isError() 
@@ -125,8 +102,7 @@ public class X_C_BPartner_Block_File extends org.compiere.model.PO implements I_
 	@Override
 	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Processed);
-	}
+		throw new IllegalArgumentException ("Processed is virtual column");	}
 
 	@Override
 	public boolean isProcessed() 

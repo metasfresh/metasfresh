@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -72,7 +50,7 @@ public interface I_C_BPartner_Block_File
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Block file.
+	 * Set Blocking data file.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -81,7 +59,7 @@ public interface I_C_BPartner_Block_File
 	void setC_BPartner_Block_File_ID (int C_BPartner_Block_File_ID);
 
 	/**
-	 * Get Block file.
+	 * Get Blocking data file.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -193,9 +171,11 @@ public interface I_C_BPartner_Block_File
 	 * An Error occurred in the execution
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setIsError (boolean IsError);
 
 	/**
@@ -203,9 +183,11 @@ public interface I_C_BPartner_Block_File
 	 * An Error occurred in the execution
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	boolean isError();
 
 	ModelColumn<I_C_BPartner_Block_File, Object> COLUMN_IsError = new ModelColumn<>(I_C_BPartner_Block_File.class, "IsError", null);
@@ -215,18 +197,22 @@ public interface I_C_BPartner_Block_File
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	boolean isProcessed();
 
 	ModelColumn<I_C_BPartner_Block_File, Object> COLUMN_Processed = new ModelColumn<>(I_C_BPartner_Block_File.class, "Processed", null);

@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.bpartner.blockstatus.BlockStatus;
 import de.metas.bpartner.blockstatus.CreateBPartnerBlockStatusRequest;
-import de.metas.bpartner.blockstatus.file.BPartnerBlockFileId;
 import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impexp.processing.ImportRecordsSelection;
@@ -111,19 +110,6 @@ public class BPartnerBlockStatusImportProcess extends SimpleImportProcessTemplat
 	protected I_I_BPartner_BlockStatus retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_BPartner_BlockStatus(ctx, rs, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	protected void afterImport()
-	{
-		final BPartnerBlockFileId fileId = getParameters()
-				.getParameterAsId(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID, BPartnerBlockFileId.class);
-
-		if (fileId == null)
-		{
-			throw new AdempiereException("BPartnerBlockStatusImportProcess executed without a C_BPartner_Block_File_ID param!");
-		}
-
-		bPartnerBlockFileService.recomputeFlags(fileId);
 	}
 
 	@NonNull
