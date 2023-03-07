@@ -572,3 +572,15 @@ UPDATE AD_Tab SET IsInsertRecord='Y',Updated=TO_TIMESTAMP('2023-03-07 13:00:31',
 UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2023-03-07 13:00:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546844
 ;
 
+-- Column: C_BPartner_Block_File.IsError
+-- Source Table: I_BPartner_BlockStatus
+-- 2023-03-07T11:33:06.064Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,586264,0,540141,542317,TO_TIMESTAMP('2023-03-07 13:33:05','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',586273,542318,TO_TIMESTAMP('2023-03-07 13:33:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Column: C_BPartner_Block_File.Processed
+-- Source Table: I_BPartner_BlockStatus
+-- 2023-03-07T11:33:47.560Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,586239,0,540142,542317,TO_TIMESTAMP('2023-03-07 13:33:47','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',586273,542318,TO_TIMESTAMP('2023-03-07 13:33:47','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
