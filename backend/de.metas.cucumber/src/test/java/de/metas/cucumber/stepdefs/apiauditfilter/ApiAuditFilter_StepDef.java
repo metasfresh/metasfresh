@@ -86,9 +86,17 @@ public class ApiAuditFilter_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
-
-			final JsonErrorItem jsonErrorItem = objectMapper.readValue(testContext.getApiResponse().getContent(), JsonErrorItem.class);
-
+			final JsonErrorItem jsonErrorItem;
+			final String responseContent = testContext.getApiResponse().getContent();
+			try
+			{
+				jsonErrorItem = objectMapper.readValue(responseContent, JsonErrorItem.class);
+			}
+			catch (final RuntimeException rte)
+			{
+				fail("Error parsing string into class " + JsonErrorItem.class + "; string=" + responseContent);
+				throw rte;
+			}
 			assertThat(jsonErrorItem.getMessage()).isEqualTo(message);
 		}
 	}

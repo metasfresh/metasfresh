@@ -75,6 +75,7 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(statusCode))
 				.authToken(userAuthToken)
 				.payload(payload)
+				.additionalHeaders(testContext.getHttpHeaders())
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
