@@ -72,7 +72,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -376,17 +375,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	private FactLine createFact_Material_InvoicePriceVariance(@NonNull final Fact fact)
 	{
-		final FactLine[] lines = fact.getLines();
-
-		final Money debitAccountedAmount = Arrays.stream(lines).map(l -> Money.of(l.getAmtAcctDr(), l.getCurrencyId()))
-				.reduce(Money::add)
-				.orElse(null);
-
-		final Money creditAccountedAmount = Arrays.stream(lines).map(l -> Money.of(l.getAmtAcctCr(), l.getCurrencyId()))
-				.reduce(Money::add)
-				.orElse(null);
-
-		final Money ipvAmount = debitAccountedAmount.subtract(creditAccountedAmount);
+		final Money ipvAmount = fact.getAcctBalance().toMoney();
 		// If there is no invoice price variance => do nothing
 		if (ipvAmount.isZero())
 		{
@@ -407,75 +396,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		updateFromInvoiceLine(ipvFactLine);
 
 		return ipvFactLine;
-	}
-
-	/**
-	 * Create the InvoicePriceVariance fact line
-	 */
-	private void createFactLines_Material_InvoicePriceVariance(
-			@NonNull final Fact fact,
-			@Nullable final FactLine dr_NotInvoicedReceipts,
-			@Nullable final FactLine cr_InventoryClearing)
-	{
-		if (dr_NotInvoicedReceipts == null && cr_InventoryClearing == null)
-		{
-			return;
-		}
-
-		final AcctSchema as = fact.getAcctSchema();
-
-		//
-		// Determine the InvoicePriceVariance Amount and currency
-		final Money ipvAmount;
-
-		// Case: the not invoiced receipts line is null (i.e. ZERO costs)
-		if (dr_NotInvoicedReceipts == null)
-		{
-			ipvAmount = cr_InventoryClearing.getSourceBalance();
-		}
-		// Case: the inventory clearing line is null (i.e. ZERO invoiced amount)
-		else if (cr_InventoryClearing == null)
-		{
-			ipvAmount = dr_NotInvoicedReceipts.getSourceBalance().negate();
-		}
-		// Case: both lines are not null and same currency
-		else if (CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
-		{
-			ipvAmount = cr_InventoryClearing.getSourceBalance().add(dr_NotInvoicedReceipts.getSourceBalance()).negate();
-		}
-		// Case: both lines are not null but different currency
-		else
-		{
-			ipvAmount = cr_InventoryClearing.getAcctBalance().add(dr_NotInvoicedReceipts.getAcctBalance()).negate();
-		}
-
-		// If there is no invoice price variance => do nothing
-		if (ipvAmount.signum() == 0)
-		{
-			return;
-		}
-
-		//
-		// Create the invoice price variance fact line, if needed
-		// InvoicePriceVariance DR/CR
-		final FactLine ipvFactLine = fact.createLine()
-				.setDocLine(null)
-				.setAccount(docLine.getInvoicePriceVarianceAccount(as))
-				.setAmtSourceDrOrCr(ipvAmount)
-				.buildAndAdd();
-
-		//
-		// In case the DR line (InOut - NotInvoicedReceipts) is zero,
-		// make sure our IPV line is not on the same DR/CR side as the CR line (Invoice - InventoryClearing)
-		if (dr_NotInvoicedReceipts.isZeroAmtSource()
-				&& cr_InventoryClearing != null
-				&& cr_InventoryClearing.isSameAmtSourceDrCrSideAs(ipvFactLine))
-		{
-			ipvFactLine.invertDrAndCrAmounts();
-			ipvFactLine.negateDrAndCrAmounts();
-		}
-
-		updateFromInvoiceLine(ipvFactLine);
 	}
 
 	private List<Fact> createFacts_NonMaterial(final AcctSchema as)

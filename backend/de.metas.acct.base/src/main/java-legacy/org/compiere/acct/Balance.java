@@ -5,18 +5,21 @@ import de.metas.money.Money;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.stream.Collector;
 
 /**
- * Mutable Balance (debit, credit)
+ * Immutable Balance (debit, credit)
  */
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class Balance
 {
-	@Getter @NonNull private Money debit;
-	@Getter @NonNull private Money credit;
+	@Getter @NonNull private final Money debit;
+	@Getter @NonNull private final Money credit;
 
 	private Balance(@Nullable final Money debit, @Nullable final Money credit)
 	{
@@ -40,25 +43,56 @@ public final class Balance
 		return new Balance(null, credit);
 	}
 
-	@Override
-	public String toString() {return "Balance[" + "DR=" + debit + "-CR=" + credit + " = " + getBalance() + "]";}
-
-	public void add(@NonNull Money debit, @NonNull Money credit)
+	public static Balance zero(@NonNull final CurrencyId currencyId)
 	{
-		this.debit = this.debit.add(debit);
-		this.credit = this.credit.add(credit);
+		final Money zero = Money.zero(currencyId);
+		return new Balance(zero, zero);
 	}
 
-	public void add(@NonNull final Balance other) {add(other.debit, other.credit);}
+	public static Collector<Balance, ?, Optional<Balance>> sum()
+	{
+		return Collector.of(BalanceBuilder::new, BalanceBuilder::add, BalanceBuilder::combine, BalanceBuilder::build);
+	}
 
-	public Money getBalance() {return debit.subtract(credit);}
+	@Override
+	public String toString() {return "Balance[" + "DR=" + debit + "-CR=" + credit + " = " + toMoney() + "]";}
+
+	private Balance add(@NonNull Money debitToAdd, @NonNull Money creditToAdd)
+	{
+		final Money debitNew = this.debit.add(debitToAdd);
+		final Money creditNew = this.credit.add(creditToAdd);
+
+		if (Money.equals(this.debit, debitNew)
+				&& Money.equals(this.credit, creditNew))
+		{
+			return this;
+		}
+		else
+		{
+			return new Balance(debitNew, creditNew);
+		}
+	}
+
+	public Balance add(@NonNull final Balance other) {return add(other.debit, other.credit);}
+
+	/**
+	 * @return debit - credit
+	 */
+	public Money toMoney() {return debit.subtract(credit);}
+
+	public BigDecimal toBigDecimal()
+	{
+		return toMoney().toBigDecimal();
+	}
+
+	public int signum() {return toMoney().signum();}
 
 	/**
 	 * @return absolute balance, negated if reversal
 	 */
 	public Money getPostBalance()
 	{
-		Money balanceAbs = getBalance().abs();
+		Money balanceAbs = toMoney().abs();
 		if (isReversal())
 		{
 			return balanceAbs.negate();
@@ -66,7 +100,10 @@ public final class Balance
 		return balanceAbs;
 	}
 
-	public boolean isZeroBalance() {return getBalance().signum() == 0;}
+	/**
+	 * @return true if the balance (debit - credit) is zero
+	 */
+	public boolean isBalanced() {return signum() == 0;}
 
 	/**
 	 * @return true if both DR/CR are negative or zero
@@ -85,4 +122,46 @@ public final class Balance
 		return condition ? negateAndInvert() : this;
 	}
 
+	//
+	//
+	//
+	//
+	//
+
+	@ToString
+	private static class BalanceBuilder
+	{
+		private Money debit;
+		private Money credit;
+
+		public void add(@NonNull Balance balance)
+		{
+			add(balance.getDebit(), balance.getCredit());
+		}
+
+		public BalanceBuilder combine(@NonNull BalanceBuilder balanceBuilder)
+		{
+			add(balanceBuilder.debit, balanceBuilder.credit);
+			return this;
+		}
+
+		public void add(@Nullable Money debitToAdd, @Nullable Money creditToAdd)
+		{
+			if (debitToAdd != null)
+			{
+				this.debit = this.debit != null ? this.debit.add(debitToAdd) : debitToAdd;
+			}
+			if (creditToAdd != null)
+			{
+				this.credit = this.credit != null ? this.credit.add(creditToAdd) : creditToAdd;
+			}
+		}
+
+		public Optional<Balance> build()
+		{
+			return debit != null || credit != null
+					? Optional.of(new Balance(debit, credit))
+					: Optional.empty();
+		}
+	}
 }
