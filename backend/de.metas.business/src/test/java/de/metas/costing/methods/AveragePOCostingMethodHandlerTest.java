@@ -286,7 +286,7 @@ public class AveragePOCostingMethodHandlerTest
 								.build())
 				.get();
 
-		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 		final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -308,7 +308,7 @@ public class AveragePOCostingMethodHandlerTest
 								.build())
 				.get();
 
-		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
@@ -331,7 +331,7 @@ public class AveragePOCostingMethodHandlerTest
 								.build())
 				.get();
 
-		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+		assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
@@ -355,7 +355,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -374,7 +374,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -399,7 +399,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -418,7 +418,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
@@ -444,7 +444,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
@@ -463,7 +463,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
@@ -490,7 +490,7 @@ public class AveragePOCostingMethodHandlerTest
 									.build())
 					.get();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 			final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -509,7 +509,7 @@ public class AveragePOCostingMethodHandlerTest
 					.get();
 
 			// The amount is the current explicit cost multiplied by the existing qty
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+			assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
 			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
@@ -539,7 +539,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -557,7 +557,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("-100");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -575,7 +575,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -594,7 +594,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -620,7 +620,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -638,7 +638,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("-100");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("-100");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -657,7 +657,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("100");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -675,7 +675,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -700,7 +700,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-100");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -718,7 +718,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("150");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);
@@ -737,7 +737,7 @@ public class AveragePOCostingMethodHandlerTest
 										.build())
 						.get();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
+				assertThat(costDetailResult.getAmt().getMainAmt().toBigDecimal()).isEqualTo("0");
 				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("100");
 
 				final CurrentCost currentCost = getCurrentCost(orgId1);

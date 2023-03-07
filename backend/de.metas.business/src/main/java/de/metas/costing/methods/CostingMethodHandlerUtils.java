@@ -32,7 +32,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Optional;
+import java.util.List;
 import java.util.function.Supplier;
 
 /*
@@ -140,9 +140,9 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.toCostDetailCreateResult(costDetail);
 	}
 
-	protected final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
+	public List<CostDetail> getExistingCostDetails(final CostDetailCreateRequest request)
 	{
-		return costDetailsService.getExistingCostDetail(request);
+		return costDetailsService.getExistingCostDetails(request);
 	}
 
 	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)

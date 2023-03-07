@@ -20,6 +20,7 @@ import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -116,9 +116,9 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
+	public final List<CostDetail> getExistingCostDetails(@NonNull final CostDetailCreateRequest request)
 	{
-		return costDetailsRepo.firstOnly(CostDetailQuery.builder()
+		return costDetailsRepo.list(CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.costElementId(request.getCostElementId()) // assume request's costing element is set
 				.documentRef(request.getDocumentRef())
@@ -161,7 +161,7 @@ public class CostDetailService implements ICostDetailService
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(costDetail))
 				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
-				.amt(costDetail.getAmt())
+				.amt(CostAmountDetailed.ofAmtAndType(costDetail.getAmt(), costDetail.getAmtType()))
 				.qty(costDetail.getQty())
 				.build();
 	}

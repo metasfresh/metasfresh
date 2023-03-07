@@ -381,4 +381,6 @@ public class Money implements Comparable<Money>
 
 		return count;
 	}
+
+	public static boolean equals(@Nullable Money money1, @Nullable Money money2) {return Objects.equals(money1, money2);}
 }

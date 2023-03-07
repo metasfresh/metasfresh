@@ -184,7 +184,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx || request.isReversal())
 		{
 			// Seed/initial costs import
-			final CostAmount requestAmt = request.getAmt();
 
 			if (request.getDocumentRef().isInventoryLine())
 			{
@@ -210,6 +209,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			else
 			{
+				final CostAmount requestAmt = request.getAmt();
 				if (requestAmt.isZero() && !request.isReversal())
 				{
 					final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());

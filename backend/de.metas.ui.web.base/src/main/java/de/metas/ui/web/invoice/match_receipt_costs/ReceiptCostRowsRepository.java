@@ -39,7 +39,7 @@ class ReceiptCostRowsRepository
 		this.costTypeLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Cost_Type.Table_Name);
 	}
 
-	public ReceiptCostRowsData query(@NonNull final DocumentFilter filter)
+	public ReceiptCostRowsData query(@Nullable final DocumentFilter filter)
 	{
 		return ReceiptCostRowsData.builder()
 				.repository(this)
