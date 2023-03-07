@@ -584,3 +584,56 @@ INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,586239,0,540142,542317,TO_TIMESTAMP('2023-03-07 13:33:47','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',586273,542318,TO_TIMESTAMP('2023-03-07 13:33:47','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2023-03-07T14:27:18.993Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582121,0,TO_TIMESTAMP('2023-03-07 16:27:18','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Lines','Lines',TO_TIMESTAMP('2023-03-07 16:27:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-03-07T14:27:19.003Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582121 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2023-03-07T14:27:35.335Z
+UPDATE AD_Element_Trl SET Name='Zeilen', PrintName='Zeilen',Updated=TO_TIMESTAMP('2023-03-07 16:27:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582121 AND AD_Language='de_CH'
+;
+
+-- 2023-03-07T14:27:35.375Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582121,'de_CH')
+;
+
+-- Element: null
+-- 2023-03-07T14:27:39.561Z
+UPDATE AD_Element_Trl SET Name='Zeilen', PrintName='Zeilen',Updated=TO_TIMESTAMP('2023-03-07 16:27:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582121 AND AD_Language='de_DE'
+;
+
+-- 2023-03-07T14:27:39.562Z
+UPDATE AD_Element SET Name='Zeilen', PrintName='Zeilen' WHERE AD_Element_ID=582121
+;
+
+-- 2023-03-07T14:27:40.054Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582121,'de_DE')
+;
+
+-- 2023-03-07T14:27:40.055Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582121,'de_DE')
+;
+
+-- Tab: Geschäftspartnerblock ändern(541682,D) -> Lines
+-- Table: I_BPartner_BlockStatus
+-- 2023-03-07T14:29:00.618Z
+UPDATE AD_Tab SET AD_Element_ID=572477, CommitWarning=NULL, Description=NULL, Help=NULL, Name='Lines',Updated=TO_TIMESTAMP('2023-03-07 16:29:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546844
+;
+
+-- 2023-03-07T14:29:00.620Z
+UPDATE AD_Tab_Trl trl SET Name='Lines' WHERE AD_Tab_ID=546844 AND AD_Language='de_DE'
+;
+
+-- 2023-03-07T14:29:00.623Z
+/* DDL */  select update_tab_translation_from_ad_element(572477)
+;
+
+-- 2023-03-07T14:29:00.658Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(546844)
+;
+
