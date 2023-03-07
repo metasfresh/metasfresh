@@ -275,13 +275,20 @@ public class OrderCandidateRestControllerService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private void processValidOlCands(@NonNull final JsonOLCandProcessRequest request, @NonNull final Set<OLCandId> validOlCandIds)
+	/**
+	 * Enqueue and wait for a {@link  de.metas.salesorder.candidate.ProcessOLCandsWorkpackageProcessor}-Workpackage to take care of creating orders, shipments and invoices as required.
+	 */
+	private void processValidOlCands(
+			@NonNull final JsonOLCandProcessRequest request,
+			@NonNull final Set<OLCandId> validOlCandIds)
 	{
 		if (validOlCandIds.isEmpty())
 		{
 			return;
 		}
 
+		// start another async-batch - just to wait for
+		// ProcessOLCandsWorkpackageProcessor to finish doing the work and enqueing sub-processors.
 		final AsyncBatchId processOLCandsAsyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ProcessOLCands);
 
 		final Supplier<IEnqueueResult> action = () -> {

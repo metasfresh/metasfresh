@@ -29,6 +29,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -48,11 +49,21 @@ public interface IInvoiceCandidateEnqueuer
 	AdMessageKey MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = AdMessageKey.of("InvoiceGenerate_No_Candidates_Selected");
 
 	/**
-	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
-	 *
-	 * @return enqueueing result
+	 * Prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular
+	 * {@link de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor}.
 	 */
+	void prepareSelection(@NonNull PInstanceId pInstanceId);
+
+	/**
+	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
+     */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
+
+	default IInvoiceCandidateEnqueueResult prepareAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		prepareSelection(pinstanceId);
+		return enqueueSelection(pinstanceId);
+	};
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 
@@ -68,6 +79,7 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Set to <code>true</code> if you want the enqueuer to make sure that the invoice candidates that will be enqueued shall not be changed.
+	 * <p>
 	 * By default, if you are not setting a particular value the {@link #SYSCONFIG_FailOnChanges} (default {@link #DEFAULT_FailOnChanges}) will be used.
 	 */
 	IInvoiceCandidateEnqueuer setFailOnChanges(boolean failOnChanges);
@@ -79,6 +91,7 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Sets the total net amount to invoice checksum.
+	 * <p>
 	 * If the amount is not null and "FailOnChanges" is set then this checksum will be enforced on enqueued invoice candidates.
 	 */
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);

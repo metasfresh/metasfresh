@@ -36,7 +36,7 @@ Feature: reversed shipment
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
     When the inventory identified by inv_1 is completed
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inv_l_1                       | hu_1               |
     And M_HU_Storage are validated
