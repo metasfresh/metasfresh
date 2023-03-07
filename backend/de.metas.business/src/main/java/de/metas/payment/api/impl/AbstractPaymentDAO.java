@@ -40,7 +40,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.adempiere.model.InterfaceWrapperHelper.*;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
@@ -109,7 +110,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// NOTE: we are not using C_InvoicePaySchedule_ID. It shall be a column in C_Payment
 
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, creditMemoAdjusted);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted);
 	}
 
 	@Override

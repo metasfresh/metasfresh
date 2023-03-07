@@ -43,6 +43,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -65,6 +66,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -1569,13 +1571,12 @@ public final class MPayment extends X_C_Payment
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
 		
-		final BigDecimal invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, false);
+		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, false);
+		final Money payAmt = getPayAmtAsMoney();
 
 		// note: zero is ok, but with negative, i don't see the case and don't know what to do
 		Check.errorIf(invoiceOpenAmt.signum() < 0, "{} has a negative open amount = {}", invoice, invoiceOpenAmt);
-		Check.errorIf(getPayAmt().signum() < 0, "{} has a negative PayAmt = {}", this, getPayAmt());
-
-		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		Check.errorIf(payAmt.signum() < 0, "{} has a negative PayAmt = {}", this, payAmt);
 
 		// 04627 end
 
@@ -1606,54 +1607,53 @@ public final class MPayment extends X_C_Payment
 //		// @formatter:on
 		//
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-														getDateTrx(), invoiceCurrencyId.getRepoId(),
+														getDateTrx(), invoiceOpenAmt.getCurrencyId().getRepoId(),
 														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
 
 		// task 09643
 		// When the Allocation has both invoice and payment, allocation's accounting date must e the max between the invoice date and payment date
+
+		Timestamp dateAcct = getDateAcct();
+
+		final Timestamp invoiceDateAcct = invoice.getDateAcct();
+
+		if (invoiceDateAcct.after(dateAcct))
 		{
-			Timestamp dateAcct = getDateAcct();
-
-			final Timestamp invoiceDateAcct = invoice.getDateAcct();
-
-			if (invoiceDateAcct.after(dateAcct))
-			{
-				dateAcct = invoiceDateAcct;
-			}
-
-			alloc.setDateAcct(dateAcct);
-
-			// allocation's trx date must e the max between the invoice date and payment date
-
-			Timestamp dateTrx = getDateTrx();
-
-			final Timestamp invoiceDateTrx = invoice.getDateInvoiced();
-
-			if (invoiceDateTrx.after(dateTrx))
-			{
-				dateTrx = invoiceDateTrx;
-			}
-
-			alloc.setDateTrx(dateTrx);
+			dateAcct = invoiceDateAcct;
 		}
+
+		alloc.setDateAcct(dateAcct);
+
+		// allocation's trx date must e the max between the invoice date and payment date
+
+		Timestamp dateTrx = getDateTrx();
+
+		final Timestamp invoiceDateTrx = invoice.getDateInvoiced();
+
+		if (invoiceDateTrx.after(dateTrx))
+		{
+			dateTrx = invoiceDateTrx;
+		}
+
+		alloc.setDateTrx(dateTrx);
 
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
 
-		final BigDecimal allocationAmtInInvoiceCurrency = getAllocationAmtInInvoiceCurrency(alloc.getDateTrx(),
-																							invoiceOpenAmt,
-																							invoiceCurrencyId,
-																							CurrencyId.ofRepoId(getC_Currency_ID()));
+		final Money allocationAmt = getAllocationAmt(alloc.getDateTrx(),
+													 invoiceOpenAmt, 
+													 payAmt,
+													 CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()));
 
 		MAllocationLine aLine = null;
 		if (isReceipt())
 		{
-			aLine = new MAllocationLine(alloc, allocationAmtInInvoiceCurrency,
+			aLine = new MAllocationLine(alloc, allocationAmt.toBigDecimal(),
 										getDiscountAmt(), getWriteOffAmt(), getOverUnderAmt());
 		}
 		else
 		{
-			aLine = new MAllocationLine(alloc, allocationAmtInInvoiceCurrency.negate(),
+			aLine = new MAllocationLine(alloc, allocationAmt.toBigDecimal().negate(),
 										getDiscountAmt().negate(), getWriteOffAmt().negate(), getOverUnderAmt().negate());
 		}
 		aLine.setDocInfo(getC_BPartner_ID(), 0, getC_Invoice_ID());
@@ -2230,26 +2230,32 @@ public final class MPayment extends X_C_Payment
 		}
 		return volatileCCData.creditCardVV;
 	}
+
+	@NonNull
+	private Money getAllocationAmt(
+			@NonNull final Timestamp dateTrx,
+			@NonNull final Money invoiceOpenAmt,
+			@NonNull final Money payAmt,
+			@Nullable final CurrencyConversionTypeId conversionTypeId)
+	{
+		if (payAmt.getCurrencyId().equals(invoiceOpenAmt.getCurrencyId()))
+		{
+			return payAmt.min(invoiceOpenAmt);
+		}
+
+		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(dateTrx.toInstant(),
+																											   conversionTypeId,
+																											   ClientId.ofRepoId(getAD_Client_ID()),
+																											   OrgId.ofRepoId(getAD_Org_ID()));
+
+		final CurrencyConversionResult currencyConversionResult = currencyBL.convert(currencyConversionContext, payAmt, invoiceOpenAmt.getCurrencyId());
+		return currencyConversionResult.getAmountAsMoney().min(invoiceOpenAmt);
+	}
 	
 	@NonNull
-	private BigDecimal getAllocationAmtInInvoiceCurrency(
-			@NonNull final Timestamp dateTrx,
-			@NonNull final BigDecimal invoiceOpenAmt,
-			@NonNull final CurrencyId invoiceCurrencyId,
-			@NonNull final CurrencyId paymentCurrencyId)
+	private Money getPayAmtAsMoney()
 	{
-		if (!invoiceCurrencyId.equals(paymentCurrencyId))
-		{
-			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-			final CurrencyConversionContext currencyConversionContext = currencyBL
-					.createCurrencyConversionContext(dateTrx.toInstant(), (CurrencyConversionTypeId)null, ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
-
-			final CurrencyConversionResult currencyConversionResult = currencyBL.convert(currencyConversionContext, getPayAmt(), paymentCurrencyId, invoiceCurrencyId);
-			return currencyConversionResult.getAmount().min(invoiceOpenAmt);	
-		}
-		else
-		{
-			return getPayAmt().min(invoiceOpenAmt);
-		}
+		return Money.of(getPayAmt(), CurrencyId.ofRepoId(getC_Currency_ID()));
 	}
 } // MPayment

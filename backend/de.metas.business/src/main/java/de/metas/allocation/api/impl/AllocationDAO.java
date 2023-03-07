@@ -11,6 +11,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -62,7 +64,8 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public final BigDecimal retrieveOpenAmt(
+	@Deprecated
+	public final BigDecimal retrieveOpenAmtInInvoiceCurrency(
 			@NonNull final I_C_Invoice invoice,
 			final boolean creditMemoAdjusted)
 	{
@@ -90,6 +93,15 @@ public class AllocationDAO implements IAllocationDAO
 		return openAmt;
 	}
 
+	@Override
+	public final Money retrieveOpenAmt(
+			@NonNull final I_C_Invoice invoice,
+			final boolean creditMemoAdjusted)
+	{
+		return Money.of(retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted),
+						CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+	}
+	
 	@Override
 	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
