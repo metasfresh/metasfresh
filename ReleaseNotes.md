@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14686](https://github.com/metasfresh/metasfresh/issues/14686) Do not reset `BillToAddress` whenever Delivery Address changed
+  * [#14714](https://github.com/metasfresh/metasfresh/issues/14714) Enable filter search on Locator when moving HU
   * [#14706](https://github.com/metasfresh/metasfresh/issues/14706) Import Shopware Product Variants  
   * [#14683](https://github.com/metasfresh/metasfresh/issues/14683) Partner Block and Release 
   * [#14645](https://github.com/metasfresh/metasfresh/issues/14645) Order Window Ivict adaptions (Billto Default, Drop Shipment)
