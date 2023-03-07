@@ -412,7 +412,7 @@ public final class Fact
 			final HashMap<OrgId, Balance> map = new HashMap<>();
 			for (FactLine line : m_lines)
 			{
-				final Balance lineBalance = Balance.ofSourceAmounts(line);
+				final Balance lineBalance = toBalance(line);
 
 				Balance oldBalance = map.get(line.getOrgId());
 				if (oldBalance == null)
@@ -477,6 +477,12 @@ public final class Fact
 			map.clear();
 		}
 	}   // balanceSegment
+
+	private static Balance toBalance(final FactLine line)
+	{
+		return Balance.of(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr());
+
+	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isAcctBalanced()
@@ -786,68 +792,4 @@ public final class Fact
 		m_lines.forEach(consumer);
 	}
 
-	private static final class Balance
-	{
-		private Money DR;
-		private Money CR;
-
-		private Balance(@NonNull CurrencyId currencyId, @NonNull final BigDecimal dr, @NonNull final BigDecimal cr)
-		{
-			DR = Money.of(dr, currencyId);
-			CR = Money.of(cr, currencyId);
-		}
-
-		public static Balance ofSourceAmounts(final FactLine line)
-		{
-			return new Balance(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr());
-		}
-
-		public void add(@NonNull Money dr, @NonNull Money cr)
-		{
-			DR = DR.add(dr);
-			CR = CR.add(cr);
-		}
-
-		public void add(@NonNull Balance other)
-		{
-			add(other.DR, other.CR);
-		}
-
-		public Money getBalance()
-		{
-			return DR.subtract(CR);
-		}
-
-		/**
-		 * @return absolute balance, negated if reversal
-		 */
-		public Money getPostBalance()
-		{
-			Money bd = getBalance().abs();
-			if (isReversal())
-			{
-				return bd.negate();
-			}
-			return bd;
-		}    // getPostBalance
-
-		public boolean isZeroBalance()
-		{
-			return getBalance().signum() == 0;
-		}    // isZeroBalance
-
-		/**
-		 * @return true if both DR/CR are negative or zero
-		 */
-		public boolean isReversal()
-		{
-			return DR.signum() <= 0 && CR.signum() <= 0;
-		}    // isReversal
-
-		@Override
-		public String toString()
-		{
-			return "Balance[" + "DR=" + DR + "-CR=" + CR + " = " + getBalance() + "]";
-		}
-	}    // Balance
 }   // Fact

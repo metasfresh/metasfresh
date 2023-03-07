@@ -79,6 +79,11 @@ public class CostAmountDetailed
 				.alreadyShippedAmt(alreadyShippedAmt.add(amtToAdd.alreadyShippedAmt))
 				.build();
 	}
+
+	public CostAmount toCostAmount()
+	{
+		return mainAmt.add(costAdjustmentAmt).add(alreadyShippedAmt);
+	}
 }
 
 

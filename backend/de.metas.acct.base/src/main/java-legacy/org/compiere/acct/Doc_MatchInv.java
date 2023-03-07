@@ -284,24 +284,23 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final CostAmountDetailed costAmountDetailed = getCreateCostDetails(as);
 
-		createFactLines(as, fact, costAmountDetailed);
+		createFactLines(fact, costAmountDetailed);
 
 		return ImmutableList.of(fact);
 	}   // createFact
 
-	private void createFactLines(final AcctSchema as, final Fact fact, final CostAmountDetailed costs)
+	private void createFactLines(final Fact fact, final CostAmountDetailed costs)
 	{
+		final AcctSchema as = fact.getAcctSchema();
+
 		final Money invoiceLineMatchedAmt = getInvoiceLineMatchedAmt();
-		final CostAmount totalCosts = costs.getMainAmt()
-				.add(costs.getCostAdjustmentAmt())
-				.add(costs.getAlreadyShippedAmt());
-		final CurrencyId currencyId = totalCosts.getCurrencyId();
+		final CostAmount totalCosts = costs.toCostAmount();
+
 		//
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)) // main
-				.setCurrencyId(currencyId)
 				.setCurrencyConversionCtx(getInOutCurrencyConversionCtx())
 				.setAmtSource(totalCosts, null)
 				.setQty(getQty())
@@ -319,103 +318,33 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				.buildAndAdd();
 		updateFromInvoiceLine(cr_InventoryClearing);
 
-		// product asset -> adjustment (if not 0)
 		//
-		// Merchandise Stock aka P_Asset CR
-
+		// P_Asset CR/DR
+		// (cost adjustment)
 		if (!costs.getCostAdjustmentAmt().isZero())
 		{
-			final CostAmount costAdjustmentAmt = costs.getCostAdjustmentAmt();
-			final Money debitCostAdjutment;
-			final Money creditCostAdjustment;
-
-			if (costAdjustmentAmt.signum() > 0)
-			{
-				if (isReversal)
-				{
-					debitCostAdjutment = costAdjustmentAmt.negate().toMoney();
-					creditCostAdjustment = null;
-				}
-				else
-				{
-					debitCostAdjutment = null;
-					creditCostAdjustment = costAdjustmentAmt.toMoney();
-				}
-			}
-			else
-			{
-				if (isReversal)
-				{
-					debitCostAdjutment = null;
-					creditCostAdjustment = costAdjustmentAmt.toMoney();
-
-				}
-
-				else
-				{
-					debitCostAdjutment = costAdjustmentAmt.negate().toMoney();
-					creditCostAdjustment = null;
-				}
-			}
-
-			final FactLine costAdjustment = fact.createLine()
+			final Balance costAdjustmentBalance = toCreditBalanceIfPositive(costs.getCostAdjustmentAmt());
+			fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
-					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSource(debitCostAdjutment, creditCostAdjustment)
+					.setAmtSource(costAdjustmentBalance)
 					.setQty(getQty())
 					.buildAndAdd();
-			updateFromInvoiceLine(costAdjustment);
 		}
 
-		// cogs -> already shipped (if not 0)
-
+		//
+		// P_COGS CR/DR
+		// (already shipped)
 		if (!costs.getAlreadyShippedAmt().isZero())
 		{
-			final CostAmount alreadyShippedAmt = costs.getAlreadyShippedAmt();
-			final Money debitAlreadyShipped;
-			final Money creditAlreadyShipped;
-
-			if (alreadyShippedAmt.signum() > 0)
-			{
-				if (isReversal)
-				{
-					debitAlreadyShipped = alreadyShippedAmt.negate().toMoney();
-					creditAlreadyShipped = null;
-				}
-				else
-				{
-					debitAlreadyShipped = null;
-					creditAlreadyShipped = alreadyShippedAmt.toMoney();
-				}
-			}
-			else
-			{
-				if (isReversal)
-				{
-					debitAlreadyShipped = null;
-					creditAlreadyShipped = alreadyShippedAmt.toMoney();
-
-				}
-
-				else
-				{
-					debitAlreadyShipped = alreadyShippedAmt.negate().toMoney();
-					creditAlreadyShipped = null;
-				}
-			}
-
-			final FactLine alreadyShipped = fact.createLine()
+			final Balance alreadyShippedBalance = toCreditBalanceIfPositive(costs.getAlreadyShippedAmt());
+			fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
-					.setCurrencyId(currencyId)
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
-					.setAmtSource(debitAlreadyShipped, creditAlreadyShipped)
+					.setAmtSource(alreadyShippedBalance)
 					.setQty(getQty())
 					.buildAndAdd();
-			updateFromInvoiceLine(alreadyShipped);
 		}
-
-		// could use setAmtSourceDrOrCr
 
 		//
 		// AZ Goodwill
@@ -438,7 +367,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Invoice Price Variance difference
 		final FactLine ipvFactLine = createFact_Material_InvoicePriceVariance(fact);
-
 		if (ipvFactLine != null && invoiceLineMatchedAmt.isGreaterThan(totalCosts.toMoney()))
 		{
 			ipvFactLine.invertDrAndCrAmounts();
@@ -609,6 +537,13 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		PostingEqualClearingAccontsUtils.removeFactLinesIfEqual(fact, dr_CostClearing, cr_InventoryClearing, this::isInterOrg);
 
 		return ImmutableList.of(fact);
+	}
+
+	private Balance toCreditBalanceIfPositive(@NonNull final CostAmount amt)
+	{
+		return amt.signum() > 0
+				? Balance.ofCredit(amt.toMoney()).negateAndInvertIf(isReversal)
+				: Balance.ofDebit(amt.negate().toMoney()).negateAndInvertIf(isReversal);
 	}
 
 	/**
