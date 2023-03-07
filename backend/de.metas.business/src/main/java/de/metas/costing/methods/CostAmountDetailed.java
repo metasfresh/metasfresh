@@ -82,7 +82,7 @@ public class CostAmountDetailed
 
 	public CostAmount toCostAmount()
 	{
-		return mainAmt.add(costAdjustmentAmt).add(alreadyShippedAmt);
+		return mainAmt.subtract(costAdjustmentAmt).subtract(alreadyShippedAmt);
 	}
 }
 
