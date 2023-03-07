@@ -16,6 +16,7 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -70,13 +71,69 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
-		if (existingCostDetail != null)
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
 		{
+			CostDetail mainCostDetail = null;
+			CostDetail costAdjustmentDetail = null;
+			CostDetail alreadyShippedDetail = null;
+			for (final CostDetail existingCostDetail : existingCostDetails)
+			{
+				@NonNull final CostAmountType amtType = existingCostDetail.getAmtType();
+				switch (amtType)
+				{
+					case MAIN:
+						if (mainCostDetail != null)
+						{
+							throw new AdempiereException("More than one main cost is not allowed: " + existingCostDetails);
+						}
+						mainCostDetail = existingCostDetail;
+						break;
+					case ADJUSTMENT:
+						if (costAdjustmentDetail != null)
+						{
+							throw new AdempiereException("More than one adjustment cost is not allowed: " + existingCostDetails);
+						}
+						costAdjustmentDetail = existingCostDetail;
+						break;
+					case ALREADY_SHIPPED:
+						if (alreadyShippedDetail != null)
+						{
+							throw new AdempiereException("More than one already shipped cost is not allowed: " + existingCostDetails);
+						}
+						alreadyShippedDetail = existingCostDetail;
+						break;
+					default:
+						throw new AdempiereException("Unknown type: " + amtType);
+				}
+			}
+
+			if (mainCostDetail == null)
+			{
+				throw new AdempiereException("No main cost detail found in " + existingCostDetails);
+			}
+
 			// make sure DateAcct is up-to-date
-			existingCostDetail = utils.updateDateAcct(existingCostDetail, request.getDate());
-			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+			utils.updateDateAcct(mainCostDetail, request.getDate());
+			if (costAdjustmentDetail != null)
+			{
+				utils.updateDateAcct(costAdjustmentDetail, request.getDate());
+			}
+			if (alreadyShippedDetail != null)
+			{
+				utils.updateDateAcct(alreadyShippedDetail, request.getDate());
+			}
+
+			return Optional.of(
+					utils.toCostDetailCreateResult(mainCostDetail)
+							.withAmt(CostAmountDetailed.builder()
+									.mainAmt(mainCostDetail.getAmt())
+									.costAdjustmentAmt(costAdjustmentDetail != null ? costAdjustmentDetail.getAmt() : null)
+									.alreadyShippedAmt(alreadyShippedDetail != null ? alreadyShippedDetail.getAmt() : null)
+									.build())
+			);
 		}
+
 		else
 		{
 			return Optional.ofNullable(createCostOrNull(request));
@@ -185,12 +242,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected CostDetailCreateResult createCostForProjectIssue(@SuppressWarnings("unused") final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(
+			@SuppressWarnings("unused") final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	protected CostDetailCreateResult createCostRevaluationLine(@NonNull final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostRevaluationLine(
+			@NonNull final CostDetailCreateRequest request)
 	{
 		if (!request.getQty().isZero())
 		{

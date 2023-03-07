@@ -727,4 +727,10 @@ public class InOutBL implements IInOutBL
 	{
 		return getById(inoutId).getDateAcct().toInstant();
 	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		return inOutDAO.retrieveCompleteOrClosedLinesForOrderLine(orderLineId, I_M_InOutLine.class);
+	}
 }

@@ -37,6 +37,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.i18n.ExplainedOptional;
@@ -171,12 +172,12 @@ public class CostingService implements ICostingService
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costElementResults)));
 
-		final Map<CostElement, CostAmount> amountsByCostElement = costElementResults
+		final Map<CostElement, CostAmountDetailed> amountsByCostElement = costElementResults
 				.stream()
 				.collect(Collectors.toMap(
 						CostDetailCreateResult::getCostElement, // keyMapper
 						CostDetailCreateResult::getAmt, // valueMapper
-						CostAmount::add)); // mergeFunction
+						CostAmountDetailed::add)); // mergeFunction
 
 		return AggregatedCostAmount.builder()
 				.costSegment(costSegment)
@@ -207,13 +208,7 @@ public class CostingService implements ICostingService
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
 	{
-		if (request.getAmt().isZero())
-		{
-			return request;
-		}
-
-		final CostAmount amtConv = utils.convertToAcctSchemaCurrency(request.getAmt(), request);
-		return request.withAmount(amtConv);
+		return request.withAmount(utils.convertToAcctSchemaCurrency(request.getAmt(), request));
 	}
 
 	@Override
@@ -259,12 +254,11 @@ public class CostingService implements ICostingService
 				.costElementId(costDetail.getCostElementId())
 				.build();
 
-		final CostAmount amt = costDetail.getAmt();
 		final Quantity qty = costDetail.getQty();
 
 		return CostDetailVoidRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
-				.amt(amt)
+				.amt(costDetail.getAmt())
 				.qty(qty)
 				.build();
 	}
@@ -328,7 +322,7 @@ public class CostingService implements ICostingService
 		if (costingMethodHandlers.isEmpty())
 		{
 			throw new AdempiereException("No " + CostingMethodHandler.class.getName() + " found for " + costingMethod
-					+ ". Available costing methods are: " + this.costingMethodHandlers.keySet());
+												 + ". Available costing methods are: " + this.costingMethodHandlers.keySet());
 		}
 		return costingMethodHandlers;
 	}
@@ -573,9 +567,9 @@ public class CostingService implements ICostingService
 
 		//
 		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-				.qty(currentCost.getCurrentQty())
-				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-				.build());
+												  .qty(currentCost.getCurrentQty())
+												  .costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
+												  .build());
 
 		//
 		return result.build();

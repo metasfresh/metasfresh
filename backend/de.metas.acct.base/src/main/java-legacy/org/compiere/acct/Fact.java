@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -47,7 +48,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -242,8 +242,8 @@ public final class Fact
 			return true;
 		}
 
-		Money balance = getSourceBalance();
-		if (balance.isZero())
+		Balance balance = getSourceBalance();
+		if (balance.isBalanced())
 		{
 			log.trace("{}", this);
 			return true;
@@ -255,18 +255,12 @@ public final class Fact
 		}
 	}
 
-	private Money getSourceBalance()
+	private Balance getSourceBalance()
 	{
-		Money result = null;
-		for (FactLine line : m_lines)
-		{
-			final Money lineBalance = line.getSourceBalance();
-			result = result == null ? lineBalance : result.add(lineBalance);
-		}
-
-		return result != null
-				? result
-				: Money.zero(acctSchema.getCurrencyId());
+		return m_lines.stream()
+				.map(FactLine::getSourceBalance)
+				.collect(Balance.sum())
+				.orElseGet(() -> Balance.zero(acctSchema.getCurrencyId())); // NOTE we use the acct schema currency because there is no other currency to use
 	}
 
 	/**
@@ -283,7 +277,7 @@ public final class Fact
 			return;
 		}
 
-		final Money diff = getSourceBalance();
+		final Money diff = getSourceBalance().toMoney();
 		log.trace("Diff={}", diff);
 
 		// new line
@@ -344,29 +338,15 @@ public final class Fact
 	{
 		if (segmentType.equals(AcctSchemaElementType.Organization))
 		{
-			final HashMap<OrgId, Money> map = new HashMap<>();
-			// Add up values by key
-			for (FactLine line : m_lines)
-			{
-				final Money lineBalance = line.getSourceBalance();
-				map.compute(line.getOrgId(), (orgId, prevBalance) -> {
-					if (prevBalance == null)
-					{
-						return lineBalance;
-					}
-					else
-					{
-						return prevBalance.add(lineBalance);
-					}
-				});
-			}
+			final ImmutableMap<OrgId, Balance> map = m_lines.stream()
+					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgId, FactLine::getSourceBalance, Balance::add));
 
 			// check if all keys are zero
-			for (final Money bal : map.values())
+			for (final Balance orgBalance : map.values())
 			{
-				if (bal.signum() != 0)
+				if (!orgBalance.isBalanced())
 				{
-					log.warn("({}) NO - {}, Balance={}", segmentType, this, bal);
+					log.warn("({}) NO - {}, Balance={}", segmentType, this, orgBalance);
 					return false;
 				}
 			}
@@ -410,30 +390,14 @@ public final class Fact
 		// Org
 		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
-			final HashMap<OrgId, Balance> map = new HashMap<>();
-			for (FactLine line : m_lines)
-			{
-				final Balance lineBalance = Balance.ofSourceAmounts(line);
-
-				Balance oldBalance = map.get(line.getOrgId());
-				if (oldBalance == null)
-				{
-					oldBalance = lineBalance;
-					map.put(line.getOrgId(), oldBalance);
-				}
-				else
-				{
-					oldBalance.add(lineBalance);
-				}
-			}
+			final ImmutableMap<OrgId, Balance> map = m_lines.stream()
+					.collect(ImmutableMap.toImmutableMap(FactLine::getOrgId, FactLine::getSourceBalance, Balance::add));
 
 			// Create entry for non-zero element
 			for (final OrgId orgId : map.keySet())
 			{
-				final Balance difference = map.get(orgId);
-
-				//
-				if (!difference.isZeroBalance())
+				final Balance orgBalance = map.get(orgId);
+				if (!orgBalance.isBalanced())
 				{
 					// Create Balancing Entry
 					final FactLine line = new FactLine(services, m_doc.get_Table_ID(), m_doc.get_ID());
@@ -442,30 +406,30 @@ public final class Fact
 					// Amount & Account
 					final AcctSchema acctSchema = getAcctSchema();
 					final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
-					if (difference.getBalance().signum() < 0)
+					if (orgBalance.signum() < 0)
 					{
-						if (difference.isReversal())
+						if (orgBalance.isReversal())
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueToAcct(elementType));
-							line.setAmtSource(null, difference.getPostBalance());
+							line.setAmtSource(null, orgBalance.getPostBalance());
 						}
 						else
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
-							line.setAmtSource(difference.getPostBalance(), null);
+							line.setAmtSource(orgBalance.getPostBalance(), null);
 						}
 					}
 					else
 					{
-						if (difference.isReversal())
+						if (orgBalance.isReversal())
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
-							line.setAmtSource(difference.getPostBalance(), null);
+							line.setAmtSource(orgBalance.getPostBalance(), null);
 						}
 						else
 						{
 							line.setAccount(acctSchema, acctSchemaGL.getDueToAcct(elementType));
-							line.setAmtSource(null, difference.getPostBalance());
+							line.setAmtSource(null, orgBalance.getPostBalance());
 						}
 					}
 					line.convert();
@@ -488,7 +452,7 @@ public final class Fact
 			return true;
 		}
 
-		final Money balance = getAcctBalance();
+		final Money balance = getAcctBalance().toMoney();
 		if (balance.isZero())
 		{
 			return true;
@@ -500,12 +464,12 @@ public final class Fact
 		}
 	}    // isAcctBalanced
 
-	private Money getAcctBalance()
+	public Balance getAcctBalance()
 	{
 		return m_lines.stream()
 				.map(FactLine::getAcctBalance)
-				.reduce(Money::add)
-				.orElseGet(() -> Money.zero(acctSchema.getCurrencyId()));
+				.collect(Balance.sum())
+				.orElseGet(() -> Balance.zero(acctSchema.getCurrencyId()));
 	}
 
 	/**
@@ -519,7 +483,7 @@ public final class Fact
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		final Money ZERO = Money.zero(acctCurrencyId);
 
-		Money diff = getAcctBalance();        // DR-CR
+		Money diff = getAcctBalance().toMoney();        // DR-CR
 
 		Money BSamount = ZERO;
 		FactLine BSline = null;
@@ -536,7 +500,7 @@ public final class Fact
 				continue;
 			}
 
-			final Money amt = l.getAcctBalance().abs();
+			final Money amt = l.getAcctBalance().toMoney().abs();
 			if (l.isBalanceSheet() && amt.compareTo(BSamount) > 0)
 			{
 				BSamount = amt;
@@ -787,68 +751,4 @@ public final class Fact
 		m_lines.forEach(consumer);
 	}
 
-	private static final class Balance
-	{
-		private Money DR;
-		private Money CR;
-
-		private Balance(@NonNull CurrencyId currencyId, @NonNull final BigDecimal dr, @NonNull final BigDecimal cr)
-		{
-			DR = Money.of(dr, currencyId);
-			CR = Money.of(cr, currencyId);
-		}
-
-		public static Balance ofSourceAmounts(final FactLine line)
-		{
-			return new Balance(line.getCurrencyId(), line.getAmtSourceDr(), line.getAmtSourceCr());
-		}
-
-		public void add(@NonNull Money dr, @NonNull Money cr)
-		{
-			DR = DR.add(dr);
-			CR = CR.add(cr);
-		}
-
-		public void add(@NonNull Balance other)
-		{
-			add(other.DR, other.CR);
-		}
-
-		public Money getBalance()
-		{
-			return DR.subtract(CR);
-		}
-
-		/**
-		 * @return absolute balance, negated if reversal
-		 */
-		public Money getPostBalance()
-		{
-			Money bd = getBalance().abs();
-			if (isReversal())
-			{
-				return bd.negate();
-			}
-			return bd;
-		}    // getPostBalance
-
-		public boolean isZeroBalance()
-		{
-			return getBalance().signum() == 0;
-		}    // isZeroBalance
-
-		/**
-		 * @return true if both DR/CR are negative or zero
-		 */
-		public boolean isReversal()
-		{
-			return DR.signum() <= 0 && CR.signum() <= 0;
-		}    // isReversal
-
-		@Override
-		public String toString()
-		{
-			return "Balance[" + "DR=" + DR + "-CR=" + CR + " = " + getBalance() + "]";
-		}
-	}    // Balance
 }   // Fact

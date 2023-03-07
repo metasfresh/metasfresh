@@ -58,7 +58,7 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 									.explicitCostPrice(costRevaluationLine.getNewCostPrice())
 									.date(getDateAcctAsInstant())
 									.build())
-					.getTotalAmountToPost(as);
+					.getTotalAmountToPost(as).getMainAmt();
 		}
 	}
 
