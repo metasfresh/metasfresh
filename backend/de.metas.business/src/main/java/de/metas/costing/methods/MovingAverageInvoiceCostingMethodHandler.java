@@ -106,6 +106,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			final CostDetailCreateResult adjustmentResult = utils.createCostDetailRecordWithChangedCosts(
 					request.withAmountAndType(costAmountDetailed.getCostAdjustmentAmt(), CostAmountType.ADJUSTMENT).withQtyZero(),
 					CostDetailPreviousAmounts.of(currentCost));
+
+			currentCost.addWeightedAverage(costAmountDetailed.getCostAdjustmentAmt(), request.getQty().toZero(), utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(currentCost);
+
 			amtDetailed = amtDetailed.add(adjustmentResult.getAmt());
 		}
 
@@ -115,13 +119,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 					request.withAmountAndType(costAmountDetailed.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
 					CostDetailPreviousAmounts.of(currentCost));
 			amtDetailed = amtDetailed.add(alreadyShippedResult.getAmt());
-		}
-
-		if (!amtDetailed.getCostAdjustmentAmt().isZero())
-		{
-			currentCost.addWeightedAverage(amtDetailed.getCostAdjustmentAmt(), request.getQty().toZero(), utils.getQuantityUOMConverter());
-
-			utils.saveCurrentCost(currentCost);
 		}
 
 		return mainResult.withAmt(amtDetailed);

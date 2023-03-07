@@ -114,7 +114,7 @@ public final class Balance
 
 	public Balance negateAndInvert()
 	{
-		return new Balance(this.credit, this.debit);
+		return new Balance(this.credit.negate(), this.debit.negate());
 	}
 
 	public Balance negateAndInvertIf(final boolean condition)
