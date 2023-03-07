@@ -57,6 +57,8 @@ import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -442,6 +444,7 @@ SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTyp
 	public void testDimensionCopied()
 	{
 		SpringContextHolder.registerJUnitBean(new ChargeRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate()
