@@ -64,6 +64,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -2244,7 +2245,7 @@ public final class MPayment extends X_C_Payment
 		}
 
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(dateTrx.toInstant(),
+		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(TimeUtil.asInstant(dateTrx),
 																											   conversionTypeId,
 																											   ClientId.ofRepoId(getAD_Client_ID()),
 																											   OrgId.ofRepoId(getAD_Org_ID()));

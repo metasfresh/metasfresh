@@ -91,7 +91,7 @@ INSERT INTO C_DataImport (AD_Client_ID,AD_ImpFormat_ID,AD_Org_ID,C_DataImport_ID
 ;
 
 -- 2023-03-06T13:44:51.301Z
-UPDATE C_DataImport SET InternalName=' MBank Statement Import Format',Updated=TO_TIMESTAMP('2023-03-06 15:44:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DataImport_ID=540024
+UPDATE C_DataImport SET InternalName='MBank Statement Import',Updated=TO_TIMESTAMP('2023-03-06 15:44:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DataImport_ID=540024
 ;
 
 -- 2023-03-06T13:44:52.511Z
