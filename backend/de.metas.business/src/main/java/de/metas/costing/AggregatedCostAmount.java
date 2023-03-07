@@ -152,7 +152,6 @@ public class AggregatedCostAmount
 				.filter(costElement -> isCostElementMatching(costElement, costingMethod, onlyCostElementIds))
 				.map(this::getCostAmountForCostElement)
 				.reduce(CostAmountDetailed::add);
-		// .orElseThrow(() -> new AdempiereException("No costs found for " + costingMethod + ", onlyCostElementIds=" + onlyCostElementIds + " in " + this));
 	}
 
 	private static boolean isCostElementMatching(
