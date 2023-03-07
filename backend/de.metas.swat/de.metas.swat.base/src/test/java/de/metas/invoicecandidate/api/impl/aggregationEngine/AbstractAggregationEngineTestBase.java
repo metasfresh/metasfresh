@@ -27,6 +27,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -108,6 +110,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	{
 		return  AggregationEngine.builder()
 				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 	}
 

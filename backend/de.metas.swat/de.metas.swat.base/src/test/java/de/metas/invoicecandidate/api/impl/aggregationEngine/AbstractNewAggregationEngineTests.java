@@ -110,6 +110,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 
 		final AggregationEngine engine = AggregationEngine.builder()
 				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
