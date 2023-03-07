@@ -95,7 +95,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailedForMatchInv(request);
 
-		final CostDetailCreateResult mainResult = utils.createCostDetailRecordWithChangedCosts(
+		final CostDetailCreateResult mainResult = utils.createCostDetailRecordNoCostsChanged(
 				request.withAmountAndType(costAmountDetailed.getMainAmt(), CostAmountType.MAIN),
 				CostDetailPreviousAmounts.of(currentCost));
 
@@ -104,15 +104,15 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		if (!costAmountDetailed.getCostAdjustmentAmt().isZero())
 		{
 			final CostDetailCreateResult adjustmentResult = utils.createCostDetailRecordWithChangedCosts(
-					request.withAmountAndType(costAmountDetailed.getCostAdjustmentAmt(), CostAmountType.ADJUSTMENT),
+					request.withAmountAndType(costAmountDetailed.getCostAdjustmentAmt(), CostAmountType.ADJUSTMENT).withQtyZero(),
 					CostDetailPreviousAmounts.of(currentCost));
 			amtDetailed = amtDetailed.add(adjustmentResult.getAmt());
 		}
 
 		if (!costAmountDetailed.getAlreadyShippedAmt().isZero())
 		{
-			final CostDetailCreateResult alreadyShippedResult = utils.createCostDetailRecordWithChangedCosts(
-					request.withAmountAndType(costAmountDetailed.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED),
+			final CostDetailCreateResult alreadyShippedResult = utils.createCostDetailRecordNoCostsChanged(
+					request.withAmountAndType(costAmountDetailed.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
 					CostDetailPreviousAmounts.of(currentCost));
 			amtDetailed = amtDetailed.add(alreadyShippedResult.getAmt());
 		}

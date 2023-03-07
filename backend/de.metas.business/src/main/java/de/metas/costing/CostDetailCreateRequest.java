@@ -216,6 +216,11 @@ public class CostDetailCreateRequest
 		return toBuilder().qty(qty).build();
 	}
 
+	public CostDetailCreateRequest withQtyZero()
+	{
+		return withQty(qty.toZero());
+	}
+
 	public CostDetailBuilder toCostDetailBuilder()
 	{
 		final CostDetailBuilder costDetail = CostDetail.builder()
