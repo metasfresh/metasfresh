@@ -109,4 +109,5 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+
 }

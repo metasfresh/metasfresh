@@ -46,12 +46,12 @@ public class MoveCostsResult
 
 	public CostAmount getOutboundAmountToPost(@NonNull final AcctSchema as)
 	{
-		return outboundCosts.getTotalAmountToPost(as);
+		return outboundCosts.getTotalAmountToPost(as).getMainAmt();
 	}
 
 	public CostAmount getInboundAmountToPost(@NonNull final AcctSchema as)
 	{
-		return inboundCosts.getTotalAmountToPost(as);
+		return inboundCosts.getTotalAmountToPost(as).getMainAmt();
 	}
 
 	public MoveCostsResult add(@NonNull final MoveCostsResult partialResult)

@@ -12,11 +12,13 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -84,7 +86,9 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setM_CostElement_ID(cd.getCostElementId().getRepoId());
 		record.setM_Product_ID(cd.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(cd.getAttributeSetInstanceId().getRepoId());
-		record.setAmt(cd.getAmt().getValue());
+
+		record.setM_CostDetail_Type(cd.getAmtType().getCode());
+		record.setAmt(cd.getAmt().toBigDecimal());
 		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
 
 		record.setQty(cd.getQty().toBigDecimal());
@@ -308,7 +312,7 @@ public class CostDetailRepository implements ICostDetailRepository
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
-		final Quantity qty = Quantity.of(record.getQty(), productUOM);
+		final Quantity qty = Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 
 		return CostDetail.builder()
 				.id(CostDetailId.ofRepoId(record.getM_CostDetail_ID()))
@@ -318,6 +322,7 @@ public class CostDetailRepository implements ICostDetailRepository
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.amtType(CostAmountType.ofCode(record.getM_CostDetail_Type()))
 				.amt(amt)
 				.qty(qty)
 				.changingCosts(record.isChangingCosts())

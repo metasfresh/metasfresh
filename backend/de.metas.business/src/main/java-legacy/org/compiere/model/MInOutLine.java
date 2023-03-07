@@ -132,6 +132,7 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
+		setC_Order_ID(oLine.getC_Order_ID());
 		setC_OrderLine_ID(oLine.getC_OrderLine_ID());
 		setLine(oLine.getLine());
 		setC_UOM_ID(oLine.getC_UOM_ID());
@@ -200,6 +201,7 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
+		setC_Order_ID(iLine.getC_Order_ID());
 		setC_OrderLine_ID(iLine.getC_OrderLine_ID());
 		setLine(iLine.getLine());
 		setC_UOM_ID(iLine.getC_UOM_ID());

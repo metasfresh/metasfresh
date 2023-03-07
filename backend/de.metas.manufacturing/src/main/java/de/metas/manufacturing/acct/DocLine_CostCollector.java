@@ -3,6 +3,7 @@
  */
 package de.metas.manufacturing.acct;
 
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -22,7 +23,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
-import de.metas.acct.Account;
 import org.compiere.util.DB;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -120,11 +120,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
-																	 .acctSchemaId(acctSchemaId)
-																	 .reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-																	 .initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
-																	 .date(getDateAcctAsInstant())
-																	 .build());
+					.acctSchemaId(acctSchemaId)
+					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
+					.date(getDateAcctAsInstant())
+					.build());
 		}
 		else
 		{

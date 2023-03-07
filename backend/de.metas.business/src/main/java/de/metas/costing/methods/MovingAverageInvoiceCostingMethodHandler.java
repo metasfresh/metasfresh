@@ -43,9 +43,13 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -54,6 +58,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
@@ -61,6 +66,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	private final MatchInvoiceService matchInvoiceService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public MovingAverageInvoiceCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils,
@@ -85,21 +91,46 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
+		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
-				.map(orderLineBL::getOrderLineById)
-				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+		final CostAmountDetailed costAmountDetailed = computeCostAmountDetailedForMatchInv(request);
 
-		final InOutId inoutId = matchInv.getInOutId();
-		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(inoutId);
+		final CostDetailCreateResult mainResult = utils.createCostDetailRecordNoCostsChanged(
+				request.withAmountAndType(costAmountDetailed.getMainAmt(), CostAmountType.MAIN),
+				CostDetailPreviousAmounts.of(currentCost));
 
-		final CostAmount amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
+		CostAmountDetailed amtDetailed = mainResult.getAmt();
 
+		if (!costAmountDetailed.getCostAdjustmentAmt().isZero())
+		{
+			final CostDetailCreateResult adjustmentResult = utils.createCostDetailRecordWithChangedCosts(
+					request.withAmountAndType(costAmountDetailed.getCostAdjustmentAmt(), CostAmountType.ADJUSTMENT).withQtyZero(),
+					CostDetailPreviousAmounts.of(currentCost));
+
+			currentCost.addWeightedAverage(costAmountDetailed.getCostAdjustmentAmt(), request.getQty().toZero(), utils.getQuantityUOMConverter());
+			utils.saveCurrentCost(currentCost);
+
+			amtDetailed = amtDetailed.add(adjustmentResult.getAmt());
+		}
+
+		if (!costAmountDetailed.getAlreadyShippedAmt().isZero())
+		{
+			final CostDetailCreateResult alreadyShippedResult = utils.createCostDetailRecordNoCostsChanged(
+					request.withAmountAndType(costAmountDetailed.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
+					CostDetailPreviousAmounts.of(currentCost));
+			amtDetailed = amtDetailed.add(alreadyShippedResult.getAmt());
+		}
+
+		return mainResult.withAmt(amtDetailed);
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
+				request,
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
@@ -129,6 +160,22 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(final CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		currentCost.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				CostDetailPreviousAmounts.of(currentCost));
+
+		utils.saveCurrentCost(currentCost);
+
+		return result;
 	}
 
 	@Override
@@ -304,13 +351,58 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		return MoveCostsResult.builder()
 				.outboundCosts(AggregatedCostAmount.builder()
-									   .costSegment(outboundSegmentAndElement.toCostSegment())
-									   .amount(costElement, outboundResult.getAmt())
-									   .build())
+						.costSegment(outboundSegmentAndElement.toCostSegment())
+						.amount(costElement, outboundResult.getAmt())
+						.build())
 				.inboundCosts(AggregatedCostAmount.builder()
-									  .costSegment(inboundSegmentAndElement.toCostSegment())
-									  .amount(costElement, inboundResult.getAmt())
-									  .build())
+						.costSegment(inboundSegmentAndElement.toCostSegment())
+						.amount(costElement, inboundResult.getAmt())
+						.build())
+				.build();
+	}
+
+	private CostAmountDetailed computeCostAmountDetailedForMatchInv(final CostDetailCreateRequest request)
+	{
+		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
+
+		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(matchInv.getInvoiceLineId());
+
+		final I_C_OrderLine orderLine = Optional.of(invoiceLine.getC_OrderLine())
+				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv.getId()));
+
+		final Quantity receiptQty = inoutBL.retrieveCompleteOrClosedLinesForOrderLine(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
+				.stream()
+				.map(line -> Quantitys.create(line.getMovementQty(), UomId.ofRepoId(line.getC_UOM_ID())))
+				.reduce(Quantity::add)
+				.orElse(Quantitys.createZero(UomId.ofRepoId(orderLine.getC_UOM_ID())));
+
+		final ProductPrice purchaseOrderPrice = orderLineBL.getCostPrice(orderLine);
+
+		final CostAmount merchandiseStock = CostAmount.ofProductPrice(purchaseOrderPrice).multiply(receiptQty.toBigDecimal()).roundToPrecisionIfNeeded(currentCost.getPrecision());
+
+		final CostAmount invoicedAmt = request.getAmt();
+
+		final boolean isReversal = invoiceBL.isReversal(invoiceBL.getById(matchInv.getInvoiceId()));
+
+		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt.negateIf(isReversal));
+
+		final CostAmount adjustmentProportion = amtDifference.isZero() || receiptQty.isZero()
+				? CostAmount.zero(currentCost.getCurrencyId())
+				: amtDifference.divide(receiptQty.toBigDecimal(), currentCost.getPrecision())
+				.roundToPrecisionIfNeeded(currentCost.getPrecision());
+
+		final Quantity qtyToDistribute = currentCost.getCumulatedQty().min(receiptQty);
+
+		final CostAmount costAdjustmentAmt = adjustmentProportion.multiply(qtyToDistribute.toBigDecimal());
+
+		final CostAmount alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
+
+		return CostAmountDetailed.builder()
+				.mainAmt(invoicedAmt)
+				.costAdjustmentAmt(costAdjustmentAmt.negateIf(!isReversal))
+				.alreadyShippedAmt(alreadyShippedAmt.negateIf(!isReversal))
 				.build();
 	}
 
@@ -320,13 +412,15 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final Quantity qty = request.getQty();
 		final boolean isInboundTrx = qty.signum() > 0;
 		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+
+		final CostAmount negateAmount = request.getAmt().negate();
 		if (isInboundTrx)
 		{
-			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate(), utils.getQuantityUOMConverter());
+			currentCosts.addWeightedAverage(negateAmount, qty.negate(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
-			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
+			currentCosts.addToCurrentQtyAndCumulate(qty.negate(), negateAmount, utils.getQuantityUOMConverter());
 		}
 
 		utils.saveCurrentCost(currentCosts);
