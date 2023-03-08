@@ -77,6 +77,7 @@ final class DataImportCommand
 	private final Resource data;
 	private final boolean processImportRecordsSynchronously;
 	private final boolean stopOnFirstError;
+	private final Params overrideColumnValues;
 
 	//
 	// State
@@ -107,7 +108,8 @@ final class DataImportCommand
 			@NonNull final Resource data,
 			//
 			final boolean processImportRecordsSynchronously,
-			final boolean stopOnFirstError)
+			final boolean stopOnFirstError,
+			@Nullable final Params overrideColumnValues)
 	{
 		this.dataImportService = dataImportService;
 		this.dataImportRunService = dataImportRunService;
@@ -125,6 +127,7 @@ final class DataImportCommand
 		this.data = data;
 		this.processImportRecordsSynchronously = processImportRecordsSynchronously;
 		this.stopOnFirstError = stopOnFirstError;
+		this.overrideColumnValues = overrideColumnValues;
 	}
 
 	public DataImportResult execute()
@@ -226,6 +229,7 @@ final class DataImportCommand
 				.dataImportConfigId(dataImportConfigId)
 				.insertBatchSize(getInsertBatchSize())
 				.stream(sourceParser.streamDataLines(data))
+				.overrideColumnValues(overrideColumnValues)
 				.build();
 
 		final InsertIntoImportTableResult result = insertIntoImportTableService.insertData(request)

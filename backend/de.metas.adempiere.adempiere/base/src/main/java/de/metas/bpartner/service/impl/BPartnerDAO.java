@@ -1969,4 +1969,14 @@ public class BPartnerDAO implements IBPartnerDAO
 				.stream().collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	@NonNull
+	public ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull final String sapBPartnerCode)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SAP_BPartnerCode, sapBPartnerCode)
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+	}
 }
