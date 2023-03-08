@@ -69,7 +69,7 @@ public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLi
 			if (i != lastIndex)
 			{
 				final Percent percentage = lineCostAmountReceived.percentageOf(totalCostAmountReceived);
-				lineInvoicedAmtDiff = lineCostAmountReceived.multiply(percentage, precision);
+				lineInvoicedAmtDiff = totalInvoicedAmtDiff.multiply(percentage, precision);
 			}
 			else
 			{
