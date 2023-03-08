@@ -141,8 +141,6 @@ public class Tax
 	}
 
 	/**
-	 * Calculate Tax - no rounding
-	 *
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
 	 * @return tax amount
 	 */

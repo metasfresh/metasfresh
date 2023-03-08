@@ -109,7 +109,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		step_validate_before_aggregation(invoiceCandidates, inOutLines);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 

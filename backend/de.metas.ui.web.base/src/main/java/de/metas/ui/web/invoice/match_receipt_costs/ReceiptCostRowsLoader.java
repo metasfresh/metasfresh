@@ -1,8 +1,8 @@
 package de.metas.ui.web.invoice.match_receipt_costs;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.currency.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import java.util.List;
 
 class ReceiptCostRowsLoader
 {
-	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final MoneyService moneyService;
 	@NonNull final LookupDataSource bpartnerLookup;
 	@NonNull final LookupDataSource orderLookup;
 	@NonNull final LookupDataSource inoutLookup;
@@ -20,13 +20,13 @@ class ReceiptCostRowsLoader
 
 	@Builder
 	private ReceiptCostRowsLoader(
-			final @NonNull CurrencyRepository currencyRepository,
+			final @NonNull MoneyService moneyService,
 			final @NonNull LookupDataSource bpartnerLookup,
 			final @NonNull LookupDataSource orderLookup,
 			final @NonNull LookupDataSource inoutLookup,
 			final @NonNull LookupDataSource costTypeLookup)
 	{
-		this.currencyRepository = currencyRepository;
+		this.moneyService = moneyService;
 		this.bpartnerLookup = bpartnerLookup;
 		this.orderLookup = orderLookup;
 		this.inoutLookup = inoutLookup;
@@ -55,7 +55,7 @@ class ReceiptCostRowsLoader
 				.purchaseOrder(orderLookup.findById(inoutCost.getOrderId()))
 				.receipt(inoutLookup.findById(inoutCost.getReceiptId()))
 				.costType(costTypeLookup.findById(inoutCost.getCostTypeId()))
-				.currency(currencyRepository.getCurrencyCodeById(costAmountToInvoice.getCurrencyId()).toThreeLetterCode())
+				.currency(moneyService.getCurrencyCodeByCurrencyId(costAmountToInvoice.getCurrencyId()).toThreeLetterCode())
 				.costAmountToInvoice(costAmountToInvoice.toBigDecimal())
 				.build();
 	}

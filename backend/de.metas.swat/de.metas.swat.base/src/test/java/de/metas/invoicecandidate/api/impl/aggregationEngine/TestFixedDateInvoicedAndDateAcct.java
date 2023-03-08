@@ -112,7 +112,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
@@ -136,7 +136,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
 				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
@@ -168,7 +168,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 13))
 				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
@@ -201,7 +201,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 
 		final AggregationEngine engine = AggregationEngine.builder()
 				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
 				.build();
 

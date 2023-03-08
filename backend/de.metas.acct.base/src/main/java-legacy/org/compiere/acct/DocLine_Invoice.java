@@ -26,12 +26,14 @@ import de.metas.acct.Account;
 import de.metas.acct.accounts.InvoiceAccountProviderExtension;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
@@ -73,6 +75,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private BigDecimal _includedTaxAmt = BigDecimal.ZERO;
 	private Quantity _qtyInvoiced = null; // lazy
 	private Quantity _qtyReceivedInStockUOM = null; // lazy
+	private Money _costAmountMatched = null; // lazy
 
 	private static final String SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema = "M_Product_Acct_Consider_CompensationSchema";
 
@@ -98,12 +101,12 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			final Tax tax = services.getTaxById(taxId);
 			if (!tax.isZeroTax())
 			{
-				final int taxPrecision = doc.getStdPrecision();
-				final BigDecimal lineTaxAmt = tax.calculateTax(lineNetAmt, true, taxPrecision);
+				final CurrencyPrecision taxPrecision = doc.getStdPrecision();
+				final BigDecimal lineTaxAmt = tax.calculateTax(lineNetAmt, true, taxPrecision.toInt());
 				logger.debug("LineNetAmt={} - LineTaxAmt={}", lineNetAmt, lineTaxAmt);
 				lineNetAmt = lineNetAmt.subtract(lineTaxAmt);
 
-				final BigDecimal priceListTax = tax.calculateTax(priceList, true, taxPrecision);
+				final BigDecimal priceListTax = tax.calculateTax(priceList, true, taxPrecision.toInt());
 				priceList = priceList.subtract(priceListTax);
 
 				_includedTaxAmt = lineTaxAmt;
@@ -227,24 +230,24 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	 *
 	 * @return quantity received invoiced amount
 	 */
-	public BigDecimal calculateAmtOfQtyReceived(final BigDecimal lineNetAmt)
+	public Money calculateAmtOfQtyReceived(final Money lineNetAmt)
 	{
 		if (lineNetAmt.signum() == 0)
 		{
-			return BigDecimal.ZERO;
+			return lineNetAmt.toZero();
 		}
 
 		final Quantity qtyReceived = getQtyReceivedAbs();
 		if (qtyReceived.signum() == 0)
 		{
-			return BigDecimal.ZERO;
+			return lineNetAmt.toZero();
 		}
 
 		final Quantity qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() == 0)
 		{
 			// shall not happen
-			return BigDecimal.ZERO;
+			return lineNetAmt.toZero();
 		}
 
 		// If it was fully received, there is no need to divide and then multiply the lineNetAmt.
@@ -256,8 +259,17 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 
 		final BigDecimal qtyReceivedMultiplier = qtyReceived.toBigDecimal().divide(qtyInvoiced.toBigDecimal(), 12, RoundingMode.HALF_UP);
 
-		return lineNetAmt.multiply(qtyReceivedMultiplier)
-				.setScale(getStdPrecision(), RoundingMode.HALF_UP);
+		return lineNetAmt.multiply(qtyReceivedMultiplier).round(getStdPrecision());
+	}
+
+	Money getCostAmountMatched()
+	{
+		if (_costAmountMatched == null)
+		{
+			this._costAmountMatched = matchInvoiceService.getCostAmountMatched(getInvoiceLineId())
+					.orElseGet(() -> Money.zero(getCurrencyId()));
+		}
+		return _costAmountMatched;
 	}
 
 	@Override

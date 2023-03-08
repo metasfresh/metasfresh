@@ -39,8 +39,15 @@ import javax.annotation.Nullable;
 @ToString
 public class CostAmountDetailed
 {
+	// amount after correction
+	// e.g. invoiced amount
 	@NonNull CostAmount mainAmt;
+
+	// i.e.
+	// positive - invoiced price is greater than receipt price
+	// negative - invoiced price is less than receipt price
 	@NonNull CostAmount costAdjustmentAmt;
+
 	@NonNull CostAmount alreadyShippedAmt;
 
 	@Builder
@@ -59,7 +66,6 @@ public class CostAmountDetailed
 	{
 		switch (type)
 		{
-
 			case MAIN:
 				return builder().mainAmt(amt).build();
 			case ADJUSTMENT:
@@ -80,10 +86,21 @@ public class CostAmountDetailed
 				.build();
 	}
 
-	public CostAmount toCostAmount()
+	public CostAmountDetailed negateIf(final boolean condition)
 	{
-		return mainAmt.subtract(costAdjustmentAmt).subtract(alreadyShippedAmt);
+		return condition ? negate() : this;
 	}
+
+	private CostAmountDetailed negate()
+	{
+		return builder()
+				.mainAmt(mainAmt.negate())
+				.costAdjustmentAmt(costAdjustmentAmt.negate())
+				.alreadyShippedAmt(alreadyShippedAmt.negate())
+				.build();
+	}
+
+	public CostAmount getAmountBeforeAdjustment() {return mainAmt.subtract(costAdjustmentAmt).subtract(alreadyShippedAmt);}
 }
 
 

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 118859417L;
+	private static final long serialVersionUID = -1089766408L;
 
     /** Standard Constructor */
     public X_M_MatchInv (final Properties ctx, final int M_MatchInv_ID, @Nullable final String trxName)
@@ -141,6 +141,19 @@ public class X_M_MatchInv extends org.compiere.model.PO implements I_M_MatchInv,
 	public BigDecimal getCostAmount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCostAmountInvoiced (final @Nullable BigDecimal CostAmountInvoiced)
+	{
+		set_ValueNoCheck (COLUMNNAME_CostAmountInvoiced, CostAmountInvoiced);
+	}
+
+	@Override
+	public BigDecimal getCostAmountInvoiced() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CostAmountInvoiced);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

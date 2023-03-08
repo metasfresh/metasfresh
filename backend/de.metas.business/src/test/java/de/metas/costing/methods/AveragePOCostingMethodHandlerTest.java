@@ -31,6 +31,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.CurrencyId;
+import de.metas.order.costs.OrderCostService;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -131,7 +132,8 @@ public class AveragePOCostingMethodHandlerTest
 
 		handler = new AveragePOCostingMethodHandler(
 				handlerUtils,
-				MatchInvoiceService.newInstanceForJUnitTesting());
+				MatchInvoiceService.newInstanceForUnitTesting(),
+				OrderCostService.newInstanceForUnitTesting());
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 		eachUOM = BusinessTestHelper.createUomEach();
