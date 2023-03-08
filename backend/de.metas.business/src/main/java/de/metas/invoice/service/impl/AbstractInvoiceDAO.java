@@ -7,9 +7,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.CoalesceUtil;
@@ -28,9 +25,6 @@ import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -90,8 +84,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
@@ -664,23 +656,5 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.stream()
 				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public CountryId getBillToCountryIdByInvoiceId(@NonNull final InvoiceId invoiceId)
-	{
-		final org.compiere.model.I_C_Invoice invoiceRecord = getByIdInTrx(invoiceId);
-		final int repoLocationId = invoiceRecord.getC_BPartner_Location_Value_ID();
-		if(repoLocationId > 0)
-		{
-			return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(repoLocationId));
-		}
-		else
-		{
-			Check.assumeGreaterThanZero(invoiceRecord.getC_BPartner_Location_ID(), "Partner-Location should exist");
-			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID());
-			return bPartnerDAO.getCountryIdInTrx(bPartnerLocationId);
-		}
-
 	}
 }

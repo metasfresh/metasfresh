@@ -91,7 +91,7 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not completed or closed");
 		}
 
-		if(!countryDAO.isEnforceCorrectionInvoice(invoiceDAO.getBillToCountryIdByInvoiceId(invoiceId)))
+		if(!countryDAO.isEnforceCorrectionInvoice(invoiceBL.getBillToCountryId(invoiceId)))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not isEnforceCorrectionInvoice");
 		}

@@ -25,7 +25,7 @@ package de.metas.invoice.sequence;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,7 +40,7 @@ import java.util.Objects;
 public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
 
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
 
 	@Override
@@ -58,7 +58,7 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(eval.get_ValueAsInt(I_C_Invoice.COLUMNNAME_C_Invoice_ID, 0));
 
-		return ProviderResult.of(invoiceDAO.getBillToCountryIdByInvoiceId(invoiceId));
+		return ProviderResult.of(invoiceBL.getBillToCountryId(invoiceId));
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
-		return ProviderResult.of(invoiceDAO.getBillToCountryIdByInvoiceId(invoiceId));
+		return ProviderResult.of(invoiceBL.getBillToCountryId(invoiceId));
 	}
 
 	@Override
