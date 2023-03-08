@@ -1175,21 +1175,21 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
 	}
 
-	public final int getStdPrecision()
+	public final CurrencyPrecision getStdPrecision()
 	{
 		if (_currencyPrecision != null)
 		{
-			return _currencyPrecision.toInt();
+			return _currencyPrecision;
 		}
 
 		final CurrencyId currencyId = getCurrencyId();
 		if (currencyId == null)
 		{
-			return ICurrencyDAO.DEFAULT_PRECISION.toInt();
+			return ICurrencyDAO.DEFAULT_PRECISION;
 		}
 
 		_currencyPrecision = services.getCurrencyStandardPrecision(currencyId);
-		return _currencyPrecision.toInt();
+		return _currencyPrecision;
 	}
 
 	protected final GLCategoryId getGL_Category_ID()

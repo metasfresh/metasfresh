@@ -1,13 +1,17 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.inout.InOutLineId;
@@ -16,6 +20,7 @@ import de.metas.order.OrderLineId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -25,7 +30,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -238,4 +245,45 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		final I_M_InOutLine inoutLine = getInOutLine();
 		return OrderId.ofRepoIdOrNull(inoutLine.getC_OrderSO_ID());
 	}
+
+	@Nullable
+	public BPartnerId getBPartnerId(@NonNull final CostElementId costElementId)
+	{
+		final ImmutableSet<BPartnerId> costBPartnerIds = inoutCosts.stream()
+				.filter(inoutCost -> CostElementId.equals(inoutCost.getCostElementId(), costElementId))
+				.map(InOutCost::getBpartnerId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final BPartnerId costBPartnerId = CollectionUtils.singleElementOrNull(costBPartnerIds);
+		if (costBPartnerId != null)
+		{
+			return costBPartnerId;
+		}
+		else
+		{
+			return getBPartnerId();
+		}
+	}
+
+	@Nullable
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final CostElementId costElementId)
+	{
+		final BPartnerLocationId bpartnerLocationId = getDoc().getBPartnerLocationId();
+		if(bpartnerLocationId == null)
+		{
+			return null;
+		}
+
+		final BPartnerId bpartnerId = getBPartnerId(costElementId);
+		if(BPartnerId.equals(bpartnerLocationId.getBpartnerId(), bpartnerId))
+		{
+			return bpartnerLocationId;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 }

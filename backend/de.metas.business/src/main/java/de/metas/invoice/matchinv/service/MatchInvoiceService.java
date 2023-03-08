@@ -43,7 +43,7 @@ public class MatchInvoiceService
 {
 	public static MatchInvoiceService get() {return SpringContextHolder.instance.getBean(MatchInvoiceService.class);}
 
-	public static MatchInvoiceService newInstanceForJUnitTesting()
+	public static MatchInvoiceService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		return new MatchInvoiceService(new MatchInvoiceRepository(), new MatchInvListenersRegistry(Optional.empty()));
@@ -228,26 +228,21 @@ public class MatchInvoiceService
 						.type(MatchInvType.Cost)
 						.inoutCostId(inoutCostId)
 						.build());
-		if (matchInvs.isEmpty())
-		{
-			return Optional.empty();
-		}
 
-		Money result = null;
+		return matchInvs.stream()
+				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmountReceived())
+				.reduce(Money::add);
+	}
 
-		for (final MatchInv matchInv : matchInvs)
-		{
-			final Money costAmount = matchInv.getCostPartNotNull().getCostAmount();
-			if (result == null)
-			{
-				result = costAmount;
-			}
-			else
-			{
-				result = result.add(costAmount);
-			}
-		}
+	public Optional<Money> getCostAmountMatched(final InvoiceLineId invoiceLineId)
+	{
+		final List<MatchInv> matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
+				.type(MatchInvType.Cost)
+				.invoiceLineId(invoiceLineId)
+				.build());
 
-		return Optional.ofNullable(result);
+		return matchInvs.stream()
+				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmountInvoiced())
+				.reduce(Money::add);
 	}
 }

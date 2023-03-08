@@ -154,7 +154,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			final CostElement costElement = request.getCostElement();
 			if (costElement == null || costElement.isMaterialElement())
 			{
-				return createCostForMatchInvoice(request);
+				return createCostForMatchInvoice_MaterialCosts(request);
 			}
 			else
 			{
@@ -209,7 +209,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;

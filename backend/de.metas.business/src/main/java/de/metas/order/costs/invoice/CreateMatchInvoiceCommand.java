@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
@@ -12,16 +13,17 @@ import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOutLine;
+
+import java.util.ArrayList;
 
 public class CreateMatchInvoiceCommand
 {
@@ -29,6 +31,7 @@ public class CreateMatchInvoiceCommand
 	private final MatchInvoiceService matchInvoiceService;
 	private final IInvoiceBL invoiceBL;
 	private final IInOutBL inoutBL;
+	private final MoneyService moneyService;
 	private final CreateMatchInvoiceRequest request;
 
 	// state
@@ -40,61 +43,91 @@ public class CreateMatchInvoiceCommand
 			@NonNull final MatchInvoiceService matchInvoiceService,
 			@NonNull final IInvoiceBL invoiceBL,
 			@NonNull final IInOutBL inoutBL,
+			@NonNull final MoneyService moneyService,
 			@NonNull final CreateMatchInvoiceRequest request)
 	{
 		this.orderCostService = orderCostService;
-
 		this.matchInvoiceService = matchInvoiceService;
 		this.invoiceBL = invoiceBL;
 		this.inoutBL = inoutBL;
+		this.moneyService = moneyService;
 
 		this.request = request;
 	}
 
-	public void execute()
+	public CreateMatchInvoicePlan execute()
 	{
-		final ImmutableList<InOutCost> inoutCosts = orderCostService.getInOutCostsByIds(request.getInoutCostIds());
-		if (inoutCosts.isEmpty())
+		final CreateMatchInvoicePlan plan = createPlan();
+		if (plan.isEmpty())
 		{
 			// shall not happen
 			throw new AdempiereException("No inout costs found");
 		}
 
-		final ImmutableSet<InOutLineId> inoutLineIds = inoutCosts.stream().map(inoutCost -> inoutCost.getReceiptAndLineId().getInOutLineId()).collect(ImmutableSet.toImmutableSet());
+		for (final CreateMatchInvoicePlanLine candidate : plan)
+		{
+			matchInvoiceService.newMatchInvBuilder(MatchInvType.Cost)
+					.invoiceLine(getInvoiceLine())
+					.inoutLine(candidate.getReceiptLine())
+					.inoutCost(candidate.getReceiptCost())
+					.qtyToMatchExact(candidate.getReceiptQty())
+					.build();
+		}
+
+		return plan;
+	}
+
+	public CreateMatchInvoicePlan createPlan()
+	{
+		final ImmutableList<InOutCost> inoutCosts = orderCostService.getInOutCostsByIds(request.getInoutCostIds());
+		if (inoutCosts.isEmpty())
+		{
+			throw new AdempiereException("No inout costs found");
+		}
+
+		final ImmutableSet<InOutLineId> inoutLineIds = inoutCosts.stream().map(InOutCost::getReceiptLineId).collect(ImmutableSet.toImmutableSet());
 		final ImmutableMap<InOutAndLineId, I_M_InOutLine> inoutLines = Maps.uniqueIndex(
 				inoutBL.getLinesByIds(inoutLineIds),
 				inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID())
 		);
 
-		// TODO: use invoiceLineNetAmt when computing how much to allocate
-		final Money invoiceLineNetAmt = getInvoiceLineNetAmt();
-
+		//
+		// Create initial plan
+		final ArrayList<CreateMatchInvoicePlanLine> candidates = new ArrayList<>();
 		for (final InOutCost inoutCost : inoutCosts)
 		{
 			final InOutAndLineId receiptAndLineId = inoutCost.getReceiptAndLineId();
 			final I_M_InOutLine receiptLine = inoutLines.get(receiptAndLineId);
 			final StockQtyAndUOMQty receiptQty = inoutBL.getStockQtyAndQtyInUOM(receiptLine);
-			final Money costAmountOpen = getCostAmountOpen(inoutCost);
+			final Money receiptLineAmt = getCostAmountOpen(inoutCost);
 
-			matchInvoiceService.newMatchInvBuilder(MatchInvType.Cost)
-					.invoiceLine(getInvoiceLine())
-					.inoutLine(receiptLine)
-					.inoutCost(MatchInvCostPart.builder()
-							.inoutCostId(inoutCost.getId())
-							.costTypeId(inoutCost.getCostTypeId())
-							.costElementId(inoutCost.getCostElementId())
-							.costAmount(costAmountOpen)
-							.build())
-					.qtyToMatchExact(receiptQty)
-					.build();
+			candidates.add(
+					CreateMatchInvoicePlanLine.builder()
+							.receiptLine(receiptLine)
+							.receiptCost(MatchInvCostPart.builder()
+									.inoutCostId(inoutCost.getId())
+									.costTypeId(inoutCost.getCostTypeId())
+									.costElementId(inoutCost.getCostElementId())
+									.costAmountReceived(receiptLineAmt)
+									.costAmountInvoiced(receiptLineAmt) // will be updated below
+									.build())
+							.receiptQty(receiptQty)
+							.build());
 		}
+		final CreateMatchInvoicePlan plan = CreateMatchInvoicePlan.ofList(candidates);
+
+		//
+		// Update CostAmountInvoiced
+		final Money invoicedAmt = getInvoiceLineOpenAmt();
+		final CurrencyPrecision precision = moneyService.getStdPrecision(invoicedAmt.getCurrencyId());
+		plan.setCostAmountInvoiced(invoicedAmt, precision);
+
+		return plan;
 	}
 
-	private Money getInvoiceLineNetAmt()
+	private Money getInvoiceLineOpenAmt()
 	{
-		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		final I_C_Invoice invoice = invoiceBL.getById(request.getInvoiceLineId().getInvoiceId());
-		return Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		return orderCostService.getInvoiceLineOpenAmt(getInvoiceLine());
 	}
 
 	private I_C_InvoiceLine getInvoiceLine()
@@ -119,5 +152,4 @@ public class CreateMatchInvoiceCommand
 			return totalAmt.subtract(matchedAmt);
 		}
 	}
-
 }

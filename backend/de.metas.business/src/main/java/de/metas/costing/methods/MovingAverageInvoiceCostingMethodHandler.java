@@ -23,6 +23,7 @@
 package de.metas.costing.methods;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -37,19 +38,22 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLineId;
+import de.metas.order.costs.OrderCostService;
+import de.metas.order.costs.inout.InOutCost;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -58,22 +62,24 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Component
 public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	private final MatchInvoiceService matchInvoiceService;
+	private final OrderCostService orderCostService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public MovingAverageInvoiceCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final MatchInvoiceService matchInvoiceService)
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final OrderCostService orderCostService)
 	{
 		super(utils);
 		this.matchInvoiceService = matchInvoiceService;
+		this.orderCostService = orderCostService;
 	}
 
 	@Override
@@ -89,7 +95,12 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
@@ -122,16 +133,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		}
 
 		return mainResult.withAmt(amtDetailed);
-	}
-
-	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
-	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
-
-		return utils.createCostDetailRecordNoCostsChanged(
-				request,
-				CostDetailPreviousAmounts.of(currentCost));
 	}
 
 	@Override
@@ -367,43 +368,70 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(matchInv.getInvoiceLineId());
+		final boolean isReversal = isReversal(matchInv.getInvoiceId());
 
-		final I_C_OrderLine orderLine = Optional.of(invoiceLine.getC_OrderLine())
-				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv.getId()));
+		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
+		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
+		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
+		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
-		final Quantity receiptQty = inoutBL.retrieveCompleteOrClosedLinesForOrderLine(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
-				.stream()
-				.map(line -> Quantitys.create(line.getMovementQty(), UomId.ofRepoId(line.getC_UOM_ID())))
-				.reduce(Quantity::add)
-				.orElse(Quantitys.createZero(UomId.ofRepoId(orderLine.getC_UOM_ID())));
-
-		final ProductPrice purchaseOrderPrice = orderLineBL.getCostPrice(orderLine);
-
-		final CostAmount merchandiseStock = CostAmount.ofProductPrice(purchaseOrderPrice).multiply(receiptQty.toBigDecimal()).roundToPrecisionIfNeeded(currentCost.getPrecision());
-
-		final CostAmount invoicedAmt = request.getAmt();
-
-		final boolean isReversal = invoiceBL.isReversal(invoiceBL.getById(matchInv.getInvoiceId()));
-
-		final CostAmount amtDifference = merchandiseStock.subtract(invoicedAmt.negateIf(isReversal));
-
-		final CostAmount adjustmentProportion = amtDifference.isZero() || receiptQty.isZero()
+		final CostAmount priceDifference = amtDifference.isZero() || receiptQty.isZero()
 				? CostAmount.zero(currentCost.getCurrencyId())
-				: amtDifference.divide(receiptQty.toBigDecimal(), currentCost.getPrecision())
-				.roundToPrecisionIfNeeded(currentCost.getPrecision());
+				: amtDifference.divide(receiptQty, currentCost.getPrecision());
 
-		final Quantity qtyToDistribute = currentCost.getCumulatedQty().min(receiptQty);
-
-		final CostAmount costAdjustmentAmt = adjustmentProportion.multiply(qtyToDistribute.toBigDecimal());
-
+		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
+		final CostAmount costAdjustmentAmt = priceDifference.multiply(qtyStillInStock);
 		final CostAmount alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
 
 		return CostAmountDetailed.builder()
 				.mainAmt(invoicedAmt)
-				.costAdjustmentAmt(costAdjustmentAmt.negateIf(!isReversal))
-				.alreadyShippedAmt(alreadyShippedAmt.negateIf(!isReversal))
-				.build();
+				.costAdjustmentAmt(costAdjustmentAmt)
+				.alreadyShippedAmt(alreadyShippedAmt)
+				.build()
+				.negateIf(isReversal);
+	}
+
+	private CostAmount getReceiptAmount(
+			@NonNull final MatchInv matchInv,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CostElement costElement,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
+
+		final MatchInvType type = matchInv.getType();
+		if (type.isMaterial())
+		{
+			Check.assume(costElement.isMaterialElement(), "Cost Element shall be material: {}", costElement);
+
+			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
+					.map(orderLineBL::getOrderLineById)
+					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+
+			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+		}
+		else if (type.isCost())
+		{
+			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
+			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
+
+			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
+
+			return utils.convertToAcctSchemaCurrency(
+					CostAmount.ofMoney(receiptAmount),
+					() -> currencyConversionContext,
+					acctSchemaId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
+	}
+
+	private boolean isReversal(final InvoiceId invoiceId)
+	{
+		return invoiceBL.isReversal(invoiceBL.getById(invoiceId));
 	}
 
 	@Override

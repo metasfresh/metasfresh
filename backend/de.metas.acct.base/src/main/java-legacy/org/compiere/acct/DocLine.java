@@ -29,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -990,7 +991,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @return document currency precision
 	 * @see Doc#getStdPrecision()
 	 */
-	protected final int getStdPrecision()
+	protected final CurrencyPrecision getStdPrecision()
 	{
 		return m_doc.getStdPrecision();
 	}

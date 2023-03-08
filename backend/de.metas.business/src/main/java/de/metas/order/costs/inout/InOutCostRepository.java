@@ -20,6 +20,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut_Cost;
@@ -107,7 +108,17 @@ public class InOutCostRepository
 		record.setIsInvoiced(from.isInvoiced());
 	}
 
-	public ImmutableList<InOutCost> getInOutCostsByIds(@NonNull final Set<InOutCostId> inoutCostIds)
+	public InOutCost getById(@NonNull final InOutCostId inoutCostId)
+	{
+		final I_M_InOut_Cost record = InterfaceWrapperHelper.load(inoutCostId, I_M_InOut_Cost.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No InOut cost found for " + inoutCostId);
+		}
+		return fromRecord(record);
+	}
+
+	public ImmutableList<InOutCost> getByIds(@NonNull final Set<InOutCostId> inoutCostIds)
 	{
 		if (inoutCostIds.isEmpty())
 		{

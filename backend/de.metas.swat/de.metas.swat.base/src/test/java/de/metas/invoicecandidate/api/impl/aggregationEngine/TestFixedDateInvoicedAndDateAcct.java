@@ -82,7 +82,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.build();
 
@@ -105,7 +105,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
 				.build();
@@ -136,7 +136,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 13))
 				.build();
 
@@ -167,7 +167,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		InterfaceWrapperHelper.refresh(ic1);
 
 		final AggregationEngine engine = AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.overrideDueDateParam(LocalDate.of(2023, Month.FEBRUARY, 1))
 				.build();
 

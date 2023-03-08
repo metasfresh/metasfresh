@@ -122,6 +122,22 @@ public final class Balance
 		return condition ? negateAndInvert() : this;
 	}
 
+	public Balance toSingleSide()
+	{
+		final Money min = debit.min(credit);
+		if (min.isZero())
+		{
+			return this;
+		}
+
+		return new Balance(this.debit.subtract(min), this.credit.subtract(min));
+	}
+
+	public Balance invert()
+	{
+		return new Balance(this.credit, this.debit);
+	}
+
 	//
 	//
 	//
