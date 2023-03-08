@@ -22,28 +22,26 @@
 
 package de.metas.bpartner.blockstatus.file;
 
-import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.bpartner.impexp.blockstatus.impl.IBPartnerBlockStatusDAO;
 import de.metas.process.PInstanceId;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_I_BPartner_BlockStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class BPartnerBlockFileService
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	@NonNull
 	private final BPartnerBlockFileRepository bPartnerBlockFileRepository;
 
-	public BPartnerBlockFileService(@NonNull final BPartnerBlockFileRepository bPartnerBlockFileRepository)
+	@NonNull
+	private final IBPartnerBlockStatusDAO ibPartnerBlockStatusDAO;
+
+	public BPartnerBlockFileService(
+			@NonNull final BPartnerBlockFileRepository bPartnerBlockFileRepository,
+			@NonNull final IBPartnerBlockStatusDAO ibPartnerBlockStatusDAO)
 	{
 		this.bPartnerBlockFileRepository = bPartnerBlockFileRepository;
+		this.ibPartnerBlockStatusDAO = ibPartnerBlockStatusDAO;
 	}
 
 	@NonNull
@@ -61,33 +59,16 @@ public class BPartnerBlockFileService
 	@NonNull
 	public PInstanceId getUnprocessedRowsSelectionId(@NonNull final BPartnerBlockFileId bPartnerBlockFileId)
 	{
-		return Optional.ofNullable(getUnprocessedActiveRowsQuery(bPartnerBlockFileId).createSelection())
-				.orElseThrow(() -> new AdempiereException("No unprocessed rows found for " + bPartnerBlockFileId));
+		return ibPartnerBlockStatusDAO.getUnprocessedRowsSelectionId(bPartnerBlockFileId);
 	}
 
 	public boolean isImported(@NonNull final BPartnerBlockFileId fileId)
 	{
-		return queryBL.createQueryBuilder(I_I_BPartner_BlockStatus.class)
-				.addEqualsFilter(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID, fileId)
-				.orderBy(I_I_BPartner_BlockStatus.COLUMNNAME_I_BPartner_BlockStatus_ID)
-				.create()
-				.firstId() > 0;
+		return ibPartnerBlockStatusDAO.existRowsFor(fileId);
 	}
 
 	public boolean hasUnprocessedRows(@NonNull final BPartnerBlockFileId fileId)
 	{
-		return getUnprocessedActiveRowsQuery(fileId)
-				.firstId() > 0;
-	}
-
-	@NonNull
-	private IQuery<I_I_BPartner_BlockStatus> getUnprocessedActiveRowsQuery(@NonNull final BPartnerBlockFileId fileId)
-	{
-		return queryBL.createQueryBuilder(I_I_BPartner_BlockStatus.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_I_BPartner_BlockStatus.COLUMNNAME_C_BPartner_Block_File_ID, fileId)
-				.addEqualsFilter(ImportTableDescriptor.COLUMNNAME_Processed, false)
-				.orderBy(I_I_BPartner_BlockStatus.COLUMNNAME_I_BPartner_BlockStatus_ID)
-				.create();
+		return ibPartnerBlockStatusDAO.existUnprocessedRowsFor(fileId);
 	}
 }

@@ -637,3 +637,63 @@ UPDATE AD_Tab_Trl trl SET Name='Lines' WHERE AD_Tab_ID=546844 AND AD_Language='d
 /* DDL */ select AD_Element_Link_Create_Missing_Tab(546844)
 ;
 
+-- Value: de.metas.attachments.ExpectedOneAttachmentForRecordRef
+-- 2023-03-08T05:51:46.161Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545251,0,TO_TIMESTAMP('2023-03-08 07:51:45','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Expected to find only one attachment entry for the given TableRecordReference, but multiple entries matched! TableName = {0}, RecordID = {1}','E',TO_TIMESTAMP('2023-03-08 07:51:45','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.attachments.ExpectedOneAttachmentForRecordRef')
+;
+
+-- 2023-03-08T05:51:46.174Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545251 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.attachments.ExpectedOneAttachmentForRecordRef
+-- 2023-03-08T05:51:53.115Z
+UPDATE AD_Message_Trl SET MsgText='Es wurde erwartet, nur einen Anhangseintrag für die angegebene TableRecordReference zu finden, aber es wurden mehrere Einträge gefunden! Tabellenname = {0}, DatensatzID = {1}',Updated=TO_TIMESTAMP('2023-03-08 07:51:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545251
+;
+
+-- Value: de.metas.attachments.ExpectedOneAttachmentForRecordRef
+-- 2023-03-08T05:51:58.308Z
+UPDATE AD_Message_Trl SET MsgText='Es wurde erwartet, nur einen Anhangseintrag für die angegebene TableRecordReference zu finden, aber es wurden mehrere Einträge gefunden! Tabellenname = {0}, DatensatzID = {1}',Updated=TO_TIMESTAMP('2023-03-08 07:51:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545251
+;
+
+-- 2023-03-08T05:51:58.309Z
+UPDATE AD_Message SET MsgText='Es wurde erwartet, nur einen Anhangseintrag für die angegebene TableRecordReference zu finden, aber es wurden mehrere Einträge gefunden! Tabellenname = {0}, DatensatzID = {1}' WHERE AD_Message_ID=545251
+;
+
+-- Value: de.metas.process.NoTableRecordReferenceFound
+-- 2023-03-08T05:54:41.955Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545252,0,TO_TIMESTAMP('2023-03-08 07:54:41','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Keine Tabellenreferenz gefunden! PInstanceID={0}','E',TO_TIMESTAMP('2023-03-08 07:54:41','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.process.NoTableRecordReferenceFound')
+;
+
+-- 2023-03-08T05:54:41.957Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545252 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.process.NoTableRecordReferenceFound
+-- 2023-03-08T05:54:51.122Z
+UPDATE AD_Message_Trl SET MsgText='No Table Record Reference found! PInstanceID={0}',Updated=TO_TIMESTAMP('2023-03-08 07:54:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545252
+;
+
+-- Value: de.metas.bpartner.impexp.blockstatus.impl.NoUnprocessedRowsFound
+-- 2023-03-08T06:33:28.796Z
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545253,0,TO_TIMESTAMP('2023-03-08 08:33:28','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','No unprocessed rows found for C_BPartner_Block_File_ID = {0}','E',TO_TIMESTAMP('2023-03-08 08:33:28','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.bpartner.impexp.blockstatus.impl.NoUnprocessedRowsFound')
+;
+
+-- 2023-03-08T06:33:28.801Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545253 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.bpartner.impexp.blockstatus.impl.NoUnprocessedRowsFound
+-- 2023-03-08T06:33:45.204Z
+UPDATE AD_Message_Trl SET MsgText='Keine unbearbeiteten Zeilen für C_BPartner_Block_File_ID = {0} gefunden',Updated=TO_TIMESTAMP('2023-03-08 08:33:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545253
+;
+
+-- Value: de.metas.bpartner.impexp.blockstatus.impl.NoUnprocessedRowsFound
+-- 2023-03-08T06:33:47.932Z
+UPDATE AD_Message_Trl SET MsgText='Keine unbearbeiteten Zeilen für C_BPartner_Block_File_ID = {0} gefunden',Updated=TO_TIMESTAMP('2023-03-08 08:33:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545253
+;
+
+-- 2023-03-08T06:33:47.933Z
+UPDATE AD_Message SET MsgText='Keine unbearbeiteten Zeilen für C_BPartner_Block_File_ID = {0} gefunden' WHERE AD_Message_ID=545253
+;
+

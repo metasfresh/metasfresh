@@ -7,6 +7,7 @@ import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderServic
 import de.metas.attachments.listener.TableAttachmentListenerRepository;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.attachments.migration.AttachmentMigrationService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -57,6 +58,8 @@ public class AttachmentEntryService
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
+
+	private static final AdMessageKey MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF = AdMessageKey.of("de.metas.attachments.ExpectedOneAttachmentForRecordRef");
 
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
@@ -404,10 +407,9 @@ public class AttachmentEntryService
 
 		if (attachmentEntries.size() > 1)
 		{
-			throw new AdempiereException("Expected to find only one attachment entry for the given TableRecordReference, but multiple entries matched!")
-					.appendParametersToMessage()
-					.setParameter("TableName", recordReference.getTableName())
-					.setParameter(TableRecordReference.COLUMNNAME_Record_ID, recordReference.getRecord_ID());
+			throw new AdempiereException(MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF,
+										 recordReference.getTableName(),
+										 recordReference.getRecord_ID());
 		}
 
 		return Optional.of(attachmentEntries)
