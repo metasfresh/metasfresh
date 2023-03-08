@@ -6,6 +6,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.lang.Percent;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,32 +18,33 @@ import java.util.List;
 @ToString
 public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLine>
 {
-	@NonNull private final ImmutableList<CreateMatchInvoicePlanLine> list;
+	@Getter
+	@NonNull private final ImmutableList<CreateMatchInvoicePlanLine> lines;
 
-	private CreateMatchInvoicePlan(@NonNull final List<CreateMatchInvoicePlanLine> list)
+	private CreateMatchInvoicePlan(@NonNull final List<CreateMatchInvoicePlanLine> lines)
 	{
-		if (list.isEmpty())
+		if (lines.isEmpty())
 		{
 			throw new AdempiereException("No plan lines");
 		}
 
-		this.list = ImmutableList.copyOf(list);
+		this.lines = ImmutableList.copyOf(lines);
 	}
 
-	public static CreateMatchInvoicePlan ofList(List<CreateMatchInvoicePlanLine> list)
+	public static CreateMatchInvoicePlan ofList(List<CreateMatchInvoicePlanLine> lines)
 	{
-		return new CreateMatchInvoicePlan(list);
+		return new CreateMatchInvoicePlan(lines);
 	}
 
 	public boolean isEmpty()
 	{
-		return list.isEmpty();
+		return lines.isEmpty();
 	}
 
 	@Override
 	public Iterator<CreateMatchInvoicePlanLine> iterator()
 	{
-		return list.iterator();
+		return lines.iterator();
 	}
 
 	public void setCostAmountInvoiced(@NonNull final Money invoicedAmt, @NonNull final CurrencyPrecision precision)
@@ -61,9 +63,9 @@ public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLi
 		}
 
 		Money totalInvoicedAmtDiffDistributed = Money.zero(currencyId);
-		for (int i = 0, lastIndex = list.size() - 1; i <= lastIndex; i++)
+		for (int i = 0, lastIndex = lines.size() - 1; i <= lastIndex; i++)
 		{
-			final CreateMatchInvoicePlanLine line = list.get(i);
+			final CreateMatchInvoicePlanLine line = lines.get(i);
 			final Money lineCostAmountReceived = line.getCostAmountReceived();
 			final Money lineInvoicedAmtDiff;
 			if (i != lastIndex)
@@ -84,13 +86,13 @@ public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLi
 
 	private Money getReceiptCostAmount()
 	{
-		return list.stream().map(CreateMatchInvoicePlanLine::getCostAmountReceived).reduce(Money::add)
+		return lines.stream().map(CreateMatchInvoicePlanLine::getCostAmountReceived).reduce(Money::add)
 				.orElseThrow(() -> new AdempiereException("No lines")); // shall not happen
 	}
 
 	public Money getInvoicedAmountDiff()
 	{
-		return list.stream().map(CreateMatchInvoicePlanLine::getInvoicedAmountDiff).reduce(Money::add)
+		return lines.stream().map(CreateMatchInvoicePlanLine::getInvoicedAmountDiff).reduce(Money::add)
 				.orElseThrow(() -> new AdempiereException("No lines")); // shall not happen
 	}
 
