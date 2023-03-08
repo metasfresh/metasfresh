@@ -27,6 +27,8 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceId;
+import de.metas.util.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashSet;
@@ -35,12 +37,14 @@ import java.util.Set;
 @Component
 public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
 {
+	private static final String PARAM_C_Invoice_ID = I_C_Invoice.COLUMNNAME_C_Invoice_ID;
+	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(PARAM_C_Invoice_ID);
 
 	@Override
-	public String getAppliesToTableName()
-	{
-		return I_C_Invoice.Table_Name;
-	}
+	public String getAppliesToTableName() {return I_C_Invoice.Table_Name;}
+
+	@Override
+	public Set<String> getParameters() {return PARAMETERS;}
 
 	@Override
 	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
@@ -48,12 +52,19 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
 
 		final String docStatus = optionsCtx.getDocStatus();
+		final InvoiceId invoiceId = extractInvoiceId(optionsCtx);
 
-		if(IDocument.STATUS_Completed.equals(docStatus))
+		if (IDocument.STATUS_Completed.equals(docStatus))
 		{
 			//TODO
 		}
 
 		optionsCtx.setDocActions(ImmutableSet.copyOf(docActions));
+	}
+
+	private InvoiceId extractInvoiceId(final DocActionOptionsContext optionsCtx)
+	{
+		final String invoiceIdStr = optionsCtx.getParameterValue(PARAM_C_Invoice_ID);
+		return InvoiceId.ofRepoId(NumberUtils.asInt(invoiceIdStr));
 	}
 }
