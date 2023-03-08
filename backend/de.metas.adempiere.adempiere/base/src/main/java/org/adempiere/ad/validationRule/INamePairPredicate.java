@@ -45,8 +45,6 @@ public interface INamePairPredicate
 	/**
 	 * @return a set of parameters on which this predicate depends. On evaluation time those parameters has to be in the {@link IValidationContext}
 	 */
-	default Set<String> getParameters(@Nullable String contextTableName) {return getParameters();}
+	Set<String> getParameters(@Nullable final String contextTableName);
 
-	// TODO remove this method
-	Set<String> getParameters();
 }

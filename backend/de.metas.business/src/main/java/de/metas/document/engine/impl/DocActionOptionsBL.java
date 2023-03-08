@@ -28,7 +28,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 	private final Supplier<Map<String, IDocActionOptionsCustomizer>> _docActionOptionsCustomizerByTableName = Suppliers.memoize(DocActionOptionsBL::retrieveDocActionOptionsCustomizer);
 
 	@Override
-	public Set<String> getRequiredParameters(@Nullable String contextTableName)
+	public Set<String> getRequiredParameters(@Nullable final String contextTableName)
 	{
 		return getDocActionOptionsCustomizers(contextTableName).getParameters();
 	}

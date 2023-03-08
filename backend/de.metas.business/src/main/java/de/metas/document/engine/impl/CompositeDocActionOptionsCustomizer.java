@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CompositeDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
 {
-	public static IDocActionOptionsCustomizer ofList(@NonNull List<IDocActionOptionsCustomizer> list)
+	public static IDocActionOptionsCustomizer ofList(@NonNull final List<IDocActionOptionsCustomizer> list)
 	{
 		if (list.isEmpty())
 		{
@@ -30,7 +30,6 @@ public class CompositeDocActionOptionsCustomizer implements IDocActionOptionsCus
 	}
 
 	private final ImmutableList<IDocActionOptionsCustomizer> list;
-	private final String appliesToTableName;
 	private final ImmutableSet<String> parameters;
 
 	private CompositeDocActionOptionsCustomizer(@NonNull final List<IDocActionOptionsCustomizer> list)
@@ -38,7 +37,6 @@ public class CompositeDocActionOptionsCustomizer implements IDocActionOptionsCus
 		Check.assumeNotEmpty(list, "list shall not be empty");
 
 		this.list = ImmutableList.copyOf(list);
-		this.appliesToTableName = CollectionUtils.extractSingleElement(list, IDocActionOptionsCustomizer::getAppliesToTableName);
 
 		this.parameters = list.stream()
 				.flatMap(customizer -> customizer.getParameters().stream())
@@ -46,7 +44,9 @@ public class CompositeDocActionOptionsCustomizer implements IDocActionOptionsCus
 	}
 
 	@Override
-	public String getAppliesToTableName() {return appliesToTableName;}
+	public String getAppliesToTableName() {
+		return null; // ANY
+	}
 
 	@Override
 	public void customizeValidActions(final DocActionOptionsContext optionsCtx)

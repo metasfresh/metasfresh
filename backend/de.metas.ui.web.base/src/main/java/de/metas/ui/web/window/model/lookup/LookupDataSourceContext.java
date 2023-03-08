@@ -288,7 +288,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				return TimeUtil.asDate(value);
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Cannot convert '{}' ({}) to to Date. Returning default value: {}.", value, value.getClass(), defaultValue, ex);
 			return defaultValue;
@@ -727,9 +727,17 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		@Nullable
 		private String getContextTableName()
 		{
-			collectContextValue(PARAM_ContextTableName, false);
-			final Object contextTableNameObj = valuesCollected.get(PARAM_ContextTableName.getName());
-			return contextTableNameObj != null ? contextTableNameObj.toString() : null;
+			try
+			{
+				collectContextValue(PARAM_ContextTableName, false);
+				final Object contextTableNameObj = valuesCollected.get(PARAM_ContextTableName.getName());
+				return contextTableNameObj != null ? contextTableNameObj.toString() : null;
+			}
+			catch (final IllegalStateException ise)
+			{
+				return null;
+			}
+
 		}
 	}
 }

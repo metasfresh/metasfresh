@@ -148,7 +148,7 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public Set<String> getParameters(@Nullable String contextTableName)
+	public Set<String> getParameters(@Nullable final String contextTableName)
 	{
 		final HashSet<String> parameters = new HashSet<>(PARAMETERS);
 
@@ -156,13 +156,6 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 		parameters.addAll(docActionOptionsBL.getRequiredParameters(contextTableName));
 
 		return parameters;
-	}
-
-	// TODO remove this method
-	@Override
-	public Set<String> getParameters()
-	{
-		throw new AdempiereException("shall not be called");
 	}
 
 }

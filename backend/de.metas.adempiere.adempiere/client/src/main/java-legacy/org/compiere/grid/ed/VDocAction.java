@@ -92,7 +92,7 @@ public class VDocAction extends CDialog
 			//
 			AEnv.positionCenterWindow(Env.getWindow(WindowNo), this);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			Services.get(IClientUI.class).error(WindowNo, ex);
 		}
@@ -192,7 +192,7 @@ public class VDocAction extends CDialog
 	 */
 	private void dynInit(final int Record_ID)
 	{
-		String DocStatus = (String)m_mTab.getValue("DocStatus");
+		final String DocStatus = (String)m_mTab.getValue("DocStatus");
 		String DocAction = (String)m_mTab.getValue("DocAction");
 		//
 		final boolean Processing = DisplayType.toBoolean(m_mTab.getValue("Processing"));
@@ -242,7 +242,6 @@ public class VDocAction extends CDialog
 					.processing(Processing)
 					.orderType(OrderType)
 					.soTrx(SOTrx.ofBoolean(IsSOTrx))
-					.recordId(Record_ID)
 					.build();
 			Services.get(IDocActionOptionsBL.class).updateDocActions(optionsCtx);
 			docActions = optionsCtx.getDocActions();
@@ -300,9 +299,9 @@ public class VDocAction extends CDialog
 	 * @param DocStatus current doc status
 	 * @return true if status not changed
 	 */
-	private boolean checkStatus(String TableName, int Record_ID, String DocStatus)
+	private boolean checkStatus(final String TableName, final int Record_ID, final String DocStatus)
 	{
-		String sql = "SELECT 2 FROM " + TableName
+		final String sql = "SELECT 2 FROM " + TableName
 				+ " WHERE " + TableName + "_ID=" + Record_ID
 				+ " AND DocStatus='" + DocStatus + "'";
 		final int result = DB.getSQLValue(null, sql);

@@ -53,7 +53,7 @@ public final class NamePairPredicates
 		}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<String> getParameters(@Nullable final String contextTableName)
 		{
 			return ImmutableSet.of();
 		}
@@ -91,13 +91,13 @@ public final class NamePairPredicates
 		}
 
 		@Override
-		public ImmutableSet<String> getParameters()
+		public ImmutableSet<String> getParameters(@Nullable final String contextTableName)
 		{
 			ImmutableSet<String> parameters = this._parameters;
 			if (parameters == null)
 			{
 				parameters = this._parameters = predicates.stream()
-						.flatMap(predicate -> predicate.getParameters().stream())
+						.flatMap(predicate -> predicate.getParameters(null).stream())
 						.collect(ImmutableSet.toImmutableSet());
 			}
 			return parameters;

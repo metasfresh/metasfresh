@@ -75,7 +75,7 @@ public final class DocActionOptionsContext
 		return getUserRolePermissionsKey().getClientId();
 	}
 
-	public String getParameterValue(String parameterName)
+	public String getParameterValue(final String parameterName)
 	{
 		return validationContext.get_ValueAsString(parameterName);
 	}
