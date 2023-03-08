@@ -447,7 +447,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		}
 		else if (type.isCost())
 		{
-			return matchInv.getCostPartNotNull().getCostAmount();
+			return matchInv.getCostPartNotNull().getCostAmountInvoiced();
 		}
 		else
 		{
@@ -568,7 +568,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		else if (type.isCost())
 		{
 			final MatchInvCostPart costPart = matchInv.getCostPartNotNull();
-			amtMatched = costPart.getCostAmount();
+			amtMatched = costPart.getCostAmountInvoiced();
 			costElement = services.getCostElementById(costPart.getCostElementId());
 		}
 		else

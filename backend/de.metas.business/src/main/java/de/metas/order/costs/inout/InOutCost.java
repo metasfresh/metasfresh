@@ -2,8 +2,10 @@ package de.metas.order.costs.inout;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -85,6 +87,8 @@ public class InOutCost
 
 	public InOutId getReceiptId() {return receiptAndLineId.getInOutId();}
 
+	public InOutLineId getReceiptLineId() {return receiptAndLineId.getInOutLineId();}
+
 	public void addCostAmountInvoiced(@NonNull final Money amtToAdd)
 	{
 		this.costAmountInvoiced = this.costAmountInvoiced.add(amtToAdd);
@@ -94,5 +98,22 @@ public class InOutCost
 	public Money getCostAmountToInvoice()
 	{
 		return costAmount.subtract(costAmountInvoiced);
+	}
+
+	public Money getCostAmountForQty(final Quantity qty, CurrencyPrecision precision)
+	{
+		if (qty.equalsIgnoreSource(this.qty))
+		{
+			return costAmount;
+		}
+		else if (qty.isZero())
+		{
+			return costAmount.toZero();
+		}
+		else
+		{
+			final Money price = costAmount.divide(this.qty.toBigDecimal(), CurrencyPrecision.ofInt(12));
+			return price.multiply(qty.toBigDecimal()).round(precision);
+		}
 	}
 }

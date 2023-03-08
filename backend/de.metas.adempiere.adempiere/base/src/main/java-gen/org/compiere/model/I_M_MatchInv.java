@@ -174,6 +174,27 @@ public interface I_M_MatchInv
 	String COLUMNNAME_CostAmount = "CostAmount";
 
 	/**
+	 * Set Cost Amount Invoiced.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCostAmountInvoiced (@Nullable BigDecimal CostAmountInvoiced);
+
+	/**
+	 * Get Cost Amount Invoiced.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCostAmountInvoiced();
+
+	ModelColumn<I_M_MatchInv, Object> COLUMN_CostAmountInvoiced = new ModelColumn<>(I_M_MatchInv.class, "CostAmountInvoiced", null);
+	String COLUMNNAME_CostAmountInvoiced = "CostAmountInvoiced";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

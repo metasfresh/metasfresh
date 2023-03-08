@@ -43,7 +43,7 @@ public class MatchInvoiceService
 {
 	public static MatchInvoiceService get() {return SpringContextHolder.instance.getBean(MatchInvoiceService.class);}
 
-	public static MatchInvoiceService newInstanceForJUnitTesting()
+	public static MatchInvoiceService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		return new MatchInvoiceService(new MatchInvoiceRepository(), new MatchInvListenersRegistry(Optional.empty()));
@@ -228,7 +228,10 @@ public class MatchInvoiceService
 						.type(MatchInvType.Cost)
 						.inoutCostId(inoutCostId)
 						.build());
-		return sumCostAmounts(matchInvs);
+
+		return matchInvs.stream()
+				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmountReceived())
+				.reduce(Money::add);
 	}
 
 	public Optional<Money> getCostAmountMatched(final InvoiceLineId invoiceLineId)
@@ -238,14 +241,8 @@ public class MatchInvoiceService
 				.invoiceLineId(invoiceLineId)
 				.build());
 
-		return sumCostAmounts(matchInvs);
-	}
-
-	private Optional<Money> sumCostAmounts(final List<MatchInv> matchInvs)
-	{
 		return matchInvs.stream()
-				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmount())
+				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmountInvoiced())
 				.reduce(Money::add);
 	}
-
 }

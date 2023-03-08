@@ -100,7 +100,7 @@ public class CostAmountDetailed
 				.build();
 	}
 
-	public CostAmount getAmountBeforeAdjustment() {return mainAmt.add(costAdjustmentAmt).add(alreadyShippedAmt);}
+	public CostAmount getAmountBeforeAdjustment() {return mainAmt.subtract(costAdjustmentAmt).subtract(alreadyShippedAmt);}
 }
 
 
