@@ -127,6 +127,9 @@ public class OrderService
 
 		Optional.ofNullable(asyncBatchId2OLCands.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
 				.ifPresent(noAsyncBatchOLCands -> {
+
+					// the asyncBatchId will be propagated through C_OLCand, M_ShipmentSchedule and C_Invoice_candidate.
+					// If will be used when we create workpackages (and wait for them!) that in turn create actual the actual orders, shipments and invoices
 					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
 					olCandDAO.assignAsyncBatchId(olCandIds, asyncBatchId);

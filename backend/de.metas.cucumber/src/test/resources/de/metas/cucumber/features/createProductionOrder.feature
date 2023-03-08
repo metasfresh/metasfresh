@@ -151,7 +151,7 @@ Feature: create production order
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
-    
+
     # now create the PP_Order from the candidates
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -343,7 +343,7 @@ Feature: create production order
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
-    
+
     # now create the PP_Order from the candidates
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -1859,4 +1859,3 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_3       | p_1                     | 2021-04-14  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
-    
