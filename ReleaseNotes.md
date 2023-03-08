@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14721](https://github.com/metasfresh/metasfresh/issues/14721) Partner Block and Release - TSV format 
   * [#14768](https://github.com/metasfresh/metasfresh/issues/14768) InvoiceEnqueueing considers already processed invoice candidates and is therefore slow
   * [#14686](https://github.com/metasfresh/metasfresh/issues/14686) Do not reset `BillToAddress` whenever Delivery Address changed
   * [#14714](https://github.com/metasfresh/metasfresh/issues/14714) Enable filter search on Locator when moving HU
