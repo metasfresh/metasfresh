@@ -6,25 +6,21 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.CurrencyRepository;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOutLine;
 
 import java.util.ArrayList;
@@ -35,7 +31,7 @@ public class CreateMatchInvoiceCommand
 	private final MatchInvoiceService matchInvoiceService;
 	private final IInvoiceBL invoiceBL;
 	private final IInOutBL inoutBL;
-	private final CurrencyRepository currencyRepository;
+	private final MoneyService moneyService;
 	private final CreateMatchInvoiceRequest request;
 
 	// state
@@ -47,14 +43,14 @@ public class CreateMatchInvoiceCommand
 			@NonNull final MatchInvoiceService matchInvoiceService,
 			@NonNull final IInvoiceBL invoiceBL,
 			@NonNull final IInOutBL inoutBL,
-			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final MoneyService moneyService,
 			@NonNull final CreateMatchInvoiceRequest request)
 	{
 		this.orderCostService = orderCostService;
 		this.matchInvoiceService = matchInvoiceService;
 		this.invoiceBL = invoiceBL;
 		this.inoutBL = inoutBL;
-		this.currencyRepository = currencyRepository;
+		this.moneyService = moneyService;
 
 		this.request = request;
 	}
@@ -123,7 +119,7 @@ public class CreateMatchInvoiceCommand
 		//
 		// Update CostAmountInvoiced
 		final Money invoicedAmt = getInvoiceLineOpenAmt();
-		final CurrencyPrecision precision = currencyRepository.getStdPrecision(invoicedAmt.getCurrencyId());
+		final CurrencyPrecision precision = moneyService.getStdPrecision(invoicedAmt.getCurrencyId());
 		plan.setCostAmountInvoiced(invoicedAmt, precision);
 
 		return plan;
@@ -131,18 +127,7 @@ public class CreateMatchInvoiceCommand
 
 	private Money getInvoiceLineOpenAmt()
 	{
-		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID());
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		Money openAmt = Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-
-		final Money matchedAmt = matchInvoiceService.getCostAmountMatched(InvoiceLineId.ofRepoId(invoiceId, invoiceLine.getC_InvoiceLine_ID())).orElse(null);
-		if (matchedAmt != null)
-		{
-			openAmt = openAmt.subtract(matchedAmt);
-		}
-
-		return openAmt;
+		return orderCostService.getInvoiceLineOpenAmt(getInvoiceLine());
 	}
 
 	private I_C_InvoiceLine getInvoiceLine()

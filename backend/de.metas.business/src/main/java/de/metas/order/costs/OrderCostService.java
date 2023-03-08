@@ -1,14 +1,20 @@
 package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry;
 import de.metas.invoice.matchinv.service.MatchInvoiceRepository;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.inout.InOutCostCreateCommand;
@@ -24,6 +30,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.Adempiere;
+import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -45,7 +52,7 @@ public class OrderCostService
 						new MatchInvoiceRepository(),
 						new MatchInvListenersRegistry(Optional.empty())
 				),
-				new CurrencyRepository());
+				new MoneyService(new CurrencyRepository()));
 	}
 
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -58,20 +65,20 @@ public class OrderCostService
 
 	@NonNull private final InOutCostRepository inOutCostRepository;
 	@NonNull private final MatchInvoiceService matchInvoiceService;
-	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final MoneyService moneyService;
 
 	public OrderCostService(
 			final @NonNull OrderCostRepository orderCostRepository,
 			final @NonNull OrderCostTypeRepository costTypeRepository,
 			final @NonNull InOutCostRepository inOutCostRepository,
 			final @NonNull MatchInvoiceService matchInvoiceService,
-			final @NonNull CurrencyRepository currencyRepository)
+			final @NonNull MoneyService moneyService)
 	{
 		this.orderCostRepository = orderCostRepository;
 		this.costTypeRepository = costTypeRepository;
 		this.inOutCostRepository = inOutCostRepository;
 		this.matchInvoiceService = matchInvoiceService;
-		this.currencyRepository = currencyRepository;
+		this.moneyService = moneyService;
 	}
 
 	public OrderCostType getCostTypeById(@NonNull final OrderCostTypeId id)
@@ -175,8 +182,30 @@ public class OrderCostService
 				.matchInvoiceService(matchInvoiceService)
 				.invoiceBL(invoiceBL)
 				.inoutBL(inoutBL)
-				.currencyRepository(currencyRepository)
+				.moneyService(moneyService)
 				.request(request)
 				.build();
 	}
+
+	public Money getInvoiceLineOpenAmt(InvoiceLineId invoiceLineId)
+	{
+		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(invoiceLineId);
+		return getInvoiceLineOpenAmt(invoiceLine);
+	}
+
+	public Money getInvoiceLineOpenAmt(I_C_InvoiceLine invoiceLine)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID());
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		Money openAmt = Money.of(invoiceLine.getLineNetAmt(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+
+		final Money matchedAmt = matchInvoiceService.getCostAmountMatched(InvoiceLineId.ofRepoId(invoiceId, invoiceLine.getC_InvoiceLine_ID())).orElse(null);
+		if (matchedAmt != null)
+		{
+			openAmt = openAmt.subtract(matchedAmt);
+		}
+
+		return openAmt;
+	}
+
 }

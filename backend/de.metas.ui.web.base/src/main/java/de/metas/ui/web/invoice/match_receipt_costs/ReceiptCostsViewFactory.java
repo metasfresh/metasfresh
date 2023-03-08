@@ -2,10 +2,10 @@ package de.metas.ui.web.invoice.match_receipt_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -49,18 +49,18 @@ public class ReceiptCostsViewFactory implements IViewFactory
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
-	private final ReceiptCostRowsRepository rowsRepo;
+	private final ReceiptCostsViewDataService viewDataService;
 	private DocumentFilterDescriptor _filterDescriptor; // lazy
 
 	public ReceiptCostsViewFactory(
 			final @NonNull OrderCostService orderCostService,
-			final @NonNull CurrencyRepository currencyRepository,
+			final @NonNull MoneyService moneyService,
 			final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
-		this.rowsRepo = ReceiptCostRowsRepository.builder()
+		this.viewDataService = ReceiptCostsViewDataService.builder()
 				.orderCostService(orderCostService)
-				.currencyRepository(currencyRepository)
+				.moneyService(moneyService)
 				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.build();
 	}
@@ -95,11 +95,17 @@ public class ReceiptCostsViewFactory implements IViewFactory
 
 		return ReceiptCostsView.builder()
 				.viewId(viewId)
-				.rowsData(rowsRepo.query(getEffectiveFilter(request)))
+				.rowsData(getViewData(request))
 				.filterDescriptor(getFilterDescriptor())
-				.invoiceLineId(getInvoiceLineId(request))
 				.relatedProcess(createProcessDescriptor(10, ReceiptCostsView_CreateMatchInv.class))
 				.build();
+	}
+
+	private ReceiptCostsViewData getViewData(final @NonNull CreateViewRequest request)
+	{
+		final InvoiceLineId invoiceLineId = getInvoiceLineId(request);
+		final DocumentFilter effectiveFilter = getEffectiveFilter(request);
+		return viewDataService.getData(invoiceLineId, effectiveFilter);
 	}
 
 	@NonNull
