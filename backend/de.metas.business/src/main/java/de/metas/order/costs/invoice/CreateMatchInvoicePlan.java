@@ -50,8 +50,8 @@ public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLi
 	public void setCostAmountInvoiced(@NonNull final Money invoicedAmt, @NonNull final CurrencyPrecision precision)
 	{
 		final CurrencyId currencyId = invoicedAmt.getCurrencyId();
-		final Money totalCostAmountReceived = getReceiptCostAmount();
-		final Money totalInvoicedAmtDiff = invoicedAmt.subtract(totalCostAmountReceived);
+		final Money totalCostAmountInOut = getCostAmountInOut();
+		final Money totalInvoicedAmtDiff = invoicedAmt.subtract(totalCostAmountInOut);
 		if (totalInvoicedAmtDiff.isZero())
 		{
 			return;
@@ -66,11 +66,11 @@ public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLi
 		for (int i = 0, lastIndex = lines.size() - 1; i <= lastIndex; i++)
 		{
 			final CreateMatchInvoicePlanLine line = lines.get(i);
-			final Money lineCostAmountReceived = line.getCostAmountReceived();
+			final Money lineCostAmountInOut = line.getCostAmountInOut();
 			final Money lineInvoicedAmtDiff;
 			if (i != lastIndex)
 			{
-				final Percent percentage = lineCostAmountReceived.percentageOf(totalCostAmountReceived);
+				final Percent percentage = lineCostAmountInOut.percentageOf(totalCostAmountInOut);
 				lineInvoicedAmtDiff = totalInvoicedAmtDiff.multiply(percentage, precision);
 			}
 			else
@@ -78,15 +78,15 @@ public class CreateMatchInvoicePlan implements Iterable<CreateMatchInvoicePlanLi
 				lineInvoicedAmtDiff = totalInvoicedAmtDiff.subtract(totalInvoicedAmtDiffDistributed);
 			}
 
-			line.setCostAmountInvoiced(lineCostAmountReceived.add(lineInvoicedAmtDiff));
+			line.setCostAmountInvoiced(lineCostAmountInOut.add(lineInvoicedAmtDiff));
 
 			totalInvoicedAmtDiffDistributed = totalInvoicedAmtDiffDistributed.add(lineInvoicedAmtDiff);
 		}
 	}
 
-	private Money getReceiptCostAmount()
+	private Money getCostAmountInOut()
 	{
-		return lines.stream().map(CreateMatchInvoicePlanLine::getCostAmountReceived).reduce(Money::add)
+		return lines.stream().map(CreateMatchInvoicePlanLine::getCostAmountInOut).reduce(Money::add)
 				.orElseThrow(() -> new AdempiereException("No lines")); // shall not happen
 	}
 

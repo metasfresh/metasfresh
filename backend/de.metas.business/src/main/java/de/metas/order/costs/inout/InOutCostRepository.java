@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -46,8 +47,9 @@ public class InOutCostRepository
 		record.setC_Order_Cost_Detail_ID(request.getOrderCostDetailId().getRepoId());
 		record.setC_Order_ID(request.getOrderAndLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(request.getOrderAndLineId().getOrderLineRepoId());
-		record.setM_InOut_ID(request.getReceiptAndLineId().getInOutId().getRepoId());
-		record.setM_InOutLine_ID(request.getReceiptAndLineId().getInOutLineId().getRepoId());
+		record.setIsSOTrx(request.getSoTrx().toBoolean());
+		record.setM_InOut_ID(request.getInoutAndLineId().getInOutId().getRepoId());
+		record.setM_InOutLine_ID(request.getInoutAndLineId().getInOutLineId().getRepoId());
 
 		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 		record.setC_Cost_Type_ID(request.getCostTypeId().getRepoId());
@@ -90,7 +92,8 @@ public class InOutCostRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.orderCostDetailId(OrderCostDetailId.ofRepoId(record.getC_Order_Cost_ID(), record.getC_Order_Cost_Detail_ID()))
 				.orderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
-				.receiptAndLineId(InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.inoutAndLineId(InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
@@ -133,10 +136,10 @@ public class InOutCostRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<InOutCost> getByReceiptId(@NonNull final InOutId receiptId)
+	public ImmutableList<InOutCost> getByInOutId(@NonNull final InOutId inoutId)
 	{
 		return queryBL.createQueryBuilder(I_M_InOut_Cost.class)
-				.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_M_InOut_ID, receiptId)
+				.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_M_InOut_ID, inoutId)
 				.orderBy(I_M_InOut_Cost.COLUMNNAME_M_InOut_Cost_ID)
 				.stream()
 				.map(InOutCostRepository::fromRecord)
@@ -157,6 +160,10 @@ public class InOutCostRepository
 		if (query.getBpartnerId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		}
+		if (query.getSoTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
 		}
 		if (query.getOrderId() != null)
 		{

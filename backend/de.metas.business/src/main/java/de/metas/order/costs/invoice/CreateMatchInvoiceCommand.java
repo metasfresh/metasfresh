@@ -68,9 +68,9 @@ public class CreateMatchInvoiceCommand
 		{
 			matchInvoiceService.newMatchInvBuilder(MatchInvType.Cost)
 					.invoiceLine(getInvoiceLine())
-					.inoutLine(candidate.getReceiptLine())
-					.inoutCost(candidate.getReceiptCost())
-					.qtyToMatchExact(candidate.getReceiptQty())
+					.inoutLine(candidate.getInoutLine())
+					.inoutCost(candidate.getInoutCost())
+					.qtyToMatchExact(candidate.getQty())
 					.build();
 		}
 
@@ -85,7 +85,7 @@ public class CreateMatchInvoiceCommand
 			throw new AdempiereException("No inout costs found");
 		}
 
-		final ImmutableSet<InOutLineId> inoutLineIds = inoutCosts.stream().map(InOutCost::getReceiptLineId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<InOutLineId> inoutLineIds = inoutCosts.stream().map(InOutCost::getInOutLineId).collect(ImmutableSet.toImmutableSet());
 		final ImmutableMap<InOutAndLineId, I_M_InOutLine> inoutLines = Maps.uniqueIndex(
 				inoutBL.getLinesByIds(inoutLineIds),
 				inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID())
@@ -96,22 +96,22 @@ public class CreateMatchInvoiceCommand
 		final ArrayList<CreateMatchInvoicePlanLine> candidates = new ArrayList<>();
 		for (final InOutCost inoutCost : inoutCosts)
 		{
-			final InOutAndLineId receiptAndLineId = inoutCost.getReceiptAndLineId();
-			final I_M_InOutLine receiptLine = inoutLines.get(receiptAndLineId);
-			final StockQtyAndUOMQty receiptQty = inoutBL.getStockQtyAndQtyInUOM(receiptLine);
-			final Money receiptLineAmt = getCostAmountOpen(inoutCost);
+			final InOutAndLineId inoutAndLineId = inoutCost.getInoutAndLineId();
+			final I_M_InOutLine inoutLine = inoutLines.get(inoutAndLineId);
+			final StockQtyAndUOMQty qty = inoutBL.getStockQtyAndQtyInUOM(inoutLine);
+			final Money costAmountInOut = getCostAmountOpen(inoutCost);
 
 			candidates.add(
 					CreateMatchInvoicePlanLine.builder()
-							.receiptLine(receiptLine)
-							.receiptCost(MatchInvCostPart.builder()
+							.inoutLine(inoutLine)
+							.inoutCost(MatchInvCostPart.builder()
 									.inoutCostId(inoutCost.getId())
 									.costTypeId(inoutCost.getCostTypeId())
 									.costElementId(inoutCost.getCostElementId())
-									.costAmountReceived(receiptLineAmt)
-									.costAmountInvoiced(receiptLineAmt) // will be updated below
+									.costAmountInOut(costAmountInOut)
+									.costAmountInvoiced(costAmountInOut) // will be updated below
 									.build())
-							.receiptQty(receiptQty)
+							.qty(qty)
 							.build());
 		}
 		final CreateMatchInvoicePlan plan = CreateMatchInvoicePlan.ofList(candidates);

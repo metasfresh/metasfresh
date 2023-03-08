@@ -356,6 +356,29 @@ public interface I_M_InOut_Cost
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_M_InOut_Cost, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_M_InOut_Cost.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
 	 * Set Cost Element.
 	 * Product Cost Element
 	 *

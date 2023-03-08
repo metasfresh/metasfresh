@@ -93,7 +93,7 @@ public class MatchInvoiceRepository
 				.inoutCostId(InOutCostId.ofRepoId(record.getM_InOut_Cost_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
-				.costAmountReceived(Money.of(record.getCostAmount(), currencyId))
+				.costAmountInOut(Money.of(record.getCostAmount(), currencyId))
 				.costAmountInvoiced(Money.of(record.getCostAmountInvoiced(), currencyId))
 				.build();
 	}
@@ -104,7 +104,7 @@ public class MatchInvoiceRepository
 		record.setC_Cost_Type_ID(from.getCostTypeId().getRepoId());
 		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
 		record.setC_Currency_ID(from.getCurrencyId().getRepoId());
-		record.setCostAmount(from.getCostAmountReceived().toBigDecimal());
+		record.setCostAmount(from.getCostAmountInOut().toBigDecimal());
 		record.setCostAmountInvoiced(from.getCostAmountInvoiced().toBigDecimal());
 	}
 

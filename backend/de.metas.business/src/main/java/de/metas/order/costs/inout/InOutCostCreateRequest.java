@@ -3,6 +3,7 @@ package de.metas.order.costs.inout;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.costs.OrderCostDetailId;
@@ -23,7 +24,8 @@ public class InOutCostCreateRequest
 	@NonNull OrgId orgId;
 	@NonNull OrderCostDetailId orderCostDetailId;
 	@NonNull OrderAndLineId orderAndLineId;
-	@NonNull InOutAndLineId receiptAndLineId;
+	@NonNull SOTrx soTrx;
+	@NonNull InOutAndLineId inoutAndLineId;
 
 	@Nullable BPartnerId bpartnerId;
 	@NonNull OrderCostTypeId costTypeId;

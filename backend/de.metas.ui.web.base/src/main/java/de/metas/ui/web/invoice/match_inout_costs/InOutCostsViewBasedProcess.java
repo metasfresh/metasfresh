@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.order.costs.OrderCostService;
@@ -8,7 +8,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import org.compiere.SpringContextHolder;
 
-public abstract class ReceiptCostsViewBasedProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
+public abstract class InOutCostsViewBasedProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	protected final OrderCostService orderCostService = SpringContextHolder.instance.getBean(OrderCostService.class);
 
@@ -16,12 +16,12 @@ public abstract class ReceiptCostsViewBasedProcess extends ViewBasedProcessTempl
 	protected abstract ProcessPreconditionsResolution checkPreconditionsApplicable();
 
 	@Override
-	protected final ReceiptCostsView getView()
+	protected final InOutCostsView getView()
 	{
-		return (ReceiptCostsView)super.getView();
+		return (InOutCostsView)super.getView();
 	}
 
-	protected final ImmutableList<ReceiptCostRow> getSelectedRows()
+	protected final ImmutableList<InOutCostRow> getSelectedRows()
 	{
 		final DocumentIdsSelection rowIds = getSelectedRowIds();
 		return getView().streamByIds(rowIds).collect(ImmutableList.toImmutableList());

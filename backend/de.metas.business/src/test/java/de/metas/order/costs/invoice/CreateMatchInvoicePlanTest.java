@@ -47,15 +47,15 @@ class CreateMatchInvoicePlanTest
 			@NonNull String costAmount)
 	{
 		return CreateMatchInvoicePlanLine.builder()
-				.receiptLine(InterfaceWrapperHelper.newInstance(I_M_InOutLine.class)) // dummy
-				.receiptCost(MatchInvCostPart.builder()
+				.inoutLine(InterfaceWrapperHelper.newInstance(I_M_InOutLine.class)) // dummy
+				.inoutCost(MatchInvCostPart.builder()
 						.inoutCostId(InOutCostId.ofRepoId(1))
 						.costTypeId(OrderCostTypeId.ofRepoId(2))
 						.costElementId(CostElementId.ofRepoId(3))
-						.costAmountReceived(euro(costAmount))
+						.costAmountInOut(euro(costAmount))
 						.costAmountInvoiced(euro(costAmount))
 						.build())
-				.receiptQty(StockQtyAndUOMQtys.ofQtyInStockUOM(BigDecimal.ONE, productId))
+				.qty(StockQtyAndUOMQtys.ofQtyInStockUOM(BigDecimal.ONE, productId))
 				.build();
 	}
 

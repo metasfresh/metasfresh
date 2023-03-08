@@ -1,7 +1,8 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.lang.SOTrx;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
@@ -19,28 +20,39 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class ReceiptCostsViewData implements IRowsData<ReceiptCostRow>
+public class InOutCostsViewData implements IRowsData<InOutCostRow>
 {
-	@NonNull private final ReceiptCostsViewDataService viewDataService;
-	@Getter @Nullable private final DocumentFilter filter;
-	@NonNull private final SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder = SynchronizedMutable.empty();
-	@NonNull private final SynchronizedRowsIndexHolder<ReceiptCostRow> rowsHolder;
+	//
+	// services
+	@NonNull private final InOutCostsViewDataService viewDataService;
+
+	//
+	// parameters
+	@Getter @NonNull final SOTrx soTrx;
 	@Getter @NonNull private final InvoiceLineId invoiceLineId;
+	@Getter @Nullable private final DocumentFilter filter;
+
+	//
+	// state
+	@NonNull private final SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder = SynchronizedMutable.empty();
+	@NonNull private final SynchronizedRowsIndexHolder<InOutCostRow> rowsHolder;
 
 	@Builder
-	private ReceiptCostsViewData(
-			@NonNull final ReceiptCostsViewDataService viewDataService,
+	private InOutCostsViewData(
+			@NonNull final InOutCostsViewDataService viewDataService,
+			@NonNull final SOTrx soTrx,
 			@NonNull final InvoiceLineId invoiceLineId,
 			@Nullable final DocumentFilter filter)
 	{
 		this.viewDataService = viewDataService;
 		this.invoiceLineId = invoiceLineId;
 		this.filter = filter;
-		this.rowsHolder = SynchronizedRowsIndexHolder.of(viewDataService.retrieveRows(filter));
+		this.soTrx = soTrx;
+		this.rowsHolder = SynchronizedRowsIndexHolder.of(viewDataService.retrieveRows(soTrx, filter));
 	}
 
 	@Override
-	public Map<DocumentId, ReceiptCostRow> getDocumentId2TopLevelRows()
+	public Map<DocumentId, InOutCostRow> getDocumentId2TopLevelRows()
 	{
 		return rowsHolder.getDocumentId2TopLevelRows();
 	}
@@ -55,7 +67,7 @@ public class ReceiptCostsViewData implements IRowsData<ReceiptCostRow>
 	public void invalidateAll()
 	{
 		headerPropertiesHolder.setValue(null);
-		rowsHolder.setRows(viewDataService.retrieveRows(filter));
+		rowsHolder.setRows(viewDataService.retrieveRows(soTrx, filter));
 	}
 
 	public ViewHeaderProperties getHeaderProperties()

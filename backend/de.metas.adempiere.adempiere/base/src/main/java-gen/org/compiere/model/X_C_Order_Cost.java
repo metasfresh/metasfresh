@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -933044574L;
+	private static final long serialVersionUID = -1853395786L;
 
     /** Standard Constructor */
     public X_C_Order_Cost (final Properties ctx, final int C_Order_Cost_ID, @Nullable final String trxName)
@@ -213,6 +213,18 @@ public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_C
 	public java.lang.String getCostDistributionMethod() 
 	{
 		return get_ValueAsString(COLUMNNAME_CostDistributionMethod);
+	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override

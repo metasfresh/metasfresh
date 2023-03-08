@@ -23,15 +23,15 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void onBeforeComplete(final I_M_InOut inout)
 	{
-		final InOutId receiptId = InOutId.ofRepoId(inout.getM_InOut_ID());
+		final InOutId inoutId = InOutId.ofRepoId(inout.getM_InOut_ID());
 		final InOutId initialReversalId = InOutId.ofRepoIdOrNull(inout.getReversal_ID());
 		if (initialReversalId == null)
 		{
-			orderCostService.receiveCosts(receiptId);
+			orderCostService.createInOutCosts(inoutId);
 		}
 		else
 		{
-			orderCostService.reverseInOutCosts(receiptId, initialReversalId);
+			orderCostService.reverseInOutCosts(inoutId, initialReversalId);
 		}
 	}
 

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -116,6 +117,7 @@ public class OrderCostRepository
 		return OrderCost.builder()
 				.id(orderCostId)
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
@@ -143,8 +145,8 @@ public class OrderCostRepository
 				.qtyOrdered(Quantitys.create(record.getQtyOrdered(), uomId))
 				.orderLineNetAmt(Money.of(record.getLineNetAmt(), currencyId))
 				.costAmount(Money.of(record.getCostAmount(), currencyId))
-				.qtyReceived(Quantitys.create(record.getQtyReceived(), uomId))
-				.costAmountReceived(Money.of(record.getCostAmountReceived(), currencyId))
+				.inoutQty(Quantitys.create(record.getQtyReceived(), uomId))
+				.inoutCostAmount(Money.of(record.getCostAmountReceived(), currencyId))
 				.build();
 	}
 
@@ -199,6 +201,7 @@ public class OrderCostRepository
 	{
 		record.setIsActive(true);
 		record.setC_Order_ID(from.getOrderId().getRepoId());
+		record.setIsSOTrx(from.getSoTrx().toBoolean());
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
 		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
@@ -241,8 +244,8 @@ public class OrderCostRepository
 		record.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		record.setLineNetAmt(from.getOrderLineNetAmt().toBigDecimal());
 		record.setCostAmount(from.getCostAmount().toBigDecimal());
-		record.setQtyReceived(from.getQtyReceived().toBigDecimal());
-		record.setCostAmountReceived(from.getCostAmountReceived().toBigDecimal());
+		record.setQtyReceived(from.getInoutQty().toBigDecimal());
+		record.setCostAmountReceived(from.getInoutCostAmount().toBigDecimal());
 	}
 
 	public void deleteDetails(@NonNull final OrderCostId orderCostId)
