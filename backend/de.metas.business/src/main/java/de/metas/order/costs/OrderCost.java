@@ -14,6 +14,7 @@ import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethod
 import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
@@ -27,6 +28,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -100,10 +102,11 @@ public class OrderCost
 	}
 
 	public void updateCostAmount(
-			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		this.costAmount = computeCostAmount(currencyPrecisionProvider);
-		distributeCostAmountToDetails(currencyPrecisionProvider);
+		distributeCostAmountToDetails(currencyPrecisionProvider, uomConverter);
 	}
 
 	private Money computeCostAmount(
@@ -132,12 +135,21 @@ public class OrderCost
 	}
 
 	private void distributeCostAmountToDetails(
-			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		distributionMethod.apply(new CostDistributionMethod.CaseConsumer()
 		{
 			@Override
-			public void amount()
+			public void amount() {distributeCostAmountToDetails_AmountBased(currencyPrecisionProvider);}
+
+			@Override
+			public void quantity() {distributeCostAmountToDetails_QuantityBased(currencyPrecisionProvider, uomConverter);}
+		});
+	}
+
+	private void distributeCostAmountToDetails_AmountBased(
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
 			{
 				final Money amtToDistribute = getCostAmount();
 
@@ -152,7 +164,7 @@ public class OrderCost
 					final Money lineCostAmount;
 					if (i < lastIndex)
 					{
-						final Percent percent = Percent.of(detail.getOrderLineNetAmt().toBigDecimal(), totalOrderNetAmount.toBigDecimal());
+						final Percent percent = detail.getOrderLineNetAmt().percentageOf(totalOrderNetAmount);
 						lineCostAmount = amtToDistribute.multiply(percent, precision);
 					}
 					else
@@ -166,12 +178,52 @@ public class OrderCost
 				}
 			}
 
-			@Override
-			public void quantity()
+	private void distributeCostAmountToDetails_QuantityBased(
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		//
+		Quantity totalQty = null;
+		final ArrayList<Quantity> detailQtys = new ArrayList<>(details.size());
+		for (final OrderCostDetail detail : details)
+		{
+			final Quantity qty = detail.getQtyOrdered();
+			if (totalQty == null)
 			{
-				throw new AdempiereException("Quantity based distribution is not supported"); // TODO
+				totalQty = qty;
+				detailQtys.add(qty);
 			}
-		});
+			else
+			{
+				final Quantity qtyConv = uomConverter.convertQuantityTo(qty, detail.getProductId(), totalQty.getUomId());
+				totalQty = totalQty.add(qtyConv);
+				detailQtys.add(qtyConv);
+			}
+		}
+
+		//
+		final Money amtToDistribute = getCostAmount();
+		final CurrencyId currencyId = amtToDistribute.getCurrencyId();
+		final CurrencyPrecision precision = currencyPrecisionProvider.apply(currencyId);
+		Money distributedAmt = Money.zero(currencyId);
+		for (int i = 0, lastIndex = details.size() - 1; i <= lastIndex; i++)
+		{
+			final OrderCostDetail detail = details.get(i);
+			final Money lineCostAmount;
+			if (i < lastIndex)
+			{
+				final Percent percent = detailQtys.get(i).percentageOf(totalQty);
+				lineCostAmount = amtToDistribute.multiply(percent, precision);
+			}
+			else
+			{
+				lineCostAmount = amtToDistribute.subtract(distributedAmt);
+			}
+
+			detail.setCostAmount(lineCostAmount);
+
+			distributedAmt = distributedAmt.add(lineCostAmount);
+		}
 	}
 
 	public OrderCostAddReceiptResult addMaterialReceipt(@NonNull OrderCostAddReceiptRequest request)

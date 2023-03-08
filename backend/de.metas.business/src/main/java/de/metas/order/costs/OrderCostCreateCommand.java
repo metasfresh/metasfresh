@@ -9,6 +9,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -22,6 +23,7 @@ class OrderCostCreateCommand
 {
 	@NonNull private final IOrderBL orderBL;
 	@NonNull private final ICurrencyBL currencyBL;
+	@NonNull private final QuantityUOMConverter uomConverter;
 	@NonNull private final OrderCostRepository orderCostRepository;
 	@NonNull private final OrderCostTypeRepository costTypeRepository;
 	@NonNull private final OrderCostCreateRequest request;
@@ -30,6 +32,7 @@ class OrderCostCreateCommand
 	private OrderCostCreateCommand(
 			final @NonNull IOrderBL orderBL,
 			final @NonNull ICurrencyBL currencyBL,
+			final @NonNull QuantityUOMConverter uomConverter,
 			final @NonNull OrderCostRepository orderCostRepository,
 			final @NonNull OrderCostTypeRepository costTypeRepository,
 			//
@@ -37,6 +40,7 @@ class OrderCostCreateCommand
 	{
 		this.orderBL = orderBL;
 		this.currencyBL = currencyBL;
+		this.uomConverter = uomConverter;
 		this.orderCostRepository = orderCostRepository;
 		this.costTypeRepository = costTypeRepository;
 
@@ -64,7 +68,7 @@ class OrderCostCreateCommand
 				.details(details)
 				.build();
 
-		orderCost.updateCostAmount(currencyBL::getStdPrecision);
+		orderCost.updateCostAmount(currencyBL::getStdPrecision, uomConverter);
 
 		orderCostRepository.save(orderCost);
 
