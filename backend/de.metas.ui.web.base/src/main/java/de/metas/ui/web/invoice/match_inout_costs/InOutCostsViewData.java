@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceLineId;
@@ -19,17 +19,17 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class ReceiptCostsViewData implements IRowsData<ReceiptCostRow>
+public class InOutCostsViewData implements IRowsData<InOutCostRow>
 {
-	@NonNull private final ReceiptCostsViewDataService viewDataService;
+	@NonNull private final InOutCostsViewDataService viewDataService;
 	@Getter @Nullable private final DocumentFilter filter;
 	@NonNull private final SynchronizedMutable<ViewHeaderProperties> headerPropertiesHolder = SynchronizedMutable.empty();
-	@NonNull private final SynchronizedRowsIndexHolder<ReceiptCostRow> rowsHolder;
+	@NonNull private final SynchronizedRowsIndexHolder<InOutCostRow> rowsHolder;
 	@Getter @NonNull private final InvoiceLineId invoiceLineId;
 
 	@Builder
-	private ReceiptCostsViewData(
-			@NonNull final ReceiptCostsViewDataService viewDataService,
+	private InOutCostsViewData(
+			@NonNull final InOutCostsViewDataService viewDataService,
 			@NonNull final InvoiceLineId invoiceLineId,
 			@Nullable final DocumentFilter filter)
 	{
@@ -40,7 +40,7 @@ public class ReceiptCostsViewData implements IRowsData<ReceiptCostRow>
 	}
 
 	@Override
-	public Map<DocumentId, ReceiptCostRow> getDocumentId2TopLevelRows()
+	public Map<DocumentId, InOutCostRow> getDocumentId2TopLevelRows()
 	{
 		return rowsHolder.getDocumentId2TopLevelRows();
 	}

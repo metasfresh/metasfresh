@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
@@ -20,7 +20,7 @@ import org.compiere.model.I_C_Order;
 import javax.annotation.Nullable;
 
 @UtilityClass
-class ReceiptCostsViewFilterHelper
+class InOutCostsViewFilterHelper
 {
 	public static final String FILTER_ID = "default";
 

@@ -143,8 +143,8 @@ public class OrderCostRepository
 				.qtyOrdered(Quantitys.create(record.getQtyOrdered(), uomId))
 				.orderLineNetAmt(Money.of(record.getLineNetAmt(), currencyId))
 				.costAmount(Money.of(record.getCostAmount(), currencyId))
-				.qtyReceived(Quantitys.create(record.getQtyReceived(), uomId))
-				.costAmountReceived(Money.of(record.getCostAmountReceived(), currencyId))
+				.inoutQty(Quantitys.create(record.getQtyReceived(), uomId))
+				.inoutCostAmount(Money.of(record.getCostAmountReceived(), currencyId))
 				.build();
 	}
 
@@ -241,8 +241,8 @@ public class OrderCostRepository
 		record.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		record.setLineNetAmt(from.getOrderLineNetAmt().toBigDecimal());
 		record.setCostAmount(from.getCostAmount().toBigDecimal());
-		record.setQtyReceived(from.getQtyReceived().toBigDecimal());
-		record.setCostAmountReceived(from.getCostAmountReceived().toBigDecimal());
+		record.setQtyReceived(from.getInoutQty().toBigDecimal());
+		record.setCostAmountReceived(from.getInoutCostAmount().toBigDecimal());
 	}
 
 	public void deleteDetails(@NonNull final OrderCostId orderCostId)

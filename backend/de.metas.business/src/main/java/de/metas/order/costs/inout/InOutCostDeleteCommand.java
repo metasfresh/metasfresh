@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.inout.InOutId;
 import de.metas.order.costs.OrderCost;
-import de.metas.order.costs.OrderCostAddReceiptRequest;
+import de.metas.order.costs.OrderCostAddInOutRequest;
 import de.metas.order.costs.OrderCostId;
 import de.metas.order.costs.OrderCostRepository;
 import lombok.Builder;
@@ -17,24 +17,24 @@ public class InOutCostDeleteCommand
 	@NonNull private final OrderCostRepository orderCostRepository;
 	@NonNull private final InOutCostRepository inOutCostRepository;
 
-	@NonNull private final InOutId receiptId;
+	@NonNull private final InOutId inoutId;
 
 	@Builder
 	private InOutCostDeleteCommand(
 			final @NonNull OrderCostRepository orderCostRepository,
 			final @NonNull InOutCostRepository inOutCostRepository,
 			//
-			final @NonNull InOutId receiptId)
+			final @NonNull InOutId inoutId)
 	{
 		this.orderCostRepository = orderCostRepository;
 		this.inOutCostRepository = inOutCostRepository;
 
-		this.receiptId = receiptId;
+		this.inoutId = inoutId;
 	}
 
 	public void execute()
 	{
-		final ImmutableList<InOutCost> inoutCosts = inOutCostRepository.getByReceiptId(receiptId);
+		final ImmutableList<InOutCost> inoutCosts = inOutCostRepository.getByInOutId(inoutId);
 		if (inoutCosts.isEmpty())
 		{
 			return;
@@ -46,8 +46,8 @@ public class InOutCostDeleteCommand
 		for (final InOutCost inoutCost : inoutCosts)
 		{
 			final OrderCost orderCost = orderCostsById.get(inoutCost.getOrderCostId());
-			orderCost.addMaterialReceipt(
-					OrderCostAddReceiptRequest.builder()
+			orderCost.addInOutCost(
+					OrderCostAddInOutRequest.builder()
 							.orderLineId(inoutCost.getOrderLineId())
 							.qty(inoutCost.getQty().negate())
 							.costAmount(inoutCost.getCostAmount().negate())

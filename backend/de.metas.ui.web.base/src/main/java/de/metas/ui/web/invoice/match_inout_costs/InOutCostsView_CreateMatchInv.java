@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -14,7 +14,7 @@ import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 
-public class ReceiptCostsView_CreateMatchInv extends ReceiptCostsViewBasedProcess
+public class InOutCostsView_CreateMatchInv extends InOutCostsViewBasedProcess
 {
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
@@ -75,7 +75,7 @@ public class ReceiptCostsView_CreateMatchInv extends ReceiptCostsViewBasedProces
 
 	private ImmutableSet<InOutCostId> getSelectedInOutCostIds()
 	{
-		final ImmutableList<ReceiptCostRow> rows = getSelectedRows();
-		return rows.stream().map(ReceiptCostRow::getInoutCostId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableList<InOutCostRow> rows = getSelectedRows();
+		return rows.stream().map(InOutCostRow::getInoutCostId).collect(ImmutableSet.toImmutableSet());
 	}
 }

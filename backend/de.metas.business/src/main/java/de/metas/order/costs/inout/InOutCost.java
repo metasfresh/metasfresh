@@ -35,7 +35,7 @@ public class InOutCost
 	@NonNull private final OrgId orgId;
 	@NonNull private final OrderCostDetailId orderCostDetailId;
 	@NonNull private final OrderAndLineId orderAndLineId;
-	@NonNull private final InOutAndLineId receiptAndLineId;
+	@NonNull private final InOutAndLineId inoutAndLineId;
 
 	@Nullable private final BPartnerId bpartnerId;
 	@NonNull private final OrderCostTypeId costTypeId;
@@ -53,7 +53,7 @@ public class InOutCost
 			@NonNull final OrgId orgId,
 			@NonNull final OrderCostDetailId orderCostDetailId,
 			@NonNull final OrderAndLineId orderAndLineId,
-			@NonNull final InOutAndLineId receiptAndLineId,
+			@NonNull final InOutAndLineId inoutAndLineId,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final OrderCostTypeId costTypeId,
 			@NonNull final CostElementId costElementId,
@@ -69,7 +69,7 @@ public class InOutCost
 		this.orgId = orgId;
 		this.orderCostDetailId = orderCostDetailId;
 		this.orderAndLineId = orderAndLineId;
-		this.receiptAndLineId = receiptAndLineId;
+		this.inoutAndLineId = inoutAndLineId;
 		this.bpartnerId = bpartnerId;
 		this.costTypeId = costTypeId;
 		this.costElementId = costElementId;
@@ -85,9 +85,9 @@ public class InOutCost
 
 	public OrderLineId getOrderLineId() {return orderAndLineId.getOrderLineId();}
 
-	public InOutId getReceiptId() {return receiptAndLineId.getInOutId();}
+	public InOutId getInOutId() {return inoutAndLineId.getInOutId();}
 
-	public InOutLineId getReceiptLineId() {return receiptAndLineId.getInOutLineId();}
+	public InOutLineId getInOutLineId() {return inoutAndLineId.getInOutLineId();}
 
 	public void addCostAmountInvoiced(@NonNull final Money amtToAdd)
 	{

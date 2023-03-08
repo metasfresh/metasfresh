@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.money.Money;
@@ -10,7 +10,7 @@ import lombok.NonNull;
 
 import java.util.List;
 
-class ReceiptCostRowsLoader
+class InOutCostRowsLoader
 {
 	@NonNull private final MoneyService moneyService;
 	@NonNull final LookupDataSource bpartnerLookup;
@@ -19,7 +19,7 @@ class ReceiptCostRowsLoader
 	@NonNull final LookupDataSource costTypeLookup;
 
 	@Builder
-	private ReceiptCostRowsLoader(
+	private InOutCostRowsLoader(
 			final @NonNull MoneyService moneyService,
 			final @NonNull LookupDataSource bpartnerLookup,
 			final @NonNull LookupDataSource orderLookup,
@@ -33,7 +33,7 @@ class ReceiptCostRowsLoader
 		this.costTypeLookup = costTypeLookup;
 	}
 
-	public ImmutableList<ReceiptCostRow> loadRows(final List<InOutCost> inoutCostsList)
+	public ImmutableList<InOutCostRow> loadRows(final List<InOutCost> inoutCostsList)
 	{
 		if (inoutCostsList.isEmpty())
 		{
@@ -41,19 +41,19 @@ class ReceiptCostRowsLoader
 		}
 
 		return inoutCostsList.stream()
-				.map(this::toReceiptCostRow)
+				.map(this::toRow)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ReceiptCostRow toReceiptCostRow(final InOutCost inoutCost)
+	private InOutCostRow toRow(final InOutCost inoutCost)
 	{
 		final Money costAmountToInvoice = inoutCost.getCostAmountToInvoice();
 
-		return ReceiptCostRow.builder()
+		return InOutCostRow.builder()
 				.inoutCostId(inoutCost.getId())
 				.bpartner(bpartnerLookup.findById(inoutCost.getBpartnerId()))
 				.purchaseOrder(orderLookup.findById(inoutCost.getOrderId()))
-				.receipt(inoutLookup.findById(inoutCost.getReceiptId()))
+				.inout(inoutLookup.findById(inoutCost.getInOutId()))
 				.costType(costTypeLookup.findById(inoutCost.getCostTypeId()))
 				.currency(moneyService.getCurrencyCodeByCurrencyId(costAmountToInvoice.getCurrencyId()).toThreeLetterCode())
 				.costAmountToInvoice(costAmountToInvoice.toBigDecimal())

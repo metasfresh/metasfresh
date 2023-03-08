@@ -18,7 +18,7 @@ public class MatchInvCostPart
 	@NonNull InOutCostId inoutCostId;
 	@NonNull OrderCostTypeId costTypeId;
 	@NonNull CostElementId costElementId;
-	@NonNull Money costAmountReceived;
+	@NonNull Money costAmountInOut;
 	@With @NonNull Money costAmountInvoiced;
 
 	@Builder
@@ -26,21 +26,21 @@ public class MatchInvCostPart
 			@NonNull final InOutCostId inoutCostId,
 			@NonNull final OrderCostTypeId costTypeId,
 			@NonNull final CostElementId costElementId,
-			@NonNull final Money costAmountReceived,
+			@NonNull final Money costAmountInOut,
 			@Nullable final Money costAmountInvoiced)
 	{
-		Money.assertSameCurrency(costAmountReceived, costAmountInvoiced);
+		Money.assertSameCurrency(costAmountInOut, costAmountInvoiced);
 		this.inoutCostId = inoutCostId;
 		this.costTypeId = costTypeId;
 		this.costElementId = costElementId;
-		this.costAmountReceived = costAmountReceived;
-		this.costAmountInvoiced = costAmountInvoiced != null ? costAmountInvoiced : costAmountReceived;
+		this.costAmountInOut = costAmountInOut;
+		this.costAmountInvoiced = costAmountInvoiced != null ? costAmountInvoiced : costAmountInOut;
 	}
 
-	public CurrencyId getCurrencyId() {return this.costAmountReceived.getCurrencyId();}
+	public CurrencyId getCurrencyId() {return this.costAmountInOut.getCurrencyId();}
 
 	public Money getInvoicedAmountDiff()
 	{
-		return costAmountInvoiced.subtract(costAmountReceived);
+		return costAmountInvoiced.subtract(costAmountInOut);
 	}
 }

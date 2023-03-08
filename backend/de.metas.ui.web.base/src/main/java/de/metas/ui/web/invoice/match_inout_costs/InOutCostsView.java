@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceLineId;
@@ -17,14 +17,14 @@ import lombok.Singular;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ReceiptCostsView extends AbstractCustomView<ReceiptCostRow>
+public class InOutCostsView extends AbstractCustomView<InOutCostRow>
 {
 	@NonNull private final ImmutableList<RelatedProcessDescriptor> relatedProcesses;
 
 	@Builder
-	private ReceiptCostsView(
+	private InOutCostsView(
 			final @NonNull ViewId viewId,
-			final @NonNull ReceiptCostsViewData rowsData,
+			final @NonNull InOutCostsViewData rowsData,
 			final @NonNull DocumentFilterDescriptor filterDescriptor,
 			final @NonNull @Singular ImmutableList<RelatedProcessDescriptor> relatedProcesses)
 	{
@@ -43,7 +43,7 @@ public class ReceiptCostsView extends AbstractCustomView<ReceiptCostRow>
 	public DocumentFilterList getFilters() {return DocumentFilterList.ofNullable(getRowsData().getFilter());}
 
 	@Override
-	protected ReceiptCostsViewData getRowsData() {return (ReceiptCostsViewData)super.getRowsData();}
+	protected InOutCostsViewData getRowsData() {return (InOutCostsViewData)super.getRowsData();}
 
 	public InvoiceLineId getInvoiceLineId() {return getRowsData().getInvoiceLineId();}
 

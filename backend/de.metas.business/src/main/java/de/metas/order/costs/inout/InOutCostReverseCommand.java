@@ -8,7 +8,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.order.costs.OrderCost;
-import de.metas.order.costs.OrderCostAddReceiptRequest;
+import de.metas.order.costs.OrderCostAddInOutRequest;
 import de.metas.order.costs.OrderCostId;
 import de.metas.order.costs.OrderCostRepository;
 import lombok.Builder;
@@ -21,7 +21,7 @@ public class InOutCostReverseCommand
 	@NonNull private final IInOutBL inoutBL;
 	@NonNull private final InOutCostRepository inOutCostRepository;
 
-	@NonNull private final InOutId receiptId;
+	@NonNull private final InOutId inoutId;
 	@NonNull private final InOutId initialReversalId;
 
 	@Builder
@@ -30,32 +30,32 @@ public class InOutCostReverseCommand
 			final @NonNull OrderCostRepository orderCostRepository,
 			final @NonNull InOutCostRepository inOutCostRepository,
 			//
-			final @NonNull InOutId receiptId,
+			final @NonNull InOutId inoutId,
 			final @NonNull InOutId initialReversalId)
 	{
-		if (InOutId.equals(receiptId, initialReversalId))
+		if (InOutId.equals(inoutId, initialReversalId))
 		{
-			throw new AdempiereException("Receipt and reversal cannot have the same ID: " + receiptId);
+			throw new AdempiereException("InOut and reversal cannot have the same ID: " + inoutId);
 		}
 
 		this.inoutBL = inoutBL;
 		this.orderCostRepository = orderCostRepository;
 		this.inOutCostRepository = inOutCostRepository;
 
-		this.receiptId = receiptId;
+		this.inoutId = inoutId;
 		this.initialReversalId = initialReversalId;
 	}
 
 	public void execute()
 	{
-		final ImmutableMap<InOutAndLineId, InOutAndLineId> initialReversalLineId2lineId = inoutBL.getLines(receiptId)
+		final ImmutableMap<InOutAndLineId, InOutAndLineId> initialReversalLineId2lineId = inoutBL.getLines(inoutId)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						receiptLine -> InOutAndLineId.ofRepoId(initialReversalId, receiptLine.getReversalLine_ID()),
-						receiptLine -> InOutAndLineId.ofRepoId(receiptLine.getM_InOut_ID(), receiptLine.getM_InOutLine_ID())
+						inoutLine -> InOutAndLineId.ofRepoId(initialReversalId, inoutLine.getReversalLine_ID()),
+						inoutLine -> InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID())
 				));
 
-		final ImmutableList<InOutCost> initialCosts = inOutCostRepository.getByReceiptId(initialReversalId);
+		final ImmutableList<InOutCost> initialCosts = inOutCostRepository.getByInOutId(initialReversalId);
 		if (initialCosts.isEmpty())
 		{
 			return;
@@ -66,7 +66,7 @@ public class InOutCostReverseCommand
 
 		for (final InOutCost initialCost : initialCosts)
 		{
-			final InOutAndLineId initialReversalLineId = initialCost.getReceiptAndLineId();
+			final InOutAndLineId initialReversalLineId = initialCost.getInoutAndLineId();
 			final InOutAndLineId lineId = initialReversalLineId2lineId.get(initialReversalLineId);
 			if (lineId == null)
 			{
@@ -78,7 +78,7 @@ public class InOutCostReverseCommand
 					.orgId(initialCost.getOrgId())
 					.orderCostDetailId(initialCost.getOrderCostDetailId())
 					.orderAndLineId(initialCost.getOrderAndLineId())
-					.receiptAndLineId(lineId)
+					.inoutAndLineId(lineId)
 					.bpartnerId(initialCost.getBpartnerId())
 					.costTypeId(initialCost.getCostTypeId())
 					.costElementId(initialCost.getCostElementId())
@@ -89,8 +89,8 @@ public class InOutCostReverseCommand
 			initialCost.setReversalId(reversalCost.getId());
 
 			final OrderCost orderCost = orderCostsById.get(reversalCost.getOrderCostId());
-			orderCost.addMaterialReceipt(
-					OrderCostAddReceiptRequest.builder()
+			orderCost.addInOutCost(
+					OrderCostAddInOutRequest.builder()
 							.orderLineId(reversalCost.getOrderLineId())
 							.qty(reversalCost.getQty())
 							.costAmount(reversalCost.getCostAmount())

@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.order.costs.inout.InOutCostId;
 import de.metas.ui.web.view.IViewRow;
@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
-public class ReceiptCostRow implements IViewRow
+public class InOutCostRow implements IViewRow
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_BPartner_ID")
 	private final LookupValue bpartner;
@@ -25,7 +25,7 @@ public class ReceiptCostRow implements IViewRow
 	private final LookupValue purchaseOrder;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_InOut_ID")
-	private final LookupValue receipt;
+	private final LookupValue inout;
 
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "C_Cost_Type_ID")
 	private final LookupValue costType;
@@ -36,28 +36,28 @@ public class ReceiptCostRow implements IViewRow
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Amount, captionKey = "CostAmount")
 	private final BigDecimal costAmountToInvoice;
 
-	private final ViewRowFieldNameAndJsonValuesHolder<ReceiptCostRow> values;
+	private final ViewRowFieldNameAndJsonValuesHolder<InOutCostRow> values;
 	private final DocumentId rowId;
 	@Getter private final InOutCostId inoutCostId;
 
 	@Builder
-	private ReceiptCostRow(
+	private InOutCostRow(
 			final InOutCostId inoutCostId,
 			final LookupValue bpartner,
 			final LookupValue purchaseOrder,
-			final LookupValue receipt,
+			final LookupValue inout,
 			final LookupValue costType,
 			final String currency,
 			final BigDecimal costAmountToInvoice)
 	{
 		this.bpartner = bpartner;
 		this.purchaseOrder = purchaseOrder;
-		this.receipt = receipt;
+		this.inout = inout;
 		this.costType = costType;
 		this.currency = currency;
 		this.costAmountToInvoice = costAmountToInvoice;
 
-		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ReceiptCostRow.class);
+		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(InOutCostRow.class);
 		this.rowId = DocumentId.of(inoutCostId);
 		this.inoutCostId = inoutCostId;
 	}

@@ -104,8 +104,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private List<DocLine_InOut> loadLines(final I_M_InOut inout)
 	{
 		final ImmutableListMultimap<InOutAndLineId, InOutCost> inoutCostsByInOutLineId = Multimaps.index(
-				orderCostService.getByReceiptId(InOutId.ofRepoId(inout.getM_InOut_ID())),
-				InOutCost::getReceiptAndLineId);
+				orderCostService.getByInOutId(InOutId.ofRepoId(inout.getM_InOut_ID())),
+				InOutCost::getInoutAndLineId);
 
 		final List<DocLine_InOut> docLines = new ArrayList<>();
 		for (final I_M_InOutLine inoutLine : inOutBL.getLines(inout))

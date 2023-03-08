@@ -10,8 +10,8 @@ import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.OrderCost;
-import de.metas.order.costs.OrderCostAddReceiptRequest;
-import de.metas.order.costs.OrderCostAddReceiptResult;
+import de.metas.order.costs.OrderCostAddInOutRequest;
+import de.metas.order.costs.OrderCostAddInOutResult;
 import de.metas.order.costs.OrderCostDetail;
 import de.metas.order.costs.OrderCostRepository;
 import de.metas.organization.OrgId;
@@ -32,7 +32,7 @@ public class InOutCostCreateCommand
 	@NonNull private final IInOutBL inoutBL;
 	@NonNull private final OrderCostRepository orderCostRepository;
 	@NonNull private final InOutCostRepository inOutCostRepository;
-	private final InOutId receiptId;
+	private final InOutId inoutId;
 
 	@Builder
 	private InOutCostCreateCommand(
@@ -41,7 +41,7 @@ public class InOutCostCreateCommand
 			final @NonNull IInOutBL inoutBL,
 			final @NonNull OrderCostRepository orderCostRepository,
 			final @NonNull InOutCostRepository inOutCostRepository,
-			final @NonNull InOutId receiptId)
+			final @NonNull InOutId inoutId)
 
 	{
 		this.currencyBL = currencyBL;
@@ -49,58 +49,58 @@ public class InOutCostCreateCommand
 		this.inoutBL = inoutBL;
 		this.orderCostRepository = orderCostRepository;
 		this.inOutCostRepository = inOutCostRepository;
-		this.receiptId = receiptId;
+		this.inoutId = inoutId;
 	}
 
 	public void execute()
 	{
-		final List<I_M_InOutLine> receiptLines = inoutBL.getLines(receiptId);
+		final List<I_M_InOutLine> inoutLines = inoutBL.getLines(inoutId);
 
-		final ImmutableSet<OrderLineId> purchaseOrderLineIds = receiptLines.stream()
-				.map(receiptLine -> OrderLineId.ofRepoIdOrNull(receiptLine.getC_OrderLine_ID()))
+		final ImmutableSet<OrderLineId> orderLineIds = inoutLines.stream()
+				.map(inoutLine -> OrderLineId.ofRepoIdOrNull(inoutLine.getC_OrderLine_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final List<OrderCost> orderCostsList = orderCostRepository.getByOrderLineIds(purchaseOrderLineIds);
+		final List<OrderCost> orderCostsList = orderCostRepository.getByOrderLineIds(orderLineIds);
 		if (orderCostsList.isEmpty())
 		{
 			return;
 		}
 
-		for (final I_M_InOutLine receiptLine : receiptLines)
+		for (final I_M_InOutLine inoutLine : inoutLines)
 		{
-			final OrderLineId purchaseOrderLineId = OrderLineId.ofRepoIdOrNull(receiptLine.getC_OrderLine_ID());
-			if (purchaseOrderLineId == null)
+			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inoutLine.getC_OrderLine_ID());
+			if (orderLineId == null)
 			{
 				continue;
 			}
 
-			final StockQtyAndUOMQty receiptQty = inoutBL.getStockQtyAndCatchQty(receiptLine);
+			final StockQtyAndUOMQty inoutQty = inoutBL.getStockQtyAndCatchQty(inoutLine);
 
 			for (final OrderCost orderCost : orderCostsList)
 			{
-				final OrderCostDetail detail = orderCost.getDetailByOrderLineIdIfExists(purchaseOrderLineId).orElse(null);
+				final OrderCostDetail detail = orderCost.getDetailByOrderLineIdIfExists(orderLineId).orElse(null);
 				if (detail == null)
 				{
 					continue;
 				}
 
-				final Quantity receiptQtyConv = receiptQty.getQtyInUOM(detail.getUomId(), uomConversionBL);
+				final Quantity inoutQtyConv = inoutQty.getQtyInUOM(detail.getUomId(), uomConversionBL);
 				final CurrencyPrecision precision = currencyBL.getStdPrecision(orderCost.getCurrencyId());
-				final Money receiptCostAmount = orderCost.computeCostAmountForQty(purchaseOrderLineId, receiptQtyConv, precision);
+				final Money inoutCostAmount = orderCost.computeCostAmountForQty(orderLineId, inoutQtyConv, precision);
 
-				final OrderCostAddReceiptResult addResult = orderCost.addMaterialReceipt(
-						OrderCostAddReceiptRequest.builder()
-								.orderLineId(purchaseOrderLineId)
-								.qty(receiptQtyConv)
-								.costAmount(receiptCostAmount)
+				final OrderCostAddInOutResult addResult = orderCost.addInOutCost(
+						OrderCostAddInOutRequest.builder()
+								.orderLineId(orderLineId)
+								.qty(inoutQtyConv)
+								.costAmount(inoutCostAmount)
 								.build());
 
 				inOutCostRepository.create(InOutCostCreateRequest.builder()
-						.orgId(OrgId.ofRepoId(receiptLine.getAD_Org_ID()))
+						.orgId(OrgId.ofRepoId(inoutLine.getAD_Org_ID()))
 						.orderCostDetailId(addResult.getOrderCostDetailId())
-						.orderAndLineId(OrderAndLineId.of(orderCost.getOrderId(), purchaseOrderLineId))
-						.receiptAndLineId(InOutAndLineId.ofRepoId(receiptLine.getM_InOut_ID(), receiptLine.getM_InOutLine_ID()))
+						.orderAndLineId(OrderAndLineId.of(orderCost.getOrderId(), orderLineId))
+						.inoutAndLineId(InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
 						.bpartnerId(orderCost.getBpartnerId())
 						.costTypeId(orderCost.getCostTypeId())
 						.costElementId(orderCost.getCostElementId())

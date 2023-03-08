@@ -1,4 +1,4 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
@@ -19,7 +19,7 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 
-class ReceiptCostsViewDataService
+class InOutCostsViewDataService
 {
 	@NonNull private final OrderCostService orderCostService;
 	@NonNull private final MoneyService moneyService;
@@ -29,7 +29,7 @@ class ReceiptCostsViewDataService
 	@NonNull final LookupDataSource costTypeLookup;
 
 	@Builder
-	private ReceiptCostsViewDataService(
+	private InOutCostsViewDataService(
 			final @NonNull OrderCostService orderCostService,
 			final @NonNull MoneyService moneyService,
 			final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
@@ -42,29 +42,29 @@ class ReceiptCostsViewDataService
 		this.costTypeLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Cost_Type.Table_Name);
 	}
 
-	public ReceiptCostsViewData getData(
+	public InOutCostsViewData getData(
 			@NonNull final InvoiceLineId invoiceLineId,
 			@Nullable final DocumentFilter filter)
 	{
-		return ReceiptCostsViewData.builder()
+		return InOutCostsViewData.builder()
 				.viewDataService(this)
 				.invoiceLineId(invoiceLineId)
 				.filter(filter)
 				.build();
 	}
 
-	ImmutableList<ReceiptCostRow> retrieveRows(final @Nullable DocumentFilter filter)
+	ImmutableList<InOutCostRow> retrieveRows(final @Nullable DocumentFilter filter)
 	{
 		final ImmutableList<InOutCost> inoutCosts = orderCostService
-				.stream(ReceiptCostsViewFilterHelper.toInOutCostQuery(filter))
+				.stream(InOutCostsViewFilterHelper.toInOutCostQuery(filter))
 				.collect(ImmutableList.toImmutableList());
 
 		return newLoader().loadRows(inoutCosts);
 	}
 
-	private ReceiptCostRowsLoader newLoader()
+	private InOutCostRowsLoader newLoader()
 	{
-		return ReceiptCostRowsLoader.builder()
+		return InOutCostRowsLoader.builder()
 				.moneyService(moneyService)
 				.bpartnerLookup(bpartnerLookup)
 				.orderLookup(orderLookup)

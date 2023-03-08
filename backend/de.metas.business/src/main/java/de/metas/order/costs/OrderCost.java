@@ -174,17 +174,17 @@ public class OrderCost
 		});
 	}
 
-	public OrderCostAddReceiptResult addMaterialReceipt(@NonNull OrderCostAddReceiptRequest request)
+	public OrderCostAddInOutResult addInOutCost(@NonNull OrderCostAddInOutRequest request)
 	{
 		final OrderCostDetail detail = getDetailByOrderLineId(request.getOrderLineId());
 
 		final Quantity qty = request.getQty();
-		final Money receivedCostAmt = request.getCostAmount();
-		detail.addReceivedCost(receivedCostAmt, qty);
+		final Money amt = request.getCostAmount();
+		detail.addInOutCost(amt, qty);
 
-		return OrderCostAddReceiptResult.builder()
+		return OrderCostAddInOutResult.builder()
 				.orderCostDetailId(Check.assumeNotNull(detail.getId(), "detail is saved"))
-				.costAmount(receivedCostAmt)
+				.costAmount(amt)
 				.qty(qty)
 				.build();
 	}

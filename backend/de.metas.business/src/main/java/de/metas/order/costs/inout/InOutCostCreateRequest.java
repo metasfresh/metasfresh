@@ -23,7 +23,7 @@ public class InOutCostCreateRequest
 	@NonNull OrgId orgId;
 	@NonNull OrderCostDetailId orderCostDetailId;
 	@NonNull OrderAndLineId orderAndLineId;
-	@NonNull InOutAndLineId receiptAndLineId;
+	@NonNull InOutAndLineId inoutAndLineId;
 
 	@Nullable BPartnerId bpartnerId;
 	@NonNull OrderCostTypeId costTypeId;
