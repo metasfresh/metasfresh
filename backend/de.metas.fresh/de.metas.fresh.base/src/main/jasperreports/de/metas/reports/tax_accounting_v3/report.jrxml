@@ -425,7 +425,11 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
+<<<<<<< HEAD
 				<reportElement x="597" y="124" width="82" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
+=======
+				<reportElement x="560" y="124" width="119" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
+>>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -459,6 +463,7 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 			</textField>
+<<<<<<< HEAD
 			<textField isStretchWithOverflow="true">
 				<reportElement x="515" y="124" width="82" height="12" forecolor="#FFFFFF" uuid="3d86b171-2133-4e68-a636-5bd8a9844cbb">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
@@ -469,6 +474,8 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
 			</textField>
+=======
+>>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
 		</band>
 	</pageHeader>
 	<columnHeader>

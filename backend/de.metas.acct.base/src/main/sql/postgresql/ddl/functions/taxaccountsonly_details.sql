@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 DROP FUNCTION IF EXISTS de_metas_acct.taxaccountsonly_details(p_ad_org_id     numeric,
                                                               p_account_id    numeric,
                                                               p_c_vat_code_id numeric,
@@ -12,6 +13,20 @@ CREATE FUNCTION de_metas_acct.taxaccountsonly_details(p_ad_org_id     numeric,
                                                       p_c_vat_code_id numeric,
                                                       p_datefrom      date,
                                                       p_dateto        date)
+=======
+DROP FUNCTION IF EXISTS de_metas_acct.taxaccountsonly_details(p_AD_Org_ID     numeric(10, 0),
+                                                              p_Account_ID    numeric,
+                                                              p_C_Vat_Code_ID numeric,
+                                                              p_DateFrom      date,
+                                                              p_DateTo        date)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_acct.taxaccountsonly_details(p_AD_Org_ID     numeric(10, 0),
+                                                                 p_Account_ID    numeric,
+                                                                 p_C_Vat_Code_ID numeric,
+                                                                 p_DateFrom      date,
+                                                                 p_DateTo        date)
+>>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
     RETURNS TABLE
             (
                 balance           numeric,
@@ -25,10 +40,17 @@ CREATE FUNCTION de_metas_acct.taxaccountsonly_details(p_ad_org_id     numeric,
                 c_elementvalue_id numeric,
                 param_startdate   date,
                 param_enddate     date,
+<<<<<<< HEAD
                 param_konto       character varying,
                 param_vatcode     character varying,
                 param_org         character varying,
                 currency          character
+=======
+                param_konto       varchar,
+                param_vatcode     varchar,
+                param_org         varchar,
+                currency          char
+>>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
             )
     STABLE
     LANGUAGE sql
@@ -68,11 +90,14 @@ FROM (
          INNER JOIN c_acctschema aas
                     ON aas.ad_orgonly_id = p_AD_Org_ID
          INNER JOIN c_currency C ON C.c_currency_id = aas.c_currency_id
+<<<<<<< HEAD
          INNER JOIN de_metas_acct.tax_accounting_report_details_sum(p_DateFrom, p_DateTo, t.vatcode,
                                                                     ev.C_ElementValue_ID,
                                                                     t.c_tax_id,
                                                                     p_AD_Org_ID) AS S ON TRUE
 
+=======
+>>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
 WHERE t.taxname IS NOT NULL
 ORDER BY vatcode, accountno
     ;
