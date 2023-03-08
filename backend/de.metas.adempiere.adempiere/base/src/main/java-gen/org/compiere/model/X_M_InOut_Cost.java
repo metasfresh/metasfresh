@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 261362364L;
+	private static final long serialVersionUID = -1211716258L;
 
     /** Standard Constructor */
     public X_M_InOut_Cost (final Properties ctx, final int M_InOut_Cost_ID, @Nullable final String trxName)
@@ -251,6 +251,18 @@ public class X_M_InOut_Cost extends org.compiere.model.PO implements I_M_InOut_C
 	public boolean isInvoiced() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
+	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override

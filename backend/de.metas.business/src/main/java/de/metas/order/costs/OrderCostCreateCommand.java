@@ -3,6 +3,7 @@ package de.metas.order.costs;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.ICurrencyBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -54,6 +55,7 @@ class OrderCostCreateCommand
 
 		final OrderCost orderCost = OrderCost.builder()
 				.orderId(orderId)
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.bpartnerId(request.getBpartnerId())
 				.costElementId(costType.getCostElementId())

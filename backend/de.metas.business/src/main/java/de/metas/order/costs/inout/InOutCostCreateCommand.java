@@ -101,6 +101,7 @@ public class InOutCostCreateCommand
 						.orderCostDetailId(addResult.getOrderCostDetailId())
 						.orderAndLineId(OrderAndLineId.of(orderCost.getOrderId(), orderLineId))
 						.inoutAndLineId(InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()))
+						.soTrx(orderCost.getSoTrx())
 						.bpartnerId(orderCost.getBpartnerId())
 						.costTypeId(orderCost.getCostTypeId())
 						.costElementId(orderCost.getCostElementId())

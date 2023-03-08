@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -46,6 +47,7 @@ public class InOutCostRepository
 		record.setC_Order_Cost_Detail_ID(request.getOrderCostDetailId().getRepoId());
 		record.setC_Order_ID(request.getOrderAndLineId().getOrderRepoId());
 		record.setC_OrderLine_ID(request.getOrderAndLineId().getOrderLineRepoId());
+		record.setIsSOTrx(request.getSoTrx().toBoolean());
 		record.setM_InOut_ID(request.getInoutAndLineId().getInOutId().getRepoId());
 		record.setM_InOutLine_ID(request.getInoutAndLineId().getInOutLineId().getRepoId());
 
@@ -90,6 +92,7 @@ public class InOutCostRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.orderCostDetailId(OrderCostDetailId.ofRepoId(record.getC_Order_Cost_ID(), record.getC_Order_Cost_Detail_ID()))
 				.orderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.inoutAndLineId(InOutAndLineId.ofRepoId(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
@@ -157,6 +160,10 @@ public class InOutCostRepository
 		if (query.getBpartnerId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		}
+		if (query.getSoTrx() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_InOut_Cost.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
 		}
 		if (query.getOrderId() != null)
 		{

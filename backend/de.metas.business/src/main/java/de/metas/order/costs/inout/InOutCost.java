@@ -6,6 +6,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -35,6 +36,7 @@ public class InOutCost
 	@NonNull private final OrgId orgId;
 	@NonNull private final OrderCostDetailId orderCostDetailId;
 	@NonNull private final OrderAndLineId orderAndLineId;
+	@NonNull private final SOTrx soTrx;
 	@NonNull private final InOutAndLineId inoutAndLineId;
 
 	@Nullable private final BPartnerId bpartnerId;
@@ -53,6 +55,7 @@ public class InOutCost
 			@NonNull final OrgId orgId,
 			@NonNull final OrderCostDetailId orderCostDetailId,
 			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final SOTrx soTrx,
 			@NonNull final InOutAndLineId inoutAndLineId,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final OrderCostTypeId costTypeId,
@@ -62,6 +65,7 @@ public class InOutCost
 			@NonNull final Money costAmountInvoiced,
 			boolean isInvoiced)
 	{
+		this.soTrx = soTrx;
 		Money.assertSameCurrency(costAmount, costAmountInvoiced);
 
 		this.id = id;

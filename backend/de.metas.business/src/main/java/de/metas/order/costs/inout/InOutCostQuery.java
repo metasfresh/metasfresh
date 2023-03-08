@@ -1,6 +1,7 @@
 package de.metas.order.costs.inout;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostTypeId;
 import lombok.Builder;
@@ -16,6 +17,7 @@ public class InOutCostQuery
 {
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.ONE_HUNDRED;
 	@Nullable BPartnerId bpartnerId;
+	@Nullable SOTrx soTrx;
 	@Nullable OrderId orderId;
 	@Nullable OrderCostTypeId costTypeId;
 	boolean includeReversed;

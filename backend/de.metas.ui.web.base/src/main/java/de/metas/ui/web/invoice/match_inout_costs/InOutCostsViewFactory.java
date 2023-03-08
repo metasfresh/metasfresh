@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.process.AdProcessId;
@@ -44,6 +45,7 @@ public class InOutCostsViewFactory implements IViewFactory
 	public static final String WINDOWID_String = "inoutCostsToMatch";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);
 
+	private static final String VIEW_PARAM_SOTrx = "soTrx";
 	private static final String VIEW_PARAM_invoiceLineId = "invoiceLineId";
 
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -79,9 +81,12 @@ public class InOutCostsViewFactory implements IViewFactory
 				.build();
 	}
 
-	public final CreateViewRequest createViewRequest(@NonNull final InvoiceLineId invoiceLineId)
+	public final CreateViewRequest createViewRequest(
+			@NonNull final SOTrx soTrx,
+			@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return CreateViewRequest.builder(WINDOW_ID)
+				.setParameter(VIEW_PARAM_SOTrx, soTrx)
 				.setParameter(VIEW_PARAM_invoiceLineId, invoiceLineId)
 				.setUseAutoFilters(true)
 				.build();
@@ -103,15 +108,22 @@ public class InOutCostsViewFactory implements IViewFactory
 
 	private InOutCostsViewData getViewData(final @NonNull CreateViewRequest request)
 	{
+		final SOTrx soTrx = getSOTrx(request);
 		final InvoiceLineId invoiceLineId = getInvoiceLineId(request);
 		final DocumentFilter effectiveFilter = getEffectiveFilter(request);
-		return viewDataService.getData(invoiceLineId, effectiveFilter);
+		return viewDataService.getData(soTrx, invoiceLineId, effectiveFilter);
 	}
 
 	@NonNull
 	private static InvoiceLineId getInvoiceLineId(final @NonNull CreateViewRequest request)
 	{
 		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_invoiceLineId, InvoiceLineId.class), "No invoiceLineId parameter provided");
+	}
+
+	@NonNull
+	private static SOTrx getSOTrx(final @NonNull CreateViewRequest request)
+	{
+		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_SOTrx, SOTrx.class), "No soTrx parameter provided");
 	}
 
 	@Nullable

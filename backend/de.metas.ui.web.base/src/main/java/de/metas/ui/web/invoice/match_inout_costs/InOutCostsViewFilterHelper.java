@@ -2,6 +2,7 @@ package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostTypeId;
 import de.metas.order.costs.inout.InOutCostQuery;
@@ -54,11 +55,14 @@ class InOutCostsViewFilterHelper
 				.displayName(TranslatableStrings.adElementOrMessage(fieldName));
 	}
 
-	public static InOutCostQuery toInOutCostQuery(@Nullable final DocumentFilter filter)
+	public static InOutCostQuery toInOutCostQuery(
+			@NonNull final SOTrx soTrx,
+			@Nullable final DocumentFilter filter)
 	{
 		return InOutCostQuery.builder()
 				.limit(QueryLimit.ONE_HUNDRED)
 				.bpartnerId(filter != null ? BPartnerId.ofRepoIdOrNull(filter.getParameterValueAsInt(PARAM_C_BPartner_ID, -1)) : null)
+				.soTrx(soTrx)
 				.orderId(filter != null ? OrderId.ofRepoIdOrNull(filter.getParameterValueAsInt(PARAM_C_Order_ID, -1)) : null)
 				.costTypeId(filter != null ? OrderCostTypeId.ofRepoIdOrNull(filter.getParameterValueAsInt(PARAM_C_Cost_Type_ID, -1)) : null)
 				.includeReversed(false)

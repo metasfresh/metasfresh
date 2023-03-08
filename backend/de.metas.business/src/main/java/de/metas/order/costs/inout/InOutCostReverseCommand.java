@@ -78,6 +78,7 @@ public class InOutCostReverseCommand
 					.orgId(initialCost.getOrgId())
 					.orderCostDetailId(initialCost.getOrderCostDetailId())
 					.orderAndLineId(initialCost.getOrderAndLineId())
+					.soTrx(initialCost.getSoTrx())
 					.inoutAndLineId(lineId)
 					.bpartnerId(initialCost.getBpartnerId())
 					.costTypeId(initialCost.getCostTypeId())

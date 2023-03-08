@@ -4,6 +4,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -55,9 +56,13 @@ public class C_Invoice_InOutCostsView_Launcher extends JavaProcess implements IP
 	@Override
 	protected String doIt()
 	{
-		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(getRecord_ID(), getSingleSelectedIncludedRecordIds(I_C_InvoiceLine.class));
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(getRecord_ID());
+		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, getSingleSelectedIncludedRecordIds(I_C_InvoiceLine.class));
 
-		final IView view = viewsRepo.createView(inOutCostsViewFactory.createViewRequest(invoiceLineId));
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+
+		final IView view = viewsRepo.createView(inOutCostsViewFactory.createViewRequest(soTrx, invoiceLineId));
 		final ViewId viewId = view.getViewId();
 
 		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()

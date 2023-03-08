@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -37,6 +38,7 @@ public class OrderCost
 	@Setter(AccessLevel.PACKAGE)
 	@Getter @Nullable private OrderCostId id;
 	@Getter @NonNull private final OrderId orderId;
+	@Getter @NonNull private final SOTrx soTrx;
 	@Getter @NonNull private final OrgId orgId;
 
 	@Getter @Nullable private final BPartnerId bpartnerId;
@@ -55,6 +57,7 @@ public class OrderCost
 	private OrderCost(
 			final @Nullable OrderCostId id,
 			final @NonNull OrderId orderId,
+			final @NonNull SOTrx soTrx,
 			final @NonNull OrgId orgId,
 			final @Nullable BPartnerId bpartnerId,
 			final @NonNull CostElementId costElementId,
@@ -78,6 +81,7 @@ public class OrderCost
 
 		this.id = id;
 		this.orderId = orderId;
+		this.soTrx = soTrx;
 		this.orgId = orgId;
 		this.bpartnerId = bpartnerId;
 		this.costElementId = costElementId;

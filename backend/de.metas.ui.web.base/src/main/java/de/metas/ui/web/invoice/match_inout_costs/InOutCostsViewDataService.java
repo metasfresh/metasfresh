@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.edi.model.I_C_Order;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
@@ -43,20 +44,24 @@ class InOutCostsViewDataService
 	}
 
 	public InOutCostsViewData getData(
+			@NonNull final SOTrx soTrx,
 			@NonNull final InvoiceLineId invoiceLineId,
 			@Nullable final DocumentFilter filter)
 	{
 		return InOutCostsViewData.builder()
 				.viewDataService(this)
+				.soTrx(soTrx)
 				.invoiceLineId(invoiceLineId)
 				.filter(filter)
 				.build();
 	}
 
-	ImmutableList<InOutCostRow> retrieveRows(final @Nullable DocumentFilter filter)
+	ImmutableList<InOutCostRow> retrieveRows(
+			@NonNull final SOTrx soTrx,
+			@Nullable final DocumentFilter filter)
 	{
 		final ImmutableList<InOutCost> inoutCosts = orderCostService
-				.stream(InOutCostsViewFilterHelper.toInOutCostQuery(filter))
+				.stream(InOutCostsViewFilterHelper.toInOutCostQuery(soTrx, filter))
 				.collect(ImmutableList.toImmutableList());
 
 		return newLoader().loadRows(inoutCosts);
