@@ -75,7 +75,7 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
 		logger.debug(COLUMNNAME_BlockStatus + " updated for {} records!", no);
 	}
@@ -93,7 +93,7 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No BPartner found by " + COLUMNNAME_SAP_BPartnerCode + " for {} rows", no);
@@ -108,7 +108,7 @@ public class BPartnerBlockStatusImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		final int no = DB.executeUpdateEx(sqlUpdateImportTable, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdateImportTable, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No " + COLUMNNAME_BlockStatus + " found for {} rows!", no);
