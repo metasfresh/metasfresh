@@ -164,7 +164,7 @@ public class InvoiceCandBLCreateInvoicesTest
 SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices(MatchInvoiceService.newInstanceForJUnitTesting());
+		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices(MatchInvoiceService.newInstanceForUnitTesting());
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();

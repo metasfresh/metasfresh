@@ -71,7 +71,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
-		SpringContextHolder.registerJUnitBean(MatchInvoiceService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(MatchInvoiceService.newInstanceForUnitTesting());
 	}
 
 	@Override

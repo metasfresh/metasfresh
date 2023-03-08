@@ -262,7 +262,12 @@ public class Money implements Comparable<Money>
 	public Money divide(@NonNull final Money divisor, @NonNull final CurrencyPrecision precision)
 	{
 		assertCurrencyIdMatching(divisor);
-		final BigDecimal resultingValue = this.value.divide(divisor.value, precision.toInt(), precision.getRoundingMode());
+		return divide(divisor.value, precision);
+	}
+
+	public Money divide(@NonNull final BigDecimal divisor, @NonNull final CurrencyPrecision precision)
+	{
+		final BigDecimal resultingValue = this.value.divide(divisor, precision.toInt(), precision.getRoundingMode());
 		return of(resultingValue, this.currencyId);
 	}
 
@@ -383,4 +388,10 @@ public class Money implements Comparable<Money>
 	}
 
 	public static boolean equals(@Nullable Money money1, @Nullable Money money2) {return Objects.equals(money1, money2);}
+
+	public Percent percentageOf(@NonNull final Money whole)
+	{
+		assertCurrencyIdMatching(whole);
+		return Percent.of(toBigDecimal(), whole.toBigDecimal());
+	}
 }

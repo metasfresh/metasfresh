@@ -109,7 +109,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	public AggregationEngine newAggregationEngine()
 	{
 		return  AggregationEngine.builder()
-				.matchInvoiceService(MatchInvoiceService.newInstanceForJUnitTesting())
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
 				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 	}

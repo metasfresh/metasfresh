@@ -1,6 +1,7 @@
 package de.metas.costing.methods;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -15,13 +16,18 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvId;
+import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.costs.OrderCostService;
+import de.metas.order.costs.inout.InOutCost;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -59,15 +65,18 @@ import java.util.Objects;
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	private final MatchInvoiceService matchInvoiceService;
+	private final OrderCostService orderCostService;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	public AveragePOCostingMethodHandler(
 			@NonNull final CostingMethodHandlerUtils utils,
-			@NonNull final MatchInvoiceService matchInvoiceService)
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final OrderCostService orderCostService)
 	{
 		super(utils);
 		this.matchInvoiceService = matchInvoiceService;
+		this.orderCostService = orderCostService;
 	}
 
 	@Override
@@ -83,34 +92,59 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request) {return createCostForMatchInvoice(request);}
+
+	private CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
-
-		final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
-				.map(orderLineBL::getOrderLineById)
-				.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
-
-		final InOutId inoutId = matchInv.getInOutId();
-		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(inoutId);
-
-		final CostAmount amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
-
 		final CurrentCost currentCost = utils.getCurrentCost(request);
+
+		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 
 		return utils.createCostDetailRecordNoCostsChanged(
 				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
-	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
+	private CostAmount getReceiptAmount(
+			@NonNull final MatchInv matchInv,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CostElement costElement,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CurrencyPrecision precision)
 	{
-		final CurrentCost currentCost = utils.getCurrentCost(request);
+		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
 
-		return utils.createCostDetailRecordNoCostsChanged(
-				request,
-				CostDetailPreviousAmounts.of(currentCost));
+		final MatchInvType type = matchInv.getType();
+		if (type.isMaterial())
+		{
+			Check.assume(costElement.isMaterialElement(), "Cost Element shall be material: {}", costElement);
+
+			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
+					.map(orderLineBL::getOrderLineById)
+					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+
+			return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+		}
+		else if (type.isCost())
+		{
+			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
+			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
+
+			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
+
+			return utils.convertToAcctSchemaCurrency(
+					CostAmount.ofMoney(receiptAmount),
+					() -> currencyConversionContext,
+					acctSchemaId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
 	}
 
 	@Override

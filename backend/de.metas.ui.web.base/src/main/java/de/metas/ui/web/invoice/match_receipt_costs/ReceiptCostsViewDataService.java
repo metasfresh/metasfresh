@@ -1,8 +1,11 @@
 package de.metas.ui.web.invoice.match_receipt_costs;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.currency.CurrencyRepository;
+import de.metas.currency.Amount;
 import de.metas.edi.model.I_C_Order;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -16,33 +19,36 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 
-class ReceiptCostRowsRepository
+class ReceiptCostsViewDataService
 {
 	@NonNull private final OrderCostService orderCostService;
-	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final MoneyService moneyService;
 	@NonNull final LookupDataSource bpartnerLookup;
 	@NonNull final LookupDataSource orderLookup;
 	@NonNull final LookupDataSource inoutLookup;
 	@NonNull final LookupDataSource costTypeLookup;
 
 	@Builder
-	private ReceiptCostRowsRepository(
+	private ReceiptCostsViewDataService(
 			final @NonNull OrderCostService orderCostService,
-			final @NonNull CurrencyRepository currencyRepository,
+			final @NonNull MoneyService moneyService,
 			final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.orderCostService = orderCostService;
-		this.currencyRepository = currencyRepository;
+		this.moneyService = moneyService;
 		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 		this.orderLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Order.Table_Name);
 		this.inoutLookup = lookupDataSourceFactory.searchInTableLookup(I_M_InOut.Table_Name);
 		this.costTypeLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Cost_Type.Table_Name);
 	}
 
-	public ReceiptCostRowsData query(@Nullable final DocumentFilter filter)
+	public ReceiptCostsViewData getData(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@Nullable final DocumentFilter filter)
 	{
-		return ReceiptCostRowsData.builder()
-				.repository(this)
+		return ReceiptCostsViewData.builder()
+				.viewDataService(this)
+				.invoiceLineId(invoiceLineId)
 				.filter(filter)
 				.build();
 	}
@@ -59,11 +65,17 @@ class ReceiptCostRowsRepository
 	private ReceiptCostRowsLoader newLoader()
 	{
 		return ReceiptCostRowsLoader.builder()
-				.currencyRepository(currencyRepository)
+				.moneyService(moneyService)
 				.bpartnerLookup(bpartnerLookup)
 				.orderLookup(orderLookup)
 				.inoutLookup(inoutLookup)
 				.costTypeLookup(costTypeLookup)
 				.build();
+	}
+
+	public Amount getInvoiceLineOpenAmount(final InvoiceLineId invoiceLineId)
+	{
+		final Money invoiceLineOpenAmt = orderCostService.getInvoiceLineOpenAmt(invoiceLineId);
+		return moneyService.toAmount(invoiceLineOpenAmt);
 	}
 }

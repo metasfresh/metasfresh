@@ -87,11 +87,14 @@ public class MatchInvoiceRepository
 
 	private static MatchInvCostPart extractMatchInvCostPart(final @NonNull I_M_MatchInv record)
 	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+
 		return MatchInvCostPart.builder()
 				.inoutCostId(InOutCostId.ofRepoId(record.getM_InOut_Cost_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
-				.costAmount(Money.of(record.getCostAmount(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.costAmountReceived(Money.of(record.getCostAmount(), currencyId))
+				.costAmountInvoiced(Money.of(record.getCostAmountInvoiced(), currencyId))
 				.build();
 	}
 
@@ -100,8 +103,9 @@ public class MatchInvoiceRepository
 		record.setM_InOut_Cost_ID(from.getInoutCostId().getRepoId());
 		record.setC_Cost_Type_ID(from.getCostTypeId().getRepoId());
 		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
-		record.setC_Currency_ID(from.getCostAmount().getCurrencyId().getRepoId());
-		record.setCostAmount(from.getCostAmount().toBigDecimal());
+		record.setC_Currency_ID(from.getCurrencyId().getRepoId());
+		record.setCostAmount(from.getCostAmountReceived().toBigDecimal());
+		record.setCostAmountInvoiced(from.getCostAmountInvoiced().toBigDecimal());
 	}
 
 	public Optional<MatchInv> first(@NonNull final MatchInvQuery query)
