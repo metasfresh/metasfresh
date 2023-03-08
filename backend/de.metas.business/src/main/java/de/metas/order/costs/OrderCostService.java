@@ -91,6 +91,7 @@ public class OrderCostService
 		OrderCostCreateCommand.builder()
 				.orderBL(orderBL)
 				.currencyBL(currencyBL)
+				.uomConverter(uomConversionBL)
 				.orderCostRepository(orderCostRepository)
 				.costTypeRepository(costTypeRepository)
 				//
