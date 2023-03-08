@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -86,6 +85,18 @@ public class DocumentLocation
 				.bpartnerAddress(null)
 				.build();
 	}
+
+	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
+	{
+		return builder()
+				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())
+				.bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
+				.contactId(null)
+				.locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
+				.bpartnerAddress(null)
+				.build();
+	}
+
 
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
