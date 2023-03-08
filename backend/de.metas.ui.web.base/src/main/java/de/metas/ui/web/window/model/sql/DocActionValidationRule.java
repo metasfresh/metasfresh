@@ -2,10 +2,13 @@ package de.metas.ui.web.window.model.sql;
 
 import java.util.Set;
 
+import de.metas.adempiere.service.IColumnBL;
+import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.POInfo;
 import org.compiere.util.NamePair;
 
 import com.google.common.collect.ImmutableSet;
@@ -51,6 +54,7 @@ import de.metas.util.Services;
 public final class DocActionValidationRule extends AbstractJavaValidationRule
 {
 	public static final DocActionValidationRule instance = new DocActionValidationRule();
+	private static final IColumnBL columnBL = Services.get(IColumnBL.class);
 
 	private static final Set<String> PARAMETERS = ImmutableSet.<String> builder()
 			.add(WindowConstants.FIELDNAME_DocStatus)
@@ -92,6 +96,7 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 				.processing(extractProcessing(evalCtx))
 				.orderType(extractOrderType(evalCtx))
 				.soTrx(extractSOTrx(evalCtx))
+				.recordId(extractRecordId(evalCtx))
 				.build();
 
 		final IDocActionOptionsBL docActionOptionsBL = Services.get(IDocActionOptionsBL.class);
@@ -146,6 +151,11 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 	private static String extractOrderType(final IValidationContext evalCtx)
 	{
 		return evalCtx.get_ValueAsString(WindowConstants.FIELDNAME_OrderType);
+	}
+
+	private static int extractRecordId(final IValidationContext evalCtx)
+	{
+			return 0; //TODO
 	}
 
 	@Override

@@ -24,9 +24,8 @@ package de.metas.invoice.sequence;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.sequence.ICountryIdProvider;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
-import de.metas.util.Check;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,7 +40,7 @@ import java.util.Objects;
 public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
 
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
 
 	@Override
@@ -57,10 +56,9 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 			return ProviderResult.EMPTY;
 		}
 
-		final LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(eval.get_ValueAsInt(I_C_Invoice.COLUMNNAME_C_BPartner_Location_Value_ID, 0));
-		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId should be present");
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(eval.get_ValueAsInt(I_C_Invoice.COLUMNNAME_C_Invoice_ID, 0));
 
-		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));
+		return ProviderResult.of(invoiceDAO.getBillToCountryIdByInvoiceId(invoiceId));
 	}
 
 	@Override
@@ -77,15 +75,9 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 			return ProviderResult.EMPTY;
 		}
 
-		LocationId bpartnerLocationValueId = LocationId.ofRepoIdOrNull(invoice.getC_BPartner_Location_Value_ID());
-		if(bpartnerLocationValueId == null)
-		{
-			bpartnerLocationValueId = LocationId.ofRepoIdOrNull(invoice.getC_BPartner_Location_ID());
-		}
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
-		Check.assumeNotNull(bpartnerLocationValueId, "bpartnerLocationValueId or bpartnerLocationId should be present");
-
-		return ProviderResult.of(locationDAO.getCountryIdByLocationId(bpartnerLocationValueId));
+		return ProviderResult.of(invoiceDAO.getBillToCountryIdByInvoiceId(invoiceId));
 	}
 
 	@Override

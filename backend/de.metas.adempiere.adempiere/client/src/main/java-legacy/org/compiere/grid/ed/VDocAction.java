@@ -110,15 +110,15 @@ public class VDocAction extends CDialog
 	private Map<String, IDocActionItem> docActionItemsByValue = null; // lazy
 
 	//
-	private CPanel mainPanel = new CPanel();
-	private BorderLayout mainLayout = new BorderLayout();
-	private CPanel northPanel = new CPanel();
-	private CComboBox<IDocActionItem> actionCombo = new CComboBox<>();
-	private JLabel actionLabel = new JLabel();
-	private JScrollPane centerPane = new JScrollPane();
-	private JTextArea message = new JTextArea();
-	private FlowLayout northLayout = new FlowLayout();
-	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+	private final CPanel mainPanel = new CPanel();
+	private final BorderLayout mainLayout = new BorderLayout();
+	private final CPanel northPanel = new CPanel();
+	private final CComboBox<IDocActionItem> actionCombo = new CComboBox<>();
+	private final JLabel actionLabel = new JLabel();
+	private final JScrollPane centerPane = new JScrollPane();
+	private final JTextArea message = new JTextArea();
+	private final FlowLayout northLayout = new FlowLayout();
+	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 * Static Init
@@ -190,7 +190,7 @@ public class VDocAction extends CDialog
 	 *
 	 * @param Record_ID id
 	 */
-	private void dynInit(int Record_ID)
+	private void dynInit(final int Record_ID)
 	{
 		String DocStatus = (String)m_mTab.getValue("DocStatus");
 		String DocAction = (String)m_mTab.getValue("DocAction");
@@ -242,6 +242,7 @@ public class VDocAction extends CDialog
 					.processing(Processing)
 					.orderType(OrderType)
 					.soTrx(SOTrx.ofBoolean(IsSOTrx))
+					.recordId(Record_ID)
 					.build();
 			Services.get(IDocActionOptionsBL.class).updateDocActions(optionsCtx);
 			docActions = optionsCtx.getDocActions();
@@ -304,7 +305,7 @@ public class VDocAction extends CDialog
 		String sql = "SELECT 2 FROM " + TableName
 				+ " WHERE " + TableName + "_ID=" + Record_ID
 				+ " AND DocStatus='" + DocStatus + "'";
-		int result = DB.getSQLValue(null, sql);
+		final int result = DB.getSQLValue(null, sql);
 		return result == 2;
 	}	// checkStatusChange
 
@@ -347,7 +348,7 @@ public class VDocAction extends CDialog
 	 * @param e event
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
@@ -355,13 +356,11 @@ public class VDocAction extends CDialog
 			{
 				dispose();
 				m_OKpressed = true;
-				return;
 			}
 		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
 		{
 			dispose();
-			return;
 		}
 		//
 		// ActionCombo: display the description for the selection

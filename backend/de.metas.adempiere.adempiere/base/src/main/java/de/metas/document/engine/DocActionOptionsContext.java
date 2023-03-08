@@ -61,6 +61,8 @@ public final class DocActionOptionsContext
 
 	private String docActionToUse;
 
+	private final int recordId;
+
 	@NonNull
 	@Default
 	private ImmutableSet<String> docActions = ImmutableSet.of();
