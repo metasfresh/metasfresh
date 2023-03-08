@@ -43,10 +43,6 @@ public class C_Invoice_InOutCostsView_Launcher extends JavaProcess implements IP
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed invoices");
 		}
-		if (invoice.isSOTrx())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only purchase invoices");
-		}
 
 		// TODO: check if the invoice line has something to allocate
 
