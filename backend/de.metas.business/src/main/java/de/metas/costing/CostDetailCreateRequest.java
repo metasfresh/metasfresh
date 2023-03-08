@@ -2,6 +2,7 @@ package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -57,6 +58,7 @@ public class CostDetailCreateRequest
 	 */
 	@Nullable CostingDocumentRef initialDocumentRef;
 	@Nullable CostElement costElement;
+	@NonNull CostAmountType amtType;
 	@NonNull CostAmount amt;
 	@NonNull Quantity qty;
 	@Nullable CurrencyConversionContext currencyConversionContext;
@@ -75,6 +77,7 @@ public class CostDetailCreateRequest
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final CostingDocumentRef initialDocumentRef,
 			@Nullable final CostElement costElement,
+			@Nullable final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			@Nullable final CurrencyConversionContext currencyConversionContext,
@@ -90,6 +93,7 @@ public class CostDetailCreateRequest
 		this.documentRef = documentRef;
 		this.costElement = costElement;
 		this.initialDocumentRef = initialDocumentRef;
+		this.amtType = amtType != null ? amtType : CostAmountType.MAIN;
 		this.amt = amt;
 		this.qty = qty;
 		this.currencyConversionContext = currencyConversionContext;
@@ -152,12 +156,18 @@ public class CostDetailCreateRequest
 
 	public CostDetailCreateRequest withAmount(@NonNull final CostAmount amt)
 	{
-		if (Objects.equals(this.amt, amt))
+		return withAmountAndType(amt, this.amtType);
+	}
+
+	public CostDetailCreateRequest withAmountAndType(@NonNull final CostAmount amt, @NonNull final CostAmountType amtType)
+	{
+		if (Objects.equals(this.amt, amt)
+				&& Objects.equals(this.amtType, amtType))
 		{
 			return this;
 		}
 
-		return toBuilder().amt(amt).build();
+		return toBuilder().amt(amt).amtType(amtType).build();
 	}
 
 	public CostDetailCreateRequest withAmountAndQty(
@@ -206,6 +216,11 @@ public class CostDetailCreateRequest
 		return toBuilder().qty(qty).build();
 	}
 
+	public CostDetailCreateRequest withQtyZero()
+	{
+		return withQty(qty.toZero());
+	}
+
 	public CostDetailBuilder toCostDetailBuilder()
 	{
 		final CostDetailBuilder costDetail = CostDetail.builder()
@@ -215,6 +230,7 @@ public class CostDetailCreateRequest
 				.productId(getProductId())
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				//
+				.amtType(getAmtType())
 				.amt(getAmt())
 				.qty(getQty())
 				//

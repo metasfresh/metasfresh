@@ -378,6 +378,14 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setAmtSource(@NonNull final Balance balance)
+	{
+		assertNotBuild();
+		setCurrencyId(balance.getCurrencyId());
+		setAmtSource(balance.getDebit().toBigDecimal(), balance.getCredit().toBigDecimal());
+		return this;
+	}
+
 	/**
 	 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
 	 * Invoke this builder method still have the builder add them.

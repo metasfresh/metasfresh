@@ -793,30 +793,20 @@ public final class FactLine extends X_Fact_Acct
 				.ifPresent(locationId -> setLocation(locationId, isFrom));
 	}
 
-	public Money getSourceBalance()
+	public Balance getSourceBalance()
 	{
-		final BigDecimal balanceBD = getAmtSourceDr().subtract(getAmtSourceCr());
-		return Money.of(balanceBD, getCurrencyId());
+		return Balance.of(getCurrencyId(), getAmtSourceDr(), getAmtSourceCr());
 	}
 
 	/**
-	 * Is Debit Source Balance
-	 *
 	 * @return true if DR source balance
 	 */
 	public boolean isDrSourceBalance()
 	{
 		return getSourceBalance().signum() >= 0;
-	}   // isDrSourceBalance
+	}
 
-	/**
-	 * @return accounting balance (DR - CR)
-	 */
-	public Money getAcctBalance()
-	{
-		final BigDecimal balanceBD = getAmtAcctDr().subtract(getAmtAcctCr());
-		return Money.of(balanceBD, acctSchema.getCurrencyId());
-	}   // getAcctBalance
+	public Balance getAcctBalance() {return Balance.of(getAcctCurrencyId(), getAmtAcctDr(), getAmtAcctCr());}
 
 	/**
 	 * @return true if the given fact line is booked on same DR/CR side as this line

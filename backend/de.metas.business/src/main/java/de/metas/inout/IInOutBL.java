@@ -1,6 +1,7 @@
 package de.metas.inout;
 
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -9,6 +10,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PricingSystem;
@@ -183,6 +185,8 @@ public interface IInOutBL extends ISingletonService
 	CurrencyConversionContext getCurrencyConversionContext(InOutId inoutId);
 
 	CurrencyConversionContext getCurrencyConversionContext(I_M_InOut inout);
+
+	List<I_M_InOutLine> retrieveCompleteOrClosedLinesForOrderLine(@NonNull OrderLineId orderLineId);
 
 	Instant getDateAcct(InOutId inoutId);
 }

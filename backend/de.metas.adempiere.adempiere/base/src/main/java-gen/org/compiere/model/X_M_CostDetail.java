@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDetail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1761612431L;
+	private static final long serialVersionUID = 1200613339L;
 
     /** Standard Constructor */
     public X_M_CostDetail (final Properties ctx, final int M_CostDetail_ID, @Nullable final String trxName)
@@ -300,6 +300,29 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public int getM_CostDetail_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_CostDetail_ID);
+	}
+
+	/** 
+	 * M_CostDetail_Type AD_Reference_ID=541722
+	 * Reference name: M_CostDetail_Type
+	 */
+	public static final int M_COSTDETAIL_TYPE_AD_Reference_ID=541722;
+	/** Main = M */
+	public static final String M_COSTDETAIL_TYPE_Main = "M";
+	/** Cost Adjustment = A */
+	public static final String M_COSTDETAIL_TYPE_CostAdjustment = "A";
+	/** Already Shipped = S */
+	public static final String M_COSTDETAIL_TYPE_AlreadyShipped = "S";
+	@Override
+	public void setM_CostDetail_Type (final java.lang.String M_CostDetail_Type)
+	{
+		set_Value (COLUMNNAME_M_CostDetail_Type, M_CostDetail_Type);
+	}
+
+	@Override
+	public java.lang.String getM_CostDetail_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_M_CostDetail_Type);
 	}
 
 	@Override

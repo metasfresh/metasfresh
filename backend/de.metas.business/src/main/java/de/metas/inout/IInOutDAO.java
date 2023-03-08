@@ -83,6 +83,8 @@ public interface IInOutDAO extends ISingletonService
 
 	List<I_M_InOutLine> retrieveLinesForOrderLine(I_C_OrderLine orderLine);
 
+	<T extends I_M_InOutLine> List<T> retrieveCompleteOrClosedLinesForOrderLine(@NonNull final OrderLineId orderLineId, Class<T> clazz);
+
 	<T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(I_C_OrderLine orderLine, Class<T> clazz);
 
 	/**

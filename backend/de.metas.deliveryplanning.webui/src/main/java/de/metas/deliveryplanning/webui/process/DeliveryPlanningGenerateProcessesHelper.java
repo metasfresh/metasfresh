@@ -245,7 +245,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(shipmentInfo.getDeliveryPlanningId());
 		if (existsBlockedPartnerDeliveryPlannings)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
 		}
 
 		if (shipmentInfo.isShipped())
@@ -281,7 +281,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(receiptInfo.getDeliveryPlanningId());
 		if (existsBlockedPartnerDeliveryPlannings)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
 		}
 		
 		if (receiptInfo.isReceived())

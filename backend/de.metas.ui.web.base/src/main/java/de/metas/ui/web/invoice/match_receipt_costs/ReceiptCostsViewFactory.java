@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut_Cost;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 @ViewFactory(windowId = ReceiptCostsViewFactory.WINDOWID_String)
@@ -107,6 +108,7 @@ public class ReceiptCostsViewFactory implements IViewFactory
 		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_invoiceLineId, InvoiceLineId.class), "No invoiceLineId parameter provided");
 	}
 
+	@Nullable
 	private DocumentFilter getEffectiveFilter(final @NonNull CreateViewRequest request)
 	{
 		if (request.isUseAutoFilters())
