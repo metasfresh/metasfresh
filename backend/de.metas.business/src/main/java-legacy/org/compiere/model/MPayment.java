@@ -40,6 +40,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -58,7 +59,6 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -1568,11 +1568,11 @@ public final class MPayment extends X_C_Payment
 		// calculate actual allocation
 		// BigDecimal allocationAmt = getPayAmt(); // underpayment
 		// when allocating an invoice, we don't want to allocate more than the invoice's open amount
-		final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceId, I_C_Invoice.class);
+		final I_C_Invoice invoice = Services.get(IInvoiceBL.class).getById(invoiceId);
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
 		
-		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, false);
+		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
 
 		// note: zero is ok, but with negative, i don't see the case and don't know what to do

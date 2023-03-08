@@ -50,6 +50,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class AllocationDAO implements IAllocationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public void save(@NonNull final I_C_AllocationHdr allocationHdr)
@@ -64,14 +65,15 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	@Deprecated
-	public final BigDecimal retrieveOpenAmtInInvoiceCurrency(
+	public final Money retrieveOpenAmtInInvoiceCurrency(
 			@NonNull final I_C_Invoice invoice,
 			final boolean creditMemoAdjusted)
 	{
+		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+
 		if (invoice.isPaid())
 		{
-			return BigDecimal.ZERO;
+			return Money.of(BigDecimal.ZERO, invoiceCurrencyId);
 		}
 
 		final BigDecimal openAmt;
@@ -86,20 +88,12 @@ public class AllocationDAO implements IAllocationDAO
 			openAmt = invoice.getGrandTotal();
 		}
 
-		if (creditMemoAdjusted && Services.get(IInvoiceBL.class).isCreditMemo(invoice))
+		if (creditMemoAdjusted && invoiceBL.isCreditMemo(invoice))
 		{
-			return openAmt.negate();
+			return Money.of(openAmt.negate(), invoiceCurrencyId);
 		}
-		return openAmt;
-	}
 
-	@Override
-	public final Money retrieveOpenAmt(
-			@NonNull final I_C_Invoice invoice,
-			final boolean creditMemoAdjusted)
-	{
-		return Money.of(retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted),
-						CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		return Money.of(openAmt, invoiceCurrencyId);
 	}
 	
 	@Override

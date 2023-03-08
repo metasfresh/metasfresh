@@ -110,7 +110,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// NOTE: we are not using C_InvoicePaySchedule_ID. It shall be a column in C_Payment
 
-		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted).toBigDecimal();
 	}
 
 	@Override

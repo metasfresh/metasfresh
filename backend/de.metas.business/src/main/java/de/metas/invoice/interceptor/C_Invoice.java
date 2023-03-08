@@ -282,7 +282,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
-																							 false); // creditMemoAdjusted = false
+																							   false).toBigDecimal(); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
