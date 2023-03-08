@@ -308,7 +308,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// (cost adjustment)
 		if (!costs.getCostAdjustmentAmt().isZero())
 		{
-			final Balance costAdjustmentBalance = toCreditBalanceIfPositive(costs.getCostAdjustmentAmt());
+			final Balance costAdjustmentBalance = toDebitBalanceIfPositive(costs.getCostAdjustmentAmt());
 			fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, as))
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
@@ -324,7 +324,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// (already shipped)
 		if (!costs.getAlreadyShippedAmt().isZero())
 		{
-			final Balance alreadyShippedBalance = toCreditBalanceIfPositive(costs.getAlreadyShippedAmt());
+			final Balance alreadyShippedBalance = toDebitBalanceIfPositive(costs.getAlreadyShippedAmt());
 			fact.createLine()
 					.setAccount(docLine.getAccount(ProductAcctType.P_COGS_Acct, as))
 					.setCurrencyConversionCtx(getInvoiceCurrencyConversionCtx())
@@ -385,11 +385,11 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		updateFromInvoiceLine(ipvFactLine);
 	}
 
-	private Balance toCreditBalanceIfPositive(@NonNull final CostAmount amt)
+	private Balance toDebitBalanceIfPositive(@NonNull final CostAmount amt)
 	{
 		return amt.signum() > 0
-				? Balance.ofCredit(amt.toMoney().negate()).negateAndInvertIf(isReversal)
-				: Balance.ofDebit(amt.toMoney()).negateAndInvertIf(isReversal);
+				? Balance.ofDebit(amt.toMoney()).negateAndInvertIf(isReversal)
+				: Balance.ofCredit(amt.toMoney().negate()).negateAndInvertIf(isReversal);
 	}
 
 	/**

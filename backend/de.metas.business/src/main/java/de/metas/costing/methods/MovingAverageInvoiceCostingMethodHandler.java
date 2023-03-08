@@ -368,10 +368,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-		final Quantity receiptQty = request.getQty(); // i.e. qty matched
-		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
-
 		final boolean isReversal = isReversal(matchInv.getInvoiceId());
+
+		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
+		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
