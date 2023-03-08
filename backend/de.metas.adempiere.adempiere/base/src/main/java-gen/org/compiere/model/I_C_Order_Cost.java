@@ -320,6 +320,29 @@ public interface I_C_Order_Cost
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_C_Order_Cost, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_C_Order_Cost.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
 	 * Set Cost Element.
 	 * Product Cost Element
 	 *

@@ -110,9 +110,9 @@ public class OrderCostService
 		return inOutCostRepository.getByIds(inoutCostIds);
 	}
 
-	public ImmutableList<InOutCost> getByReceiptId(@NonNull final InOutId receiptId)
+	public ImmutableList<InOutCost> getByInOutId(@NonNull final InOutId inoutId)
 	{
-		return inOutCostRepository.getByReceiptId(receiptId);
+		return inOutCostRepository.getByInOutId(inoutId);
 	}
 
 	public void updateInOutCostById(@NonNull final InOutCostId inoutCostId, @NonNull final Consumer<InOutCost> consumer)
@@ -120,7 +120,7 @@ public class OrderCostService
 		inOutCostRepository.updateInOutCostById(inoutCostId, consumer);
 	}
 
-	public void receiveCosts(@NonNull final InOutId receiptId)
+	public void createInOutCosts(@NonNull final InOutId inoutId)
 	{
 		InOutCostCreateCommand.builder()
 				.currencyBL(currencyBL)
@@ -129,32 +129,32 @@ public class OrderCostService
 				.orderCostRepository(orderCostRepository)
 				.inOutCostRepository(inOutCostRepository)
 				//
-				.receiptId(receiptId)
+				.inoutId(inoutId)
 				//
 				.build()
 				.execute();
 	}
 
-	public void deleteInOutCosts(@NonNull final InOutId receiptId)
+	public void deleteInOutCosts(@NonNull final InOutId inoutId)
 	{
 		InOutCostDeleteCommand.builder()
 				.orderCostRepository(orderCostRepository)
 				.inOutCostRepository(inOutCostRepository)
 				//
-				.receiptId(receiptId)
+				.inoutId(inoutId)
 				//
 				.build()
 				.execute();
 	}
 
-	public void reverseInOutCosts(@NonNull final InOutId receiptId, @NonNull final InOutId initialReversalId)
+	public void reverseInOutCosts(@NonNull final InOutId inoutId, @NonNull final InOutId initialReversalId)
 	{
 		InOutCostReverseCommand.builder()
 				.inoutBL(inoutBL)
 				.orderCostRepository(orderCostRepository)
 				.inOutCostRepository(inOutCostRepository)
 				//
-				.receiptId(receiptId)
+				.inoutId(inoutId)
 				.initialReversalId(initialReversalId)
 				//
 				.build()

@@ -29,8 +29,8 @@ public class OrderCostDetail
 	@Getter @NonNull private final Money orderLineNetAmt;
 	@Getter private Money costAmount;
 
-	@Getter @NonNull Quantity qtyReceived;
-	@Getter @NonNull Money costAmountReceived;
+	@Getter @NonNull Quantity inoutQty;
+	@Getter @NonNull Money inoutCostAmount;
 
 	@Builder
 	private OrderCostDetail(
@@ -40,11 +40,11 @@ public class OrderCostDetail
 			@NonNull final Quantity qtyOrdered,
 			@NonNull final Money orderLineNetAmt,
 			@Nullable final Money costAmount,
-			@Nullable final Quantity qtyReceived,
-			@Nullable Money costAmountReceived)
+			@Nullable final Quantity inoutQty,
+			@Nullable Money inoutCostAmount)
 	{
-		Money.assertSameCurrency(orderLineNetAmt, costAmount, costAmountReceived);
-		Quantity.assertSameUOM(qtyOrdered, qtyReceived);
+		Money.assertSameCurrency(orderLineNetAmt, costAmount, inoutCostAmount);
+		Quantity.assertSameUOM(qtyOrdered, inoutQty);
 
 		this.id = id;
 		this.orderLineId = orderLineId;
@@ -52,8 +52,8 @@ public class OrderCostDetail
 		this.qtyOrdered = qtyOrdered;
 		this.orderLineNetAmt = orderLineNetAmt;
 		this.costAmount = costAmount != null ? costAmount : orderLineNetAmt.toZero();
-		this.qtyReceived = qtyReceived != null ? qtyReceived : qtyOrdered.toZero();
-		this.costAmountReceived = costAmountReceived != null ? costAmountReceived : orderLineNetAmt.toZero();
+		this.inoutQty = inoutQty != null ? inoutQty : qtyOrdered.toZero();
+		this.inoutCostAmount = inoutCostAmount != null ? inoutCostAmount : orderLineNetAmt.toZero();
 	}
 
 	public CurrencyId getCurrencyId()
@@ -72,9 +72,9 @@ public class OrderCostDetail
 		this.costAmount = costAmountNew;
 	}
 
-	void addReceivedCost(@NonNull Money amt, @NonNull Quantity qty)
+	void addInOutCost(@NonNull Money amt, @NonNull Quantity qty)
 	{
-		this.costAmountReceived = this.costAmountReceived.add(amt);
-		this.qtyReceived = this.qtyReceived.add(qty);
+		this.inoutCostAmount = this.inoutCostAmount.add(amt);
+		this.inoutQty = this.inoutQty.add(qty);
 	}
 }

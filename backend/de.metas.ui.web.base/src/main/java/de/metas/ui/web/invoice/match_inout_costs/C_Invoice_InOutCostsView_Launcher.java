@@ -1,9 +1,10 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -18,11 +19,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 
-public class C_Invoice_ReceiptCostsView_Launcher extends JavaProcess implements IProcessPrecondition
+public class C_Invoice_InOutCostsView_Launcher extends JavaProcess implements IProcessPrecondition
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final ReceiptCostsViewFactory receiptCostsViewFactory = SpringContextHolder.instance.getBean(ReceiptCostsViewFactory.class);
+	private final InOutCostsViewFactory inOutCostsViewFactory = SpringContextHolder.instance.getBean(InOutCostsViewFactory.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -42,10 +43,6 @@ public class C_Invoice_ReceiptCostsView_Launcher extends JavaProcess implements 
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only completed invoices");
 		}
-		if (invoice.isSOTrx())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only purchase invoices");
-		}
 
 		// TODO: check if the invoice line has something to allocate
 
@@ -55,9 +52,13 @@ public class C_Invoice_ReceiptCostsView_Launcher extends JavaProcess implements 
 	@Override
 	protected String doIt()
 	{
-		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(getRecord_ID(), getSingleSelectedIncludedRecordIds(I_C_InvoiceLine.class));
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(getRecord_ID());
+		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, getSingleSelectedIncludedRecordIds(I_C_InvoiceLine.class));
 
-		final IView view = viewsRepo.createView(receiptCostsViewFactory.createViewRequest(invoiceLineId));
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
+		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+
+		final IView view = viewsRepo.createView(inOutCostsViewFactory.createViewRequest(soTrx, invoiceLineId));
 		final ViewId viewId = view.getViewId();
 
 		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()

@@ -16,19 +16,19 @@ import org.compiere.model.I_M_InOutLine;
 @ToString
 public class CreateMatchInvoicePlanLine
 {
-	@NonNull private final I_M_InOutLine receiptLine;
-	@NonNull private MatchInvCostPart receiptCost;
-	@NonNull private final StockQtyAndUOMQty receiptQty;
+	@NonNull private final I_M_InOutLine inoutLine;
+	@NonNull private MatchInvCostPart inoutCost;
+	@NonNull private final StockQtyAndUOMQty qty;
 
-	public Money getCostAmountReceived() {return receiptCost.getCostAmountReceived();}
+	public Money getCostAmountInOut() {return inoutCost.getCostAmountInOut();}
 
-	public Money getCostAmountInvoiced() {return receiptCost.getCostAmountInvoiced();}
+	public Money getCostAmountInvoiced() {return inoutCost.getCostAmountInvoiced();}
 
 	public void setCostAmountInvoiced(@NonNull final Money costAmountInvoiced)
 	{
-		this.receiptCost = this.receiptCost.withCostAmountInvoiced(costAmountInvoiced);
+		this.inoutCost = this.inoutCost.withCostAmountInvoiced(costAmountInvoiced);
 	}
 
-	public Money getInvoicedAmountDiff() {return this.receiptCost.getInvoicedAmountDiff();}
+	public Money getInvoicedAmountDiff() {return this.inoutCost.getInvoicedAmountDiff();}
 
 }

@@ -35,7 +35,7 @@ class DefaultMatchInvListener implements MatchInvListener
 			final MatchInvCostPart matchInvCost = matchInv.getCostPartNotNull();
 			orderCostService.updateInOutCostById(
 					matchInvCost.getInoutCostId(),
-					inoutCost -> inoutCost.addCostAmountInvoiced(matchInvCost.getCostAmountReceived()));
+					inoutCost -> inoutCost.addCostAmountInvoiced(matchInvCost.getCostAmountInOut()));
 		}
 	}
 
@@ -54,7 +54,7 @@ class DefaultMatchInvListener implements MatchInvListener
 				final MatchInvCostPart matchInvCost = matchInv.getCostPartNotNull();
 				orderCostService.updateInOutCostById(
 						matchInvCost.getInoutCostId(),
-						inoutCost -> inoutCost.addCostAmountInvoiced(matchInvCost.getCostAmountReceived().negate()));
+						inoutCost -> inoutCost.addCostAmountInvoiced(matchInvCost.getCostAmountInOut().negate()));
 			}
 		}
 

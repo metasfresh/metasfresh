@@ -230,7 +230,7 @@ public class MatchInvoiceService
 						.build());
 
 		return matchInvs.stream()
-				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmountReceived())
+				.map(matchInv -> matchInv.getCostPartNotNull().getCostAmountInOut())
 				.reduce(Money::add);
 	}
 

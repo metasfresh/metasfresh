@@ -1,10 +1,11 @@
-package de.metas.ui.web.invoice.match_receipt_costs;
+package de.metas.ui.web.invoice.match_inout_costs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.money.MoneyService;
 import de.metas.order.costs.OrderCostService;
 import de.metas.process.AdProcessId;
@@ -38,27 +39,28 @@ import org.compiere.model.I_M_InOut_Cost;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-@ViewFactory(windowId = ReceiptCostsViewFactory.WINDOWID_String)
-public class ReceiptCostsViewFactory implements IViewFactory
+@ViewFactory(windowId = InOutCostsViewFactory.WINDOWID_String)
+public class InOutCostsViewFactory implements IViewFactory
 {
-	public static final String WINDOWID_String = "receiptCosts";
+	public static final String WINDOWID_String = "inoutCostsToMatch";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOWID_String);
 
+	private static final String VIEW_PARAM_SOTrx = "soTrx";
 	private static final String VIEW_PARAM_invoiceLineId = "invoiceLineId";
 
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
-	private final ReceiptCostsViewDataService viewDataService;
+	private final InOutCostsViewDataService viewDataService;
 	private DocumentFilterDescriptor _filterDescriptor; // lazy
 
-	public ReceiptCostsViewFactory(
+	public InOutCostsViewFactory(
 			final @NonNull OrderCostService orderCostService,
 			final @NonNull MoneyService moneyService,
 			final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
-		this.viewDataService = ReceiptCostsViewDataService.builder()
+		this.viewDataService = InOutCostsViewDataService.builder()
 				.orderCostService(orderCostService)
 				.moneyService(moneyService)
 				.lookupDataSourceFactory(lookupDataSourceFactory)
@@ -74,44 +76,54 @@ public class ReceiptCostsViewFactory implements IViewFactory
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
-				.addElementsFromViewRowClass(ReceiptCostRow.class, viewDataType)
+				.addElementsFromViewRowClass(InOutCostRow.class, viewDataType)
 				.setFilters(ImmutableList.of(getFilterDescriptor()))
 				.build();
 	}
 
-	public final CreateViewRequest createViewRequest(@NonNull final InvoiceLineId invoiceLineId)
+	public final CreateViewRequest createViewRequest(
+			@NonNull final SOTrx soTrx,
+			@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return CreateViewRequest.builder(WINDOW_ID)
+				.setParameter(VIEW_PARAM_SOTrx, soTrx)
 				.setParameter(VIEW_PARAM_invoiceLineId, invoiceLineId)
 				.setUseAutoFilters(true)
 				.build();
 	}
 
 	@Override
-	public ReceiptCostsView createView(@NonNull final CreateViewRequest request)
+	public InOutCostsView createView(@NonNull final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(WINDOW_ID);
 
-		return ReceiptCostsView.builder()
+		return InOutCostsView.builder()
 				.viewId(viewId)
 				.rowsData(getViewData(request))
 				.filterDescriptor(getFilterDescriptor())
-				.relatedProcess(createProcessDescriptor(10, ReceiptCostsView_CreateMatchInv.class))
+				.relatedProcess(createProcessDescriptor(10, InOutCostsView_CreateMatchInv.class))
 				.build();
 	}
 
-	private ReceiptCostsViewData getViewData(final @NonNull CreateViewRequest request)
+	private InOutCostsViewData getViewData(final @NonNull CreateViewRequest request)
 	{
+		final SOTrx soTrx = getSOTrx(request);
 		final InvoiceLineId invoiceLineId = getInvoiceLineId(request);
 		final DocumentFilter effectiveFilter = getEffectiveFilter(request);
-		return viewDataService.getData(invoiceLineId, effectiveFilter);
+		return viewDataService.getData(soTrx, invoiceLineId, effectiveFilter);
 	}
 
 	@NonNull
 	private static InvoiceLineId getInvoiceLineId(final @NonNull CreateViewRequest request)
 	{
 		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_invoiceLineId, InvoiceLineId.class), "No invoiceLineId parameter provided");
+	}
+
+	@NonNull
+	private static SOTrx getSOTrx(final @NonNull CreateViewRequest request)
+	{
+		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_SOTrx, SOTrx.class), "No soTrx parameter provided");
 	}
 
 	@Nullable
@@ -124,12 +136,12 @@ public class ReceiptCostsViewFactory implements IViewFactory
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 			final LookupValue bpartner = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name).findById(bpartnerId);
 
-			return DocumentFilter.equalsFilter(ReceiptCostsViewFilterHelper.FILTER_ID, ReceiptCostsViewFilterHelper.PARAM_C_BPartner_ID, bpartner);
+			return DocumentFilter.equalsFilter(InOutCostsViewFilterHelper.FILTER_ID, InOutCostsViewFilterHelper.PARAM_C_BPartner_ID, bpartner);
 		}
 		else
 		{
 			return request.getFiltersUnwrapped(getFilterDescriptor())
-					.getFilterById(ReceiptCostsViewFilterHelper.FILTER_ID)
+					.getFilterById(InOutCostsViewFilterHelper.FILTER_ID)
 					.orElse(null);
 		}
 	}
@@ -157,22 +169,23 @@ public class ReceiptCostsViewFactory implements IViewFactory
 		if (filterDescriptor == null)
 		{
 			final LookupDescriptorProviders lookupDescriptorProviders = lookupDataSourceFactory.getLookupDescriptorProviders();
-			filterDescriptor = this._filterDescriptor = ReceiptCostsViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders);
+			filterDescriptor = this._filterDescriptor = InOutCostsViewFilterHelper.createFilterDescriptor(lookupDescriptorProviders);
 		}
 
 		return filterDescriptor;
 	}
 
 	@Override
-	public ReceiptCostsView filterView(
+	public InOutCostsView filterView(
 			final @NonNull IView view,
 			final @NonNull JSONFilterViewRequest filterViewRequest,
 			final @NonNull Supplier<IViewsRepository> viewsRepo)
 	{
-		final ReceiptCostsView receiptCostsView = (ReceiptCostsView)view;
+		final InOutCostsView inOutCostsView = (InOutCostsView)view;
 		return createView(
 				CreateViewRequest.filterViewBuilder(view, filterViewRequest)
-						.setParameter(VIEW_PARAM_invoiceLineId, receiptCostsView.getInvoiceLineId())
+						.setParameter(VIEW_PARAM_SOTrx, inOutCostsView.getSoTrx())
+						.setParameter(VIEW_PARAM_invoiceLineId, inOutCostsView.getInvoiceLineId())
 						.build());
 	}
 }
