@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
@@ -401,4 +402,7 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 
 	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
+
+	@NonNull
+	ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull String sapBPartnerCode);
 }

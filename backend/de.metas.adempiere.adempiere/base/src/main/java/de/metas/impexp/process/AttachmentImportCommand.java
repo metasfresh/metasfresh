@@ -36,8 +36,11 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.Params;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
 
 @Builder
 public class AttachmentImportCommand
@@ -59,17 +62,21 @@ public class AttachmentImportCommand
 	@Default
 	private final IParams additionalParameters = IParams.NULL;
 
+	@Nullable
+	private final Params overrideColumnValues;
+
 	public DataImportResult execute()
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(attachmentEntryId);
 
 		return dataImportService.importDataFromResource(DataImportRequest.builder()
-				.data(data)
-				.dataImportConfigId(dataImportConfigId)
-				.clientId(clientId)
-				.orgId(orgId)
-				.userId(userId)
-				.additionalParameters(additionalParameters)
-				.build());
+																.data(data)
+																.dataImportConfigId(dataImportConfigId)
+																.clientId(clientId)
+																.orgId(orgId)
+																.userId(userId)
+																.additionalParameters(additionalParameters)
+																.overrideColumnValues(overrideColumnValues)
+																.build());
 	}
 }
