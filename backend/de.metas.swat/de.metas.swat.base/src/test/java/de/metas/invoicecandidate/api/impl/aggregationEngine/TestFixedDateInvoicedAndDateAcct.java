@@ -1,38 +1,10 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
-import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.impl.AggregationEngine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_PaymentTerm;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.*;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
