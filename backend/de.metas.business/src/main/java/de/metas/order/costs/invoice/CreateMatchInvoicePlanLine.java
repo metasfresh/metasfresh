@@ -22,6 +22,8 @@ public class CreateMatchInvoicePlanLine
 
 	public Money getCostAmountReceived() {return receiptCost.getCostAmountReceived();}
 
+	public Money getCostAmountInvoiced() {return receiptCost.getCostAmountInvoiced();}
+
 	public void setCostAmountInvoiced(@NonNull final Money costAmountInvoiced)
 	{
 		this.receiptCost = this.receiptCost.withCostAmountInvoiced(costAmountInvoiced);
