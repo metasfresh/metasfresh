@@ -27,6 +27,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.location.ICountryDAO;
 import de.metas.process.IProcessPrecondition;
@@ -45,6 +46,7 @@ import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPrecondition
 {
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
@@ -74,7 +76,7 @@ public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPre
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not completed or closed");
 		}
 
-		if(countryDAO.isEnforceCorrectionInvoice(invoiceDAO.getBillToCountryIdByInvoiceId(invoiceId)))
+		if(countryDAO.isEnforceCorrectionInvoice(invoiceBL.getBillToCountryId(invoiceId)))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("isEnforceCorrectionInvoice");
 		}

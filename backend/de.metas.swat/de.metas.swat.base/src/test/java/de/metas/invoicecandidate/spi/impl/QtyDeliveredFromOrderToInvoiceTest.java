@@ -284,6 +284,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		mInOutLine.setM_InOut_ID(mInOut.getM_InOut_ID());
 
 		// link to C_OrderLine
+		mInOutLine.setC_Order_ID(orderLine.getC_Order_ID());
 		mInOutLine.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 
 		// assume that it's true; our test case at the moment always has it true when dealing with qtyDelivered

@@ -49,10 +49,27 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void validateBPartnerBlockedStatus(@NonNull final I_C_Order order)
 	{
-		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(order.getC_BPartner_ID())))
+		if (hasBlockedBPartner(order))
 		{
 			throw new AdempiereException(MSG_ORDER_WITH_BLOCKED_PARTNER)
 					.markAsUserValidationError();
 		}
+	}
+	
+	private boolean hasBlockedBPartner(@NonNull final I_C_Order order)
+	{
+		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(order.getC_BPartner_ID())))
+		{
+			return true;
+		}
+
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()); 
+		if (billBPartnerId != null && bPartnerBlockStatusService.isBPartnerBlocked(billBPartnerId))
+		{
+			return true;
+		}
+
+		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(order.getDropShip_BPartner_ID());
+		return dropShipBPartnerId != null && bPartnerBlockStatusService.isBPartnerBlocked(dropShipBPartnerId);
 	}
 }

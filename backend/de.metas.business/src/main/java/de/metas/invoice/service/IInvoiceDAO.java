@@ -35,7 +35,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
-import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -190,6 +189,4 @@ public interface IInvoiceDAO extends ISingletonService
 	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
-
-	CountryId getBillToCountryIdByInvoiceId(final InvoiceId invoiceId);
 }

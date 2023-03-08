@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
@@ -16,6 +17,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -229,6 +231,21 @@ public class InOutDAO implements IInOutDAO
 		return retrieveLinesForOrderLine(orderLine, I_M_InOutLine.class);
 	}
 
+	@Override
+	public <T extends I_M_InOutLine> List<T> retrieveCompleteOrClosedLinesForOrderLine(@NonNull final OrderLineId orderLineId, final Class<T> clazz)
+	{
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
+				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID, I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineId)
+				// .filterByClientId()
+				.addOnlyActiveRecordsFilter();
+		queryBuilder.orderBy()
+				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
+
+		return queryBuilder.create()
+				.list(clazz);
+	}
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(final I_C_OrderLine orderLine, final Class<T> clazz)
 	{

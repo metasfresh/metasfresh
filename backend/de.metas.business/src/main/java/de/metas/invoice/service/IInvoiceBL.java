@@ -388,4 +388,6 @@ public interface IInvoiceBL extends ISingletonService
 	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	Instant getDateAcct(InvoiceId invoiceId);
+
+	CountryId getBillToCountryId(@NonNull final InvoiceId invoiceId);
 }

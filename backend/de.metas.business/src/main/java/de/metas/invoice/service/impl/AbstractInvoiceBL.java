@@ -173,6 +173,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -1967,4 +1968,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return getById(invoiceId).getDateAcct().toInstant();
 	}
+
+	@Override
+	public CountryId getBillToCountryId(@NonNull final InvoiceId invoiceId)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice)
+				.getBPartnerLocationAndCaptureId();
+
+		return bPartnerBL.getCountryId(bpartnerLocationAndCaptureId);
+	}
+
 }
