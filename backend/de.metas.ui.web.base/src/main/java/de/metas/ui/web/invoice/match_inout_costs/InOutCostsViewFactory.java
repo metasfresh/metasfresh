@@ -184,6 +184,7 @@ public class InOutCostsViewFactory implements IViewFactory
 		final InOutCostsView inOutCostsView = (InOutCostsView)view;
 		return createView(
 				CreateViewRequest.filterViewBuilder(view, filterViewRequest)
+						.setParameter(VIEW_PARAM_SOTrx, inOutCostsView.getSoTrx())
 						.setParameter(VIEW_PARAM_invoiceLineId, inOutCostsView.getInvoiceLineId())
 						.build());
 	}

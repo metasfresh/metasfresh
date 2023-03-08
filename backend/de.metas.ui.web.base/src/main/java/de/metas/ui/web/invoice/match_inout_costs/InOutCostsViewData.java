@@ -28,7 +28,7 @@ public class InOutCostsViewData implements IRowsData<InOutCostRow>
 
 	//
 	// parameters
-	@NonNull final SOTrx soTrx;
+	@Getter @NonNull final SOTrx soTrx;
 	@Getter @NonNull private final InvoiceLineId invoiceLineId;
 	@Getter @Nullable private final DocumentFilter filter;
 
