@@ -1,16 +1,18 @@
 package org.adempiere.util.api;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Optional;
-
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Optional;
 
 /*
  * #%L
@@ -105,10 +107,24 @@ public class ForwardingParams implements IParams
 		return params.getParameterAsZonedDateTime(parameterName);
 	}
 
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		return params.getParameterAsInstant(parameterName);
+	}
+
 	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);
+	}
+
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		return params.getParameterAsBoolean(parameterName, defaultValue);
 	}
 
 	@Override
