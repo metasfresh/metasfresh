@@ -1,19 +1,16 @@
 package de.metas.impexp.parser.csv;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import de.metas.impexp.parser.ErrorMessage;
-import de.metas.impexp.parser.ImpDataCell;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.impexp.format.ImpFormat;
 import de.metas.impexp.format.ImpFormatColumn;
-import de.metas.impexp.format.ImpFormatType;
+import de.metas.impexp.parser.ErrorMessage;
+import de.metas.impexp.parser.ImpDataCell;
 import groovy.transform.ToString;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -49,28 +46,8 @@ final class FlexImpDataLineParser implements CsvImpDataLineParser
 	public FlexImpDataLineParser(@NonNull final ImpFormat importFormat)
 	{
 		columns = importFormat.getColumns();
-		cellDelimiter = getCellDelimiterChar(importFormat.getFormatType());
+		cellDelimiter = importFormat.getFormatType().getCellDelimiterChar();
 		cellQuote = DEFAULT_CELL_QUOTE;
-	}
-
-	private static char getCellDelimiterChar(final ImpFormatType formatType)
-	{
-		if (formatType.equals(ImpFormatType.COMMA_SEPARATED))
-		{
-			return ',';
-		}
-		else if (formatType.equals(ImpFormatType.SEMICOLON_SEPARATED))
-		{
-			return ';';
-		}
-		else if (formatType.equals(ImpFormatType.TAB_SEPARATED))
-		{
-			return '\t';
-		}
-		else
-		{
-			throw new AdempiereException("Cannot find delimiter for " + formatType);
-		}
 	}
 
 	@Override
