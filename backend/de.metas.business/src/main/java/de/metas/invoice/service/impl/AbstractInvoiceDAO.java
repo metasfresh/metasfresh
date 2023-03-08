@@ -188,7 +188,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 	}
 
 	@Override
