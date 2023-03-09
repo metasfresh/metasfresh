@@ -154,6 +154,7 @@ const Calendar = ({
           key={calendarKey}
           ref={calendarRef}
           height="100%"
+          now={calendarRef?.current?.getApi().getDate()}
           locales={[deLocale]}
           locale={getCurrentActiveLanguage()}
           views={{
@@ -161,6 +162,9 @@ const Calendar = ({
               slotDuration: { months: 1 },
               slotLabelInterval: { months: 1 },
               slotLabelFormat: [{ month: 'long' }],
+            },
+            resourceTimelineMonth: {
+              slotMinWidth: '60',
             },
           }}
           initialView={view}
