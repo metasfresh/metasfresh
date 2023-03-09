@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_I_BPartner_BlockStatus;
 import org.springframework.stereotype.Component;
@@ -62,6 +63,23 @@ public class IBPartnerBlockStatusDAO
 				.orderBy(I_I_BPartner_BlockStatus.COLUMNNAME_I_BPartner_BlockStatus_ID)
 				.create()
 				.firstId() > 0;
+	}
+
+	/**
+	 * Workaround to make the PO framework aware of the updated/inserted failed records and propagate the changes to UI.
+	 * <p>
+	 * Related to {@see de.metas.bpartner.impexp.blockstatus.BPartnerBlockStatusImportProcess#updateAndValidateImportRecords()}
+	 */
+	public void forceAcknowledgementForFailedRows(@NonNull final PInstanceId selectionId)
+	{
+		queryBL.createQueryBuilder(I_I_BPartner_BlockStatus.class)
+				.addEqualsFilter(I_I_BPartner_BlockStatus.COLUMNNAME_I_IsImported, "E")
+				.setOnlySelection(selectionId)
+				.stream()
+				.forEach(ibPartnerBlockStatusRecord -> {
+					ibPartnerBlockStatusRecord.setI_ErrorMsg(ibPartnerBlockStatusRecord.getI_ErrorMsg() + "!");
+					InterfaceWrapperHelper.save(ibPartnerBlockStatusRecord);
+				});
 	}
 
 	@NonNull
