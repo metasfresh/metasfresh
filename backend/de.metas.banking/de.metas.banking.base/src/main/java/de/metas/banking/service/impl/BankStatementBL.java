@@ -33,13 +33,13 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.Amount;
-import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
@@ -58,6 +58,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -292,7 +293,7 @@ public class BankStatementBL implements IBankStatementBL
 	public PaymentCurrencyContext getPaymentCurrencyContext(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
-				.currencyConversionTypeId(currencyConversionBL.getCurrencyConversionTypeId(ConversionTypeMethod.Spot));
+				.currencyConversionTypeId(getPaymentCurrencyConversionTypeId(bankStatementLine));
 
 		final BigDecimal fixedCurrencyRate = bankStatementLine.getCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
@@ -310,4 +311,16 @@ public class BankStatementBL implements IBankStatementBL
 		return result.build();
 	}
 
+	@Nullable
+	private CurrencyConversionTypeId getPaymentCurrencyConversionTypeId(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
+
+		if (paymentId == null)
+		{
+			return null;
+		}
+
+		return paymentBL.getCurrencyConversionTypeId(paymentId).orElse(null);
+	}
 }

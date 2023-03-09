@@ -5,6 +5,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -273,5 +274,13 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.iterate(I_C_Payment.class);
 
 		return paymentsForEmployees;
+	}
+	
+	@NonNull
+	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment paymentRecord = getById(paymentId);
+		
+		return Optional.ofNullable(CurrencyConversionTypeId.ofRepoIdOrNull(paymentRecord.getC_ConversionType_ID()));
 	}
 }
