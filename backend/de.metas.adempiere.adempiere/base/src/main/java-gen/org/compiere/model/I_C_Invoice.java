@@ -816,6 +816,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -825,6 +826,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Create From ....
+	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -992,6 +994,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1001,6 +1004,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Process Batch.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1148,7 +1152,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set SAP PayT ID.
+	 * Set External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1157,7 +1161,7 @@ public interface I_C_Invoice
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get SAP PayT ID.
+	 * Get External ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1169,7 +1173,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set FEC Currency Rate.
+	 * Set FEC Rate.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1178,7 +1182,7 @@ public interface I_C_Invoice
 	void setFEC_CurrencyRate (@Nullable BigDecimal FEC_CurrencyRate);
 
 	/**
-	 * Get FEC Currency Rate.
+	 * Get FEC Rate.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1296,8 +1300,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
-	 * Set Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1306,8 +1310,8 @@ public interface I_C_Invoice
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get Incoterm Location.
-	 * Location to be specified for commercial clause
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1472,6 +1476,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsFEC = new ModelColumn<>(I_C_Invoice.class, "IsFEC", null);
 	String COLUMNNAME_IsFEC = "IsFEC";
+
+	/**
+	 * Set isFixedInvoice.
+	 * Invoices with this set to Y will not have the docActions RE, RC and VO available
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedInvoice (boolean IsFixedInvoice);
+
+	/**
+	 * Get isFixedInvoice.
+	 * Invoices with this set to Y will not have the docActions RE, RC and VO available
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedInvoice();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsFixedInvoice = new ModelColumn<>(I_C_Invoice.class, "IsFixedInvoice", null);
+	String COLUMNNAME_IsFixedInvoice = "IsFixedInvoice";
 
 	/**
 	 * Set In Dispute.
@@ -2160,11 +2187,6 @@ public interface I_C_Invoice
 	 */
 	int getUser1_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser1();
-
-	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Invoice.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -2185,11 +2207,6 @@ public interface I_C_Invoice
 	 */
 	int getUser2_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser2();
-
-	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Invoice.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**

@@ -257,7 +257,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
 						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
 						true, // copyLines == true
-						new CreditMemoInvoiceCopyHandler(creditCtx)),
+						new CreditMemoInvoiceCopyHandler(creditCtx),
+						creditCtx.isFixedInvoice()),
 				I_C_Invoice.class);
 		return creditMemo;
 	}
@@ -301,9 +302,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final boolean isCounterpart,
 			final boolean setOrderRef,
 			final boolean isSetLineInvoiceRef,
-			final boolean isCopyLines)
+			final boolean isCopyLines,
+			final boolean isFixedInvoice)
 	{
-		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
+		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler, isFixedInvoice);
 	}
 
 	private org.compiere.model.I_C_Invoice copyFrom(
@@ -315,7 +317,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final boolean setOrderRef,
 			final boolean isSetLineInvoiceRef,
 			final boolean isCopyLines,
-			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> additionalDocCopyHandler)
+			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> additionalDocCopyHandler,
+			final boolean isFixedInvoice)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(from);
 		final String trxName = InterfaceWrapperHelper.getTrxName(from);
@@ -363,6 +366,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setProcessing(false);
 		// delete references
 		to.setIsSelfService(false);
+		to.setIsFixedInvoice(isFixedInvoice);
 		if (setOrderRef)
 		{
 			to.setC_Order_ID(from.getC_Order_ID());
@@ -1672,7 +1676,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						false, // counter == false
 						true, // setOrderRef == true
 						true, // setInvoiceRef == true
-						true), // copyLines == true
+						true, // copyLines == true
+						false),
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"

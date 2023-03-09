@@ -24,8 +24,6 @@ package de.metas.invoice.docAction;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.document.engine.IDocument;
@@ -40,16 +38,13 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
-
 @Component
 public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCustomizer
 {
 	private static final String PARAM_C_Invoice_ID = I_C_Invoice.COLUMNNAME_C_Invoice_ID;
-	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(PARAM_C_Invoice_ID);
-	private static final DocBaseAndSubType SALES_INVOICE = DocBaseAndSubType.of(DOCBASETYPE_ARInvoice);
+	private static final String PARAM_IsFixedInvoice = I_C_Invoice.COLUMNNAME_IsFixedInvoice;
+	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.of(PARAM_C_Invoice_ID, PARAM_IsFixedInvoice);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	@Override
@@ -62,14 +57,13 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 	public void customizeValidActions(final DocActionOptionsContext optionsCtx)
 	{
 		final Set<String> docActions = new LinkedHashSet<>(optionsCtx.getDocActions());
-		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(optionsCtx.getDocTypeId());
 
 		final String docStatus = optionsCtx.getDocStatus();
 		final InvoiceId invoiceId = extractInvoiceId(optionsCtx);
 		final CountryId countryId = invoiceBL.getBillToCountryId(invoiceId);
 
 		if (IDocument.STATUS_Completed.equals(docStatus)
-				&& docBaseAndSubType.equals(SALES_INVOICE)
+				&& optionsCtx.getSoTrx().isSales()
 				&& countryDAO.isEnforceCorrectionInvoice(countryId))
 		{
 			docActions.remove(IDocument.ACTION_Reverse_Correct);
@@ -77,9 +71,22 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 			docActions.remove(IDocument.ACTION_Void);
 		}
 
+		final boolean isFixedInvoice = extractIsFixedInvoice(optionsCtx);
+		if (IDocument.STATUS_Completed.equals(docStatus) && isFixedInvoice)
+		{
+			docActions.remove(IDocument.ACTION_Reverse_Correct);
+			docActions.remove(IDocument.ACTION_ReActivate);
+			docActions.remove(IDocument.ACTION_Void);
+		}
+
 		if (IDocument.STATUS_Closed.equals(docStatus)
-				&& docBaseAndSubType.equals(SALES_INVOICE)
+				&& optionsCtx.getSoTrx().isSales()
 				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+		{
+			docActions.remove(IDocument.ACTION_Void);
+		}
+
+		if (IDocument.STATUS_Closed.equals(docStatus) && isFixedInvoice)
 		{
 			docActions.remove(IDocument.ACTION_Void);
 		}
@@ -87,9 +94,17 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 		optionsCtx.setDocActions(ImmutableSet.copyOf(docActions));
 	}
 
+
+
 	private InvoiceId extractInvoiceId(final DocActionOptionsContext optionsCtx)
 	{
 		final String invoiceIdStr = optionsCtx.getParameterValue(PARAM_C_Invoice_ID);
 		return InvoiceId.ofRepoId(NumberUtils.asInt(invoiceIdStr));
+	}
+
+	private boolean extractIsFixedInvoice(final DocActionOptionsContext optionsCtx)
+	{
+		final String isFixedInvoice = optionsCtx.getParameterValue(PARAM_IsFixedInvoice);
+		return isFixedInvoice.equals("Y");
 	}
 }

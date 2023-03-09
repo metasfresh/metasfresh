@@ -27,6 +27,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -40,13 +41,17 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_DocType;
+
+import java.util.Optional;
 
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 
@@ -60,12 +65,12 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 
 	private static final DocBaseAndSubType SALES_INVOICE = DocBaseAndSubType.of(DOCBASETYPE_ARInvoice);
 	private static final DocBaseAndSubType CORRECTION_INVOICE = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_ARInvoice, X_C_DocType.DOCSUBTYPE_CorrectionInvoice);
 	private static final int C_DocType_ID = -1;
-	private static final AdMessageKey MSG_Event_CreditMemoGenerated = AdMessageKey.of("Event_CreditMemoGenerated");
-	private static final AdMessageKey MSG_Event_CorrectionInvoiceGenerated = AdMessageKey.of("Event_CorrectionInvoiceGenerated");
+	private static final AdMessageKey MSG_Event_DocumentGenerated = AdMessageKey.of("Event_DocumentGenerated");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -80,9 +85,9 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID());
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 
-		if(!docBaseAndSubType.equals(SALES_INVOICE))
+		if(!(docBaseAndSubType.equals(SALES_INVOICE) || invoiceBL.isAdjustmentCharge(invoiceRecord)))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an basic Sales Invoice");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an basic Sales Invoice or Adjustment Charge");
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(invoiceRecord.getDocStatus());
@@ -105,14 +110,16 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 		final de.metas.adempiere.model.I_C_Invoice invoice = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), de.metas.adempiere.model.I_C_Invoice.class, get_TrxName());
 
 		final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
-				.docTypeId(DocTypeId.ofRepoIdOrNull(C_DocType_ID))
+				.docTypeId(null)
 				.completeAndAllocate(true)
 				.referenceOriginalOrder(true)
 				.referenceInvoice(true)
-				.creditedInvoiceReinvoicable(true).build();
+				.creditedInvoiceReinvoicable(false)
+				.fixedInvoice(true)
+				.build();
 
 		final I_C_Invoice creditMemo = invoiceBL.creditInvoice(invoice, creditCtx);
-		createUserNotification(creditMemo, MSG_Event_CreditMemoGenerated);
+		createUserNotification(creditMemo);
 
 		final AdjustmentChargeCreateRequest adjustmentChargeCreateRequest = AdjustmentChargeCreateRequest.builder()
 				.invoiceID(InvoiceId.ofRepoId(getRecord_ID()))
@@ -120,25 +127,27 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 				.build();
 
 		final I_C_Invoice correctionInvoice = invoiceBL.adjustmentCharge(adjustmentChargeCreateRequest);
-		createUserNotification(correctionInvoice, MSG_Event_CorrectionInvoiceGenerated);
+		createUserNotification(correctionInvoice);
 
 		return MSG_OK;
 	}
 
-	private void createUserNotification(@NonNull final I_C_Invoice invoiceRecord, @NonNull final AdMessageKey adMessageKey)
+	private void createUserNotification(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoiceRecord);
+		final I_C_DocType docTypeRecord = docTypeDAO.getById(invoiceRecord.getC_DocTypeTarget_ID());
 		final AdWindowId targetWindow = getProcessInfo().getAdWindowId();
+		final IModelTranslationMap docTypeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(docTypeRecord);
+		final Optional<String> docTypeTrl = docTypeTrlMap.translateColumn(I_C_DocType.COLUMNNAME_Name, userBL.getUserLanguage(getUserId()).getAD_Language());
 
 		notificationBL.sendAfterCommit(
 				UserNotificationRequest.builder()
 						.recipientUserId(UserId.ofRepoId(getAD_User_ID()))
-						.contentADMessage(adMessageKey)
+						.contentADMessage(MSG_Event_DocumentGenerated)
+						.contentADMessageParam(docTypeTrl.orElse(""))
 						.contentADMessageParam(invoiceRef)
 						.targetAction(UserNotificationRequest.TargetRecordAction.ofRecordAndWindow(invoiceRef, targetWindow))
 						.build()
 		);
-
-
 	}
 }
