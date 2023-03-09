@@ -25,9 +25,11 @@ package de.metas.project.workorder.project;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.status.RStatusService;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.resource.WOProjectResource;
@@ -58,15 +60,18 @@ public class WOProjectService
 	private final WOProjectRepository woProjectRepository;
 	private final WOProjectResourceRepository woProjectResourceRepository;
 	private final WOProjectStepRepository woProjectStepRepository;
+	private final RStatusService statusService;
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
 			final WOProjectResourceRepository woProjectResourceRepository,
-			final WOProjectStepRepository woProjectStepRepository)
+			final WOProjectStepRepository woProjectStepRepository,
+			final RStatusService statusService)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
 		this.woProjectStepRepository = woProjectStepRepository;
+		this.statusService = statusService;
 	}
 
 	@NonNull
@@ -196,5 +201,16 @@ public class WOProjectService
 			Loggables.get().addLog("Update WO_Project_ID = {} with the following columns from C_Project_Parent_ID={}: {}",
 								   woProject.getProjectId().getRepoId(), parentProject.getProjectId().getRepoId(), logMessage);
 		}
+	}
+
+	@NonNull
+	public String getCalendarColor(@NonNull final WOProject woProject)
+	{
+		final String defaultCalendarColor = "#FFCF60";
+		if (woProject.getStatusId() != null)
+		{
+			return CoalesceUtil.coalesceNotNull(statusService.getCalendarColorForStatus(woProject.getStatusId()), defaultCalendarColor);
+		}
+		return defaultCalendarColor;
 	}
 }

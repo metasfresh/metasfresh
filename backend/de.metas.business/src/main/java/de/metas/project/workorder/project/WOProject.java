@@ -30,7 +30,9 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.status.RStatusId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,6 +41,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Value
 @Builder(toBuilder = true)
@@ -115,7 +119,10 @@ public class WOProject
 
 	@Nullable
 	InternalPriority internalPriority;
-	
+
+	@Nullable
+	RStatusId statusId;
+
 	@NonNull
 	public Optional<CalendarDateRange> getCalendarDateRange()
 	{
@@ -128,5 +135,21 @@ public class WOProject
 								   .startDate(dateContract)
 								   .endDate(dateFinish)
 								   .build());
+	}
+
+	@Nullable
+	public String getCalendarExternalId()
+	{
+		return Optional.ofNullable(externalId)
+				.map(id -> "VA " + id.getValue())
+				.orElse(null);
+	}
+
+	@NonNull
+	public String getCalendarHelpText()
+	{
+		return Stream.of(getCalendarExternalId(), projectReferenceExt)
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(", "));
 	}
 }

@@ -3,15 +3,19 @@ package de.metas.project.workorder.calendar;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanRef;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectCategory;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
@@ -19,18 +23,24 @@ import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.lang3.StringUtils;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class ToCalendarEntryConverter
 {
 	private static final Logger logger = LogManager.getLogger(ToCalendarEntryConverter.class);
 	@NonNull
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull
+	private final WOProjectService woProjectService = SpringContextHolder.instance.getBean(WOProjectService.class);
+
 	@NonNull
 	private final ProjectFrontendURLsProvider frontendURLs = new ProjectFrontendURLsProvider();
 
@@ -41,30 +51,20 @@ class ToCalendarEntryConverter
 			@NonNull final WOProject project,
 			@Nullable final SimulationPlanRef simulationHeaderRef)
 	{
-		final WFDurationUnit durationUnit = resource.getDurationUnit();
-
-		final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
-		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
-
 		return Optional.ofNullable(resource.getDateRange())
 				.map(dateRange -> CalendarEntry
 						.builder()
 						.entryId(BudgetAndWOCalendarEntryIdConverters.from(resource.getWoProjectResourceId()))
 						.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 						.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
-						.title(TranslatableStrings.builder()
-									   .append(project.getName())
-									   .append(" - ")
-									   .append(step.getSeqNo() + "_" + step.getName())
-									   .append(" - ")
-									   .appendQty(durationInt, durationUomSymbol)
-									   .build()
-						)
+						.title(getCalendarWOEntryTitle(project, step, resource))
 						.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 						.dateRange(dateRange)
 						.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
-						.color("#FFCF60") // orange-ish
+						.color(woProjectService.getCalendarColor(project))
 						.url(frontendURLs.getProjectUrl(ProjectCategory.WorkOrderJob, resource.getProjectId()).orElse(null))
+
+						.help(project.getCalendarHelpText())
 						.build());
 	}
 
@@ -107,18 +107,47 @@ class ToCalendarEntryConverter
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(),
 																					 budget.getResourceGroupId())))
-				.title(TranslatableStrings.builder()
-							   .append(project.getName())
-							   .append(" - ")
-							   .appendQty(budget.getPlannedDuration().toBigDecimal(),
-										  budget.getPlannedDuration().getUOMSymbol())
-							   .build())
+				.title(getCalendarBudgetEntryTitle(project, budget.getPlannedDuration()))
 				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
 				.dateRange(budget.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
 				.color("#89D72D") // metasfresh green
 				.url(frontendURLs.getProjectUrl(ProjectCategory.Budget, budget.getProjectId()).orElse(null))
+				.help("")
 				.build();
 	}
 
+	@NonNull
+	private ITranslatableString getCalendarWOEntryTitle(
+			@NonNull final WOProject project,
+			@NonNull final WOProjectStep step,
+			@NonNull final WOProjectResource resource)
+	{
+		final WFDurationUnit durationUnit = resource.getDurationUnit();
+
+		final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
+		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
+
+		return TranslatableStrings.builder()
+				.append(Stream.of(project.getName(),
+								  StringUtils.trimToEmpty(project.getCalendarExternalId()),
+								  step.getSeqNo() + "_" + step.getName())
+								.filter(Check::isNotBlank)
+								.collect(Collectors.joining(" - ")))
+				.append(" - ")
+				.appendQty(durationInt, durationUomSymbol)
+				.build();
+	}
+
+	@NonNull
+	private ITranslatableString getCalendarBudgetEntryTitle(@NonNull final BudgetProject project, @NonNull final Quantity plannedDuration)
+	{
+		return TranslatableStrings.builder()
+				.append(Stream.of(project.getName(), project.getCalendarExternalId())
+								.filter(Check::isNotBlank)
+								.collect(Collectors.joining(" - ")))
+				.append(" - ")
+				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
+				.build();
+	}
 }

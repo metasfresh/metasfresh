@@ -33,6 +33,7 @@ import de.metas.project.InternalPriority;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.status.RStatusId;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -113,6 +114,7 @@ public class WOProjectRepository
 		projectRecord.setC_ProjectType_ID(woProject.getProjectTypeId().getRepoId());
 		projectRecord.setSpecialist_Consultant_ID(UserId.toRepoId(woProject.getSpecialistConsultantID()));
 		projectRecord.setInternalPriority(InternalPriority.toCode(woProject.getInternalPriority()));
+		projectRecord.setR_Project_Status_ID(RStatusId.toRepoId(woProject.getStatusId()));
 
 		saveRecord(projectRecord);
 
@@ -321,6 +323,7 @@ public class WOProjectRepository
 				.isActive(projectRecord.isActive())
 				.specialistConsultantID(UserId.ofRepoIdOrNullIfSystem(projectRecord.getSpecialist_Consultant_ID()))
 				.internalPriority(InternalPriority.ofNullableCode(projectRecord.getInternalPriority()))
+				.statusId(RStatusId.ofRepoIdOrNull(projectRecord.getR_Project_Status_ID()))
 				.build();
 	}
 }
