@@ -6,6 +6,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 /**
  * {@link IImportProcess} to {@link JavaProcess} adapter.
@@ -32,6 +33,7 @@ public abstract class AbstractImportJavaProcess<ImportRecordType> extends JavaPr
 		importProcess.setCtx(getCtx());
 		importProcess.setParameters(getParameterAsIParams());
 		importProcess.setLoggable(this);
+		importProcess.selectedRecords(TableRecordReferenceSet.of(getProcessInfo().getRecordRefNotNull()));
 	}
 
 	// NOTE: we shall run this process out of transaction because the actual import process is managing the transaction
