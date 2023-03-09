@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
 import de.metas.bpartner.blockstatus.BlockStatus;
 import de.metas.bpartner.blockstatus.CreateBPartnerBlockStatusRequest;
-import de.metas.bpartner.blockstatus.file.BPartnerBlockFileService;
+import de.metas.bpartner.impexp.blockstatus.impl.IBPartnerBlockStatusDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
@@ -54,7 +54,7 @@ public class BPartnerBlockStatusImportProcess extends SimpleImportProcessTemplat
 {
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
-	private final BPartnerBlockFileService bPartnerBlockFileService = SpringContextHolder.instance.getBean(BPartnerBlockFileService.class);
+	private final IBPartnerBlockStatusDAO ibPartnerBlockStatusDAO = SpringContextHolder.instance.getBean(IBPartnerBlockStatusDAO.class);
 
 	@Override
 	public Class<I_I_BPartner_BlockStatus> getImportModelClass()
@@ -110,6 +110,14 @@ public class BPartnerBlockStatusImportProcess extends SimpleImportProcessTemplat
 	protected I_I_BPartner_BlockStatus retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_BPartner_BlockStatus(ctx, rs, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Override
+	protected void afterImport()
+	{
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
+		ibPartnerBlockStatusDAO.forceAcknowledgementForFailedRows(selection.getSelectionId());
 	}
 
 	@NonNull
