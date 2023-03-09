@@ -135,7 +135,7 @@ class ToCalendarEntryConverter
 		final String externalIdPrefix = sysConfigBL.getValue(SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX);
 		final String externalIdWithPrefix = project.getExternalIdAsString()
 				.filter(Check::isNotBlank)
-				.map(externalId -> externalIdPrefix + " " + externalId + " - ")
+				.map(externalId -> externalIdPrefix + externalId + " - ")
 				.orElse(null);
 
 		return TranslatableStrings.builder()

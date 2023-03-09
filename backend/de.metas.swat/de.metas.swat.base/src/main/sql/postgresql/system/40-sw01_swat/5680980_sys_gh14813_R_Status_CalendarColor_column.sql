@@ -590,5 +590,5 @@ UPDATE AD_Menu SET   Name = 'Calendar Color', Description = 'Im Ressourcenkalend
 ;
 
 -- 2023-03-09T14:38:19.962Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541599,'S',TO_TIMESTAMP('2023-03-09 16:38:19','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','de.metas.project.workorder.calendar.WOProjectExternalIdPrefix',TO_TIMESTAMP('2023-03-09 16:38:19','YYYY-MM-DD HH24:MI:SS'),100,'VA')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541599,'S',TO_TIMESTAMP('2023-03-09 16:38:19','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','de.metas.project.workorder.calendar.WOProjectExternalIdPrefix',TO_TIMESTAMP('2023-03-09 16:38:19','YYYY-MM-DD HH24:MI:SS'),100,'VA ')
 ;
