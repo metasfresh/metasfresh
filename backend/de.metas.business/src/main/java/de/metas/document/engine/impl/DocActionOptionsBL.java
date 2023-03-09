@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -30,7 +31,27 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 	@Override
 	public Set<String> getRequiredParameters(@Nullable final String contextTableName)
 	{
-		return getDocActionOptionsCustomizers(contextTableName).getParameters();
+		final HashSet<String> requiredParameters = new HashSet<>(DefaultDocActionOptionsCustomizer.instance.getParameters());
+
+		if (contextTableName != null)
+		{
+			final IDocActionOptionsCustomizer tableSpecificCustomizer = _docActionOptionsCustomizerByTableName.get().get(contextTableName);
+			if (tableSpecificCustomizer != null)
+			{
+				requiredParameters.addAll(tableSpecificCustomizer.getParameters());
+			}
+		}
+		else
+		{
+			// NOTE: in case contextTableName is not provided
+			// then we shall consider all params as (possibly) required.
+
+			_docActionOptionsCustomizerByTableName.get()
+					.values()
+					.forEach(tableSpecificCustomizer -> requiredParameters.addAll(tableSpecificCustomizer.getParameters()));
+		}
+
+		return requiredParameters;
 	}
 
 	@Override
