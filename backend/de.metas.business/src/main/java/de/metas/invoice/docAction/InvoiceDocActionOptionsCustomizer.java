@@ -62,6 +62,22 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 		final InvoiceId invoiceId = extractInvoiceId(optionsCtx);
 		final CountryId countryId = invoiceBL.getBillToCountryId(invoiceId);
 
+		if (IDocument.STATUS_InProgress.equals(docStatus)
+				&& optionsCtx.getSoTrx().isSales()
+				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+		{
+			docActions.remove(IDocument.ACTION_Void);
+		}
+
+		if (IDocument.STATUS_Completed.equals(docStatus)
+				&& optionsCtx.getSoTrx().isSales()
+				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+		{
+			docActions.remove(IDocument.ACTION_Reverse_Correct);
+			docActions.remove(IDocument.ACTION_ReActivate);
+			docActions.remove(IDocument.ACTION_Void);
+		}
+
 		if (IDocument.STATUS_Completed.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
 				&& countryDAO.isEnforceCorrectionInvoice(countryId))
