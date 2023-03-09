@@ -31,7 +31,6 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.location.ICountryDAO;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -54,11 +53,10 @@ import java.util.Optional;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 
 /**
- * TODO
+ * For Sales Invoices where billToCountry isn't set to "Enforce Correction Invoice", this Process generates a Credit Memo for the full amount, followed by a new Sales Invoice.
  */
 public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -77,7 +75,7 @@ public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPre
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(context.getSingleSelectedRecordId());
-		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID());
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 

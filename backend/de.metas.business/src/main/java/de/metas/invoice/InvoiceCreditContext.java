@@ -46,7 +46,7 @@ public class InvoiceCreditContext
 	boolean creditedInvoiceReinvoicable;
 
 	/**
-	 * @return if <code>true</code>, then the docActions <code>IDocument.ACTION_Reverse_Correct</code>, <code>IDocument.ACTION_ReActivate</code> and <code>IDocument.ACTION_Void</code> won't be available
+	 * @return if <code>true</code>, this means that this invoice should not be changeable after creation. In this case the invoice should also be completed.
 	 */
 	boolean fixedInvoice;
 }

@@ -31,7 +31,6 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.location.ICountryDAO;
 import de.metas.notification.INotificationBL;
@@ -56,11 +55,10 @@ import java.util.Optional;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 
 /**
- * TODO
+ * For Invoices where billToCountry is set to "Enforce Correction Invoice", this Process generates a Credit Memo for the full amount followed, by a Correction Invoice.
  */
 public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -69,7 +67,6 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 
 	private static final DocBaseAndSubType SALES_INVOICE = DocBaseAndSubType.of(DOCBASETYPE_ARInvoice);
 	private static final DocBaseAndSubType CORRECTION_INVOICE = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_ARInvoice, X_C_DocType.DOCSUBTYPE_CorrectionInvoice);
-	private static final int C_DocType_ID = -1;
 	private static final AdMessageKey MSG_Event_DocumentGenerated = AdMessageKey.of("Event_DocumentGenerated");
 
 	@Override
@@ -81,7 +78,7 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(context.getSingleSelectedRecordId());
-		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID());
 		final DocBaseAndSubType docBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 

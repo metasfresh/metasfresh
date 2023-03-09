@@ -733,7 +733,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				final Object contextTableNameObj = valuesCollected.get(PARAM_ContextTableName.getName());
 				return contextTableNameObj != null ? contextTableNameObj.toString() : null;
 			}
-			catch (final IllegalStateException ise)
+			catch (final Exception e)
 			{
 				return null;
 			}

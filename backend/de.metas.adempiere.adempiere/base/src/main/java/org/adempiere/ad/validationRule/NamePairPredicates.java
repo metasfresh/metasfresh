@@ -97,7 +97,7 @@ public final class NamePairPredicates
 			if (parameters == null)
 			{
 				parameters = this._parameters = predicates.stream()
-						.flatMap(predicate -> predicate.getParameters(null).stream())
+						.flatMap(predicate -> predicate.getParameters(contextTableName).stream())
 						.collect(ImmutableSet.toImmutableSet());
 			}
 			return parameters;

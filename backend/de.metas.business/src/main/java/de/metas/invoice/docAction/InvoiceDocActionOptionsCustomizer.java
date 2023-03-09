@@ -33,6 +33,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashSet;
@@ -119,15 +120,15 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 
 
 
-	private InvoiceId extractInvoiceId(final DocActionOptionsContext optionsCtx)
+	private static InvoiceId extractInvoiceId(final DocActionOptionsContext optionsCtx)
 	{
 		final String invoiceIdStr = optionsCtx.getParameterValue(PARAM_C_Invoice_ID);
 		return InvoiceId.ofRepoId(NumberUtils.asInt(invoiceIdStr));
 	}
 
-	private boolean extractIsFixedInvoice(final DocActionOptionsContext optionsCtx)
+	private static boolean extractIsFixedInvoice(final DocActionOptionsContext optionsCtx)
 	{
 		final String isFixedInvoice = optionsCtx.getParameterValue(PARAM_IsFixedInvoice);
-		return isFixedInvoice.equals("Y");
+		return StringUtils.toBoolean(isFixedInvoice);
 	}
 }
