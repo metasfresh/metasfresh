@@ -35,20 +35,6 @@ public class RStatus
 	@NonNull
 	RStatusId id;
 
-	@NonNull
-	RStatusCategoryId statusCategoryId;
-
-	@NonNull
-	String value;
-
-	@NonNull
-	String name;
-
-	@NonNull
-	Integer seqNo;
-
 	@Nullable
 	String calendarColor;
-
-	boolean isDefault;
 }

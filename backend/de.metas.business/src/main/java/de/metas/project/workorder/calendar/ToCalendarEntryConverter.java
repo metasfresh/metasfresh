@@ -22,6 +22,7 @@ import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
@@ -35,9 +36,12 @@ import java.util.stream.Stream;
 
 class ToCalendarEntryConverter
 {
+	private static final String SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX = "de.metas.project.workorder.calendar.WOProjectExternalIdPrefix";
 	private static final Logger logger = LogManager.getLogger(ToCalendarEntryConverter.class);
 	@NonNull
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull
 	private final WOProjectService woProjectService = SpringContextHolder.instance.getBean(WOProjectService.class);
 
@@ -64,7 +68,7 @@ class ToCalendarEntryConverter
 						.color(woProjectService.getCalendarColor(project))
 						.url(frontendURLs.getProjectUrl(ProjectCategory.WorkOrderJob, resource.getProjectId()).orElse(null))
 
-						.help(project.getCalendarHelpText())
+						.help(computeHelpTextForCalendarEntry(project))
 						.build());
 	}
 
@@ -83,6 +87,7 @@ class ToCalendarEntryConverter
 						.setParameter("WOProjectResource", woProjectResource));
 	}
 
+	@NonNull
 	private String getTemporalUnitSymbolOrEmpty(final @NonNull TemporalUnit temporalUnit)
 	{
 		try
@@ -113,7 +118,6 @@ class ToCalendarEntryConverter
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
 				.color("#89D72D") // metasfresh green
 				.url(frontendURLs.getProjectUrl(ProjectCategory.Budget, budget.getProjectId()).orElse(null))
-				.help("")
 				.build();
 	}
 
@@ -128,12 +132,17 @@ class ToCalendarEntryConverter
 		final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
 		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
 
+		final String externalIdPrefix = sysConfigBL.getValue(SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX);
+		final String externalIdWithPrefix = project.getExternalIdAsString()
+				.filter(Check::isNotBlank)
+				.map(externalId -> externalIdPrefix + " " + externalId + " - ")
+				.orElse(null);
+
 		return TranslatableStrings.builder()
-				.append(Stream.of(project.getName(),
-								  StringUtils.trimToEmpty(project.getCalendarExternalId()),
-								  step.getSeqNo() + "_" + step.getName())
-								.filter(Check::isNotBlank)
-								.collect(Collectors.joining(" - ")))
+				.append(externalIdWithPrefix)
+				.append(project.getName())
+				.append(" - ")
+				.append(step.getSeqNo() + "_" + step.getName())
 				.append(" - ")
 				.appendQty(durationInt, durationUomSymbol)
 				.build();
@@ -142,12 +151,27 @@ class ToCalendarEntryConverter
 	@NonNull
 	private ITranslatableString getCalendarBudgetEntryTitle(@NonNull final BudgetProject project, @NonNull final Quantity plannedDuration)
 	{
+		final String externalIdPrefix = project.getExternalIdAsString()
+				.filter(Check::isNotBlank)
+				.map(externalId -> externalId + " - ")
+				.orElse(null);
+
 		return TranslatableStrings.builder()
-				.append(Stream.of(project.getName(), project.getCalendarExternalId())
-								.filter(Check::isNotBlank)
-								.collect(Collectors.joining(" - ")))
+				.append(externalIdPrefix)
+				.append(project.getName())
 				.append(" - ")
 				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
 				.build();
+	}
+
+	@NonNull
+	private static String computeHelpTextForCalendarEntry(@NonNull final WOProject project)
+	{
+		final String projectExternalId = project.getExternalIdAsString()
+				.orElse(null);
+
+		return Stream.of(projectExternalId, project.getProjectReferenceExt())
+				.filter(de.metas.util.Check::isNotBlank)
+				.collect(Collectors.joining(", "));
 	}
 }

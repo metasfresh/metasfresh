@@ -46,11 +46,6 @@ public class RStatusRepository
 	{
 		return RStatus.builder()
 				.id(RStatusId.ofRepoId(record.getR_Status_ID()))
-				.statusCategoryId(RStatusCategoryId.ofRepoId(record.getR_StatusCategory_ID()))
-				.name(record.getName())
-				.value(record.getValue())
-				.seqNo(record.getSeqNo())
-				.isDefault(record.isDefault())
 				.calendarColor(record.getCalendarColor())
 				.build();
 	}

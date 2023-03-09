@@ -25,7 +25,6 @@ package de.metas.project.workorder.project;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
@@ -51,8 +50,11 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+
+import static de.metas.project.ProjectConstants.DEFAULT_WO_CALENDAR_ENTRY_COLOR;
 
 @Service
 public class WOProjectService
@@ -206,11 +208,8 @@ public class WOProjectService
 	@NonNull
 	public String getCalendarColor(@NonNull final WOProject woProject)
 	{
-		final String defaultCalendarColor = "#FFCF60";
-		if (woProject.getStatusId() != null)
-		{
-			return CoalesceUtil.coalesceNotNull(statusService.getCalendarColorForStatus(woProject.getStatusId()), defaultCalendarColor);
-		}
-		return defaultCalendarColor;
+		return Optional.ofNullable(woProject.getStatusId())
+				.map(statusService::getCalendarColorForStatus)
+				.orElse(DEFAULT_WO_CALENDAR_ENTRY_COLOR);
 	}
 }

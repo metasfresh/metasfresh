@@ -100,11 +100,10 @@ public class BudgetProject
 	@Nullable
 	InternalPriority internalPriority;
 
-	@Nullable
-	public String getCalendarExternalId()
+	@NonNull
+	public Optional<String> getExternalIdAsString()
 	{
 		return Optional.ofNullable(externalId)
-				.map(ExternalId::getValue)
-				.orElse(null);
+				.map(ExternalId::getValue);
 	}
 }

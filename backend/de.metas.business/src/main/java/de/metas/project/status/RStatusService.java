@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 @Service
 public class RStatusService
 {
+	@NonNull
 	private final RStatusRepository statusRepository;
 
 	public RStatusService(@NonNull final RStatusRepository statusRepository)
