@@ -375,13 +375,35 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
-		final CostAmount priceDifference = amtDifference.isZero() || receiptQty.isZero()
-				? CostAmount.zero(currentCost.getCurrencyId())
-				: amtDifference.divide(receiptQty, currentCost.getPrecision());
+
+		final CostAmount costAdjustmentAmt;
+		final CostAmount alreadyShippedAmt;
 
 		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
-		final CostAmount costAdjustmentAmt = priceDifference.multiply(qtyStillInStock);
-		final CostAmount alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
+		if(amtDifference.isZero())
+		{
+			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
+			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
+		}
+		else if(receiptQty.isZero())
+		{
+			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
+			alreadyShippedAmt = amtDifference;
+		}
+		else if(receiptQty.equalsIgnoreSource(qtyStillInStock))
+		{
+			costAdjustmentAmt  = amtDifference;
+			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
+		}
+		else
+		{
+			final CostAmount priceDifference = amtDifference.isZero() || receiptQty.isZero()
+					? CostAmount.zero(currentCost.getCurrencyId())
+					: amtDifference.divide(receiptQty, currentCost.getPrecision());
+
+			costAdjustmentAmt = priceDifference.multiply(qtyStillInStock);
+			alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
+		}
 
 		return CostAmountDetailed.builder()
 				.mainAmt(invoicedAmt)
