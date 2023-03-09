@@ -69,6 +69,13 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 			docActions.remove(IDocument.ACTION_Void);
 		}
 
+		if (IDocument.STATUS_Drafted.equals(docStatus)
+				&& optionsCtx.getSoTrx().isSales()
+				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+		{
+			docActions.remove(IDocument.ACTION_Void);
+		}
+
 		if (IDocument.STATUS_Completed.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
 				&& countryDAO.isEnforceCorrectionInvoice(countryId))
