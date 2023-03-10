@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1059344685L;
+	private static final long serialVersionUID = 1624442889L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -316,7 +316,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 
 	/** 
 	 * DocSubType AD_Reference_ID=148
-	 * Reference name: C_DocType SubTypeSO
+	 * Reference name: C_DocType SubType
 	 */
 	public static final int DOCSUBTYPE_AD_Reference_ID=148;
 	/** OnCreditOrder = WI */
@@ -425,6 +425,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_InventoryShortageDocument = "ISD";
 	/** InventoryOverageDocument = IOD */
 	public static final String DOCSUBTYPE_InventoryOverageDocument = "IOD";
+	/** CorrectionInvoice = CI */
+	public static final String DOCSUBTYPE_CorrectionInvoice = "CI";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{

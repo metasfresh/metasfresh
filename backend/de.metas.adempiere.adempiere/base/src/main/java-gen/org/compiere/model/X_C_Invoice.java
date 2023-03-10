@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2677555L;
+	private static final long serialVersionUID = -691382146L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -1054,6 +1054,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setIsFixedInvoice (final boolean IsFixedInvoice)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsFixedInvoice, IsFixedInvoice);
+	}
+
+	@Override
+	public boolean isFixedInvoice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedInvoice);
+	}
+
+	@Override
 	public void setIsInDispute (final boolean IsInDispute)
 	{
 		set_Value (COLUMNNAME_IsInDispute, IsInDispute);
@@ -1489,18 +1501,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1()
-	{
-		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
-	{
-		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
-	}
-
-	@Override
 	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -1513,18 +1513,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getUser1_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User1_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ElementValue getUser2()
-	{
-		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
-	{
-		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
 	@Override
