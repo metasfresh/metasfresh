@@ -101,7 +101,7 @@ public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt() throws Exception
 	{
-		final de.metas.adempiere.model.I_C_Invoice invoice = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), de.metas.adempiere.model.I_C_Invoice.class, get_TrxName());
+		final de.metas.adempiere.model.I_C_Invoice invoice = InterfaceWrapperHelper.create(invoiceBL.getById(InvoiceId.ofRepoId(getRecord_ID())), de.metas.adempiere.model.I_C_Invoice.class);
 
 		final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
 				.docTypeId(null)
