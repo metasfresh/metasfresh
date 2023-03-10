@@ -1971,13 +1971,21 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CountryId getBillToCountryId(@NonNull final InvoiceId invoiceId)
+	public Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice)
-				.getBPartnerLocationAndCaptureId();
+		if(invoice == null)
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice)
+					.getBPartnerLocationAndCaptureId();
 
-		return bPartnerBL.getCountryId(bpartnerLocationAndCaptureId);
+			return Optional.of(bPartnerBL.getCountryId(bpartnerLocationAndCaptureId));
+		}
+
 	}
 
 }
