@@ -37,6 +37,7 @@ import de.metas.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -61,25 +62,28 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 
 		final String docStatus = optionsCtx.getDocStatus();
 		final InvoiceId invoiceId = extractInvoiceId(optionsCtx);
-		final CountryId countryId = invoiceBL.getBillToCountryId(invoiceId);
+		final Optional<CountryId> countryId = invoiceBL.getBillToCountryId(invoiceId);
+
+		final boolean isEnforceCorrectionInvoice;
+		isEnforceCorrectionInvoice = countryId.filter(countryDAO::isEnforceCorrectionInvoice).isPresent();
 
 		if (IDocument.STATUS_InProgress.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
-				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+				&& isEnforceCorrectionInvoice)
 		{
 			docActions.remove(IDocument.ACTION_Void);
 		}
 
 		if (IDocument.STATUS_Drafted.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
-				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+				&& isEnforceCorrectionInvoice)
 		{
 			docActions.remove(IDocument.ACTION_Void);
 		}
 
 		if (IDocument.STATUS_Completed.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
-				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+				&& isEnforceCorrectionInvoice)
 		{
 			docActions.remove(IDocument.ACTION_Reverse_Correct);
 			docActions.remove(IDocument.ACTION_ReActivate);
@@ -88,7 +92,7 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 
 		if (IDocument.STATUS_Completed.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
-				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+				&& isEnforceCorrectionInvoice)
 		{
 			docActions.remove(IDocument.ACTION_Reverse_Correct);
 			docActions.remove(IDocument.ACTION_ReActivate);
@@ -105,7 +109,7 @@ public class InvoiceDocActionOptionsCustomizer implements IDocActionOptionsCusto
 
 		if (IDocument.STATUS_Closed.equals(docStatus)
 				&& optionsCtx.getSoTrx().isSales()
-				&& countryDAO.isEnforceCorrectionInvoice(countryId))
+				&& isEnforceCorrectionInvoice)
 		{
 			docActions.remove(IDocument.ACTION_Void);
 		}
