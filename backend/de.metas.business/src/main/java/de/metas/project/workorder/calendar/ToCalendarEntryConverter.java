@@ -150,13 +150,10 @@ class ToCalendarEntryConverter
 	@NonNull
 	private ITranslatableString getCalendarBudgetEntryTitle(@NonNull final BudgetProject project, @NonNull final Quantity plannedDuration)
 	{
-		final String externalIdPrefix = project.getExternalIdAsString()
-				.filter(Check::isNotBlank)
-				.map(externalId -> externalId + " - ")
-				.orElse(null);
-
 		return TranslatableStrings.builder()
-				.append(externalIdPrefix)
+				.append(project.getExternalIdAsString()
+								.map(externalId -> externalId + " - ")
+								.orElse(""))
 				.append(project.getName())
 				.append(" - ")
 				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
@@ -175,7 +172,7 @@ class ToCalendarEntryConverter
 	private String computeHelpTextForCalendarEntry(@NonNull final WOProject project)
 	{
 		return Stream.of(getWOExternalIdWithPrefix(project).orElse(""), project.getProjectReferenceExt())
-				.filter(de.metas.util.Check::isNotBlank)
+				.filter(Check::isNotBlank)
 				.collect(Collectors.joining(", "));
 	}
 
