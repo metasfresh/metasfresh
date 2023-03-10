@@ -31,6 +31,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -90,7 +91,13 @@ public class C_Invoice_ReissueInvoice extends JavaProcess implements IProcessPre
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not completed or closed");
 		}
 
-		if(countryDAO.isEnforceCorrectionInvoice(invoiceBL.getBillToCountryId(invoiceId)))
+		final Optional<CountryId> billToCountryId = invoiceBL.getBillToCountryId(invoiceId);
+		if(!billToCountryId.isPresent())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("BillToCountry should be present");
+		}
+
+		if(countryDAO.isEnforceCorrectionInvoice(billToCountryId.get()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("isEnforceCorrectionInvoice");
 		}

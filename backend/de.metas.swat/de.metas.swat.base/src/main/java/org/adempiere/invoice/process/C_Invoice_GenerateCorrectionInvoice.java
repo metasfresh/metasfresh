@@ -32,6 +32,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
+import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -42,7 +43,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
-import de.metas.workflow.model.validator.C_Invoice;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -94,7 +94,13 @@ public class C_Invoice_GenerateCorrectionInvoice extends JavaProcess implements 
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not completed or closed");
 		}
 
-		if(!countryDAO.isEnforceCorrectionInvoice(invoiceBL.getBillToCountryId(invoiceId)))
+		final Optional<CountryId> billToCountryId = invoiceBL.getBillToCountryId(invoiceId);
+		if(!billToCountryId.isPresent())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("BillToCountry should be present");
+		}
+
+		if(!countryDAO.isEnforceCorrectionInvoice(billToCountryId.get()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not isEnforceCorrectionInvoice");
 		}
