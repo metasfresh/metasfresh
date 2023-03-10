@@ -75,8 +75,37 @@ FROM (
                 bp.c_bpartner_id,
                 fa.record_id                                                                     AS c_invoice_id,
                 fa.docbasetype,
-                t.rate                                                                           AS c_tax_rate,
-                fa.vatCode,
+                CASE
+                    -- When the tax have:
+                    --  1. The rate equal to zero
+                    --  2. The Type dest. country = EU-foreign
+                    --  3. The ReqTaxCert = Y
+                    WHEN (t.rate = 0 AND t.requirestaxcertificate = 'Y' AND t.typeofdestcountry = 'WITHIN_COUNTRY_AREA')
+                        -- Find the correspondent domestic tax with:
+                        --  1. The same Tax Category
+                        --  2. The same Country of origin
+                        --  3. The Type dest. country = EU-foreign
+                        --  4. The ReqTaxCert = N
+                        THEN (SELECT tx.rate
+                              FROM c_tax tx
+                              WHERE (tx.requirestaxcertificate = 'N' OR tx.requirestaxcertificate IS NULL)
+                                AND tx.typeofdestcountry = 'WITHIN_COUNTRY_AREA'
+                                AND tx.c_country_id = t.c_country_id
+                                AND tx.c_taxcategory_id = t.c_taxcategory_id
+                                AND tx.ad_org_id = t.ad_org_id
+                              LIMIT 1)
+                        ELSE t.rate
+                END                                                                              AS c_tax_rate,
+                CASE
+                    -- When the tax have:
+                    --  1. The rate equal to zero
+                    --  2. The Type dest. country = EU-foreign
+                    --  3. The ReqTaxCert = Y
+                    WHEN (t.rate = 0 AND t.requirestaxcertificate = 'Y' AND t.typeofdestcountry = 'WITHIN_COUNTRY_AREA')
+                        -- Set the vatcode = 9
+                        THEN '9'
+                        ELSE fa.vatcode
+                END                                                                              AS vatcode,
                 dt.name                                                                          AS c_doctype_name,
                 fa.fact_acct_id,
                 fa.fact_acct_id                                                                  AS rv_datev_export_fact_acct_invoice_id,
