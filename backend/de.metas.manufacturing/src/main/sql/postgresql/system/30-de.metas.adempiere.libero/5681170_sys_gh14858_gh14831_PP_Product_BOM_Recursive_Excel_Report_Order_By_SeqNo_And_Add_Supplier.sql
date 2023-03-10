@@ -24,7 +24,7 @@ drop function if exists PP_Product_BOM_Recursive(numeric, character varying);
 drop function if exists PP_Product_BOM_Recursive_Report(numeric);
 
 CREATE OR REPLACE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric, p_ad_language character varying)
-    RETURNS TABLE(line text, parent_line text, productvalue character varying, productname character varying, qtybom numeric, percentage numeric, uomsymbol character varying, depth integer, m_product_id numeric, isqtypercentage character, c_uom_id numeric, path integer[])
+    RETURNS TABLE(line text, parent_line text, productvalue character varying, productname character varying, qtybom numeric, percentage numeric, uomsymbol character varying, depth integer, m_product_id numeric, isqtypercentage character, c_uom_id numeric, path integer[], supplier text)
     STABLE
     LANGUAGE sql
 AS
@@ -45,13 +45,16 @@ $$
 				round(1::numeric, uom.StdPrecision) as QtyBOM,
 				null::numeric as Percentage,
 				COALESCE(uom.UOMSymbol, uomt.UOMSymbol) as UOMSymbol,
-				uom.C_UOM_ID
+				uom.C_UOM_ID,
+                COALESCE(bPartner.value, '') as supplier
 			from PP_Product_BOM bom
 			inner join M_Product bomProduct on bomProduct.M_Product_ID=bom.M_Product_ID
 			LEFT OUTER JOIN M_Product_Trl pt    ON bomProduct.M_Product_ID = pt.M_Product_ID AND pt.AD_Language =p_ad_language
        AND pt.isActive = 'Y'
 			left outer join C_UOM uom on uom.C_UOM_ID=coalesce(bom.C_UOM_ID, bomProduct.C_UOM_ID)
 			LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.IsActive='Y' and uomt.AD_Language = p_ad_language
+            left join C_BPartner_Product bPartnerProduct on bomProduct.m_product_id = bPartnerProduct.m_product_id and bPartnerProduct.iscurrentvendor='Y' and bPartnerProduct.isActive='Y'
+            left join C_BPartner bPartner on bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id and bPartner.isActive='Y'
 			where
 			bom.PP_Product_BOM_ID=PP_Product_BOM_Recursive.p_PP_Product_BOM_ID
 		)
@@ -80,7 +83,8 @@ $$
 				(case when bomLine.IsQtyPercentage='N' then round(bomLine.QtyBOM, uom.StdPrecision) else null end) as QtyBOM,
 				(case when bomLine.IsQtyPercentage='Y' then round(bomLine.QtyBatch, 2) else null end) as Percentage,
 				COALESCE(uom.UOMSymbol, uomt.UOMSymbol) as UOMSymbol,
-				uom.C_UOM_ID
+				uom.C_UOM_ID,
+                COALESCE(bPartner.value, '') as supplier
 			from bomNode parent
 			inner join PP_Product_BOMLine bomLine on bomLine.PP_Product_BOM_ID=parent.PP_Product_BOM_ID
 			inner join M_Product bomLineProduct on bomLineProduct.M_Product_ID = bomLine.M_Product_ID
@@ -88,6 +92,8 @@ $$
        AND pt.isActive = 'Y'
 			left outer join C_UOM uom on uom.C_UOM_ID=bomLine.C_UOM_ID
 			LEFT OUTER JOIN C_UOM_Trl uomt ON bomLine.C_UOM_ID = uomt.C_UOM_ID AND uomt.IsActive='Y' and uomt.AD_Language = p_ad_language
+            left join C_BPartner_Product bPartnerProduct on bomLine.m_product_id = bPartnerProduct.m_product_id and bPartnerProduct.iscurrentvendor='Y' and bPartnerProduct.isActive='Y'
+            left join C_BPartner bPartner on bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id and bPartner.isActive='Y'
 			where bomLine.IsActive='Y'
 			order by bomLine.PP_Product_BOMLine_ID
 		)
@@ -106,7 +112,8 @@ $$
 		n.M_Product_ID,
 		n.IsQtyPercentage,
 		n.C_UOM_ID,
-        n.path
+        n.path,
+        n.supplier
 	from bomNode n
 	order by path
 	;
@@ -114,4 +121,26 @@ $$
 ;
 
 ALTER FUNCTION pp_product_bom_recursive(numeric, varchar) OWNER TO metasfresh
+;
+
+CREATE OR REPLACE FUNCTION pp_product_bom_recursive_report(p_pp_product_bom_id numeric)
+    RETURNS TABLE(line text, productvalue character varying, productname character varying, qtybom numeric, percentage numeric, uomsymbol character varying, supplier text)
+    STABLE
+    LANGUAGE sql
+AS
+$$
+select
+    t.Line,
+    t.ProductValue,
+    t.ProductName,
+    t.QtyBOM,
+    t.Percentage,
+    t.UOMSymbol,
+    t.Supplier
+from PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, null) t
+order by t.path
+$$
+;
+
+ALTER FUNCTION pp_product_bom_recursive_report(numeric) OWNER TO metasfresh
 ;
