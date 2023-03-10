@@ -30,16 +30,12 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_R_Status;
-import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
 
-@Interceptor(I_R_Status.class)
 @Callout(I_R_Status.class)
 @Component
 public class R_Status
@@ -52,8 +48,6 @@ public class R_Status
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_R_Status.COLUMNNAME_CalendarColor)
 	@CalloutMethod(columnNames = I_R_Status.COLUMNNAME_CalendarColor)
 	public void validateHexadecimalCalendarColor(@NonNull final I_R_Status statusRecord)
 	{

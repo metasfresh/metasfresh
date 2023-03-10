@@ -37,6 +37,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.metas.project.ProjectConstants.DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR;
+
 class ToCalendarEntryConverter
 {
 	private static final String SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX = "de.metas.project.workorder.calendar.WOProjectExternalIdPrefix";
@@ -119,7 +121,7 @@ class ToCalendarEntryConverter
 				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
 				.dateRange(budget.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
-				.color("#89D72D") // metasfresh green
+				.color(DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR) // metasfresh green
 				.url(frontendURLs.getProjectUrl(ProjectCategory.Budget, budget.getProjectId()).orElse(null))
 				.build();
 	}
@@ -148,19 +150,6 @@ class ToCalendarEntryConverter
 	}
 
 	@NonNull
-	private ITranslatableString getCalendarBudgetEntryTitle(@NonNull final BudgetProject project, @NonNull final Quantity plannedDuration)
-	{
-		return TranslatableStrings.builder()
-				.append(project.getExternalIdAsString()
-								.map(externalId -> externalId + " - ")
-								.orElse(""))
-				.append(project.getName())
-				.append(" - ")
-				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
-				.build();
-	}
-
-	@NonNull
 	private Optional<String> getWOExternalIdWithPrefix(@NonNull final WOProject project)
 	{
 		return project.getExternalIdAsString()
@@ -182,5 +171,20 @@ class ToCalendarEntryConverter
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), orgId);
 		return Optional.ofNullable(sysConfigBL.getValue(SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX, clientAndOrgId))
 				.orElse("");
+	}
+
+	@NonNull
+	private static ITranslatableString getCalendarBudgetEntryTitle(
+			@NonNull final BudgetProject project,
+			@NonNull final Quantity plannedDuration)
+	{
+		return TranslatableStrings.builder()
+				.append(project.getExternalIdAsString()
+								.map(externalId -> externalId + " - ")
+								.orElse(""))
+				.append(project.getName())
+				.append(" - ")
+				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
+				.build();
 	}
 }
