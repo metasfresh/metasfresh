@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14755](https://github.com/metasfresh/metasfresh/issues/14755) Correction Invoices 
   * [#14709](https://github.com/metasfresh/metasfresh/issues/14709) CR042 mbank (Poland bank data) 
   * [#14721](https://github.com/metasfresh/metasfresh/issues/14721) Partner Block and Release - TSV format 
   * [#14768](https://github.com/metasfresh/metasfresh/issues/14768) InvoiceEnqueueing considers already processed invoice candidates and is therefore slow
