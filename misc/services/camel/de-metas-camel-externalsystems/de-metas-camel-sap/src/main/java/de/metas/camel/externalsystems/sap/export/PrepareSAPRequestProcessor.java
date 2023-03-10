@@ -23,36 +23,38 @@
 package de.metas.camel.externalsystems.sap.export;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessLogger;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import lombok.NonNull;
+import de.metas.camel.externalsystems.sap.export.generalledger.lobservices.RequestBuilder;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URI;
 import static de.metas.camel.externalsystems.sap.export.ExportAcctDetailsRouteBuilder.ROUTE_PROPERTY_EXPORT_ACCT_ROUTE_CONTEXT;
 
 public class PrepareSAPRequestProcessor implements Processor
 {
-	@NonNull
-	private final ProcessLogger processLogger;
-
-	public PrepareSAPRequestProcessor(final @NonNull ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
-
 	@Override
-	public void process(final Exchange exchange)
+	public void process(final Exchange exchange) throws ParserConfigurationException, TransformerException
 	{
 		final JsonNode processResponse = exchange.getIn().getBody(JsonNode.class);
+
+		if (!processResponse.isArray())
+		{
+			throw new RuntimeException("Unexpected response! see: " + processResponse);
+		}
 
 		final ExportAcctDetailsRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange,
 																								   ROUTE_PROPERTY_EXPORT_ACCT_ROUTE_CONTEXT,
 																								   ExportAcctDetailsRouteContext.class);
 
-		processLogger.logMessage("TargetURL: \n" + routeContext.getCredentials().getPostAcctDocumentsURL()
-										 + "\n\nPostgREST response: \n" + processResponse.toString(),
-								 exchange.getIn().getHeader(ExternalSystemCamelConstants.HEADER_PINSTANCE_ID, Integer.class));
+		exchange.getIn().setHeader(HEADER_TARGET_URI, routeContext.getCredentials().getPostAcctDocumentsURL());
+
+		final String requestBody = RequestBuilder.getXMLRequest(ImmutableList.copyOf(processResponse.iterator()));
+
+		exchange.getIn().setBody(requestBody);
 	}
 }

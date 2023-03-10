@@ -149,8 +149,8 @@ public class ExternalSystemConstants
 
 
 	public static final String PARAM_PostGREST_AD_Process_Value = "PostgREST_AD_Process_Value";
-	public static final String PARAM_PostGREST_AD_Process_Param_Record_ID_NAME = "PostgREST_AD_Process_Record_ID_Name";
-	public static final String PARAM_PostGREST_AD_Process_Param_Record_ID_VALUE = "PostgREST_AD_Process_Record_ID_Value";
+
+	public static final String PARAM_PostGREST_JSONParamList = "PostgREST_Invoke_AD_Process_JSONParamList";
 
 	public static final String PARAM_SAP_SignedVersion = "SAP_SignedVersion";
 	public static final String PARAM_SAP_SignedPermissions = "SAP_SignedPermissions";
@@ -158,3 +158,4 @@ public class ExternalSystemConstants
 	public static final String PARAM_SAP_Post_Acct_Documents_Path = "SAP_Post_Acct_Documents_Path";
 	public static final String PARAM_SAP_ApiVersion = "SAP_ApiVersion";
 }
+

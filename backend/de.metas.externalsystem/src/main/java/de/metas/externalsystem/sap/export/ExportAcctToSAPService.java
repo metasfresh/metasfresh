@@ -22,11 +22,14 @@
 
 package de.metas.externalsystem.sap.export;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.process.request.JSONProcessParam;
 import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -158,8 +161,8 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 						.setParameter("Record_ID", recordReference.getRecord_ID()));
 
 		parameters.put(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Value, getProcessValue(exportAcctConfig));
-		parameters.put(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_NAME, acctDocumentInfo.getColumnName());
-		parameters.put(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_VALUE, String.valueOf(acctDocumentInfo.getRecordId()));
+
+		parameters.put(ExternalSystemConstants.PARAM_PostGREST_JSONParamList, getInvokeProcessParams(recordReference));
 
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, externalSystemSAPConfig.getValue());
 
@@ -220,8 +223,6 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 				return AcctDocumentInfo.builder()
 						.docTypeId(DocTypeId.ofRepoId(inOut.getC_DocType_ID()))
 						.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
-						.columnName(I_M_InOut.COLUMNNAME_M_InOut_ID)
-						.recordId(inOut.getM_InOut_ID())
 						.build();
 			default:
 				throw new AdempiereException("Unsupported TableRecordReference!")
@@ -249,6 +250,16 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 		return processDAO.getById(config.getProcessId()).getValue();
 	}
 
+	@NonNull
+	private static String getInvokeProcessParams(@NonNull final TableRecordReference recordReference)
+	{
+		final ImmutableList<JSONProcessParam> processParams = ImmutableList.of(
+				JSONProcessParam.of(TableRecordReference.COLUMNNAME_Record_ID, String.valueOf(recordReference.getRecord_ID())),
+				JSONProcessParam.of(TableRecordReference.COLUMNNAME_AD_Table_ID, String.valueOf(recordReference.getAdTableId().getRepoId())));
+
+		return JsonObjectMapperHolder.toJson(processParams);
+	}
+
 	private static class TemporaryCache
 	{
 		private final ConcurrentHashMap<TableRecordReference, AcctDocumentInfo> recordReference2AcctDocumentInfo = new ConcurrentHashMap<>();
@@ -272,11 +283,6 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 	@Builder
 	private static class AcctDocumentInfo
 	{
-		@NonNull
-		String columnName;
-
-		int recordId;
-
 		@NonNull
 		OrgId orgId;
 

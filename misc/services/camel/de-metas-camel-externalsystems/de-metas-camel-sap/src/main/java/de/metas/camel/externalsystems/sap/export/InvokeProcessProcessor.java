@@ -22,7 +22,9 @@
 
 package de.metas.camel.externalsystems.sap.export;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.v2.InvokeProcessCamelRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -35,7 +37,7 @@ import org.apache.camel.Processor;
 public class InvokeProcessProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange)
+	public void process(final Exchange exchange) throws JsonProcessingException
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
@@ -46,27 +48,20 @@ public class InvokeProcessProcessor implements Processor
 			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PostGREST_AD_Process_Value);
 		}
 
-		final String paramRecordIdName = request.getParameters().get(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_NAME);
+		final String invokeProcessPrams = request.getParameters().get(ExternalSystemConstants.PARAM_PostGREST_JSONParamList);
 
-		if (Check.isBlank(paramRecordIdName))
+		if (Check.isBlank(invokeProcessPrams))
 		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_NAME);
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PostGREST_JSONParamList);
 		}
 
-		final String paramRecordId = request.getParameters().get(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_VALUE);
-
-		if (Check.isBlank(paramRecordId))
-		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_VALUE);
-		}
+		final ImmutableList<JSONProcessParam> processParams = ImmutableList.copyOf(JsonObjectMapperHolder.sharedJsonObjectMapper()
+																						   .readValue(invokeProcessPrams, JSONProcessParam[].class));
 
 		final InvokeProcessCamelRequest invokeProcessRequest = InvokeProcessCamelRequest.builder()
 				.processValue(processValue)
 				.runProcessRequest(RunProcessRequest.builder()
-										   .processParameters(ImmutableList.of(JSONProcessParam.builder()
-																					   .name(paramRecordIdName)
-																					   .value(paramRecordId)
-																					   .build()))
+										   .processParameters(processParams)
 										   .build())
 				.build();
 

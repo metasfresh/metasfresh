@@ -134,6 +134,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-jaxb-starter</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.common.externalsystem</groupId>
             <artifactId>de-metas-common-externalsystem</artifactId>
