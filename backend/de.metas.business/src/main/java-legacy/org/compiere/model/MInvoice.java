@@ -130,7 +130,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 * @param trxName            trx
 	 * @param setOrder           set Order links
 	 * @return Invoice
-	 * @deprecated please use {@link IInvoiceBL#copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)} instead.
+	 * @deprecated please use {@link IInvoiceBL#copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean, boolean)} instead.
 	 */
 	@Deprecated
 	public static MInvoice copyFrom(final MInvoice from, final Timestamp dateDoc, final Timestamp dateAcct,
@@ -141,7 +141,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// NOTE: the old crap is deleted from here.... search it in SCM history
 		final I_C_Invoice to = Services.get(IInvoiceBL.class).copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, counter, setOrder,
 																	   false,  // setInvoiceRef == false
-																	   true); // copyLines == true
+																	   true, // copyLines == true
+																	   false);
 
 		// Make sure DateAcct is set (08356)
 		to.setDateAcct(dateAcct);
@@ -171,7 +172,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	} // get
 
 	private static final Logger s_log = LogManager.getLogger(MInvoice.class);
-	private static CCache<Integer, MInvoice> s_cache = new CCache<>("C_Invoice", 20, 2);    // 2 minutes
+	private static final CCache<Integer, MInvoice> s_cache = new CCache<>("C_Invoice", 20, 2);    // 2 minutes
 
 	private MInvoiceLine[] m_lines;
 	private MInvoiceTax[] m_taxes;

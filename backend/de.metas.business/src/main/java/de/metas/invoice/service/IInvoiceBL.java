@@ -56,6 +56,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setOrderRef if true, then the copy shall reference the same C_Order that <code>from</code> references
 	 * @param isSetLineInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
 	 * @param isCopyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
+	 * @param isFixedInvoice if true, this means that this invoice can't be reversed, reactivated or voided after creation. In this case the invoice should also be completed.
 	 */
 	org.compiere.model.I_C_Invoice copyFrom(
 			org.compiere.model.I_C_Invoice from,
@@ -65,7 +66,8 @@ public interface IInvoiceBL extends ISingletonService
 			boolean isCounterpart,
 			boolean setOrderRef,
 			boolean isSetLineInvoiceRef,
-			boolean isCopyLines);
+			boolean isCopyLines,
+			boolean isFixedInvoice);
 
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef);
 
@@ -86,7 +88,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setInvoiceRef if <code>true</code>, then set <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> as described for the counter parameter (do this independent of the counter parameter's value).
 	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, InvoiceCreditContext)}.
 	 *            May be <code>null</code>.
-	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)
+	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean, boolean)
 	 */
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef,
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> docLineCopyHandler);
@@ -387,4 +389,6 @@ public interface IInvoiceBL extends ISingletonService
 	Quantity getQtyInvoicedStockUOM(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	Instant getDateAcct(InvoiceId invoiceId);
+
+	CountryId getBillToCountryId(@NonNull final InvoiceId invoiceId);
 }

@@ -173,6 +173,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	protected final transient Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -204,7 +205,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId)
+	public I_C_InvoiceLine getLineById(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return invoiceDAO.retrieveLineById(invoiceLineId);
 	}
@@ -256,7 +257,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
 						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
 						true, // copyLines == true
-						new CreditMemoInvoiceCopyHandler(creditCtx)),
+						new CreditMemoInvoiceCopyHandler(creditCtx),
+						creditCtx.isFixedInvoice()),
 				I_C_Invoice.class);
 		return creditMemo;
 	}
@@ -300,12 +302,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final boolean isCounterpart,
 			final boolean setOrderRef,
 			final boolean isSetLineInvoiceRef,
-			final boolean isCopyLines)
+			final boolean isCopyLines,
+			final boolean isFixedInvoice)
 	{
-		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
+		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler, isFixedInvoice);
 	}
 
-	private final org.compiere.model.I_C_Invoice copyFrom(
+	private org.compiere.model.I_C_Invoice copyFrom(
 			final org.compiere.model.I_C_Invoice from,
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
@@ -314,7 +317,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final boolean setOrderRef,
 			final boolean isSetLineInvoiceRef,
 			final boolean isCopyLines,
-			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> additionalDocCopyHandler)
+			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> additionalDocCopyHandler,
+			final boolean isFixedInvoice)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(from);
 		final String trxName = InterfaceWrapperHelper.getTrxName(from);
@@ -362,6 +366,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setProcessing(false);
 		// delete references
 		to.setIsSelfService(false);
+		to.setIsFixedInvoice(isFixedInvoice);
 		if (setOrderRef)
 		{
 			to.setC_Order_ID(from.getC_Order_ID());
@@ -837,7 +842,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
+	public void setDocTypeTargetIdAndUpdateDescription(final org.compiere.model.I_C_Invoice invoice, final int docTypeId)
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
 		updateDescriptionFromDocTypeTargetId(invoice, null, null);
@@ -1021,7 +1026,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Collections.sort(lines, cmp);
 	}
 
-	private final Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -1056,7 +1061,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * @param lines
 	 * @return comparator
 	 */
-	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final HashMap<Integer, Integer> invoiceLineId2inOutId = new HashMap<>();
 
@@ -1146,7 +1151,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return cmp;
 	}
 
-	private final Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
 
@@ -1442,7 +1447,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -1546,7 +1551,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean isAdjustmentCharge(final I_C_DocType docType)
+	public final boolean isAdjustmentCharge(@NonNull final I_C_DocType docType)
 	{
 		final String docBaseType = docType.getDocBaseType();
 
@@ -1564,9 +1569,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return false;
 		}
 
-		// must be one of Mengendifferenz or Preisdifferenz
+		// must be one of Mengendifferenz (AmountDiff), Preisdifferenz (PriceDiff) or Korrekturrechnung (CorrectionInvoice)
 		if (X_C_DocType.DOCSUBTYPE_AQ.compareTo(docSubType) != 0
-				&& X_C_DocType.DOCSUBTYPE_AP.compareTo(docSubType) != 0)
+				&& X_C_DocType.DOCSUBTYPE_AP.compareTo(docSubType) != 0
+				&& X_C_DocType.DOCSUBTYPE_CorrectionInvoice.compareTo(docSubType) != 0)
 		{
 			return false;
 		}
@@ -1666,7 +1672,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						false, // counter == false
 						true, // setOrderRef == true
 						true, // setInvoiceRef == true
-						true), // copyLines == true
+						true, // copyLines == true
+						false),
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
@@ -1962,4 +1969,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return getById(invoiceId).getDateAcct().toInstant();
 	}
+
+	@Override
+	public CountryId getBillToCountryId(@NonNull final InvoiceId invoiceId)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice)
+				.getBPartnerLocationAndCaptureId();
+
+		return bPartnerBL.getCountryId(bpartnerLocationAndCaptureId);
+	}
+
 }
