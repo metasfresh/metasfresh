@@ -18,7 +18,7 @@ export const renderEventContent = (params) => {
   );
 };
 
-const CalendarEvent = ({ title, help = null }) => {
+const CalendarEvent = ({ title, help }) => {
   return (
     <div className="calendar-event">
       <span title={help}>{title}</span>
