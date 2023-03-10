@@ -57,6 +57,7 @@ public class JsonCalendarEntry
 	boolean editable;
 	@Nullable String color;
 	@Nullable String url;
+	@Nullable String help;
 
 	public static JsonCalendarEntry of(
 			@NonNull final CalendarEntry entry,
@@ -76,6 +77,7 @@ public class JsonCalendarEntry
 				.editable(entry.isEditable())
 				.color(entry.getColor())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
+				.help(entry.getHelp())
 				.build();
 	}
 }

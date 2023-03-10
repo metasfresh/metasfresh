@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.status.RStatusId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;

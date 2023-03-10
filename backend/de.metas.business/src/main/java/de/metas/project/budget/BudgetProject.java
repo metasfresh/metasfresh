@@ -37,6 +37,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -98,4 +99,11 @@ public class BudgetProject
 
 	@Nullable
 	InternalPriority internalPriority;
+
+	@NonNull
+	public Optional<String> getExternalIdAsString()
+	{
+		return Optional.ofNullable(externalId)
+				.map(ExternalId::getValue);
+	}
 }
