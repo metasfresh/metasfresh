@@ -354,10 +354,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					fl_Payment = fact.createLine()
 							.setDocLine(line)
 							.setAccount(paymentAcct)
-							.setAmtSource(getCurrencyId(), allocatedAmt, null)
+							.setCurrencyId(getCurrencyId())
+							.setAmtSourceDrOrCr(allocatedAmt)
 							.alsoAddZeroLine()
 							.buildAndAdd();
-
 				}
 				// Outgoing payment
 				else
