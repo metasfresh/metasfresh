@@ -46,7 +46,7 @@ public class InvoiceCreditContext
 	boolean creditedInvoiceReinvoicable;
 
 	/**
-	 * @return if <code>true</code>, this means that this invoice should not be changeable after creation. In this case the invoice should also be completed.
+	 * @return if <code>true</code>, this means that this invoice can't be reversed, reactivated or voided after creation. In this case the invoice should also be completed.
 	 */
 	boolean fixedInvoice;
 }

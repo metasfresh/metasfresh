@@ -74,7 +74,6 @@ public final class NamePairPredicates
 	private static final class ComposedNamePairPredicate implements INamePairPredicate
 	{
 		private final ImmutableSet<INamePairPredicate> predicates;
-		private transient ImmutableSet<String> _parameters = null; // lazy
 
 		private ComposedNamePairPredicate(final Set<INamePairPredicate> predicates)
 		{
@@ -93,14 +92,9 @@ public final class NamePairPredicates
 		@Override
 		public ImmutableSet<String> getParameters(@Nullable final String contextTableName)
 		{
-			ImmutableSet<String> parameters = this._parameters;
-			if (parameters == null)
-			{
-				parameters = this._parameters = predicates.stream()
+			return predicates.stream()
 						.flatMap(predicate -> predicate.getParameters(contextTableName).stream())
 						.collect(ImmutableSet.toImmutableSet());
-			}
-			return parameters;
 		}
 
 		@Override

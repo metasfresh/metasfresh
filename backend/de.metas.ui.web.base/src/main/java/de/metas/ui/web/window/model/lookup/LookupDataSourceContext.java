@@ -735,6 +735,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			}
 			catch (final Exception e)
 			{
+				logger.warn(e.getMessage());
 				return null;
 			}
 

@@ -56,7 +56,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setOrderRef if true, then the copy shall reference the same C_Order that <code>from</code> references
 	 * @param isSetLineInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
 	 * @param isCopyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
-	 * @param isFixedInvoice if true, this means that this invoice should not be changeable after creation. In this case the invoice should also be completed.
+	 * @param isFixedInvoice if true, this means that this invoice can't be reversed, reactivated or voided after creation. In this case the invoice should also be completed.
 	 */
 	org.compiere.model.I_C_Invoice copyFrom(
 			org.compiere.model.I_C_Invoice from,
