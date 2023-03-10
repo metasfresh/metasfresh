@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1868517016L;
+	private static final long serialVersionUID = -1002435990L;
 
     /** Standard Constructor */
     public X_C_Cost_Type (final Properties ctx, final int C_Cost_Type_ID, @Nullable final String trxName)
@@ -101,6 +101,30 @@ public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Typ
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsAllowOnPurchase (final boolean IsAllowOnPurchase)
+	{
+		set_Value (COLUMNNAME_IsAllowOnPurchase, IsAllowOnPurchase);
+	}
+
+	@Override
+	public boolean isAllowOnPurchase() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowOnPurchase);
+	}
+
+	@Override
+	public void setIsAllowOnSales (final boolean IsAllowOnSales)
+	{
+		set_Value (COLUMNNAME_IsAllowOnSales, IsAllowOnSales);
+	}
+
+	@Override
+	public boolean isAllowOnSales() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowOnSales);
 	}
 
 	@Override

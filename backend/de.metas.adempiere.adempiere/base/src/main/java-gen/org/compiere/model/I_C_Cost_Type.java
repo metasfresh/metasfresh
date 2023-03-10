@@ -183,6 +183,48 @@ public interface I_C_Cost_Type
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow on Purchase.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowOnPurchase (boolean IsAllowOnPurchase);
+
+	/**
+	 * Get Allow on Purchase.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowOnPurchase();
+
+	ModelColumn<I_C_Cost_Type, Object> COLUMN_IsAllowOnPurchase = new ModelColumn<>(I_C_Cost_Type.class, "IsAllowOnPurchase", null);
+	String COLUMNNAME_IsAllowOnPurchase = "IsAllowOnPurchase";
+
+	/**
+	 * Set Allow on Sales.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowOnSales (boolean IsAllowOnSales);
+
+	/**
+	 * Get Allow on Sales.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowOnSales();
+
+	ModelColumn<I_C_Cost_Type, Object> COLUMN_IsAllowOnSales = new ModelColumn<>(I_C_Cost_Type.class, "IsAllowOnSales", null);
+	String COLUMNNAME_IsAllowOnSales = "IsAllowOnSales";
+
+	/**
 	 * Set Cost Element.
 	 * Product Cost Element
 	 *
