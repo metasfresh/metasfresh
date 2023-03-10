@@ -8,6 +8,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
@@ -25,6 +27,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -132,14 +135,10 @@ class ToCalendarEntryConverter
 		final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
 		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
 
-		final String externalIdPrefix = sysConfigBL.getValue(SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX);
-		final String externalIdWithPrefix = project.getExternalIdAsString()
-				.filter(Check::isNotBlank)
-				.map(externalId -> externalIdPrefix + externalId + " - ")
-				.orElse(null);
-
 		return TranslatableStrings.builder()
-				.append(externalIdWithPrefix)
+				.append(getWOExternalIdWithPrefix(project)
+								.map(externalId -> externalId + " - ")
+								.orElse(""))
 				.append(project.getName())
 				.append(" - ")
 				.append(step.getSeqNo() + "_" + step.getName())
@@ -165,13 +164,26 @@ class ToCalendarEntryConverter
 	}
 
 	@NonNull
-	private static String computeHelpTextForCalendarEntry(@NonNull final WOProject project)
+	private Optional<String> getWOExternalIdWithPrefix(@NonNull final WOProject project)
 	{
-		final String projectExternalId = project.getExternalIdAsString()
-				.orElse(null);
+		return project.getExternalIdAsString()
+				.filter(Check::isNotBlank)
+				.map(externalId -> getExternalIdPrefix(project.getOrgId()) + externalId);
+	}
 
-		return Stream.of(projectExternalId, project.getProjectReferenceExt())
+	@NonNull
+	private String computeHelpTextForCalendarEntry(@NonNull final WOProject project)
+	{
+		return Stream.of(getWOExternalIdWithPrefix(project).orElse(""), project.getProjectReferenceExt())
 				.filter(de.metas.util.Check::isNotBlank)
 				.collect(Collectors.joining(", "));
+	}
+
+	@NonNull
+	private String getExternalIdPrefix(@NonNull final OrgId orgId)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), orgId);
+		return Optional.ofNullable(sysConfigBL.getValue(SYSCONFIG_WO_PROJECT_EXTERNAL_ID_PREFIX, clientAndOrgId))
+				.orElse("");
 	}
 }
