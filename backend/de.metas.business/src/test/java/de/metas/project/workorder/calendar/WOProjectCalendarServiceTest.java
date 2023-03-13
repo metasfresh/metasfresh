@@ -17,6 +17,8 @@ import de.metas.project.budget.BudgetProjectSimulationRepository;
 import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.project.service.PlainProjectRepository;
+import de.metas.project.status.RStatusRepository;
+import de.metas.project.status.RStatusService;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.conflicts.WOProjectResourceConflictRepository;
 import de.metas.project.workorder.project.CreateWOProjectRequest;
@@ -62,7 +64,8 @@ class WOProjectCalendarServiceTest
 		this.budgetProjectRepository = new BudgetProjectRepository();
 		this.woProjectRepository = new WOProjectRepository();
 		final WOProjectResourceRepository woProjectResourceRepository = new WOProjectResourceRepository();
-		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository());
+		final RStatusRepository statusRepository = new RStatusRepository();
+		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), new RStatusService(statusRepository));
 		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository());
 		final WOProjectSimulationRepository woProjectSimulationRepository = new WOProjectSimulationRepository();
 		final SimulationPlanRepository simulationPlanRepository = new SimulationPlanRepository();
