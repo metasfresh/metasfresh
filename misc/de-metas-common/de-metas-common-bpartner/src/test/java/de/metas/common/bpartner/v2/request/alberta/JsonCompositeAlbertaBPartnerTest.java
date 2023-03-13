@@ -23,7 +23,7 @@
 package de.metas.common.bpartner.v2.request.alberta;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -41,7 +41,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 public class JsonCompositeAlbertaBPartnerTest
 {
 	private Expect expect;
@@ -102,6 +102,6 @@ public class JsonCompositeAlbertaBPartnerTest
 		final JsonCompositeAlbertaBPartner result = mapper.readValue(string, JsonCompositeAlbertaBPartner.class);
 
 		assertThat(result).isEqualTo(compositeAlbertaBPartner);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

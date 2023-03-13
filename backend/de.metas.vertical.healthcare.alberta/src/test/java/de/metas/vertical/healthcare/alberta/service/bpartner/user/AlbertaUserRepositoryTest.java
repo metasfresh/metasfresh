@@ -23,7 +23,6 @@
 package de.metas.vertical.healthcare.alberta.service.bpartner.user;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.user.UserId;
 import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUser;
@@ -31,19 +30,13 @@ import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUserRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.user.GenderType;
 import de.metas.vertical.healthcare.alberta.bpartner.user.TitleType;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 public class AlbertaUserRepositoryTest
 {
 	private AlbertaUserRepository albertaUserRepository;
@@ -71,7 +64,7 @@ public class AlbertaUserRepositoryTest
 		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -86,6 +79,6 @@ public class AlbertaUserRepositoryTest
 		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

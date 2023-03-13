@@ -1,7 +1,7 @@
 package de.metas.handlingunits.inventory;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -69,8 +69,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@ExtendWith(AdempiereTestWatcher.class)
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class InventoryRepositoryTest
 {
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
@@ -200,7 +199,7 @@ class InventoryRepositoryTest
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);
 
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(reloadedResult);
+		expect.serializer("orderedJson").toMatchSnapshot(reloadedResult);
 
 		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}

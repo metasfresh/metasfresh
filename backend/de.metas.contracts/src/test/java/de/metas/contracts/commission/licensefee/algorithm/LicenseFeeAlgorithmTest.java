@@ -23,7 +23,7 @@
 package de.metas.contracts.commission.licensefee.algorithm;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -61,7 +61,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 public class LicenseFeeAlgorithmTest
 {
 	private LicenseFeeAlgorithm licenseFeeAlgorithm;
@@ -86,7 +86,7 @@ public class LicenseFeeAlgorithmTest
 		//then
 		assertThat(commissionShare.size()).isEqualTo(1);
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(commissionShare.get(0));
+		expect.serializer("orderedJson").toMatchSnapshot(commissionShare.get(0));
 	}
 
 	@Test

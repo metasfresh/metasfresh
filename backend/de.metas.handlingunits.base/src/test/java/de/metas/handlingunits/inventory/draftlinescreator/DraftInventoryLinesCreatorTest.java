@@ -1,7 +1,7 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseAndSubType;
@@ -69,7 +69,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 class DraftInventoryLinesCreatorTest
 {
 	private final ProductId PRODUCT_ID_40 = ProductId.ofRepoId(40);
@@ -142,7 +142,7 @@ class DraftInventoryLinesCreatorTest
 		new DraftInventoryLinesCreator(ctx).execute();
 
 		final Inventory result = inventoryRepo.getById(inventoryId);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -150,7 +150,7 @@ class DraftInventoryLinesCreatorTest
 	{
 		final Inventory result = execute_MultipleHUInventoryLineAggregator_performTest();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	/** Verifies that the creator also works if an inventory already has some lines/HUs*/
@@ -178,7 +178,7 @@ class DraftInventoryLinesCreatorTest
 				HuId.ofRepoId(200),
 				HuId.ofRepoId(300),
 				HuId.ofRepoId(305)/*newly added*/);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	private Inventory execute_MultipleHUInventoryLineAggregator_performTest()

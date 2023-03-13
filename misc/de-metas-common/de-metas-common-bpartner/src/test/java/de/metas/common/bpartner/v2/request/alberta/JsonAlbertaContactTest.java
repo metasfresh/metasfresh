@@ -23,7 +23,7 @@
 package de.metas.common.bpartner.v2.request.alberta;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -62,6 +62,6 @@ public class JsonAlbertaContactTest
 		final JsonAlbertaContact result = mapper.readValue(string, JsonAlbertaContact.class);
 
 		assertThat(result).isEqualTo(contact);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

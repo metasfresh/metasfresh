@@ -23,7 +23,7 @@
 package de.metas;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
@@ -37,7 +37,7 @@ import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 class CreatedUpdatedInfoTest
 {
 	private Expect expect;
@@ -56,7 +56,7 @@ class CreatedUpdatedInfoTest
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(createdUpdatedInfo);
+		expect.serializer("orderedJson").toMatchSnapshot(createdUpdatedInfo);
 	}
 
 	@Test

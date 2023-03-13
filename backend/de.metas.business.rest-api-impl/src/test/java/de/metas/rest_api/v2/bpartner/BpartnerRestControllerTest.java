@@ -23,7 +23,7 @@
 package de.metas.rest_api.v2.bpartner;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
@@ -142,8 +142,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(AdempiereTestWatcher.class)
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
@@ -227,7 +226,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -239,7 +238,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -253,7 +252,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -270,7 +269,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -287,7 +286,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -304,7 +303,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -321,7 +320,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -338,7 +337,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -398,7 +397,7 @@ class BpartnerRestControllerTest
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(persistedResult);
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount + 1);
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
@@ -512,7 +511,7 @@ class BpartnerRestControllerTest
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("12345");
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(resultBody);
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 
 		// finally, also make sure that if we repeat the same invocation, no new location record is created
 		final RecordCounts countsBefore2ndInvocation = new RecordCounts();
@@ -716,21 +715,21 @@ class BpartnerRestControllerTest
 		assertThat(resultContactId.getRepoId()).isEqualTo(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(persistedResult);
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
 	void createOrUpdateContact_update_extContactIdentifier()
 	{
 		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + EXTERNAL_SYSTEM_NAME + "-" + AD_USER_EXTERNAL_ID);
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(persistedResult);
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
 	void createOrUpdateContact_update_idContactIdentifier()
 	{
 		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update(Integer.toString(AD_USER_ID));
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(persistedResult);
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
@@ -806,7 +805,7 @@ class BpartnerRestControllerTest
 
 		assertThat(persistedLocation.get().getId().getRepoId()).isEqualTo(metasfreshId.getValue());
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(persistedResult);
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
@@ -883,9 +882,9 @@ class BpartnerRestControllerTest
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 
-		expect.scenario("page1").serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(page1Body);
-		expect.scenario("page2").serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(page2Body);
-		expect.scenario("page3").serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(page3Body);
+		expect.scenario("page1").serializer("orderedJson").toMatchSnapshot(page1Body);
+		expect.scenario("page2").serializer("orderedJson").toMatchSnapshot(page2Body);
+		expect.scenario("page3").serializer("orderedJson").toMatchSnapshot(page3Body);
 	}
 
 	@Test
@@ -905,6 +904,6 @@ class BpartnerRestControllerTest
 		assertThat(responseProductBPartner).isNotNull();
 		assertThat(responseProductBPartner.getBPartnerProducts()).hasSize(1);
 
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(responseProductBPartner);
+		expect.serializer("orderedJson").toMatchSnapshot(responseProductBPartner);
 	}
 }

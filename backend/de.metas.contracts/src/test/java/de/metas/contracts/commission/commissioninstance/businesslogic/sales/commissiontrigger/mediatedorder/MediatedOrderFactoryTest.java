@@ -23,7 +23,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -65,7 +65,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 import static org.mockito.ArgumentMatchers.eq;
 
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 public class MediatedOrderFactoryTest
 {
 	private MediatedOrderFactory mediatedOrderFactory;
@@ -114,7 +114,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -144,7 +144,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test

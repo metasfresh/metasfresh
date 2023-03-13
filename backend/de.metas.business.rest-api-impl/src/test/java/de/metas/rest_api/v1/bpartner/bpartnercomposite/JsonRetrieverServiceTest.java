@@ -23,7 +23,7 @@
 package de.metas.rest_api.v1.bpartner.bpartnercomposite;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
@@ -64,7 +64,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 class JsonRetrieverServiceTest
 {
 	private final OrgId orgId = OrgId.ofRepoId(10);
@@ -112,7 +112,7 @@ class JsonRetrieverServiceTest
 		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKeys);
 
 		assertThat(result).isNotEmpty();
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result.get());
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
 	}
 
 	/**

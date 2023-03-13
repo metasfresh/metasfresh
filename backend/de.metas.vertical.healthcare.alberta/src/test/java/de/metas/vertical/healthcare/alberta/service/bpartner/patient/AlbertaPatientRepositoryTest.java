@@ -23,7 +23,7 @@
 package de.metas.vertical.healthcare.alberta.service.bpartner.patient;
 
 import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.jackson.serializers.DeterministicJacksonSnapshotSerializer;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
@@ -40,7 +40,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-@ExtendWith({ SnapshotExtension.class})
+@ExtendWith(SnapshotExtension.class)
 public class AlbertaPatientRepositoryTest
 {
 	private AlbertaPatientRepository albertaPatientRepository;
@@ -84,7 +84,7 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient result = albertaPatientRepository.save(patient);
 
 		//then
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -99,6 +99,6 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient result = albertaPatientRepository.save(patient);
 
 		//then
-		expect.serializer(DeterministicJacksonSnapshotSerializer.class).toMatchSnapshot(result);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

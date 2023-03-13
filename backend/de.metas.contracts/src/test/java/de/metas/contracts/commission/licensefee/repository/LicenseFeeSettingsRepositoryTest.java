@@ -22,6 +22,8 @@
 
 package de.metas.contracts.commission.licensefee.repository;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPGroupId;
 import de.metas.contracts.commission.licensefee.model.LicenseFeeSettings;
 import de.metas.contracts.commission.licensefee.model.LicenseFeeSettingsId;
@@ -30,27 +32,25 @@ import de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine;
 import lombok.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 public class LicenseFeeSettingsRepositoryTest
 {
 	private LicenseFeeSettingsRepository licenseFeeSettingsRepository;
+	private Expect expect;
 
 	@BeforeAll
 	static void init()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -58,12 +58,6 @@ public class LicenseFeeSettingsRepositoryTest
 	public void beforeEach()
 	{
 		licenseFeeSettingsRepository = new LicenseFeeSettingsRepository();
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -95,7 +89,7 @@ public class LicenseFeeSettingsRepositoryTest
 		//then
 		assertThat(licenseFeeSettings.getLines().size()).isEqualTo(1);
 
-		expect(licenseFeeSettings).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(licenseFeeSettings);
 	}
 
 	private I_C_LicenseFeeSettings createLicenseFeeSettingsRecord()
