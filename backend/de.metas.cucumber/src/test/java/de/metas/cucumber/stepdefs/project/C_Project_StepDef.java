@@ -42,7 +42,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.RStatusId;
+import de.metas.project.status.RStatusId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
