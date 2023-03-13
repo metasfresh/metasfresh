@@ -118,8 +118,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     # dev-note: update dateInvoiced to be set in the past in order to generate dunning
     And update C_Invoice:
-      | Identifier | OPT.DateInvoiced |
-      | invoice_1  | 2021-04-08       |
+      | Identifier | OPT.DueDate |
+      | invoice_1  | 2021-04-08  |
 
     And invoke "C_Dunning_Candidate_Create" process:
       | C_DunningLevel_ID.Identifier | DunningDate | OPT.IsFullUpdate |
