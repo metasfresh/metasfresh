@@ -15,6 +15,7 @@ import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
@@ -668,6 +669,12 @@ public final class FactLine extends X_Fact_Acct
 		{
 			setM_SectionCode_ID(m_doc.getSectionCodeId());
 		}
+
+		// C_BPartner_ID2
+		setC_BPartner2_ID(CoalesceUtil.coalesceSuppliers(
+				() -> m_docLine.getBPartnerId2(),
+				() -> m_doc.getBPartnerId2()
+		));
 
 		// User List 1
 		if (m_docLine != null)
@@ -1392,8 +1399,6 @@ public final class FactLine extends X_Fact_Acct
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
 			setC_Activity_ID(fact.getC_Activity_ID());
-			setC_OrderSO_ID(fact.getC_OrderSO_ID());
-			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 			setC_Campaign_ID(fact.getC_Campaign_ID());
 			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
 			setC_LocFrom_ID(fact.getC_LocFrom_ID());
@@ -1404,10 +1409,10 @@ public final class FactLine extends X_Fact_Acct
 			setUser2_ID(fact.getUser2_ID());
 			setC_UOM_ID(fact.getC_UOM_ID());
 			setC_Tax_ID(fact.getC_Tax_ID());
-			// Org for cross charge
 			setAD_Org_ID(fact.getAD_Org_ID());
 			setC_OrderSO_ID(fact.getC_OrderSO_ID());
 			setM_SectionCode_ID(fact.getM_SectionCode_ID());
+			setC_BPartner2_ID(fact.getC_BPartner2_ID());
 
 			return true; // success
 		}
@@ -1505,6 +1510,11 @@ public final class FactLine extends X_Fact_Acct
 		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
 
+	public void setC_BPartner2_ID(@Nullable final BPartnerId bpartnerId)
+	{
+		super.setC_BPartner2_ID(BPartnerId.toRepoId(bpartnerId));
+	}
+
 	public void setC_Project_ID(@Nullable final ProjectId projectId)
 	{
 		super.setC_Project_ID(ProjectId.toRepoId(projectId));
@@ -1545,6 +1555,7 @@ public final class FactLine extends X_Fact_Acct
 		setC_OrderSO_ID(dimension.getSalesOrderId());
 		setM_SectionCode_ID(dimension.getSectionCodeId());
 		setM_Product_ID(dimension.getProductId());
+		setC_BPartner2_ID(dimension.getBpartnerId2());
 		setUser1_ID(dimension.getUser1_ID());
 		setUser2_ID(dimension.getUser2_ID());
 		setUserElement1_ID(dimension.getUserElement1Id());
