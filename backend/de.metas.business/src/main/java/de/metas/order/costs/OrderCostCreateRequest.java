@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
+import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,13 +22,15 @@ public class OrderCostCreateRequest
 	@Nullable CostCalculationMethodParams costCalculationMethodParams;
 
 	@NonNull ImmutableSet<OrderAndLineId> orderAndLineIds;
+	@Nullable ProductId invoiceableProductId;
 
 	@Builder
 	private OrderCostCreateRequest(
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final OrderCostTypeId costTypeId,
 			@Nullable final CostCalculationMethodParams costCalculationMethodParams,
-			@NonNull final ImmutableSet<OrderAndLineId> orderAndLineIds)
+			@NonNull final ImmutableSet<OrderAndLineId> orderAndLineIds,
+			@Nullable final ProductId invoiceableProductId)
 	{
 		this.bpartnerId = bpartnerId;
 		if (orderAndLineIds.isEmpty())
@@ -38,6 +41,7 @@ public class OrderCostCreateRequest
 		this.costTypeId = costTypeId;
 		this.costCalculationMethodParams = costCalculationMethodParams;
 		this.orderAndLineIds = orderAndLineIds;
+		this.invoiceableProductId = invoiceableProductId;
 	}
 
 	public OrderId getOrderId()

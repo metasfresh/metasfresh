@@ -55,6 +55,8 @@ public class OrderCost
 
 	@Getter @NonNull private final ImmutableList<OrderCostDetail> details;
 
+	@Getter @Nullable private OrderLineId createdOrderLineId;
+
 	@Builder
 	private OrderCost(
 			final @Nullable OrderCostId id,
@@ -68,7 +70,8 @@ public class OrderCost
 			final @Nullable CostCalculationMethodParams calculationMethodParams,
 			final @NonNull CostDistributionMethod distributionMethod,
 			final @Nullable Money costAmount,
-			final @NonNull ImmutableList<OrderCostDetail> details)
+			final @NonNull ImmutableList<OrderCostDetail> details,
+			final @Nullable OrderLineId createdOrderLineId)
 	{
 		if (details.isEmpty())
 		{
@@ -93,6 +96,7 @@ public class OrderCost
 		this.distributionMethod = distributionMethod;
 		this.costAmount = costAmount != null ? costAmount : Money.zero(detailsCurrencyId);
 		this.details = details;
+		this.createdOrderLineId = createdOrderLineId;
 	}
 
 	public CurrencyId getCurrencyId() {return costAmount.getCurrencyId();}
@@ -154,33 +158,33 @@ public class OrderCost
 
 	private void distributeCostAmountToDetails_AmountBased(
 			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+	{
+		final Money amtToDistribute = getCostAmount();
+
+		final CurrencyId currencyId = amtToDistribute.getCurrencyId();
+		final CurrencyPrecision precision = currencyPrecisionProvider.apply(currencyId);
+
+		final Money totalOrderNetAmount = getOrderLinesNetAmt();
+		Money distributedAmt = Money.zero(currencyId);
+		for (int i = 0, lastIndex = details.size() - 1; i <= lastIndex; i++)
+		{
+			final OrderCostDetail detail = details.get(i);
+			final Money lineCostAmount;
+			if (i < lastIndex)
 			{
-				final Money amtToDistribute = getCostAmount();
-
-				final CurrencyId currencyId = amtToDistribute.getCurrencyId();
-				final CurrencyPrecision precision = currencyPrecisionProvider.apply(currencyId);
-
-				final Money totalOrderNetAmount = getOrderLinesNetAmt();
-				Money distributedAmt = Money.zero(currencyId);
-				for (int i = 0, lastIndex = details.size() - 1; i <= lastIndex; i++)
-				{
-					final OrderCostDetail detail = details.get(i);
-					final Money lineCostAmount;
-					if (i < lastIndex)
-					{
-						final Percent percent = detail.getOrderLineNetAmt().percentageOf(totalOrderNetAmount);
-						lineCostAmount = amtToDistribute.multiply(percent, precision);
-					}
-					else
-					{
-						lineCostAmount = amtToDistribute.subtract(distributedAmt);
-					}
-
-					detail.setCostAmount(lineCostAmount);
-
-					distributedAmt = distributedAmt.add(lineCostAmount);
-				}
+				final Percent percent = detail.getOrderLineNetAmt().percentageOf(totalOrderNetAmount);
+				lineCostAmount = amtToDistribute.multiply(percent, precision);
 			}
+			else
+			{
+				lineCostAmount = amtToDistribute.subtract(distributedAmt);
+			}
+
+			detail.setCostAmount(lineCostAmount);
+
+			distributedAmt = distributedAmt.add(lineCostAmount);
+		}
+	}
 
 	private void distributeCostAmountToDetails_QuantityBased(
 			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider,
@@ -269,4 +273,8 @@ public class OrderCost
 				.orElseThrow(() -> new AdempiereException("No cost detail found for " + orderLineId));
 	}
 
+	public void setCreatedOrderLineId(@Nullable final OrderLineId createdOrderLineId)
+	{
+		this.createdOrderLineId = createdOrderLineId;
+	}
 }

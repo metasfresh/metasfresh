@@ -8,6 +8,7 @@ import de.metas.costing.CostElementId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethod;
@@ -30,6 +31,7 @@ import org.compiere.model.I_C_Order_Cost;
 import org.compiere.model.I_C_Order_Cost_Detail;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +118,7 @@ public class OrderCostRepository
 
 		return OrderCost.builder()
 				.id(orderCostId)
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.orderId(extractOrderId(record))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
@@ -130,8 +132,24 @@ public class OrderCostRepository
 						.stream()
 						.map(OrderCostRepository::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
+				.createdOrderLineId(extractCreatedOrderLineId(record))
 				.build();
 	}
+
+	@Nullable
+	private static OrderLineId extractCreatedOrderLineId(final @NonNull I_C_Order_Cost record)
+	{
+		return OrderLineId.ofRepoIdOrNull(record.getCreated_OrderLine_ID());
+	}
+
+	@Nullable
+	public static OrderAndLineId extractCreatedOrderAndLineId(final @NonNull I_C_Order_Cost record)
+	{
+		return OrderAndLineId.ofNullable(extractOrderId(record), extractCreatedOrderLineId(record));
+	}
+
+	@NonNull
+	private static OrderId extractOrderId(final @NonNull I_C_Order_Cost record) {return OrderId.ofRepoId(record.getC_Order_ID());}
 
 	private static OrderCostDetail fromRecord(@NonNull final I_C_Order_Cost_Detail record)
 	{
@@ -232,6 +250,7 @@ public class OrderCostRepository
 		record.setCostDistributionMethod(from.getDistributionMethod().getCode());
 		record.setC_Currency_ID(from.getCostAmount().getCurrencyId().getRepoId());
 		record.setCostAmount(from.getCostAmount().toBigDecimal());
+		record.setCreated_OrderLine_ID(OrderLineId.toRepoId(from.getCreatedOrderLineId()));
 	}
 
 	private static void updateRecord(final I_C_Order_Cost_Detail record, final OrderCostDetail from)
@@ -253,5 +272,23 @@ public class OrderCostRepository
 		queryDetailsByOrderCostId(orderCostId)
 				.create()
 				.delete();
+	}
+
+	public void deleteByCreatedOrderLineId(@NonNull final OrderAndLineId createdOrderLineId)
+	{
+		final I_C_Order_Cost orderCostRecord = queryBL.createQueryBuilder(I_C_Order_Cost.class)
+				.addEqualsFilter(I_C_Order_Cost.COLUMNNAME_C_Order_ID, createdOrderLineId.getOrderId())
+				.addEqualsFilter(I_C_Order_Cost.COLUMNNAME_Created_OrderLine_ID, createdOrderLineId.getOrderLineId())
+				.create()
+				.firstOnly();
+		if (orderCostRecord == null)
+		{
+			return;
+		}
+
+		final OrderCostId orderCostId = OrderCostId.ofRepoId(orderCostRecord.getC_Order_Cost_ID());
+		deleteDetails(orderCostId);
+
+		InterfaceWrapperHelper.delete(orderCostRecord, false);
 	}
 }
