@@ -811,6 +811,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return SectionCodeId.ofRepoIdOrNull(getValue("M_SectionCode_ID"));
 	}
 
+	public BPartnerId getBPartnerId2() {return BPartnerId.ofRepoIdOrNull(getValue("C_BPartner2_ID"));}
+
 	public final int getUser1_ID()
 	{
 		return getValue("User1_ID");

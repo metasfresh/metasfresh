@@ -1488,6 +1488,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIdOrNull("M_SectionCode_ID", SectionCodeId::ofRepoIdOrNull);
 	}
 
+	public BPartnerId getBPartnerId2() {return getValueAsIdOrNull("C_BPartner2_ID", BPartnerId::ofRepoIdOrNull);}
+
 	protected final int getValueAsIntOrZero(final String ColumnName)
 	{
 		final PO po = getPO();

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.jgoodies.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -50,6 +51,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.document.dimension.ShipmentScheduleDimensionFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
@@ -91,7 +93,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/** Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}. */
+/**
+ * Note that contrary to the class name, this might as well be a shipment schedule *without* HU. See {@link #ofShipmentScheduleWithoutHu(IHUContext, I_M_ShipmentSchedule, StockQtyAndUOMQty, M_ShipmentSchedule_QuantityTypeToUse)}.
+ */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ShipmentScheduleWithHU
 {
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
@@ -147,6 +152,7 @@ public class ShipmentScheduleWithHU
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
 
+	private final ShipmentScheduleDimensionFactory shipmentScheduleDimensionFactory = new ShipmentScheduleDimensionFactory();
 	private final IHUContext huContext;
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private final Quantity pickedQty;
@@ -575,5 +581,10 @@ public class ShipmentScheduleWithHU
 	public ShipperId getShipperId()
 	{
 		return ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID());
+	}
+
+	public Dimension getDimension()
+	{
+		return shipmentScheduleDimensionFactory.getFromRecord(this.shipmentSchedule);
 	}
 }
