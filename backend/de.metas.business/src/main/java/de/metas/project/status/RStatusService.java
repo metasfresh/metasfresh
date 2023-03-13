@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,27 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.project.status;
 
-import java.time.Duration;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-public interface ProjectConstants
+import javax.annotation.Nullable;
+
+@Service
+public class RStatusService
 {
-	Duration DEFAULT_DURATION = Duration.ofHours(1);
+	@NonNull
+	private final RStatusRepository statusRepository;
 
-	String DEFAULT_WO_CALENDAR_ENTRY_COLOR = "#FFCF60";
-	String DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR = "#89D72D";
+	public RStatusService(@NonNull final RStatusRepository statusRepository)
+	{
+		this.statusRepository = statusRepository;
+	}
+
+	@Nullable
+	public String getCalendarColorForStatus(@NonNull final RStatusId statusId)
+	{
+		return statusRepository.getById(statusId).getCalendarColor();
+	}
 }

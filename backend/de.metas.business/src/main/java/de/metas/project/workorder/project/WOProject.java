@@ -30,6 +30,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.InternalPriority;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.status.RStatusId;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -115,7 +116,10 @@ public class WOProject
 
 	@Nullable
 	InternalPriority internalPriority;
-	
+
+	@Nullable
+	RStatusId statusId;
+
 	@NonNull
 	public Optional<CalendarDateRange> getCalendarDateRange()
 	{
@@ -128,5 +132,12 @@ public class WOProject
 								   .startDate(dateContract)
 								   .endDate(dateFinish)
 								   .build());
+	}
+
+	@NonNull
+	public Optional<String> getExternalIdAsString()
+	{
+		return Optional.ofNullable(externalId)
+				.map(ExternalId::getValue);
 	}
 }

@@ -28,6 +28,7 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.status.RStatusService;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.resource.WOProjectResource;
@@ -49,8 +50,11 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+
+import static de.metas.project.ProjectConstants.DEFAULT_WO_CALENDAR_ENTRY_COLOR;
 
 @Service
 public class WOProjectService
@@ -58,15 +62,18 @@ public class WOProjectService
 	private final WOProjectRepository woProjectRepository;
 	private final WOProjectResourceRepository woProjectResourceRepository;
 	private final WOProjectStepRepository woProjectStepRepository;
+	private final RStatusService statusService;
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
 			final WOProjectResourceRepository woProjectResourceRepository,
-			final WOProjectStepRepository woProjectStepRepository)
+			final WOProjectStepRepository woProjectStepRepository,
+			final RStatusService statusService)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
 		this.woProjectStepRepository = woProjectStepRepository;
+		this.statusService = statusService;
 	}
 
 	@NonNull
@@ -196,5 +203,13 @@ public class WOProjectService
 			Loggables.get().addLog("Update WO_Project_ID = {} with the following columns from C_Project_Parent_ID={}: {}",
 								   woProject.getProjectId().getRepoId(), parentProject.getProjectId().getRepoId(), logMessage);
 		}
+	}
+
+	@NonNull
+	public String getCalendarColor(@NonNull final WOProject woProject)
+	{
+		return Optional.ofNullable(woProject.getStatusId())
+				.map(statusService::getCalendarColorForStatus)
+				.orElse(DEFAULT_WO_CALENDAR_ENTRY_COLOR);
 	}
 }

@@ -44,7 +44,7 @@ import de.metas.project.Project;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.RStatusId;
+import de.metas.project.status.RStatusId;
 import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.project.service.ProjectService;
