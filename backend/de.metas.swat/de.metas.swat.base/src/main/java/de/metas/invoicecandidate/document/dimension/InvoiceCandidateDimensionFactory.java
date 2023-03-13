@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.document.dimension;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -53,6 +54,7 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -72,6 +74,7 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
