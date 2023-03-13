@@ -9,6 +9,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
@@ -107,6 +108,7 @@ public class SAPGLJournal
 			@NonNull PostingSign postingSign,
 			@NonNull Account account,
 			@NonNull BigDecimal amountBD,
+			@NonNull SectionCodeId sectionCodeId,
 			@Nullable TaxId taxId,
 			@NonNull SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -119,6 +121,7 @@ public class SAPGLJournal
 				.postingSign(postingSign)
 				.amount(amount)
 				.amountAcct(amountAcct)
+				.sectionCodeId(sectionCodeId)
 				.taxId(taxId)
 				.orgId(orgId)
 				.dimension(dimension)
@@ -201,6 +204,7 @@ public class SAPGLJournal
 				.postingSign(taxPostingSign)
 				.amount(taxAmt)
 				.amountAcct(taxAmtAcct)
+				.sectionCodeId(baseLine.getSectionCodeId())
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())

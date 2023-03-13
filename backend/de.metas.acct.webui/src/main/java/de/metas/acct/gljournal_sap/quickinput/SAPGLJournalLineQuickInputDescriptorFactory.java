@@ -22,6 +22,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
@@ -82,6 +83,10 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 						.setWidgetSize(WidgetSize.Large))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_Amount)
 						.setWidgetType(DocumentFieldWidgetType.Amount))
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_M_SectionCode_ID)
+								  .setWidgetType(DocumentFieldWidgetType.Lookup)
+								  .setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name))
+								  .setMandatoryLogic(true))
 				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_C_Tax_ID)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Tax.Table_Name))

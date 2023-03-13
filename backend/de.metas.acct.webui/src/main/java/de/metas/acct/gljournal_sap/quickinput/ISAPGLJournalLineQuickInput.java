@@ -17,6 +17,9 @@ public interface ISAPGLJournalLineQuickInput
 	BigDecimal getAmount();
 
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	int getM_SectionCode_ID();
 
 	int getC_Tax_ID();
 }

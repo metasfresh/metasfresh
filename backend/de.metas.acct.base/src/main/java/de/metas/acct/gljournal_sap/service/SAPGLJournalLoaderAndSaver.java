@@ -200,6 +200,8 @@ public class SAPGLJournalLoaderAndSaver
 				.amount(Money.of(record.getAmount(), conversionCtx.getCurrencyId()))
 				.amountAcct(Money.of(record.getAmtAcct(), conversionCtx.getAcctCurrencyId()))
 				//
+				.sectionCodeId(SectionCodeId.ofRepoId(record.getM_SectionCode_ID()))
+				//
 				.taxId(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 				//
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
@@ -298,6 +300,7 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setPostingSign(line.getPostingSign().getCode());
 		lineRecord.setAmount(line.getAmount().toBigDecimal());
 		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());
+		lineRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(line.getSectionCodeId()));
 		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
 
 		lineRecord.setAD_Org_ID(line.getOrgId().getRepoId());
