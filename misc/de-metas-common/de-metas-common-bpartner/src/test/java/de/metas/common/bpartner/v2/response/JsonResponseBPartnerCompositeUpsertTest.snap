@@ -7,11 +7,11 @@ de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertTest.ser
           "metasfreshId": 23,
           "syncOutcome": "CREATED"
         },
-        "responseLocationItems": [
+        "responseBankAccountItems": [
           {
             "identifier": "ext-12345",
             "metasfreshId": 24,
-            "syncOutcome": "UPDATED"
+            "syncOutcome": "NOTHING_DONE"
           }
         ],
         "responseContactItems": [
@@ -21,11 +21,11 @@ de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertTest.ser
             "syncOutcome": "UPDATED"
           }
         ],
-        "responseBankAccountItems": [
+        "responseLocationItems": [
           {
             "identifier": "ext-12345",
             "metasfreshId": 24,
-            "syncOutcome": "NOTHING_DONE"
+            "syncOutcome": "UPDATED"
           }
         ]
       }
