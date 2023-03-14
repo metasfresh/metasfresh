@@ -17,12 +17,15 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverters;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,26 +42,35 @@ class OrderCostTest
 		this.uomKg = BusinessTestHelper.createUomKg();
 	}
 
-	private Money euro(final String amount) {return Money.of(amount, eur);}
+	private Money euro(@NonNull final String amount) {return Money.of(amount, eur);}
+
+	private Money euroOrZero(@Nullable final String amount) {return amount != null ? euro(amount) : euro("0");}
 
 	private Quantity kg(final String kg) {return Quantity.of(kg, uomKg);}
 
 	@Builder(builderMethodName = "detail", builderClassName = "$DetailBuilder")
-	private OrderCostDetail createOrderCostDetail(String qty, String orderLineNetAmt)
+	private OrderCostDetail createOrderCostDetail(
+			@Nullable OrderLineId orderLineId,
+			@Nullable String qty,
+			@Nullable String orderLineNetAmt,
+			@Nullable String costAmount,
+			@Nullable String inoutCostAmount)
 	{
 		return OrderCostDetail.builder()
-				.orderLineId(OrderLineId.ofRepoId(11))
+				.orderLineId(orderLineId != null ? orderLineId : OrderLineId.ofRepoId(11))
 				.productId(ProductId.ofRepoId(12))
-				.qtyOrdered(kg(qty))
-				.orderLineNetAmt(euro(orderLineNetAmt))
+				.qtyOrdered(qty != null ? kg(qty) : kg("0"))
+				.orderLineNetAmt(euroOrZero(orderLineNetAmt))
+				.costAmount(euroOrZero(costAmount))
+				.inoutCostAmount(euroOrZero(inoutCostAmount))
 				.build();
 
 	}
 
 	@Builder(builderMethodName = "orderCost", builderClassName = "$OrderCostBuilder")
 	private OrderCost createOrderCost(
-			String fixedCostAmount,
-			CostDistributionMethod distributionMethod,
+			@NonNull String fixedCostAmount,
+			@NonNull CostDistributionMethod distributionMethod,
 			@Singular ImmutableList<OrderCostDetail> details)
 	{
 		return OrderCost.builder()
@@ -117,6 +129,38 @@ class OrderCostTest
 			assertThat(orderCost.getDetails().get(1).getCostAmount()).isEqualTo(euro("6"));
 			assertThat(orderCost.getDetails().get(2).getCostAmount()).isEqualTo(euro("2"));
 			assertThat(orderCost.getDetails().get(3).getCostAmount()).isEqualTo(euro("1"));
+		}
+	}
+
+	@Nested
+	class computeInOutCostAmountForQty
+	{
+		@Test
+		void underReceipt()
+		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(111);
+			final OrderCost orderCost = orderCost()
+					.fixedCostAmount("500")
+					.distributionMethod(CostDistributionMethod.Amount)
+					.detail(detail().orderLineId(orderLineId).qty("500").costAmount("500").inoutCostAmount("400").build())
+					.build();
+
+			final Money computedInOutCost = orderCost.computeInOutCostAmountForQty(orderLineId, kg("50"), CurrencyPrecision.TWO);
+			assertThat(computedInOutCost).isEqualTo(euro("50"));
+		}
+
+		@Test
+		void overReceipt()
+		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(111);
+			final OrderCost orderCost = orderCost()
+					.fixedCostAmount("500")
+					.distributionMethod(CostDistributionMethod.Amount)
+					.detail(detail().orderLineId(orderLineId).qty("500").costAmount("500").inoutCostAmount("400").build())
+					.build();
+
+			final Money computedInOutCost = orderCost.computeInOutCostAmountForQty(orderLineId, kg("300"), CurrencyPrecision.TWO);
+			assertThat(computedInOutCost).isEqualTo(euro("100"));
 		}
 	}
 }
