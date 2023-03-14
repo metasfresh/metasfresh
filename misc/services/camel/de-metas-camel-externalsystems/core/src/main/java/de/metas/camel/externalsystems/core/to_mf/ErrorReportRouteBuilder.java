@@ -89,7 +89,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		from(direct(ERROR_WRITE_TO_ADISSUE))
 				.routeId(ERROR_WRITE_TO_ADISSUE)
 				.log("Route invoked")
-				.process(this::prepareJsonErrorRequest)
+				.process(ErrorProcessor::prepareJsonErrorRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
@@ -131,20 +131,6 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 
 		exchange.getIn().setBody(content.toString());
 		exchange.getIn().setHeader(Exchange.FILE_NAME, FILE_TIMESTAMP_FORMATTER.format(ZonedDateTime.now()) + "_error.txt");
-	}
-
-	private void prepareJsonErrorRequest(@NonNull final Exchange exchange)
-	{
-		final String pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, String.class);
-
-		if (pInstanceId == null)
-		{
-			throw new RuntimeException("No PInstanceId available!");
-		}
-
-		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
-
-		exchange.getIn().setBody(JsonError.ofSingleItem(errorItem));
 	}
 
 	@NonNull
