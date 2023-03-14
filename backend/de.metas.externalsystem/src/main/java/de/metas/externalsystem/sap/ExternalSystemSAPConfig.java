@@ -117,14 +117,19 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	}
 
 	@NonNull
-	public Optional<SAPExportAcctConfig> getExportConfigFor(@NonNull final DocTypeId docTypeId)
+	public Optional<SAPExportAcctConfig> getExportConfigFor(@Nullable final DocTypeId docTypeId)
 	{
+		if (docTypeId == null)
+		{
+			return Optional.empty();
+		}
+
 		return exportAcctConfigList.stream()
 				.filter(config -> config.getDocTypeId().equals(docTypeId))
 				.findFirst();
 	}
 
-	public boolean isExportEnabledForDocType(@NonNull final DocTypeId docTypeId)
+	public boolean isExportEnabledForDocType(@Nullable final DocTypeId docTypeId)
 	{
 		if (Check.isBlank(baseURL)
 				|| Check.isBlank(signature)
