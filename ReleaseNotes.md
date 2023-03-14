@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14849](https://github.com/metasfresh/metasfresh/pull/14849) Allow creation of goods issue for the qty that ws just received in the case of b2b
   * [#14813](https://github.com/metasfresh/metasfresh/issues/14813) Resource reservation presentation 
   * [#14755](https://github.com/metasfresh/metasfresh/issues/14755) Correction Invoices 
   * [#14709](https://github.com/metasfresh/metasfresh/issues/14709) CR042 mbank (Poland bank data) 
