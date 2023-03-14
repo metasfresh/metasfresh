@@ -99,7 +99,6 @@
         <dependency>
             <groupId>de.metas.banking</groupId>
             <artifactId>de.metas.banking.base</artifactId>
-            <version>10.0.0</version>
             <version>${metasfresh.version}</version>
         </dependency>
     </dependencies>
