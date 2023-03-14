@@ -13,11 +13,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-<<<<<<< HEAD
-import java.math.BigInteger;
-=======
->>>>>>> origin/release
-
 
 /**
  * <p>Java class for EDI_cctop_000_vType complex type.

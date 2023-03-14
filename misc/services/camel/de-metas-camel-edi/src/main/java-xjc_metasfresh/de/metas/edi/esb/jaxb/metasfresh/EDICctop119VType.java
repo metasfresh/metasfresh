@@ -75,12 +75,8 @@ import javax.xml.bind.annotation.XmlType;
     "vaTaxID",
     "referenceNo",
     "setupPlaceNo",
-<<<<<<< HEAD
-    "siteName"
-=======
     "siteName",
     "contact"
->>>>>>> origin/release
 })
 public class EDICctop119VType {
 
@@ -124,11 +120,8 @@ public class EDICctop119VType {
     protected String setupPlaceNo;
     @XmlElement(name = "SiteName")
     protected String siteName;
-<<<<<<< HEAD
-=======
     @XmlElement(name = "Contact")
     protected String contact;
->>>>>>> origin/release
 
     /**
      * Gets the value of the address1 property.
@@ -610,8 +603,6 @@ public class EDICctop119VType {
         this.siteName = value;
     }
 
-<<<<<<< HEAD
-=======
     /**
      * Gets the value of the contact property.
      * 
@@ -636,5 +627,4 @@ public class EDICctop119VType {
         this.contact = value;
     }
 
->>>>>>> origin/release
 }
