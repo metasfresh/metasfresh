@@ -249,7 +249,7 @@ public class OrderCost
 				.build();
 	}
 
-	public Money computeCostAmountForQty(
+	public Money computeInOutCostAmountForQty(
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final Quantity qty,
 			@NonNull final CurrencyPrecision precision)
@@ -257,7 +257,10 @@ public class OrderCost
 		final OrderCostDetail detail = getDetailByOrderLineId(orderLineId);
 
 		final Percent percentage = qty.percentageOf(detail.getQtyOrdered());
-		return detail.getCostAmount().multiply(percentage, precision);
+
+		final Money maxCostAmount = detail.getCostAmount().subtract(detail.getInoutCostAmount()).toZeroIfNegative();
+		final Money costAmount = detail.getCostAmount().multiply(percentage, precision);
+		return costAmount.min(maxCostAmount);
 	}
 
 	public Optional<OrderCostDetail> getDetailByOrderLineIdIfExists(final OrderLineId orderLineId)
