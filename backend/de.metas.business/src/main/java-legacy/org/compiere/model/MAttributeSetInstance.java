@@ -18,7 +18,6 @@ package org.compiere.model;
 
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
-import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.util.LegacyAdapters;
 
 import java.sql.ResultSet;

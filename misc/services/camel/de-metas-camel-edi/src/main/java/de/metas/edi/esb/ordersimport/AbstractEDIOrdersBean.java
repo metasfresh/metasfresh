@@ -22,8 +22,12 @@
 
 package de.metas.edi.esb.ordersimport;
 
+import de.metas.common.util.Check;
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.ExceptionUtil;
+import de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRequest;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIADOrgLookupBPLGLNVType;
@@ -39,6 +43,7 @@ import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+import de.metas.edi.esb.ordersimport.compudata.CompuDataOrdersRoute;
 import de.metas.edi.esb.ordersimport.compudata.H100;
 import de.metas.edi.esb.ordersimport.compudata.P100;
 import lombok.NonNull;
@@ -65,6 +70,8 @@ import static de.metas.edi.esb.commons.Util.trimString;
 
 public abstract class AbstractEDIOrdersBean
 {
+	private static final String REPLICATION_TRX_NAME_EXCHANGE_PROPERTY = Exchange.FILE_NAME;
+
 	@Autowired
 	private CamelContext camelContext;
 
@@ -73,7 +80,7 @@ public abstract class AbstractEDIOrdersBean
 	private static final ObjectFactory factory = Constants.JAXB_ObjectFactory;
 
 	public List<Message> createXMLDocument(@Body final List<Object> ediLines,
-			@ExchangeProperty(value = Exchange.FILE_NAME) final String camelFileName,
+			@ExchangeProperty(value = REPLICATION_TRX_NAME_EXCHANGE_PROPERTY) final String camelFileName,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern) final String EDIMessageDatePattern,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADClientValue) final String ADClientValue,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADOrgID) final BigInteger ADOrgID,
@@ -96,6 +103,48 @@ public abstract class AbstractEDIOrdersBean
 				DeliveryViaRule);
 
 		return createOLCandMessages(ctx, ediDocuments);
+	}
+
+	public static void prepareNotifyReplicationTrxDone(final Exchange exchange)
+	{
+		final String trxName = exchange.getProperty(REPLICATION_TRX_NAME_EXCHANGE_PROPERTY, String.class);
+		final String clientValue = Util.resolveProperty(exchange.getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
+
+		if (Check.isBlank(trxName) || Check.isBlank(clientValue))
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
+
+		final NotifyReplicationTrxRequest request = NotifyReplicationTrxRequest
+				.finished()
+				.clientValue(clientValue)
+				.trxName(trxName)
+				.build();
+
+		exchange.getIn().setBody(request);
+	}
+
+	public static void prepareNotifyReplicationTrxError(final Exchange exchange)
+	{
+		final String trxName = exchange.getProperty(REPLICATION_TRX_NAME_EXCHANGE_PROPERTY, String.class);
+		final String clientValue = Util.resolveProperty(exchange.getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
+
+		if (Check.isBlank(trxName) || Check.isBlank(clientValue))
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
+
+		final String errorMsg = ExceptionUtil.extractErrorMessage(exchange);
+
+		final NotifyReplicationTrxRequest request = NotifyReplicationTrxRequest
+				.error(errorMsg)
+				.clientValue(clientValue)
+				.trxName(trxName)
+				.build();
+
+		exchange.getIn().setBody(request);
 	}
 
 	protected abstract List<OrderEDI> convertToOrderEDIs(List<Object> ediLines);

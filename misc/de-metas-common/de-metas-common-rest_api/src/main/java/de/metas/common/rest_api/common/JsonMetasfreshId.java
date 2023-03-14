@@ -68,6 +68,15 @@ public class JsonMetasfreshId
 		return new JsonMetasfreshId(value);
 	}
 
+	@Nullable
+	public static JsonMetasfreshId ofOrNull(@Nullable final String value)
+	{
+		return Optional.ofNullable(value)
+				.map(Integer::parseInt)
+				.map(JsonMetasfreshId::ofOrNull)
+				.orElse(null);
+	}
+
 	private static boolean isNullOrNegative(@Nullable final Integer value)
 	{
 		return value == null || value < 0;

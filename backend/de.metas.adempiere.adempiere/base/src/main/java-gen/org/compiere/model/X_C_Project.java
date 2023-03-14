@@ -409,6 +409,33 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 		return get_ValueAsString(COLUMNNAME_GenerateTo);
 	}
 
+	/**
+	 * InternalPriority AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
+	public static final int INTERNALPRIORITY_AD_Reference_ID=154;
+	/** High = 3 */
+	public static final String INTERNALPRIORITY_High = "3";
+	/** Medium = 5 */
+	public static final String INTERNALPRIORITY_Medium = "5";
+	/** Low = 7 */
+	public static final String INTERNALPRIORITY_Low = "7";
+	/** Urgent = 1 */
+	public static final String INTERNALPRIORITY_Urgent = "1";
+	/** Minor = 9 */
+	public static final String INTERNALPRIORITY_Minor = "9";
+	@Override
+	public void setInternalPriority (final @Nullable java.lang.String InternalPriority)
+	{
+		set_Value (COLUMNNAME_InternalPriority, InternalPriority);
+	}
+
+	@Override
+	public java.lang.String getInternalPriority()
+	{
+		return get_ValueAsString(COLUMNNAME_InternalPriority);
+	}
+
 	@Override
 	public void setInvoicedAmt (final BigDecimal InvoicedAmt)
 	{

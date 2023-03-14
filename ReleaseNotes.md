@@ -12,6 +12,65 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14849](https://github.com/metasfresh/metasfresh/pull/14849) Allow creation of goods issue for the qty that ws just received in the case of b2b
+  * [#14813](https://github.com/metasfresh/metasfresh/issues/14813) Resource reservation presentation 
+  * [#14755](https://github.com/metasfresh/metasfresh/issues/14755) Correction Invoices 
+  * [#14709](https://github.com/metasfresh/metasfresh/issues/14709) CR042 mbank (Poland bank data) 
+  * [#14721](https://github.com/metasfresh/metasfresh/issues/14721) Partner Block and Release - TSV format 
+  * [#14768](https://github.com/metasfresh/metasfresh/issues/14768) InvoiceEnqueueing considers already processed invoice candidates and is therefore slow
+  * [#14686](https://github.com/metasfresh/metasfresh/issues/14686) Do not reset `BillToAddress` whenever Delivery Address changed
+  * [#14714](https://github.com/metasfresh/metasfresh/issues/14714) Enable filter search on Locator when moving HU
+  * [#14706](https://github.com/metasfresh/metasfresh/issues/14706) Import Shopware Product Variants  
+  * [#14683](https://github.com/metasfresh/metasfresh/issues/14683) Partner Block and Release 
+  * [#14645](https://github.com/metasfresh/metasfresh/issues/14645) Order Window Ivict adaptions (Billto Default, Drop Shipment)
+  * [#14649](https://github.com/metasfresh/metasfresh/issues/14649) country-based doctype sequences
+  * [#14672](https://github.com/metasfresh/metasfresh/issues/14672) Sort by serial number 
+  * [#14663](https://github.com/metasfresh/metasfresh/issues/14663) Prevent changing account schema currency if there are current costs in that currency
+  * [#14448](https://github.com/metasfresh/metasfresh/issues/14448) product notice not translated on PO
+  * [#14652](https://github.com/metasfresh/metasfresh/issues/14652) Import Data File with C_Activity
+  * [#14632](https://github.com/metasfresh/metasfresh/issues/14632) Add C_Invoice_Candidate.ActualLoadingDate and populate from earliest M_ShipperTransportation 
+  * [#14542](https://github.com/metasfresh/metasfresh/issues/14542) When importing inventory, different CUs that are in the same TU get summed up incorrectly
+  * [#14596](https://github.com/metasfresh/metasfresh/issues/14596) SAP Partner ID in Business Partner location is set to null after credit limit import
+  * [#14537](https://github.com/metasfresh/metasfresh/issues/14537) Moving Average Invoice Costing Method
+  * [#14582](https://github.com/metasfresh/metasfresh/issues/14582) Hus in zur Prüfung können in Produktion benutzt werden 
+  * [#14521](https://github.com/metasfresh/metasfresh/issues/14521) Delivery Instruction Cucumber Tests
+  * [#14554](https://github.com/metasfresh/metasfresh/issues/14554) Add accountConceptualName to fact_acct 
+  * [#14569](https://github.com/metasfresh/metasfresh/issues/14569) Generate Invoice with Allowing Override Due Date
+  * [#14467](https://github.com/metasfresh/metasfresh/issues/14467) Import Exchange Rate from .dat file
+  * [#14520](https://github.com/metasfresh/metasfresh/issues/14520) Avoid useless updates to AD_Field_Trl
+  * [#14538](https://github.com/metasfresh/metasfresh/issues/14538) Field Renaming Delivery Planning Window
+  * [#14508](https://github.com/metasfresh/metasfresh/issues/14508) Create Cucumber for accounting 
+  * [#14492](https://github.com/metasfresh/metasfresh/issues/14492) Delivery Planning - Shortage and Overage
+  * [#14500](https://github.com/metasfresh/metasfresh/issues/14500) Credit Limit - Reporting
+  * [#14470](https://github.com/metasfresh/metasfresh/issues/14470) Inventory management: Add Process To Move CUQY To another Location
+  * [#14475](https://github.com/metasfresh/metasfresh/issues/14475) Fix /invoices/payment 
+  * [#14408](https://github.com/metasfresh/metasfresh/issues/14408) Delivery Based Credit Limit 
+  * [#14469](https://github.com/metasfresh/metasfresh/issues/14469) SAP: mark only imported fields as read-only
+  * [#14477](https://github.com/metasfresh/metasfresh/issues/14477) Drop stepDef `all the hu data is reset` 
+  * [#14446](https://github.com/metasfresh/metasfresh/issues/14446) Order dispo shall show complete transaction 
+  * [#14458](https://github.com/metasfresh/metasfresh/issues/14458) Implement invoice API
+  * [#14444](https://github.com/metasfresh/metasfresh/issues/14444) Delivery Planning - Delivery Instructions Amendment
+  * [#14235](https://github.com/metasfresh/metasfresh/issues/14235) Enhance REST-API with cache control
+  * [#14402](https://github.com/metasfresh/metasfresh/issues/14402) ExternalSys-Other: Send Address MF to ES (=> C__BPartner_Location) 
+  * [#14437](https://github.com/metasfresh/metasfresh/issues/14437) Allow setting manual tax rate for PO lines created via SO to PO process
+  * [#14210](https://github.com/metasfresh/metasfresh/issues/14210) ExternalSys-Other: Send project info from MF to ES - Part II (=> C_Project.ExternalId) 
+  * [#14104](https://github.com/metasfresh/metasfresh/issues/14104) ExternalSys-Other: Send project info from MF to ES (=>C_Project_WO_Step data) 
+  * [#14377](https://github.com/metasfresh/metasfresh/issues/14377) group invoices and credit memos into a single document 
+  * [#14370](https://github.com/metasfresh/metasfresh/pull/14370) import Allergens for bom products
+  * [#14429](https://github.com/metasfresh/metasfresh/pull/14429)  Increased Credit Limit be decreased again
+  * [#14433](https://github.com/metasfresh/metasfresh/pull/14433)  Add M_SectionCode_ID to C_BPartner_Stats
+  * [#14354](https://github.com/metasfresh/metasfresh/issues/14354) Automatically update PP Orders when a new BOM Version is imported
+  * [#14414](https://github.com/metasfresh/metasfresh/issues/14414) Add Department Data Structures
+  * [#14368](https://github.com/metasfresh/metasfresh/issues/14368) Enhancements SAP import product
+  * [#14362](https://github.com/metasfresh/metasfresh/issues/14362) Enhancements SAP import BPartner
+  * [#14215](https://github.com/metasfresh/metasfresh/issues/14215) Delivery Instruction 
+  * [#14233](https://github.com/metasfresh/metasfresh/issues/14233) Add additional translation sync
+  * [#14245](https://github.com/metasfresh/metasfresh/issues/14245) Use pagination when exchanging data with CMS-platform
+  * [#14201](https://github.com/metasfresh/metasfresh/issues/14201) Allow lotNo to be set automatically, based on sequence Number
+  * [#14160](https://github.com/metasfresh/metasfresh/issues/14160) SAP: Make sure credit limits are automatically enforced after import 
+  * [#14223](https://github.com/metasfresh/metasfresh/issues/14223) Enhance import BOM Formula from GRS
+  * [#14217](https://github.com/metasfresh/metasfresh/issues/14217) Show weight Diff on scale by sending target weight (Soehnle)
+  * [#14155](https://github.com/metasfresh/metasfresh/issues/14155) Fixing de_DE and de_CH Translations
   * [#14199](https://github.com/metasfresh/metasfresh/issues/14199) Product API bpartnerProductItems update fails 
   * [#14156](https://github.com/metasfresh/metasfresh/issues/14156) Create Interface to upload contacts to Active Campaign 
   * [#14165](https://github.com/metasfresh/metasfresh/issues/14165) Gantt: New Prüfaufträge shall always be simulation initially 
@@ -194,6 +253,13 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14803](https://github.com/metasfresh/metasfresh/issues/14803) Accounting Issues - Invalid accounting operation structure
+  * [#14686](https://github.com/metasfresh/metasfresh/issues/14686) Do not reset BillToAddress whenever Delivery Address changed
+  * [#14700](https://github.com/metasfresh/metasfresh/issues/14700) Delivery Planning Generate Goods Issue without stock should not be possible
+  * [#14651](https://github.com/metasfresh/metasfresh/issues/14651) Solve on-prem ExternalSys-Other-API problems  
+  * [#14381](https://github.com/metasfresh/metasfresh/issues/14381) Set C_doctypeTarget_ID as filter in C_Order
+  * [#14366](https://github.com/metasfresh/metasfresh/pull/14366) POInfoColumn.ValueMin, ValueMax: trim blank to null
+  * [#14346](https://github.com/metasfresh/metasfresh/issues/14346) Propagate `POReference` from PO to MR
   * [#14187](https://github.com/metasfresh/metasfresh/issues/14187) update infrastructure db dockerfile to work with new images
   * [#13546](https://github.com/metasfresh/metasfresh/issues/13546) DATEV Export Performance Problem 
   * [#14095](https://github.com/metasfresh/metasfresh/pull/14095#pullrequestreview-1215114428) Sum amounts per vatcode

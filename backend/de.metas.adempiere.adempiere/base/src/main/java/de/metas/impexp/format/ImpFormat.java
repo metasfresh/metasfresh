@@ -1,6 +1,7 @@
 package de.metas.impexp.format;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +9,9 @@ import lombok.NonNull;
 import lombok.Singular;
 
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Import Format Definition
@@ -80,5 +83,21 @@ public final class ImpFormat
 	public String getImportKeyColumnName()
 	{
 		return getImportTableDescriptor().getKeyColumnName();
+	}
+
+	@NonNull
+	public String getHeader()
+	{
+		return columns
+				.stream()
+				.sorted(Comparator.comparing(ImpFormatColumn::getStartNo))
+				.map(ImpFormatColumn::getName)
+				.collect(Collectors.joining(String.valueOf(formatType.getCellDelimiterChar())));
+	}
+
+	@NonNull
+	public String generateCSVFileName()
+	{
+		return "Template_" + getName() + "_" + SystemTime.asInstant() + ".csv";
 	}
 }

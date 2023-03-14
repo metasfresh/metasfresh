@@ -960,7 +960,8 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
             <activation>
                 <file>
-                    <exists>src/main/jasperreports</exists>
+                    <!-- we specify this folder with a .../de so that we can also have empty placeholder jasper folders is custom projects, and not fail make-jasper-assembly if there aren't any jasper files inside -->
+                    <exists>src/main/jasperreports/de</exists>
                 </file>
             </activation>
 

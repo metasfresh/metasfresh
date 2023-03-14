@@ -7,8 +7,8 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

@@ -1,31 +1,32 @@
 de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
   [
     {
-      "IBAN": "iban",
-      "SwiftCode": "SwiftCode",
-      "accountNo": "accountNo",
-      "addressLine1": "addr1",
-      "addressLine2": "addr2",
-      "amount": {
-        "currencyCode": "CHF",
-        "value": 10,
-        "zero": false
+      "revolutPaymentExportId" : 1000000,
+      "recordReference" : {
+        "tableName" : "C_PaySelection",
+        "recordId" : 1
       },
-      "city": "city",
-      "name": "name",
-      "orgId": 1,
-      "paymentReference": "payReference",
-      "postalCode": "postal",
-      "recipientBankCountryId": 4,
-      "recipientCountryId": 5,
-      "recipientType": "COMPANY",
-      "recordReference": {
-        "recordId": 1,
-        "tableName": "C_PaySelection"
+      "name" : "name",
+      "orgId" : 1,
+      "amount" : {
+        "value" : 10,
+        "currencyCode" : "CHF",
+        "zero" : false
       },
-      "regionName": "region",
-      "revolutPaymentExportId": 100007,
-      "routingNo": "routingNo"
+      "recipientType" : "COMPANY",
+      "accountNo" : "accountNo",
+      "routingNo" : "routingNo",
+      "IBAN" : "iban",
+      "SwiftCode" : "SwiftCode",
+      "paymentReference" : "payReference",
+      "regionName" : "region",
+      "addressLine1" : "addr1",
+      "addressLine2" : "addr2",
+      "SwiftCode" : "SwiftCode", 
+      "city" : "city",
+      "postalCode" : "postal",
+      "recipientCountryId" : 5,
+      "recipientBankCountryId" : 4
     }
   ]
 ]

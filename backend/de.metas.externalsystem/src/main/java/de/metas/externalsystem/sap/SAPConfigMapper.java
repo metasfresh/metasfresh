@@ -26,6 +26,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -52,9 +53,15 @@ public class SAPConfigMapper
 				.targetDirectoryCreditLimit(externalSystemConfigSapSftp.getSFTP_CreditLimit_TargetDirectory())
 				.fileNamePatternCreditLimit(externalSystemConfigSapSftp.getSFTP_CreditLimit_FileName_Pattern())
 
+				.targetDirectoryConversionRate(externalSystemConfigSapSftp.getSFTP_ConversionRate_TargetDirectory())
+				.fileNamePatternConversionRate(externalSystemConfigSapSftp.getSFTP_ConversionRate_FileName_Pattern())
+
 				.processedDirectory(externalSystemConfigSapSftp.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapSftp.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapSftp.getPollingFrequencyInMs()))
+
+				.approvedBy(UserId.ofRepoIdOrNullIfSystem(externalSystemConfigSapSftp.getApprovedBy_ID()))
+
 				.build();
 	}
 
@@ -73,9 +80,15 @@ public class SAPConfigMapper
 				.targetDirectoryCreditLimit(externalSystemConfigSapLocalFile.getLocalFile_CreditLimit_TargetDirectory())
 				.fileNamePatternCreditLimit(externalSystemConfigSapLocalFile.getLocalFile_CreditLimit_FileName_Pattern())
 
+				.targetDirectoryConversionRate(externalSystemConfigSapLocalFile.getLocalFile_ConversionRate_TargetDirectory())
+				.fileNamePatternConversionRate(externalSystemConfigSapLocalFile.getLocalFile_ConversionRate_FileName_Pattern())
+
 				.processedDirectory(externalSystemConfigSapLocalFile.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapLocalFile.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapLocalFile.getPollingFrequencyInMs()))
+
+				.approvedBy(UserId.ofRepoIdOrNullIfSystem(externalSystemConfigSapLocalFile.getApprovedBy_ID()))
+
 				.build();
 	}
 }

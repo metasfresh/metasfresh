@@ -83,10 +83,19 @@ public interface IWarehouseBL extends ISingletonService
 
 	Optional<ResourceId> getPlantId(WarehouseId warehouseId);
 
+	/**
+	 * Loads all warehouses that have the old location and updates them to the new location.
+	 */
 	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
 
 	@NonNull
 	WarehouseId getIdByLocatorRepoId(int locatorId);
 
 	DocumentLocation getBPartnerBillingLocationDocument(@NonNull WarehouseId warehouseId);
+
+	boolean isDropShipWarehouse(@NonNull WarehouseId warehouseId,@NonNull OrgId adOrgId);
+
+	Optional<LocationId> getLocationIdByLocatorRepoId(int locatorRepoId);
+
+	OrgId getOrgIdByLocatorRepoId(int locatorId);
 }

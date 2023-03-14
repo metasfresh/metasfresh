@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -24,6 +23,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
@@ -150,15 +150,15 @@ public class QtyDeliveredFromOrderToInvoiceTest
 
 	private void mockTaxAndProductAcctServices()
 	{
-		final IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		final IProductActivityProvider productActivityProvider = Mockito.mock(IProductActivityProvider.class);
 		final IDocTypeBL docTypeBL = Mockito.mock(IDocTypeBL.class);
 		final ITaxBL taxBL = Mockito.mock(ITaxBL.class);
 
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 		Services.registerService(IDocTypeBL.class, docTypeBL);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
+		Mockito.doReturn(activityId).when(productActivityProvider).getActivityForAcct(clientId, orgId, productId);
 		Mockito.doReturn(docType).when(docTypeBL).getById(docTypeId);
 
 		final Properties ctx = Env.getCtx();
@@ -229,6 +229,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		order.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order.setC_Currency_ID(10);
 		order.setM_PricingSystem_ID(20);
+		order.setC_PaymentTerm_ID(100);
 		save(order);
 	}
 
@@ -283,6 +284,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		mInOutLine.setM_InOut_ID(mInOut.getM_InOut_ID());
 
 		// link to C_OrderLine
+		mInOutLine.setC_Order_ID(orderLine.getC_Order_ID());
 		mInOutLine.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 
 		// assume that it's true; our test case at the moment always has it true when dealing with qtyDelivered

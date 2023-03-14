@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,10 +24,9 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -106,7 +105,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 	public void loadPPOrderByCandidateId(final int timeoutSec, @NonNull final String ppOrderCandidateIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
-		assertThat(ppOrderCandidate).isNotNull();
+		assertThat(ppOrderCandidate).as("Missing PP_Order_Candidate for identifier %s", ppOrderCandidateIdentifier).isNotNull();
 
 		final ItemProvider<ImmutableList<I_PP_OrderCandidate_PP_Order>> arePPOrdersCreated = () -> {
 
@@ -117,14 +116,36 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 			final boolean allOrdersArePresent = allocations.size() == dataTable.asMaps().size();
 
+			final StringBuilder allocationsLog = new StringBuilder("PP_OrderCandidate_PP_Order records:").append("\n");
+
+			allocations.forEach(allocation -> allocationsLog.append("PP_OrderCandidate_PP_Order.QtyEntered=").append(allocation.getQtyEntered())
+					.append("; PP_OrderCandidate_PP_Order.PP_Order_ID=").append(allocation.getPP_Order_ID())
+					.append("\n"));
+
 			return allOrdersArePresent
 					? ItemProvider.ProviderResult.resultWasFound(ImmutableList.copyOf(allocations))
 					: ItemProvider.ProviderResult.resultWasNotFound(
-							"Only " + allocations.size() + " orders found! Expecting " + dataTable.asMaps().size());
+					"Only " + allocations.size() + " orders found! Expecting " + dataTable.asMaps().size() + "\n" + allocationsLog
+							+ "PP_OrderCandidate.SeqNo=" + ppOrderCandidate.getSeqNo());
 		};
 
 		final Supplier<String> getLogContext = () -> {
-			final StringBuilder context = new StringBuilder();
+			final StringBuilder context = new StringBuilder("Found the following allocations for PP_Order_Candidate_ID: ")
+					.append(ppOrderCandidate.getPP_Order_Candidate_ID())
+					.append(" (Identifier=").append(ppOrderCandidateIdentifier).append(")");
+
+			queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+					.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMN_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+					.create()
+					.stream()
+					.forEach(ppOrderCandAlloc -> {
+						context.append("\n\tPP_Order_ID=").append(ppOrderCandAlloc.getPP_Order_ID());
+						context.append("\n\tQtyOrdered=").append(ppOrderCandAlloc.getQtyEntered());
+					});
+
+			context.append("Found the following PP_Orders for PP_Order_Candidate_ID: ")
+					.append(ppOrderCandidate.getPP_Order_Candidate_ID())
+					.append(" (Identifier=").append(ppOrderCandidateIdentifier).append(")");
 
 			queryBL.createQueryBuilder(I_PP_Order.class)
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, ppOrderCandidate.getM_Product_ID())
@@ -161,7 +182,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 			if (record == null)
 			{
-				throw new RuntimeException("No I_PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
+				throw new RuntimeException("No PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
 			}
 
 			alreadySeenAllocRecordIds.add(record.getPP_OrderCandidate_PP_Order_ID());

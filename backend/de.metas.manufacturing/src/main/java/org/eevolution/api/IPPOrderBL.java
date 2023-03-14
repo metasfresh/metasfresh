@@ -112,4 +112,6 @@ public interface IPPOrderBL extends ISingletonService
 	boolean hasSerialNumberSequence(@NonNull PPOrderId ppOrderId);
 
 	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
+
+	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
 }

@@ -44,10 +44,9 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
+import de.metas.common.util.pair.IPair;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -313,10 +312,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 
-	/**
-	 * Get the warehouses of the hus' organization , excluding those which currently contain the given HUs
-	 */
-	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
+	Set<LocatorId> getLocatorIds(List<I_M_HU> hus);
 
 	// TODO: replace it by getByIds
 	@Deprecated

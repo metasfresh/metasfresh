@@ -369,6 +369,10 @@ final class BPartnerCompositesLoader
 				.storageWarehouse(bpartnerRecord.isStorageWarehouse())
 				//
 				.sectionGroupPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getSection_Group_Partner_ID()))
+				.prospect(bpartnerRecord.isProspect())
+				.sapBPartnerCode(bpartnerRecord.getSAP_BPartnerCode())
+				.sectionGroupPartner(bpartnerRecord.isSectionGroupPartner())
+				.sectionPartner(bpartnerRecord.isSectionPartner())
 				.build();
 	}
 
@@ -410,6 +414,8 @@ final class BPartnerCompositesLoader
 				.remitTo(bPartnerLocationRecord.isRemitTo())
 				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
 				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
+				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
+				.sapBPartnerCode(bPartnerLocationRecord.getSAP_BPartnerCode())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -452,7 +458,7 @@ final class BPartnerCompositesLoader
 			@NonNull final ICountryDAO countryDAO)
 	{
 		final CountryId countryId = CountryId.ofRepoId(locationRecord.getC_Country_ID());
-		final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(countryId);
+		final I_C_Country country = countryDAO.getById(countryId);
 
 		final PostalId postalId = PostalId.ofRepoIdOrNull(locationRecord.getC_Postal_ID());
 		final String district;
@@ -474,11 +480,12 @@ final class BPartnerCompositesLoader
 				.address3(trimBlankToNull(locationRecord.getAddress3()))
 				.address4(trimBlankToNull(locationRecord.getAddress4()))
 				.city(trimBlankToNull(locationRecord.getCity()))
-				.countryCode(countryCode)
+				.countryCode(country.getCountryCode())
 				.poBox(trimBlankToNull(locationRecord.getPOBox()))
 				.postal(trimBlankToNull(locationRecord.getPostal()))
 				.region(trimBlankToNull(locationRecord.getRegionName()))
 				.district(district)
+				.countryName(country.getName())
 				.build();
 	}
 

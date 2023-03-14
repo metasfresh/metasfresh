@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
 @RequestMapping(value = {
@@ -74,6 +75,33 @@ public class ProductBOMRestController
 			final JsonBOMCreateResponse bomId = bomRestService.createBOMs(orgCode, request);
 
 			return ResponseEntity.ok().body(bomId);
+		}
+		catch (final Exception ex)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
+
+			return ResponseEntity.unprocessableEntity().body(error);
+		}
+	}
+
+	@ApiOperation("Verifies the default bill of material version for given product identifier.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully verified bill of material"),
+			@ApiResponse(code = 401, message = "You are not authorized to perform this action"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
+	@PutMapping("{orgCode}/verify/{productIdentifier}")
+	public ResponseEntity<?> verifyDefaultBOM(
+			@PathVariable("orgCode") @NonNull final String orgCode,
+			@ApiParam(required = true, value = PRODUCT_IDENTIFIER_DOC)
+			@PathVariable("productIdentifier") @NonNull final String productIdentifier)
+	{
+		try
+		{
+			bomRestService.verifyDefaultBOM(productIdentifier, orgCode);
+
+			return ResponseEntity.ok().build();
 		}
 		catch (final Exception ex)
 		{

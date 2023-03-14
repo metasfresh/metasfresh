@@ -2,13 +2,13 @@ package de.metas.inout.api.impl;
 
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarDAO;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.api.MaterialBalanceConfig;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_Material_Balance_Detail;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
+import de.metas.material.MovementType;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -54,7 +54,7 @@ public class MaterialBalanceDetailDAO implements IMaterialBalanceDetailDAO
 
 		// set qty based on SOTrx of the inout
 
-		final boolean isReturnMovementType = Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType());
+		final boolean isReturnMovementType = MovementType.isMaterialReturn(inout.getMovementType());
 
 		if (!isReturnMovementType)
 		{

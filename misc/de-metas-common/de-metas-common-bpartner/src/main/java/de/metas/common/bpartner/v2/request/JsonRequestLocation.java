@@ -203,6 +203,20 @@ public class JsonRequestLocation
 	@Schema(hidden = true)
 	private boolean vatIdSet;
 
+	@ApiModelProperty(position = 280, //
+			value = "Translates to C_BPartner_Location.SAP_PaymentMethod")
+	private String sapPaymentMethod;
+
+	private boolean sapPaymentMethodSet;
+
+
+	@ApiModelProperty(position = 290,  //
+			value = "This translates to `C_BPartner_Location.SAP_BPartnerCode`.")
+	private String sapBPartnerCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sapBPartnerCodeSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -357,5 +371,17 @@ public class JsonRequestLocation
 	{
 		this.vatId = vatId;
 		this.vatIdSet = true;
+	}
+
+	public void setSapPaymentMethod(final String sapPaymentMethod)
+	{
+		this.sapPaymentMethod = sapPaymentMethod;
+		this.sapPaymentMethodSet = true;
+	}
+
+	public void setSapBPartnerCode(final String sapBPartnerCode)
+	{
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sapBPartnerCodeSet = true;
 	}
 }

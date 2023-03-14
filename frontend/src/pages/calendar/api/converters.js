@@ -69,6 +69,7 @@ const converters = {
       editable: apiEntry.editable,
       color: apiEntry.color,
       url: apiEntry.url,
+      help: apiEntry.help,
     }),
   },
 };

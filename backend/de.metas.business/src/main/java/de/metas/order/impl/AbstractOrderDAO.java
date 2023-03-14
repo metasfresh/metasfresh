@@ -7,7 +7,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.GetOrdersQuery;
 import de.metas.order.IOrderDAO;
@@ -20,7 +19,6 @@ import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -398,13 +396,11 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
-		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
 
 		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo);
 
 		return queryBuilder.create().firstOnly(I_C_Order.class);
 	}
@@ -437,14 +433,27 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	@Override
 	public void allocatePOLineToSOLine(
-			@NonNull final OrderLineId purchaseOrderLineId,
-			@NonNull final OrderLineId salesOrderLineId)
+			@NonNull final OrderAndLineId purchaseOrderLineId,
+			@NonNull final OrderAndLineId salesOrderLineId)
 	{
 		final I_C_PO_OrderLine_Alloc poLineAllocation = InterfaceWrapperHelper.newInstance(I_C_PO_OrderLine_Alloc.class);
-		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getRepoId());
-		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getRepoId());
-
+		poLineAllocation.setC_OrderPO_ID(purchaseOrderLineId.getOrderRepoId());
+		poLineAllocation.setC_PO_OrderLine_ID(purchaseOrderLineId.getOrderLineRepoId());
+		poLineAllocation.setC_OrderSO_ID(salesOrderLineId.getOrderRepoId());
+		poLineAllocation.setC_SO_OrderLine_ID(salesOrderLineId.getOrderLineRepoId());
 		InterfaceWrapperHelper.save(poLineAllocation);
+	}
+
+	@Override
+	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull final OrderAndLineId purchaseOrderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, purchaseOrderLineId.getOrderLineId())
+				.create()
+				.stream()
+				.map(allocRecord -> OrderAndLineId.ofRepoIds(allocRecord.getC_OrderSO_ID(), allocRecord.getC_SO_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
@@ -484,5 +493,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		}
 
 		return queryBuilder;
+	}
+
+	@Override
+	public boolean hasIsOnConsignmentLines(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsOnConsignment, true)
+				.anyMatch();
 	}
 }

@@ -7,7 +7,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.printing.IMassPrintingService;
-import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
@@ -54,7 +53,6 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@ClientOnlyProcess
 public abstract class ReportStarter extends JavaProcess
 {
 	// services

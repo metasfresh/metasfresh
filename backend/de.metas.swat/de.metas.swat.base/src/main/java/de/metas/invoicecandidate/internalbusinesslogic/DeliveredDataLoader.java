@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.metas.document.engine.DocStatus;
@@ -12,6 +13,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -19,11 +21,13 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -59,6 +63,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 @Value
 public class DeliveredDataLoader
 {
+	private static final Logger logger = LogManager.getLogger(DeliveredDataLoader.class);
+
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	UomId stockUomId;
@@ -73,7 +79,9 @@ public class DeliveredDataLoader
 
 	Boolean negateQtys;
 
-	/** always empty, if soTrx; sometimes set if poTrx */
+	/**
+	 * always empty, if soTrx; sometimes set if poTrx
+	 */
 	Optional<Percent> deliveryQualityDiscount;
 
 	/**
@@ -345,5 +353,31 @@ public class DeliveredDataLoader
 			result.add(deliveredQtyItem.build());
 		}
 		return result.build();
+	}
+
+	@NonNull
+	private StockQtyAndUOMQty getDeliveredQtyWhenNoValidICIOL()
+	{
+		final boolean hasInOutLineAllocations = invoiceCandDAO.countICIOLAssociations(invoiceCandidateId) > 0;
+
+		if (hasInOutLineAllocations)
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns StockQtyAndUOMQty with 0 qty! Invoice_Candidate_ID={}", invoiceCandidateId);
+
+			return StockQtyAndUOMQty.builder()
+					.productId(productId)
+					.uomQty(Quantitys.createZero(icUomId))
+					.stockQty(Quantitys.createZero(productId))
+					.build();
+		}
+		else
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("getDeliveredQtyWhenNoValidICIOL returns default StockQtyAndUOMQty={}! Invoice_Candidate_ID={}",
+							defaultQtyDelivered, invoiceCandidateId);
+
+			return defaultQtyDelivered;
+		}
 	}
 }

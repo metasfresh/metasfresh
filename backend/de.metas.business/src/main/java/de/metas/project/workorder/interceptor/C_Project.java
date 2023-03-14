@@ -23,57 +23,56 @@
 package de.metas.project.workorder.interceptor;
 
 import de.metas.project.ProjectCategory;
-import de.metas.util.Loggables;
+import de.metas.project.ProjectId;
+import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectService;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
 
 @Interceptor(I_C_Project.class)
 @Component
 public class C_Project
 {
+	private final WOProjectService woProjectService;
+	private final BudgetProjectService budgetProjectService;
+
+	public C_Project(
+			@NonNull final WOProjectService woProjectService,
+			@NonNull final BudgetProjectService budgetProjectService)
+	{
+		this.woProjectService = woProjectService;
+		this.budgetProjectService = budgetProjectService;
+	}
+
 	/**
 	 * If the given work order project has no values for certain columns, then take them from the parent-project
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_C_Project.COLUMNNAME_C_Project_Parent_ID, I_C_Project.COLUMNNAME_ProjectCategory })
-	public void updateFromParent(@NonNull final I_C_Project project)
+	public void updateFromParent(@NonNull final I_C_Project woProjectToBeUpdated)
 	{
-		if (!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder())
+		if (!ProjectCategory.ofNullableCodeOrGeneral(woProjectToBeUpdated.getProjectCategory()).isWorkOrder())
 		{
 			return; // not our business
 		}
-		if (project.getC_Project_Parent_ID() <= 0)
+
+		if (woProjectToBeUpdated.getC_Project_Parent_ID() <= 0)
 		{
 			return; // nothing for us to do
 		}
 
-		final ArrayList<String> updatedColumns = new ArrayList<>();
-		final I_C_Project parentProjectRecord = InterfaceWrapperHelper.load(project.getC_Project_Parent_ID(), I_C_Project.class);
-		if (project.getC_BPartner_ID() <= 0)
-		{
-			project.setC_BPartner_ID(parentProjectRecord.getC_BPartner_ID());
-			updatedColumns.add(I_C_Project.COLUMNNAME_C_BPartner_ID);
-		}
-		if (project.getSalesRep_ID() <= 0)
-		{
-			project.setSalesRep_ID(parentProjectRecord.getSalesRep_ID());
-			updatedColumns.add(I_C_Project.COLUMNNAME_SalesRep_ID);
-		}
-		if (project.getSpecialist_Consultant_ID() <= 0)
-		{
-			project.setSpecialist_Consultant_ID(parentProjectRecord.getSpecialist_Consultant_ID());
-			updatedColumns.add(I_C_Project.COLUMNNAME_Specialist_Consultant_ID);
-		}
-		if (updatedColumns.size() > 0) // log this, particularly in case the change is done via API 
-		{
-			Loggables.get().addLog("Set the following columns from C_Project_Parent_ID={}: {}", project.getC_Project_Parent_ID(), updatedColumns);
-		}
+		final BudgetProject parentProject = budgetProjectService.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_Parent_ID()))
+				.orElseThrow(() -> new AdempiereException("No budget project record found for C_Project_ID = " + woProjectToBeUpdated.getC_Project_Parent_ID()));
+
+		final WOProject woProject = woProjectService.getById(ProjectId.ofRepoId(woProjectToBeUpdated.getC_Project_ID()));
+
+		woProjectService.syncWithParentAndUpdate(woProject, parentProject);
 	}
 }

@@ -1,28 +1,32 @@
 package org.compiere.acct;
 
-import de.metas.acct.api.AccountId;
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 /*
  * #%L
@@ -46,16 +50,18 @@ import java.math.BigDecimal;
  * #L%
  */
 
-@ToString(exclude = "fact")
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@ToString(exclude = "fact", doNotUseGetters = true)
 public final class FactLineBuilder
 {
+	private static final Logger log = Fact.log;
 	private boolean built = false;
 
 	private final Fact fact;
 	private DocLine<?> docLine = null;
 	private Integer subLineId = null;
 
-	private MAccount account = null;
+	private Account account = null;
 
 	private CurrencyId currencyId;
 	@Nullable private CurrencyConversionContext currencyConversionCtx;
@@ -73,6 +79,9 @@ public final class FactLineBuilder
 	@Nullable private TaxId C_Tax_ID;
 	private Integer locatorId;
 	private ActivityId activityId;
+	private LocationId fromLocationId;
+	private LocationId toLocationId;
+	private CostElementId costElementId;
 
 	FactLineBuilder(@NonNull final Fact fact)
 	{
@@ -103,7 +112,7 @@ public final class FactLineBuilder
 		markAsBuilt();
 
 		// Data Check
-		final MAccount account = getAccount();
+		final Account account = getAccount();
 		if (account == null)
 		{
 			throw new AdempiereException("No account for " + this);
@@ -113,6 +122,7 @@ public final class FactLineBuilder
 		final Doc<?> doc = getDoc();
 		final DocLine<?> docLine = getDocLine();
 		final FactLine line = new FactLine(
+				doc.getServices(),
 				doc.get_Table_ID(), // AD_Table_ID
 				doc.get_ID(), // Record_ID
 				docLine == null ? 0 : docLine.get_ID()); // Line_ID
@@ -143,16 +153,15 @@ public final class FactLineBuilder
 		}
 
 		//
-		// Amounts - one needs to not zero
-		final CurrencyId currencyId = getCurrencyId();
-		final BigDecimal amtSourceDr = getAmtSourceDr();
-		final BigDecimal amtSourceCr = getAmtSourceCr();
-		line.setAmtSource(currencyId, amtSourceDr, amtSourceCr);
+		// Amounts - one needs to be not zero
+		final Money amtSourceDr = getAmtSourceDr();
+		final Money amtSourceCr = getAmtSourceCr();
+		line.setAmtSource(amtSourceDr, amtSourceCr);
 		if (line.isZeroAmtSource())
 		{
 			if (line.getQty().signum() == 0)
 			{
-				Fact.log.debug("Both amounts & qty = 0/Null - {}", this);
+				log.debug("Both amounts & qty = 0/Null - {}", this);
 				// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
 				if (!alsoAddZeroLine)
 				{
@@ -160,9 +169,9 @@ public final class FactLineBuilder
 				}
 			}
 
-			if (Fact.log.isDebugEnabled())
+			if (log.isDebugEnabled())
 			{
-				Fact.log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + toString());
+				log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + this);
 			}
 		}
 
@@ -219,8 +228,24 @@ public final class FactLineBuilder
 			line.setC_Activity_ID(activityId.getRepoId());
 		}
 
+		if (fromLocationId != null)
+		{
+			line.setC_LocFrom_ID(fromLocationId.getRepoId());
+		}
+		if (toLocationId != null)
+		{
+			line.setC_LocTo_ID(toLocationId.getRepoId());
+		}
+
+		if (costElementId != null)
+		{
+			line.setM_CostElement_ID(costElementId.getRepoId());
+		}
+
+		line.setAccountConceptualName(account.getAccountConceptualName());
+
 		//
-		Fact.log.debug("Built: {}", line);
+		log.debug("Built: {}", line);
 		return line;
 	}
 
@@ -235,24 +260,24 @@ public final class FactLineBuilder
 		built = true;
 	}
 
-	public FactLineBuilder setAccount(@NonNull final AccountId accountId)
-	{
-		final IAccountDAO accountsRepo = Services.get(IAccountDAO.class);
-		return setAccount(accountsRepo.getById(Env.getCtx(), accountId));
-	}
-
-	public FactLineBuilder setAccount(final MAccount account)
+	@NonNull
+	public FactLineBuilder setAccount(@NonNull final Account account)
 	{
 		assertNotBuild();
 		this.account = account;
 		return this;
 	}
 
-	private MAccount getAccount()
+	private Account getAccount()
 	{
 		// TODO: check if we can enforce it all the time
 		// Check.assumeNotNull(account, "account not null for {}", this);
 		return account;
+	}
+
+	private AcctDocRequiredServicesFacade getServices()
+	{
+		return fact.services;
 	}
 
 	private Doc<?> getDoc()
@@ -343,6 +368,24 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setAmtSource(@Nullable final Money amtSourceDr, @Nullable final Money amtSourceCr)
+	{
+		assertNotBuild();
+		setCurrencyId(Money.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr));
+		setAmtSource(
+				amtSourceDr != null ? amtSourceDr.toBigDecimal() : null,
+				amtSourceCr != null ? amtSourceCr.toBigDecimal() : null);
+		return this;
+	}
+
+	public FactLineBuilder setAmtSource(@NonNull final Balance balance)
+	{
+		assertNotBuild();
+		setCurrencyId(balance.getCurrencyId());
+		setAmtSource(balance.getDebit().toBigDecimal(), balance.getCredit().toBigDecimal());
+		return this;
+	}
+
 	/**
 	 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
 	 * Invoke this builder method still have the builder add them.
@@ -360,11 +403,6 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	private CurrencyId getCurrencyId()
-	{
-		return currencyId;
-	}
-
 	public FactLineBuilder setCurrencyConversionCtx(@Nullable final CurrencyConversionContext currencyConversionCtx)
 	{
 		assertNotBuild();
@@ -375,25 +413,40 @@ public final class FactLineBuilder
 	@Nullable
 	private CurrencyConversionContext getCurrencyConversionCtx()
 	{
-		return currencyConversionCtx;
+		if (currencyConversionCtx != null)
+		{
+			return currencyConversionCtx;
+		}
+
+		return fact.getCurrencyConversionContext();
 	}
 
 	@Nullable
-	private BigDecimal getAmtSourceDr()
+	private Money getAmtSourceDr()
 	{
-		return amtSourceDr;
+		return amtSourceDr != null ? Money.of(amtSourceDr, currencyId) : null;
 	}
 
 	@Nullable
-	private BigDecimal getAmtSourceCr()
+	private Money getAmtSourceCr()
 	{
-		return amtSourceCr;
+		return amtSourceCr != null ? Money.of(amtSourceCr, currencyId) : null;
 	}
 
 	/**
 	 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
 	 */
-	public FactLineBuilder setAmtSourceDrOrCr(final BigDecimal amtSource)
+	public FactLineBuilder setAmtSourceDrOrCr(@NonNull final Money amtSource)
+	{
+		setCurrencyId(amtSource.getCurrencyId());
+		setAmtSourceDrOrCr(amtSource.toBigDecimal());
+		return this;
+	}
+
+	/**
+	 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
+	 */
+	public FactLineBuilder setAmtSourceDrOrCr(@NonNull final BigDecimal amtSource)
 	{
 		if (amtSource.signum() < 0)
 		{
@@ -496,4 +549,46 @@ public final class FactLineBuilder
 		return activityId;
 	}
 
+	public FactLineBuilder fromLocation(final Optional<LocationId> optionalLocationId)
+	{
+		optionalLocationId.ifPresent(locationId -> this.fromLocationId = locationId);
+		return this;
+	}
+
+	public FactLineBuilder fromLocationOfBPartner(@Nullable final BPartnerLocationId bpartnerLocationId)
+	{
+		return fromLocation(getServices().getLocationId(bpartnerLocationId));
+	}
+
+	public FactLineBuilder fromLocationOfLocator(final int locatorRepoId)
+	{
+		return fromLocation(getServices().getLocationIdByLocatorRepoId(locatorRepoId));
+	}
+
+	public FactLineBuilder toLocation(final Optional<LocationId> optionalLocationId)
+	{
+		optionalLocationId.ifPresent(locationId -> this.toLocationId = locationId);
+		return this;
+	}
+
+	public FactLineBuilder toLocationOfBPartner(@Nullable final BPartnerLocationId bpartnerLocationId)
+	{
+		return toLocation(getServices().getLocationId(bpartnerLocationId));
+	}
+
+	public FactLineBuilder toLocationOfLocator(final int locatorRepoId)
+	{
+		return toLocation(getServices().getLocationIdByLocatorRepoId(locatorRepoId));
+	}
+
+	public FactLineBuilder costElement(@Nullable final CostElementId costElementId)
+	{
+		this.costElementId = costElementId;
+		return this;
+	}
+
+	public FactLineBuilder costElement(@Nullable final CostElement costElement)
+	{
+		return costElement(costElement != null ? costElement.getId() : null);
+	}
 }

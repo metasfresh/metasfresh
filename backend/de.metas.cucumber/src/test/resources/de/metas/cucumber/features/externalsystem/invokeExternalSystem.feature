@@ -4,7 +4,8 @@ Feature: external system invocation using metasfresh api
   I want want to be able to invoke external systems
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
       | S6_config                           | S6   | testS6              |

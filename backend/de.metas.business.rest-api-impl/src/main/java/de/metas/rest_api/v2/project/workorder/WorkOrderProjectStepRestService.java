@@ -169,7 +169,7 @@ public class WorkOrderProjectStepRestService
 				.externalId(ExternalId.of(request.getExternalId()))
 				.name(request.getName())
 				.description(request.getDescription())
-				.dateStart(TimeUtil.asInstant(request.getDateStart(), zoneId))
+				.dateStart(TimeUtil.asStartOfDayInstant(request.getDateStart(), zoneId))
 				.dateEnd(TimeUtil.asEndOfDayInstant(request.getDateEnd(), zoneId))
 				.woPartialReportDate(TimeUtil.asInstant(request.getWoPartialReportDate(), zoneId))
 				.woPlannedResourceDurationHours(request.getWoPlannedResourceDurationHours())
@@ -699,9 +699,19 @@ public class WorkOrderProjectStepRestService
 			return null;
 		}
 
+		final boolean isSameDate = actualDateStart.equals(actualDateEnd);
+
+		final Instant computedDateStart = isSameDate
+				? TimeUtil.asStartOfDayInstant(actualDateStart, zoneId)
+				: actualDateStart;
+
+		final Instant computedDateEnd = isSameDate
+				? TimeUtil.asEndOfDayInstant(actualDateEnd, zoneId)
+				: actualDateEnd;
+
 		return CalendarDateRange.builder()
-				.startDate(actualDateStart)
-				.endDate(actualDateEnd)
+				.startDate(computedDateStart)
+				.endDate(computedDateEnd)
 				.allDay(Boolean.FALSE)
 				.build();
 	}

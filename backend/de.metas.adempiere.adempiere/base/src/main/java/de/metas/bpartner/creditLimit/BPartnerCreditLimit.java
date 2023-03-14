@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.money.Money;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
@@ -67,6 +68,9 @@ public class BPartnerCreditLimit
 	Instant dateFrom;
 
 	@Nullable
+	UserId approvedBy;
+
+	@Nullable
 	@With
 	RecordChangeLog changeLog;
 
@@ -86,6 +90,7 @@ public class BPartnerCreditLimit
 			@NonNull final CreditLimitTypeId creditLimitTypeId,
 			@NonNull final Money amount,
 			@Nullable final Instant dateFrom,
+			@Nullable final UserId approvedBy,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			final boolean active,
@@ -96,6 +101,7 @@ public class BPartnerCreditLimit
 		this.creditLimitTypeId = creditLimitTypeId;
 		this.amount = amount;
 		this.dateFrom = dateFrom;
+		this.approvedBy = approvedBy;
 		this.changeLog = changeLog;
 		this.orgMappingId = orgMappingId;
 		this.active = active;

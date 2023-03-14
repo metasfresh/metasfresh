@@ -32,4 +32,9 @@ public interface SAPConstants
 	String ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT = "CreditLimitRouteContext";
 
 	String BPARTNER_DEFAULT_LANGUAGE = "en_US";
+
+	String DEFAULT_PRODUCT_CATEGORY_ID = "sap.material-import.default-product-category";
+
+	String ROUTE_PROPERTY_CONVERSION_RATE_ROUTE_CONTEXT = "ConversionRateRouteContext";
+	String DEFAULT_DATE_FORMAT = "yyyyMMdd";
 }

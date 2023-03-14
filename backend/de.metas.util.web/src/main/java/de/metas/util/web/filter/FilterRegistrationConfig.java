@@ -53,6 +53,14 @@ public class FilterRegistrationConfig
 	// 	registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 	// 	return registrationBean;
 	// }
+	@Bean
+	public FilterRegistrationBean<CacheControlFilter> cacheControlFilterFilter()
+	{
+		final FilterRegistrationBean<CacheControlFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new CacheControlFilter());
+		registrationBean.setOrder(0);
+		return registrationBean;
+	}
 
 	@Bean
 	public FilterRegistrationBean<GithubIssueFilter> githubIssueFilter(@NonNull final IAuthenticateGithubService authenticateGithubRequest)

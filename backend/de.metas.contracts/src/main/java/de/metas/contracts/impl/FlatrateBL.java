@@ -24,7 +24,6 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
@@ -89,6 +88,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -507,7 +507,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private ActivityId findActivityIdOrNull(final I_C_Flatrate_Term term, final int productId)
 	{
-		return Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+		return Services.get(IProductActivityProvider.class).getActivityForAcct(
 				ClientId.ofRepoId(term.getAD_Client_ID()),
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				ProductId.ofRepoId(productId));

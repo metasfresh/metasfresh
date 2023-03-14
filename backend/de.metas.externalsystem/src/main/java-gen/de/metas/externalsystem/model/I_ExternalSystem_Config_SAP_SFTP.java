@@ -52,6 +52,26 @@ public interface I_ExternalSystem_Config_SAP_SFTP
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Approved By.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setApprovedBy_ID (int ApprovedBy_ID);
+
+	/**
+	 * Get Approved By.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getApprovedBy_ID();
+
+	String COLUMNNAME_ApprovedBy_ID = "ApprovedBy_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -261,6 +281,52 @@ public interface I_ExternalSystem_Config_SAP_SFTP
 	String COLUMNNAME_SFTP_BPartner_TargetDirectory = "SFTP_BPartner_TargetDirectory";
 
 	/**
+	 * Set Conversion Rate File Name Pattern.
+	 * Ant-style pattern used to identify conversion rate files on the SFTP-Server. (If not set, all files are considered)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_ConversionRate_FileName_Pattern (@Nullable java.lang.String SFTP_ConversionRate_FileName_Pattern);
+
+	/**
+	 * Get Conversion Rate File Name Pattern.
+	 * Ant-style pattern used to identify conversion rate files on the SFTP-Server. (If not set, all files are considered)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_ConversionRate_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP_SFTP, Object> COLUMN_SFTP_ConversionRate_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP_SFTP.class, "SFTP_ConversionRate_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_ConversionRate_FileName_Pattern = "SFTP_ConversionRate_FileName_Pattern";
+
+	/**
+	 * Set Conversion Rate Target Directory.
+	 * The directory used to retrieve conversion rates from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_ConversionRate_TargetDirectory (@Nullable java.lang.String SFTP_ConversionRate_TargetDirectory);
+
+	/**
+	 * Get Conversion Rate Target Directory.
+	 * The directory used to retrieve conversion rates from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_ConversionRate_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP_SFTP, Object> COLUMN_SFTP_ConversionRate_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP_SFTP.class, "SFTP_ConversionRate_TargetDirectory", null);
+	String COLUMNNAME_SFTP_ConversionRate_TargetDirectory = "SFTP_ConversionRate_TargetDirectory";
+
+	/**
 	 * Set Credit Limit File Name Pattern.
 	 * Ant-style pattern used to identify credit limit files on the SFTP-Server. (If not set, all files are considered)
 	 *
@@ -285,7 +351,7 @@ public interface I_ExternalSystem_Config_SAP_SFTP
 
 	/**
 	 * Set Credit Limit TargetDirectory.
-	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).
+	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -295,7 +361,7 @@ public interface I_ExternalSystem_Config_SAP_SFTP
 
 	/**
 	 * Get Credit Limit TargetDirectory.
-	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).
+	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

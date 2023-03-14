@@ -35,6 +35,21 @@ public class X_ExternalSystem_Config_SAP_SFTP extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setApprovedBy_ID (final int ApprovedBy_ID)
+	{
+		if (ApprovedBy_ID < 1) 
+			set_Value (COLUMNNAME_ApprovedBy_ID, null);
+		else 
+			set_Value (COLUMNNAME_ApprovedBy_ID, ApprovedBy_ID);
+	}
+
+	@Override
+	public int getApprovedBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ApprovedBy_ID);
+	}
+
+	@Override
 	public void setErroredDirectory (final java.lang.String ErroredDirectory)
 	{
 		set_Value (COLUMNNAME_ErroredDirectory, ErroredDirectory);
@@ -134,6 +149,30 @@ public class X_ExternalSystem_Config_SAP_SFTP extends org.compiere.model.PO impl
 	public java.lang.String getSFTP_BPartner_TargetDirectory() 
 	{
 		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_TargetDirectory);
+	}
+
+	@Override
+	public void setSFTP_ConversionRate_FileName_Pattern (final @Nullable java.lang.String SFTP_ConversionRate_FileName_Pattern)
+	{
+		set_Value (COLUMNNAME_SFTP_ConversionRate_FileName_Pattern, SFTP_ConversionRate_FileName_Pattern);
+	}
+
+	@Override
+	public java.lang.String getSFTP_ConversionRate_FileName_Pattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_ConversionRate_FileName_Pattern);
+	}
+
+	@Override
+	public void setSFTP_ConversionRate_TargetDirectory (final @Nullable java.lang.String SFTP_ConversionRate_TargetDirectory)
+	{
+		set_Value (COLUMNNAME_SFTP_ConversionRate_TargetDirectory, SFTP_ConversionRate_TargetDirectory);
+	}
+
+	@Override
+	public java.lang.String getSFTP_ConversionRate_TargetDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_ConversionRate_TargetDirectory);
 	}
 
 	@Override

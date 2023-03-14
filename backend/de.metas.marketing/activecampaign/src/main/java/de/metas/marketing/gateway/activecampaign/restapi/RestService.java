@@ -113,6 +113,35 @@ public class RestService
 		return performWithRetry(resourceURI, HttpMethod.POST, request, clazz);
 	}
 
+	public <T> ResponseEntity<T> performPut(@NonNull final ApiRequest postRequest, @Nullable final Class<T> clazz)
+	{
+		final URI resourceURI;
+
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(postRequest.getBaseURL());
+
+		if (!Check.isEmpty(postRequest.getPathVariables()))
+		{
+			uriBuilder.pathSegment(postRequest.getPathVariables().toArray(new String[0]));
+		}
+
+		if (!Check.isEmpty(postRequest.getQueryParameters()))
+		{
+			uriBuilder.queryParams(postRequest.getQueryParameters());
+		}
+
+		final String requestBody = postRequest.getRequestBody();
+
+		final HttpHeaders httpHeaders = getHttpHeaders(postRequest.getApiKey());
+
+		final HttpEntity<String> request = Check.isBlank(requestBody)
+				? new HttpEntity<>(httpHeaders)
+				: new HttpEntity<>(requestBody, httpHeaders);
+
+		resourceURI = uriBuilder.build().encode().toUri();
+
+		return performWithRetry(resourceURI, HttpMethod.PUT, request, clazz);
+	}
+
 	private <T> ResponseEntity<T> performWithRetry(
 			final URI resourceURI,
 			final HttpMethod httpMethod,

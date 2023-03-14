@@ -22,19 +22,19 @@ package de.metas.shipping.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_M_Package;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
@@ -47,6 +47,8 @@ public interface IShipperTransportationDAO extends ISingletonService
 	 * Retrieve all {@link I_M_ShippingPackage}s which are pointing to givem {@link I_M_Package}.
 	 */
 	List<I_M_ShippingPackage> retrieveShippingPackages(I_M_Package mpackage);
+
+	Iterator<I_M_ShippingPackage> retrieveCompletedOutgoingDeliveryInstructionLines(@NonNull BPartnerId bPartnerId);
 
 	@Nullable
 	I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId);

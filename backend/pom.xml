@@ -83,6 +83,8 @@
         <module>de.metas.global_qrcode.services</module>
         <module>de.metas.business</module>
 
+        <module>de.metas.forex.webui</module>
+
         <module>de.metas.business.rest-api</module>
         <module>de.metas.business.rest-api-impl</module>
 
@@ -156,6 +158,10 @@
         <module>de.metas.storage</module>
 
         <module>de.metas.swat</module>
+        <module>de.metas.invoice.webui</module>
+
+        <module>de.metas.deliveryplanning.base</module>
+        <module>de.metas.deliveryplanning.webui</module>
 
         <module>de.metas.serviceprovider</module>
 

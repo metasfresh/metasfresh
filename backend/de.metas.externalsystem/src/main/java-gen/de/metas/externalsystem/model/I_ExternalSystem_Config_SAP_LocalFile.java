@@ -52,6 +52,26 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Approved By.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setApprovedBy_ID (int ApprovedBy_ID);
+
+	/**
+	 * Get Approved By.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getApprovedBy_ID();
+
+	String COLUMNNAME_ApprovedBy_ID = "ApprovedBy_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -238,6 +258,52 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 	String COLUMNNAME_LocalFile_BPartner_TargetDirectory = "LocalFile_BPartner_TargetDirectory";
 
 	/**
+	 * Set Conversion Rate File Name Pattern.
+	 * Ant-style pattern used to identify conversion rate files on the local machine. (If not set, all files are considered)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLocalFile_ConversionRate_FileName_Pattern (@Nullable java.lang.String LocalFile_ConversionRate_FileName_Pattern);
+
+	/**
+	 * Get Conversion Rate File Name Pattern.
+	 * Ant-style pattern used to identify conversion rate files on the local machine. (If not set, all files are considered)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLocalFile_ConversionRate_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP_LocalFile, Object> COLUMN_LocalFile_ConversionRate_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP_LocalFile.class, "LocalFile_ConversionRate_FileName_Pattern", null);
+	String COLUMNNAME_LocalFile_ConversionRate_FileName_Pattern = "LocalFile_ConversionRate_FileName_Pattern";
+
+	/**
+	 * Set Conversion Rate Target Directory.
+	 * Directory used to pull conversion rates from the local machine. (If no value is specified here, the files are pulled from the configured local root location)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLocalFile_ConversionRate_TargetDirectory (@Nullable java.lang.String LocalFile_ConversionRate_TargetDirectory);
+
+	/**
+	 * Get Conversion Rate Target Directory.
+	 * Directory used to pull conversion rates from the local machine. (If no value is specified here, the files are pulled from the configured local root location)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLocalFile_ConversionRate_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP_LocalFile, Object> COLUMN_LocalFile_ConversionRate_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP_LocalFile.class, "LocalFile_ConversionRate_TargetDirectory", null);
+	String COLUMNNAME_LocalFile_ConversionRate_TargetDirectory = "LocalFile_ConversionRate_TargetDirectory";
+
+	/**
 	 * Set Credit Limit File Name Pattern.
 	 * Ant-style pattern used to identify credit limit files on the local machine. (If not set, all files are considered)
 	 *
@@ -261,8 +327,8 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 	String COLUMNNAME_LocalFile_CreditLimit_FileName_Pattern = "LocalFile_CreditLimit_FileName_Pattern";
 
 	/**
-	 * Set Credit Limit TargetDirectory.
-	 * The directory used to retrieve credit limits from the local machine. (If no value is specified here, the files are pulled from the configured local root location).
+	 * Set Credit Limit Target Directory.
+	 * The directory used to retrieve credit limits from the local machine. (If no value is specified here, the files are pulled from the configured local root location)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -271,8 +337,8 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 	void setLocalFile_CreditLimit_TargetDirectory (@Nullable java.lang.String LocalFile_CreditLimit_TargetDirectory);
 
 	/**
-	 * Get Credit Limit TargetDirectory.
-	 * The directory used to retrieve credit limits from the local machine. (If no value is specified here, the files are pulled from the configured local root location).
+	 * Get Credit Limit Target Directory.
+	 * The directory used to retrieve credit limits from the local machine. (If no value is specified here, the files are pulled from the configured local root location)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -308,7 +374,7 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 
 	/**
 	 * Set Product Target Directory.
-	 * Directory used to pull products from the sftp server. (If not set, the files will be pulled from the root location of the sftp server)
+	 * Directory used to pull products from the local machine. (If no value is specified here, the files are pulled from the configured local root location)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -318,7 +384,7 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 
 	/**
 	 * Get Product Target Directory.
-	 * Directory used to pull products from the sftp server. (If not set, the files will be pulled from the root location of the sftp server)
+	 * Directory used to pull products from the local machine. (If no value is specified here, the files are pulled from the configured local root location)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

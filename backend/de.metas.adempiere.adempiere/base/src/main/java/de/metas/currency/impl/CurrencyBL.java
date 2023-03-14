@@ -184,6 +184,12 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	public CurrencyPrecision getCostingPrecision(final CurrencyId currencyId)
+	{
+		return currencyDAO.getCostingPrecision(currencyId);
+	}
+
+	@Override
 	@NonNull
 	public final BigDecimal convert(
 			final BigDecimal amt,
@@ -327,6 +333,7 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}
 
+	@NonNull
 	private CurrencyConversionTypeId getDefaultConversionTypeId(
 			final ClientId adClientId,
 			final OrgId adOrgId,
@@ -339,6 +346,22 @@ public class CurrencyBL implements ICurrencyBL
 	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
 	{
 		return currencyDAO.getConversionTypeId(type);
+	}
+
+	@Override
+	@NonNull
+	public CurrencyConversionTypeId getCurrencyConversionTypeIdOrDefault(@NonNull final OrgId orgId, @Nullable final String conversionTypeName)
+	{
+		if (Check.isBlank(conversionTypeName))
+		{
+			final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
+
+			return getDefaultConversionTypeId(clientId, orgId, SystemTime.asInstant());
+		}
+
+		final ConversionTypeMethod conversionTypeMethod = ConversionTypeMethod.ofName(conversionTypeName);
+
+		return getCurrencyConversionTypeId(conversionTypeMethod);
 	}
 
 	@Nullable

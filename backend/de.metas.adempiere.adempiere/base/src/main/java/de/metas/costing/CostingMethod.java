@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import de.metas.ad_reference.ReferenceId;
 import org.compiere.model.X_M_CostElement;
 
 import com.google.common.collect.ImmutableMap;
@@ -42,11 +43,12 @@ public enum CostingMethod
 	AverageInvoice(X_M_CostElement.COSTINGMETHOD_AverageInvoice), //
 	LastInvoice(X_M_CostElement.COSTINGMETHOD_LastInvoice), //
 	UserDefined(X_M_CostElement.COSTINGMETHOD_UserDefined), //
-	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__) //
+	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__), //
+	MovingAverageInvoice(X_M_CostElement.COSTINGMETHOD_MovingAverageInvoice)
 
 	;
 
-	public static final int AD_REFERENCE_ID = X_M_CostElement.COSTINGMETHOD_AD_Reference_ID;
+	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_M_CostElement.COSTINGMETHOD_AD_Reference_ID);
 
 	@Getter
 	private final String code;

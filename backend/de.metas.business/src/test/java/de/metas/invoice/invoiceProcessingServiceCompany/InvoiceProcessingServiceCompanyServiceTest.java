@@ -22,6 +22,7 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -476,6 +477,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							.ctx(Env.getCtx())
 							.name("invoice processing fee vendor invoice")
 							.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+							.glCategoryId(GLCategoryId.ofRepoId(123))
 							.build());
 
 			final I_C_UOM uomEach = BusinessTestHelper.createUomEach();

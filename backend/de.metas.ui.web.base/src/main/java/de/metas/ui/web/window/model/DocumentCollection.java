@@ -458,17 +458,12 @@ public class DocumentCollection
 
 		//
 		// Make sure all events were collected for the case when we just created the new document
-		// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
+		//
+		// IMPORTANT: This case happens when the document is not yet saved, but it's not the first time we are patching it.
+		// e.g. we have a document with multiple mandatory fields, user is filling them one by one, after each change a PATCH is sent
 		if (wasNew)
 		{
-			logger.debug("Checking if we collected all events for the new document");
-			final Set<String> collectedFieldNames = rootDocument.getChangesCollector().collectFrom(rootDocument, () -> "new document, initially missed");
-			if (!collectedFieldNames.isEmpty())
-			{
-				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
-									+ "\n Missed (but collected now) field names were: {}" //
-									+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
-			}
+			rootDocument.getChangesCollector().collectFrom(rootDocument, () -> "new document, initially missed");
 		}
 
 	}

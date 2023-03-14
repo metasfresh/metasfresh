@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -104,51 +104,30 @@ public class AsyncBatchService
 	}
 
 	/**
-	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
-	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
+	 * Invokes the given {@code supplier} to enqueue workpackages and then and waits for them to finish (successfully or exceptionally).
+	 * It's mandatory for the given {@code supplier} to assign those workpackages to the given async batch.
+	 * If the supplier enqueues zero workpackages, that's OK and nothing is done.
+	 * <br/>
+	 * @return the enqueuing result as returned by the supplier.
 	 *
-	 * @param supplier     Supplier<>
-	 * @param asyncBatchId C_Async_Batch_ID
-	 * @param <T>          model type
-	 * @return model type of supplier
 	 * @see C_Queue_WorkPackage#processBatchFromWP(de.metas.async.model.I_C_Queue_WorkPackage)
 	 */
-	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	public <T extends IEnqueueResult> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final T result;
 		try
 		{
 			asyncBatchObserver.observeOn(asyncBatchId);
 
-			result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get); // let the supplier enqueue its workpackages
 
-			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
-		}
-		finally
-		{
-			asyncBatchObserver.removeObserver(asyncBatchId);
-		}
-
-		return result;
-	}
-
-	@NonNull
-	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		final IEnqueueResult result;
-		try
-		{
-			asyncBatchObserver.observeOn(asyncBatchId);
-
-			result = trxManager.callInNewTrx(supplier::get);
-
-			if (result.getEnqueuedWorkPackageIds().isEmpty())
-			{
-				asyncBatchObserver.removeObserver(asyncBatchId);
-			}
-			else
+			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
 				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			}
+			else 
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());
 			}
 		}
 		finally
@@ -188,19 +167,19 @@ public class AsyncBatchService
 	}
 
 	/**
-	 *
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * This is important as we want to avoid old "with-error" work packages failing a new async batch run.
 	 * <br/>
 	 * <br/>
 	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * This is important as we want to consider work packages that were created in the past but only run now.
 	 * <br/>
 	 * <br/>
 	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.
 	 * <br/>
+	 *
 	 * @return true, if {@code wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping}
 	 */
 	private boolean qualifiesForBatchProcessingStatus(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Instant startMonitoringFrom)

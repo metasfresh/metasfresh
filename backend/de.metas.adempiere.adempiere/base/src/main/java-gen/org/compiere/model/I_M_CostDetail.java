@@ -203,28 +203,6 @@ public interface I_M_CostDetail
 	String COLUMNNAME_C_ProjectIssue_ID = "C_ProjectIssue_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -248,6 +226,28 @@ public interface I_M_CostDetail
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Accounting Date.
@@ -457,6 +457,27 @@ public interface I_M_CostDetail
 
 	ModelColumn<I_M_CostDetail, Object> COLUMN_M_CostDetail_ID = new ModelColumn<>(I_M_CostDetail.class, "M_CostDetail_ID", null);
 	String COLUMNNAME_M_CostDetail_ID = "M_CostDetail_ID";
+
+	/**
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostDetail_Type (java.lang.String M_CostDetail_Type);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getM_CostDetail_Type();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_M_CostDetail_Type = new ModelColumn<>(I_M_CostDetail.class, "M_CostDetail_Type", null);
+	String COLUMNNAME_M_CostDetail_Type = "M_CostDetail_Type";
 
 	/**
 	 * Set Cost Element.

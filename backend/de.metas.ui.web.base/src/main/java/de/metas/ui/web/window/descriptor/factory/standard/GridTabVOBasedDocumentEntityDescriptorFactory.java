@@ -5,6 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -27,6 +30,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
@@ -56,8 +60,7 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -77,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -107,7 +111,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
+	private final IColumnBL adColumnBL = Services.get(IColumnBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 	private final LookupDataSourceFactory lookupDataSourceFactory;
@@ -117,11 +122,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
 	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
+	private static final String SYSCONFIG_QUANTITY_DEFAULT_PRECISION = "webui.frontend.widget.Quantity.defaultPrecision";
+
 	//
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
+
+	private WidgetTypeStandardNumberPrecision _standardNumberPrecision;
 
 	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
@@ -408,7 +417,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 					widgetType,
 					valueClass,
 					gridFieldVO.isMandatory(),
-					gridFieldVO.isUseDocSequence());
+					gridFieldVO.isUseDocSequence(),
+					DocSequenceId.ofRepoIdOrNull(gridFieldVO.getAD_Sequence_ID()));
 
 			final OptionalBoolean tabAllowsCreateNew = entityDescriptorBuilder.getAllowCreateNewLogic().toOptionalBoolean();
 			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn, tabAllowsCreateNew);
@@ -459,6 +469,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
+				.setMinPrecision(getStandardNumberPrecision().getMinPrecision(widgetType))
 				.setValueClass(valueClass)
 				.setSqlValueClass(entityBindings.getPOInfo().getColumnClass(sqlColumnName))
 				.setLookupDescriptor(lookupDescriptor.orElse(null))
@@ -1051,4 +1062,25 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
 	}
+
+	private WidgetTypeStandardNumberPrecision getStandardNumberPrecision()
+	{
+		WidgetTypeStandardNumberPrecision standardNumberPrecision = this._standardNumberPrecision;
+		if (standardNumberPrecision == null)
+		{
+			standardNumberPrecision = this._standardNumberPrecision = WidgetTypeStandardNumberPrecision.builder()
+					.quantityPrecision(getPrecisionFromSysConfigs(SYSCONFIG_QUANTITY_DEFAULT_PRECISION))
+					.build()
+					.fallbackTo(WidgetTypeStandardNumberPrecision.DEFAULT);
+		}
+		return standardNumberPrecision;
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private OptionalInt getPrecisionFromSysConfigs(@NonNull final String sysconfigName)
+	{
+		final int precision = sysConfigBL.getIntValue(sysconfigName, -1);
+		return precision > 0 ? OptionalInt.of(precision) : OptionalInt.empty();
+	}
+
 }

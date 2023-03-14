@@ -118,10 +118,7 @@ public class InvoiceSource extends AbstractDunnableSource
 		{
 			final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
 
-			daysDue = invoiceSourceDAO.retrieveDueDays(
-					PaymentTermId.ofRepoId(paymentTermId),
-					dateInvoiced,
-					context.getDunningDate());
+			daysDue = invoiceSourceDAO.computeDueDays(dueDate,	context.getDunningDate());
 		}
 
 		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName,

@@ -81,6 +81,10 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 	public static final String SECTION_GROUP_PARTNER_ID = "sectionGroupPartnerId";
+	public static final String PROSPECT = "isProspect";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+	public static final String SECTION_GROUP_PARTNER = "sectionGroupPartner";
+	public static final String SECTION_PARTNER = "sectionPartner";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -263,6 +267,26 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId sectionGroupPartnerId;
 
+	@Schema(description = "This translates to `C_BPartner.IsProspect`")
+	@JsonProperty(PROSPECT)
+	@JsonInclude(Include.NON_NULL)
+	Boolean prospect;
+
+	@Schema(description = "This translates to `C_BPartner.SAP_BPartnerCode`")
+	@JsonProperty(SAP_BPARTNER_CODE)
+	@JsonInclude(Include.NON_NULL)
+	String sapBPartnerCode;
+
+	@Schema(description = "This translates to `C_BPartner.IsSectionGroupPartner`")
+	@JsonProperty(SECTION_GROUP_PARTNER)
+	@JsonInclude(Include.NON_NULL)
+	boolean sectionGroupPartner;
+
+	@Schema(description = "This translates to `C_BPartner.IsSectionPartner`")
+	@JsonProperty(SECTION_PARTNER)
+	@JsonInclude(Include.NON_NULL)
+	boolean sectionPartner;
+
 	@Schema // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -309,6 +333,10 @@ public class JsonResponseBPartner
 			@JsonProperty(CUSTOMER_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId customerPaymentTermId,
 			@JsonProperty(VENDOR_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId vendorPaymentTermId,
 			@JsonProperty(SECTION_GROUP_PARTNER_ID) @Nullable final JsonMetasfreshId sectionGroupPartnerId,
+			@JsonProperty(PROSPECT) final Boolean prospect,
+			@JsonProperty(SAP_BPARTNER_CODE) @Nullable final String sapBPartnerCode,
+			@JsonProperty(SECTION_GROUP_PARTNER) final boolean sectionGroupPartner,
+			@JsonProperty(SECTION_PARTNER) final boolean sectionPartner,
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 			//
 	{
@@ -360,6 +388,10 @@ public class JsonResponseBPartner
 		this.customerPaymentTermId = customerPaymentTermId;
 		this.vendorPaymentTermId = vendorPaymentTermId;
 		this.sectionGroupPartnerId = sectionGroupPartnerId;
+		this.prospect = prospect;
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sectionGroupPartner = sectionGroupPartner;
+		this.sectionPartner = sectionPartner;
 
 		this.changeInfo = changeInfo;
 	}

@@ -36,6 +36,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -81,7 +83,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
@@ -187,7 +188,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
+		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 	}
 
 	@Override
@@ -302,7 +303,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
@@ -377,6 +378,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Nullable
 	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		if (!invoiceBL.isInvoice(invoice))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
@@ -477,6 +479,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list();
 	}
 
+	@NonNull
 	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
@@ -485,7 +488,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 		if (query.getExternalId() != null)
 		{
-			return getInvoiceIdByExternalIdIfExists(query);
+			return getInvoiceIdByExternalIdIfCOorCL(query);
 		}
 		if (!Check.isEmpty(query.getDocType()))
 		{
@@ -530,6 +533,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.listImmutable(I_C_Invoice.class);
 	}
 
+	@NonNull
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
@@ -556,7 +560,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
-	private Optional<InvoiceId> getInvoiceIdByExternalIdIfExists(@NonNull final InvoiceQuery query)
+	@NonNull
+	private Optional<InvoiceId> getInvoiceIdByExternalIdIfCOorCL(@NonNull final InvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -564,9 +569,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue())
 
-		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
+				// we only want invoices that payments or other invoices can be allocated against
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed);
+
+		final int invoiceRepoId = queryBuilder.create()
+				.firstIdOnly(); // this firstIdOnly() corresponds to the UC "c_invoice_uc_externalId_org"
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
@@ -634,5 +643,18 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
 		return docBaseAndSubType.equals(targetDocType);
+	}
+
+	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
+	{
+		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, true)
+				.addFilter(filter)
+				.setLimit(QueryLimit.TEN)
+				.create()
+				.stream()
+				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

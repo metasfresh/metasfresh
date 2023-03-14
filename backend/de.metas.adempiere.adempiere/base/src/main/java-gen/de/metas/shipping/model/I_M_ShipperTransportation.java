@@ -1,9 +1,8 @@
 package de.metas.shipping.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipperTransportation
  *  @author metasfresh (generated) 
@@ -74,6 +73,46 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_AssignAnonymouslyPickedHUs = "AssignAnonymouslyPickedHUs";
 
 	/**
+	 * Set Delivery Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Delivery_ID (int C_BPartner_Location_Delivery_ID);
+
+	/**
+	 * Get Delivery Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Delivery_ID();
+
+	String COLUMNNAME_C_BPartner_Location_Delivery_ID = "C_BPartner_Location_Delivery_ID";
+
+	/**
+	 * Set Loading Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Loading_ID (int C_BPartner_Location_Loading_ID);
+
+	/**
+	 * Get Loading Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Loading_ID();
+
+	String COLUMNNAME_C_BPartner_Location_Loading_ID = "C_BPartner_Location_Loading_ID";
+
+	/**
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -94,6 +133,31 @@ public interface I_M_ShipperTransportation
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Sammelrechnung erstellen.
@@ -209,6 +273,48 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_DateToBeFetched = "DateToBeFetched";
 
 	/**
+	 * Set Shipmentdate.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
+
+	/**
+	 * Get Shipmentdate.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDeliveryDate();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveryDate", null);
+	String COLUMNNAME_DeliveryDate = "DeliveryDate";
+
+	/**
+	 * Set Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryTime (@Nullable java.lang.String DeliveryTime);
+
+	/**
+	 * Get Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryTime();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveryTime = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveryTime", null);
+	String COLUMNNAME_DeliveryTime = "DeliveryTime";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -231,7 +337,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -241,7 +347,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -297,6 +403,29 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_ShipperTransportation.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -341,6 +470,98 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_ShipperTransportation.class, "IsApproved", null);
 	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
+	 * Set Loading Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingDate (@Nullable java.sql.Timestamp LoadingDate);
+
+	/**
+	 * Get Loading Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getLoadingDate();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingDate = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingDate", null);
+	String COLUMNNAME_LoadingDate = "LoadingDate";
+
+	/**
+	 * Set Loading Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingTime (@Nullable java.lang.String LoadingTime);
+
+	/**
+	 * Get Loading Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLoadingTime();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingTime", null);
+	String COLUMNNAME_LoadingTime = "LoadingTime";
+
+	/**
+	 * Set Delivery Planning.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
+
+	/**
+	 * Get Delivery Planning.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Delivery_Planning_ID();
+
+	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
+
+	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
+	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
+
+	/**
+	 * Set Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_MeansOfTransportation_ID (int M_MeansOfTransportation_ID);
+
+	/**
+	 * Get Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_MeansOfTransportation_ID();
+
+	@Nullable org.compiere.model.I_M_MeansOfTransportation getM_MeansOfTransportation();
+
+	void setM_MeansOfTransportation(@Nullable org.compiere.model.I_M_MeansOfTransportation M_MeansOfTransportation);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_MeansOfTransportation> COLUMN_M_MeansOfTransportation_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_MeansOfTransportation_ID", org.compiere.model.I_M_MeansOfTransportation.class);
+	String COLUMNNAME_M_MeansOfTransportation_ID = "M_MeansOfTransportation_ID";
 
 	/**
 	 * Set Shipper.
@@ -433,7 +654,7 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_PackageNetTotal = "PackageNetTotal";
 
 	/**
-	 * Set Package Weight.
+	 * Set Weight.
 	 * Weight of a package
 	 *
 	 * <br>Type: Number
@@ -443,7 +664,7 @@ public interface I_M_ShipperTransportation
 	void setPackageWeight (@Nullable BigDecimal PackageWeight);
 
 	/**
-	 * Get Package Weight.
+	 * Get Weight.
 	 * Weight of a package
 	 *
 	 * <br>Type: Number

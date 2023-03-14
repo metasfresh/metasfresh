@@ -26,10 +26,11 @@ import com.google.common.base.Suppliers;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocTypeSequenceMap;
+import de.metas.document.DocTypeSequenceList;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -85,8 +86,16 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private static final AdMessageKey MSG_PROVIDER_NOT_APPLICABLE = AdMessageKey.of("de.metas.document.CustomSequenceNotProviderNoApplicable");
 
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
+
+	/**
+	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARYEAR}.
+	 */
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
-	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarMonth = new SimpleDateFormatThreadLocal("MM");
+
+	/**
+	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARMONTH}.
+	 */
+	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarMonth = new SimpleDateFormatThreadLocal("M");
 
 	private ClientId _adClientId;
 	private Boolean _isAdempiereSys;
@@ -97,8 +106,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private boolean _failOnError = false; // default=false, for backward compatibility
 	private boolean _usePreliminaryDocumentNo = false; // default=false, for backward compatibility
 
-	DocumentNoBuilder()
+	private final List<ICountryIdProvider> countryIdProviders;
+
+	DocumentNoBuilder(final @NonNull List<ICountryIdProvider> countryIdProviders)
 	{
+		this.countryIdProviders = countryIdProviders;
 	}
 
 	@Override
@@ -293,25 +305,9 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 						.setParameter("context", evalContext);
 			}
 
-			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
-			{
-				logger.debug("getSequenceNoToUse - The customSequenceNoProvider.isUseIncrementSeqNoAsPrefix()=true; -> going to prepend an incremental sequence number to it");
-				if (!docSeqInfo.isAutoSequence())
-				{
-
-					throw new AdempiereException("The current customSequenceNoProvider requires this sequence to be configured as auto-sequence")
-							.appendParametersToMessage()
-							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
-							.setParameter("docSeqInfo", docSeqInfo);
-				}
-				result = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo,retrieveAndIncrementSeqNo(docSeqInfo) );
-			}
-			else
-			{
-				final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo, null);
-				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
-				result = customSequenceNumber;
-			}
+			result = customSequenceNoProvider.provideSeqNo(() -> getIncrementalSeqNo(docSeqInfo),
+														   evalContext,
+														   docSeqInfo);
 		}
 		else
 		{
@@ -561,8 +557,19 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 		else
 		{
-			final DocTypeSequenceMap docTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(docType);
-			docSequenceId = docTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
+
+			ICountryIdProvider.ProviderResult providerResult = ICountryIdProvider.ProviderResult.EMPTY;
+			for(final ICountryIdProvider countryIdProvider : countryIdProviders)
+			{
+				providerResult = countryIdProvider.computeValueInfo(_evalContext);
+				if(providerResult.hasCountryId())
+				{
+					break;
+				}
+			}
+
+			final DocTypeSequenceList docTypeSequenceList = documentSequenceDAO.retrieveDocTypeSequenceList(docType);
+			docSequenceId = docTypeSequenceList.getDocNoSequenceId(getClientId(), getOrgId(), providerResult.getCountryIdOrNull());
 			if (docSequenceId == null)
 			{
 				throw new DocumentNoBuilderException("No Sequence for DocType - " + docType);
@@ -619,5 +626,18 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private boolean isUsePreliminaryDocumentNo()
 	{
 		return _usePreliminaryDocumentNo;
+	}
+
+	@NonNull
+	private String getIncrementalSeqNo(@NonNull final DocumentSequenceInfo docSeqInfo) throws AdempiereException
+	{
+		if (!docSeqInfo.isAutoSequence())
+		{
+			throw new AdempiereException("getIncrementalSeqNo called for a non incremental sequence.")
+					.appendParametersToMessage()
+					.setParameter("docSeqInfo", docSeqInfo);
+		}
+
+		return retrieveAndIncrementSeqNo(docSeqInfo);
 	}
 }

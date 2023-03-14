@@ -22,6 +22,7 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
@@ -77,6 +78,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
 	private final CallOrderContractService callOrderContractService;
 	private final ADReferenceService adReferenceService;
+	private final GLCategoryRepository glCategoryRepository;
 
 	@Deprecated
 	public MainValidator()
@@ -87,7 +89,8 @@ public class MainValidator extends AbstractModuleInterceptor
 				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
 				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class),
 				SpringContextHolder.instance.getBean(CallOrderContractService.class),
-				ADReferenceService.get());
+				ADReferenceService.get(),
+				GLCategoryRepository.get());
 	}
 
 	public MainValidator(
@@ -96,7 +99,8 @@ public class MainValidator extends AbstractModuleInterceptor
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo,
 			@NonNull final CallOrderContractService callOrderContractService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final GLCategoryRepository glCategoryRepository)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
@@ -104,6 +108,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
 		this.callOrderContractService = callOrderContractService;
 		this.adReferenceService = adReferenceService;
+		this.glCategoryRepository = glCategoryRepository;
 	}
 
 	@Override
@@ -155,6 +160,7 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 
+
 		ExcludeSubscriptionOrderLines.registerFilterForInvoiceCandidateCreation();
 		registerInOutLinesWithMissingInvoiceCandidateFilter();
 
@@ -182,7 +188,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(C_SubscriptionProgress.instance);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance);
 		engine.addModelValidator(C_Flatrate_Matching.instance);
-		engine.addModelValidator(new C_Flatrate_Term(contractOrderService,documentLocationBL, adReferenceService));
+		engine.addModelValidator(new C_Flatrate_Term(contractOrderService, documentLocationBL, adReferenceService, glCategoryRepository));
 
 		engine.addModelValidator(new C_Invoice_Candidate());
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc());

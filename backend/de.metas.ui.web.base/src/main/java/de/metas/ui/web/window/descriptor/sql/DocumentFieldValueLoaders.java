@@ -10,6 +10,7 @@ import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
 import de.metas.util.NumberUtils;
@@ -38,6 +39,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 /*
@@ -128,11 +130,12 @@ public final class DocumentFieldValueLoaders
 		return new LocalTimeDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static DocumentFieldValueLoader toBigDecimal(final String sqlColumnName, final boolean encrypted, @Nullable final Integer precision)
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static DocumentFieldValueLoader toBigDecimal(final String sqlColumnName, final boolean encrypted, @NonNull final OptionalInt minPrecision)
 	{
-		if (precision != null)
+		if (minPrecision.isPresent())
 		{
-			return new BigDecimalWithPrecisionDocumentFieldValueLoader(sqlColumnName, encrypted, precision);
+			return new BigDecimalWithPrecisionDocumentFieldValueLoader(sqlColumnName, encrypted, minPrecision.getAsInt());
 		}
 		else
 		{
@@ -181,7 +184,7 @@ public final class DocumentFieldValueLoaders
 	//
 	//
 
-	private static final transient Logger logger = LogManager.getLogger(DocumentFieldValueLoaders.class);
+	private static final Logger logger = LogManager.getLogger(DocumentFieldValueLoaders.class);
 
 	private DocumentFieldValueLoaders()
 	{
@@ -413,13 +416,13 @@ public final class DocumentFieldValueLoaders
 	{
 		String sqlColumnName;
 		boolean encrypted;
-		int precision;
+		int minPrecision;
 
 		@Override
 		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			BigDecimal value = rs.getBigDecimal(sqlColumnName);
-			value = value == null ? null : NumberUtils.setMinimumScale(value, precision);
+			value = value == null ? null : NumberUtils.setMinimumScale(value, minPrecision);
 			return encrypted ? decrypt(value) : value;
 		}
 	}
@@ -560,8 +563,8 @@ public final class DocumentFieldValueLoaders
 				final String adLanguage_NOTUSED,
 				final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
-			final int adColorId = rs.getInt(sqlColumnName);
-			if (adColorId <= 0)
+			final ColorId adColorId = ColorId.ofRepoIdOrNull(rs.getInt(sqlColumnName));
+			if (adColorId == null)
 			{
 				return null;
 			}

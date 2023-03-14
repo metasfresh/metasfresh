@@ -42,6 +42,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ObjectMapperUtil;
 import de.metas.util.Services;
@@ -55,9 +56,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_APPROVED_BY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CONVERSION_RATE_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CONVERSION_RATE_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ERRORED_DIRECTORY;
@@ -68,8 +73,11 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ROOT_LOCATION;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_CATEGORY_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_TYPE_MAPPINGS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_APPROVED_BY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CONVERSION_RATE_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CONVERSION_RATE_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_ERRORED_DIRECTORY;
@@ -113,6 +121,7 @@ public class InvokeSAPService
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
+		parameters.put(PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE, String.valueOf(sapConfig.isCheckDescriptionForMaterialType()));
 		parameters.putAll(extractContentSourceParameters(sapConfig, externalRequest));
 
 		parameters.putAll(getMappingParameters(sapConfig.getParentId()));
@@ -230,6 +239,11 @@ public class InvokeSAPService
 		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryCreditLimit());
 		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, contentSourceSFTP.getFileNamePatternCreditLimit());
 
+		parameters.put(PARAM_SFTP_CONVERSION_RATE_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryConversionRate());
+		parameters.put(PARAM_SFTP_CONVERSION_RATE_FILENAME_PATTERN, contentSourceSFTP.getFileNamePatternConversionRate());
+
+		parameters.put(PARAM_SFTP_APPROVED_BY, String.valueOf(UserId.toRepoId(contentSourceSFTP.getApprovedBy())));
+
 		return parameters;
 	}
 
@@ -251,6 +265,11 @@ public class InvokeSAPService
 
 		parameters.put(PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryCreditLimit());
 		parameters.put(PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN, contentSourceLocalFile.getFileNamePatternCreditLimit());
+
+		parameters.put(PARAM_LOCAL_FILE_CONVERSION_RATE_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryConversionRate());
+		parameters.put(PARAM_LOCAL_FILE_CONVERSION_RATE_FILENAME_PATTERN, contentSourceLocalFile.getFileNamePatternConversionRate());
+
+		parameters.put(PARAM_LOCAL_FILE_APPROVED_BY, String.valueOf(UserId.toRepoId(contentSourceLocalFile.getApprovedBy())));
 
 		return parameters;
 	}

@@ -55,14 +55,19 @@ public class HUWithExpiryDatesService
 				.execute();
 	}
 
-	public UpdateMonthsUntilExpiryResult updateMonthsUntilExpiry(@NonNull final LocalDate today)
+	public UpdateMonthsResult updateMonthsUntilExpiry(@NonNull final LocalDate today)
 	{
 		return UpdateMonthsUntilExpiryCommand.builder()
 				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
-				.handlingUnitsBL(handlingUnitsBL)
-				//
 				.today(today)
-				//
+				.execute();
+	}
+
+	public UpdateMonthsResult updateMonthsUntilStorageEndDate(@NonNull final LocalDate today)
+	{
+		return UpdateMonthsUntilEndStorageCommand.builder()
+				.huWithExpiryDatesRepository(huWithExpiryDatesRepository)
+				.today(today)
 				.execute();
 	}
 }

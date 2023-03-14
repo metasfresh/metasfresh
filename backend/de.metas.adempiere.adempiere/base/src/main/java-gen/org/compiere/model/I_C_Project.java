@@ -623,6 +623,27 @@ public interface I_C_Project
 	String COLUMNNAME_GenerateTo = "GenerateTo";
 
 	/**
+	 * Set Internal Priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalPriority (@Nullable java.lang.String InternalPriority);
+
+	/**
+	 * Get Internal Priority.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalPriority();
+
+	ModelColumn<I_C_Project, Object> COLUMN_InternalPriority = new ModelColumn<>(I_C_Project.class, "InternalPriority", null);
+	String COLUMNNAME_InternalPriority = "InternalPriority";
+
+	/**
 	 * Set Invoiced Amount.
 	 * The amount invoiced
 	 *

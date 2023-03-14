@@ -1187,4 +1187,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
 	}
+
+	@Override
+	public ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.getClientAndOrgId(huId);
+	}
 }

@@ -83,14 +83,22 @@ public class SyncAdvise
 	{
 		UPDATE_MERGE(true/* updateMerge */),
 
-		DONT_UPDATE(false/* updateMerge */);
+		DONT_UPDATE(false/* updateMerge */),
+
+		@ApiEnum("Replace data for the target resource with the information present in the request.")
+		REPLACE(true);
 
 		@Getter
 		private final boolean update;
 
-		IfExists(boolean update)
+		IfExists(final boolean update)
 		{
 			this.update = update;
+		}
+
+		public boolean isReplace()
+		{
+			return this == REPLACE;
 		}
 	}
 

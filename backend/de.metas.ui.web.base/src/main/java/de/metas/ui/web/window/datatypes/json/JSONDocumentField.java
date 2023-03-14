@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -67,13 +68,14 @@ public final class JSONDocumentField
 	public static JSONDocumentField ofDocumentField(final IDocumentFieldView field, final JSONOptions jsonOpts)
 	{
 		final String name = field.getFieldName();
-		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
 		final Object valueJSON = field.getValueAsJsonObject(jsonOpts);
 
 		final DocumentFieldLogicExpressionResultRevaluator expressionRevaluator = jsonOpts.getLogicExpressionResultRevaluator();
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
+		final JSONDocumentField jsonField = new JSONDocumentField(name)
+				.setWidgetType(JSONLayoutWidgetType.fromNullable(field.getWidgetType()))
+				.setPrecision(field.getMinPrecision())
 				.setValue(valueJSON, null)
 				.setReadonly(expressionRevaluator.revaluate(field.getReadonly()), adLanguage)
 				.setMandatory(field.getMandatory(), adLanguage) // NOTE: don't re-evaluate because we cannot apply the same logic when we evaluate if the document is valid
@@ -101,7 +103,9 @@ public final class JSONDocumentField
 		final DocumentFieldLogicExpressionResultRevaluator expressionRevaluator = jsonOpts.getLogicExpressionResultRevaluator();
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
+		final JSONDocumentField jsonField = new JSONDocumentField(name)
+				.setWidgetType(jsonWidgetType)
+				.setPrecision(parameter.getMinPrecision())
 				.setValue(valueJSON, null)
 				.setReadonly(expressionRevaluator.revaluate(parameter.getReadonly()), adLanguage)
 				.setMandatory(parameter.getMandatory(), adLanguage) // NOTE: don't re-evaluate because we cannot apply the same logic when we evaluate if the document is valid
@@ -118,20 +122,22 @@ public final class JSONDocumentField
 
 	public static JSONDocumentField idField(final Object jsonValue)
 	{
-		return new JSONDocumentField(FIELD_VALUE_ID, JSONLayoutWidgetType.Integer)
+		return new JSONDocumentField(FIELD_VALUE_ID)
+				.setWidgetType(JSONLayoutWidgetType.Integer)
 				.setValue(jsonValue, null);
 	}
 
 	public static JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
 	{
-		return new JSONDocumentField(fieldName, null)
+		return new JSONDocumentField(fieldName)
 				.setValue(jsonValue, null);
 	}
 
 	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event, final JSONOptions jsonOpts)
 	{
-		final JSONLayoutWidgetType widgetType = JSONLayoutWidgetType.fromNullable(event.getWidgetType());
-		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName(), widgetType);
+		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName())
+				.setWidgetType(JSONLayoutWidgetType.fromNullable(event.getWidgetType()))
+				.setPrecision(OptionalInt.empty()); // N/A
 
 		if (event.isValueSet())
 		{
@@ -249,13 +255,9 @@ public final class JSONDocumentField
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	@JsonCreator
-		/* package */ JSONDocumentField(
-			@JsonProperty("field") final String field,
-			@JsonProperty("widgetType") @Nullable final JSONLayoutWidgetType widgetType)
+	JSONDocumentField(@JsonProperty("field") final String field)
 	{
 		this.field = field;
-		this.widgetType = widgetType;
-		this.precision = widgetType != null ? widgetType.getStandardNumberPrecision() : null;
 	}
 
 	@Override
@@ -298,7 +300,17 @@ public final class JSONDocumentField
 	public JSONDocumentField setWidgetType(@Nullable final JSONLayoutWidgetType widgetType)
 	{
 		this.widgetType = widgetType;
-		this.precision = widgetType != null ? widgetType.getStandardNumberPrecision() : null;
+		if (widgetType != null)
+		{
+			setPrecision(widgetType.getStandardNumberPrecision());
+		}
+		return this;
+	}
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public JSONDocumentField setPrecision(@NonNull OptionalInt precision)
+	{
+		this.precision = precision.isPresent() ? precision.getAsInt() : null;
 		return this;
 	}
 

@@ -27,4 +27,7 @@ import java.time.Duration;
 public interface ProjectConstants
 {
 	Duration DEFAULT_DURATION = Duration.ofHours(1);
+
+	String DEFAULT_WO_CALENDAR_ENTRY_COLOR = "#FFCF60";
+	String DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR = "#89D72D";
 }

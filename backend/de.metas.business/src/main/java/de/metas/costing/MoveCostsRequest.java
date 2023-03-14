@@ -70,7 +70,7 @@ public class MoveCostsRequest
 	@NonNull
 	CostingDocumentRef inboundDocumentRef;
 
-	public boolean isAllCostElements()
+	public boolean isAllMaterialCostElements()
 	{
 		return costElement == null;
 	}

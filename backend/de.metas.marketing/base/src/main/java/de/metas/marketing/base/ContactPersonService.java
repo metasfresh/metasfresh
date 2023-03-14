@@ -16,9 +16,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -162,10 +164,41 @@ public class ContactPersonService
 		final ArrayList<ContactPerson> savedContactPersons = new ArrayList<>(syncResults.size());
 		for (final SyncResult syncResult : syncResults)
 		{
-			final ContactPerson savedContactPerson = contactPersonRepo.saveSyncResult(syncResult);
-			savedContactPersons.add(savedContactPerson);
+			savedContactPersons.add(saveSyncResult(syncResult));
 		}
 
 		return savedContactPersons;
+	}
+
+	@NonNull
+	public ContactPerson saveSyncResult(@NonNull final SyncResult syncResult)
+	{
+		return contactPersonRepo.saveSyncResult(syncResult);
+	}
+
+	@NonNull
+	public Stream<ContactPerson> streamActivelySyncedWithRemoteId(@NonNull final CampaignId campaignId)
+	{
+		final boolean onlyWithRemoteIds = true;
+		return contactPersonRepo.streamActiveContacts(campaignId, onlyWithRemoteIds);
+	}
+
+	@NonNull
+	public Stream<ContactPerson> streamContacts(@NonNull final CampaignId campaignId)
+	{
+		final boolean onlyWithRemoteIds = false;
+		return contactPersonRepo.streamActiveContacts(campaignId, onlyWithRemoteIds);
+	}
+
+	@NonNull
+	public List<ContactPerson> retrieveByCampaignAndRemoteIds(@NonNull final CampaignId campaignId, @NonNull final Set<String> remoteIds)
+	{
+		return contactPersonRepo.retrieveByCampaignAndRemoteIds(campaignId, remoteIds);
+	}
+
+	@NonNull
+	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final Collection<String> emails)
+	{
+		return contactPersonRepo.retrieveByEmails(campaignId, emails);
 	}
 }

@@ -24,11 +24,8 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.M_ShipmentSchedule_Create_M_Delivery_Planning;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -42,7 +39,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -79,7 +75,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 @Component
 public class M_ShipmentSchedule
 {
-	private final DeliveryPlanningService deliveryPlanningService;
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService;
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
@@ -89,12 +84,11 @@ public class M_ShipmentSchedule
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	
-	public M_ShipmentSchedule(@NonNull final DeliveryPlanningService deliveryPlanningService,
+
+	public M_ShipmentSchedule(
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
 			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
 	{
-		this.deliveryPlanningService = deliveryPlanningService;
 		this.invalidSchedulesService = shipmentScheduleInvalidateBL;
 		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
 	}
@@ -110,10 +104,10 @@ public class M_ShipmentSchedule
 
 		// task 07355: we allow QtyOrdered == 0, because an order could be closed before a delivery was made
 		Check.errorIf(qtyOrderedEffective.signum() < 0,
-					  "M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
+				"M_ShipmentSchedule {} has QtyOrderedEffective {} (less than 0!)", schedule, qtyOrderedEffective);
 
 		Check.errorIf(schedule.getQtyReserved().signum() < 0,
-					  "M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
+				"M_ShipmentSchedule {} has QtyReserved {} (less than 0!)", schedule, schedule.getQtyReserved());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -378,24 +372,5 @@ public class M_ShipmentSchedule
 	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		shipmentScheduleBL.updateCanBeExportedAfter(sched);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		final boolean autoCreateEnabled = deliveryPlanningService.isAutoCreateEnabled(ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()));
-
-		if (!autoCreateEnabled)
-		{
-			//nothing to do
-			return;
-		}
-		M_ShipmentSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void deleteDeliveryPlannings(@NonNull final I_M_ShipmentSchedule sched)
-	{
-		deliveryPlanningService.deleteForShipmentSchedule(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()));
 	}
 }

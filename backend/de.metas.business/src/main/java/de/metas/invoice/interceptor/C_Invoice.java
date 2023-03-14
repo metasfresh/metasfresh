@@ -6,13 +6,16 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
+import de.metas.invoice.sequence.InvoiceCountryIdProvider;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -34,6 +37,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -68,12 +72,20 @@ public class C_Invoice // 03771
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
+	private final  IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
+
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
 			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.paymentReservationService = paymentReservationService;
 		this.documentLocationBL = documentLocationBL;
+	}
+
+	@Init
+	void init()
+	{
+		Services.get(IDocumentNoBuilderFactory.class).registerCountryIdProvider(new InvoiceCountryIdProvider());
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -269,8 +281,8 @@ public class C_Invoice // 03771
 		if (creditMemo.getRef_Invoice_ID() > 0)
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
-			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
-																			false); // creditMemoAdjusted = false
+			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
+																							   false).toBigDecimal(); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
@@ -420,5 +432,15 @@ public class C_Invoice // 03771
 			line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
 			invoiceDAO.save(line);
 		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_BEFORE_PREPARE })
+	public void updateBPartnerStats(@NonNull I_C_Invoice invoice)
+	{
+		bPartnerStatisticsUpdater
+				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
+												  .bpartnerId(invoice.getC_BPartner_ID())
+												  .build());
+
 	}
 }

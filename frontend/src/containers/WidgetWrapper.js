@@ -49,6 +49,10 @@ class WidgetWrapper extends PureComponent {
     this.childRef = React.createRef();
   }
 
+  getWrappedElement = () => {
+    return this.childRef?.current;
+  };
+
   render() {
     //console.log('WidgetWrapper.render', { props: this.props });
     const { renderMaster, widgetType } = this.props;
@@ -184,6 +188,7 @@ WidgetWrapper.propTypes = {
   supportFieldEdit: PropTypes.bool,
   layoutId: PropTypes.string,
   isModal: PropTypes.bool,
+  propagateEnterKeyEvent: PropTypes.bool,
 
   //
   // Callbacks and other functions

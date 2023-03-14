@@ -46,6 +46,8 @@ public interface ActiveCampaignConstants
 	enum QueryParam
 	{
 		LIST_ID("listid"),
+		LIMIT("limit"),
+		OFFSET("offset"),
 		;
 
 		private final String value;
@@ -58,4 +60,5 @@ public interface ActiveCampaignConstants
 	String ACTIVE_CAMPAIGN_API_RATE_LIMIT_RETRY_HEADER = "Retry-After";
 
 	String MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET = "de.metas.marketing.gateway.activecampaign.rest.maxSecondsToWaitForLimitReset";
+	int ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT = 100;
 }

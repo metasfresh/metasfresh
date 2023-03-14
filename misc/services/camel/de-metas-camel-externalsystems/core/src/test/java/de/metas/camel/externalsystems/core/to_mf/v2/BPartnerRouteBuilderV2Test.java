@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -36,7 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_BASE_URL;
 import static de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilderV2.RETRIEVE_BPARTNER_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilderV2.RETRIEVE_BPARTNER_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
@@ -66,8 +68,12 @@ public class BPartnerRouteBuilderV2Test extends CamelTestSupport
 		final InputStream retrieveBPartnerRequestIS = this.getClass().getResourceAsStream(JSON_TO_MF_RETRIEVE_BPARTNER_REQUEST);
 		final BPRetrieveCamelRequest retrieveBPartnerRequest = objectMapper.readValue(retrieveBPartnerRequestIS, BPRetrieveCamelRequest.class);
 
+		final String bpartnerBaseURL = context().getPropertiesComponent().resolveProperty(MF_UPSERT_BPARTNER_V2_BASE_URL)
+				.orElseThrow(() -> new RuntimeCamelException("Missing mandatory property: " + MF_UPSERT_BPARTNER_V2_BASE_URL));
+		final String expectedRetrieveBPartnerURL = bpartnerBaseURL + "/" + EXPECTED_BP_IDENTIFIER;
+
 		final MockEndpoint bPartnerMockEndpoint = getMockEndpoint(MOCK_BPARTNER_RETRIEVE);
-		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_BPARTNER_IDENTIFIER, EXPECTED_BP_IDENTIFIER);
+		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_TARGET_URI, expectedRetrieveBPartnerURL);
 		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_PINSTANCE_ID, EXPECTED_PINSTANCE_ID);
 		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_EXTERNALSYSTEM_CONFIG_ID, EXPECTED_EXTERNALSYSTEM_CONFIG_ID);
 		//fire the route

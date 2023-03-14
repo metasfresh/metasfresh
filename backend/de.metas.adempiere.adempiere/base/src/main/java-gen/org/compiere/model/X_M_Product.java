@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1987738200L;
+	private static final long serialVersionUID = -1387146855L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -652,7 +652,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public boolean isEnforceIssuingTolerance() 
+	public boolean isEnforceIssuingTolerance()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEnforceIssuingTolerance);
 	}
@@ -783,7 +783,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public BigDecimal getIssuingTolerance_Perc() 
+	public BigDecimal getIssuingTolerance_Perc()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_IssuingTolerance_Perc);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -796,7 +796,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public BigDecimal getIssuingTolerance_Qty() 
+	public BigDecimal getIssuingTolerance_Qty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_IssuingTolerance_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -805,19 +805,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public void setIssuingTolerance_UOM_ID (final int IssuingTolerance_UOM_ID)
 	{
-		if (IssuingTolerance_UOM_ID < 1) 
+		if (IssuingTolerance_UOM_ID < 1)
 			set_Value (COLUMNNAME_IssuingTolerance_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_IssuingTolerance_UOM_ID, IssuingTolerance_UOM_ID);
 	}
 
 	@Override
-	public int getIssuingTolerance_UOM_ID() 
+	public int getIssuingTolerance_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_IssuingTolerance_UOM_ID);
 	}
 
-	/** 
+	/**
 	 * IssuingTolerance_ValueType AD_Reference_ID=541693
 	 * Reference name: IssuingTolerance_ValueType
 	 */
@@ -833,7 +833,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public java.lang.String getIssuingTolerance_ValueType() 
+	public java.lang.String getIssuingTolerance_ValueType()
 	{
 		return get_ValueAsString(COLUMNNAME_IssuingTolerance_ValueType);
 	}
@@ -1200,7 +1200,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public java.lang.String getMRP_Exclude() 
+	public java.lang.String getMRP_Exclude()
 	{
 		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
@@ -1562,6 +1562,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getSalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+	}
+
+	@Override
+	public void setSAP_ProductHierarchy (final @Nullable java.lang.String SAP_ProductHierarchy)
+	{
+		set_Value (COLUMNNAME_SAP_ProductHierarchy, SAP_ProductHierarchy);
+	}
+
+	@Override
+	public java.lang.String getSAP_ProductHierarchy()
+	{
+		return get_ValueAsString(COLUMNNAME_SAP_ProductHierarchy);
 	}
 
 	@Override

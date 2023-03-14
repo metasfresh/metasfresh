@@ -350,6 +350,7 @@ class PPOrderLinesViewDataLoader
 	{
 		return ppOrderQtys.stream()
 				.map(ppOrderQty -> createForPPOrderQty(ppOrderQty, readOnly))
+				.sorted(Comparator.comparing(PPOrderLineRow::getCode, Comparator.nullsLast(Comparator.naturalOrder())))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -374,6 +375,7 @@ class PPOrderLinesViewDataLoader
 						includedHUEditorRow,
 						huEditorRow,
 						readonly))
+				.sorted(Comparator.comparing(PPOrderLineRow::getCode, Comparator.nullsLast(Comparator.naturalOrder())))
 				.collect(ImmutableList.toImmutableList());
 
 		final PPOrderLineRowId rowId = PPOrderLineRowId.ofIssuedOrReceivedHU(parentHUEditorRow != null ? parentHUEditorRow.getId() : null, huEditorRow.getHuId());

@@ -1,15 +1,6 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.util.Set;
-
-import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
-import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.NamePair;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
@@ -19,6 +10,15 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.validationRule.AbstractJavaValidationRule;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.NamePair;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -46,13 +46,11 @@ import de.metas.util.Services;
  * {@link IValidationRule} implementation which filters only those DocActions on which are suitable for current document status and user's role has access to them.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class DocActionValidationRule extends AbstractJavaValidationRule
 {
 	public static final DocActionValidationRule instance = new DocActionValidationRule();
-
-	private static final Set<String> PARAMETERS = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> PARAMETERS = ImmutableSet.<String>builder()
 			.add(WindowConstants.FIELDNAME_DocStatus)
 			.add(WindowConstants.FIELDNAME_C_DocType_ID)
 			.add(WindowConstants.FIELDNAME_C_DocTypeTarget_ID)
@@ -92,6 +90,7 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 				.processing(extractProcessing(evalCtx))
 				.orderType(extractOrderType(evalCtx))
 				.soTrx(extractSOTrx(evalCtx))
+				.validationContext(evalCtx)
 				.build();
 
 		final IDocActionOptionsBL docActionOptionsBL = Services.get(IDocActionOptionsBL.class);
@@ -149,9 +148,14 @@ public final class DocActionValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<String> getParameters(@Nullable final String contextTableName)
 	{
-		return PARAMETERS;
+		final HashSet<String> parameters = new HashSet<>(PARAMETERS);
+
+		final IDocActionOptionsBL docActionOptionsBL = Services.get(IDocActionOptionsBL.class);
+		parameters.addAll(docActionOptionsBL.getRequiredParameters(contextTableName));
+
+		return parameters;
 	}
 
 }

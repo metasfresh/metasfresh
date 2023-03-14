@@ -50,6 +50,7 @@ import java.util.Optional;
 @Profile(Profiles.PROFILE_App)
 public class ProjectRestController
 {
+	@NonNull
 	private final ProjectRestService projectRestService;
 
 	public ProjectRestController(@NonNull final ProjectRestService projectRestService)

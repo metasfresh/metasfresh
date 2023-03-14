@@ -21,6 +21,7 @@ import de.metas.process.Param;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
+import de.metas.tax.api.TaxId;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.uom.UomId;
@@ -103,6 +104,9 @@ public class C_Order_CreatePOFromSOs
 	@Param(parameterName = "IsPurchaseBOMComponents")
 	private boolean p_isPurchaseBOMComponents;
 
+	@Param(parameterName="C_Tax_ID")
+	private int p_C_Tax_ID;
+
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
 
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
@@ -139,7 +143,8 @@ public class C_Order_CreatePOFromSOs
 		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
 				purchaseQtySource,
-				p_TypeOfPurchase);
+				p_TypeOfPurchase,
+				TaxId.ofRepoIdOrNull(p_C_Tax_ID));
 
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
 		workpackageAggregator.setGroupsBufferSize(100);

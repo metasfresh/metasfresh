@@ -47,12 +47,4 @@ public class Contact
 	@Nullable
 	@JsonProperty("id")
 	String id;
-
-	@Nullable
-	@JsonProperty("firstName")
-	String firstName;
-
-	@Nullable
-	@JsonProperty("lastName")
-	String lastName;
 }

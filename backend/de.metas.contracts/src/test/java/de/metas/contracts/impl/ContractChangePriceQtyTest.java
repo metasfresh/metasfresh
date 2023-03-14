@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IContractsDAO;
@@ -27,7 +28,6 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -44,17 +44,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
 	private ContractChangePriceQtyService contractsRepository;
-	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
+	private IContractsDAO contractsDAO;
 
 	private final static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 
-	@BeforeEach
-	public void before()
+	@Override
+	protected void afterInit()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 		contractsRepository = new ContractChangePriceQtyService();
+		contractsDAO = Services.get(IContractsDAO.class);
 
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 
@@ -63,7 +64,8 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 				new C_Flatrate_Term(
 						new ContractOrderService(),
 						documentLocationBL,
-						ADReferenceService.newMocked()));
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);

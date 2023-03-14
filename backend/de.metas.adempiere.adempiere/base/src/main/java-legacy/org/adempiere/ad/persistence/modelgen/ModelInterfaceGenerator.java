@@ -142,6 +142,7 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_AD_WF_Responsible")
 			//
 			.add("org.compiere.model.I_C_Element")
+			.add("org.compiere.model.I_C_ElementValue")
 			//
 			.build();
 

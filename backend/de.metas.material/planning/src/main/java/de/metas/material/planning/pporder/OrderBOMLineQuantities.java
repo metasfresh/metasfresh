@@ -55,6 +55,8 @@ public class OrderBOMLineQuantities
 
 	@NonNull UomId uomId;
 
+	boolean doNotRestrictQtyIssued;
+
 	private static final AdMessageKey MSG_CannotIssueLessThan = AdMessageKey.of("OrderBOMLineQuantities.CannotIssueLessThan");
 	private static final AdMessageKey MSG_CannotIssueMoreThan = AdMessageKey.of("OrderBOMLineQuantities.CannotIssueMoreThan");
 
@@ -69,7 +71,8 @@ public class OrderBOMLineQuantities
 			@Nullable final Quantity qtyScrap,
 			@Nullable final Quantity qtyUsageVariance,
 			@Nullable final Quantity qtyPost,
-			@Nullable final Quantity qtyReserved)
+			@Nullable final Quantity qtyReserved,
+			final boolean doNotRestrictQtyIssued)
 	{
 		this.qtyRequired = qtyRequired;
 		this.qtyRequiredBeforeClose = CoalesceUtil.coalesceNotNull(qtyRequiredBeforeClose, qtyRequired::toZero);
@@ -92,6 +95,8 @@ public class OrderBOMLineQuantities
 				this.qtyUsageVariance,
 				this.qtyPost,
 				this.qtyReserved);
+
+		this.doNotRestrictQtyIssued = doNotRestrictQtyIssued;
 	}
 
 	public static OrderBOMLineQuantities zero(@NonNull final I_C_UOM uom)
@@ -210,7 +215,7 @@ public class OrderBOMLineQuantities
 
 	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual)
 	{
-		if (issuingToleranceSpec == null)
+		if (doNotRestrictQtyIssued || issuingToleranceSpec == null)
 		{
 			return;
 		}
@@ -233,7 +238,7 @@ public class OrderBOMLineQuantities
 
 	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual)
 	{
-		if (issuingToleranceSpec == null)
+		if (doNotRestrictQtyIssued || issuingToleranceSpec == null)
 		{
 			return;
 		}

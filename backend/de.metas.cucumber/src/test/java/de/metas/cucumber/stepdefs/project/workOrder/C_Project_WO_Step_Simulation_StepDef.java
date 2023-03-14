@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs.project.workOrder;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.simulationplan.C_SimulationPlan_StepDefData;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -34,6 +34,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Project_WO_Step;
 import org.compiere.model.I_C_Project_WO_Step_Simulation;
 import org.compiere.model.I_C_SimulationPlan;
@@ -51,18 +52,18 @@ public class C_Project_WO_Step_Simulation_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final ProjectId_StepDefData projectIdTable;
+	private final C_Project_StepDefData projectTable;
 	private final C_Project_WO_Step_StepDefData projectWOStepTable;
 	private final C_SimulationPlan_StepDefData simulationPlanTable;
 	private final C_Project_WO_Step_Simulation_StepDefData woStepSimulationTable;
 
 	public C_Project_WO_Step_Simulation_StepDef(
-			@NonNull final ProjectId_StepDefData projectIdTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Project_WO_Step_StepDefData projectWOStepTable,
 			@NonNull final C_SimulationPlan_StepDefData simulationPlanTable,
 			@NonNull final C_Project_WO_Step_Simulation_StepDefData woStepSimulationTable)
 	{
-		this.projectIdTable = projectIdTable;
+		this.projectTable = projectTable;
 		this.projectWOStepTable = projectWOStepTable;
 		this.simulationPlanTable = simulationPlanTable;
 		this.woStepSimulationTable = woStepSimulationTable;
@@ -112,8 +113,11 @@ public class C_Project_WO_Step_Simulation_StepDef
 	private void loadProjectWoStepSimulation(@NonNull final Map<String, String> tableRow)
 	{
 		final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ProjectId projectId = projectIdTable.get(projectIdentifier);
-		assertThat(projectId).isNotNull();
+
+		final I_C_Project project = projectTable.get(projectIdentifier);
+		assertThat(project).isNotNull();
+
+		final ProjectId projectId = ProjectId.ofRepoId(project.getC_Project_ID());
 
 		final String woProjectStepIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_WO_Step_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_C_Project_WO_Step woProjectStepRecord = projectWOStepTable.get(woProjectStepIdentifier);
