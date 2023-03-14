@@ -1,9 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 49f85185943 (#14753 Fix Tax accounting v3   (#14851))
 DROP FUNCTION IF EXISTS de_metas_acct.taxaccountsonly_details(p_ad_org_id     numeric,
                                                               p_account_id    numeric,
                                                               p_c_vat_code_id numeric,
                                                               p_datefrom      date,
                                                               p_dateto        date)
+<<<<<<< HEAD
 ;
 
 
@@ -27,6 +31,17 @@ CREATE OR REPLACE FUNCTION de_metas_acct.taxaccountsonly_details(p_AD_Org_ID    
                                                                  p_DateFrom      date,
                                                                  p_DateTo        date)
 >>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
+=======
+;
+
+
+
+CREATE FUNCTION de_metas_acct.taxaccountsonly_details(p_ad_org_id     numeric,
+                                                      p_account_id    numeric,
+                                                      p_c_vat_code_id numeric,
+                                                      p_datefrom      date,
+                                                      p_dateto        date)
+>>>>>>> 49f85185943 (#14753 Fix Tax accounting v3   (#14851))
     RETURNS TABLE
             (
                 balance           numeric,
@@ -41,16 +56,22 @@ CREATE OR REPLACE FUNCTION de_metas_acct.taxaccountsonly_details(p_AD_Org_ID    
                 param_startdate   date,
                 param_enddate     date,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 49f85185943 (#14753 Fix Tax accounting v3   (#14851))
                 param_konto       character varying,
                 param_vatcode     character varying,
                 param_org         character varying,
                 currency          character
+<<<<<<< HEAD
 =======
                 param_konto       varchar,
                 param_vatcode     varchar,
                 param_org         varchar,
                 currency          char
 >>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
+=======
+>>>>>>> 49f85185943 (#14753 Fix Tax accounting v3   (#14851))
             )
     STABLE
     LANGUAGE sql
@@ -91,13 +112,19 @@ FROM (
                     ON aas.ad_orgonly_id = p_AD_Org_ID
          INNER JOIN c_currency C ON C.c_currency_id = aas.c_currency_id
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 49f85185943 (#14753 Fix Tax accounting v3   (#14851))
          INNER JOIN de_metas_acct.tax_accounting_report_details_sum(p_DateFrom, p_DateTo, t.vatcode,
                                                                     ev.C_ElementValue_ID,
                                                                     t.c_tax_id,
                                                                     p_AD_Org_ID) AS S ON TRUE
 
+<<<<<<< HEAD
 =======
 >>>>>>> baaf2e70828 (Add currency in Tax report s 3 (#14806))
+=======
+>>>>>>> 49f85185943 (#14753 Fix Tax accounting v3   (#14851))
 WHERE t.taxname IS NOT NULL
 ORDER BY vatcode, accountno
     ;
