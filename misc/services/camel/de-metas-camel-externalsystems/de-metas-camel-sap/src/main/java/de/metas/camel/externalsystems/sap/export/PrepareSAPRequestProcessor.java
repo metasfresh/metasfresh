@@ -62,7 +62,9 @@ public class PrepareSAPRequestProcessor implements Processor
 																								   ROUTE_PROPERTY_EXPORT_ACCT_ROUTE_CONTEXT,
 																								   ExportAcctDetailsRouteContext.class);
 
-		if (processResponse.isEmpty())
+		final ImmutableList<JsonNode> documentTypeGLItems = ImmutableList.copyOf(processResponse.iterator());
+
+		if (documentTypeGLItems.isEmpty())
 		{
 			processLogger.logMessage("No accounting records retrieved! see request: " + routeContext.getInvokePostgRESTRequest(),
 									 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
@@ -70,7 +72,7 @@ public class PrepareSAPRequestProcessor implements Processor
 
 		exchange.getIn().setHeader(HEADER_TARGET_URI, routeContext.getCredentials().getPostAcctDocumentsURL());
 
-		final String requestBody = RequestBuilder.getXMLRequest(ImmutableList.copyOf(processResponse.iterator()));
+		final String requestBody = RequestBuilder.getXMLRequest(documentTypeGLItems);
 
 		exchange.getIn().setBody(requestBody);
 	}
