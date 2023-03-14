@@ -182,7 +182,9 @@ public final class DisplayType
 			return false;
 		}
 		
-		return columnName.toLowerCase().indexOf("password") >= 0;
+		return columnName.toLowerCase().indexOf("password") >= 0
+				|| columnName.endsWith("PW")
+				|| columnName.equals("EMail_From_Pwd");
 	}
 
 	/**

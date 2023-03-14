@@ -24,10 +24,12 @@ package de.metas.handlingunits.pporder.interceptor;
 
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
@@ -38,15 +40,44 @@ import org.springframework.stereotype.Component;
 public class PP_Order
 {
 	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
+
+	public PP_Order(
+			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository)
+	{
+		this.ppOrderIssueScheduleRepository = ppOrderIssueScheduleRepository;
+	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_CLOSE)
 	public void onBeforeClose(@NonNull final I_PP_Order order)
 	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		ppOrderIssueScheduleRepository.deleteNotProcessedByOrderId(ppOrderId);
+
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(order.getPlanningStatus());
 		if (!planningStatus.isComplete())
 		{
-			final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 			ppOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
+		}
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
+	public void onBeforeReverse(@NonNull final I_PP_Order order)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		reverseIssueSchedules(ppOrderId);
+	}
+
+	private void reverseIssueSchedules(@NonNull final PPOrderId ppOrderId)
+	{
+		ppOrderIssueScheduleRepository.deleteNotProcessedByOrderId(ppOrderId);
+		if (ppOrderIssueScheduleRepository.matchesByOrderId(ppOrderId))
+		{
+			throw new AdempiereException("Reversing processed issue schedules is not allowed");
 		}
 	}
 }

@@ -148,7 +148,7 @@ public class PaySelectionService
 				.accountNo(bpBankAccount.getAccountNo())
 				.routingNo(bpBankAccount.getRoutingNo())
 				.IBAN(bpBankAccount.getIBAN())
-				.BIC(bpBankAccount.getRoutingNo())
+				.SwiftCode(bpBankAccount.getRoutingNo())
 				.build();
 	}
 

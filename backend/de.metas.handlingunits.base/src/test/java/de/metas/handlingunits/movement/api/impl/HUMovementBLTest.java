@@ -1,24 +1,24 @@
 package de.metas.handlingunits.movement.api.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.model.I_M_Warehouse;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Acct;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests {@link HUMovementBL}.
@@ -32,27 +32,23 @@ public class HUMovementBLTest
 	private HUMovementBL huMovementBL;
 
 	private IContextAware context;
-	private AcctSchemaId acctSchemaId;
+	private static final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
+
 		context = PlainContextAware.newOutOfTrx();
 
 		//
 		// Service under test
 		huMovementBL = (HUMovementBL)Services.get(IHUMovementBL.class);
-
-		//
-		// Master data
-		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
-		acctSchemaId = AcctSchemaId.ofRepoId(1);
-		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
+	 * @implNote task http://dewiki908/mediawiki/index.php/07689_Korrektur_zu_Kostenstellenwechsel_%28102909571093%29
 	 */
 	@Test
 	public void test_setPackingMaterialCActivity()
@@ -63,7 +59,7 @@ public class HUMovementBLTest
 
 		huMovementBL.setPackingMaterialCActivity(movementLine);
 
-		Assert.assertEquals("Movement line shall have the activity of the product", productActivity, movementLine.getC_Activity());
+		assertThat(movementLine.getC_Activity()).as("Movement line shall have the activity of the product").isEqualTo(productActivity);
 	}
 
 	private I_M_Product createProduct(final I_C_Activity activity)

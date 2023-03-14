@@ -127,9 +127,6 @@ public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecut
 	 * Put given variable to context.
 	 *
 	 * In case the test will fail, all context variables will be printed to console.
-	 *
-	 * @param name
-	 * @param value
 	 */
 	public void putContext(final String name, final Object value)
 	{

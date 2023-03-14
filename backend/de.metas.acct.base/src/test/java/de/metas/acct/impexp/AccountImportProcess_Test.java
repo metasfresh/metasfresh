@@ -1,19 +1,33 @@
 package de.metas.acct.impexp;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.elementvalue.ChartOfAccountsRepository;
+import de.metas.elementvalue.ChartOfAccountsService;
+import de.metas.elementvalue.ElementValueRepository;
+import de.metas.elementvalue.ElementValueService;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.treenode.TreeNodeRepository;
+import de.metas.treenode.TreeNodeService;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_I_ElementValue;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.impexp.format.ImportTableDescriptorRepository;
-import de.metas.impexp.processing.DBFunctionsRepository;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -36,107 +50,71 @@ import de.metas.impexp.processing.DBFunctionsRepository;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class AccountImportProcess_Test
 {
 	private Properties ctx;
 
+	private ChartOfAccountsService chartOfAccountsService;
+	private ElementValueService elementValueService;
+	private AccountImportTestHelper testHelper;
+
 	@BeforeEach
-	public void init()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		ctx = Env.getCtx();
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+
+		this.chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
+		final TreeNodeRepository treeNodeRepository = new TreeNodeRepository();
+		final TreeNodeService treeNodeService = new TreeNodeService(treeNodeRepository, chartOfAccountsService);
+		final ElementValueRepository elementValueRepository = new ElementValueRepository();
+		this.elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
+		this.testHelper = new AccountImportTestHelper(chartOfAccountsService, elementValueService, elementValueRepository, treeNodeService, treeNodeRepository);
+
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(Services.get(IAcctSchemaDAO.class), treeNodeService)
+		{
+			@Override
+			protected void createValidCombinationIfNeeded(final I_C_ElementValue elementValue)
+			{
+				// do nothing to avoid DBException
+			}
+		});
+	}
+
+	private void runImportProcess(final List<I_I_ElementValue> importRecords)
+	{
+		final AccountImportProcess importProcess = new AccountImportProcess(chartOfAccountsService, elementValueService);
+		importProcess.setCtx(ctx);
+		importRecords.forEach(importRecord -> importProcess.importRecord(new Mutable<>(), importRecord, false));
+		importProcess.afterImport();
 	}
 
 	@Test
-	public void testAccountImport()
+	public void simpleTreeStructure()
 	{
-		final List<I_I_ElementValue> ievs = prepareImportElementValue();
-
-		final AccountImportProcess importProcess = new AccountImportProcess();
-		importProcess.setCtx(ctx);
-
-		ievs.forEach(iElelemntValue -> importProcess.importRecord(new Mutable<>(), iElelemntValue, false /* isInsertOnly */));
-
-		ievs.forEach(iElelemntValue -> AccountImportTestHelper.assertImported(iElelemntValue));
-	}
-
-	/**
-	 * Build a test case for import<br>
-	 * <br>
-	 * <code>ElementName	 Value	 Name        			ParentValue	 AccountType	AccountSign	IsSummary	PostActual	PostBudget	PostStatistical	IsDocControlled	</code><br>
-	 * <code>Import Account	 1	    Aktiven	  			   					 A				N          Y            N            N             N              N         </code><br>
-	 * <code>Import Account	 10	    Umlaufvermögen	  			1		     A				N          Y            N            N             N              N         </code><br>
-	 * <code>Import Account	 100    Total flüssige Mittel	  	10		     A				N          Y            N            N             N              N         </code><br>
-	 * <code>Import Account	 10000  Kasse	  					100		     A				N          N            Y            Y             Y              N         </code><br>
-	 *
-	 * @param lines
-	 */
-	private List<I_I_ElementValue> prepareImportElementValue()
-	{
-		final List<I_I_ElementValue> elements = new ArrayList<>();
-
-		I_I_ElementValue iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("1")
-				.name("Aktiven")
+		final AccountImportTestHelper.ImportRecordBuilder importRecordTemplate = AccountImportTestHelper.importRecord()
+				.chartOfAccountsName("Import Account")
 				.accountType("A")
-				.accountSign("N")
-				.summary(true)
-				.postActual(false)
-				.postBudget(false)
-				.postStatistical(false)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
+				.accountSign("N");
 
-		iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("10")
-				.name("Umlaufvermögen")
-				.parentValue("1")
-				.accountType("A")
-				.accountSign("N")
-				.summary(true)
-				.postActual(false)
-				.postBudget(false)
-				.postStatistical(false)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
+		//@formatter:off
+		final List<I_I_ElementValue> importRecords = ImmutableList.of(
+				importRecordTemplate.value("1"    ).name("Aktiven"              ).parentValue(null ).summary(true ).postActual(false).postBudget(false).postStatistical(false).docControlled(false).build(),
+				importRecordTemplate.value("10"   ).name("Umlaufvermögen"       ).parentValue("1"  ).summary(true ).postActual(false).postBudget(false).postStatistical(false).docControlled(false).build(),
+				importRecordTemplate.value("100"  ).name("Total flüssige Mittel").parentValue("10" ).summary(true ).postActual(false).postBudget(false).postStatistical(false).docControlled(false).build(),
+				importRecordTemplate.value("10000").name("Kasse"                ).parentValue("100").summary(false).postActual(true ).postBudget(true ).postStatistical(true ).docControlled(false).defaultAccountName("CASH_ACCOUNT_NAME").build()
+		);
+		//@formatter:on
 
-		iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("100")
-				.name("Total flüssige Mittel")
-				.parentValue("10")
-				.accountType("A")
-				.accountSign("N")
-				.summary(true)
-				.postActual(false)
-				.postBudget(false)
-				.postStatistical(false)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
+		runImportProcess(importRecords);
 
-		iev = IElementValueFactory.builder()
-				.elementName("Import Account")
-				.value("10000")
-				.name("Kasse")
-				.parentValue("100")
-				.accountType("A")
-				.accountSign("N")
-				.summary(false)
-				.postActual(true)
-				.postBudget(true)
-				.postStatistical(true)
-				.docControlled(false)
-				.build();
-		elements.add(iev);
+		importRecords.forEach(testHelper::assertImported);
 
-		return elements;
+		final ChartOfAccountsId chartOfAccountsId = CollectionUtils.singleElement(AccountImportTestHelper.extractChartOfAccountsIds(importRecords));
+		testHelper.assertTreeStructureIsUpToDate(chartOfAccountsId);
 	}
 }

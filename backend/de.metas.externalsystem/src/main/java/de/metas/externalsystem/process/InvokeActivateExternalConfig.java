@@ -34,6 +34,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.scheduler.SchedulerAction;
+import de.metas.scheduler.SchedulerSearchKey;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.SchedulerEventBusService;
 import de.metas.util.Check;
@@ -66,10 +68,10 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + getExternalSystemType().getExternalSystemProcessClassName());
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
-													 .adProcessId(targetProcessId)
+													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(ManageSchedulerRequest.Advice.ENABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.ENABLE)
+													 .schedulerAction(SchedulerAction.ENABLE)
+													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.ENABLE)
 													 .build());
 		return MSG_OK;
 	}
@@ -91,7 +93,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getExternalSystemType().getName()));
 			}
 
-			if (config.get().getIsActive())
+			if (config.get().isActive())
 			{
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_EXTERNAL_SYSTEM_CONFIG_ACTIVE));
 			}

@@ -80,8 +80,13 @@
 			<artifactId>de.metas.business</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>de.metas.material</groupId>
+            <artifactId>metasfresh-material-cockpit</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>

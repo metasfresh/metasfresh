@@ -1,8 +1,10 @@
 package de.metas.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
@@ -16,6 +18,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule
@@ -38,7 +42,9 @@ import java.time.ZonedDateTime;
 @Component
 public class M_ShipmentSchedule_PostMaterialEvent
 {
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 	private final PostMaterialEventService postMaterialEventService;
 	private final ShipmentScheduleReferencedLineFactory referencedLineFactory;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
@@ -121,8 +127,10 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
 
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
+
 		return ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(clientAndOrgId))
 				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
@@ -147,6 +155,9 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.getQtyReserved()
 				.subtract(oldShipmentSchedule.getQtyReserved());
 
+		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
+				.getDocumentLineDescriptor();
+
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository
 				.getBy(materialDescriptor)
 				.toMinMaxDescriptor();
@@ -158,6 +169,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.reservedQuantityDelta(reservedQuantityDelta)
 				.orderedQuantityDelta(orderedQuantityDelta)
+				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 	}
@@ -180,6 +192,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.build();
 	}
 
+	@NonNull
 	private MaterialDescriptor createMaterialDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final BigDecimal orderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
@@ -191,7 +204,26 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
-				.quantity(orderedQuantity)
+				.quantity(orderedQuantity.subtract(getActualDeliveredQty(shipmentSchedule)))
 				.build();
+	}
+
+	@NonNull
+	private BigDecimal getActualDeliveredQty(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPicked = shipmentScheduleAllocDAO
+				.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+
+		return shipmentScheduleQtyPicked
+				.stream()
+				.filter(I_M_ShipmentSchedule_QtyPicked::isActive)
+				.filter(I_M_ShipmentSchedule_QtyPicked::isProcessed)
+				.filter(qtyPicked -> qtyPicked.getM_InOutLine_ID() > 0)
+				//dev-note: we only care about "real" qty movements
+				// getValueOptional(qtyPicked, "VHU_ID") - it's an ugly workaround to avoid a circular dependency with de.metas.handlingunits.base
+				.filter(qtyPicked -> InterfaceWrapperHelper.getValueOptional(qtyPicked, "VHU_ID").isPresent())
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal::add)
+				.orElse(BigDecimal.ZERO);
 	}
 }

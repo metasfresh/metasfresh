@@ -9,6 +9,8 @@ import org.compiere.model.I_C_BPartner;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -35,7 +37,6 @@ import java.util.stream.Stream;
 
 public interface IBPRelationDAO extends ISingletonService
 {
-
 	/**
 	 * Retrieves the last created handover C_BP_Relation between the given partners.
 	 *
@@ -44,5 +45,7 @@ public interface IBPRelationDAO extends ISingletonService
 
 	Stream<BPRelation> getRelationsForBpartner(@NonNull OrgId orgId, @NonNull BPartnerId bPartnerId);
 
+	Optional<BPartnerId> getLastUpdatedPreferredPharmacyByPartnerId(@Nullable final BPartnerId bpartnerId);
+	
 	void saveOrUpdate(final @NonNull OrgId orgId, final BPRelation rel);
 }
