@@ -22,11 +22,14 @@
 
 package de.metas.externalsystem.sap.export;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.process.request.JSONProcessParam;
 import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -37,22 +40,16 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.acct.ExportAcctToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -68,25 +65,30 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 {
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_ACCT_FACT = "exportAcctFact";
 
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	private final TemporaryCache temporaryCache = new TemporaryCache();
 
+	@NonNull
+	private final AcctDocumentInfoProvider acctDocumentInfoProvider;
+
 	public ExportAcctToSAPService(
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
-			@NonNull final ExternalSystemConfigService externalSystemConfigService)
+			@NonNull final ExternalSystemConfigService externalSystemConfigService,
+			@NonNull final AcctDocumentInfoProvider acctDocumentInfoProvider)
 	{
 		super(dataExportAuditRepository,
 			  dataExportAuditLogRepository,
 			  externalSystemConfigRepo,
 			  externalSystemMessageSender,
 			  externalSystemConfigService);
+
+		this.acctDocumentInfoProvider = acctDocumentInfoProvider;
 	}
 
 	@Override
@@ -158,8 +160,8 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 						.setParameter("Record_ID", recordReference.getRecord_ID()));
 
 		parameters.put(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Value, getProcessValue(exportAcctConfig));
-		parameters.put(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_NAME, acctDocumentInfo.getColumnName());
-		parameters.put(ExternalSystemConstants.PARAM_PostGREST_AD_Process_Param_Record_ID_VALUE, String.valueOf(acctDocumentInfo.getRecordId()));
+
+		parameters.put(ExternalSystemConstants.PARAM_PostGREST_JSONParamList, getInvokeProcessParams(recordReference));
 
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, externalSystemSAPConfig.getValue());
 
@@ -211,42 +213,31 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 	}
 
 	@NonNull
-	private AcctDocumentInfo loadDocumentInfo(@NonNull final TableRecordReference recordReference)
-	{
-		switch (recordReference.getTableName())
-		{
-			case I_M_InOut.Table_Name:
-				final I_M_InOut inOut = inOutBL.getById(recordReference.getIdAssumingTableName(I_M_InOut.Table_Name, InOutId::ofRepoId));
-				return AcctDocumentInfo.builder()
-						.docTypeId(DocTypeId.ofRepoId(inOut.getC_DocType_ID()))
-						.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
-						.columnName(I_M_InOut.COLUMNNAME_M_InOut_ID)
-						.recordId(inOut.getM_InOut_ID())
-						.build();
-			default:
-				throw new AdempiereException("Unsupported TableRecordReference!")
-						.appendParametersToMessage()
-						.setParameter("TableName", recordReference.getTableName())
-						.setParameter("Record_Id", recordReference.getRecord_ID());
-		}
-	}
-
-	@NonNull
 	private AcctDocumentInfo getAcctDocumentInfo(@NonNull final TableRecordReference recordReference)
 	{
-		return temporaryCache.get(recordReference).orElseGet(() -> loadDocumentInfo(recordReference));
+		return temporaryCache.get(recordReference).orElseGet(() -> acctDocumentInfoProvider.loadDocumentInfo(recordReference));
 	}
 
 	@NonNull
 	private IAutoCloseable initCache(@NonNull final TableRecordReference recordReference)
 	{
-		return temporaryCache.add(recordReference, loadDocumentInfo(recordReference));
+		return temporaryCache.add(recordReference, acctDocumentInfoProvider.loadDocumentInfo(recordReference));
 	}
 
 	@NonNull
 	private String getProcessValue(@NonNull final SAPExportAcctConfig config)
 	{
 		return processDAO.getById(config.getProcessId()).getValue();
+	}
+
+	@NonNull
+	private static String getInvokeProcessParams(@NonNull final TableRecordReference recordReference)
+	{
+		final ImmutableList<JSONProcessParam> processParams = ImmutableList.of(
+				JSONProcessParam.of(TableRecordReference.COLUMNNAME_Record_ID, String.valueOf(recordReference.getRecord_ID())),
+				JSONProcessParam.of(TableRecordReference.COLUMNNAME_AD_Table_ID, String.valueOf(recordReference.getAdTableId().getRepoId())));
+
+		return JsonObjectMapperHolder.toJsonNonNull(processParams);
 	}
 
 	private static class TemporaryCache
@@ -266,21 +257,5 @@ public class ExportAcctToSAPService extends ExportAcctToExternalSystemService
 
 			return () -> recordReference2AcctDocumentInfo.remove(tableRecordReference);
 		}
-	}
-
-	@Value
-	@Builder
-	private static class AcctDocumentInfo
-	{
-		@NonNull
-		String columnName;
-
-		int recordId;
-
-		@NonNull
-		OrgId orgId;
-
-		@NonNull
-		DocTypeId docTypeId;
 	}
 }

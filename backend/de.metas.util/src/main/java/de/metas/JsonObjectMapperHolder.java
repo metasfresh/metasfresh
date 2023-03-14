@@ -108,4 +108,16 @@ public class JsonObjectMapperHolder
 		}
 	}
 
+	@NonNull
+	public static String toJsonNonNull(@NonNull final Object object)
+	{
+		try
+		{
+			return sharedJsonObjectMapper().writeValueAsString(object);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw Check.mkEx("Failed converting object to JSON: " + object, e);
+		}
+	}
 }

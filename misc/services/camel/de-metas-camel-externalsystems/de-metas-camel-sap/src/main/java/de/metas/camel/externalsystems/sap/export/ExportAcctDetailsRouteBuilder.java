@@ -31,8 +31,18 @@ import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_INVOKE_AD_PROCESS;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -55,6 +65,10 @@ public class ExportAcctDetailsRouteBuilder extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		final JaxbDataFormat dataFormat = new JaxbDataFormat();
+		dataFormat.setCamelContext(getContext());
+		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
+
 		errorHandler(defaultErrorHandler());
 
 		onException(Exception.class)
@@ -69,7 +83,14 @@ public class ExportAcctDetailsRouteBuilder extends RouteBuilder
 				.to(direct(MF_INVOKE_AD_PROCESS))
 
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonNode.class))
-				.process(new PrepareSAPRequestProcessor(processLogger));
+				.process(new PrepareSAPRequestProcessor(processLogger))
+				.removeHeaders("CamelHttp*")
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
+				.removeHeader("Authorization")
+				.toD("${header." + HEADER_TARGET_URI + "}")
+				.log("Received from SAP: ${body}")
+				.process(this::reportOutcomeToMetasfresh);
 	}
 
 	private void prepareRouteContext(@NonNull final Exchange exchange)
@@ -132,5 +153,18 @@ public class ExportAcctDetailsRouteBuilder extends RouteBuilder
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_EXPORT_ACCT_ROUTE_CONTEXT, routeContext);
+	}
+
+	private void reportOutcomeToMetasfresh(@NonNull final Exchange exchange)
+	{
+		final InputStream sapResponseStream = exchange.getIn().getBody(InputStream.class);
+
+		final String deserializedString = new BufferedReader(
+				new InputStreamReader(sapResponseStream, StandardCharsets.UTF_8))
+				.lines()
+				.collect(Collectors.joining("\n"));
+
+		processLogger.logMessage("SAP response = \n\n" + deserializedString,
+								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
 	}
 }
