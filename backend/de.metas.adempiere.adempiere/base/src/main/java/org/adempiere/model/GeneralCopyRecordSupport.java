@@ -170,10 +170,14 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				log.debug("Copied {}", childPO);
 			}
 		}
+
+		//
+		//
+		fireOnRecordAndChildrenCopied(toPO, fromPO);
 	}
 
 	/**
-	 * Called after the record was copied, right before saving it.
+	 * Called after the record was copied, right before saving it (and before it's children are copied).
 	 *
 	 * @param to   the copy
 	 * @param from the source
@@ -189,6 +193,16 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	protected void onRecordCopied(final PO to, final PO from)
+	{
+		// nothing on this level
+	}
+
+	private void fireOnRecordAndChildrenCopied(final PO to, final PO from)
+	{
+		onRecordAndChildrenCopied(to, from);
+	}
+
+	protected void onRecordAndChildrenCopied(final PO to, final PO from)
 	{
 		// nothing on this level
 	}
