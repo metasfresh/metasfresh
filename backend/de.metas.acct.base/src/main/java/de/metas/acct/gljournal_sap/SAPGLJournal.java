@@ -1,6 +1,7 @@
 package de.metas.acct.gljournal_sap;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
@@ -20,7 +21,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -108,7 +108,7 @@ public class SAPGLJournal
 			@NonNull PostingSign postingSign,
 			@NonNull Account account,
 			@NonNull BigDecimal amountBD,
-			@NonNull SectionCodeId sectionCodeId,
+			@Nullable SectionCodeId sectionCodeId,
 			@Nullable TaxId taxId,
 			@NonNull SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -121,10 +121,9 @@ public class SAPGLJournal
 				.postingSign(postingSign)
 				.amount(amount)
 				.amountAcct(amountAcct)
-				.sectionCodeId(sectionCodeId)
 				.taxId(taxId)
 				.orgId(orgId)
-				.dimension(dimension)
+				.dimension(sectionCodeId != null ? dimension.withSectionCodeId(sectionCodeId) : dimension)
 				.build();
 		lines.add(line);
 
@@ -204,7 +203,6 @@ public class SAPGLJournal
 				.postingSign(taxPostingSign)
 				.amount(taxAmt)
 				.amountAcct(taxAmtAcct)
-				.sectionCodeId(baseLine.getSectionCodeId())
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
