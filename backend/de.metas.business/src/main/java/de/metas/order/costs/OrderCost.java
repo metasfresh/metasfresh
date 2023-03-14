@@ -57,7 +57,7 @@ public class OrderCost
 
 	@Getter @Nullable private OrderLineId createdOrderLineId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private OrderCost(
 			final @Nullable OrderCostId id,
 			final @NonNull OrderId orderId,
@@ -276,5 +276,18 @@ public class OrderCost
 	public void setCreatedOrderLineId(@Nullable final OrderLineId createdOrderLineId)
 	{
 		this.createdOrderLineId = createdOrderLineId;
+	}
+
+	public OrderCost copy(@NonNull final OrderCostCloneMapper mapper)
+	{
+		return toBuilder()
+				.id(null)
+				.orderId(mapper.getTargetOrderId(orderId))
+				.createdOrderLineId(createdOrderLineId != null ? mapper.getTargetOrderLineId(createdOrderLineId) : null)
+				.details(details.stream()
+						.map(detail -> detail.copy(mapper))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+
 	}
 }

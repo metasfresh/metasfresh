@@ -32,7 +32,7 @@ public class OrderCostDetail
 	@Getter @NonNull Quantity inoutQty;
 	@Getter @NonNull Money inoutCostAmount;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private OrderCostDetail(
 			@Nullable final OrderCostDetailId id,
 			@NonNull final OrderLineId orderLineId,
@@ -76,5 +76,13 @@ public class OrderCostDetail
 	{
 		this.inoutCostAmount = this.inoutCostAmount.add(amt);
 		this.inoutQty = this.inoutQty.add(qty);
+	}
+
+	public OrderCostDetail copy(@NonNull final OrderCostCloneMapper mapper)
+	{
+		return toBuilder()
+				.id(null)
+				.orderLineId(mapper.getTargetOrderLineId(orderLineId))
+				.build();
 	}
 }
