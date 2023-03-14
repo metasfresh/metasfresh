@@ -31,7 +31,7 @@ public class SAPGLJournalLineQuickInputProcessor implements IQuickInputProcessor
 		final SAPGLJournalLineId glJournalLineId = glJournalService.createLine(SAPGLJournalLineCreateRequest.builder()
 																					   .glJournalId(SAPGLJournalLoaderAndSaver.extractId(headerRecord))
 																					   .postingSign(PostingSign.ofCode(lineQuickInput.getPostingSign()))
-																					   .account(Account.ofId(AccountId.ofRepoId(lineQuickInput.getC_ValidCombination_ID())))
+																					   .account(Account.ofId(AccountId.ofRepoId(lineQuickInput.getGL_Account_ID())))
 																					   .amount(lineQuickInput.getAmount())
 																					   .sectionCodeId(SectionCodeId.ofRepoId(lineQuickInput.getM_SectionCode_ID()))
 																					   .taxId(TaxId.ofRepoIdOrNull(lineQuickInput.getC_Tax_ID()))

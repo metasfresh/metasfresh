@@ -7,10 +7,9 @@ public interface ISAPGLJournalLineQuickInput
 	String COLUMNNAME_PostingSign = "PostingSign";
 
 	java.lang.String getPostingSign();
+	String COLUMNNAME_GL_Account_ID = "GL_Account_ID";
 
-	String COLUMNNAME_C_ValidCombination_ID = "C_ValidCombination_ID";
-
-	int getC_ValidCombination_ID();
+	int getGL_Account_ID();
 
 	String COLUMNNAME_Amount = "Amount";
 

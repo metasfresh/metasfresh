@@ -32,7 +32,6 @@ import java.util.Set;
 @Component
 public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	private final static String  FIELDNAME_GL_Account_ID = "GL_Account_ID";
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final LookupDescriptorProviders lookupDescriptorProviders;
 
@@ -78,7 +77,7 @@ public class SAPGLJournalLineQuickInputDescriptorFactory implements IQuickInputD
 						.setWidgetType(DocumentFieldWidgetType.List)
 						.setLookupDescriptorProvider(getPostingSignLookup())
 						.setWidgetSize(WidgetSize.Small))
-				.addField(prepareField(FIELDNAME_GL_Account_ID)
+				.addField(prepareField(ISAPGLJournalLineQuickInput.COLUMNNAME_GL_Account_ID)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
 						.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_ValidCombination.Table_Name))
 						.setWidgetSize(WidgetSize.Large))
