@@ -297,6 +297,31 @@ public interface I_C_Order_Cost
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Created Order Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCreated_OrderLine_ID (int Created_OrderLine_ID);
+
+	/**
+	 * Get Created Order Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCreated_OrderLine_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getCreated_OrderLine();
+
+	void setCreated_OrderLine(@Nullable org.compiere.model.I_C_OrderLine Created_OrderLine);
+
+	ModelColumn<I_C_Order_Cost, org.compiere.model.I_C_OrderLine> COLUMN_Created_OrderLine_ID = new ModelColumn<>(I_C_Order_Cost.class, "Created_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_Created_OrderLine_ID = "Created_OrderLine_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1002435990L;
+	private static final long serialVersionUID = -968908090L;
 
     /** Standard Constructor */
     public X_C_Cost_Type (final Properties ctx, final int C_Cost_Type_ID, @Nullable final String trxName)
@@ -104,6 +104,18 @@ public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Typ
 	}
 
 	@Override
+	public void setIsAllowInvoicing (final boolean IsAllowInvoicing)
+	{
+		set_Value (COLUMNNAME_IsAllowInvoicing, IsAllowInvoicing);
+	}
+
+	@Override
+	public boolean isAllowInvoicing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowInvoicing);
+	}
+
+	@Override
 	public void setIsAllowOnPurchase (final boolean IsAllowOnPurchase)
 	{
 		set_Value (COLUMNNAME_IsAllowOnPurchase, IsAllowOnPurchase);
@@ -152,6 +164,21 @@ public class X_C_Cost_Type extends org.compiere.model.PO implements I_C_Cost_Typ
 	public int getM_CostElement_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
+	}
+
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override

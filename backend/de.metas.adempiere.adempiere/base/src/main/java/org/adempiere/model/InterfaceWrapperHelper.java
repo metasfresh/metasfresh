@@ -80,6 +80,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -1392,6 +1393,13 @@ public class InterfaceWrapperHelper
 	{
 		return helpers.getDynAttribute(model, attributeName);
 	}
+
+	@Nullable
+	public static <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return helpers.computeDynAttributeIfAbsent(model, attributeName, supplier);
+	}
+
 
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.

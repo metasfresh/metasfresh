@@ -2,6 +2,7 @@ package de.metas.order.costs.interceptor;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostId;
 import de.metas.order.costs.OrderCostRepository;
@@ -9,6 +10,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order_Cost;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -25,12 +27,21 @@ public class C_Order_Cost
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onBeforeDelete(final I_C_Order_Cost record)
 	{
-		DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(record.getC_Order_ID()));
-		if (!orderDocStatus.isDraftedOrInProgress())
+		if (InterfaceWrapperHelper.isUIAction(record))
 		{
-			throw new AdempiereException("Deleting order costs is not allowed when order is not Drafted");
-		}
+			final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(record.getC_Order_ID()));
+			if (!orderDocStatus.isDraftedOrInProgress())
+			{
+				throw new AdempiereException("Deleting order costs is not allowed when order is not Drafted");
+			}
 
-		orderCostRepository.deleteDetails(OrderCostId.ofRepoId(record.getC_Order_Cost_ID()));
+			final OrderAndLineId createdOrderLineId = OrderCostRepository.extractCreatedOrderAndLineId(record);
+			if (createdOrderLineId != null)
+			{
+				orderBL.deleteLineById(createdOrderLineId);
+			}
+
+			orderCostRepository.deleteDetails(OrderCostId.ofRepoId(record.getC_Order_Cost_ID()));
+		}
 	}
 }
