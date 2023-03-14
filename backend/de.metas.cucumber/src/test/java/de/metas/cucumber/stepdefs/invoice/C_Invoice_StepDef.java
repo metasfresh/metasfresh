@@ -135,6 +135,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
@@ -856,6 +857,12 @@ public class C_Invoice_StepDef
 			assertThat(paymentTermId).isNotNull();
 
 			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		}
+
+		final Timestamp dueDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DueDate);
+		if (dueDate != null)
+		{
+			invoice.setDueDate(dueDate);
 		}
 
 		InterfaceWrapperHelper.save(invoice);
