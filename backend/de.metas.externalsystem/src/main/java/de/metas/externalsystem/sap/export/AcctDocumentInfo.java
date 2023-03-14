@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2023 metas GmbH
  * %%
@@ -20,26 +20,23 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.export;
+package de.metas.externalsystem.sap.export;
 
-import de.metas.camel.externalsystems.common.v2.InvokeProcessCamelRequest;
+import de.metas.document.DocTypeId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
-import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ExportAcctDetailsRouteContext
+public class AcctDocumentInfo
 {
 	@NonNull
-	SAPCredentials credentials;
+	OrgId orgId;
 
 	@Nullable
-	@NonFinal
-	@Setter
-	InvokeProcessCamelRequest invokePostgRESTRequest;
+	DocTypeId docTypeId;
 }

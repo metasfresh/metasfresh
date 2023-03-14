@@ -96,6 +96,12 @@
             <artifactId>de-metas-common-manufacturing</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.banking</groupId>
+            <artifactId>de.metas.banking.base</artifactId>
+            <version>10.0.0</version>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

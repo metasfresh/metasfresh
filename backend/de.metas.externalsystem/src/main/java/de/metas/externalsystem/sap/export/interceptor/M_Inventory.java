@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.sap.export.inout;
+package de.metas.externalsystem.sap.export.interceptor;
 
 import de.metas.externalsystem.sap.export.ExportAcctToSAPService;
 import de.metas.util.Services;
@@ -29,32 +29,27 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_M_InOut.class)
+@Interceptor(I_M_Inventory.class)
 @Component
-public class M_InOut
+public class M_Inventory
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull
 	private final ExportAcctToSAPService exportAcctToSAPService;
 
-	public M_InOut(final @NonNull ExportAcctToSAPService exportAcctToSAPService)
+	public M_Inventory(final @NonNull ExportAcctToSAPService exportAcctToSAPService)
 	{
 		this.exportAcctToSAPService = exportAcctToSAPService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_POST)
-	public void exportAfterPost(@NonNull final I_M_InOut shipment)
+	public void exportAfterPost(@NonNull final I_M_Inventory inventory)
 	{
-		if (!shipment.isSOTrx())
-		{
-			return;
-		}
-
-		trxManager.runAfterCommit(() -> exportAcctToSAPService.enqueueDocument(TableRecordReference.of(shipment)));
+		trxManager.runAfterCommit(() -> exportAcctToSAPService.enqueueDocument(TableRecordReference.of(inventory)));
 	}
 }

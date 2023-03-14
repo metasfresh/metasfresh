@@ -83,7 +83,7 @@ public class ExportAcctDetailsRouteBuilder extends RouteBuilder
 				.to(direct(MF_INVOKE_AD_PROCESS))
 
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonNode.class))
-				.process(new PrepareSAPRequestProcessor())
+				.process(new PrepareSAPRequestProcessor(processLogger))
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
