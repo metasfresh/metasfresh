@@ -67,7 +67,7 @@ public class ErrorProcessor
 	}
 
 	@NonNull
-	public JsonError processHttpErrorEncounteredResponse(@NonNull final Exchange exchange)
+	public JsonError processMetasfreshHttpError(@NonNull final Exchange exchange)
 	{
 		final Exception exception = CoalesceUtil.coalesce(exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
 														  exchange.getIn().getHeader(Exchange.EXCEPTION_CAUGHT, Exception.class));
@@ -171,9 +171,7 @@ public class ErrorProcessor
 	@NonNull
 	private JsonErrorItem getJsonErrorItemFor(@NonNull final Exception exception, @NonNull final JsonErrorItem.JsonErrorItemBuilder errorBuilder)
 	{
-		final String errorMsgPrefix = getErrorMessagePrefix(exception);
-
-		errorBuilder.message(errorMsgPrefix + exception.getLocalizedMessage());
+		errorBuilder.message(getErrorMessagePrefix(exception) + exception.getLocalizedMessage());
 		errorBuilder.stackTrace(getStackTrace(exception));
 
 		getSourceStackTraceElement(exception).ifPresent(sourceStackTraceElement -> {
@@ -192,7 +190,7 @@ public class ErrorProcessor
 			final HttpOperationFailedException httpError = (HttpOperationFailedException)exception;
 
 			return Optional.ofNullable(httpError.getResponseBody())
-					.map(responseBody -> responseBody + "; ")
+					.map(responseBody -> responseBody + "\n ")
 					.orElse("");
 		}
 
