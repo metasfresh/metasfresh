@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.costing.CostElementId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethod;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,6 +53,7 @@ public class OrderCostTypeRepository
 				.distributionMethod(CostDistributionMethod.ofCode(record.getCostDistributionMethod()))
 				.calculationMethod(CostCalculationMethod.ofCode(record.getCostCalculationMethod()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
+				.invoiceableProductId(record.isAllowInvoicing() ? ProductId.ofRepoId(record.getM_Product_ID()) : null)
 				.build();
 	}
 

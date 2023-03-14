@@ -35,7 +35,9 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -51,6 +53,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
@@ -93,6 +96,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.SpringContextHolder;
@@ -150,6 +154,7 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
 	{
@@ -748,11 +753,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -1238,6 +1243,12 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void save(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		orderDAO.save(orderLine);
+	}
+
+	@Override
 	public CurrencyId getCurrencyId(final OrderId orderId)
 	{
 		return CurrencyId.ofRepoId(getById(orderId).getC_Currency_ID());
@@ -1277,5 +1288,36 @@ public class OrderBL implements IOrderBL
 		}
 
 		return true;
+	}
+
+	@Override
+	public I_C_OrderLine createOrderLine(final I_C_Order order)
+	{
+		return orderLineBL.createOrderLine(order);
+	}
+
+	@Override
+	public void setProductId(
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine,
+			@NonNull final ProductId productId,
+			final boolean setUOM)
+	{
+		orderLineBL.setProductId(orderLine, productId, setUOM);
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionContext(final I_C_Order order)
+	{
+		return currencyBL.createCurrencyConversionContext(
+				order.getDateOrdered().toInstant(),
+				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
+	}
+
+	@Override
+	public void deleteLineById(final OrderAndLineId orderAndLineId)
+	{
+		orderDAO.deleteByLineId(orderAndLineId);
 	}
 }

@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
+import de.metas.product.ProductId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,13 +22,15 @@ public class OrderCostCreateRequest
 	@Nullable CostCalculationMethodParams costCalculationMethodParams;
 
 	@NonNull ImmutableSet<OrderAndLineId> orderAndLineIds;
+	@Nullable OrderLine addOrderLine;
 
 	@Builder
 	private OrderCostCreateRequest(
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final OrderCostTypeId costTypeId,
 			@Nullable final CostCalculationMethodParams costCalculationMethodParams,
-			@NonNull final ImmutableSet<OrderAndLineId> orderAndLineIds)
+			@NonNull final ImmutableSet<OrderAndLineId> orderAndLineIds,
+			@Nullable final OrderLine addOrderLine)
 	{
 		this.bpartnerId = bpartnerId;
 		if (orderAndLineIds.isEmpty())
@@ -38,10 +41,19 @@ public class OrderCostCreateRequest
 		this.costTypeId = costTypeId;
 		this.costCalculationMethodParams = costCalculationMethodParams;
 		this.orderAndLineIds = orderAndLineIds;
+		this.addOrderLine = addOrderLine;
 	}
 
 	public OrderId getOrderId()
 	{
 		return CollectionUtils.extractSingleElement(orderAndLineIds, OrderAndLineId::getOrderId);
+	}
+
+	@Value
+	@Builder
+	public static class OrderLine
+	{
+		@NonNull ProductId productId;
+		@Nullable BPartnerId bpartnerId2;
 	}
 }

@@ -23,6 +23,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -60,6 +61,14 @@ public class C_Order_CreateCost extends JavaProcess
 	@Param(parameterName = PARAM_Percentage)
 	private BigDecimal p_percentageBD;
 
+	@Param(parameterName = "IsAllowInvoicing")
+	private boolean p_IsAllowInvoicing;
+	@Param(parameterName = "IsInvoiced")
+	private boolean p_IsInvoiced;
+
+	@Param(parameterName = "M_Product_ID")
+	private ProductId p_InvoiceableProductId;
+
 	private final HashMap<OrderId, I_C_Order> orderCache = new HashMap<>();
 
 	@Override
@@ -91,21 +100,45 @@ public class C_Order_CreateCost extends JavaProcess
 		{
 			final OrderCostType costType = p_costTypeId != null ? orderCostService.getCostTypeById(p_costTypeId) : null;
 			p_CostCalculationMethod = costType != null ? costType.getCalculationMethod() : null;
+			p_IsAllowInvoicing = isSOTrx() && costType != null && costType.isAllowInvoicing();
+			p_InvoiceableProductId = costType != null ? costType.getInvoiceableProductId() : null;
 		}
 	}
 
 	@Override
 	protected String doIt()
 	{
-		orderCostService.createOrderCost(
-				OrderCostCreateRequest.builder()
-						.bpartnerId(p_bpartnerId)
-						.costTypeId(p_costTypeId)
-						.orderAndLineIds(getSelectedOrderAndLineIds())
-						.costCalculationMethodParams(getCostCalculationMethodParams())
-						.build());
-
+		orderCostService.createOrderCost(orderCostCreateRequest());
 		return MSG_OK;
+	}
+
+	private OrderCostCreateRequest orderCostCreateRequest()
+	{
+		final OrderCostCreateRequest.OrderLine orderLine;
+		if (p_IsInvoiced)
+		{
+			if (p_InvoiceableProductId == null)
+			{
+				throw new FillMandatoryException("M_Product_ID");
+			}
+
+			orderLine = OrderCostCreateRequest.OrderLine.builder()
+					.productId(p_InvoiceableProductId)
+					.bpartnerId2(p_bpartnerId)
+					.build();
+		}
+		else
+		{
+			orderLine = null;
+		}
+
+		return OrderCostCreateRequest.builder()
+				.bpartnerId(p_bpartnerId)
+				.costTypeId(p_costTypeId)
+				.orderAndLineIds(getSelectedOrderAndLineIds())
+				.costCalculationMethodParams(getCostCalculationMethodParams())
+				.addOrderLine(orderLine)
+				.build();
 	}
 
 	private CostCalculationMethodParams getCostCalculationMethodParams()
@@ -160,5 +193,10 @@ public class C_Order_CreateCost extends JavaProcess
 	private CurrencyId getOrderCurrencyId()
 	{
 		return CurrencyId.ofRepoId(getOrder(getOrderId()).getC_Currency_ID());
+	}
+
+	public boolean isSOTrx()
+	{
+		return getOrder(getOrderId()).isSOTrx();
 	}
 }

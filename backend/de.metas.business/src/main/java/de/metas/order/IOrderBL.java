@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -33,6 +34,7 @@ import de.metas.money.Money;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -285,6 +287,8 @@ public interface IOrderBL extends ISingletonService
 
 	void save(I_C_Order order);
 
+	void save(I_C_OrderLine orderLine);
+
 	CurrencyId getCurrencyId(final OrderId orderId);
 
 	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
@@ -306,4 +310,15 @@ public interface IOrderBL extends ISingletonService
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		return Quantitys.create(orderLine.getQtyEntered(), uomId);
 	}
+
+	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);
+
+	void setProductId(
+			@NonNull I_C_OrderLine orderLine,
+			@NonNull ProductId productId,
+			boolean setUOM);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
+
+	void deleteLineById(final OrderAndLineId orderAndLineId);
 }

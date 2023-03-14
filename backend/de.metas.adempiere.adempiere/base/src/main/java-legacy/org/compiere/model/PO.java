@@ -107,6 +107,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 /**
  * Persistent Object.
@@ -4970,7 +4971,7 @@ public abstract class PO
 	}
 
 	// metas: begin
-	private Map<String, Object> m_dynAttrs = null;
+	private HashMap<String, Object> m_dynAttrs = null;
 
 	/**
 	 * Set Dynamic Attribute.
@@ -5008,6 +5009,18 @@ public abstract class PO
 	{
 		return DisplayType.toBoolean(getDynAttribute(name));
 	}
+
+	public <T> T computeDynAttributeIfAbsent(@NonNull final String name, @NonNull final Supplier<T> supplier)
+	{
+		if (m_dynAttrs == null)
+		{
+			m_dynAttrs = new HashMap<>();
+		}
+
+		//noinspection unchecked
+		return (T)m_dynAttrs.computeIfAbsent(name, k->supplier.get());
+	}
+
 
 	/**
 	 * Fire Model Change Event.
