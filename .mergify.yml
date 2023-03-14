@@ -5,7 +5,7 @@ queue_rules:
       - check-success=continuous-integration/jenkins/branch
 
 pull_request_rules:
-  - name: When a project-PR is integrated, add a label with the name of the branch, and create a PR towards the master-branch
+  - name: When a project-PR is integrated, create a PR towards the master-branch
     conditions:
       - merged
       - or: &PROJECTBRANCHES # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
@@ -23,23 +23,29 @@ pull_request_rules:
         - base=week_end_uat
         - base=yoyo_uat
     actions:
-      label:
-        add:
-          - "branch:{{base}}"        
       copy:
         branches:
           - master
         labels:  
           - "ops:merge_towards_master"
 
+  - name: When a project- or master-PR is integrated, add a label with the name of the branch
+    conditions:
+      - merged
+      - or: &BASEBRANCHES # this rule should apply to both the project-branches from above, and master
+        - or: *PROJECTBRANCHES
+        - or:
+          - base=master
+    actions:
+      label:
+        add:
+          - "branch:{{base}}"
+
   - name: Automatic squash-merge successful PRs into the base-branch
     conditions:
       - check-success=testspace-analytics
       - check-success=continuous-integration/jenkins/branch
-      - or: # this rule should apply to both the project-branches from above, and master
-        - or: *PROJECTBRANCHES
-        - or:
-          - base=master
+      - or: *BASEBRANCHES
       - or:
         - "#approved-reviews-by>=1"
         - label=ops:without_review_approval
