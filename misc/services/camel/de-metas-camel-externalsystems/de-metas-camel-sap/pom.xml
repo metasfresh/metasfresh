@@ -34,7 +34,6 @@
 
     <artifactId>de-metas-camel-sap</artifactId>
     <version>10.0.0</version>
-
     <properties>
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
