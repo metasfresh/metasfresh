@@ -16,6 +16,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.inout.InOutCostCreateCommand;
 import de.metas.order.costs.inout.InOutCostDeleteCommand;
@@ -33,6 +34,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -207,6 +209,19 @@ public class OrderCostService
 		}
 
 		return openAmt;
+	}
+
+	public void cloneAllByOrderId(
+			@NonNull final OrderId orderId,
+			@NonNull final OrderCostCloneMapper mapper)
+	{
+		final List<OrderCost> originalOrderCosts = orderCostRepository.getByOrderId(orderId);
+
+		final ImmutableList<OrderCost> clonedOrderCosts = originalOrderCosts.stream()
+				.map(originalOrderCost -> originalOrderCost.copy(mapper))
+				.collect(ImmutableList.toImmutableList());
+
+		orderCostRepository.saveAll(clonedOrderCosts);
 	}
 
 }

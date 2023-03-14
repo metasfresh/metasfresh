@@ -520,6 +520,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 				.map(FlatrateTermId::getRepoId)
 				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
+		updateDimensionFromCandidates(shipmentLine);
+
 		// Save Shipment Line
 		save(shipmentLine);
 
@@ -537,8 +539,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 			//
 			// Create HU Assignments
 			createShipmentLineHUAssignments(shipmentLine);
-
-			updateDimensionFromCandidates(shipmentLine);
 
 			return shipmentLine;
 		}

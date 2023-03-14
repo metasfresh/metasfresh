@@ -346,6 +346,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
+	public void deleteByLineId(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine record = InterfaceWrapperHelper.load(orderAndLineId.getOrderLineId(), I_C_OrderLine.class);
+		if (record != null)
+		{
+			InterfaceWrapperHelper.delete(record);
+		}
+	}
+
+	@Override
 	public void save(@NonNull final org.compiere.model.I_C_Order order)
 	{
 		InterfaceWrapperHelper.save(order);

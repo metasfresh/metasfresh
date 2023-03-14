@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1853395786L;
+	private static final long serialVersionUID = -775061758L;
 
     /** Standard Constructor */
     public X_C_Order_Cost (final Properties ctx, final int C_Order_Cost_ID, @Nullable final String trxName)
@@ -213,6 +213,33 @@ public class X_C_Order_Cost extends org.compiere.model.PO implements I_C_Order_C
 	public java.lang.String getCostDistributionMethod() 
 	{
 		return get_ValueAsString(COLUMNNAME_CostDistributionMethod);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getCreated_OrderLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_Created_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setCreated_OrderLine(final org.compiere.model.I_C_OrderLine Created_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_Created_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, Created_OrderLine);
+	}
+
+	@Override
+	public void setCreated_OrderLine_ID (final int Created_OrderLine_ID)
+	{
+		if (Created_OrderLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Created_OrderLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Created_OrderLine_ID, Created_OrderLine_ID);
+	}
+
+	@Override
+	public int getCreated_OrderLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Created_OrderLine_ID);
 	}
 
 	@Override

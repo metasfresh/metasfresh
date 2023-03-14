@@ -183,6 +183,27 @@ public interface I_C_Cost_Type
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow Invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowInvoicing (boolean IsAllowInvoicing);
+
+	/**
+	 * Get Allow Invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowInvoicing();
+
+	ModelColumn<I_C_Cost_Type, Object> COLUMN_IsAllowInvoicing = new ModelColumn<>(I_C_Cost_Type.class, "IsAllowInvoicing", null);
+	String COLUMNNAME_IsAllowInvoicing = "IsAllowInvoicing";
+
+	/**
 	 * Set Allow on Purchase.
 	 *
 	 * <br>Type: YesNo
@@ -250,6 +271,28 @@ public interface I_C_Cost_Type
 
 	ModelColumn<I_C_Cost_Type, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_C_Cost_Type.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Name.
