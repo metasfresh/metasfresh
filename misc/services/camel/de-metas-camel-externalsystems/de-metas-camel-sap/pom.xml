@@ -34,7 +34,6 @@
 
     <artifactId>de-metas-camel-sap</artifactId>
     <version>10.0.0</version>
-
     <properties>
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
@@ -134,6 +133,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-jaxb-starter</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.common.externalsystem</groupId>
             <artifactId>de-metas-common-externalsystem</artifactId>
