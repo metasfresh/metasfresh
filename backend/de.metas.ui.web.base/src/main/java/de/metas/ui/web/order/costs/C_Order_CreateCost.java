@@ -108,21 +108,37 @@ public class C_Order_CreateCost extends JavaProcess
 	@Override
 	protected String doIt()
 	{
-		if (p_IsInvoiced && p_InvoiceableProductId == null)
+		orderCostService.createOrderCost(orderCostCreateRequest());
+		return MSG_OK;
+	}
+
+	private OrderCostCreateRequest orderCostCreateRequest()
+	{
+		final OrderCostCreateRequest.OrderLine orderLine;
+		if (p_IsInvoiced)
 		{
-			throw new FillMandatoryException("M_Product_ID");
+			if (p_InvoiceableProductId == null)
+			{
+				throw new FillMandatoryException("M_Product_ID");
+			}
+
+			orderLine = OrderCostCreateRequest.OrderLine.builder()
+					.productId(p_InvoiceableProductId)
+					.bpartnerId2(p_bpartnerId)
+					.build();
+		}
+		else
+		{
+			orderLine = null;
 		}
 
-		orderCostService.createOrderCost(
-				OrderCostCreateRequest.builder()
-						.bpartnerId(p_bpartnerId)
-						.costTypeId(p_costTypeId)
-						.orderAndLineIds(getSelectedOrderAndLineIds())
-						.costCalculationMethodParams(getCostCalculationMethodParams())
-						.invoiceableProductId(p_InvoiceableProductId)
-						.build());
-
-		return MSG_OK;
+		return OrderCostCreateRequest.builder()
+				.bpartnerId(p_bpartnerId)
+				.costTypeId(p_costTypeId)
+				.orderAndLineIds(getSelectedOrderAndLineIds())
+				.costCalculationMethodParams(getCostCalculationMethodParams())
+				.addOrderLine(orderLine)
+				.build();
 	}
 
 	private CostCalculationMethodParams getCostCalculationMethodParams()

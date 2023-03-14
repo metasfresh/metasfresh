@@ -2,6 +2,7 @@ package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
@@ -112,15 +113,15 @@ class OrderCostCreateCommand
 
 	public void createOrderLineIfNeeded(final I_C_Order order, final OrderCost orderCost)
 	{
-		final ProductId invoiceableProductId = request.getInvoiceableProductId();
-		if (invoiceableProductId == null)
+		final OrderCostCreateRequest.OrderLine addOrderLineRequest = request.getAddOrderLine();
+		if (addOrderLineRequest == null)
 		{
 			return;
 		}
 
 		final I_C_OrderLine orderLine = orderBL.createOrderLine(order);
 
-		orderBL.setProductId(orderLine, invoiceableProductId, true);
+		orderBL.setProductId(orderLine, addOrderLineRequest.getProductId(), true);
 
 		orderLine.setQtyEntered(BigDecimal.ONE);
 		orderLine.setQtyOrdered(BigDecimal.ONE);
@@ -134,6 +135,8 @@ class OrderCostCreateCommand
 
 		orderLine.setIsManualDiscount(true);
 		orderLine.setDiscount(BigDecimal.ZERO);
+
+		orderLine.setC_BPartner2_ID(BPartnerId.toRepoId(addOrderLineRequest.getBpartnerId2()));
 
 		orderBL.save(orderLine);
 

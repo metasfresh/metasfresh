@@ -22,7 +22,7 @@ public class OrderCostCreateRequest
 	@Nullable CostCalculationMethodParams costCalculationMethodParams;
 
 	@NonNull ImmutableSet<OrderAndLineId> orderAndLineIds;
-	@Nullable ProductId invoiceableProductId;
+	@Nullable OrderLine addOrderLine;
 
 	@Builder
 	private OrderCostCreateRequest(
@@ -30,7 +30,7 @@ public class OrderCostCreateRequest
 			@NonNull final OrderCostTypeId costTypeId,
 			@Nullable final CostCalculationMethodParams costCalculationMethodParams,
 			@NonNull final ImmutableSet<OrderAndLineId> orderAndLineIds,
-			@Nullable final ProductId invoiceableProductId)
+			@Nullable final OrderLine addOrderLine)
 	{
 		this.bpartnerId = bpartnerId;
 		if (orderAndLineIds.isEmpty())
@@ -41,11 +41,19 @@ public class OrderCostCreateRequest
 		this.costTypeId = costTypeId;
 		this.costCalculationMethodParams = costCalculationMethodParams;
 		this.orderAndLineIds = orderAndLineIds;
-		this.invoiceableProductId = invoiceableProductId;
+		this.addOrderLine = addOrderLine;
 	}
 
 	public OrderId getOrderId()
 	{
 		return CollectionUtils.extractSingleElement(orderAndLineIds, OrderAndLineId::getOrderId);
+	}
+
+	@Value
+	@Builder
+	public static class OrderLine
+	{
+		@NonNull ProductId productId;
+		@Nullable BPartnerId bpartnerId2;
 	}
 }
