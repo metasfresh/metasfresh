@@ -2,6 +2,7 @@ package de.metas.acct.gljournal_sap.service;
 
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,5 +20,6 @@ public class SAPGLJournalLineCreateRequest
 	@NonNull PostingSign postingSign;
 	@NonNull Account account;
 	@NonNull BigDecimal amount;
+	@Nullable SectionCodeId sectionCodeId;
 	@Nullable TaxId taxId;
 }

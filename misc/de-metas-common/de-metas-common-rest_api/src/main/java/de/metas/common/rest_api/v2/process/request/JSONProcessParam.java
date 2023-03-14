@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -39,4 +40,13 @@ public class JSONProcessParam
 
 	@JsonProperty("value")
 	String value;
+
+	@NonNull
+	public static JSONProcessParam of(@NonNull final String name, @NonNull final String value)
+	{
+		return JSONProcessParam.builder()
+				.name(name)
+				.value(value)
+				.build();
+	}
 }
