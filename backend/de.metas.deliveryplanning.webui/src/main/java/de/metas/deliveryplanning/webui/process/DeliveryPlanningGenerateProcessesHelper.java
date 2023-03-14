@@ -18,6 +18,7 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -314,8 +315,10 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 		final ShipmentScheduleId shipmentScheduleId = shipmentInfo.getShipmentScheduleId();
 		final BigDecimal qtyToDeliverBD = getQtyToDeliverByShipmentScheduleId(shipmentScheduleId);
+
 		final DeliveryRule deliveryRule = getDeliveryRuleByShipmentScheduleId(shipmentScheduleId);
-		if (request.getQtyToShipBD().compareTo(qtyToDeliverBD) > 0 && !deliveryRule.isForce())
+		final InOutId b2bReceiptId = request.getB2bReceiptId();
+		if (request.getQtyToShipBD().compareTo(qtyToDeliverBD) > 0 && !deliveryRule.isForce() && b2bReceiptId == null)
 		{
 			throw new AdempiereException(MSG_ERROR_GOODS_ISSUE_QUANTITY);
 		}
@@ -335,7 +338,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 															   .build())
 								.forexContractRef(request.getForexContractRef())
 								.deliveryPlanningId(deliveryPlanningId)
-								.b2bReceiptId(request.getB2bReceiptId())
+								.b2bReceiptId(b2bReceiptId)
 								.build());
 
 		if (result.getWorkpackageEnqueuedCount() <= 0)

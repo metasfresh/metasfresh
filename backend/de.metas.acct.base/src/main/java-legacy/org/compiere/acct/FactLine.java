@@ -672,8 +672,8 @@ public final class FactLine extends X_Fact_Acct
 
 		// C_BPartner_ID2
 		setC_BPartner2_ID(CoalesceUtil.coalesceSuppliers(
-				() -> m_docLine.getBPartnerId2(),
-				() -> m_doc.getBPartnerId2()
+				() -> (m_docLine != null) ? m_docLine.getBPartnerId2() : null,
+				() -> (m_doc != null) ? m_doc.getBPartnerId2() : null
 		));
 
 		// User List 1
