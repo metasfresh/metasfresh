@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/tax_accounting_new/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/tax_accounting_v3/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -39,6 +39,9 @@ order by vatcode, accountno
 	</field>
 	<field name="balanceyear" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="balanceyear"/>
+	</field>
+	<field name="taxbaseamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxbaseamt"/>
 	</field>
 	<field name="accountno" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="accountno"/>
@@ -92,10 +95,18 @@ order by vatcode, accountno
 		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
+	<variable name="taxbaseamt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
+		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<variable name="taxbaseamt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
+		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
 	<group name="vatcode_group">
 		<groupExpression><![CDATA[$F{vatcode}]]></groupExpression>
 		<groupHeader>
-			<band height="26">
+			<band height="27">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="0" y="12" width="150" height="14" uuid="f9a5b4ab-ac9d-4612-9172-b6ce863e873a"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
@@ -117,6 +128,13 @@ order by vatcode, accountno
 					</textElement>
 					<textFieldExpression><![CDATA[$V{balance_vat_sum}]]></textFieldExpression>
 				</textField>
+				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="520" y="12" width="77" height="14" uuid="ae4f572d-b66d-4194-a001-188b93c0d3a1"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Arial" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{taxbaseamt_vat_sum}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
@@ -126,7 +144,7 @@ order by vatcode, accountno
 	<group name="account_group">
 		<groupExpression><![CDATA[$F{accountno}]]></groupExpression>
 		<groupHeader>
-			<band height="18">
+			<band height="26">
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="680" y="3" width="100" height="14" uuid="58ca5ce2-1c32-49c9-a66b-f57e6b1b5ca8"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
@@ -154,6 +172,13 @@ order by vatcode, accountno
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{balance_acct_sum}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="520" y="3" width="77" height="14" uuid="26391098-bd8c-49a3-963d-6d4f8e1430f8"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{taxbaseamt_acct_sum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -400,7 +425,7 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="560" y="124" width="119" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
+				<reportElement x="597" y="124" width="82" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -434,13 +459,23 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="515" y="124" width="82" height="12" forecolor="#FFFFFF" uuid="3d86b171-2133-4e68-a636-5bd8a9844cbb">
+					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="15">
+		<band height="19">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="2" width="70" height="12" uuid="f1148d44-61ec-4614-b025-8b84222eca1d"/>
 				<textElement textAlignment="Left">
@@ -476,11 +511,18 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="520" y="2" width="77" height="12" uuid="329993a1-8b91-41d6-aba5-aee39cb330b9"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
+			</textField>
 		</band>
-		<band height="3" splitType="Stretch">
+		<band height="4" splitType="Stretch">
 			<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 			<subreport>
-				<reportElement x="-19" y="1" width="841" height="2" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
+				<reportElement x="0" y="0" width="780" height="4" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
 					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="DateFrom">
@@ -502,7 +544,7 @@ order by vatcode, accountno
 					<subreportParameterExpression><![CDATA[$F{c_tax_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/tax_accounting_new/report_details.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/tax_accounting_v3/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
