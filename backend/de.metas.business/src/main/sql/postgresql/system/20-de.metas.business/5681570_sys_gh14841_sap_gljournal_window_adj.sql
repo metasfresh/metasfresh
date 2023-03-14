@@ -88,16 +88,24 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710036
 /* DDL */ select AD_Element_Link_Create_Missing_Field(710036)
 ;
 
--- Value: C_ValidCombination_ID
--- 2023-03-13T09:58:05.877Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545256,0,TO_TIMESTAMP('2023-03-13 10:58:05','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','GL Account','I',TO_TIMESTAMP('2023-03-13 10:58:05','YYYY-MM-DD HH24:MI:SS'),100,'C_ValidCombination_ID')
-;
-
--- 2023-03-13T09:58:05.879Z
-INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545256 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
-;
-
 -- Column: SAP_GLJournalLine.M_SectionCode_ID
 -- 2023-03-13T10:34:09.973Z
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2023-03-13 11:34:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585398
 ;
+
+-- 2023-03-14T10:27:13.937Z
+UPDATE AD_Element SET ColumnName='GL_Account_ID',Updated=TO_TIMESTAMP('2023-03-14 11:27:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582137
+;
+
+-- 2023-03-14T10:27:13.938Z
+UPDATE AD_Column SET ColumnName='GL_Account_ID' WHERE AD_Element_ID=582137
+;
+
+-- 2023-03-14T10:27:13.938Z
+UPDATE AD_Process_Para SET ColumnName='GL_Account_ID' WHERE AD_Element_ID=582137
+;
+
+-- 2023-03-14T10:27:13.940Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582137,'en_US')
+;
+
