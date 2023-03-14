@@ -310,10 +310,6 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setM_Product_ID(ProductId.toRepoId(dimension.getProductId()));
 		lineRecord.setC_OrderSO_ID(OrderId.toRepoId(dimension.getSalesOrderId()));
 		lineRecord.setC_Activity_ID(ActivityId.toRepoId(dimension.getActivityId()));
-		if(dimension.getSectionCodeId() != null)
-		{
-			lineRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(dimension.getSectionCodeId()));
-		}
 	}
 
 	private void saveRecordIfAllowed(final I_SAP_GLJournal headerRecord)
