@@ -5,37 +5,10 @@ queue_rules:
       - check-success=continuous-integration/jenkins/branch
 
 pull_request_rules:
-  - name: Automatic merge ⬇️ into base-branch using the merge queue
-    conditions:
-      - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
-      - or:
-        - base=adorable_badger_uat
-        - base=big_coconut_uat
-        - base=hard_encoded_uat
-        - base=holy_cow_uat
-        - base=inner_silence_uat
-        - base=intensive_care_uat
-        - base=mad_orange_uat
-        - base=master
-        - base=neon_underwear_uat
-        - base=release
-        - base=tasty_ham_uat
-        - base=tenacious_d_uat
-        - base=week_end_uat
-        - base=yoyo_uat
-      - or:
-        - "#approved-reviews-by>=1"
-        - label=ops:without_review_approval
-    actions:
-      queue:
-        name: default
-        method: squash
-pull_request_rules:
-  - name: add a label with the name of the branch
+  - name: When a project-PR is integrated, add a label with the name of the branch, and create a PR towards the master-branch
     conditions:
       - merged
-      - or:
+      - or: &PROJECTBRANCHES # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
         - base=adorable_badger_uat
         - base=big_coconut_uat
         - base=hard_encoded_uat 
@@ -43,7 +16,6 @@ pull_request_rules:
         - base=inner_silence_uat
         - base=intensive_care_uat
         - base=mad_orange_uat
-        - base=master
         - base=neon_underwear_uat
         - base=release
         - base=tasty_ham_uat
@@ -54,3 +26,35 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"        
+      copy:
+        branches:
+          - master
+        labels:  
+          - "ops:merge_towards_master"
+
+  - name: Automatic squash-merge successful PRs into the base-branch
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+      - or: # this rule should apply to both the project-branches from above, and master
+        - or: *PROJECTBRANCHES
+        - or:
+          - base=master
+      - or:
+        - "#approved-reviews-by>=1"
+        - label=ops:without_review_approval
+    actions:
+      queue:
+        name: default
+        method: squash
+
+  - name: Automatic merge PRs labeled with `ops:merge_towards_master` into the `master`-branch
+    conditions:
+      - check-success=testspace-analytics
+      - check-success=continuous-integration/jenkins/branch
+      - base=master
+      - label=ops:merge_towards_master
+    actions:
+      queue:
+        name: default
+        method: merge
