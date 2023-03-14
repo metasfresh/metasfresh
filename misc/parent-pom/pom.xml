@@ -33,23 +33,24 @@
         <!-- this is our default; individual projects might need to specify their own settings -->
         <metasfresh.java.version>17</metasfresh.java.version>
 
-        <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
-        <jackson.version>2.14.1</jackson.version>
-        <amqp-client.version>5.10.0</amqp-client.version>
+        <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html
+        https://docs.spring.io/spring-boot/docs/2.7.7/reference/html/dependency-versions.html#appendix.dependency-versions -->
+        <jackson.version>2.13.4</jackson.version>
+        <amqp-client.version>5.14.2</amqp-client.version>
 
         <jasperreports.version>6.7.0</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.7.9</spring-boot-admin.version>
+        <spring-boot-admin.version>2.7.7</spring-boot-admin.version>
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
         <springdoc-swagger.version>1.6.14</springdoc-swagger.version>
 
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
-        <slf4j-api.version>2.0.6</slf4j-api.version>
+        <slf4j-api.version>1.7.36</slf4j-api.version>
 
         <!-- test related versions -->
         <!--
