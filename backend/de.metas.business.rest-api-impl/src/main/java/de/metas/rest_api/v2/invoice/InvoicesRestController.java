@@ -276,12 +276,12 @@ public class InvoicesRestController
 
 	}
 
-	@ApiOperation("Create new invoice")
+	@Operation(summary = "Create new invoice")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created new invoice"),
-			@ApiResponse(code = 401, message = "You are not authorized to create a new invoice"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created new invoice"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create a new invoice"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PostMapping("/new")
 	public ResponseEntity<JsonCreateInvoiceResponse> createInvoice(@NonNull @RequestBody final JsonCreateInvoiceRequest request)

@@ -62,38 +62,6 @@ public class ProductDAOTest
 	@Nested
 	class getGuaranteeDuration
 	{
-		@Builder(builderMethodName = "product", builderClassName = "$ProductBuilder")
-		ProductId createProduct(
-				@Nullable final Integer productCategoryGuaranteeDaysMin,
-				@Nullable final Integer productGuaranteeDaysMin,
-				@Nullable final String productGuaranteeMonths)
-		{
-			final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
-			productCategory.setIsActive(true);
-			productCategory.setName("Test Category");
-			if (productCategoryGuaranteeDaysMin != null)
-			{
-				productCategory.setGuaranteeDaysMin(productCategoryGuaranteeDaysMin);
-			}
-			save(productCategory);
-
-			final I_M_Product product = newInstance(I_M_Product.class);
-			product.setIsActive(true);
-			product.setName("Product");
-			product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-			if (productGuaranteeDaysMin != null)
-			{
-				product.setGuaranteeDaysMin(productGuaranteeDaysMin);
-			}
-			if (productGuaranteeMonths != null)
-			{
-				product.setGuaranteeMonths(productGuaranteeMonths);
-			}
-			save(product);
-
-			return ProductId.ofRepoId(product.getM_Product_ID());
-		}
-
 		AbstractIntegerAssert<?> assertGuaranteeDays(final ProductId productId)
 		{
 			final int expectedGuaranteeDays = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
@@ -128,5 +96,37 @@ public class ProductDAOTest
 			final ProductId productId = product().productCategoryGuaranteeDaysMin(33).build();
 			assertGuaranteeDays(productId).isEqualTo(33);
 		}
+	}
+
+	@Builder(builderMethodName = "product", builderClassName = "$ProductBuilder")
+	ProductId createProduct(
+			@Nullable final Integer productCategoryGuaranteeDaysMin,
+			@Nullable final Integer productGuaranteeDaysMin,
+			@Nullable final String productGuaranteeMonths)
+	{
+		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
+		productCategory.setIsActive(true);
+		productCategory.setName("Test Category");
+		if (productCategoryGuaranteeDaysMin != null)
+		{
+			productCategory.setGuaranteeDaysMin(productCategoryGuaranteeDaysMin);
+		}
+		save(productCategory);
+
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setIsActive(true);
+		product.setName("Product");
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
+		if (productGuaranteeDaysMin != null)
+		{
+			product.setGuaranteeDaysMin(productGuaranteeDaysMin);
+		}
+		if (productGuaranteeMonths != null)
+		{
+			product.setGuaranteeMonths(productGuaranteeMonths);
+		}
+		save(product);
+
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 }

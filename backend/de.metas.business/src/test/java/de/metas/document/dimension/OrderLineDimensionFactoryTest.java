@@ -57,23 +57,6 @@ class OrderLineDimensionFactoryTest
 	@Nested
 	class getFromRecord_check_salesOrderId
 	{
-		@Builder(builderMethodName = "orderLine", builderClassName = "OrderLineBuilder")
-		private I_C_OrderLine createOrderLine(
-				@NonNull final SOTrx soTrx,
-				@Nullable final OrderId lineOrderSOId)
-		{
-			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-			order.setIsSOTrx(soTrx.toBoolean());
-			InterfaceWrapperHelper.save(order);
-
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
-			orderLine.setC_Order_ID(order.getC_Order_ID());
-			orderLine.setC_OrderSO_ID(OrderId.toRepoId(lineOrderSOId));
-			InterfaceWrapperHelper.save(orderLine);
-
-			return orderLine;
-		}
-
 		@Test
 		void purchaseOrderLine_orderSOId_not_set()
 		{
@@ -102,5 +85,22 @@ class OrderLineDimensionFactoryTest
 			assertThat(dimensionFactory.getFromRecord(orderLine).getSalesOrderId()).isEqualTo(OrderId.ofRepoId(1234));
 		}
 
+	}
+
+	@Builder(builderMethodName = "orderLine", builderClassName = "OrderLineBuilder")
+	private I_C_OrderLine createOrderLine(
+			@NonNull final SOTrx soTrx,
+			@Nullable final OrderId lineOrderSOId)
+	{
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setIsSOTrx(soTrx.toBoolean());
+		InterfaceWrapperHelper.save(order);
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setC_OrderSO_ID(OrderId.toRepoId(lineOrderSOId));
+		InterfaceWrapperHelper.save(orderLine);
+
+		return orderLine;
 	}
 }

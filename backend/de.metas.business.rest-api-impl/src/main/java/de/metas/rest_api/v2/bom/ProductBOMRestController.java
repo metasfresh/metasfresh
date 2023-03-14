@@ -84,17 +84,17 @@ public class ProductBOMRestController
 		}
 	}
 
-	@ApiOperation("Verifies the default bill of material version for given product identifier.")
+	@Operation(summary = "Verifies the default bill of material version for given product identifier.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully verified bill of material"),
-			@ApiResponse(code = 401, message = "You are not authorized to perform this action"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully verified bill of material"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to perform this action"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@PutMapping("{orgCode}/verify/{productIdentifier}")
 	public ResponseEntity<?> verifyDefaultBOM(
 			@PathVariable("orgCode") @NonNull final String orgCode,
-			@ApiParam(required = true, value = PRODUCT_IDENTIFIER_DOC)
+			@Parameter(required = true, description = PRODUCT_IDENTIFIER_DOC)
 			@PathVariable("productIdentifier") @NonNull final String productIdentifier)
 	{
 		try

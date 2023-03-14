@@ -78,6 +78,7 @@ public class SyncAdvise
 	@Schema(enumAsRef = true, description = "IfExists: \n" +
 			"* `UPDATE_MERGE` - Insert/update data that is specified in this request entity (incl. setting properties to `null`), but leave *other* pre-existing data untouched\n" +
 			"* `DONT_UPDATE`\n" +
+			"* `REPLACE` - Replace data for the target resource with the information present in the request.\n" +
 			"")
 	public enum IfExists
 	{
@@ -85,7 +86,6 @@ public class SyncAdvise
 
 		DONT_UPDATE(false/* updateMerge */),
 
-		@ApiEnum("Replace data for the target resource with the information present in the request.")
 		REPLACE(true);
 
 		@Getter

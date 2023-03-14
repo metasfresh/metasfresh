@@ -73,10 +73,10 @@ public class JsonRequestCreditLimitUpsertItem
 	@Schema(hidden = true)
 	private boolean processedSet;
 
-	@ApiModelProperty(position = 70, value = "Translated to `C_BPartner_CreditLimit.ApprovedBy_ID`")
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.ApprovedBy_ID`")
 	private JsonMetasfreshId approvedBy;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean approvedBySet;
 
 	public void setAmount(final JsonMoney amount)

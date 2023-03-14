@@ -155,7 +155,7 @@ public class JsonRequestProduct
 	@Schema(hidden = true)
 	private boolean sapProductHierarchySet;
 
-	@Schema(position = 190)
+	@Schema
 	private JsonRequestUpsertProductAllergen productAllergens;
 
 	public void setCode(final @NonNull String code)

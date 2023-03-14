@@ -61,10 +61,10 @@ public class JsonBOMCreateRequest
 	@Schema(description = "Corresponding to `M_AttributeSetInstance`")
 	JsonAttributeSetInstance attributeSetInstance;
 
-	@Schema(position = 70, description = "Corresponding to `PP_Product_BOM.S_PreferredResource_ID`")
+	@Schema(description = "Corresponding to `PP_Product_BOM.S_PreferredResource_ID`")
 	String resourceCode;
 
-	@Schema(position = 80, required = true)
+	@Schema(required = true)
 	List<JsonCreateBOMLine> bomLines;
 
 	@Builder

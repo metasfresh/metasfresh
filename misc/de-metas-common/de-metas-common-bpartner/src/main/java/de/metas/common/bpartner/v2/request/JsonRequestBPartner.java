@@ -256,7 +256,7 @@ public class JsonRequestBPartner
 	@Schema(description = "This translates to `C_BPartner.IsSectionPartner`.")
 	private boolean sectionPartner;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean sectionPartnerSet;
 
 	@Schema(description = "Sync advise about this bPartner's individual properties.\n"

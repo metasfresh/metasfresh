@@ -203,18 +203,16 @@ public class JsonRequestLocation
 	@Schema(hidden = true)
 	private boolean vatIdSet;
 
-	@ApiModelProperty(position = 280, //
-			value = "Translates to C_BPartner_Location.SAP_PaymentMethod")
+	@Schema(description = "Translates to C_BPartner_Location.SAP_PaymentMethod")
 	private String sapPaymentMethod;
 
 	private boolean sapPaymentMethodSet;
 
 
-	@ApiModelProperty(position = 290,  //
-			value = "This translates to `C_BPartner_Location.SAP_BPartnerCode`.")
+	@Schema(description = "This translates to `C_BPartner_Location.SAP_BPartnerCode`.")
 	private String sapBPartnerCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean sapBPartnerCodeSet;
 
 	public void setActive(final Boolean active)
