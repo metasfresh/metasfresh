@@ -392,8 +392,8 @@ SELECT DISTINCT NULL::date,
                 NULL::numeric,
                 NULL::boolean,
                 ad_org_id,
-                vat_code,
-                tax_rate_name
+                NULL::text,
+                NULL::text
 FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 UNION ALL
 SELECT DISTINCT NULL::date,
@@ -419,8 +419,8 @@ SELECT DISTINCT NULL::date,
                 NULL::numeric,
                 NULL::boolean,
                 ad_org_id,
-                vat_code,
-                tax_rate_name
+                NULL::text,
+                NULL::text
 FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 UNION ALL
 (SELECT DISTINCT NULL::date,
@@ -446,8 +446,8 @@ UNION ALL
                  EuroSaldo,
                  containsEUR,
                  ad_org_id,
-                 vat_code,
-                 tax_rate_name
+                 NULL::text,
+                 NULL::text
  FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
  WHERE containsEUR = 'Y')
 ORDER BY Param_Acct_Value, UnionOrder, DateAcct,
