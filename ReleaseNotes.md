@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14722](https://github.com/metasfresh/metasfresh/issues/14722) Report Accounts information changes
   * [#14835](https://github.com/metasfresh/metasfresh/issues/14835) Manage filtering with attributes in HU reservation screen
   * [#14841](https://github.com/metasfresh/metasfresh/issues/14841) SAP GL Journal Window Adjustment
   * [#14849](https://github.com/metasfresh/metasfresh/pull/14849) Allow creation of goods issue for the qty that ws just received in the case of b2b
