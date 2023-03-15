@@ -52,7 +52,7 @@ const translations = {
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
+      qtyAboveMax: '%(qtyDiff)s über max value: %(qtyMaxValue)s', // TODO verify trl
       notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',

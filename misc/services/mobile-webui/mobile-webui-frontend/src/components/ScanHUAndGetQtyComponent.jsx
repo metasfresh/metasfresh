@@ -133,6 +133,7 @@ const ScanHUAndGetQtyComponent = ({
     if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0 && qtyEntered > resolvedBarcodeData.qtyMax) {
       return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
         qtyDiff: formatQtyToHumanReadable({ qty: qtyEntered - resolvedBarcodeData.qtyMax, uom }),
+        qtyMaxValue: `${resolvedBarcodeData.qtyMax} ${uom}`,
       });
     }
 

@@ -22,7 +22,12 @@ const ButtonWithIndicator = ({
 }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
-  const showHazardsAndAllergens = hazardSymbols != null || allergens != null;
+  const displayAllergensWithColor =
+    allergens != null && allergens.find((allergen) => (allergen.color === null ? null : allergen.color));
+
+  const displayHazards = hazardSymbols != null && hazardSymbols.length > 0;
+
+  const showHazardsAndAllergens = displayHazards || displayAllergensWithColor;
 
   return (
     <button
