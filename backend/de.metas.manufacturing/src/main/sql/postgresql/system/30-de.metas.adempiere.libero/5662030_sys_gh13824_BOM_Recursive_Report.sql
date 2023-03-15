@@ -24,19 +24,34 @@ CREATE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
 AS
 $$
     --
-WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS path,
-                                   NULL::integer[]                         AS parent_path,
-                                   1                                       AS depth,
-                                   bomProduct.Value                        AS ProductValue,
-                                   COALESCE(pt.Name, bomProduct.Name)      AS ProductName,
+WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                          AS path,
+                                   NULL::integer[]                             AS parent_path,
+                                   1                                           AS depth,
+                                   bomProduct.Value                            AS ProductValue,
+                                   COALESCE(pt.Name, bomProduct.Name)          AS ProductName,
                                    bomProduct.M_Product_ID,
                                    bomProduct.IsBOM,
                                    bom.PP_Product_BOM_ID,
+<<<<<<< HEAD:backend/de.metas.manufacturing/src/main/sql/postgresql/system/30-de.metas.adempiere.libero/5662030_sys_gh13824_BOM_Recursive_Report.sql
                                    'N'::char(1)                            AS IsQtyPercentage,
                                    ROUND(1::numeric, uom.StdPrecision)     AS QtyBOM,
                                    NULL::numeric                           AS Percentage,
                                    COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
                                    uom.C_UOM_ID
+=======
+                                   'N'::char(1)                                AS IsQtyPercentage,
+                                   ROUND(1::numeric, uom.StdPrecision)         AS QtyBOM,
+                                   NULL::numeric                               AS Percentage,
+                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol)     AS UOMSymbol,
+                                   uom.C_UOM_ID,
+                                   (SELECT CONCAT_WS(' ', bPartner.name, bPartner.name2, bPartner.name3)
+                                    FROM C_BPartner_Product bPartnerProduct
+                                             INNER JOIN C_BPartner bPartner ON bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id
+                                    WHERE bomProduct.m_product_id = bPartnerProduct.m_product_id
+                                      AND bPartnerProduct.iscurrentvendor = 'Y'
+                                      AND bPartnerProduct.isActive = 'Y'
+                                      AND bPartnerProduct.usedforvendor = 'Y') AS Supplier
+>>>>>>> f6df512a0ff (Stücklistenexport nach Excel - Lieferant mit ausgeben (#14891)):backend/de.metas.manufacturing/src/main/sql/postgresql/system/30-de.metas.adempiere.libero/5681170_sys_gh14858_gh14831_PP_Product_BOM_Recursive_Excel_Report_Order_By_SeqNo_And_Add_Supplier.sql
                             FROM PP_Product_BOM bom
                                      INNER JOIN M_Product bomProduct ON bomProduct.M_Product_ID = bom.M_Product_ID
                                      LEFT OUTER JOIN M_Product_Trl pt ON bomProduct.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
@@ -66,10 +81,24 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                             ELSE NULL
                                     END)::numeric(10, 0)                                                                                                       AS PP_Product_BOM_ID,
                                    bomLine.IsQtyPercentage,
+<<<<<<< HEAD:backend/de.metas.manufacturing/src/main/sql/postgresql/system/30-de.metas.adempiere.libero/5662030_sys_gh13824_BOM_Recursive_Report.sql
                                    (CASE WHEN bomLine.IsQtyPercentage = 'N' THEN ROUND(bomLine.QtyBOM, uom.StdPrecision) ELSE NULL END)                        AS QtyBOM,
                                    (CASE WHEN bomLine.IsQtyPercentage = 'Y' THEN ROUND(bomLine.QtyBatch, 2) ELSE NULL END)                                     AS Percentage,
                                    COALESCE(uom.UOMSymbol, uomt.UOMSymbol)                                                                                     AS UOMSymbol,
                                    uom.C_UOM_ID
+=======
+                                   (CASE WHEN bomLine.IsQtyPercentage = 'N' THEN ROUND(bomLine.QtyBOM, uom.StdPrecision) ELSE NULL END)                                      AS QtyBOM,
+                                   (CASE WHEN bomLine.IsQtyPercentage = 'Y' THEN ROUND(bomLine.QtyBatch, 2) ELSE NULL END)                                                   AS Percentage,
+                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol)                                                                                                   AS UOMSymbol,
+                                   uom.C_UOM_ID,
+                                   (SELECT CONCAT_WS(' ', bPartner.name, bPartner.name2, bPartner.name3)
+                                    FROM C_BPartner_Product bPartnerProduct
+                                             INNER JOIN C_BPartner bPartner ON bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id
+                                    WHERE bomLine.m_product_id = bPartnerProduct.m_product_id
+                                      AND bPartnerProduct.iscurrentvendor = 'Y'
+                                      AND bPartnerProduct.isActive = 'Y'
+                                      AND bPartnerProduct.usedforvendor = 'Y')                                                                                               AS Supplier
+>>>>>>> f6df512a0ff (Stücklistenexport nach Excel - Lieferant mit ausgeben (#14891)):backend/de.metas.manufacturing/src/main/sql/postgresql/system/30-de.metas.adempiere.libero/5681170_sys_gh14858_gh14831_PP_Product_BOM_Recursive_Excel_Report_Order_By_SeqNo_And_Add_Supplier.sql
                             FROM bomNode parent
                                      INNER JOIN PP_Product_BOMLine bomLine ON bomLine.PP_Product_BOM_ID = parent.PP_Product_BOM_ID
                                      INNER JOIN M_Product bomLineProduct ON bomLineProduct.M_Product_ID = bomLine.M_Product_ID
