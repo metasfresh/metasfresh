@@ -63,7 +63,7 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                    NULL::numeric                           AS Percentage,
                                    COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
                                    uom.C_UOM_ID,
-                                   (SELECT bPartner.value
+                                   (SELECT CONCAT(bPartner.name, bPartner.name2, bPartner.name3)
                                     FROM C_BPartner_Product bPartnerProduct
                                              INNER JOIN C_BPartner bPartner ON bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id
                                     WHERE bomProduct.m_product_id = bPartnerProduct.m_product_id
@@ -104,7 +104,7 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                    (CASE WHEN bomLine.IsQtyPercentage = 'Y' THEN ROUND(bomLine.QtyBatch, 2) ELSE NULL END)                                                   AS Percentage,
                                    COALESCE(uom.UOMSymbol, uomt.UOMSymbol)                                                                                                   AS UOMSymbol,
                                    uom.C_UOM_ID,
-                                   (SELECT bPartner.value
+                                   (SELECT CONCAT(bPartner.name, bPartner.name2, bPartner.name3)
                                     FROM C_BPartner_Product bPartnerProduct
                                              INNER JOIN C_BPartner bPartner ON bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id
                                     WHERE bomLine.m_product_id = bPartnerProduct.m_product_id
