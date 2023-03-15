@@ -1,5 +1,30 @@
+/*
+ * #%L
+ * de.metas.manufacturing
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive(numeric,
-                                                 varchar)
+                                                 character varying)
+;
+
+DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric)
 ;
 
 CREATE OR REPLACE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
@@ -25,27 +50,26 @@ CREATE OR REPLACE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
 AS
 $$
     --
-WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS path,
-                                   NULL::integer[]                         AS parent_path,
-                                   1                                       AS depth,
-                                   bomProduct.Value                        AS ProductValue,
-                                   COALESCE(pt.Name, bomProduct.Name)      AS ProductName,
+WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                          AS path,
+                                   NULL::integer[]                             AS parent_path,
+                                   1                                           AS depth,
+                                   bomProduct.Value                            AS ProductValue,
+                                   COALESCE(pt.Name, bomProduct.Name)          AS ProductName,
                                    bomProduct.M_Product_ID,
                                    bomProduct.IsBOM,
                                    bom.PP_Product_BOM_ID,
-                                   'N'::char(1)                            AS IsQtyPercentage,
-                                   ROUND(1::numeric, uom.StdPrecision)     AS QtyBOM,
-                                   NULL::numeric                           AS Percentage,
-                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
+                                   'N'::char(1)                                AS IsQtyPercentage,
+                                   ROUND(1::numeric, uom.StdPrecision)         AS QtyBOM,
+                                   NULL::numeric                               AS Percentage,
+                                   COALESCE(uom.UOMSymbol, uomt.UOMSymbol)     AS UOMSymbol,
                                    uom.C_UOM_ID,
-                                   (SELECT bPartner.value
+                                   (SELECT CONCAT_WS(' ', bPartner.name, bPartner.name2, bPartner.name3)
                                     FROM C_BPartner_Product bPartnerProduct
                                              INNER JOIN C_BPartner bPartner ON bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id
                                     WHERE bomProduct.m_product_id = bPartnerProduct.m_product_id
                                       AND bPartnerProduct.iscurrentvendor = 'Y'
                                       AND bPartnerProduct.isActive = 'Y'
-                                      AND bPartnerProduct.usedforvendor = 'Y'
-                                   )                                       AS Supplier
+                                      AND bPartnerProduct.usedforvendor = 'Y') AS Supplier
                             FROM PP_Product_BOM bom
                                      INNER JOIN M_Product bomProduct ON bomProduct.M_Product_ID = bom.M_Product_ID
                                      LEFT OUTER JOIN M_Product_Trl pt ON bomProduct.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
@@ -79,14 +103,13 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                    (CASE WHEN bomLine.IsQtyPercentage = 'Y' THEN ROUND(bomLine.QtyBatch, 2) ELSE NULL END)                                                   AS Percentage,
                                    COALESCE(uom.UOMSymbol, uomt.UOMSymbol)                                                                                                   AS UOMSymbol,
                                    uom.C_UOM_ID,
-                                   (SELECT bPartner.value
+                                   (SELECT CONCAT_WS(' ', bPartner.name, bPartner.name2, bPartner.name3)
                                     FROM C_BPartner_Product bPartnerProduct
                                              INNER JOIN C_BPartner bPartner ON bPartnerProduct.c_bpartner_id = bPartner.c_bpartner_id
                                     WHERE bomLine.m_product_id = bPartnerProduct.m_product_id
                                       AND bPartnerProduct.iscurrentvendor = 'Y'
                                       AND bPartnerProduct.isActive = 'Y'
-                                      AND bPartnerProduct.usedforvendor = 'Y'
-                                   )                                                                                                                                         AS Supplier
+                                      AND bPartnerProduct.usedforvendor = 'Y')                                                                                               AS Supplier
                             FROM bomNode parent
                                      INNER JOIN PP_Product_BOMLine bomLine ON bomLine.PP_Product_BOM_ID = parent.PP_Product_BOM_ID
                                      INNER JOIN M_Product bomLineProduct ON bomLineProduct.M_Product_ID = bomLine.M_Product_ID
@@ -118,4 +141,34 @@ $$
 ;
 
 ALTER FUNCTION pp_product_bom_recursive(numeric, varchar) OWNER TO metasfresh
+;
+
+CREATE OR REPLACE FUNCTION pp_product_bom_recursive_report(p_pp_product_bom_id numeric)
+    RETURNS TABLE
+            (
+                line         text,
+                productvalue character varying,
+                productname  character varying,
+                qtybom       numeric,
+                percentage   numeric,
+                uomsymbol    character varying,
+                supplier     text
+            )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT t.Line,
+       t.ProductValue,
+       t.ProductName,
+       t.QtyBOM,
+       t.Percentage,
+       t.UOMSymbol,
+       t.Supplier
+FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL) t
+ORDER BY t.path
+$$
+;
+
+ALTER FUNCTION pp_product_bom_recursive_report(numeric) OWNER TO metasfresh
 ;
