@@ -26,6 +26,8 @@ pull_request_rules:
       copy:
         branches:
           - master
+        assignees: # the original PR's author shall be notified when the merge-towards-master build fails
+          - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
 
