@@ -114,7 +114,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 					}
 				});
 
-		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
+		//dev-note: acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
 
 		asyncBatch2Completion.put(id, new BatchProgress(lock, id));
@@ -205,12 +205,11 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (!isAsyncBatchObserved(asyncBatchId))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
 			return;
 		}
 
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
-
 		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 

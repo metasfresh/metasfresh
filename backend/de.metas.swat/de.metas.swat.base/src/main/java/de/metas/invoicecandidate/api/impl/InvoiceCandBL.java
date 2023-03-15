@@ -722,7 +722,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final String trxName)
 	{
-		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveIcForSelection(ctx, AD_PInstance_ID, trxName);
+		final Iterator<I_C_Invoice_Candidate> candidates =
+				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
 		return generateInvoices()
 				.setContext(ctx, trxName)

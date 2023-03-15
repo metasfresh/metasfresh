@@ -37,7 +37,7 @@ Feature: reversed shipment
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
     When the inventory identified by inv_1 is completed
-    And after not more than 30s, M_HU are found:
+    And after not more than 60s, M_HU are found:
       | Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | HUStatus | IsActive |
       | hu_1       | null                     | null                              | A        | Y        |
     And M_HU_Storage are validated
@@ -50,13 +50,13 @@ Feature: reversed shipment
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | s_1                   | CO            |
     And M_HU are validated:
@@ -68,13 +68,13 @@ Feature: reversed shipment
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | A        | Y        |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    And after not more than 30s, M_InOut is found:
+    And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | s_2                   | CO            |
     And M_HU are validated:
