@@ -304,12 +304,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), receiptInfo.getOrgId());
 
 		final boolean preventReceiptIfMissingDeliveryInstructions = sysConfigBL.getBooleanValue(SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS, false, clientAndOrgId);
-		if(!preventReceiptIfMissingDeliveryInstructions)
-		{
-			return ProcessPreconditionsResolution.accept();
-		}
-
-		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
+		if (preventReceiptIfMissingDeliveryInstructions && !deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
 		}
