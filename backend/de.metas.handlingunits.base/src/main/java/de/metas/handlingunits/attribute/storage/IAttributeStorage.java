@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -86,8 +87,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 * This might mean that it's stored as a weak reference. so make sure you keep a reference to this listener in our object.</li>
 	 * <li>a listener won't be registered twice</li>
 	 * </ul>
-	 *
-	 * @param listener
 	 */
 	void addListener(IAttributeStorageListener listener);
 
@@ -95,8 +94,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 * Unregisters given storage listener.
 	 *
 	 * If listener was not already registered, it will silently ignore it.
-	 *
-	 * @param listener
 	 */
 	void removeListener(IAttributeStorageListener listener);
 
@@ -117,7 +114,6 @@ public interface IAttributeStorage extends IAttributeSet
 	}
 
 	/**
-	 * @param attribute
 	 * @return true if the given attribute is available for getting/setting
 	 */
 	@Override
@@ -131,13 +127,11 @@ public interface IAttributeStorage extends IAttributeSet
 	Collection<I_M_Attribute> getAttributes();
 
 	/**
-	 *
-	 * @param attributeValueKey
 	 * @return attribute for given M_Attribute.Value or <code>null</code>
 	 */
 	I_M_Attribute getAttributeByValueKeyOrNull(AttributeCode attributeCode);
 
-	default I_M_Attribute getAttributeByValueKeyOrNull(String attributeValueKey)
+	default I_M_Attribute getAttributeByValueKeyOrNull(final String attributeValueKey)
 	{
 		return getAttributeByValueKeyOrNull(AttributeCode.ofString(attributeValueKey));
 	}
@@ -162,9 +156,6 @@ public interface IAttributeStorage extends IAttributeSet
 
 	/**
 	 * Updates given <code>huTrxAttribute</code> with storage settings and with underlying infos from <code>fromAttributeValue</code>.
-	 *
-	 * @param huTrxAttribute
-	 * @param fromAttributeValue
 	 */
 	void updateHUTrxAttribute(MutableHUTransactionAttribute huTrxAttribute, IAttributeValue fromAttributeValue);
 
@@ -173,15 +164,13 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * This method checks if this action is possible in current context (i.e. it is also checking current parent and current child storages).
 	 *
-	 * @param attribute
 	 * @return true if is propagated value
 	 */
 	boolean isPropagatedValue(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return propagation type of given attribute or {@link NullHUAttributePropagator#getPropagationType()} if attribute was not found
-	 * @see X_M_HU_PI_Attribute.PROPAGATIONTYPE_
+	 * See X_M_HU_PI_Attribute.PROPAGATIONTYPE_*.
 	 */
 	String getPropagationType(I_M_Attribute attribute);
 
@@ -207,12 +196,12 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
 
-	boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute);
+	boolean isDisplayedUI(final I_M_Attribute attribute, final Set<ProductId> productIds);
 
-	default boolean isMandatory(@NonNull final I_M_Attribute attribute)
-	{
-		return getAttributeValue(AttributeCode.ofString(attribute.getValue())).isMandatory();
-	}
+	boolean isMandatory(
+			@NonNull final I_M_Attribute attribute,
+			final Set<ProductId> productIds,
+			final boolean isMaterialReceipt);
 
 	/**
 	 * Set attribute's value with NO propagation.
@@ -221,7 +210,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 */
 	void setValueNoPropagate(AttributeCode attributeCode, Object value);
 
-	default void setValueNoPropagate(I_M_Attribute attribute, Object value)
+	default void setValueNoPropagate(final I_M_Attribute attribute, final Object value)
 	{
 		setValueNoPropagate(AttributeCode.ofString(attribute.getValue()), value);
 	}
@@ -244,7 +233,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * Value to be used for null is determined from {@link IAttributeValue#getNullAttributeValue()}.
 	 *
-	 * @param attribute
 	 * @return null value that was set
 	 */
 	NamePair setValueToNull(I_M_Attribute attribute);
@@ -266,7 +254,6 @@ public interface IAttributeStorage extends IAttributeSet
 	String getValueAsString(AttributeCode attributeCode);
 
 	/**
-	 * @param attribute
 	 * @return name of given attribute current value (aka. valueName)
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported (inherited from {@link #getValue(I_M_Attribute)})
 	 */
@@ -275,7 +262,6 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Returns the initial attribute value. Currently only used for the aggregation that takes place during bottom-up propagation.
 	 *
-	 * @param attribute
 	 * @return initial value (seed value) of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
@@ -296,7 +282,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * NOTE: don't call it directly, the API will make the call, e.g. if a child HU was added to aparent HU.
 	 *
-	 * @param childAttributeStorage
 	 */
 	void onChildAttributeStorageAdded(IAttributeStorage childAttributeStorage);
 
@@ -305,7 +290,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 *
 	 * NOTE: don't call it directly, the API will.
 	 *
-	 * @param childAttributeStorageRemoved
 	 */
 	void onChildAttributeStorageRemoved(IAttributeStorage childAttributeStorageRemoved);
 
@@ -343,7 +327,6 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Enables/Disables automatic saving when an attribute value is changed
 	 *
-	 * @param saveOnChange
 	 * @throws UnsupportedOperationException in case the operation is not supported
 	 */
 	void setSaveOnChange(final boolean saveOnChange);
@@ -376,7 +359,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * To be implemented on higher level if you want to implement destroy/dispose functionality and you want to make sure the storage is not used after that.
 	 * If you don't care, just return <code>true</code>.</li>
 	 * <li>in your implementation, don't check if possible child storages are disposed, because for that we have {@link #assertNotDisposedTree()}</li>
-	 * <li>please have a look at {@link AbstractAttributeStorage#throwOrLogDisposedException(Long)} and use it if your particular instance is disposed.</li>
+	 * <li>please have a look at AbstractAttributeStorage's throwOrLogDisposedException(Long) method and use it if your particular instance is disposed.</li>
 	 * </ul>
 	 *
 	 * @return <code>true</code> if NOT disposed (i.e. still alive); <code>false</code> if IT IS disposed

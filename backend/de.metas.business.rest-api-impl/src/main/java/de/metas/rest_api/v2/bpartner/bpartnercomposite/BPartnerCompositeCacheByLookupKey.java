@@ -35,6 +35,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_User_Assigned_Role;
+import org.compiere.model.I_C_User_Role;
 
 import java.util.Collection;
 import java.util.Map;
@@ -55,6 +57,8 @@ public final class BPartnerCompositeCacheByLookupKey
 				.additionalTableNameToResetFor(I_AD_User.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
+				.additionalTableNameToResetFor(I_C_User_Assigned_Role.Table_Name)
+				.additionalTableNameToResetFor(I_C_User_Role.Table_Name)
 				.cacheMapType(CacheMapType.LRU)
 				.initialCapacity(100)
 				.invalidationKeysMapper(cacheIndex)

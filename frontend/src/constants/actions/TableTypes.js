@@ -63,3 +63,9 @@ export const UPDATE_TABLE_ROW_PROPERTY = 'UPDATE_TABLE_ROW_PROPERTY';
  * @type {string} clear table rows and selections
  */
 export const CLEAR_TABLE_DATA = 'CLEAR_TABLE_DATA';
+
+/**
+ * @constant
+ * @type {string} set flag for table navigation
+ */
+export const SET_TABLE_NAVIGATION = 'SET_TABLE_NAVIGATION';

@@ -42,16 +42,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_AUDIT_TRAIL;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SYSTEM_VALUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TRACE_ID;
-import static de.metas.camel.externalsystems.core.to_mf.ErrorReportRouteBuilder.ERROR_WRITE_TO_ADISSUE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.file;
 
 public class AuditEventNotifier extends EventNotifierSupport
@@ -116,13 +115,8 @@ public class AuditEventNotifier extends EventNotifierSupport
 			return;
 		}
 
-		final Optional<String> auditLogFileContent = AuditFileTrailUtil.computeAuditLogFileContent(exchange, message);
-		if (auditLogFileContent.isEmpty())
-		{
-			return;
-		}
-
-		producerTemplate.sendBody(getAuditEndpoint(exchange), auditLogFileContent.get());
+		AuditFileTrailUtil.computeAuditLogFileContent(exchange, message)
+				.ifPresent(logFileContent -> producerTemplate.sendBody(getAuditEndpoint(exchange), logFileContent));
 	}
 
 	@NonNull

@@ -1,17 +1,8 @@
 package de.metas.quantity;
 
-import static de.metas.util.Check.assumeNotNull;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.product.ProductId;
 import de.metas.uom.UOMPrecision;
 import de.metas.util.Check;
@@ -19,6 +10,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Optional;
+
+import static de.metas.util.Check.assumeNotNull;
 
 @Value
 @ToString(doNotUseGetters = true)
@@ -28,7 +26,9 @@ public class StockQtyAndUOMQty
 
 	Quantity stockQty;
 
-	/** Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}. */
+	/**
+	 * Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}.
+	 */
 	Quantity uomQty;
 
 	@Builder(toBuilder = true)
@@ -191,7 +191,7 @@ public class StockQtyAndUOMQty
 
 	/**
 	 * @return the minimum by looking at the stock quantities.
-	 *         Important: if this instance's stock quantity is equal to {@code other}'s stock quantity, then return {@code this}.
+	 * Important: if this instance's stock quantity is equal to {@code other}'s stock quantity, then return {@code this}.
 	 */
 	public StockQtyAndUOMQty min(@NonNull final StockQtyAndUOMQty other)
 	{
@@ -200,5 +200,21 @@ public class StockQtyAndUOMQty
 			return this;
 		}
 		return other;
+	}
+
+	@NonNull
+	public static StockQtyAndUOMQty toZeroIfNegative(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
+	{
+		return stockQtyAndUOMQty.signum() < 0
+				? stockQtyAndUOMQty.toZero()
+				: stockQtyAndUOMQty;
+	}
+
+	@NonNull
+	public static StockQtyAndUOMQty toZeroIfPositive(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
+	{
+		return stockQtyAndUOMQty.signum() > 0
+				? stockQtyAndUOMQty.toZero()
+				: stockQtyAndUOMQty;
 	}
 }

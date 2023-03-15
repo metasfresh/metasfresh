@@ -24,18 +24,18 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /* package */abstract class AbstractProductionMaterial implements IProductionMaterial
 {
 	// Services
-	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	protected final UOMConversionContext getUOMConversionContext()
 	{
@@ -44,9 +44,8 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public final BigDecimal getQty(final I_C_UOM uomTo)
+	public final BigDecimal getQty(@NonNull final I_C_UOM uomTo)
 	{
-		Check.assumeNotNull(uomTo, "uomTo not null");
 		final BigDecimal qty = getQty();
 		final I_C_UOM qtyUOM = getC_UOM();
 
@@ -56,9 +55,8 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public final BigDecimal getQM_QtyDeliveredAvg(final I_C_UOM uomTo)
+	public final BigDecimal getQM_QtyDeliveredAvg(@NonNull final I_C_UOM uomTo)
 	{
-		Check.assumeNotNull(uomTo, "uomTo not null");
 		final UOMConversionContext conversionCtx = getUOMConversionContext();
 		final BigDecimal qty = getQM_QtyDeliveredAvg();
 		final I_C_UOM qtyUOM = getC_UOM();
@@ -69,7 +67,7 @@ import de.metas.util.Services;
 	@Override
 	public boolean isByProduct()
 	{
-		return getComponentType().isByProduct();
+		return getComponentType() != null && getComponentType().isByProduct();
 	}
 
 }

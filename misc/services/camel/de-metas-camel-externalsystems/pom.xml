@@ -45,6 +45,7 @@
         <module>de-metas-camel-shopware6</module>
         <module>de-metas-camel-rabbitmq</module>
         <module>de-metas-camel-woocommerce</module>
+        <module>de-metas-camel-grssignum</module>
     </modules>
 
     <dependencies>
@@ -57,7 +58,7 @@
             <version>1.18.22</version>
         </dependency>
     </dependencies>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -69,5 +70,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

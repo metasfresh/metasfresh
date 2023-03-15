@@ -30,7 +30,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.model.I_M_Product;
 import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,12 +40,13 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 class ProductRepositoryTest
 {
-
+	private final static OrgId ORG_ID = OrgId.ofRepoId(100000);
 	private ProductRepository productRepository;
 	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000);
 
@@ -52,6 +55,7 @@ class ProductRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		productRepository = new ProductRepository();
+		createOrg();
 	}
 
 	@Test
@@ -222,5 +226,13 @@ class ProductRepositoryTest
 		assertThat(updatedProduct.getPackageSize()).isEqualTo(packageSize);
 		assertThat(updatedProduct.getWeight()).isEqualTo(weight);
 		assertThat(updatedProduct.getUomId()).isEqualTo(product.getUomId());
+	}
+
+	private void createOrg()
+	{
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(ORG_ID.getRepoId());
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Letzte4Stellen);
+		save(orgInfo);
 	}
 }

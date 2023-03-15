@@ -65,6 +65,9 @@ import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task_Access;
 import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow_Access;
+import org.compiere.model.I_API_Request_Audit;
+import org.compiere.model.I_API_Request_Audit_Log;
+import org.compiere.model.I_API_Response_Audit;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -132,6 +135,9 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_SCHEDULERLOG",
 				"AD_SESSION",
 				"AD_WORKFLOWPROCESSORLOG",
+				I_API_Request_Audit.Table_Name.toUpperCase(),
+				I_API_Request_Audit_Log.Table_Name.toUpperCase(),
+				I_API_Response_Audit.Table_Name.toUpperCase(),
 				"CM_WEBACCESSLOG",
 				"K_INDEXLOG",
 				"R_REQUESTPROCESSORLOG",

@@ -17,4 +17,4 @@ DROP FUNCTION IF EXISTS  "de.metas.fresh".X_MRP_ProductInfo_Detail_MV_Refresh(da
 
 DROP FUNCTION IF EXISTS  x_mrp_productinfo_detail_v_experimental(date,date);
 
-DROP TABLE IF EXISTS X_MRP_ProductInfo_Detail_MV;
+DROP TABLE IF EXISTS X_MRP_ProductInfo_Detail_MV CASCADE;

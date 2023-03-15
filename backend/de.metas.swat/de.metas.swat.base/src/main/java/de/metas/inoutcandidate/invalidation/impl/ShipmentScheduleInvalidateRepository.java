@@ -2,10 +2,12 @@ package de.metas.inoutcandidate.invalidation.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -20,6 +22,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -43,6 +46,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
@@ -75,13 +79,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private static final String M_SHIPMENT_SCHEDULE_RECOMPUTE = "M_ShipmentSchedule_Recompute";
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	/**
 	 * Invalidate by M_Product_ID
 	 */
-	private static final String SQL_RECOMPUTE_BY_PRODUCT = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description) "
+	private static final String SQL_RECOMPUTE_BY_PRODUCT = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
 			+ " SELECT "
-			+ " s." + COLUMNNAME_M_ShipmentSchedule_ID
-			+ " , ?"
+			+ " s." + COLUMNNAME_M_ShipmentSchedule_ID + ", ? , s." + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + ", ?"
 			+ " FROM " + I_M_ShipmentSchedule.Table_Name + " s "
 			+ "   INNER JOIN " + I_C_OrderLine.Table_Name + " ol ON ol." + COLUMNNAME_C_OrderLine_ID + "=s." + COLUMNNAME_C_OrderLine_ID
 			+ " WHERE true "
@@ -90,8 +95,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			+ "   AND ol.M_Product_ID=? ";
 
 	private static final String SQL_RECOMPUTE_ALL =               //
-			"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description) "
-					+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID + ", 'invalidate all'"
+			"INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+					+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID + ", 'invalidate all', " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
 					+ " FROM " + I_M_ShipmentSchedule.Table_Name
 					+ " WHERE IsActive='Y' AND " + I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID + "=?"
 					+ "   AND " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'";
@@ -113,13 +118,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	@Override
 	public void invalidateForProduct(@NonNull final ProductId productId)
 	{
+		final String chunkUUID = UUID.randomUUID().toString();
 		final String description = truncInvalidateDescription("" + productId);
-		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, productId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} entries for productId={} ", count, productId);
 
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+			enqueueShipmentScheduleRecompute(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, chunkUUID);
 		}
 	}
 
@@ -128,13 +134,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		final int clientId = Env.getAD_Client_ID(ctx);
+		final String chunkUUID = UUID.randomUUID().toString();
 
-		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_ALL, new Object[] { clientId }, trxName);
+		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
 		logger.debug("Invalidated {} entries for AD_Client_ID={}", count, clientId);
 
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(ctx, trxName);
+			enqueueShipmentScheduleRecompute(ctx, trxName, chunkUUID);
 		}
 	}
 
@@ -173,10 +180,13 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			return;
 		}
 
+		final String chunkUUID = UUID.randomUUID().toString();
 		final List<Object> sqlParams = new ArrayList<>();
-		sqlParams.addAll(headerAggregationKeysParams);
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description) "
-				+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID + ", ?"
+		sqlParams.add(description);
+		sqlParams.add(chunkUUID);
+
+		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+				+ " SELECT " + COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + ", ? "
 				+ " FROM " + I_M_ShipmentSchedule.Table_Name
 				+ " WHERE "
 				// Only those which have our header aggregation keys
@@ -186,7 +196,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				// Only those which were not already added
 				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
 				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
-		sqlParams.add(description);
+		sqlParams.addAll(headerAggregationKeysParams);
 		sqlParams.add(false); // Processed=false
 
 		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
@@ -194,7 +204,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+			enqueueShipmentScheduleRecompute(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, chunkUUID);
 		}
 	}
 
@@ -207,13 +217,15 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		}
 
 		final String description = truncInvalidateDescription("" + shipmentScheduleIds.size() + " shipment schedules: " + shipmentScheduleIds);
+		final String chunkUUID = UUID.randomUUID().toString();
 
 		final List<Object> sqlParams = new ArrayList<>();
 		sqlParams.add(description);
+		sqlParams.add(chunkUUID);
 		final String sqlInWhereClause = DB.buildSqlList(shipmentScheduleIds, sqlParams); // creates the string and fills the sqlParams list
 
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description) "
-				+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?"
+		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+				+ " SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
 				+ " FROM " + I_M_ShipmentSchedule.Table_Name
 				+ " WHERE "
 				// Only our shipment schedule Ids
@@ -227,7 +239,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+			enqueueShipmentScheduleRecompute(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, chunkUUID);
 		}
 	}
 
@@ -235,19 +247,20 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	public void invalidateSchedulesForSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final String description = truncInvalidateDescription("from T_Selection: " + pinstanceId);
+		final String chunkUUID = UUID.randomUUID().toString();
 
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description) "
-				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?"
+		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, C_Async_Batch_ID, ChunkUUID) "
+				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
 				+ "\n FROM " + I_M_ShipmentSchedule.Table_Name
 				+ "\n WHERE " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'"
 				+ "\n AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = ? AND s.T_Selection_ID = M_ShipmentSchedule_ID)";
 
-		final int count = DB.executeUpdateEx(sql, new Object[] { description, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateEx(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, pinstanceId);
 		//
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+			enqueueShipmentScheduleRecompute(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, chunkUUID);
 		}
 	}
 
@@ -269,6 +282,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final String description = truncInvalidateDescription("" + storageSegments.size() + " storage segments: " + storageSegments);
 		sqlParams.add(description);
 		sqlParams.add(addToSelectionId);
+
+		final String chunkUUID = UUID.randomUUID().toString();
+		sqlParams.add(chunkUUID);
 
 		// Not Processed
 		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
@@ -302,14 +318,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// Not already exists
 		sqlWhereClause.append("\n AND ");
 		sqlWhereClause.append(" NOT EXISTS (select 1 from M_ShipmentSchedule_Recompute e "
-				+ " where "
-				+ " e.AD_PInstance_ID is NULL"
-				+ " and e.M_ShipmentSchedule_ID=" + ssAlias + "" + COLUMNNAME_M_ShipmentSchedule_ID + ")");
+									  + " where "
+									  + " e.AD_PInstance_ID is NULL"
+									  + " and e.M_ShipmentSchedule_ID=" + ssAlias + "" + COLUMNNAME_M_ShipmentSchedule_ID + ")");
 
 		//
 		// Build INSERT SQL
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, AD_PInstance_ID) "
-				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, ?"
+		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, AD_PInstance_ID, C_Async_Batch_ID, ChunkUUID) "
+				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, ?, " + I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID + " , ?"
 				+ " FROM " + I_M_ShipmentSchedule.Table_Name
 				+ " WHERE "
 				+ "\n" + sqlWhereClause;
@@ -323,14 +339,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		if (count > 0)
 		{
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(Env.getCtx(), trxName);
+			enqueueShipmentScheduleRecompute(Env.getCtx(), trxName, chunkUUID);
 		}
 	}
 
 	/**
 	 * Build {@link I_M_ShipmentSchedule} where clause based on given segment.
 	 *
-	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias with trailing dot
+	 * @param ssAlias   {@link I_M_ShipmentSchedule#Table_Name}'s alias with trailing dot
 	 * @param segment
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
@@ -393,10 +409,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append(" EXISTS (select 1 from " + I_M_Locator.Table_Name + " loc"
-					+ " WHERE"
-					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
-					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
-					+ ")");
+									   + " WHERE"
+									   + "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
+									   + " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
+									   + ")");
 		}
 
 		//
@@ -408,9 +424,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			whereClause.append("\n\t AND (");
 			whereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID + " IS NULL");
 			whereClause.append(" OR EXISTS (SELECT 1 FROM " + I_M_AttributeInstance.Table_Name + " ai "
-					+ " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
-					+ " AND (" + attributeSegmentsWhereClause + ")"
-					+ ")");
+									   + " WHERE ai." + I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID
+									   + " AND (" + attributeSegmentsWhereClause + ")"
+									   + ")");
 			whereClause.append(")");
 		}
 
@@ -427,7 +443,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	/**
 	 * Build SQL where clause for given storage attribute segments.
-	 *
+	 * <p>
 	 * We assume following table aliases
 	 * <ul>
 	 * <li>ai - alias for {@link I_M_AttributeInstance#Table_Name}
@@ -472,7 +488,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return attributeSegmentsWhereClause.toString();
 	}
 
-	/** convert the given {@code attributeSegments} to a set of segments that are attributeId-only and where the attributeIds are all storage-relevant. */
+	/**
+	 * convert the given {@code attributeSegments} to a set of segments that are attributeId-only and where the attributeIds are all storage-relevant.
+	 */
 	private final Set<ShipmentScheduleAttributeSegment> explodeToAttributeOnlySegments(
 			@NonNull final Set<ShipmentScheduleAttributeSegment> attributeSegments)
 	{
@@ -506,14 +524,14 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	/**
 	 * Build SQL where clause for given storage attribute segment.
-	 *
+	 * <p>
 	 * We assume following table aliases
 	 * <ul>
 	 * <li>ai - alias for {@link I_M_AttributeInstance#Table_Name}
 	 * </ul>
 	 *
-	 * @param attributeSegment
-	 * @param sqlParams
+	 * @param attributeId - AttributeId
+	 * @param sqlParams   - List<Object>
 	 * @return where clause or <code>null</code>
 	 */
 	private String buildSingleAttributeInstanceWhereClause(@Nullable final AttributeId attributeId, @NonNull final List<Object> sqlParams)
@@ -539,7 +557,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
 		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
 				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
-				"FROM (" +
+				" FROM (" +
 				"	SELECT s.M_ShipmentSchedule_ID " +
 				"	FROM M_ShipmentSchedule s " +
 				// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
@@ -548,7 +566,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				") data " +
 				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
 				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
-		;
+				;
 		final int countTagged = DB.executeUpdateEx(sqlUpdate, ITrx.TRXNAME_None);
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
@@ -608,34 +626,62 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final List<Object> sqlParams = ImmutableList.of(pinstanceId);
 		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
-	
+
 	@Override
 	public final void invalidateShipmentSchedulesFor(@NonNull final IQuery<I_M_ShipmentSchedule> shipmentScheduleQuery)
 	{
+		final String chunkUUID = UUID.randomUUID().toString();
 		final int count = shipmentScheduleQuery.insertDirectlyInto(I_M_ShipmentSchedule_Recompute.class)
-				.mapColumn(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, 
-						I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
-				
+				.mapColumn(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.mapColumn(I_M_ShipmentSchedule_Recompute.COLUMNNAME_C_Async_Batch_ID, I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID)
+				.mapColumnToConstant(I_M_ShipmentSchedule_Recompute.COLUMNNAME_ChunkUUID, chunkUUID)
+
 				.execute()
 				.getRowsInserted();
 
 		logger.debug("Invalidated {} shipment schedules for {}", new Object[] { count, shipmentScheduleQuery });
 
-		
 		if (count > 0)
 		{
 			invalidateCacheForAllShipmentSchedules();
-			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+			enqueueShipmentScheduleRecompute(Env.getCtx(), ITrx.TRXNAME_ThreadInherited, chunkUUID);
 		}
 	}
-	
+
 	private void invalidateCacheForAllShipmentSchedules()
 	{
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
-		modelCacheInvalidationService.invalidate(multiRequest,  ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
-	
 
+	/**
+	 * Enqueue one workpackage per each async batch id that was flagged for recomputing in the chunk identified by the {@code chunkUUID} param.
+	 *
+	 * dev-note: we need this one workpackage per async batch separation to be sure that any enqueued workpackage within the same certain async batch
+	 * will also wait for the {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor} to finish work.
+	 */
+	private void enqueueShipmentScheduleRecompute(
+			@NonNull final Properties context,
+			@Nullable final String trxName,
+			@NonNull final String chunkUUID)
+	{
+		final List<Integer> asyncBatchIds = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_ChunkUUID, chunkUUID)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule_Recompute.COLUMNNAME_C_Async_Batch_ID, Integer.class);
+
+		final ShipmentSchedulesUpdateSchedulerRequest.ShipmentSchedulesUpdateSchedulerRequestBuilder requestBuilder = ShipmentSchedulesUpdateSchedulerRequest.builder()
+				.ctx(context)
+				.trxName(trxName);
+
+		for (final Integer asyncBatchIdInt : asyncBatchIds)
+		{
+			final AsyncBatchId asyncBatchId = asyncBatchIdInt != null ? AsyncBatchId.ofRepoIdOrNull(asyncBatchIdInt) : null;
+
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule(requestBuilder.asyncBatchId(asyncBatchId).build());
+		}
+	}
 }

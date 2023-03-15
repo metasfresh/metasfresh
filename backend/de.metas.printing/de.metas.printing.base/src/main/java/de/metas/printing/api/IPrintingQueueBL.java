@@ -45,7 +45,7 @@ public interface IPrintingQueueBL extends ISingletonService
 	 */
 	I_C_Printing_Queue enqueue(I_AD_Archive printOut);
 
-	void printArchive(PrintArchiveParameters printArchiveParameters);
+	void printArchive(@NonNull PrintArchiveParameters printArchiveParameters);
 
 	void registerHandler(IPrintingQueueHandler handler);
 
@@ -110,4 +110,6 @@ public interface IPrintingQueueBL extends ISingletonService
 	void setPrintoutForOtherUsers(I_C_Printing_Queue item, Set<Integer> userToPrintIds);
 
 	PrinterRoutingsQuery createPrinterRoutingsQueryForItem(I_C_Printing_Queue item);
+
+	void setProcessedAndSave(@NonNull I_C_Printing_Queue item);
 }

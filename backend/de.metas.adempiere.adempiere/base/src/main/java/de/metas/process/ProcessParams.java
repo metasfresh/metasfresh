@@ -22,8 +22,20 @@ package de.metas.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.ImmutableReference;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -43,6 +55,8 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /**
  * {@link IParams} implementation for {@link ProcessInfoParameter}.
  *
@@ -52,21 +66,26 @@ import lombok.ToString;
 @ToString
 public class ProcessParams implements IRangeAwareParams
 {
-	public static final ProcessParams of(final ProcessInfoParameter parameter)
+	public static ProcessParams of(final ProcessInfoParameter parameter)
 	{
 		return new ProcessParams(ImmutableList.of(parameter));
 	}
 
-	public static final ProcessParams of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
+	public static ProcessParams of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
 	{
 		final ProcessInfoParameter parameter = ProcessInfoParameter.of(parameterName, parameterValue, parameterValueTo);
 		return new ProcessParams(ImmutableList.of(parameter));
 	}
 
-	public static final ProcessParams ofValueObject(final String parameterName, final Object parameterValue)
+	public static ProcessParams ofValueObject(final String parameterName, final Object parameterValue)
 	{
 		final ProcessInfoParameter parameter = ProcessInfoParameter.ofValueObject(parameterName, parameterValue);
 		return new ProcessParams(ImmutableList.of(parameter));
+	}
+
+	public static ProcessParams of(final List<ProcessInfoParameter> parameters)
+	{
+		return new ProcessParams(parameters);
 	}
 
 	private final IReference<List<ProcessInfoParameter>> _parametersLoader;
@@ -80,14 +99,14 @@ public class ProcessParams implements IRangeAwareParams
 	/**
 	 * Lazy loading constructor
 	 *
-	 * @param parametersLoader loader which will provide the paramaters. It will be called ONLY when needed
+	 * @param parametersLoader loader which will provide the parameters. It will be called ONLY when needed
 	 */
 	public ProcessParams(@NonNull final IReference<List<ProcessInfoParameter>> parametersLoader)
 	{
 		_parametersLoader = parametersLoader;
 	}
 
-	private final Map<String, ProcessInfoParameter> getParametersMap()
+	private Map<String, ProcessInfoParameter> getParametersMap()
 	{
 		Map<String, ProcessInfoParameter> parameterName2parameter = _parameterName2parameter;
 		if (parameterName2parameter == null)
@@ -98,7 +117,7 @@ public class ProcessParams implements IRangeAwareParams
 		return parameterName2parameter;
 	}
 
-	private final ProcessInfoParameter getProcessInfoParameterOrNull(final String parameterName)
+	private ProcessInfoParameter getProcessInfoParameterOrNull(final String parameterName)
 	{
 		return getParametersMap().get(parameterName);
 	}
@@ -163,7 +182,7 @@ public class ProcessParams implements IRangeAwareParams
 		}
 		return processInfoParameter.getParameterAsInt(defaultValue);
 	}
-	
+		
 	@Override
 	public <T extends RepoIdAware> T getParameterAsId(final String parameterName, final Class<T> type)
 	{
@@ -211,12 +230,16 @@ public class ProcessParams implements IRangeAwareParams
 	@Override
 	public final boolean getParameterAsBool(final String parameterName)
 	{
+		//noinspection ConstantConditions
+		return getParameterAsBoolean(parameterName, false);
+	}
+
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		if (processInfoParameter == null)
-		{
-			return false;
-		}
-		return processInfoParameter.getParameterAsBoolean();
+		return processInfoParameter != null ? processInfoParameter.getParameterAsBoolean(defaultValue) : defaultValue;
 	}
 
 	@Override
@@ -251,6 +274,13 @@ public class ProcessParams implements IRangeAwareParams
 		return processInfoParameter != null ? processInfoParameter.getParameterAsZonedDateTime() : null;
 	}
 
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
+	}
+	
 	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{

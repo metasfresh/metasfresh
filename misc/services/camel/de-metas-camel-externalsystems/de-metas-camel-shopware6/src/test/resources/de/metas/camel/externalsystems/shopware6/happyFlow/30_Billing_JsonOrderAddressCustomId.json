@@ -1,13 +1,22 @@
 {
-  "countryId": "countryId",
-  "firstName": "firstName",
-  "lastName": "lastName",
-  "street": "billingAddressStreet",
-  "zipcode": "0000123",
-  "city": "Billing City",
-  "phoneNumber": "phoneNumber",
-  "additionalAddressLine1": "additionalAddressLine1",
-  "additionalAddressLine2": "additionalAddressLine2",
-  "orderId": "orderId",
-  "id": "billingAddressId"
+  "data": {
+    "countryId": "countryId",
+    "firstName": "firstName",
+    "lastName": "lastName",
+    "street": "billingAddressStreet",
+    "zipcode": "0000123",
+    "city": "Billing City",
+    "phoneNumber": "phoneNumber",
+    "additionalAddressLine1": "additionalAddressLine1",
+    "additionalAddressLine2": "additionalAddressLine2",
+    "orderId": "orderId",
+    "company": "billingCompany",
+    "department": "billingDepartment",
+    "title": null,
+    "salutationId": "billingSalutationId",
+    "id": "billingAddressId",
+    "customFields": {
+      "deliveryNotificationEmailAddress": "billingEmailAddress@example.com"
+    }
+  }
 }

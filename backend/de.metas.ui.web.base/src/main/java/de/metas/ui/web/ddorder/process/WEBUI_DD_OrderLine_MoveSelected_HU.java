@@ -25,7 +25,7 @@ package de.metas.ui.web.ddorder.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -40,18 +40,19 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
-import org.eevolution.api.DDOrderLineId;
-import org.eevolution.api.IDDOrderDAO;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_OrderLine;
 
 public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IViewsRepository viewsRepository = SpringContextHolder.instance.getBean(IViewsRepository.class);
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String PARAM_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@Param(parameterName = PARAM_M_HU_ID, mandatory = true)
@@ -91,20 +92,18 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-
-		final I_DD_OrderLine selectedDDOrderLine = ddOrderDAO.getLineById(DDOrderLineId.ofRepoId(ddOrderLineId));
+		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoId(this.ddOrderLineId);
 
 		final I_M_HU huToMove = huDAO.getById(HuId.ofRepoId(mHuID));
 
-		huDDOrderBL.createMovements()
-				.setDDOrderLines(ImmutableList.of(selectedDDOrderLine))
-				.setLocatorToIdOverride(paramLocatorToId)
-				.setDoDirectMovements(true)
-				.setFailIfCannotAllocate(true)
-				.allocateHU(huToMove)
-				.processWithinOwnTrx();
+		ddOrderService.prepareAllocateFullHUsAndMove()
+				.toDDOrderLineId(ddOrderLineId)
+				.failIfCannotAllocate()
+				.allocateHUAndPrepareGeneratingMovements(huToMove)
+				.locatorToIdOverride(paramLocatorToId > 0 ? warehouseBL.getLocatorIdByRepoId(paramLocatorToId) : null)
+				.generateDirectMovements();
 
 		return MSG_OK;
 	}
@@ -133,7 +132,7 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final I_DD_OrderLine ddOrderLine = getSelectedDDOrderLine();
+		final I_DD_OrderLine ddOrderLine = getViewSelectedDDOrderLine();
 
 		final String parameterName = parameter.getColumnName();
 		if (PARAM_M_HU_ID.equals(parameterName))
@@ -154,7 +153,14 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 		}
 	}
 
-	private I_DD_OrderLine getSelectedDDOrderLine()
+	private I_DD_OrderLine getViewSelectedDDOrderLine()
+	{
+		final DDOrderLineId ddOrderLineId = getViewSelectedDDOrderLineId();
+		return ddOrderService.getLineById(ddOrderLineId);
+	}
+
+	@NonNull
+	private DDOrderLineId getViewSelectedDDOrderLineId()
 	{
 		final ViewId parentViewId = getView().getParentViewId();
 		final DocumentIdsSelection selectedParentRow = DocumentIdsSelection.of(ImmutableList.of(getView().getParentRowId()));
@@ -165,6 +171,6 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 				.orElseThrow(() -> new AdempiereException("No DD_OrderLine was selected!"))
 				.getFieldValueAsInt(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, -1);
 
-		return ddOrderDAO.getLineById(DDOrderLineId.ofRepoId(selectedOrderLineId));
+		return DDOrderLineId.ofRepoId(selectedOrderLineId);
 	}
 }

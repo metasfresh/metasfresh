@@ -36,6 +36,7 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.X_AD_UI_Element;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -638,10 +639,27 @@ public class ADWindowDAO implements IADWindowDAO
 
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
-			final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
-			copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
+			if(isValidSourceUIElement(sourceUIElement))
+			{
+				final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
+				copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
+			}
+		}
+	}
+
+	private boolean isValidSourceUIElement(final I_AD_UI_Element sourceUIElements)
+	{
+		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
+		{
+			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
+		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		{
+			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
+		}
+
+		return true;
 	}
 
 	private void copyUIElement(

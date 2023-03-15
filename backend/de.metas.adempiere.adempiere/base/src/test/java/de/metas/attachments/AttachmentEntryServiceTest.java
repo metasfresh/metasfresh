@@ -5,11 +5,13 @@ import de.metas.adempiere.model.I_M_Product;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
+import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -48,6 +50,7 @@ public class AttachmentEntryServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10); // will be in the attachment-entry's CreatedUpdatedInfo
 
 		bpartnerRecord = newInstance(I_C_BPartner.class);
 		saveRecord(bpartnerRecord);
@@ -70,9 +73,9 @@ public class AttachmentEntryServiceTest
 		// assert that bpartnerRecord's attachments are unchanged
 		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
-		// we need to compare them without linked records because productRecordEntries.get(0) now also has the product
-		assertThat(bpartnerRecordEntries.get(0).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
-		assertThat(bpartnerRecordEntries.get(1)).isEqualTo(bpartnerAttachmentEntry2);
+		// we need to compare them without linked records because productRecordEntries.get(1) now also has the product; also note that the younger entry is first in the list
+		assertThat(bpartnerRecordEntries.get(1).withoutLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.withoutLinkedRecords());
+		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry2);
 
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 		assertThat(productRecordEntries).hasSize(1);
@@ -126,7 +129,7 @@ public class AttachmentEntryServiceTest
 	{
 		final AttachmentEntryCreateRequest requestWithTags = AttachmentEntryCreateRequest
 				.builderFromByteArray(
-						"bPartnerAttachment_eith_tags",
+						"bPartnerAttachment_with_tags",
 						"bPartnerAttachment_with_tags.data".getBytes())
 				.tags(AttachmentTags.builder()
 						.tag("tag1Name", "tag1Value")
@@ -202,5 +205,32 @@ public class AttachmentEntryServiceTest
 
 		assertThat(result.getLinkedRecords()).doesNotContain(tableRecordReferenceToRemove);
 		assertThat(result.getLinkedRecords()).contains(tableRecordReferenceToAdd);
+	}
+
+	@Test
+	public void streamEmailAttachments_test()
+	{
+		// given
+		final AttachmentEntry attachment = createNewAttachment_with_tags_performTest().toBuilder()
+				.tags(AttachmentTags.builder()
+							  .tag(TAGNAME_SEND_VIA_EMAIL, "tag3Value")
+							  .build())
+				.build();
+
+		attachmentEntryService.save(attachment);
+		final List<AttachmentEntry> attachmentsForRecordRef = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
+		assertThat(attachmentsForRecordRef.size()).isEqualTo(3);
+
+		// when
+		final List<EmailAttachment> filteredAttachments = attachmentEntryService.streamEmailAttachments(TableRecordReference.of(bpartnerRecord), TAGNAME_SEND_VIA_EMAIL)
+				.collect(ImmutableList.toImmutableList());
+
+		// then
+		assertThat(filteredAttachments).isNotEmpty();
+		assertThat(filteredAttachments.size()).isEqualTo(1);
+
+		final EmailAttachment attachmentEntry = filteredAttachments.get(0);
+		assertThat(attachmentEntry.getFilename()).isEqualTo("bPartnerAttachment_with_tags");
+		assertThat(attachmentEntry.getAttachmentDataSupplier().get()).isEqualTo("bPartnerAttachment_with_tags.data".getBytes());
 	}
 }

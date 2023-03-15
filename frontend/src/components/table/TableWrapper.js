@@ -3,7 +3,6 @@ import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
-
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -210,13 +209,15 @@ class TableWrapper extends PureComponent {
       parentView,
       deselectTableRows,
     } = this.props;
+
     const parentNode = event.target.parentNode;
     const closeIncluded =
       // is modal
       limitOnClickOutside
         ? // user is clicking within the document list component
-          parentNode.className.includes('document-list-wrapper') ||
-          event.target.className.includes('document-list-wrapper')
+          (parentNode.className.includes('document-list-wrapper') ||
+            event.target.className.includes('document-list-wrapper')) &&
+          !event.target.className.includes('document-list-is-included')
         : true;
 
     if (
@@ -319,7 +320,8 @@ class TableWrapper extends PureComponent {
       tabIndex,
       isModal,
       queryLimitHit,
-      supportQuickInput,
+      quickInputSupport,
+      newRecordInputMode,
       tabInfo,
       allowShortcut,
       disablePaginationShortcuts,
@@ -334,6 +336,7 @@ class TableWrapper extends PureComponent {
       onHandleAdvancedEdit,
       onOpenTableModal,
       supportOpenRecord,
+      pending,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
@@ -394,7 +397,9 @@ class TableWrapper extends PureComponent {
                 docId,
                 tabIndex,
                 isBatchEntry,
-                supportQuickInput,
+                quickInputSupport,
+                newRecordInputMode,
+                pending,
               }}
               docType={windowId}
               tabId={tabId}
@@ -413,7 +418,6 @@ class TableWrapper extends PureComponent {
             rowRefs={this.rowRefs}
             ref={this.setTableRef}
           />
-
           {
             // Other 'table-flex-wrapped' components
             // like selection attributes

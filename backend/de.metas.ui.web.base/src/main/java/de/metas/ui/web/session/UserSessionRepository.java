@@ -17,8 +17,8 @@ import com.google.common.base.Strings;
 
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;

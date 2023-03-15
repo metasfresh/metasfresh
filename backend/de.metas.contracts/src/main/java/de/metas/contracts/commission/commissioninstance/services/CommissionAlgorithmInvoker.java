@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
@@ -13,6 +14,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -39,6 +43,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class CommissionAlgorithmInvoker
 {
+	@NonNull
+	private final Map<CommissionType,CommissionAlgorithmFactory> commissionType2AlgorithmFactory;
+
+	public CommissionAlgorithmInvoker(@NonNull final List<CommissionAlgorithmFactory> commissionAlgorithmFactories)
+	{
+		this.commissionType2AlgorithmFactory = Maps.uniqueIndex(commissionAlgorithmFactories, CommissionAlgorithmFactory::getSupportedCommissionType);
+	}
+
 	@NonNull
 	public ImmutableList<CommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
 	{
@@ -97,6 +109,13 @@ public class CommissionAlgorithmInvoker
 	@NonNull
 	private CommissionAlgorithm createAlgorithmInstance(@NonNull final CommissionType commissionType)
 	{
+		final CommissionAlgorithmFactory commissionAlgorithmFactory = commissionType2AlgorithmFactory.get(commissionType);
+
+		if (commissionAlgorithmFactory != null)
+		{
+			return commissionAlgorithmFactory.instantiateAlgorithm();
+		}
+
 		final Class<? extends CommissionAlgorithm> algorithmClass = commissionType.getAlgorithmClass();
 		final CommissionAlgorithm algorithm;
 		try

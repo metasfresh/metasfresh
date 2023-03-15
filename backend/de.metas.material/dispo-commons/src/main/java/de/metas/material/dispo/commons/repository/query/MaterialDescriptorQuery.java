@@ -91,6 +91,27 @@ public class MaterialDescriptorQuery
 				.build();
 	}
 
+	@NonNull
+	public static MaterialDescriptorQuery forDescriptor(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final CustomerIdOperator customerIdOperator,
+			@Nullable final DateAndSeqNo timeRangeStart,
+			@Nullable final DateAndSeqNo timeRangeEnd)
+	{
+		Check.errorIf(timeRangeStart == null && timeRangeEnd == null, "At least one of timeRangeStart or timeRangeEnd need to be not-null");
+
+		return MaterialDescriptorQuery
+				.builder()
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.productId(materialDescriptor.getProductId())
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.customer(BPartnerClassifier.specificOrAny(materialDescriptor.getCustomerId()))
+				.customerIdOperator(customerIdOperator)
+				.timeRangeStart(timeRangeStart)
+				.timeRangeEnd(timeRangeEnd)
+				.build();
+	}
+
 	WarehouseId warehouseId;
 	int productId;
 	AttributesKey storageAttributesKey;

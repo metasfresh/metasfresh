@@ -33,6 +33,17 @@
     },
     "receiptData" : null
   },
+  "pickedData" : {
+    "productId" : 300000,
+    "qtyPicked" : {
+      "qty" : "0",
+      "uomId" : 100000
+    },
+    "qtyPickedInUOM" : {
+      "qty" : "0",
+      "uomId" : 110000
+    }
+  },
   "invoicedData" : {
     "qtys" : {
       "productId" : 300000,

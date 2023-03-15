@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_Qty, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1652003501L;
+	private static final long serialVersionUID = 1616741663L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (final Properties ctx, final int PP_Order_Qty_ID, @Nullable final String trxName)
@@ -225,6 +225,33 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	public int getPP_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_PP_Order_IssueSchedule getPP_Order_IssueSchedule()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_IssueSchedule_ID, de.metas.handlingunits.model.I_PP_Order_IssueSchedule.class);
+	}
+
+	@Override
+	public void setPP_Order_IssueSchedule(final de.metas.handlingunits.model.I_PP_Order_IssueSchedule PP_Order_IssueSchedule)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_IssueSchedule_ID, de.metas.handlingunits.model.I_PP_Order_IssueSchedule.class, PP_Order_IssueSchedule);
+	}
+
+	@Override
+	public void setPP_Order_IssueSchedule_ID (final int PP_Order_IssueSchedule_ID)
+	{
+		if (PP_Order_IssueSchedule_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_IssueSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_IssueSchedule_ID, PP_Order_IssueSchedule_ID);
+	}
+
+	@Override
+	public int getPP_Order_IssueSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_IssueSchedule_ID);
 	}
 
 	@Override
