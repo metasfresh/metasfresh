@@ -5,34 +5,7 @@ const MAX_maximumFractionDigits = 20; // ... to avoid "maximumFractionDigits val
 export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance = null }) => {
   //console.log('formatQtyToHumanReadable', { qty, uom, precision, tolerancePercent });
 
-  let qtyEffective = qty ?? 0;
-  let uomEffective = uom;
-
-  while (qtyEffective !== 0 && Math.abs(qtyEffective) < 1) {
-    if (uomEffective === 'kg') {
-      qtyEffective *= 1000;
-      uomEffective = 'g';
-    } else if (uomEffective === 'g') {
-      qtyEffective *= 1000;
-      uomEffective = 'mg';
-    } else {
-      break;
-    }
-  }
-
-  const formatOptions = {
-    useGrouping: false,
-  };
-
-  const maximumFractionDigits = Math.min(
-    precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
-    MAX_maximumFractionDigits
-  );
-  if (maximumFractionDigits < MAX_maximumFractionDigits) {
-    formatOptions.minimumFractionDigits = 0;
-    formatOptions.maximumFractionDigits = maximumFractionDigits;
-  }
-  const qtyEffectiveStr = qtyEffective.toLocaleString(getLanguage(), formatOptions);
+  const { qtyEffectiveStr, uomEffective } = computeEffectiveValues({ qty, uom, precision });
 
   let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
 
@@ -73,4 +46,41 @@ const getDefaultDisplayPrecision = (uom, defaultPrecision = 4) => {
   } else {
     return defaultPrecision;
   }
+};
+
+export const computeEffectiveValues = ({ qty, uom, precision = null }) => {
+  let qtyEffective = qty ?? 0;
+  let uomEffective = uom;
+
+  while (qtyEffective !== 0 && Math.abs(qtyEffective) < 1) {
+    if (uomEffective === 'kg') {
+      qtyEffective *= 1000;
+      uomEffective = 'g';
+    } else if (uomEffective === 'g') {
+      qtyEffective *= 1000;
+      uomEffective = 'mg';
+    } else {
+      break;
+    }
+  }
+
+  const formatOptions = {
+    useGrouping: false,
+  };
+
+  const maximumFractionDigits = Math.min(
+    precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
+    MAX_maximumFractionDigits
+  );
+  if (maximumFractionDigits < MAX_maximumFractionDigits) {
+    formatOptions.minimumFractionDigits = 0;
+    formatOptions.maximumFractionDigits = maximumFractionDigits;
+  }
+  const qtyEffectiveStr = qtyEffective.toLocaleString(getLanguage(), formatOptions);
+
+  return {
+    qtyEffectiveStr,
+    qtyEffective,
+    uomEffective,
+  };
 };
