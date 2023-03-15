@@ -52,7 +52,7 @@ const translations = {
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
-      qtyAboveMax: '%(qtyDiff)s above max value: %(qtyMaxValue)s',
+      qtyAboveMax: '%(qtyDiff)s above max',
       notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',
       confirmDone: 'Done',
       rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',

@@ -130,23 +130,18 @@ const ScanHUAndGetQtyComponent = ({
     }
 
     // Qty shall be less than or equal to qtyMax
-    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0 && qtyEntered > resolvedBarcodeData.qtyMax) {
-      const { qtyEffectiveStr, qtyEffective, uomEffective } = computeEffectiveValues({
+    const { qtyEffective: diff, uomEffective: diffUom } =
+      resolvedBarcodeData.qtyMax &&
+      resolvedBarcodeData.qtyMax > 0 &&
+      computeEffectiveValues({
         qty: qtyEntered - resolvedBarcodeData.qtyMax,
         uom,
       });
 
-      // dev-note: we don't want to show errors in UI for differences showing 0 diff values
-      if (qtyEffectiveStr.localeCompare('0') === 0) {
-        return;
-      }
+    if (diff > 0) {
+      const qtyDiff = formatQtyToHumanReadable({ qty: diff, uom: diffUom });
 
-      const qtyDiff = formatQtyToHumanReadable({ qty: qtyEffective, uom: uomEffective });
-
-      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
-        qtyDiff: qtyDiff,
-        qtyMaxValue: `${resolvedBarcodeData.qtyMax} ${uom}`,
-      });
+      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
     }
 
     // OK

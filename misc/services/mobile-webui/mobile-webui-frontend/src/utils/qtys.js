@@ -72,6 +72,9 @@ export const computeEffectiveValues = ({ qty, uom, precision = null }) => {
     precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
     MAX_maximumFractionDigits
   );
+
+  qtyEffective = parseFloat(qtyEffective.toFixed(maximumFractionDigits));
+
   if (maximumFractionDigits < MAX_maximumFractionDigits) {
     formatOptions.minimumFractionDigits = 0;
     formatOptions.maximumFractionDigits = maximumFractionDigits;
