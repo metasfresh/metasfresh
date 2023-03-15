@@ -1,5 +1,30 @@
+/*
+ * #%L
+ * de.metas.manufacturing
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive(numeric,
-                                                 varchar)
+                                                 character varying)
+;
+
+DROP FUNCTION IF EXISTS PP_Product_BOM_Recursive_Report(numeric)
 ;
 
 CREATE OR REPLACE FUNCTION pp_product_bom_recursive(p_pp_product_bom_id numeric,
@@ -118,4 +143,34 @@ $$
 ;
 
 ALTER FUNCTION pp_product_bom_recursive(numeric, varchar) OWNER TO metasfresh
+;
+
+CREATE OR REPLACE FUNCTION pp_product_bom_recursive_report(p_pp_product_bom_id numeric)
+    RETURNS TABLE
+            (
+                line         text,
+                productvalue character varying,
+                productname  character varying,
+                qtybom       numeric,
+                percentage   numeric,
+                uomsymbol    character varying,
+                supplier     text
+            )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT t.Line,
+       t.ProductValue,
+       t.ProductName,
+       t.QtyBOM,
+       t.Percentage,
+       t.UOMSymbol,
+       t.Supplier
+FROM PP_Product_BOM_Recursive(PP_Product_BOM_Recursive_Report.p_PP_Product_BOM_ID, NULL) t
+ORDER BY t.path
+$$
+;
+
+ALTER FUNCTION pp_product_bom_recursive_report(numeric) OWNER TO metasfresh
 ;
