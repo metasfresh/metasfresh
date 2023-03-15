@@ -87,7 +87,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -108,7 +107,7 @@ class WorkpackageProcessorTask implements Runnable
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
-	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
+	private static final Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
@@ -183,10 +182,10 @@ class WorkpackageProcessorTask implements Runnable
 
 		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
 
-		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
-				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable);
-				final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage);
-				final MDCCloseable queueProcessorMDC = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
+		try (final IAutoCloseable ignored = Env.switchContext(processingCtx);
+			 final IAutoCloseable ignored1 = Loggables.temporarySetLoggable(loggable);
+			 final MDCCloseable ignored2 = TableRecordMDC.putTableRecordReference(workPackage);
+			 final MDCCloseable ignored3 = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 
@@ -566,7 +565,15 @@ class WorkpackageProcessorTask implements Runnable
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId;
+		if(ex instanceof WorkpackageSkipRequestException)
+		{ // don't clutter the database with AD_Issue records for this type of exception
+			issueId = null;	
+		}
+		else 
+		{ // ordinary issue => create AD_Issue record
+			issueId = Services.get(IErrorManager.class).createIssue(ex);
+		}
 
 		//
 		// Allow retry processing this workpackage?
@@ -585,7 +592,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
 
 		setLastEndTime(workPackage); // update statistics
 
