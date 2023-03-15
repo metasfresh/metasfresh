@@ -1,3 +1,68 @@
+
+
+-- BACKUP
+
+CREATE TABLE backup.BKP_c_queue_block_15023023 AS
+SELECT *
+FROM c_queue_block
+;
+
+CREATE TABLE backup.BKP_c_queue_workpackage_15032023 AS
+SELECT *
+FROM c_queue_workpackage
+;
+
+CREATE TABLE backup.BKP_dlm_c_queue_workpackage_archived_15032023 AS
+SELECT *
+FROM dlm.c_queue_workpackage_archived
+;
+
+CREATE TABLE backup.BKP_c_queue_element_15032023 AS
+SELECT *
+FROM c_queue_element
+;
+
+
+-- DELETE invalid data
+
+CREATE TEMP TABLE workPackageIDsToDelete AS
+SELECT c_queue_workpackage_ID
+FROM c_queue_workpackage wp
+WHERE EXISTS(SELECT 1
+             FROM c_queue_block b
+             WHERE b.c_queue_block_id = wp.c_queue_block_id
+               AND NOT EXISTS(SELECT 1 FROM c_queue_packageprocessor proc WHERE proc.c_queue_packageprocessor_id = b.c_queue_packageprocessor_id))
+;
+
+
+DELETE
+FROM c_queue_element el
+WHERE EXISTS(SELECT 1 FROM workPackageIDsToDelete wpd WHERE el.c_queue_workpackage_id = wpd.c_queue_workpackage_ID)
+;
+
+DELETE
+FROM c_queue_workpackage wp
+WHERE EXISTS(SELECT 1
+             FROM workPackageIDsToDelete wpd WHERE wp.c_queue_workpackage_id = wpd.c_queue_workpackage_ID)
+;
+
+DELETE
+FROM c_queue_block b
+WHERE NOT EXISTS(SELECT 1 FROM c_queue_packageprocessor WHERE c_queue_packageprocessor_id = b.c_queue_packageprocessor_id)
+;
+
+
+DELETE
+FROM dlm.c_queue_workpackage_archived wp
+WHERE EXISTS(SELECT 1
+             FROM c_queue_block b
+             WHERE b.c_queue_block_id = wp.c_queue_block_id
+               AND NOT EXISTS(SELECT 1 FROM c_queue_packageprocessor proc WHERE proc.c_queue_packageprocessor_id = b.c_queue_packageprocessor_id))
+;
+
+
+-- Actual migration
+38
 update c_queue_workpackage
 set c_queue_packageprocessor_id = block.c_queue_packageprocessor_id, updatedBy=99, updated=TO_TIMESTAMP('2022-02-04 12:16:30', 'YYYY-MM-DD HH24:MI:SS')
 from c_queue_block block
