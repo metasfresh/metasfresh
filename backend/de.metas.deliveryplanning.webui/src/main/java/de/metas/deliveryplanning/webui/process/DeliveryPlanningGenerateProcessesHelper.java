@@ -28,6 +28,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -42,6 +43,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.util.Env;
@@ -68,6 +70,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
 				.shipmentScheduleEffectiveBL(Services.get(IShipmentScheduleEffectiveBL.class))
 				.msgBL(Services.get(IMsgBL.class))
+				.sysConfigBL(Services.get(ISysConfigBL.class))
 				.build();
 	}
 
@@ -79,6 +82,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL;
 	private final IMsgBL msgBL;
+	private final ISysConfigBL sysConfigBL;
 
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningReceiptInfo>> receiptInfos = new HashMap<>();
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfos = new HashMap<>();
@@ -88,6 +92,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 	private final HashMap<OrderAndLineId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfosByPurchaseOrderLineId = new HashMap<>();
 
 	private static final AdMessageKey MSG_ERROR_GOODS_ISSUE_QUANTITY = AdMessageKey.of("GoodsIssueQuantityParameterError");
+	private static final String SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS = "de.metas.deliveryplanning.webui.process.PreventReceiptIfMissingDeliveryInstructions";
 
 	@Builder
 	private DeliveryPlanningGenerateProcessesHelper(
@@ -98,7 +103,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 			@NonNull final LookupDataSource forexContractLookup,
 			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
 			@NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL,
-			@NonNull final IMsgBL msgBL)
+			@NonNull final IMsgBL msgBL,
+			@NonNull final ISysConfigBL sysConfigBL)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
 		this.orderBL = orderBL;
@@ -108,6 +114,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		this.shipmentScheduleBL = shipmentScheduleBL;
 		this.shipmentScheduleEffectiveBL = shipmentScheduleEffectiveBL;
 		this.msgBL = msgBL;
+		this.sysConfigBL = sysConfigBL;
 	}
 
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -279,7 +286,8 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	private ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningReceiptInfo receiptInfo)
 	{
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(receiptInfo.getDeliveryPlanningId());
+		final DeliveryPlanningId deliveryPlanningId = receiptInfo.getDeliveryPlanningId();
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(deliveryPlanningId);
 		if (existsBlockedPartnerDeliveryPlannings)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_M_Delivery_Planning_BlockedPartner));
@@ -294,7 +302,10 @@ final class DeliveryPlanningGenerateProcessesHelper
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
 		}
 
-		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(receiptInfo.getDeliveryPlanningId()))
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), receiptInfo.getOrgId());
+
+		final boolean preventReceiptIfMissingDeliveryInstructions = sysConfigBL.getBooleanValue(SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS, false, clientAndOrgId);
+		if (preventReceiptIfMissingDeliveryInstructions && !deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
 		}
