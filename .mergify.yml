@@ -7,7 +7,7 @@ queue_rules:
 pull_request_rules:
   - name: When a project-PR is integrated, create a PR towards the master-branch
     conditions:
-      - merged
+      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
       - or: &PROJECTBRANCHES # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
         # Please keep in sync with the branches at .testspace.yml
         - base=adorable_badger_uat
@@ -37,7 +37,6 @@ pull_request_rules:
         - base=tenacious_d_uat
         - base=week_end_uat
         - base=yoyo_uat
-
     actions:
       copy:
         branches:
@@ -49,7 +48,7 @@ pull_request_rules:
 
   - name: When a project- or master-PR is integrated, add a label with the name of the branch
     conditions:
-      - merged
+      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
       - or: &BASEBRANCHES # this rule should apply to both the project-branches from above, and master
         - or: *PROJECTBRANCHES
         - or:
