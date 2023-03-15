@@ -9,19 +9,35 @@ pull_request_rules:
     conditions:
       - merged
       - or: &PROJECTBRANCHES # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
+        # Please keep in sync with the branches at .testspace.yml
         - base=adorable_badger_uat
+        - base=ant_pharm_uat
+        - base=anxious_hippos_uat
+        - base=arctic_north_uat
         - base=big_coconut_uat
+        - base=blonde_monkey_uat
+        - base=clone_wars_uat
         - base=hard_encoded_uat 
         - base=holy_cow_uat
+        - base=hostile_tractor_uat
         - base=inner_silence_uat
         - base=intensive_care_uat
+        - base=iron_plant_uat
+        - base=epic_party_uat
         - base=mad_orange_uat
+        - base=magic_oak_uat
         - base=neon_underwear_uat
+        - base=nerdy_frog_uat 
+        - base=pot_hole_uat 
         - base=release
+        - base=scary_plum_uat
+        - base=science_vessel_uat
+        - base=secondary_opinion_uat
         - base=tasty_ham_uat
         - base=tenacious_d_uat
         - base=week_end_uat
         - base=yoyo_uat
+
     actions:
       copy:
         branches:
