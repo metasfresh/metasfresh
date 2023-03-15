@@ -1,6 +1,6 @@
 -- 2023-03-10T15:59:58.007Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582131,0,'Supplier',TO_TIMESTAMP('2023-03-10 17:59:57','YYYY-MM-DD HH24:MI:SS'),100,'Der Lieferant für das Stücklistenelement','D','Indicates the supplier for the BOM element.','Y','Lieferant','Lieferant',TO_TIMESTAMP('2023-03-10 17:59:57','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582131,0,'Supplier',TO_TIMESTAMP('2023-03-10 17:59:57','YYYY-MM-DD HH24:MI:SS'),100,'Lieferant','D','Lieferant','Y','Lieferant','Lieferant',TO_TIMESTAMP('2023-03-10 17:59:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-03-10T15:59:58.017Z
@@ -10,7 +10,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2023-03-10T16:18:30.616Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element_Trl SET Description='The supplier for the BOM element', IsTranslated='Y', Name='Supplier', PrintName='Supplier',Updated=TO_TIMESTAMP('2023-03-10 18:18:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582131 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Description='Supplier', IsTranslated='Y', Name='Supplier', PrintName='Supplier',Updated=TO_TIMESTAMP('2023-03-10 18:18:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582131 AND AD_Language='en_US'
 ;
 
 -- 2023-03-10T16:18:30.640Z
