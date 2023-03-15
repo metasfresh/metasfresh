@@ -213,10 +213,13 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
+<<<<<<< HEAD
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 15                           | 15                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 15                             | 15                         | 0                                  |
 
+=======
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |

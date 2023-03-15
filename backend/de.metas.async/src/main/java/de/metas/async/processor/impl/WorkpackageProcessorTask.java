@@ -198,9 +198,15 @@ class WorkpackageProcessorTask implements Runnable
 		final WorkpackageLoggable loggable = createLoggable(workPackage);
 
 		try (final IAutoCloseable ignored = Env.switchContext(processingCtx);
+<<<<<<< HEAD
 			 final IAutoCloseable ignored1 = Loggables.temporarySetLoggable(loggable);
 			 final MDCCloseable ignored2 = TableRecordMDC.putTableRecordReference(workPackage);
 			 final MDCCloseable ignored3 = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
+=======
+				final IAutoCloseable ignored1 = Loggables.temporarySetLoggable(loggable);
+				final MDCCloseable ignored2 = TableRecordMDC.putTableRecordReference(workPackage);
+				final MDCCloseable ignored3 = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 

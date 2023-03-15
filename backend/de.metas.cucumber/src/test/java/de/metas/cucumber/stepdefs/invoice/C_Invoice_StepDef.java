@@ -318,8 +318,33 @@ public class C_Invoice_StepDef
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
 		assertThat(invoices.size()).isEqualTo(1);
 
+<<<<<<< HEAD
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 		invoiceTable.put(invoiceIdentifier, invoices.get(0));
+=======
+		invoiceCandBL.enqueueForInvoicing()
+				.setContext(Env.getCtx())
+				.setFailIfNothingEnqueued(true)
+				.setInvoicingParams(invoicingParams)
+				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+
+		//wait for the invoice to be created
+		final Supplier<Boolean> invoiceCreated = () ->
+		{
+			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+			if (invoices.isEmpty())
+			{
+				return false;
+			}
+			assertThat(invoices.size())
+					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
+					.isEqualTo(1);
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			invoiceTable.put(invoiceIdentifier, invoices.get(0));
+			return true;
+		};
+		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 	}
 
 	@And("metasfresh contains C_Invoice:")

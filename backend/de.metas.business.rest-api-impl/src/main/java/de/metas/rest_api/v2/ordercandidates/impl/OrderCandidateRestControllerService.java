@@ -195,12 +195,50 @@ public class OrderCandidateRestControllerService
 	{
 		final Set<OLCandId> olCandIds = getOLCands(IdentifierString.of(request.getInputDataSourceName()), request.getExternalHeaderId());
 
+<<<<<<< HEAD
 		processValidOlCands(request, olCandIds);
+=======
+		// clear the olCands and at the same time assign them to asyncBatchId
+		// the asyncBatchId will be used *not* by ProcessOLCandsWorkpackageProcessor,
+		// but by the WP-processors that it enqueues its packages for, to create actual the actual orders, shipments and invoices
+		final JsonOLCandClearingResponse clearingResponse =
+				clearOLCandidates(request.getInputDataSourceName(), request.getExternalHeaderId(), asyncBatchId);
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 
 		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 
 		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
+<<<<<<< HEAD
 				.orderResponse(buildGenerateOrdersResponse(orderIds));
+=======
+				.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
+
+		if (!clearingResponse.isSuccessfullyCleared())
+		{
+			return responseBuilder.build();
+		}
+
+		final Set<OLCandId> validOlCandIds = clearingResponse.getOlCandIdToValidationStatus().keySet().stream()
+				.map(OLCandId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		//
+		// to the actual order/shipment/invoice creation
+		processValidOlCands(request, validOlCandIds);
+
+		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(validOlCandIds);
+
+		if (orderIds.isEmpty())
+		{
+			return responseBuilder.build();
+		}
+
+		jsonOLCandProcessResponseBuilder
+				.jsonGenerateOrdersResponse(buildGenerateOrdersResponse(orderIds))
+				.build();
+
+		responseBuilder.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 
 		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
 		{

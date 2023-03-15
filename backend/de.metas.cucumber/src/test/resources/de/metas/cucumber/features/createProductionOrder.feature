@@ -601,6 +601,7 @@ Feature: create production order
       | c_3        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 10   | 0                      | productPlanningASI                       |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | -100 | -100                   | bomLineASI                               |
       | c_l_2      | SUPPLY            |                               | p_4                     | 2021-06-16T21:00:00Z | 100  | 0                      | bomLineASI                               |
+<<<<<<< HEAD
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
@@ -610,6 +611,8 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
 
+=======
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_2       | false     | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10           | 0            | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    | bomASI                                   |
@@ -684,6 +687,7 @@ Feature: create production order
       | ocP_3      | true      | p_3                     | bom_2                        | ppln_2                            | 540006        | 22         | 0            | 22           | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    | bomASI                                   |
     And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.M_AttributeSetInstance_ID.Identifier |
+<<<<<<< HEAD
       | ppo_4      | p_3                     | bom_2                        | ppln_2                            | 540006        | 12         | 12         | PCE               | endcustomer_3            | 2021-06-16T21:00:00Z | bomASI                                   |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -691,6 +695,15 @@ Feature: create production order
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_3                            | ppo_4                  | 12         | PCE               |
+=======
+      | ppo_3      | p_3                     | bom_2                        | ppln_2                            | 540006        | 12         | 12         | PCE               | endcustomer_3            | 2021-06-16T21:00:00Z | bomASI                                   |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppOrderBOMLine_3               | ppo_3                  | p_4                     | 120          | false           | PCE               | CO            | bomLineASI                               |
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
+      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
+      | ocP_3                            | ppo_3                  | 12         | PCE               |
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_5        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 12   | 12                     | bomASI                                   |
@@ -917,6 +930,7 @@ Feature: create production order
       | c_222      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-12T21:00:00Z | 10   | 0                      | productPlanningASI                       |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_222                   | 2021-04-12T21:00:00Z | -100 | -100                   | bomLineASI                               |
       | c_l_2      | SUPPLY            |                               | p_222                   | 2021-04-12T21:00:00Z | 100  | 0                      | bomLineASI                               |
+<<<<<<< HEAD
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
@@ -927,6 +941,8 @@ Feature: create production order
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
+=======
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_111     | false     | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    | bomASI                                   |

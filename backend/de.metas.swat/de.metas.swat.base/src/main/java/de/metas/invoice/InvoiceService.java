@@ -35,6 +35,11 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
+<<<<<<< HEAD
+=======
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;

@@ -62,8 +62,12 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 				final IQueueProcessor queueProcessor,
 				final IWorkpackageProcessor workPackageProcessor,
 				final I_C_Queue_WorkPackage workPackage,
+<<<<<<< HEAD
 				final IWorkpackageLogsRepository logsRepository,
 				PerformanceMonitoringService perfMonService)
+=======
+				final IWorkpackageLogsRepository logsRepository)
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 		{
 			super(queueProcessor, workPackageProcessor, workPackage, logsRepository, perfMonService);
 		}

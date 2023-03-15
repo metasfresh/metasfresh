@@ -435,6 +435,23 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Return first PO that match query criteria. If there are more records that match criteria an exception will be throwed
+	 *
+	 * @return first PO
+	 * @see  #first()
+	 */
+	@Nullable
+	public <ET extends T> ET firstOnly() throws DBException
+	{
+		final Class<ET> clazz = null;
+		final boolean throwExIfMoreThenOneFound = true;
+		return firstOnly(clazz, throwExIfMoreThenOneFound);
+	}
+
+	/**
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
 	 */
@@ -599,7 +616,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				});
 	}
 
+<<<<<<< HEAD
 	public <AT> ImmutableList<AT> aggregateList(
+=======
+	public <AT> List<AT> aggregateList(
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 			@NonNull final String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@NonNull final Class<AT> returnType)
@@ -662,6 +683,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (groupBys != null && !groupBys.isEmpty())
 		{
 			groupBysClause = Joiner.on(", ").join(groupBys);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 			sqlSelect.append("\n, ").append(groupBysClause);
 		}
 		else
@@ -1545,7 +1570,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(selectClause, fromClause, groupByClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
+<<<<<<< HEAD
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+=======
+		return DB.executeUpdateEx(sql, params, trxName);
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 	}
 
 	@Nullable

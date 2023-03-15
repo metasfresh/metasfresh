@@ -35,6 +35,16 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
+
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 /**
  * Helper interface to mass-enqueue {@link I_C_Invoice_Candidate}s to be invoiced.
  *
@@ -55,6 +65,15 @@ public interface IInvoiceCandidateEnqueuer
 	void prepareSelection(@NonNull PInstanceId pInstanceId);
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular
+	 * {@link de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor}.
+	 */
+	void prepareSelection(@NonNull PInstanceId pInstanceId);
+
+	/**
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
      */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);

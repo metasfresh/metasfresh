@@ -31,6 +31,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
+<<<<<<< HEAD
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
@@ -38,6 +39,13 @@ import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
+=======
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
+import de.metas.invoicecandidate.api.impl.InvoicingParams;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -141,6 +149,14 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 	private InvoicingParams getInvoicingParams()
 	{
+<<<<<<< HEAD
 		return InvoicingParams.ofParams(getParameters());
+=======
+		if (_invoicingParams == null)
+		{
+			_invoicingParams = new InvoicingParams(getParameters());
+		}
+		return _invoicingParams;
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 	}
 }

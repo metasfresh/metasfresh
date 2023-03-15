@@ -337,7 +337,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		//
 		// Update POReference (task 07978)
+<<<<<<< HEAD
 		final String poReference = invoicingParams.getPoReference();
+=======
+		final String poReference = invoicingParams.getPOReference();
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 		if (Check.isNotBlank(poReference))
 		{
 			invoiceCandDAO.updatePOReference(poReference, selectionId);
@@ -397,7 +401,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
+<<<<<<< HEAD
 	public IInvoiceCandidateEnqueuer setInvoicingParams(final InvoicingParams invoicingParams)
+=======
+	public IInvoiceCandidateEnqueuer setInvoicingParams(final IInvoicingParams invoicingParams)
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

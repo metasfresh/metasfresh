@@ -22,6 +22,14 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+<<<<<<< HEAD
+=======
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+>>>>>>> 039d007f911 (Improve stability of the invoicing process (#14702) (#14800))
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
