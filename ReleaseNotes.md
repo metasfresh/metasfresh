@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14879](https://github.com/metasfresh/metasfresh/issues/14879) Fix the Open Linked Accounting transactions action
   * [#14722](https://github.com/metasfresh/metasfresh/issues/14722) Report Accounts information changes
   * [#14835](https://github.com/metasfresh/metasfresh/issues/14835) Manage filtering with attributes in HU reservation screen
   * [#14841](https://github.com/metasfresh/metasfresh/issues/14841) SAP GL Journal Window Adjustment
