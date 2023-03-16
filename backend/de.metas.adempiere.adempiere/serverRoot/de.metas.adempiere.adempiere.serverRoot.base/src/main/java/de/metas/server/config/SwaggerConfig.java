@@ -1,15 +1,3 @@
-package de.metas.server.config;
-
-import de.metas.util.web.SwaggerUtil;
-import io.swagger.v3.oas.models.OpenAPI;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-// import springfox.documentation.builders.PathSelectors;
-// import springfox.documentation.spi.DocumentationType;
-// import springfox.documentation.spring.web.plugins.Docket;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.serverRoot.base
@@ -32,19 +20,25 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  * #L%
  */
 
+package de.metas.server.config;
+
+import de.metas.util.web.SwaggerUtil;
+import io.swagger.v3.oas.models.OpenAPI;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import static de.metas.util.web.SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER;
+
 @Configuration
 @EnableWebMvc
 public class SwaggerConfig
 {
-	// @Bean
-	// public Docket api()
-	// {
-	// 	return new Docket(DocumentationType.OAS_30)
-	// 			.globalOperationParameters(ImmutableList.of(SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
-	// 			.select()
-	// 			.paths(PathSelectors.any())
-	// 			.build();
-	// }
+	@Bean
+	public OperationCustomizer customize() {
+		return (operation, handlerMethod) -> operation.addParametersItem(SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER);
+	}
 
 	@Bean
 	public OpenAPI appOpenAPI() {

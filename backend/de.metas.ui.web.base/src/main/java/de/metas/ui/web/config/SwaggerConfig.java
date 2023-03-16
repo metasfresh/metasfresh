@@ -1,21 +1,3 @@
-package de.metas.ui.web.config;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import de.metas.util.web.SwaggerUtil;
-import io.swagger.v3.oas.models.OpenAPI;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-// import springfox.documentation.RequestHandler;
-// import springfox.documentation.builders.PathSelectors;
-// import springfox.documentation.builders.RequestHandlerSelectors;
-// import springfox.documentation.spi.DocumentationType;
-// import springfox.documentation.spring.web.plugins.Docket;
-
-import java.util.HashSet;
-import java.util.Set;
-
 /*
  * #%L
  * metasfresh-webui-vaadin
@@ -38,6 +20,14 @@ import java.util.Set;
  * #L%
  */
 
+package de.metas.ui.web.config;
+
+import de.metas.util.web.SwaggerUtil;
+import io.swagger.v3.oas.models.OpenAPI;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
 @Configuration
 @EnableWebMvc
 public class SwaggerConfig
@@ -48,22 +38,4 @@ public class SwaggerConfig
 				"metasfresh webui REST API",
 				"REST API backend for metasfresh UIs");
 	}
-
-	// @SuppressWarnings("unused")
-	// private static Predicate<RequestHandler> basePackages(final Class<?>... classes)
-	// {
-	// 	final Set<Predicate<RequestHandler>> predicates = new HashSet<>(classes.length);
-	// 	for (final Class<?> clazz : classes)
-	// 	{
-	// 		final String packageName = clazz.getPackage().getName();
-	// 		predicates.add((Predicate<RequestHandler>)RequestHandlerSelectors.basePackage(packageName));
-	// 	}
-	//
-	// 	if(predicates.size() == 1)
-	// 	{
-	// 		return predicates.iterator().next();
-	// 	}
-	//
-	// 	return Predicates.or(predicates);
-	// }
 }
