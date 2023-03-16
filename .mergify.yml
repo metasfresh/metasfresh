@@ -46,7 +46,7 @@ pull_request_rules:
         labels:  
           - "ops:merge_towards_master"
 
-  - name: When a project- or master-PR is integrated, add a label with the name of the branch
+  - name: After project- or master-PR is integrated, add branch-label and delete the branch
     conditions:
       - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
       - or: &BASEBRANCHES # this rule should apply to both the project-branches from above, and master
@@ -57,6 +57,7 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"
+      delete_head_branch:          
 
   - name: Automatic squash-merge successful PRs into the base-branch
     conditions:
