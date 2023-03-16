@@ -96,6 +96,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		from(direct(ERROR_WRITE_TO_ADISSUE))
 				.routeId(ERROR_WRITE_TO_ADISSUE)
 				.log("Route invoked")
+<<<<<<< HEAD
 				.process(this::prepareJsonErrorRequest)
 				.choice()
 					.when(body().isNull())
@@ -107,6 +108,14 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 						.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error")
 				.endChoice()
 				.end();
+=======
+				.process(ErrorProcessor::prepareJsonErrorRequest)
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.removeHeaders("CamelHttp*")
+				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
+>>>>>>> c85b00ee62c (Change /SaveSollData requestBody and create AD_Issue if call fails (#14865))
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))
 				.routeId(ERROR_SEND_LOG_MESSAGE)
@@ -145,6 +154,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		exchange.getIn().setHeader(Exchange.FILE_NAME, FILE_TIMESTAMP_FORMATTER.format(ZonedDateTime.now()) + "_error.txt");
 	}
 
+<<<<<<< HEAD
 	private void prepareJsonErrorRequest(@NonNull final Exchange exchange)
 	{
 		final String pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, String.class);
@@ -160,6 +170,8 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		exchange.getIn().setBody(JsonError.ofSingleItem(errorItem));
 	}
 
+=======
+>>>>>>> c85b00ee62c (Change /SaveSollData requestBody and create AD_Issue if call fails (#14865))
 	@NonNull
 	private Optional<Integer> getAPIRequestId(@NonNull final Exchange exchange)
 	{
