@@ -1,13 +1,9 @@
 # About this document
 
-This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first).
+THE RELEASE NOTES ARE NOW MAINTAINED AT https://github.com/metasfresh/metasfresh-release-info/blob/master/ReleaseNotes.md
 
-Additional notes:
- * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at [metasfresh.com/en](https://metasfresh.com/en) (English), [metasfresh.com](https://metasfresh.com/) (German)
- * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
-
-Here come the actual release notes:
+This file remains here just for "history".
+Here come the actual (historical) release notes:
 
 # metasfresh 5.176 (upcoming RC)
 ## Features
