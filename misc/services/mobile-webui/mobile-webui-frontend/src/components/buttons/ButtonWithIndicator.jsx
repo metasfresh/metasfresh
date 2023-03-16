@@ -22,7 +22,13 @@ const ButtonWithIndicator = ({
 }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
-  const showHazardsAndAllergens = hazardSymbols != null || allergens != null;
+  const allergensWithColor = allergens != null && allergens.filter((allergen) => allergen.color != null);
+
+  const displayAllergens = allergensWithColor && allergensWithColor.length > 0;
+
+  const displayHazards = hazardSymbols != null && hazardSymbols.length > 0;
+
+  const displayHazardsAndAllergens = displayHazards || displayAllergens;
 
   return (
     <button
@@ -40,7 +46,7 @@ const ButtonWithIndicator = ({
             <div className="row">
               <span>{caption}</span>
             </div>
-            {showHazardsAndAllergens && (
+            {displayHazardsAndAllergens && (
               <div
                 className="row hazard-icons-btn"
                 style={{
@@ -48,7 +54,7 @@ const ButtonWithIndicator = ({
                   maxHeight: SYMBOLS_SIZE_PX + 'px',
                 }}
               >
-                <AllergenIcon allergens={allergens} size={SYMBOLS_SIZE_PX} />
+                <AllergenIcon allergens={allergensWithColor} size={SYMBOLS_SIZE_PX} />
                 {hazardSymbols &&
                   hazardSymbols.map((hazardSymbol, symbolIndex) => (
                     <HazardIcon
