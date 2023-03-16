@@ -6,7 +6,7 @@ import { trl } from '../utils/translations';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadable, computeEffectiveValues } from '../utils/qtys';
+import { formatQtyToHumanReadableStr, formatQtyToHumanReadable } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -133,13 +133,13 @@ const ScanHUAndGetQtyComponent = ({
     const { qtyEffective: diff, uomEffective: diffUom } =
       resolvedBarcodeData.qtyMax &&
       resolvedBarcodeData.qtyMax > 0 &&
-      computeEffectiveValues({
+      formatQtyToHumanReadable({
         qty: qtyEntered - resolvedBarcodeData.qtyMax,
         uom,
       });
 
     if (diff > 0) {
-      const qtyDiff = formatQtyToHumanReadable({ qty: diff, uom: diffUom });
+      const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
 
       return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
     }

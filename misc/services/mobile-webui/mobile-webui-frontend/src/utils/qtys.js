@@ -2,10 +2,10 @@ import { getLanguage } from './translations';
 
 const MAX_maximumFractionDigits = 20; // ... to avoid "maximumFractionDigits value is out of range"
 
-export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance = null }) => {
+export const formatQtyToHumanReadableStr = ({ qty, uom, precision = null, tolerance = null }) => {
   //console.log('formatQtyToHumanReadable', { qty, uom, precision, tolerancePercent });
 
-  const { qtyEffectiveStr, uomEffective } = computeEffectiveValues({ qty, uom, precision });
+  const { qtyEffectiveStr, uomEffective } = formatQtyToHumanReadable({ qty, uom, precision });
 
   let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
 
@@ -13,7 +13,7 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance
     if (tolerance.percentage != null) {
       result += ' ±' + tolerance.percentage + '%';
     } else if (tolerance.qty != null) {
-      const toleranceQtyStr = formatQtyToHumanReadable({
+      const toleranceQtyStr = formatQtyToHumanReadableStr({
         qty: tolerance.qty,
         uom: tolerance.uom,
       });
@@ -48,7 +48,7 @@ const getDefaultDisplayPrecision = (uom, defaultPrecision = 4) => {
   }
 };
 
-export const computeEffectiveValues = ({ qty, uom, precision = null }) => {
+export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
   let qtyEffective = qty ?? 0;
   let uomEffective = uom;
 
