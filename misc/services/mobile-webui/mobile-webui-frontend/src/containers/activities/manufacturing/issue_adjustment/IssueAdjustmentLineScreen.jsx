@@ -8,7 +8,7 @@ import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/w
 import { issueAdjustmentScanScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
-import { formatQtyToHumanReadable } from '../../../../utils/qtys';
+import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 const IssueAdjustmentLineScreen = () => {
   const {
@@ -36,7 +36,7 @@ const IssueAdjustmentLineScreen = () => {
           { caption: trl('general.Product'), value: productName },
           {
             caption: trl('activities.mfg.issues.qtyToIssueTarget'),
-            value: formatQtyToHumanReadable({
+            value: formatQtyToHumanReadableStr({
               qty: qtyToIssue,
               uom,
               tolerance: qtyToIssueTolerance,
