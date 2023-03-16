@@ -32,6 +32,7 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
+import de.metas.externalsystem.other.export.project.C_BudgetProject_SyncTo_Other;
 import de.metas.externalsystem.other.export.project.ExportProjectToOtherService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.project.ProjectId;
@@ -75,6 +76,13 @@ public class ExportBudgetProjectToOtherService extends ExportProjectToOtherServi
 	protected String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_BUDGET;
+	}
+
+	@NonNull
+	@Override
+	protected String getExportADProcessClassname()
+	{
+		return C_BudgetProject_SyncTo_Other.class.getName();
 	}
 
 	@NonNull
