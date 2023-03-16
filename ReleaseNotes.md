@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14831](https://github.com/metasfresh/metasfresh/issues/14831) Stücklistenexport nach Excel - Lieferant mit ausgeben
+  * [#14826](https://github.com/metasfresh/metasfresh/issues/14826) Stücklistenexport nach Excel - Reihenfolge der Zeilen wird ignoriert
   * [#14722](https://github.com/metasfresh/metasfresh/issues/14722) Report Accounts information changes
   * [#14835](https://github.com/metasfresh/metasfresh/issues/14835) Manage filtering with attributes in HU reservation screen
   * [#14841](https://github.com/metasfresh/metasfresh/issues/14841) SAP GL Journal Window Adjustment
