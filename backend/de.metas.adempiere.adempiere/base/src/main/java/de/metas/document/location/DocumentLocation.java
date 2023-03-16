@@ -90,6 +90,18 @@ public class DocumentLocation
 				.build();
 	}
 
+	public static DocumentLocation ofBPartnerLocationAndCaptureId(@NonNull BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId)
+	{
+		return builder()
+				.bpartnerId(bPartnerLocationAndCaptureId.getBpartnerId())
+				.bpartnerLocationId(bPartnerLocationAndCaptureId.getBpartnerLocationId())
+				.contactId(null)
+				.locationId(bPartnerLocationAndCaptureId.getLocationCaptureId())
+				.bpartnerAddress(null)
+				.build();
+	}
+
+
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
 		return !Objects.equals(this.locationId, locationId)

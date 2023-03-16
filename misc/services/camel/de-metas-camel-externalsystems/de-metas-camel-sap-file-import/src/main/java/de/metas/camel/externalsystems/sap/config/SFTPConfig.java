@@ -33,7 +33,7 @@ import java.util.Optional;
 
 @Value
 @Builder
-public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpointConfig, CreditLimitFileEndpointConfig
+public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpointConfig, CreditLimitFileEndpointConfig, ConversionRateFileEndpointConfig
 {
 	@NonNull
 	String username;
@@ -80,6 +80,13 @@ public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpoi
 	@Nullable
 	String fileNamePatternCreditLimit;
 
+	//conversion rate specific
+	@Nullable
+	String targetDirectoryConversionRate;
+
+	@Nullable
+	String fileNamePatternConversionRate;
+
 	@Override
 	@NonNull
 	public String getProductFileEndpoint()
@@ -101,6 +108,13 @@ public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpoi
 		return getSFTPConnectionString(targetDirectoryCreditLimit, fileNamePatternCreditLimit);
 	}
 
+	@Override
+	@NonNull
+	public String getConversionRateFileEndpoint()
+	{
+		return getSFTPConnectionString(targetDirectoryConversionRate, fileNamePatternConversionRate);
+	}
+
 	@NonNull
 	private String getSFTPConnectionString(@Nullable final String targetDir, @Nullable final String includeFilePattern)
 	{
@@ -115,9 +129,9 @@ public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpoi
 				.append("?")
 				.append("delay=").append(pollingFrequency.toMillis())
 				.append("&")
-				.append("move=.").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
+				.append("move=").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
 				.append("&")
-				.append("moveFailed=.").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
+				.append("moveFailed=").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
 
 		Optional.ofNullable(password).ifPresent(pass -> sftpEndpoint.append("&").append("password=").append(pass));
 		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> sftpEndpoint.append("&").append("antInclude=").append(filePattern));

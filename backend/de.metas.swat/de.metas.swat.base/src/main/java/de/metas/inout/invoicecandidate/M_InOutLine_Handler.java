@@ -5,7 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
@@ -42,6 +41,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -50,6 +50,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -394,7 +395,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			//
 			// Set C_Activity from Product (07442)
-			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+			final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(clientId, orgId, productId);
 			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
 		}
 
@@ -468,6 +469,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			iciol.setQtyDeliveredInUOM_Nominal(icRecord.getQtyEntered().multiply(qtyMultiplier));
 
 			saveRecord(iciol);
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("Setting qtyDelivered={} on icIol_ID={}",
+							icRecord.getQtyOrdered().multiply(qtyMultiplier), iciol.getC_InvoiceCandidate_InOutLine_ID());
 		}
 		else
 		{
@@ -487,7 +491,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (inOutRecord.getC_DocType_ID() > 0)
 		{
-			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID());
 			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
 			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
 			{
@@ -524,6 +528,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return null;
 	}
 
+	@NonNull
 	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
 	{
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
@@ -592,7 +597,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 		final String movementType = inout.getMovementType();
 
-		if (inOutBL.isReturnMovementType(movementType))
+		if (MovementType.isMaterialReturn(movementType))
 		{
 			return ONE.negate();
 		}

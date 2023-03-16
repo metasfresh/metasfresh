@@ -139,7 +139,6 @@
             <groupId>de.metas.banking</groupId>
             <artifactId>de.metas.banking.base</artifactId>
             <version>${metasfresh.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>de.metas.handlingunits</groupId>

@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -119,6 +120,20 @@ public class C_DataImport_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_Description);
 		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_InvoiceRule);
 		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_OrgCode);
+		final String defaultOrgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_Default_OrgCode);
+		final String endNote = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_DescriptionBottom);
+		final String adUserInChargeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_AD_User_InCharge_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_Discount);
+		final BigDecimal price = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_Price);
+		final String activityValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_C_Activity_Value);
+
+		int userInChargeId = 0;
+		if (Check.isNotBlank(adUserInChargeIdentifier))
+		{
+			final I_AD_User userInCharge = contactTable.get(adUserInChargeIdentifier);
+			assertThat(userInCharge).isNotNull();
+			userInChargeId = userInCharge.getAD_User_ID();
+		}
 
 		final String payload = bpartnerValue + ";"
 				+ bPartnerLocation.getC_BPartner_Location_ID() + ";"
@@ -135,7 +150,13 @@ public class C_DataImport_StepDef
 				+ description + ";"
 				+ poReference + ";"
 				+ invoiceRule + ";"
-				+ orgCode + ";";
+				+ orgCode + ";"
+				+ defaultOrgCode + ";"
+				+ endNote + ";"
+				+ (userInChargeId >= 0 ? userInChargeId : "") + ";"
+				+ discount + ";"
+				+ price + ";"
+				+ activityValue + ";";
 
 		testContext.setRequestPayload(payload.replaceAll("null", ""));
 	}

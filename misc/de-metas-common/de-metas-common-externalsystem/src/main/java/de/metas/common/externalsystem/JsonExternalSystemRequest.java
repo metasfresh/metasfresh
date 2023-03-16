@@ -25,6 +25,7 @@ package de.metas.common.externalsystem;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -34,6 +35,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Send from metasfresh to camel to indicate that metasfresh wants an external system to do something.
@@ -83,9 +85,15 @@ public class JsonExternalSystemRequest
 		this.externalSystemName = externalSystemName;
 		this.command = command;
 		this.adPInstanceId = adPInstanceId;
-		this.parameters = parameters;
+		this.parameters = Optional.ofNullable(parameters).orElseGet(ImmutableMap::of);
 		this.traceId = traceId;
 		this.writeAuditEndpoint = writeAuditEndpoint;
 		this.externalSystemChildConfigValue = externalSystemChildConfigValue;
+	}
+
+	@Nullable
+	public String getParameter(@NonNull final String parameterName)
+	{
+		return parameters.get(parameterName);
 	}
 }

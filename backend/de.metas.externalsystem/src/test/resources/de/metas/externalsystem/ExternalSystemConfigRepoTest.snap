@@ -404,21 +404,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "apiVersion": "ApiVersion",
+      "baseURL": "baseURL",
+      "checkDescriptionForMaterialType": false,
       "contentSourceLocalFile": {
         "erroredDirectory": "testSAPLocalFileErroredDirectory",
         "fileNamePatternBPartner": "BPartnerLocalFile*",
+        "fileNamePatternConversionRate": "ConversionRateLocalFile*",
         "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
         "fileNamePatternProduct": "ProductLocalFile*",
         "pollingFrequency": 1.000000000,
         "processedDirectory": "testSAPLocalFileProcessedDirectory",
         "rootLocation": "testLocalFileRootLocation",
         "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+        "targetDirectoryConversionRate": "testSAPLocalFileConversionRateDirectory",
         "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
         "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
       },
       "contentSourceSFTP": {
         "erroredDirectory": "testSAPSFTPErroredDirectory",
         "fileNamePatternBPartner": "BPartnerSFTP*",
+        "fileNamePatternConversionRate": "ConversionRateSFTP*",
         "fileNamePatternCreditLimit": "CreditLimitSFTP*",
         "fileNamePatternProduct": "ProductSFTP*",
         "hostName": "testSAPSFTPHostName",
@@ -427,12 +433,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "port": "testSAPSFTPPort",
         "processedDirectory": "testSAPSFTPProcessedDirectory",
         "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+        "targetDirectoryConversionRate": "testSAPSFTPConversionRateDirectory",
         "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
         "targetDirectoryProduct": "testSAPSFTPProductDirectory",
         "username": "testSAPSFTPUsername"
       },
+      "exportAcctConfigList": [
+        {
+          "docTypeId": 1,
+          "processId": 2
+        }
+      ],
       "id": 100002,
       "parentId": 100001,
+      "postAcctDocumentsPath": "Post_Acct_Documents_Path",
+      "signature": "Signature",
+      "signedPermissions": "SignedPermissions",
+      "signedVersion": "signedVersion",
       "value": "testSAPValue"
     },
     "id": 100001,
@@ -446,21 +463,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getByTypeAndParent=[
   {
+    "apiVersion": "ApiVersion",
+    "baseURL": "baseURL",
+    "checkDescriptionForMaterialType": false,
     "contentSourceLocalFile": {
       "erroredDirectory": "testSAPLocalFileErroredDirectory",
       "fileNamePatternBPartner": "BPartnerLocalFile*",
+      "fileNamePatternConversionRate": "ConversionRateLocalFile*",
       "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
       "fileNamePatternProduct": "ProductLocalFile*",
       "pollingFrequency": 1.000000000,
       "processedDirectory": "testSAPLocalFileProcessedDirectory",
       "rootLocation": "testLocalFileRootLocation",
       "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+      "targetDirectoryConversionRate": "testSAPLocalFileConversionRateDirectory",
       "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
       "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
     },
     "contentSourceSFTP": {
       "erroredDirectory": "testSAPSFTPErroredDirectory",
       "fileNamePatternBPartner": "BPartnerSFTP*",
+      "fileNamePatternConversionRate": "ConversionRateSFTP*",
       "fileNamePatternCreditLimit": "CreditLimitSFTP*",
       "fileNamePatternProduct": "ProductSFTP*",
       "hostName": "testSAPSFTPHostName",
@@ -469,12 +492,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "port": "testSAPSFTPPort",
       "processedDirectory": "testSAPSFTPProcessedDirectory",
       "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+      "targetDirectoryConversionRate": "testSAPSFTPConversionRateDirectory",
       "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
       "targetDirectoryProduct": "testSAPSFTPProductDirectory",
       "username": "testSAPSFTPUsername"
     },
+    "exportAcctConfigList": [
+      {
+        "docTypeId": 1,
+        "processId": 2
+      }
+    ],
     "id": 100002,
     "parentId": 100001,
+    "postAcctDocumentsPath": "Post_Acct_Documents_Path",
+    "signature": "Signature",
+    "signedPermissions": "SignedPermissions",
+    "signedVersion": "signedVersion",
     "value": "testSAPValue"
   }
 ]
@@ -485,21 +519,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "apiVersion": "ApiVersion",
+      "baseURL": "baseURL",
+      "checkDescriptionForMaterialType": false,
       "contentSourceLocalFile": {
         "erroredDirectory": "testSAPLocalFileErroredDirectory",
         "fileNamePatternBPartner": "BPartnerLocalFile*",
+        "fileNamePatternConversionRate": "ConversionRateLocalFile*",
         "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
         "fileNamePatternProduct": "ProductLocalFile*",
         "pollingFrequency": 1.000000000,
         "processedDirectory": "testSAPLocalFileProcessedDirectory",
         "rootLocation": "testLocalFileRootLocation",
         "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+        "targetDirectoryConversionRate": "testSAPLocalFileConversionRateDirectory",
         "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
         "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
       },
       "contentSourceSFTP": {
         "erroredDirectory": "testSAPSFTPErroredDirectory",
         "fileNamePatternBPartner": "BPartnerSFTP*",
+        "fileNamePatternConversionRate": "ConversionRateSFTP*",
         "fileNamePatternCreditLimit": "CreditLimitSFTP*",
         "fileNamePatternProduct": "ProductSFTP*",
         "hostName": "testSAPSFTPHostName",
@@ -508,12 +548,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "port": "testSAPSFTPPort",
         "processedDirectory": "testSAPSFTPProcessedDirectory",
         "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+        "targetDirectoryConversionRate": "testSAPSFTPConversionRateDirectory",
         "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
         "targetDirectoryProduct": "testSAPSFTPProductDirectory",
         "username": "testSAPSFTPUsername"
       },
+      "exportAcctConfigList": [
+        {
+          "docTypeId": 1,
+          "processId": 2
+        }
+      ],
       "id": 100002,
       "parentId": 100001,
+      "postAcctDocumentsPath": "Post_Acct_Documents_Path",
+      "signature": "Signature",
+      "signedPermissions": "SignedPermissions",
+      "signedVersion": "signedVersion",
       "value": "testSAPValue"
     },
     "id": 100001,
@@ -807,21 +858,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
       "active": true,
       "auditFileFolder": "auditFileFolder",
       "childConfig": {
+        "apiVersion": "ApiVersion",
+        "baseURL": "baseURL",
+        "checkDescriptionForMaterialType": false,
         "contentSourceLocalFile": {
           "erroredDirectory": "testSAPLocalFileErroredDirectory",
           "fileNamePatternBPartner": "BPartnerLocalFile*",
+          "fileNamePatternConversionRate": "ConversionRateLocalFile*",
           "fileNamePatternCreditLimit": "CreditLimitLocalFile*",
           "fileNamePatternProduct": "ProductLocalFile*",
           "pollingFrequency": 1.000000000,
           "processedDirectory": "testSAPLocalFileProcessedDirectory",
           "rootLocation": "testLocalFileRootLocation",
           "targetDirectoryBPartner": "testSAPLocalFileBPartnerDirectory",
+          "targetDirectoryConversionRate": "testSAPLocalFileConversionRateDirectory",
           "targetDirectoryCreditLimit": "testSAPLocalFileCreditLimitDirectory",
           "targetDirectoryProduct": "testSAPLocalFileProductDirectory"
         },
         "contentSourceSFTP": {
           "erroredDirectory": "testSAPSFTPErroredDirectory",
           "fileNamePatternBPartner": "BPartnerSFTP*",
+          "fileNamePatternConversionRate": "ConversionRateSFTP*",
           "fileNamePatternCreditLimit": "CreditLimitSFTP*",
           "fileNamePatternProduct": "ProductSFTP*",
           "hostName": "testSAPSFTPHostName",
@@ -830,12 +887,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           "port": "testSAPSFTPPort",
           "processedDirectory": "testSAPSFTPProcessedDirectory",
           "targetDirectoryBPartner": "testSAPSFTPBPartnerDirectory",
+          "targetDirectoryConversionRate": "testSAPSFTPConversionRateDirectory",
           "targetDirectoryCreditLimit": "testSAPSFTPCreditLimitDirectory",
           "targetDirectoryProduct": "testSAPSFTPProductDirectory",
           "username": "testSAPSFTPUsername"
         },
+        "exportAcctConfigList": [
+          {
+            "docTypeId": 1,
+            "processId": 2
+          }
+        ],
         "id": 100002,
         "parentId": 100001,
+        "postAcctDocumentsPath": "Post_Acct_Documents_Path",
+        "signature": "Signature",
+        "signedPermissions": "SignedPermissions",
+        "signedVersion": "signedVersion",
         "value": "notImportant"
       },
       "id": 100001,
@@ -878,6 +946,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
+      "autoSendDefaultShippingAddress": false,
       "id": {
         "externalSystemParentConfigId": 100001
       },
@@ -893,6 +962,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value": "value2"
         }
       ],
+      "syncBPartnerEnabled": false,
+      "syncBudgetProjectsEnabled": false,
+      "syncWOProjectsEnabled": false,
       "value": {
         "externalSystemParentConfigId": 100001
       }

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_AcctSchema
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSchema, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 855496023L;
+	private static final long serialVersionUID = 258234637L;
 
     /** Standard Constructor */
     public X_C_AcctSchema (final Properties ctx, final int C_AcctSchema_ID, @Nullable final String trxName)
@@ -166,6 +166,8 @@ public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSch
 	public static final String COSTINGMETHOD_UserDefined = "U";
 	/** _ = x */
 	public static final String COSTINGMETHOD__ = "x";
+	/** MovingAverageInvoice = M */
+	public static final String COSTINGMETHOD_MovingAverageInvoice = "M";
 	@Override
 	public void setCostingMethod (final java.lang.String CostingMethod)
 	{

@@ -16,7 +16,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /*
  * #%L
@@ -207,7 +206,7 @@ public class CostAmount
 			throw new AdempiereException("Diving " + this + " by ZERO is not allowed");
 		}
 
-		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
+		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), precision.getRoundingMode());
 		return new CostAmount(valueNew, currencyId);
 	}
 

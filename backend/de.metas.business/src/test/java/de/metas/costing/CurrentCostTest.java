@@ -1,19 +1,5 @@
 package de.metas.costing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyPrecision;
@@ -23,6 +9,17 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverters;
 import lombok.Builder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -34,12 +31,12 @@ import lombok.Builder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -107,7 +104,7 @@ public class CurrentCostTest
 					Quantity.of(0, uomEach),
 					QuantityUOMConverters.noConversion());
 
-			assertThat(currentCost).isEqualToComparingFieldByField(currentCost().build());
+			assertThat(currentCost).usingRecursiveComparison().isEqualTo(currentCost().build());
 		}
 
 		@Test
@@ -130,14 +127,19 @@ public class CurrentCostTest
 		@Test
 		public void nonZeroAmt_zeroQty()
 		{
-			final CurrentCost currentCost = currentCost().build();
+			final CurrentCost currentCost = currentCost()
+					.ownCostPrice("1000")
+					.currentQty("1")
+					.build();
 
-			assertThatThrownBy(() -> currentCost.addWeightedAverage(
-					CostAmount.of(10, currencyId),
+			currentCost.addWeightedAverage(
+					CostAmount.of(13, currencyId),
 					Quantity.of(0, uomEach),
-					QuantityUOMConverters.noConversion()))
-							.isInstanceOf(AdempiereException.class)
-							.hasMessageStartingWith("Qty shall not be zero when amount is non zero");
+					QuantityUOMConverters.noConversion());
+
+			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1013"); // (1000x1 + 13) / (1 + 0)
+			assertThat(currentCost.getCurrentQty()).isEqualTo(Quantity.of(1, uomEach));
+
 		}
 
 		@Test

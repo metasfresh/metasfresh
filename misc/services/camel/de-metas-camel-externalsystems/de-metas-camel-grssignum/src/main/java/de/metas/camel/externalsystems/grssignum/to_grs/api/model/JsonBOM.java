@@ -81,6 +81,14 @@ public class JsonBOM
 	@JsonProperty("DETAIL")
 	List<JsonBOMLine> bomLines;
 
+	@Nullable
+	@JsonProperty("Sonstige_Infos")
+	List<JsonBOMAdditionalInfo> additionalInfos;
+
+	@Nullable
+	@JsonProperty("ALLERGENE")
+	List<JsonAllergen> allergens;
+
 	@Builder
 	public JsonBOM(
 			@JsonProperty("FLAG") final @NonNull Integer flag,
@@ -93,7 +101,9 @@ public class JsonBOM
 			@JsonProperty("GTIN") final @Nullable String gtin,
 			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
 			@JsonProperty("ANHANGDATEI") final @Nullable String attachmentFilePath,
-			@JsonProperty("DETAIL") final @NonNull List<JsonBOMLine> bomLines)
+			@JsonProperty("DETAIL") final @NonNull List<JsonBOMLine> bomLines,
+			@JsonProperty("Sonstige_Infos") final @Nullable List<JsonBOMAdditionalInfo> additionalInfos,
+			@JsonProperty("ALLERGENE") final @Nullable List<JsonAllergen> allergens)
 	{
 		this.flag = flag;
 		this.productValue = productValue;
@@ -106,6 +116,8 @@ public class JsonBOM
 		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
 		this.attachmentFilePath = attachmentFilePath;
 		this.bomLines = bomLines;
+		this.additionalInfos = additionalInfos;
+		this.allergens = allergens;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

@@ -306,7 +306,7 @@ public class CalloutInOut extends CalloutEngine
 		if (isSOTrx)
 		{
 			final BPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
-			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
+			final BigDecimal soCreditUsed = bpartnerStats.getSoCreditUsed();
 			if (soCreditUsed.signum() < 0)
 			{
 				calloutField.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(soCreditUsed), false);

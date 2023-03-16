@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1756575147L;
+	private static final long serialVersionUID = 862093207L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -33,19 +33,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setActualDeliveredQty (final BigDecimal ActualDeliveredQty)
-	{
-		set_Value (COLUMNNAME_ActualDeliveredQty, ActualDeliveredQty);
-	}
-
-	@Override
-	public BigDecimal getActualDeliveredQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualDeliveredQty);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -302,6 +289,33 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setDeliveryStatus_Color_ID (final int DeliveryStatus_Color_ID)
+	{
+		if (DeliveryStatus_Color_ID < 1) 
+			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, null);
+		else 
+			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, DeliveryStatus_Color_ID);
+	}
+
+	@Override
+	public int getDeliveryStatus_Color_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DeliveryStatus_Color_ID);
+	}
+
+	@Override
+	public void setDeliveryTime (final @Nullable java.lang.String DeliveryTime)
+	{
+		set_Value (COLUMNNAME_DeliveryTime, DeliveryTime);
+	}
+
+	@Override
+	public java.lang.String getDeliveryTime() 
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryTime);
+	}
+
+	@Override
 	public void setGrade (final @Nullable java.lang.String Grade)
 	{
 		throw new IllegalArgumentException ("Grade is virtual column");	}
@@ -310,6 +324,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getGrade() 
 	{
 		return get_ValueAsString(COLUMNNAME_Grade);
+	}
+
+	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
 	@Override
@@ -337,6 +363,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setLoadingTime (final @Nullable java.lang.String LoadingTime)
+	{
+		set_Value (COLUMNNAME_LoadingTime, LoadingTime);
+	}
+
+	@Override
+	public java.lang.String getLoadingTime() 
+	{
+		return get_ValueAsString(COLUMNNAME_LoadingTime);
+	}
+
+	@Override
 	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
 	{
 		if (M_Delivery_Planning_ID < 1) 
@@ -361,7 +399,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	/** Outgoing = Outgoing */
 	public static final String M_DELIVERY_PLANNING_TYPE_Outgoing = "Outgoing";
 	@Override
-	public void setM_Delivery_Planning_Type (final @Nullable java.lang.String M_Delivery_Planning_Type)
+	public void setM_Delivery_Planning_Type (final java.lang.String M_Delivery_Planning_Type)
 	{
 		set_Value (COLUMNNAME_M_Delivery_Planning_Type, M_Delivery_Planning_Type);
 	}
@@ -373,30 +411,30 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public org.compiere.model.I_M_Forwarder getM_Forwarder()
+	public org.compiere.model.I_M_InOut getM_InOut()
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Forwarder_ID, org.compiere.model.I_M_Forwarder.class);
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
 	}
 
 	@Override
-	public void setM_Forwarder(final org.compiere.model.I_M_Forwarder M_Forwarder)
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Forwarder_ID, org.compiere.model.I_M_Forwarder.class, M_Forwarder);
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
 	@Override
-	public void setM_Forwarder_ID (final int M_Forwarder_ID)
+	public void setM_InOut_ID (final int M_InOut_ID)
 	{
-		if (M_Forwarder_ID < 1) 
-			set_Value (COLUMNNAME_M_Forwarder_ID, null);
+		if (M_InOut_ID < 1) 
+			set_Value (COLUMNNAME_M_InOut_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Forwarder_ID, M_Forwarder_ID);
+			set_Value (COLUMNNAME_M_InOut_ID, M_InOut_ID);
 	}
 
 	@Override
-	public int getM_Forwarder_ID() 
+	public int getM_InOut_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Forwarder_ID);
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
@@ -496,6 +534,33 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	@Override
+	public void setM_Shipper_ID (final int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
+	}
+
+	@Override
+	public int getM_Shipper_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
 
 	@Override
@@ -715,17 +780,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getShipToLocation_Name() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShipToLocation_Name);
-	}
-
-	@Override
-	public void setTransportationOrderNo (final @Nullable java.lang.String TransportationOrderNo)
-	{
-		throw new IllegalArgumentException ("TransportationOrderNo is virtual column");	}
-
-	@Override
-	public java.lang.String getTransportationOrderNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_TransportationOrderNo);
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
@@ -55,7 +56,8 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn)
+			final boolean isRestAPICustomColumn,
+			final int adSequenceID)
 	{
 		this.AD_Column_ID = AD_Column_ID;
 		ColumnName = columnName;
@@ -106,14 +108,16 @@ public final class POInfoColumn implements Serializable
 		this.AD_Val_Rule_ID = AD_Val_Rule_ID;
 		//
 		FieldLength = fieldLength;
-		ValueMin = valueMin;
-		ValueMin_BD = toBigDecimalOrNull(ValueMin, "ValueMin");
-		ValueMax = valueMax;
-		ValueMax_BD = toBigDecimalOrNull(ValueMax, "ValueMax");
+		ValueMin = StringUtils.trimBlankToNull(valueMin);
+		ValueMin_BD = toBigDecimalOrNull(this.ValueMin, "ValueMin");
+		ValueMax = StringUtils.trimBlankToNull(valueMax);
+		ValueMax_BD = toBigDecimalOrNull(this.ValueMax, "ValueMax");
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
 		IsRestAPICustomColumn = isRestAPICustomColumn;
+		AD_Sequence_ID = adSequenceID;
+		AD_Reference_Value_KeyColumn_DisplayType = ad_Reference_Value_KeyColumn_DisplayType;
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
 	}   // Column
@@ -146,6 +150,11 @@ public final class POInfoColumn implements Serializable
 		}
 
 		return false;
+	}
+
+	public boolean isString()
+	{
+		return isString(tableName, ColumnName, displayType, AD_Reference_Value_ID, AD_Reference_Value_KeyColumn_DisplayType);
 	}
 
 	private static boolean isSearchDisplayType(final int displayType)
@@ -267,6 +276,10 @@ public final class POInfoColumn implements Serializable
 
 	private final Optional<String> _referencedTableName;
 
+	private final int AD_Sequence_ID;
+
+	private final int AD_Reference_Value_KeyColumn_DisplayType;
+
 	/**
 	 * String representation
 	 *
@@ -286,21 +299,21 @@ public final class POInfoColumn implements Serializable
 	@Nullable
 	private static BigDecimal toBigDecimalOrNull(final String valueStr, final String name)
 	{
-		if (Check.isEmpty(valueStr, true))
+		final String valueNorm = StringUtils.trimBlankToNull(valueStr);
+		if(valueNorm == null)
 		{
 			return null;
 		}
 
 		try
 		{
-			return new BigDecimal(valueStr.trim());
+			return new BigDecimal(valueNorm);
 		}
 		catch (final Exception ex) // i.e. NumberFormatException
 		{
-			logger.error("Cannot parse " + name + "=" + valueStr, ex);
+			logger.error("Cannot parse {}=`{}`. Returning null.", name, valueNorm, ex);
+			return null;
 		}
-
-		return null;
 	}
 
 	public String getColumnName()
@@ -371,6 +384,11 @@ public final class POInfoColumn implements Serializable
 	public boolean isRestAPICustomColumn()
 	{
 		return IsRestAPICustomColumn;
+	}
+
+	public int getAD_Sequence_ID()
+	{
+		return AD_Sequence_ID;
 	}
 
 	@Nullable

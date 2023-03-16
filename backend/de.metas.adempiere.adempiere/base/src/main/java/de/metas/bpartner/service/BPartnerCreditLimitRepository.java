@@ -20,9 +20,6 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.bpartner.service;
 
 import com.google.common.collect.ImmutableList;
@@ -39,6 +36,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -47,6 +45,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -71,7 +70,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Repository
 public class BPartnerCreditLimitRepository
@@ -217,6 +215,8 @@ public class BPartnerCreditLimitRepository
 		creditLimitRecord.setIsActive(creditLimit.isActive());
 		creditLimitRecord.setProcessed(creditLimit.isProcessed());
 
+		creditLimitRecord.setApprovedBy_ID(UserId.toRepoId(creditLimit.getApprovedBy()));
+
 		creditLimitRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(creditLimit.getOrgMappingId()));
 
 		Optional.ofNullable(request.getValidatePermissions())
@@ -243,19 +243,36 @@ public class BPartnerCreditLimitRepository
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
 				.active(creditLimit.isActive())
 				.processed(creditLimit.isProcessed())
+				.approvedBy(UserId.ofRepoIdOrNullIfSystem(creditLimit.getApprovedBy_ID()))
 				.build();
 	}
 
 	@NonNull
 	private List<I_C_BPartner_CreditLimit> retrieveCreditLimitsToEnforceByBPartnerId(final int bpartnerId, @NonNull final Timestamp date)
 	{
+		@NonNull
+		final IQueryFilter<I_C_BPartner_CreditLimit> deactivatedButNotApproved = queryBL.createCompositeQueryFilter(I_C_BPartner_CreditLimit.class)
+				.setJoinAnd()
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, false)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, false);
+
+		@NonNull
+		final IQueryFilter<I_C_BPartner_CreditLimit> activatedAndApproved = queryBL.createCompositeQueryFilter(I_C_BPartner_CreditLimit.class)
+				.setJoinAnd()
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, true)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true);
+
+		final @NonNull IQueryFilter<I_C_BPartner_CreditLimit> activeFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_CreditLimit.class)
+				.setJoinOr()
+				.addFilter(activatedAndApproved)
+				.addFilter(deactivatedButNotApproved);
+
 		return queryBL
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, true)
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addFilter(activeFilter)
+
 				.create()
 				.list();
 	}

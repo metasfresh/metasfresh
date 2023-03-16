@@ -68,12 +68,14 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -99,6 +101,8 @@ public class C_Order
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
@@ -568,6 +572,23 @@ public class C_Order
 		}
 	}
 
+	@CalloutMethod(columnNames = {
+			I_C_Order.COLUMNNAME_M_Warehouse_ID,
+			I_C_Order.COLUMNNAME_IsDropShip,
+			I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void handleDropShipRelatedColumns(@NonNull final I_C_Order order)
+	{
+		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
+		{
+			setDropShipFlag(order);
+		}
+
+		if (orderBL.isUseDefaultBillToLocationForBPartner(order))
+		{
+			setDefaultBillToBPartnerLocation(order);
+		}
+	}
+
 	private void validateSupplierApprovals(final I_C_Order order)
 	{
 		if (order.isSOTrx())
@@ -595,6 +616,39 @@ public class C_Order
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+		}
+	}
+
+	private void setDropShipFlag(@NonNull final I_C_Order order)
+	{
+		if (order.isDropShip())
+		{
+			return;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+
+		if (warehouseId == null)
+		{
+			return;
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+
+		order.setIsDropShip(warehouseBL.isDropShipWarehouse(warehouseId, orgId));
+	}
+
+	private void setDefaultBillToBPartnerLocation(@NonNull final I_C_Order order)
+	{
+		final IBPartnerDAO.BPartnerLocationQuery billToQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+				.build();
+
+		final I_C_BPartner_Location billToLocation = bpartnerDAO.retrieveBPartnerLocation(billToQuery);
+		if (billToLocation != null)
+		{
+			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
 		}
 	}
 }

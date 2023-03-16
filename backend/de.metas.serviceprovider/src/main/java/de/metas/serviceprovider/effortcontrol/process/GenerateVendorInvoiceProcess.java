@@ -28,9 +28,8 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.serviceprovider.issue.Status;
@@ -121,19 +120,18 @@ public class GenerateVendorInvoiceProcess extends JavaProcess
 	{
 		invoiceCandBL.enqueueForInvoicing()
 				.setContext(getCtx())
-				.setInvoicingParams(createDefaultIInvoicingParams())
+				.setInvoicingParams(createDefaultInvoicingParams())
 				.setFailIfNothingEnqueued(false)
 				.enqueueSelection(selectionId);
 	}
 
 	@NonNull
-	private IInvoicingParams createDefaultIInvoicingParams()
+	private static InvoicingParams createDefaultInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-		invoicingParams.setDateInvoiced(SystemTime.asLocalDate());
-
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
+				.dateInvoiced(SystemTime.asLocalDate())
+				.build();
 	}
 }

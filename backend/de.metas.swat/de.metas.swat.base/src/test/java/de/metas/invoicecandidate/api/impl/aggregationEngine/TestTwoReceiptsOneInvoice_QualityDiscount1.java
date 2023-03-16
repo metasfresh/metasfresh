@@ -22,19 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -43,8 +30,21 @@ import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * Similar to {@link AbstractTwoInOutsOneInvoicePurchaseTests}, but each InOut has two lines, one of each has <code>IsInDispute=Y</code>.
@@ -60,15 +60,23 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 	protected static final BigDecimal TWENTY = new BigDecimal("20");
 
 	protected I_M_InOut inOut1;
-	/** Receipt 1 - line 1 */
+	/**
+	 * Receipt 1 - line 1
+	 */
 	protected I_M_InOutLine iol11_three;
-	/** Receipt 1 - line 2 (IsInDispute) */
+	/**
+	 * Receipt 1 - line 2 (IsInDispute)
+	 */
 	protected I_M_InOutLine iol12_five_disp;
 
 	protected I_M_InOut inOut2;
-	/** Receipt 2 - line 1 */
+	/**
+	 * Receipt 2 - line 1
+	 */
 	protected I_M_InOutLine iol21_ten;
-	/** Receipt 2 - line 2 (IsInDispute) */
+	/**
+	 * Receipt 2 - line 2 (IsInDispute)
+	 */
 	protected I_M_InOutLine iol22_twenty_disp;
 
 	@Override
@@ -91,7 +99,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 		{
 			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(new BigDecimal("3"), productId, new BigDecimal("30"), uomId);
 			final String inOutDocumentNo = "1";
-			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
+			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, MovementType.VendorReceipts);
 			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_3, inOutDocumentNo + "_1");
 
 			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(new BigDecimal("5"), productId, new BigDecimal("50"), uomId);
@@ -105,7 +113,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 		{
 			final String inOutDocumentNo = "2";
 			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), uomId);
-			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
+			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo, MovementType.VendorReceipts);
 			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_10, inOutDocumentNo + "_1");
 
 			final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(new BigDecimal("20"), productId, new BigDecimal("200"), uomId);

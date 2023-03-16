@@ -14,10 +14,8 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -43,6 +41,7 @@ import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.InOutId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -51,6 +50,7 @@ import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -135,6 +135,11 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 
 	@Override
+	public I_M_ReceiptSchedule getById(@NonNull final ReceiptScheduleId id)
+	{
+		return receiptScheduleBL.getById(id, I_M_ReceiptSchedule.class);
+	}
+	@Override
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(receiptSchedule.getC_OrderLine(), I_C_OrderLine.class);
@@ -143,8 +148,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return null;
 		}
 
-		final BigDecimal qtyTU = ol.getQtyEnteredTU();
-		return qtyTU;
+		return ol.getQtyEnteredTU();
 	}
 
 	@Override
@@ -164,19 +168,15 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	{
 		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);
 		final BigDecimal qtyMovedTU = receiptSchedule.getQtyMovedTU();
-		final BigDecimal qtyToMoveTU = qtyOrderedTU.subtract(qtyMovedTU);
 
-		return qtyToMoveTU;
+		return qtyOrderedTU.subtract(qtyMovedTU);
 	}
 
-	// @Override public
 	private IInOutProducer createInOutProducerFromReceiptScheduleHU(
 			@NonNull final CreateReceiptsParameters parameters,
 			@NonNull final InOutGenerateResult result)
-
 	{
-		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(parameters, result);
-		return producer;
+		return new InOutProducerFromReceiptScheduleHU(parameters, result);
 	}
 
 	@Override
@@ -296,16 +296,11 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	@Override
 	public IProductStorage createProductStorage(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule rs)
 	{
-		final boolean enforceCapacity = true;
-		return new ReceiptScheduleProductStorage(rs, enforceCapacity);
-	}
-
-	@Override
-	public IAllocationSource createAllocationSource(final I_M_ReceiptSchedule receiptSchedule)
-	{
-		final IProductStorage productStorage = createProductStorage(receiptSchedule);
-		final IAllocationSource allocationSource = new GenericAllocationSourceDestination(productStorage, receiptSchedule);
-		return allocationSource;
+		return ReceiptScheduleProductStorage.builder()
+				.receiptScheduleBL(receiptScheduleBL)
+				.receiptSchedule(rs)
+				.enforceCapacity(true)
+				.build();
 	}
 
 	@Override
@@ -456,8 +451,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * We used to create it in ReceiptInOutLineHUAssignmentListener, but there we could not detect the code
 	 * being called multiple times in a row, from different transactions.
 	 * This happens if there are >1 inout lines sharing the same LU.
-	 * <p>
-	 * task <a href="https://github.com/metasfresh/metasfresh/issues/1905">1905</a>
+	 *
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/1905">task</a>
 	 */
 	private void printReceiptLabels(final InOutGenerateResult result)
 	{
@@ -621,7 +616,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
-		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited);
 		if (!allocsAll.isEmpty())
 		{
 			loggable.addLog("M_ReceiptSchedule_ID={} - already has HUs assinged to it; not creating HUs", receiptSchedule.getM_ReceiptSchedule_ID());
@@ -663,8 +658,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private Set<HuId> retrieveAllocatedHuIds(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		return receiptSchedules.stream()
-				.map(receiptSchedule -> huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited))
+				.map(receiptSchedule -> huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, ITrx.TRXNAME_ThreadInherited))
 				.flatMap(Collection::stream)
+				.filter(I_M_ReceiptSchedule_Alloc::isActive) // inactive RSAs have destroyed HUs - ignore those
 				.flatMap(allocation -> Stream.of(allocation.getVHU_ID(), allocation.getM_TU_HU_ID(), allocation.getM_LU_HU_ID()))
 				.filter(huId -> huId > 0)
 				.map(HuId::ofRepoId)
@@ -698,4 +694,33 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		}
 	}
 
+	@Override
+	public void updateHUAttributesFromReceiptSchedule(
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		UpdateHUAttributesFromReceiptScheduleCommand.builder()
+				.hu(hu)
+				.receiptSchedule(receiptSchedule)
+				.build()
+				.execute();
+	}
+
+	@Override
+	public I_M_HU createPlanningVHU(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final Quantity qtyToReceive)
+	{
+		return ReceiptScheduleCreatePlanningVHUCommand.builder()
+				.huReceiptScheduleBL(this)
+				.huContextFactory(huContextFactory)
+				//
+				.receiptSchedule(receiptSchedule)
+				.qtyToReceive(qtyToReceive)
+				.build()
+				.execute();
+	}
+
+	@Override
+	public StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule receiptSchedule) {return receiptScheduleBL.getQtyToMove(receiptSchedule);}
 }

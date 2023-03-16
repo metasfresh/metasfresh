@@ -21,6 +21,7 @@ SELECT t.ad_window_id
      , f.seqno
      , f.seqnogrid
      , f.sortno
+     , f.ad_sequence_id AS AD_Sequence_ID
      , COALESCE(f.issameline, 'N'::bpchar)                        AS issameline
      , COALESCE(f.isheading, 'N'::bpchar)                         AS isheading
      , COALESCE(f.isfieldonly, 'N'::bpchar)                       AS isfieldonly

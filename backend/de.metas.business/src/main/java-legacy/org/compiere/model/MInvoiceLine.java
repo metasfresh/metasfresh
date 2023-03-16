@@ -30,14 +30,12 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -134,7 +132,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	/**
 	 * Static Logger
 	 */
-	private static Logger s_log = LogManager.getLogger(MInvoiceLine.class);
+	private static final Logger s_log = LogManager.getLogger(MInvoiceLine.class);
 
 	/**
 	 * Tax
@@ -204,10 +202,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	private boolean m_IsSOTrx = true;
 	private boolean m_priceSet = false;
 	private MProduct m_product = null;
-	/**
-	 * Charge
-	 */
-	private MCharge m_charge = null;
 
 	/**
 	 * Cached Name of the line
@@ -646,7 +640,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		if (isDescription())
 		{
@@ -760,20 +753,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
 		Services.get(IInvoiceBL.class).setLineNetAmt(invoiceLine);
 	}    // setLineNetAmt
-
-	/**
-	 * Get Charge
-	 *
-	 * @return product or null
-	 */
-	public MCharge getCharge()
-	{
-		if (m_charge == null && getC_Charge_ID() != 0)
-		{
-			m_charge = MCharge.get(getCtx(), getC_Charge_ID());
-		}
-		return m_charge;
-	}
 
 	/**
 	 * Get Tax
@@ -1162,22 +1141,25 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		if (getC_TaxCategory_ID() <= 0)
 		{
-			final I_C_OrderLine orderLine = create(getC_OrderLine(), I_C_OrderLine.class);
-
 			final int taxCategoryID;
 
-			if (orderLine != null)
+			if (getC_Tax_ID() > 0)
 			{
-				taxCategoryID = orderLine.getC_TaxCategory_ID();
+				taxCategoryID = getTax().getC_TaxCategory_ID();
 			}
-
 			else
 			{
-				final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
-
-				taxCategoryID = TaxCategoryId.toRepoId(Services.get(IInvoiceBL.class).getTaxCategoryId(invoiceLine));
+				final I_C_OrderLine orderLine = create(getC_OrderLine(), I_C_OrderLine.class);
+				if (orderLine != null)
+				{
+					taxCategoryID = orderLine.getC_TaxCategory_ID();
+				}
+				else
+				{
+					final I_C_InvoiceLine invoiceLine = create(this, I_C_InvoiceLine.class);
+					taxCategoryID = TaxCategoryId.toRepoId(Services.get(IInvoiceBL.class).getTaxCategoryId(invoiceLine));
+				}
 			}
-
 			setC_TaxCategory_ID(taxCategoryID);
 		}
 
@@ -1769,12 +1751,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
 		// task FRESH-273
 		il.setIsPackagingMaterial(true);
-	}
-
-	@Deprecated
-	public StockQtyAndUOMQty getMatchedQty()
-	{
-		return Services.get(IMatchInvDAO.class).retrieveQtyMatched(this);
 	}
 
 	// metas: begin

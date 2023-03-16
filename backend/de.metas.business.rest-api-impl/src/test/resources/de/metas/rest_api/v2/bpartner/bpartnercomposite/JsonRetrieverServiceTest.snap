@@ -19,7 +19,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 100018,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -48,24 +48,27 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       },
       "company": false,
       "customer": true,
-      "customerPaymentTermId": 100008,
+      "customerPaymentTermId": 1000000,
       "deliveryRule": "AVAILABILITY",
       "deliveryViaRule": "Shipper",
       "excludeFromPromotions": false,
       "groupId": 15,
       "id": 20,
       "identifiedByExternalReference": false,
-      "incotermsCustomerId": 100010,
-      "incotermsVendorId": 100011,
+      "incotermsCustomerId": 1000000,
+      "incotermsVendorId": 1000001,
       "name": "bpartnerRecord.name",
       "paymentRule": "OnCredit",
       "paymentRulePO": "Cash",
-      "sectionCodeId": 100007,
+      "prospect": false,
+      "sectionCodeId": 1000000,
+      "sectionGroupPartner": false,
+      "sectionPartner": false,
       "storageWarehouse": true,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true,
-      "vendorPaymentTermId": 100009
+      "vendorPaymentTermId": 1000001
     },
     "contacts": [
       {
@@ -114,7 +117,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       {
         "active": true,
         "amount": {
-          "currencyId": 100020,
+          "currencyId": 1000001,
           "value": 25.5
         },
         "bPartnerId": 20,
@@ -163,9 +166,10 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         },
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
+        "countryName": "countryRecord.name",
         "district": "postalRecord.district",
         "ephemeral": false,
-        "existingLocationId": 100016,
+        "existingLocationId": 1000000,
         "gln": "bpartnerLocationRecord.gln",
         "handOverLocation": true,
         "handles": [ ],

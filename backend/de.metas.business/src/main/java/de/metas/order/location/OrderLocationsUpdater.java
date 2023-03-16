@@ -46,7 +46,7 @@ public class OrderLocationsUpdater
 	{
 		OrderDocumentLocationAdapterFactory.locationAdapter(record).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 		OrderDocumentLocationAdapterFactory.billLocationAdapter(record).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
-		OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(record).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
+		OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(record).updateCapturedLocationAndRenderedAddress(documentLocationBL);
 		OrderDocumentLocationAdapterFactory.handOverLocationAdapter(record).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 	}
 

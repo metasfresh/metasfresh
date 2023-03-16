@@ -2,7 +2,8 @@
 Feature: Handling unit export from manufacturing order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And RabbitMQ MF_TO_ExternalSystem queue is purged
@@ -93,9 +94,9 @@ Feature: Handling unit export from manufacturing order
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote |
-      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
-      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Gesperrt                    | Hergestellt       |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceNote |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
+      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

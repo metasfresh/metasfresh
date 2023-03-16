@@ -50,6 +50,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.project.ProjectId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -188,6 +189,8 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setRecord_ID(recordReference.getRecord_ID());
 		}
 
+		icRecord.setC_Activity_ID(ActivityId.toRepoId(ic.getActivityId()));
+
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 
@@ -254,6 +257,7 @@ public class ExternallyReferencedCandidateRepository
 		return result.build();
 	}
 
+	@NonNull
 	private ExternallyReferencedCandidate forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
@@ -321,6 +325,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
 
 		candidate.projectId(ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()));
+
+		candidate.activityId(ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()));
 
 		return candidate.build();
 	}

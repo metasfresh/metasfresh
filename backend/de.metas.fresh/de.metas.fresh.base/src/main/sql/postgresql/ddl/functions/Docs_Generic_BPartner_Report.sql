@@ -65,6 +65,8 @@ SELECT x.org_name,
                THEN COALESCE(mktbp.name || E'\n', '') || COALESCE(mktbpl.address, '')
            WHEN p_doctype = 'ci'
                THEN ci.BPartnerAddress
+		   WHEN p_doctype = 'di' -- Delivery Instructions 
+		       THEN ''
                ELSE 'Incompatible Parameter!'
        END || E'\n' AS addressblock
 FROM (

@@ -146,7 +146,7 @@ public class MMovement extends X_M_Movement implements IDocument
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (getC_DocType_ID() == 0)
+		if (getC_DocType_ID() <= 0)
 		{
 			MDocType[] types = MDocType.getOfDocBaseType(getCtx(), DocBaseType.MaterialMovement);
 			if (types.length > 0)
@@ -388,7 +388,7 @@ public class MMovement extends X_M_Movement implements IDocument
 						line.getMovementQty(), BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName());
 
 				//
-				final MTransaction trxFrom = new MTransaction(getCtx(),
+				final MTransaction trxFrom = new MTransaction (getCtx(),
 						line.getAD_Org_ID(),
 						MTransaction.MOVEMENTTYPE_MovementFrom,
 						line.getM_Locator_ID(),
@@ -398,9 +398,9 @@ public class MMovement extends X_M_Movement implements IDocument
 						getMovementDate(),
 						get_TrxName());
 				trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
-					InterfaceWrapperHelper.save(trxFrom);
+				InterfaceWrapperHelper.save(trxFrom);
 				//
-				final MTransaction trxTo = new MTransaction(getCtx(),
+				final MTransaction trxTo = new MTransaction (getCtx(),
 						line.getAD_Org_ID(),
 						MTransaction.MOVEMENTTYPE_MovementTo,
 						line.getM_LocatorTo_ID(),
@@ -410,7 +410,7 @@ public class MMovement extends X_M_Movement implements IDocument
 						getMovementDate(),
 						get_TrxName());
 				trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
-					InterfaceWrapperHelper.save(trxTo);
+				InterfaceWrapperHelper.save(trxTo);
 			} // product stock
 		}    //	for all lines
 		//	User Validation

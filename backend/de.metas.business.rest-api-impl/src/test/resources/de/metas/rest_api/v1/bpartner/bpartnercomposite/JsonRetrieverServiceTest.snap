@@ -19,7 +19,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 100010,
+        "currencyId": 1000000,
         "iban": "INITIAL-IBAN-1",
         "id": {
           "bpartnerId": 20,
@@ -54,6 +54,9 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
+      "prospect": false,
+      "sectionGroupPartner": false,
+      "sectionPartner": false,
       "storageWarehouse": false,
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
@@ -128,7 +131,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
         "ephemeral": false,
-        "existingLocationId": 100009,
+        "existingLocationId": 1000000,
         "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
         "handOverLocation": false,

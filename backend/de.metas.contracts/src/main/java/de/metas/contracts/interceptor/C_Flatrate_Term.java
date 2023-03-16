@@ -22,6 +22,7 @@
 
 package de.metas.contracts.interceptor;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.standard.ICalendarDAO;
@@ -71,6 +72,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -113,16 +115,20 @@ public class C_Flatrate_Term
 	private final ContractOrderService contractOrderService;
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ADReferenceService adReferenceService;
+	private final GLCategoryRepository glCategoryRepository;
 
 	public C_Flatrate_Term(
 			@NonNull final ContractOrderService contractOrderService,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final GLCategoryRepository glCategoryRepository)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
 		this.adReferenceService = adReferenceService;
+		this.glCategoryRepository = glCategoryRepository;
 	}
 
 	@Init
@@ -139,12 +145,13 @@ public class C_Flatrate_Term
 
 	private void ensureDocTypesExist(final String docSubType)
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
+		final ClientId clientId = ClientId.METASFRESH;
 		final List<I_AD_Org> orgs = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_AD_Client_ID, clientId)
 				.addNotEqualsFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, OrgId.ANY)
 				.orderBy(I_AD_Org.COLUMNNAME_AD_Org_ID)
 				.create()
@@ -184,6 +191,7 @@ public class C_Flatrate_Term
 					.docSubType(docSubType)
 					.isSOTrx(true)
 					.newDocNoSequenceStartNo(10000)
+					.glCategoryId(glCategoryRepository.getDefaultId(clientId).orElseThrow(() -> new AdempiereException("No default GL Category found")))
 					.build());
 		}
 	}
@@ -652,7 +660,6 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
 	}
 
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID,
@@ -668,7 +675,7 @@ public class C_Flatrate_Term
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Flatrate_Term.COLUMNNAME_DropShip_Location_ID,
-			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID},
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID },
 			skipIfCopying = true)
 	public void updateDropshipAddress(final I_C_Flatrate_Term term)
 	{

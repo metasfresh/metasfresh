@@ -40,6 +40,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
@@ -59,6 +60,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -368,7 +370,7 @@ public class BankStatementBL implements IBankStatementBL
 	public PaymentCurrencyContext getPaymentCurrencyContext(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
-				.currencyConversionTypeId(null);
+				.currencyConversionTypeId(getPaymentCurrencyConversionTypeId(bankStatementLine));
 
 		final BigDecimal fixedCurrencyRate = bankStatementLine.getCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
@@ -420,4 +422,16 @@ public class BankStatementBL implements IBankStatementBL
 		return moneyService.getBaseCurrencyId(clientAndOrgId);
 	}
 
+	@Nullable
+	private CurrencyConversionTypeId getPaymentCurrencyConversionTypeId(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
+
+		if (paymentId == null)
+		{
+			return null;
+		}
+
+		return paymentBL.getCurrencyConversionTypeId(paymentId).orElse(null);
+	}
 }

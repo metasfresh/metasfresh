@@ -50,6 +50,7 @@ import java.util.stream.Stream;
  * @author Jorg Janke
  * @author Victor Perez, e-Evolution SC
  * <li>[ 2195894 ] Improve performance in PO engine
+ * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335">http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335</a>
  */
 public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 {
@@ -217,10 +218,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ",c." + I_AD_Column.COLUMNNAME_IsStaleable                    // 28 // metas: 01537
 				+ ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
 				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
-				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn			  // 31
+				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn              // 31
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
 				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
+ 				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
@@ -401,7 +403,9 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		sqlWhereClauseByKeys = buildSqlWhereClauseByKeys();
 		sqlSelectByKeys = buildSqlSelectByKeys();
 
-		trlInfo = POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames);
+		trlInfo = !translatedColumnNames.isEmpty()
+				? POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames)
+				: POTrlInfo.NOT_TRANSLATED;
 	}
 
 	private static POInfoHeader retrievePOInfoHeader(@NonNull final ResultSet rs) throws SQLException
@@ -448,6 +452,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 
 		final POInfoColumn col = new POInfoColumn(
 				AD_Column_ID,
@@ -469,7 +474,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn);
+				isRestAPICustomColumn,
+				adSequenceID);
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -553,6 +559,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	/**
 	 * @return list column names which compose the primary key or empty list; never return null
 	 */
+	@NonNull
 	public List<String> getKeyColumnNames()
 	{
 		return m_keyColumnNames;
@@ -1347,7 +1354,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final int columnIndex = getColumnIndex(columnName);
 		return isRestAPICustomColumn(columnIndex);
 	}
-
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{

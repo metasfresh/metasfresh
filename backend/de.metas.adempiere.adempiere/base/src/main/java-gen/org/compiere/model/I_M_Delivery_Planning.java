@@ -18,28 +18,7 @@ public interface I_M_Delivery_Planning
 
 
 	/**
-	 * Set Actual Delivered Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setActualDeliveredQty (BigDecimal ActualDeliveredQty);
-
-	/**
-	 * Get Actual Delivered Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getActualDeliveredQty();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_ActualDeliveredQty = new ModelColumn<>(I_M_Delivery_Planning.class, "ActualDeliveredQty", null);
-	String COLUMNNAME_ActualDeliveredQty = "ActualDeliveredQty";
-
-	/**
-	 * Set Actual Delivery Date.
+	 * Set Act Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -48,7 +27,7 @@ public interface I_M_Delivery_Planning
 	void setActualDeliveryDate (@Nullable java.sql.Timestamp ActualDeliveryDate);
 
 	/**
-	 * Get Actual Delivery Date.
+	 * Get Act Delivery Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -60,7 +39,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDeliveryDate = "ActualDeliveryDate";
 
 	/**
-	 * Set Actual Discharge Quantity.
+	 * Set Act Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -69,7 +48,7 @@ public interface I_M_Delivery_Planning
 	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
 
 	/**
-	 * Get Actual Discharge Quantity.
+	 * Get Act Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -81,7 +60,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
 
 	/**
-	 * Set Actual Loading Date.
+	 * Set Act Load Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -90,7 +69,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadingDate (@Nullable java.sql.Timestamp ActualLoadingDate);
 
 	/**
-	 * Get Actual Loading Date.
+	 * Get Act Load Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -102,7 +81,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualLoadingDate = "ActualLoadingDate";
 
 	/**
-	 * Set Actual Loaded Quantity.
+	 * Set Act Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -111,7 +90,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Actual Loaded Quantity.
+	 * Get Act Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -417,6 +396,48 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Delivery Status.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryStatus_Color_ID (int DeliveryStatus_Color_ID);
+
+	/**
+	 * Get Delivery Status.
+	 *
+	 * <br>Type: Color
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDeliveryStatus_Color_ID();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_DeliveryStatus_Color_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "DeliveryStatus_Color_ID", null);
+	String COLUMNNAME_DeliveryStatus_Color_ID = "DeliveryStatus_Color_ID";
+
+	/**
+	 * Set Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryTime (@Nullable java.lang.String DeliveryTime);
+
+	/**
+	 * Get Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryTime();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_DeliveryTime = new ModelColumn<>(I_M_Delivery_Planning.class, "DeliveryTime", null);
+	String COLUMNNAME_DeliveryTime = "DeliveryTime";
+
+	/**
 	 * Set Grade.
 	 *
 	 * <br>Type: String
@@ -440,6 +461,29 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_Grade = new ModelColumn<>(I_M_Delivery_Planning.class, "Grade", null);
 	String COLUMNNAME_Grade = "Grade";
+
+	/**
+	 * Set Incoterm Location.
+	 * Location to be specified for commercial clause
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Location to be specified for commercial clause
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_Delivery_Planning.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Active.
@@ -507,6 +551,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
+	 * Set Load Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingTime (@Nullable java.lang.String LoadingTime);
+
+	/**
+	 * Get Load Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLoadingTime();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_Delivery_Planning.class, "LoadingTime", null);
+	String COLUMNNAME_LoadingTime = "LoadingTime";
+
+	/**
 	 * Set Delivery Planning.
 	 *
 	 * <br>Type: ID
@@ -531,47 +596,49 @@ public interface I_M_Delivery_Planning
 	 * Set Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Delivery_Planning_Type (@Nullable java.lang.String M_Delivery_Planning_Type);
+	void setM_Delivery_Planning_Type (java.lang.String M_Delivery_Planning_Type);
 
 	/**
 	 * Get Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getM_Delivery_Planning_Type();
+	java.lang.String getM_Delivery_Planning_Type();
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_Delivery_Planning_Type = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Delivery_Planning_Type", null);
 	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
 
 	/**
-	 * Set Forwarder.
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Forwarder_ID (int M_Forwarder_ID);
+	void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Forwarder.
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Forwarder_ID();
+	int getM_InOut_ID();
 
-	@Nullable org.compiere.model.I_M_Forwarder getM_Forwarder();
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
 
-	void setM_Forwarder(@Nullable org.compiere.model.I_M_Forwarder M_Forwarder);
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
 
-	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Forwarder> COLUMN_M_Forwarder_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Forwarder_ID", org.compiere.model.I_M_Forwarder.class);
-	String COLUMNNAME_M_Forwarder_ID = "M_Forwarder_ID";
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
 	 * Set Means of Transportation.
@@ -686,6 +753,33 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_ShipmentSchedule_ID", null);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Transportation Order.
@@ -804,7 +898,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OriginCountry = "OriginCountry";
 
 	/**
-	 * Set Planned Delivery Date.
+	 * Set Plan Delivery Date (ETA).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -813,7 +907,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedDeliveryDate (@Nullable java.sql.Timestamp PlannedDeliveryDate);
 
 	/**
-	 * Get Planned Delivery Date.
+	 * Get Plan Delivery Date (ETA).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -825,7 +919,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedDeliveryDate = "PlannedDeliveryDate";
 
 	/**
-	 * Set Planned Discharge Quantity.
+	 * Set Plan Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -834,7 +928,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedDischargeQuantity (BigDecimal PlannedDischargeQuantity);
 
 	/**
-	 * Get Planned Discharge Quantity.
+	 * Get Plan Delivered Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -846,7 +940,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
 
 	/**
-	 * Set Planned Loaded Quantity.
+	 * Set Plan Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -855,7 +949,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedLoadedQuantity (BigDecimal PlannedLoadedQuantity);
 
 	/**
-	 * Get Planned Loaded Quantity.
+	 * Get Plan Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -867,7 +961,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedLoadedQuantity = "PlannedLoadedQuantity";
 
 	/**
-	 * Set Planned Loading Date.
+	 * Set Plan Load Date (ETD).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -876,7 +970,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedLoadingDate (@Nullable java.sql.Timestamp PlannedLoadingDate);
 
 	/**
-	 * Get Planned Loading Date.
+	 * Get Plan Load Date (ETD).
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -992,7 +1086,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Qty Ordered.
+	 * Set PO/SO Line Qty.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
@@ -1002,7 +1096,7 @@ public interface I_M_Delivery_Planning
 	void setQtyOrdered (BigDecimal QtyOrdered);
 
 	/**
-	 * Get Qty Ordered.
+	 * Get PO/SO Line Qty.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
@@ -1082,31 +1176,6 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_ShipToLocation_Name = new ModelColumn<>(I_M_Delivery_Planning.class, "ShipToLocation_Name", null);
 	String COLUMNNAME_ShipToLocation_Name = "ShipToLocation_Name";
-
-	/**
-	 * Set Transport Order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setTransportationOrderNo (@Nullable java.lang.String TransportationOrderNo);
-
-	/**
-	 * Get Transport Order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getTransportationOrderNo();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_TransportationOrderNo = new ModelColumn<>(I_M_Delivery_Planning.class, "TransportationOrderNo", null);
-	String COLUMNNAME_TransportationOrderNo = "TransportationOrderNo";
 
 	/**
 	 * Set Transport Details.

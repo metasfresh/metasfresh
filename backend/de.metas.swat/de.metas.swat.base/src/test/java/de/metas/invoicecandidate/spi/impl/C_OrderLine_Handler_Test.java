@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.spi.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -27,9 +26,9 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
@@ -168,6 +167,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			save(order1);
 
 			orderLine1 = orderLine("1");
@@ -190,6 +190,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order2.setC_Currency_ID(10);
 			order2.setM_PricingSystem_ID(20);
+			order2.setC_PaymentTerm_ID(100);
 			save(order2);
 
 			orderLine2 = orderLine("2");
@@ -213,8 +214,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
 
 		ic1.setC_Order_ID(orderLine1.getC_Order_ID());
+		ic1.setC_OrderSO_ID(orderLine1.getC_OrderSO_ID());
 		save(ic1);
 		ic2.setC_Order_ID(orderLine2.getC_Order_ID());
+		ic2.setC_OrderSO_ID(orderLine2.getC_OrderSO_ID());
 		save(ic2);
 
 		final String key1 = headerAggregationKeyBuilder.buildKey(ic1);
@@ -225,18 +228,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
 	{
-		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		IProductActivityProvider productActivityProvider = Mockito.mock(IProductActivityProvider.class);
 		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
 
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		Mockito.doReturn(null).when(productAcctDAO).retrieveActivityForAcct(
+		Mockito.doReturn(null).when(productActivityProvider).getActivityForAcct(
 				AdditionalMatchers.not(ArgumentMatchers.eq(clientId)),
 				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
 				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
 
-		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						order1,
@@ -247,7 +249,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
 						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
 						SOTrx.ofBoolean(order1.isSOTrx()),
-								(VatCodeId)null))
+						null))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
@@ -276,6 +278,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order1.setC_Currency_ID(10);
 		order1.setM_PricingSystem_ID(20);
+		order1.setC_PaymentTerm_ID(100);
 		save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
@@ -302,6 +305,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order2.setC_Currency_ID(10);
 		order2.setM_PricingSystem_ID(20);
+		order2.setC_PaymentTerm_ID(100);
 		save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
@@ -328,6 +332,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order3.setC_Currency_ID(10);
 		order3.setM_PricingSystem_ID(20);
+		order3.setC_PaymentTerm_ID(100);
 		save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
@@ -354,6 +359,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order4.setC_Currency_ID(10);
 		order4.setM_PricingSystem_ID(20);
+		order4.setC_PaymentTerm_ID(100);
 		save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
@@ -404,6 +410,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			order1.setC_Project_ID(c_project_id);
 
 			save(order1);
@@ -450,6 +457,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			save(order1);
 
 			orderLine1 = orderLine("1");
@@ -489,6 +497,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(100);
 			save(order1);
 
 			orderLine1 = orderLine("1");

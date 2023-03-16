@@ -79,6 +79,7 @@ public class CurrencyId implements RepoIdAware
 		return Objects.equals(currencyId1, currencyId2);
 	}
 
+	@NonNull
 	@SafeVarargs
 	public static <T> CurrencyId getCommonCurrencyIdOfAll(
 			@NonNull final Function<T, CurrencyId> getCurrencyId,

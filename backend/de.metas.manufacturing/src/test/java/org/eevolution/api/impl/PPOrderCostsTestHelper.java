@@ -41,7 +41,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
-import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionDAO;
@@ -74,7 +73,7 @@ public class PPOrderCostsTestHelper
 {
 	public final IUOMConversionDAO uomConversionDAO;
 
-	public final ClientId clientId = ClientId.ofRepoId(1);
+	public final ClientId clientId = ClientId.METASFRESH;
 
 	public final I_C_UOM uomEach;
 	public final UomId uomEachId;

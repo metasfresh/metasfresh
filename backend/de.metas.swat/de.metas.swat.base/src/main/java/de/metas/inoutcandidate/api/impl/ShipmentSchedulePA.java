@@ -117,7 +117,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// Reservation 1 - look at scheds for which there is a reservation
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM M_HU_Reservation res"
-			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
@@ -653,5 +653,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
 				.create()
 				.mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
+	}
+
+	@Override
+	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
+	{
+		//noinspection unchecked
+		final ImmutableList<OrderId> orderIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.filter((IQueryFilter<I_M_ShipmentSchedule>)filter)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
+		return ImmutableSet.copyOf(orderIds);
 	}
 }

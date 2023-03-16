@@ -13,6 +13,7 @@
     "LocalFileProcessedDirectory": "doesntmatter",
     "LocalFileErroredDirectory": "doesntmatter",
     "LocalFilePollingFrequencyInMs": "1000",
-    "LocalFileProductFileNamePattern": "doesntmatter"
+    "LocalFileProductFileNamePattern": "doesntmatter",
+    "CheckDescriptionForMaterialType": "doesntmatter"
   }
 }

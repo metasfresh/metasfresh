@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -43,6 +44,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
@@ -66,6 +68,16 @@ public class M_Warehouse_StepDef
 		this.bPartnerLocationTable = bPartnerLocationTable;
 	}
 
+	@And("update M_Warehouse:")
+	public void update_M_Warehouse(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			updateWarehouse(row);
+		}
+	}
+
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
@@ -79,9 +91,17 @@ public class M_Warehouse_StepDef
 					.create()
 					.firstOnlyNotNull(I_M_Warehouse.class);
 
+			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bpartnerLocationIdentifier))
+			{
+				final I_C_BPartner_Location bPartnerLocation = load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+				assertThat(bPartnerLocation).isNotNull();
+				bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
+			}
+
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			warehouseTable.put(warehouseIdentifier, warehouseRecord);
+			warehouseTable.putOrReplace(warehouseIdentifier, warehouseRecord);
 		}
 	}
 
@@ -117,6 +137,8 @@ public class M_Warehouse_StepDef
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 
 			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+			final boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, false);
+			final boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
@@ -124,6 +146,8 @@ public class M_Warehouse_StepDef
 			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
 			warehouseRecord.setIsInTransit(isInTransit);
+			warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
+			warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
 
 			saveRecord(warehouseRecord);
 
@@ -176,5 +200,37 @@ public class M_Warehouse_StepDef
 				.updateDirectly()
 				.addSetColumnValue(I_M_Warehouse.COLUMNNAME_IsInTransit, false)
 				.execute();
+	}
+
+	private void updateWarehouse(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Warehouse warehouseRecord = warehouseTable.get(identifier);
+
+		final Boolean isQuarantineWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse);
+		if (isQuarantineWarehouse != null)
+		{
+			warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
+		}
+
+		final Boolean isQualityReturnWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse);
+		if (isQualityReturnWarehouse != null)
+		{
+			warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
+		}
+
+		final Boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse);
+		if (isIssueWarehouse != null)
+		{
+			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+		}
+
+		final Boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit);
+		if (isInTransit != null)
+		{
+			warehouseRecord.setIsInTransit(isInTransit);
+		}
+
+		saveRecord(warehouseRecord);
 	}
 }

@@ -1,39 +1,6 @@
 package de.metas.shipping.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Package;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -43,9 +10,25 @@ import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.X_M_Delivery_Planning;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class ShipperTransportationDAO implements IShipperTransportationDAO
 {
+
+	private IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperItransportationId)
@@ -61,7 +44,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	@Override
 	public List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull final ShipperTransportationId shipperTransportationId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShippingPackage.class)
 				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId))
 				.create()
@@ -71,11 +54,11 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	@Override
 	public <T extends I_M_ShipperTransportation> List<T> retrieveOpenShipperTransportations(final Properties ctx, final Class<T> clazz)
 	{
-		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<T> queryBuilder = queryBL
 				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Drafted) // Drafts
-		;
+				;
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_ShipperTransportation.COLUMNNAME_DocumentNo);
@@ -88,7 +71,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	@Override
 	public ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(final ShipperId shipperId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Drafted) // Drafts
@@ -104,11 +87,25 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 	{
 		Check.assumeNotNull(mpackage, "mpackage not null");
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShippingPackage.class, mpackage)
 				.filter(new EqualsQueryFilter<I_M_ShippingPackage>(I_M_ShippingPackage.COLUMNNAME_M_Package_ID, mpackage.getM_Package_ID()))
 				.create()
 				.list(I_M_ShippingPackage.class);
+	}
+
+	@Override
+	public Iterator<I_M_ShippingPackage> retrieveCompletedOutgoingDeliveryInstructionLines(@NonNull final BPartnerId bPartnerId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_Type, X_M_Delivery_Planning.M_DELIVERY_PLANNING_TYPE_Outgoing)
+				.andCollect(I_M_Delivery_Planning.COLUMN_M_ShipperTransportation_ID, I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Completed)
+				.andCollectChildren(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, I_M_ShippingPackage.class)
+				.create()
+				.iterate(I_M_ShippingPackage.class);
 	}
 
 	@Override

@@ -235,15 +235,16 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		{
 			huStatusBL.setHUStatus(huContext, hu, status);
 			hu.setIsActive(true);
-
-			final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
-
-			if (locator.isAfterPickingLocator())
+			if (hu.getM_Locator_ID() > 0)
 			{
-				final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+				final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
+				if (locator.isAfterPickingLocator())
+				{
+					final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 
-				// Restore default locator
+					// Restore default locator
 				hu.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
+				}
 			}
 		}
 

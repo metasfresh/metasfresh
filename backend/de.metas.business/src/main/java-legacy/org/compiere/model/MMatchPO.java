@@ -24,7 +24,8 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -44,7 +45,6 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -156,15 +156,11 @@ public class MMatchPO extends X_M_MatchPO
 		// If newRecord, set c_invoiceline_id while null
 		if (newRecord && getC_InvoiceLine_ID() <= 0)
 		{
-			final List<I_M_MatchInv> matchInvs = Services.get(IMatchInvDAO.class).retrieveForInOutLine(getM_InOutLine());
-			for (final I_M_MatchInv matchInv : matchInvs)
-			{
-				if (matchInv.getC_InvoiceLine_ID() > 0 && matchInv.getM_AttributeSetInstance_ID() == mpoASIId)
-				{
-					setC_InvoiceLine_ID(matchInv.getC_InvoiceLine_ID());
-					break;
-				}
-			}
+			final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(getM_InOutLine_ID());
+			matchInvoiceService.suggestMaterialInvoiceLineId(inoutLineId, AttributeSetInstanceId.ofRepoIdOrNone(mpoASIId))
+					.ifPresent(invoiceLineId -> setC_InvoiceLine_ID(invoiceLineId.getRepoId()));
 		}
 		// end Bayu
 

@@ -5,7 +5,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-11-20T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And preexisting test data is put into tableData
@@ -154,8 +155,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     # dev-note: update dateInvoiced to be set in the past in order to generate dunning
     And update C_Invoice:
-      | Identifier | OPT.DateInvoiced |
-      | invoice_1  | 2021-04-08       |
+      | Identifier | OPT.DueDate |
+      | invoice_1  | 2021-04-08  |
 
     And invoke "C_Dunning_Candidate_Create" process:
       | C_DunningLevel_ID.Identifier | DunningDate | OPT.IsFullUpdate |
@@ -236,8 +237,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Order_ID.Identifier | OPT.ExternalId      | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName |
       | order_1               | 1444_zeroQtyShipped | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        | testName         | Shopware                               |
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ordereLine_1_1            | order_1               | 2021-07-20  | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ordereLine_1_1            | order_1               | 2021-07-20      | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
     # We didn't close the order, so we expect QtyOrdered=10
 
   @from:cucumber

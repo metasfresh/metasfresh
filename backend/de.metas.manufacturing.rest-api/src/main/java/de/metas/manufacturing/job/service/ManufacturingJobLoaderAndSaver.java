@@ -203,6 +203,7 @@ public class ManufacturingJobLoaderAndSaver
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
 				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
+				.userInstructions(orderBOMLine.getHelp())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
 						.stream()
@@ -216,6 +217,7 @@ public class ManufacturingJobLoaderAndSaver
 	{
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
+				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
 				.isAlternativeIssue(schedule.isAlternativeIssue())
 				.productId(schedule.getProductId())
 				.productName(supportingServices.getProductName(schedule.getProductId()))

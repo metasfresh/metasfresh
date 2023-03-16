@@ -22,11 +22,13 @@
 
 package de.metas.rest_api.v2.bpartner.relation;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.service.BPRelation;
 import de.metas.common.bprelation.JsonBPRelationRole;
@@ -34,10 +36,11 @@ import de.metas.common.bprelation.request.JsonRequestBPRelationTarget;
 import de.metas.common.bprelation.response.JsonResponseBPRelationComposite;
 import de.metas.common.bprelation.response.JsonResponseBPRelationItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -145,7 +148,42 @@ public class BPRelationsService
 	}
 
 	@NonNull
-	private Optional<BPartnerLocation> getBpartnerLocation(
+	public Optional<BPartnerContact> getBpartnerContact(
+			@Nullable final ExternalIdentifier contactIdentifier,
+			@NonNull final BPartnerComposite bPartnerComposite)
+	{
+		return bPartnerComposite.extractContact(partnerContact -> contactMatchesIdentifier(partnerContact, contactIdentifier, bPartnerComposite.getOrgId()));
+	}
+
+	private boolean contactMatchesIdentifier(
+			@NonNull final BPartnerContact bpartnerContact,
+			@Nullable final ExternalIdentifier contactIdentifier,
+			@Nullable final OrgId orgId)
+	{
+		if (contactIdentifier == null)
+		{
+			return false;
+		}
+		final BPartnerContactId bpartnerContactId = bpartnerContact.getId();
+		if (bpartnerContactId == null)
+		{
+			return false;
+		}
+		switch (contactIdentifier.getType())
+		{
+			case EXTERNAL_REFERENCE:
+				final Optional<MetasfreshId> metasfreshId =
+						jsonServiceFactory.createRetriever().resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID);
+				return metasfreshId.filter(id -> Objects.equals(bpartnerContactId.getRepoId(), id.getValue())).isPresent();
+			case METASFRESH_ID:
+				return MetasfreshId.equals(contactIdentifier.asMetasfreshId(), MetasfreshId.of(bpartnerContactId));
+			default:
+				throw new AdempiereException("Unexpected type=" + contactIdentifier.getType());
+		}
+	}
+
+	@NonNull
+	public Optional<BPartnerLocation> getBpartnerLocation(
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@Nullable final ExternalIdentifier locationIdentifier,
 			@NonNull final BPartnerComposite bPartnerComposite)
@@ -154,12 +192,13 @@ public class BPRelationsService
 				? bpartnerIdentifier
 				: locationIdentifier;
 
-		return bPartnerComposite.extractLocation(bPartnerLocation -> locationMatchesIdentifier(bPartnerLocation, lookupLocationIdentifier));
+		return bPartnerComposite.extractLocation(bPartnerLocation -> locationMatchesIdentifier(bPartnerLocation, lookupLocationIdentifier, bPartnerComposite.getOrgId()));
 	}
 
 	private boolean locationMatchesIdentifier(
 			@NonNull final BPartnerLocation bPartnerLocation,
-			@Nullable final ExternalIdentifier locationIdentifier)
+			@Nullable final ExternalIdentifier locationIdentifier,
+			@Nullable final OrgId orgId)
 	{
 		if (locationIdentifier == null)
 		{
@@ -169,7 +208,7 @@ public class BPRelationsService
 		{
 			case EXTERNAL_REFERENCE:
 				final Optional<MetasfreshId> metasfreshId =
-						jsonServiceFactory.createRetriever().resolveExternalReference(null, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
+						jsonServiceFactory.createRetriever().resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
 
 				return metasfreshId.filter(id -> Objects.equals(bPartnerLocation.getId().getRepoId(), id.getValue())).isPresent();
 			case GLN:

@@ -938,4 +938,10 @@ public class PaymentBL implements IPaymentBL
 
 		return Optional.ofNullable(singleSectionCodeId);
 	}
+	
+	@NonNull
+	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
+	{
+		return paymentDAO.getCurrencyConversionTypeId(paymentId);
+	}
 }

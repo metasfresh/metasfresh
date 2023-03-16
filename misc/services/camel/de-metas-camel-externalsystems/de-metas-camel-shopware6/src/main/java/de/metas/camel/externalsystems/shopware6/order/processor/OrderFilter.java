@@ -199,10 +199,11 @@ public class OrderFilter implements Processor
 
 		return switch (paymentMethodType)
 				{
-					case DEBIT_PAYMENT -> isOpen || isInProgress; // debit-payments ("SEPA") are automatically set to "inProgress" in the shop, so technically "isOpen" won't happen
+					// debit-payments ("SEPA") are automatically set to "inProgress" in the shop, so technically "isOpen" won't happen
+					case DEBIT_PAYMENT -> isOpen || isInProgress;
+					case CREDIT_OR_DEBIT_CARD -> isOpen || isInProgress; // handling this just like DEBIT_PAYMENT ("SEPA") as per customer request
 					case PRE_PAYMENT, INVOICE_PAYMENT -> isOpen;
 					case PAY_PAL_PAYMENT_HANDLER -> isPaid;
-					case CREDIT_OR_DEBIT_CARD -> isPaid; // handling this just like PAY_PAL_PAYMENT_HANDLER ("pay_pal_payment_handler") as per customer request
 					default -> false;
 				};
 	}

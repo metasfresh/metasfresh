@@ -33,6 +33,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -118,6 +119,18 @@ public class JsonRequestProduct
 	@Schema(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
+	@Schema
+	private String guaranteeMonths;
+
+	@Schema(hidden = true)
+	private boolean guaranteeMonthsSet;
+
+	@Schema
+	private String warehouseTemperature;
+
+	@Schema(hidden = true)
+	private boolean warehouseTemperatureSet;
+
 	@Schema(description = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
@@ -135,6 +148,15 @@ public class JsonRequestProduct
 
 	@Schema(hidden = true)
 	private boolean purchasedSet;
+
+	@Schema(description = "Corresponding to `M_Product.SAP_ProductHierarchy`")
+	private String sapProductHierarchy;
+
+	@Schema(hidden = true)
+	private boolean sapProductHierarchySet;
+
+	@Schema
+	private JsonRequestUpsertProductAllergen productAllergens;
 
 	public void setCode(final @NonNull String code)
 	{
@@ -228,6 +250,29 @@ public class JsonRequestProduct
 	{
 		this.sectionCode = sectionCode;
 		this.sectionCodeSet = true;
+	}
+
+	public void setSAPProductHierarchy(final String sapProductHierarchy)
+	{
+		this.sapProductHierarchy = sapProductHierarchy;
+		this.sapProductHierarchySet = true;
+	}
+
+	public void setProductAllergens(@Nullable final JsonRequestUpsertProductAllergen productAllergens)
+	{
+		this.productAllergens = productAllergens;
+	}
+
+	public void setGuaranteeMonths(@Nullable final String guaranteeMonths)
+	{
+		this.guaranteeMonths = guaranteeMonths;
+		this.guaranteeMonthsSet = true;
+	}
+
+	public void setWarehouseTemperature(@Nullable final String warehouseTemperature)
+	{
+		this.warehouseTemperature = warehouseTemperature;
+		this.warehouseTemperatureSet = true;
 	}
 
 	@AllArgsConstructor

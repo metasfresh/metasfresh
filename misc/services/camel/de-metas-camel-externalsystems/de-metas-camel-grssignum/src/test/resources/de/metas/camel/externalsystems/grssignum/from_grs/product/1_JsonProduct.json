@@ -22,7 +22,16 @@
             "DocumentGroup": "DocumentGroup"
           }
         ]
-      }
+      },
+      "ALLERGENE": [
+        {
+          "ALID":2,
+          "Text":"Allergen",
+          "Vorkommen_Direkt":0,
+          "Vorkommen_Kreuzkontamination":0,
+          "Vorkommen_Kein":1
+        }
+      ]
     },
     {
       "MKREDID": "vendorId2",

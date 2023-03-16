@@ -27,7 +27,7 @@ import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;

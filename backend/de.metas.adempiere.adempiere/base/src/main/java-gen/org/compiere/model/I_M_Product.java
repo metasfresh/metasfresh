@@ -2288,6 +2288,27 @@ public interface I_M_Product
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
+	 * Set SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSAP_ProductHierarchy (@Nullable java.lang.String SAP_ProductHierarchy);
+
+	/**
+	 * Get SAP Product Hierarchy.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSAP_ProductHierarchy();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SAP_ProductHierarchy = new ModelColumn<>(I_M_Product.class, "SAP_ProductHierarchy", null);
+	String COLUMNNAME_SAP_ProductHierarchy = "SAP_ProductHierarchy";
+
+	/**
 	 * Set Shelf Depth.
 	 * Shelf depth required
 	 *

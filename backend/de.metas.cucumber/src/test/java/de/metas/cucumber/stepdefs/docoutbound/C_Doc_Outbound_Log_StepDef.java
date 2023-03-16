@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.docoutbound;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -180,19 +181,31 @@ public class C_Doc_Outbound_Log_StepDef
 	{
 		final TableRecordReference recordReference = getTableRecordReference(row);
 
-		final I_C_Doc_Outbound_Log docOutboundLog = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+		final ImmutableList<I_C_Doc_Outbound_Log> docOutboundLogs = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addEqualsFilter(COLUMNNAME_Record_ID, recordReference.getRecord_ID())
 				.addEqualsFilter(COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
 				.create()
-				.firstOnlyOrNull(I_C_Doc_Outbound_Log.class);
+				.listImmutable(I_C_Doc_Outbound_Log.class);
 
-		if (docOutboundLog == null)
+		if (docOutboundLogs.isEmpty())
 		{
 			return false;
 		}
 
+		if (docOutboundLogs.size() > 1)
+		{
+			final StringBuilder stringBuilder = new StringBuilder("Multiple C_Doc_Outbound_Log records found: \n");
+
+			docOutboundLogs.forEach(docOutboundLogRecord -> stringBuilder
+					.append("Filename: ").append(docOutboundLogRecord.getFileName())
+					.append("Created: ").append(docOutboundLogRecord.getCreated())
+					.append("\n"));
+
+			throw new AdempiereException(stringBuilder.toString());
+		}
+
 		final String docOutBoundIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Doc_Outbound_Log.COLUMNNAME_C_Doc_Outbound_Log_ID + "." + TABLECOLUMN_IDENTIFIER);
-		docOutboundLogTable.putOrReplace(docOutBoundIdentifier, docOutboundLog);
+		docOutboundLogTable.putOrReplace(docOutBoundIdentifier, docOutboundLogs.get(0));
 		return true;
 	}
 }

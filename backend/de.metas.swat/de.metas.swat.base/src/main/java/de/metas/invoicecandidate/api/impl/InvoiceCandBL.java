@@ -68,6 +68,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -97,6 +98,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.TableRecordMDC;
+import de.metas.material.MovementType;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -156,8 +158,8 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -276,6 +278,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -724,7 +727,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public IInvoiceGenerator generateInvoices()
 	{
-		return new InvoiceCandBLCreateInvoices();
+		return new InvoiceCandBLCreateInvoices(matchInvoiceServiceHolder.get());
 	}
 
 	@Override
@@ -734,7 +737,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final String trxName)
 	{
-		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveIcForSelection(ctx, AD_PInstance_ID, trxName);
+		final Iterator<I_C_Invoice_Candidate> candidates =
+				invoiceCandDAO.retrieveIcForSelectionStableOrdering(AD_PInstance_ID);
 
 		return generateInvoices()
 				.setContext(ctx, trxName)
@@ -2152,7 +2156,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				if (inout != null)
 				{
-					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					if (MovementType.isMaterialReturn(inout.getMovementType()))
 					{
 						qty = qty.negate();
 					}
@@ -2722,11 +2726,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final org.compiere.model.I_M_InOut inOut = inoutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
 
-		if (docStatus.equals(DocStatus.InProgress) || docStatus.equals(DocStatus.Reversed))
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("DocStatus for M_InOutLine_ID={} is {}", inOutLine.getM_InOutLine_ID(), docStatus.getCode());
+
+		if (docStatus.equals(DocStatus.Completed) || docStatus.equals(DocStatus.Closed))
 		{
-			return ZERO;
+			return inOutLine.getMovementQty();
 		}
 
-		return inOutLine.getMovementQty();
+		return ZERO;
 	}
 }

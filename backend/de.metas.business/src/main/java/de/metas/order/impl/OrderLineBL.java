@@ -8,7 +8,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
@@ -23,7 +22,6 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -31,6 +29,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -64,8 +63,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.impl.OnConsignmentAttributeService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
@@ -75,6 +74,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -155,6 +155,12 @@ public class OrderLineBL implements IOrderLineBL
 	public List<I_C_OrderLine> getByOrderIds(@NonNull final Set<OrderId> orderIds)
 	{
 		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
+	}
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
 	}
 
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
@@ -845,7 +851,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 * task https://github.com/metasfresh/metasfresh/issues/4535
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/4535">task</a>
 	 */
 	@Override
 	public void updateProductDescriptionFromProductBOMIfConfigured(final org.compiere.model.I_C_OrderLine orderLine)
@@ -1006,13 +1012,16 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public CurrencyConversionContext extractCurrencyConversionContext(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	public void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		return currencyBL.createCurrencyConversionContext(
-				order.getDateAcct().toInstant(),
-				(CurrencyConversionTypeId)null,
-				ClientId.ofRepoId(order.getAD_Client_ID()),
-				OrgId.ofRepoId(order.getAD_Org_ID()));
+		final boolean isOnConsignment = computeIsOnConsignmentFromASI(orderLine);
+		orderLine.setIsOnConsignment(isOnConsignment);
+	}
+
+	private boolean computeIsOnConsignmentFromASI(@NonNull final I_C_OrderLine orderLine)
+	{
+		final OnConsignmentAttributeService onConsignmentAttributeService = SpringContextHolder.instance.getBean(OnConsignmentAttributeService.class);
+		final I_M_AttributeSetInstance productSI = orderLine.getM_AttributeSetInstance();
+		return onConsignmentAttributeService.isOnConsignment(productSI);
 	}
 }

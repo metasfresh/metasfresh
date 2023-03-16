@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IFlatrateBL;
@@ -48,7 +49,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 				new C_Flatrate_Term(
 						new ContractOrderService(),
 						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
-						ADReferenceService.newMocked()));
+						ADReferenceService.newMocked(),
+						new GLCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 

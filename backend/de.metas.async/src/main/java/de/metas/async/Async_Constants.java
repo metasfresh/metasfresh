@@ -64,12 +64,26 @@ public final class Async_Constants
 
 	public static final String C_Async_Batch_InternalName_Default = "Default";
 
+	/**
+	 * Referenced by the {@code C_OLCand}s that are to be processed. That means that when later-on,
+	 * the workpackage of {@link #C_Async_Batch_InternalName_ProcessOLCands} creates and waits for the execution of new WPs,
+	 * those new WP will belong to this async-batch.
+	 */
 	public static final String C_Async_Batch_InternalName_OLCand_Processing = "OLCand_Processing";
 	public static final String C_Async_Batch_InternalName_ShipmentSchedule = "ShipmentSchedule_Processing";
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate_Processing = "InvoiceCandidate_Processing";
 	public static final String C_Async_Batch_InternalName_DunningCandidate_Processing = "DunningCandidate_Processing";
 	public static final String C_Async_Batch_InternalName_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
 	public static final String C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation = "EnqueueInvoiceCandidateCreation";
+
+	/**
+	 * Used when a single olCand-Prozessing workpackage is enqueued.
+	 * That WPs job is to do the processing, which entails creating further workpackages.
+	 * In other words, we create and wait for a workpackage, the processor of which then creates and wait for a number of other WPs.
+	 * That is we need two different async-batches.
+	 *
+	 * @see #C_Async_Batch_InternalName_OLCand_Processing
+	 */
 	public static final String C_Async_Batch_InternalName_ProcessOLCands = "ProcessOLCands";
 	public static final String C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting = "AutomaticallyInvoicePdfPrinting";
 	public static final String C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting = "AutomaticallyDunningPdfPrinting";

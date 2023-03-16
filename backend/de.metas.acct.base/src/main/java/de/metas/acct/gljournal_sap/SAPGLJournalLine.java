@@ -1,6 +1,5 @@
 package de.metas.acct.gljournal_sap;
 
-import de.metas.acct.api.AccountId;
 import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -13,6 +12,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 
@@ -28,7 +28,7 @@ public class SAPGLJournalLine
 	@NonNull @Getter @Setter private SeqNo line;
 	@Nullable @Getter private final String description;
 
-	@NonNull @Getter private final AccountId accountId;
+	@NonNull @Getter private final Account account;
 	@NonNull @Getter private final PostingSign postingSign;
 	@NonNull @Getter private final Money amount;
 	@NonNull @Getter @Setter private Money amountAcct;

@@ -5,6 +5,7 @@ import java.awt.Color;
 import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.util.ColorId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -65,7 +66,7 @@ class PricingConditionsRowLookups
 	private final LookupDataSource paymentTermLookup;
 	private final LookupDataSource currencyIdLookup;
 
-	private CCache<Integer, String> temporaryPriceConditionsColorCache = CCache.newCache("temporaryPriceConditionsColor", 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, String> temporaryPriceConditionsColorCache = CCache.newCache("temporaryPriceConditionsColor", 1, CCache.EXPIREMINUTES_Never);
 
 	public PricingConditionsRowLookups(final LookupDataSourceFactory lookupDataSourceFactory)
 	{
@@ -178,7 +179,7 @@ class PricingConditionsRowLookups
 
 	private String retrieveTemporaryPriceConditionsColor()
 	{
-		final int temporaryPriceConditionsColorId = Services.get(IOrderLinePricingConditions.class).getTemporaryPriceConditionsColorId();
+		final ColorId temporaryPriceConditionsColorId = Services.get(IOrderLinePricingConditions.class).getTemporaryPriceConditionsColorId();
 		return toHexString(Services.get(IColorRepository.class).getColorById(temporaryPriceConditionsColorId));
 	}
 

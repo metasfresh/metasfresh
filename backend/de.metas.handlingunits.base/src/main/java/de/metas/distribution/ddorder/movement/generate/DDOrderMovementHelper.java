@@ -49,7 +49,7 @@ public class DDOrderMovementHelper
 				//
 				.dimensionFields(Dimension.builder()
 										 .activityId(ActivityId.ofRepoIdOrNull(ddOrder.getC_Activity_ID()))
-										 .orderId(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
+										 .salesOrderId(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
 										 .campaignId(ddOrder.getC_Campaign_ID())
 										 .projectId(ProjectId.ofRepoIdOrNull(ddOrder.getC_Project_ID()))
 										 .build());

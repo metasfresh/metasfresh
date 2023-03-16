@@ -3,6 +3,7 @@ package de.metas.acct.api;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import de.metas.acct.Account;
 
 /*
  * #%L
@@ -31,31 +32,33 @@ import lombok.Value;
 public class AcctSchemaGeneralLedger
 {
 	boolean suspenseBalancing;
-	AccountId suspenseBalancingAcctId;
+	Account suspenseBalancingAcct;
 
 	boolean currencyBalancing;
-	AccountId currencyBalancingAcctId;
+	Account currencyBalancingAcct;
 
 	@NonNull
-	AccountId intercompanyDueToAcctId;
+	Account intercompanyDueToAcct;
 	@NonNull
-	AccountId intercompanyDueFromAcctId;
+	Account intercompanyDueFromAcct;
 
 	@NonNull
-	AccountId incomeSummaryAcctId;
+	Account incomeSummaryAcct;
 	@NonNull
-	AccountId retainedEarningAcctId;
+	Account retainedEarningAcct;
 	
 	@NonNull
-	AccountId purchasePriceVarianceOffsetAcctId;
+	Account purchasePriceVarianceOffsetAcct;
 
-	public AccountId getDueToAcctId(final AcctSchemaElementType segment)
+	@NonNull
+	public Account getDueToAcct(final AcctSchemaElementType segment)
 	{
-		return intercompanyDueToAcctId;
+		return intercompanyDueToAcct;
 	}
 
-	public AccountId getDueFromAcct(final AcctSchemaElementType segment)
+	@NonNull
+	public Account getDueFromAcct(final AcctSchemaElementType segment)
 	{
-		return intercompanyDueFromAcctId;
+		return intercompanyDueFromAcct;
 	}
 }

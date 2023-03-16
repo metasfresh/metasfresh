@@ -120,7 +120,11 @@ public class PickingJobCreateCommand
 							.build(),
 					loadingSupportServices);
 
-			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			final PickingConfigV2 pickingConfig = getPickingConfig();
+			if (pickingConfig.isReserveHUsOnJobStart())
+			{
+				pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			}
 
 			return pickingJob;
 		}
@@ -228,9 +232,11 @@ public class PickingJobCreateCommand
 	{
 		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
 
+		final PickingConfigV2 pickingConfig = getPickingConfig();
+
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
 				.packageables(itemsForProduct)
-				.considerAttributes(getPickingConfig().isConsiderAttributes())
+				.considerAttributes(pickingConfig.isConsiderAttributes())
 				.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();

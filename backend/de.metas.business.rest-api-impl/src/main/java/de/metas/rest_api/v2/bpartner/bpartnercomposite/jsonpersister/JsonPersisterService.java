@@ -1171,6 +1171,26 @@ public class JsonPersisterService
 			bpartner.setSectionGroupPartnerId(sectionGroupPartnerId);
 		}
 
+		if (jsonBPartner.isProspectSet())
+		{
+			bpartner.setProspect(jsonBPartner.getProspect());
+		}
+
+		if(jsonBPartner.isSapBPartnerCodeSet())
+		{
+			bpartner.setSapBPartnerCode(jsonBPartner.getSapBPartnerCode());
+		}
+
+		if(jsonBPartner.isSectionGroupPartnerSet())
+		{
+			bpartner.setSectionGroupPartner(jsonBPartner.isSectionGroupPartner());
+		}
+
+		if(jsonBPartner.isSectionPartnerSet())
+		{
+			bpartner.setSectionPartner(jsonBPartner.isSectionPartner());
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
@@ -1926,6 +1946,16 @@ public class JsonPersisterService
 			location.setVatTaxId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
 		}
 
+		if(jsonBPartnerLocation.isSapPaymentMethodSet())
+		{
+			location.setSapPaymentMethod(jsonBPartnerLocation.getSapPaymentMethod());
+		}
+
+		if (jsonBPartnerLocation.isSapBPartnerCodeSet())
+		{
+			location.setSapBPartnerCode(jsonBPartnerLocation.getSapBPartnerCode());
+		}
+
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
 	}
@@ -2289,6 +2319,14 @@ public class JsonPersisterService
 			{
 				creditLimitBuilder.processed(jsonBPartnerCreditLimit.getProcessed());
 			}
+		}
+
+		// approvedBy
+		if (jsonBPartnerCreditLimit.isApprovedBySet())
+		{
+			final UserId approvedById = UserId.ofRepoIdOrNullIfSystem(JsonMetasfreshId.toValueInt(jsonBPartnerCreditLimit.getApprovedBy()));
+
+			creditLimitBuilder.approvedBy(approvedById);
 		}
 	}
 

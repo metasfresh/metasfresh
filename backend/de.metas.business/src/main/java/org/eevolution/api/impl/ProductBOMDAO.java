@@ -36,7 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
@@ -313,6 +312,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 			bomRecord.setBOMType(request.getBomType().getCode());
 		}
 
+		if (request.getResourceId() != null)
+		{
+			bomRecord.setS_PreferredResource_ID(request.getResourceId().getRepoId());
+		}
+
 		saveRecord(bomRecord);
 
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());
@@ -374,6 +378,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 		if (line.getLine() != null)
 		{
 			bomLineRecord.setLine(line.getLine());
+		}
+
+		if (line.getHelp() != null)
+		{
+			bomLineRecord.setHelp(line.getHelp());
 		}
 
 		saveRecord(bomLineRecord);

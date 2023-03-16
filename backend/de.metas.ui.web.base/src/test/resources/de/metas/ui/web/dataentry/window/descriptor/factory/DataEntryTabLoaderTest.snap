@@ -1832,6 +1832,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -1879,6 +1880,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -1926,6 +1928,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -1973,6 +1976,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2020,6 +2024,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2067,6 +2072,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2114,6 +2120,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2161,6 +2168,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2208,6 +2216,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2255,6 +2264,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2337,6 +2347,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": true
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2384,6 +2395,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2430,6 +2442,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -2476,6 +2489,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=1",
+              "minPrecision": 0,
               "parentLink": true,
               "parentLinkFieldName": "documentLinkColumnName",
               "readonlyLogic": "1=1",
@@ -2527,6 +2541,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -2576,6 +2591,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "numericKey": false
             },
             "mandatoryLogic": "1=1",
+            "minPrecision": 0,
             "parentLink": true,
             "parentLinkFieldName": "documentLinkColumnName",
             "readonlyLogic": "1=1",
@@ -2661,6 +2677,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2708,6 +2725,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2755,6 +2773,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2802,6 +2821,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2849,6 +2869,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2896,6 +2917,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2943,6 +2965,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -2990,6 +3013,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3037,6 +3061,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3084,6 +3109,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3166,6 +3192,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": true
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3213,6 +3240,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=0",
               "readonlyVirtualField": false,
@@ -3259,6 +3287,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -3305,6 +3334,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=1",
+              "minPrecision": 0,
               "parentLink": true,
               "parentLinkFieldName": "documentLinkColumnName",
               "readonlyLogic": "1=1",
@@ -3356,6 +3386,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "numericKey": false
               },
               "mandatoryLogic": "1=0",
+              "minPrecision": null,
               "parentLink": false,
               "readonlyLogic": "1=1",
               "readonlyVirtualField": false,
@@ -3405,6 +3436,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "numericKey": false
             },
             "mandatoryLogic": "1=1",
+            "minPrecision": 0,
             "parentLink": true,
             "parentLinkFieldName": "documentLinkColumnName",
             "readonlyLogic": "1=1",

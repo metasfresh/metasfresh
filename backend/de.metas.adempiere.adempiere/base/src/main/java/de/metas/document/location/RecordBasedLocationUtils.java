@@ -32,7 +32,7 @@ import org.compiere.model.PO;
 public class RecordBasedLocationUtils
 {
 	public static <SELF extends RecordBasedLocationAdapter<SELF>> void updateCapturedLocationAndRenderedAddressIfNeeded(
-			@NonNull RecordBasedLocationAdapter<SELF> locationAdapter,
+			@NonNull final RecordBasedLocationAdapter<SELF> locationAdapter,
 			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		final Object record = locationAdapter.getWrappedRecord();
@@ -42,6 +42,15 @@ public class RecordBasedLocationUtils
 		{
 			return;
 		}
+
+		updateCapturedLocationAndRenderedAddress(locationAdapter,documentLocationBL);
+	}
+
+	public static <SELF extends RecordBasedLocationAdapter<SELF>> void updateCapturedLocationAndRenderedAddress(
+			@NonNull final RecordBasedLocationAdapter<SELF> locationAdapter,
+			@NonNull final IDocumentLocationBL documentLocationBL)
+	{
+		final Object record = locationAdapter.getWrappedRecord();
 
 		final boolean isNewRecord = InterfaceWrapperHelper.isNew(record);
 		final DocumentLocation currentLocation = locationAdapter.toPlainDocumentLocation(documentLocationBL).orElse(DocumentLocation.EMPTY);

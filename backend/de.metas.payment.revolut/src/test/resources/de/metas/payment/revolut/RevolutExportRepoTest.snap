@@ -24,7 +24,7 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
         "tableName": "C_PaySelection"
       },
       "regionName": "region",
-      "revolutPaymentExportId": 100007,
+      "revolutPaymentExportId": 1000000,
       "routingNo": "routingNo"
     }
   ]

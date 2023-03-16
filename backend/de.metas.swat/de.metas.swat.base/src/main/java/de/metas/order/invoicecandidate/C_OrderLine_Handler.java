@@ -1,6 +1,5 @@
 package de.metas.order.invoicecandidate;
 
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -45,6 +44,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -128,7 +128,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final @NonNull QueryLimit limit_IGNORED)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -260,6 +260,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setExternalLineId(orderLine.getExternalId());
 		icRecord.setExternalHeaderId(order.getExternalId());
 
+		icRecord.setInvoiceAdditionalText(order.getInvoiceAdditionalText());
+		icRecord.setIsNotShowOriginCountry(order.isNotShowOriginCountry());
+		icRecord.setC_PaymentInstruction_ID(order.getC_PaymentInstruction_ID());
+
 		// Don't save.
 		// That's done by the invoking API-impl, because we want to avoid C_Invoice_Candidate.invalidateCandidates() from being called on every single IC that is created here.
 		// Because it's a performance nightmare for orders with a lot of lines
@@ -273,7 +277,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
 		if (orderLineDimension.getActivityId() == null)
 		{
-			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+			final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
 					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
 					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 					ProductId.ofRepoId(orderLine.getM_Product_ID()));
@@ -340,6 +344,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setPresetDateInvoiced(orderLine.getPresetDateInvoiced());
 
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
+		ic.setC_OrderSO_ID(orderLine.getC_OrderSO_ID());
 
 		setC_PaymentTerm(ic, orderLine);
 
@@ -388,11 +393,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		if (!ic.isSOTrx())
-		{
-			return;
-		}
-
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}

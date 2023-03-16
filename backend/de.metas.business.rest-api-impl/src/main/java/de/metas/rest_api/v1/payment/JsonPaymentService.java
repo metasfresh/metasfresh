@@ -253,6 +253,7 @@ public class JsonPaymentService
 		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString, orgId);
 	}
 
+	@NonNull
 	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
 	{
 		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier).docType(docType).orgId(orgId).build();

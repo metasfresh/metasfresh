@@ -58,6 +58,9 @@ public class JsonCreateBOMLine
 	@Schema(description = "Corresponding to 'PP_Product_BOMLine.IssueMethod")
 	String issueMethod;
 
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.Help")
+	String help;
+
 	@Schema(description = "Corresponding to `M_AttributeSetInstance`")
 	JsonAttributeSetInstance attributeSetInstance;
 
@@ -70,6 +73,7 @@ public class JsonCreateBOMLine
 			@JsonProperty("isQtyPercentage") @Nullable final Boolean isQtyPercentage,
 			@JsonProperty("scrap") final BigDecimal scrap,
 			@JsonProperty("issueMethod") @Nullable final String issueMethod,
+			@JsonProperty("help") @Nullable final String help,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance)
 	{
 
@@ -79,6 +83,7 @@ public class JsonCreateBOMLine
 		this.isQtyPercentage = isQtyPercentage;
 		this.scrap = scrap;
 		this.issueMethod = issueMethod;
+		this.help = help;
 		this.attributeSetInstance = attributeSetInstance;
 	}
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -45,7 +45,6 @@ import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -64,7 +63,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -74,7 +72,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
@@ -110,13 +107,12 @@ public class MD_Candidate_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private PostMaterialEventService postMaterialEventService;
-	private MaterialDispoRecordRepository materialDispoRecordRepository;
-	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private CandidateRepositoryWriteService candidateWriteService;
-	private MaterialEventObserver materialEventObserver;
+	private final PostMaterialEventService postMaterialEventService;
+	private final MaterialDispoRecordRepository materialDispoRecordRepository;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final MaterialEventObserver materialEventObserver;
 	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
-	private SimulatedCandidateService simulatedCandidateService;
+	private final SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final C_OrderLine_StepDefData orderLineTable;
@@ -134,20 +130,14 @@ public class MD_Candidate_StepDef
 		this.stockCandidateTable = stockCandidateTable;
 		this.orderLineTable = orderLineTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
-	}
 
-	@Before
-	public void beforeEach()
-	{
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
-		candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
-		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
-
+	
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
 	{
@@ -391,7 +381,7 @@ public class MD_Candidate_StepDef
 					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
 					.append(" See:\n");
 
-			logCandidateRecords(message);
+			logCandidateRecords(message, productIdSet);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -683,26 +673,12 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	private void logCurrentContext(@NonNull final MaterialDispoTableRow tableRow)
-	{
-		final StringBuilder message = new StringBuilder();
-
-		message.append("Looking for instance with:").append("\n")
-				.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(tableRow.getType().getCode()).append("\n")
-				.append(COLUMNNAME_M_Product_ID).append(" : ").append(tableRow.getProductId().getRepoId()).append("\n")
-				.append(COLUMNNAME_DateProjected).append(" : ").append(tableRow.getTime()).append("\n")
-				.append(COLUMNNAME_Qty).append(" : ").append(tableRow.getQty()).append("\n")
-				.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(tableRow.getAtp()).append("\n")
-				.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(tableRow.getBusinessCase()).append("\n");
-
-		logCandidateRecords(message);
-	}
-
-	private void logCandidateRecords(@NonNull final StringBuilder message)
+	private void logCandidateRecords(@NonNull final StringBuilder message, @NonNull final ImmutableSet<ProductId> productIds)
 	{
 		message.append("MD_Candidate records:").append("\n");
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_MD_Candidate.class)
 				.forEach(candidateRecord -> message

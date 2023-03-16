@@ -22,6 +22,7 @@
 
 package de.metas.inoutcandidate.document.dimension;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -50,9 +51,10 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -69,8 +71,10 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_Order_ID(OrderId.toRepoId(from.getOrderId()));
-		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		//record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
+		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
@@ -78,6 +82,5 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 		record.setUserElementString5(from.getUserElementString5());
 		record.setUserElementString6(from.getUserElementString6());
 		record.setUserElementString7(from.getUserElementString7());
-
 	}
 }

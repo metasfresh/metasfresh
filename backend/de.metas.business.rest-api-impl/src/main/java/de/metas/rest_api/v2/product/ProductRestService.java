@@ -95,15 +95,18 @@ public class ProductRestService
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final SectionCodeService sectionCodeService;
+	private final ProductAllergenRestService productAllergenRestService;
 
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final SectionCodeService sectionCodeService)
+			@NonNull final SectionCodeService sectionCodeService,
+			final ProductAllergenRestService productAllergenRestService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.sectionCodeService = sectionCodeService;
+		this.productAllergenRestService = productAllergenRestService;
 	}
 
 	@NonNull
@@ -207,6 +210,13 @@ public class ProductRestService
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens() != null)
+		{
+			productAllergenRestService.upsertProductAllergens(org,
+															  productId,
+															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
 		}
 
 		handleProductExternalReference(org,
@@ -833,9 +843,45 @@ public class ProductRestService
 			builder.purchased(existingProduct.isPurchased());
 		}
 
+		// SAPProductHierarchy
+		if (jsonRequestProductUpsertItem.isSapProductHierarchySet())
+		{
+			builder.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy());
+		}
+		else
+		{
+			builder.sapProductHierarchy(existingProduct.getSapProductHierarchy());
+		}
+
+		if (jsonRequestProductUpsertItem.isGuaranteeMonthsSet())
+		{
+			builder.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths());
+		}
+		else
+		{
+			builder.guaranteeMonths(existingProduct.getGuaranteeMonths());
+		}
+
+		if (jsonRequestProductUpsertItem.isWarehouseTemperatureSet())
+		{
+			builder.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature());
+		}
+		else
+		{
+			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
+		}
+
+		if(jsonRequestProductUpsertItem.isCodeSet())
+		{
+			builder.productNo(jsonRequestProductUpsertItem.getCode());
+		}
+		else
+		{
+			builder.productNo(existingProduct.getProductNo());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
-				.productNo(existingProduct.getProductNo())
 				.commodityNumberId(existingProduct.getCommodityNumberId())
 				.manufacturerId(existingProduct.getManufacturerId())
 				.packageSize(existingProduct.getPackageSize())
@@ -877,6 +923,9 @@ public class ProductRestService
 				.productValue(jsonRequestProductUpsertItem.getCode())
 				.sectionCodeId(sectionCodeId)
 				.purchased(purchased)
+				.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy())
+				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
+				.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature())
 				.build();
 	}
 

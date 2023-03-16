@@ -88,6 +88,11 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
 	public static final String PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN = "SFTPCreditLimitFileNamePattern";
 
+	public static final String PARAM_SFTP_CONVERSION_RATE_TARGET_DIRECTORY = "SFTP_ConversionRate_Target_Directory";
+	public static final String PARAM_SFTP_CONVERSION_RATE_FILENAME_PATTERN = "SFTPConversionRateFileNamePattern";
+
+	public static final String PARAM_SFTP_APPROVED_BY = "SFTP_ApprovedBy";
+
 	// Local File Config
 	public static final String PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY = "LocalFile_Product_Target_Directory";
 	public static final String PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN = "LocalFileProductFileNamePattern";
@@ -98,10 +103,15 @@ public class ExternalSystemConstants
 	public static final String PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN = "LocalFileCreditLimitFileNamePattern";
 	public static final String PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY = "LocalFile_CreditLimit_Target_Directory";
 
+	public static final String PARAM_LOCAL_FILE_CONVERSION_RATE_FILENAME_PATTERN = "LocalFileConversionRateFileNamePattern";
+	public static final String PARAM_LOCAL_FILE_CONVERSION_RATE_TARGET_DIRECTORY = "LocalFile_ConversionRate_Target_Directory";
+
 	public static final String PARAM_LOCAL_FILE_ROOT_LOCATION = "LocalFileRootLocation";
 	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";
 	public static final String PARAM_LOCAL_FILE_ERRORED_DIRECTORY = "LocalFileErroredDirectory";
 	public static final String PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS = "LocalFilePollingFrequencyInMs";
+
+	public static final String PARAM_LOCAL_FILE_APPROVED_BY = "LocalFile_ApprovedBy";
 	//
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
@@ -137,7 +147,6 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
-
 	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
 
 	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
@@ -151,4 +160,17 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
 	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";
+	public static final String PARAM_CHECK_DESCRIPTION_FOR_MATERIAL_TYPE = "CheckDescriptionForMaterialType";
+
+	public static final String PARAM_PROJECT_ID = "C_Project_ID";
+
+	public static final String PARAM_PostGREST_AD_Process_Value = "PostgREST_AD_Process_Value";
+	public static final String PARAM_PostGREST_AD_Process_Param_Record_ID_NAME = "PostgREST_AD_Process_Record_ID_Name";
+	public static final String PARAM_PostGREST_AD_Process_Param_Record_ID_VALUE = "PostgREST_AD_Process_Record_ID_Value";
+
+	public static final String PARAM_SAP_SignedVersion = "SAP_SignedVersion";
+	public static final String PARAM_SAP_SignedPermissions = "SAP_SignedPermissions";
+	public static final String PARAM_SAP_Signature = "SAP_Signature";
+	public static final String PARAM_SAP_Post_Acct_Documents_Path = "SAP_Post_Acct_Documents_Path";
+	public static final String PARAM_SAP_ApiVersion = "SAP_ApiVersion";
 }

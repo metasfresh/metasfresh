@@ -45,11 +45,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/project/workorder" })
+@RequestMapping(value = { WorkOrderProjectRestController.WORKORDER_PROJECT_REST_CONTROLLER_PATH_V2 })
 @Profile(Profiles.PROFILE_App)
 public class WorkOrderProjectRestController
 {
+	public static final String WORKORDER_PROJECT_REST_CONTROLLER_PATH_V2 = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/project/workorder";
+
 	private final WorkOrderProjectRestService workOrderProjectRestService;
 
 	public WorkOrderProjectRestController(@NonNull final WorkOrderProjectRestService workOrderProjectRestService)

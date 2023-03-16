@@ -1,14 +1,14 @@
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxIncluded_whenForRecord_thenReturnMediatedOrderModel=[
   {
-    "currencyId": 100023,
-    "id": 100024,
+    "currencyId": 1000000,
+    "id": 1000000,
     "mediatedOrderLines": [
       {
-        "id": 100025,
+        "id": 1000000,
         "invoicedCommissionPoints": 200.00,
         "orderedQty": {
           "qty": "10",
-          "uomId": 100022
+          "uomId": 1000000
         },
         "productId": 100,
         "updated": "1970-01-19T21:05:57.038Z"
@@ -16,7 +16,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
     ],
     "orderDateAcct": "2021-03-18",
     "orgBPartnerId": 1,
-    "orgId": 100016,
+    "orgId": 1000000,
     "updated": "1970-01-19T21:05:57.038Z",
     "vendorBPartnerId": 2
   }
@@ -25,15 +25,15 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
 
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderFactoryTest.givenValidMediatedOrder_taxNotIncluded_whenForRecord_thenReturnMediatedOrderModel=[
   {
-    "currencyId": 100033,
-    "id": 100034,
+    "currencyId": 1000000,
+    "id": 1000000,
     "mediatedOrderLines": [
       {
-        "id": 100035,
+        "id": 1000000,
         "invoicedCommissionPoints": 220,
         "orderedQty": {
           "qty": "10",
-          "uomId": 100032
+          "uomId": 1000000
         },
         "productId": 100,
         "updated": "1970-01-19T21:05:57.038Z"
@@ -41,7 +41,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
     ],
     "orderDateAcct": "2021-03-18",
     "orgBPartnerId": 1,
-    "orgId": 100026,
+    "orgId": 1000000,
     "updated": "1970-01-19T21:05:57.038Z",
     "vendorBPartnerId": 2
   }

@@ -51,6 +51,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -59,6 +60,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -115,8 +117,10 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -124,14 +128,18 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 public class OrderBL implements IOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(OrderBL.class);
+
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
+	private static final String SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION = "de.metas.order.impl.UseDefaultBillToLocationAsOrderDefaultLocation";
+
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
+	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
+	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyDeliveredSum = new ModelDynAttributeAccessor<>("QtyDeliveredSum", BigDecimal.class);
+	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyOrderedSum = new ModelDynAttributeAccessor<>("QtyOrderedSum", BigDecimal.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
-	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
-
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -142,12 +150,27 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+
+	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
+	{
+		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+	}
+
+	private static Optional<BPartnerLocationAndCaptureId> extractBPartnerLocation(final I_C_Order order)
+	{
+		return BPartnerLocationAndCaptureId.optionalOfRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID());
+	}
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
 		return orderDAO.getById(orderId);
+	}
+
+	@Override
+	public Map<OrderAndLineId, I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds)
+	{
+		return orderDAO.getOrderLinesByIds(orderAndLineIds);
 	}
 
 	@Override
@@ -444,10 +467,6 @@ public class OrderBL implements IOrderBL
 		}
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
-		if (docType == null)
-		{
-			return;
-		}
 
 		if (!docType.isCopyDescriptionToDocument())
 		{
@@ -489,7 +508,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
-		if(shipBPartnerId == null || billBPartnerId == null)
+		if (shipBPartnerId == null || billBPartnerId == null)
 		{
 			return Optional.empty(); // orderRecord is not yet ready
 		}
@@ -738,16 +757,6 @@ public class OrderBL implements IOrderBL
 		return true; // found it
 	}
 
-	private static BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
-	{
-		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-	}
-
-	private static Optional<BPartnerLocationAndCaptureId> extractBPartnerLocation(final I_C_Order order)
-	{
-		return BPartnerLocationAndCaptureId.optionalOfRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID());
-	}
-
 	@Override
 	public CurrencyPrecision getPricePrecision(final I_C_Order order)
 	{
@@ -940,10 +949,6 @@ public class OrderBL implements IOrderBL
 		return BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
 
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyDeliveredSum = new ModelDynAttributeAccessor<>("QtyDeliveredSum", BigDecimal.class);
-	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyOrderedSum = new ModelDynAttributeAccessor<>("QtyOrderedSum", BigDecimal.class);
-
 	@Override
 	public void updateOrderQtySums(final org.compiere.model.I_C_Order order)
 	{
@@ -1054,21 +1059,20 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@Nullable
 	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
-		return docTypeId != null
-				? docTypeBL.getById(docTypeId)
-				: null;
+		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
 	}
 
 	@Nullable
 	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeId != null
-				? docTypeBL.getById(docTypeId)
-				: null;
+		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()))
+				.map(docTypeBL::getById)
+				.orElse(null);
 	}
 
 	@Override
@@ -1205,7 +1209,7 @@ public class OrderBL implements IOrderBL
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
 
-		if(bpartnerLocationId == null)
+		if (bpartnerLocationId == null)
 		{
 			return null;
 		}
@@ -1221,11 +1225,57 @@ public class OrderBL implements IOrderBL
 		return getById(orderId).getDocumentNo();
 	}
 
-	@NonNull
+	@Override
 	public DocStatus getDocStatus(@NonNull final OrderId orderId)
 	{
-		final I_C_Order order = getById(orderId);
+		return DocStatus.ofNullableCodeOrUnknown(getById(orderId).getDocStatus());
+	}
 
-		return DocStatus.ofCode(order.getDocStatus());
+	@Override
+	public void save(final I_C_Order order)
+	{
+		orderDAO.save(order);
+	}
+
+	@Override
+	public CurrencyId getCurrencyId(final OrderId orderId)
+	{
+		return CurrencyId.ofRepoId(getById(orderId).getC_Currency_ID());
+	}
+
+	@Override
+	public Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId)
+	{
+		return orderDAO.getSOLineIdsByPOLineId(purchaseOrderLineId);
+	}
+
+	@Override
+	public void updateIsOnConsignmentFromLines(OrderId orderId)
+	{
+		final boolean isOnConsignment = orderDAO.hasIsOnConsignmentLines(orderId);
+		final I_C_Order order = getById(orderId);
+		order.setIsOnConsignment(isOnConsignment);
+		save(order);
+	}
+
+	public boolean isUseDefaultBillToLocationForBPartner(@NonNull final I_C_Order order)
+	{
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION, false))
+		{
+			return false;
+		}
+
+		if (!order.isSOTrx())
+		{
+			//only sales orders are relevant
+			return false;
+		}
+
+		if (order.getC_BPartner_ID() <= 0)
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

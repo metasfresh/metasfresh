@@ -6,7 +6,6 @@
         "bpartnerIdentifier":"ext-SAP-DIFF_PARTNER_CODE00",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
@@ -53,8 +52,8 @@
             "memoIsSet":false,
             "sectionCodeValue":null,
             "sectionCodeValueSet":false,
-            "description":"XXXX AAAA. DE VAT",
-            "descriptionSet":true,
+            "description":null,
+            "descriptionSet":false,
             "deliveryRule":null,
             "deliveryRuleSet":false,
             "deliveryViaRule":null,
@@ -78,7 +77,15 @@
             "syncAdvise":null,
             "syncAdviseSet":false,
             "sectionGroupPartnerIdentifier":null,
-            "sectionGroupPartnerIdentifierSet":false
+            "sectionGroupPartnerIdentifierSet":false,
+            "prospect":false,
+            "prospectSet":true,
+            "sapBPartnerCode":"DIFF_PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":true,
+            "sectionGroupPartnerSet":true,
+            "sectionPartner":false,
+            "sectionPartnerSet":false
           }
         }
       },
@@ -86,12 +93,11 @@
         "bpartnerIdentifier":"ext-SAP-DIFF_PARTNER_CODE00_SCOD",
         "externalVersion":null,
         "externalReferenceUrl":null,
-        "isReadOnlyInMetasfresh":true,
         "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"DIFF_PARTNER_CODE00_SCOD",
+            "code":"DIFF_PARTNER_CODE00 (SCOD)",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -133,18 +139,18 @@
             "memoIsSet":false,
             "sectionCodeValue":"SCOD",
             "sectionCodeValueSet":true,
-            "description":"XXXX AAAA. DE VAT",
-            "descriptionSet":true,
+            "description":null,
+            "descriptionSet":false,
             "deliveryRule":"Availability",
             "deliveryRuleSet":true,
             "deliveryViaRule":"Shipper",
             "deliveryViaRuleSet":true,
             "storageWarehouse":false,
             "storageWarehouseSet":true,
-            "incotermsCustomerValue":"",
-            "incotermsCustomerValueSet":true,
-            "incotermsVendorValue":"",
-            "incotermsVendorValueSet":true,
+            "incotermsCustomerValue":null,
+            "incotermsCustomerValueSet":false,
+            "incotermsVendorValue":null,
+            "incotermsVendorValueSet":false,
             "customerPaymentTermIdentifier":"val-M000",
             "customerPaymentTermIdentifierSet":true,
             "vendorPaymentTermIdentifier":"val-M000",
@@ -155,15 +161,22 @@
             "paymentRuleSet":true,
             "paymentRulePO":"OnCredit",
             "paymentRulePOSet":true,
+            "prospect":false,
+            "prospectSet":true,
             "syncAdvise":null,
-            "syncAdviseSet":false
+            "syncAdviseSet":false,
+            "sapBPartnerCode":"DIFF_PARTNER_CODE00",
+            "sapBPartnerCodeSet":true,
+            "sectionGroupPartner":false,
+            "sectionGroupPartnerSet":false,
+            "sectionPartner":true,
+            "sectionPartnerSet":true
           },
           "locations":{
             "requestItems":[
               {
                 "locationIdentifier":"ext-SAP-DIFF_PARTNER_CODE01_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
@@ -217,13 +230,16 @@
                   "replicationLookupDefault":false,
                   "replicationLookupDefaultSet":true,
                   "vatId":"DE111111111",
-                  "vatIdSet":true
+                  "vatIdSet":true,
+                  "sapPaymentMethod":"EO",
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"DIFF_PARTNER_CODE01",
+                  "sapBPartnerCodeSet":true
                 }
               },
               {
                 "locationIdentifier":"ext-SAP-DIFF_PARTNER_CODE02_SCOD",
                 "externalVersion":null,
-                "isReadOnlyInMetasfresh":true,
                 "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
@@ -277,7 +293,11 @@
                   "replicationLookupDefault":false,
                   "replicationLookupDefaultSet":true,
                   "vatId":"DE111111111",
-                  "vatIdSet":true
+                  "vatIdSet":true,
+                  "sapPaymentMethod":"EO",
+                  "sapPaymentMethodSet":true,
+                  "sapBPartnerCode":"DIFF_PARTNER_CODE02",
+                  "sapBPartnerCodeSet":true
                 }
               }
             ],

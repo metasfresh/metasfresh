@@ -42,11 +42,12 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
-import de.metas.resource.ResourceGroupId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.resource.ResourceGroupId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.Percent;
@@ -62,7 +63,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -73,6 +74,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
@@ -99,10 +102,11 @@ public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	final static int ONE_YEAR_DAYS = 365;
-	final static int TWO_YEAR_DAYS = 730;
-	final static int THREE_YEAR_DAYS = 1095;
-	final static int FIVE_YEAR_DAYS = 1825;
+	private static final int ONE_YEAR_DAYS = 365;
+	private static final int TWO_YEAR_DAYS = 730;
+	private static final int THREE_YEAR_DAYS = 1095;
+	private static final int FIVE_YEAR_DAYS = 1825;
+	private static final BigDecimal MONTH_IN_DAYS_APROX = new BigDecimal("30.42");
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -585,45 +589,58 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public int getProductGuaranteeDaysMinFallbackProductCategory(final @NonNull ProductId productId)
 	{
+		//
+		// M_Product.GuaranteeDaysMin
 		final I_M_Product productRecord = getById(productId);
-		if (productRecord.getGuaranteeDaysMin() > 0)
+		final int productGuaranteeDaysMin = productRecord.getGuaranteeDaysMin();
+		if (productGuaranteeDaysMin > 0)
 		{
-			return productRecord.getGuaranteeDaysMin();
+			return productGuaranteeDaysMin;
 		}
-		else if (Check.isNotBlank(productRecord.getGuaranteeMonths()))
+
+		//
+		// M_Product.GuaranteeMonths
+		final int productGuaranteeMonthsInDays = getGuaranteeMonthsInDays(productRecord);
+		if (productGuaranteeMonthsInDays > 0)
 		{
-			return getGuaranteeMonthsInDays(productId);
+			return productGuaranteeMonthsInDays;
 		}
-		else
-		{
-			final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
-			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
-			return productCategoryRecord.getGuaranteeDaysMin();
-		}
+
+		//
+		// M_Product_Category.GuaranteeDaysMin
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+		final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
+		return productCategoryRecord.getGuaranteeDaysMin();
 	}
 
-	@Override
-	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
+	private static int getGuaranteeMonthsInDays(@NonNull final I_M_Product product)
 	{
-		final I_M_Product product = getById(productId);
-		final String guaranteeMonths = product != null ? StringUtils.trimBlankToNull(product.getGuaranteeMonths()) : null;
-		if (guaranteeMonths == null)
+		final String guaranteeMonthsStr = StringUtils.trimBlankToNull(product.getGuaranteeMonths());
+		if (guaranteeMonthsStr == null)
 		{
 			return 0;
 		}
 
-		switch (guaranteeMonths)
+		if (X_M_Product.GUARANTEEMONTHS_12.equals(guaranteeMonthsStr))
 		{
-			case X_M_Product.GUARANTEEMONTHS_12:
-				return ONE_YEAR_DAYS;
-			case X_M_Product.GUARANTEEMONTHS_24:
-				return TWO_YEAR_DAYS;
-			case X_M_Product.GUARANTEEMONTHS_36:
-				return THREE_YEAR_DAYS;
-			case X_M_Product.GUARANTEEMONTHS_60:
-				return FIVE_YEAR_DAYS;
-			default:
-				return 0;
+			return ONE_YEAR_DAYS;
+		}
+		else if (X_M_Product.GUARANTEEMONTHS_24.equals(guaranteeMonthsStr))
+		{
+			return TWO_YEAR_DAYS;
+		}
+		else if (X_M_Product.GUARANTEEMONTHS_36.equals(guaranteeMonthsStr))
+		{
+			return THREE_YEAR_DAYS;
+		}
+		else if (X_M_Product.GUARANTEEMONTHS_60.equals(guaranteeMonthsStr))
+		{
+			return FIVE_YEAR_DAYS;
+		}
+		else
+		{
+			int guaranteeMonths = NumberUtils.asInt(guaranteeMonthsStr, 0);
+			return MONTH_IN_DAYS_APROX.multiply(BigDecimal.valueOf(guaranteeMonths)).setScale(0, RoundingMode.DOWN).intValueExact();
 		}
 	}
 

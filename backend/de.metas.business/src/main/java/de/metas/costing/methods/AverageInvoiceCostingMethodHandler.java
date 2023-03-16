@@ -51,7 +51,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -85,6 +85,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 			final CostPrice price = currentCosts.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 

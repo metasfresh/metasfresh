@@ -86,4 +86,7 @@ public interface IAcctSchemaDAO extends ISingletonService
 	I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(AcctSchemaId acctSchemaId);
 
 	void changeAcctSchemaAutomaticPeriodId(AcctSchemaId acctSchemaId, int periodId);
+
+	@NonNull
+	AcctSchema getByClientAndName(@NonNull ClientId clientId, @NonNull String name);
 }

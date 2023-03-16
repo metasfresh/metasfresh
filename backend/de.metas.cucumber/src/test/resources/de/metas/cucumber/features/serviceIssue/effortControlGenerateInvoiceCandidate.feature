@@ -2,7 +2,8 @@
 Feature: Create customer invoice candidates from effort control
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has current date and time
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -22,7 +23,7 @@ Feature: Create customer invoice candidates from effort control
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | invoiceableProduct      | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier  | Name                 | Value                | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | customer_SO | customer_SO_12102022 | customer_SO_12102022 | Y              | ps_SO                         |
     And metasfresh contains C_BPartner_Locations:

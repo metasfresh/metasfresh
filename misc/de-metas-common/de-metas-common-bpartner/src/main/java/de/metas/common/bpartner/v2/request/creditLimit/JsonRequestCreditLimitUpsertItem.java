@@ -73,6 +73,12 @@ public class JsonRequestCreditLimitUpsertItem
 	@Schema(hidden = true)
 	private boolean processedSet;
 
+	@Schema(description = "Translated to `C_BPartner_CreditLimit.ApprovedBy_ID`")
+	private JsonMetasfreshId approvedBy;
+
+	@Schema(hidden = true)
+	private boolean approvedBySet;
+
 	public void setAmount(final JsonMoney amount)
 	{
 		this.amount = amount;
@@ -107,5 +113,11 @@ public class JsonRequestCreditLimitUpsertItem
 	{
 		this.processed = processed;
 		this.processedSet = true;
+	}
+
+	public void setApprovedBy(final JsonMetasfreshId approvedBy)
+	{
+		this.approvedBy = approvedBy;
+		this.approvedBySet = true;
 	}
 }

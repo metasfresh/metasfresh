@@ -290,8 +290,8 @@ public class TaxDeclarationLinesBuilder
 		// Tax declaration accounting records
 		final List<I_Fact_Acct> factAcctRecords = factAcctDAO.retrieveQueryForDocument(documentBL.getDocument(invoice))
 				// fetch only those Fact_Acct records which are about taxes, i.e.
-				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Tax_ID, null) // C_Tax_ID is set
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // Line_ID is NOT set
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Tax_ID, null) // C_Tax_ID is set
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, null) // Line_ID is NOT set
 				//
 				.create()
 				.list();

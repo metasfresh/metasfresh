@@ -36,6 +36,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.project.ProjectId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
@@ -78,7 +79,8 @@ public class ExternallyReferencedCandidate
 				.qtyOrdered(newIC.getQtyOrdered())
 				.soTrx(newIC.getSoTrx())
 				.projectId(newIC.getProjectId())
-				.invoiceDetailItems(newIC.getInvoiceDetailItems());
+				.invoiceDetailItems(newIC.getInvoiceDetailItems())
+				.activityId(newIC.getActivityId());
 	}
 
 	private final OrgId orgId;
@@ -139,6 +141,9 @@ public class ExternallyReferencedCandidate
 
 	private ProjectId projectId;
 
+	@Nullable
+	private ActivityId activityId;
+
 	/**
 	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
 	 */
@@ -174,6 +179,7 @@ public class ExternallyReferencedCandidate
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final UserId userInChargeId,
+			@Nullable final ActivityId activityId,
 			@Nullable final String lineDescription,
 			@Nullable final ProjectId projectId,
 			@Nullable final String descriptionBottom,
@@ -208,6 +214,7 @@ public class ExternallyReferencedCandidate
 		this.projectId = projectId;
 		this.descriptionBottom = descriptionBottom;
 		this.userInChargeId = userInChargeId;
+		this.activityId = activityId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 

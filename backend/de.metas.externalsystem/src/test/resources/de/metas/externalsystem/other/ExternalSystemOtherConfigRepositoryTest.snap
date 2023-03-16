@@ -1,5 +1,6 @@
 de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.getById=[
   {
+    "autoSendDefaultShippingAddress": false,
     "id": {
       "externalSystemParentConfigId": 1
     },
@@ -15,6 +16,9 @@ de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.getById=[
         "value": "value2"
       }
     ],
+    "syncBPartnerEnabled": false,
+    "syncBudgetProjectsEnabled": false,
+    "syncWOProjectsEnabled": false,
     "value": {
       "externalSystemParentConfigId": 1
     }

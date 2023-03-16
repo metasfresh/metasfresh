@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.InvokeExternalSystemParametersUtil;
 import de.metas.common.externalsystem.JsonExternalMapping;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -75,6 +76,22 @@ public class ExternalMappingsHolder
 	public Optional<JsonMetasfreshId> resolveProductCategoryId(@Nullable final String externalValue)
 	{
 		return Optional.ofNullable(externalValue)
+				.map(externalRef2ProductCategory::get)
+				.map(JsonExternalMapping::getMetasfreshId);
+	}
+
+	@NonNull
+	public Optional<JsonMetasfreshId> resolveProductCategoryIdByMatchingValue(@Nullable final String externalValue)
+	{
+		if (externalValue == null || Check.isBlank(externalValue))
+		{
+			return Optional.empty();
+		}
+
+		return externalRef2ProductCategory.keySet()
+				.stream()
+				.filter(externalValue::contains)
+				.findFirst()
 				.map(externalRef2ProductCategory::get)
 				.map(JsonExternalMapping::getMetasfreshId);
 	}

@@ -1,22 +1,22 @@
 de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactoryTest.forRecord=[
   {
     "commissionDate": "2020-03-21",
-    "currencyId": 100008,
+    "currencyId": 1000000,
     "customerBPartnerId": 30,
-    "id": 100010,
+    "id": 1000000,
     "invoiceLines": [
       {
-        "currencyId": 100008,
+        "currencyId": 1000000,
         "id": {
-          "invoiceId": 100010,
-          "repoId": 100011
+          "invoiceId": 1000000,
+          "repoId": 1000000
         },
         "invoicedCommissionPoints": -100,
         "invoicedQty": {
           "qty": "0",
-          "uomId": 100007
+          "uomId": 1000000
         },
-        "productId": 100009,
+        "productId": 1000000,
         "updated": "2020-03-03T08:23:00.929Z"
       }
     ],

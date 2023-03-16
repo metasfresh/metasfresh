@@ -12,7 +12,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -205,8 +205,6 @@ public interface IProductDAO extends ISingletonService
 	void updateProduct(UpdateProductRequest request);
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
-
-	int getGuaranteeMonthsInDays(ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

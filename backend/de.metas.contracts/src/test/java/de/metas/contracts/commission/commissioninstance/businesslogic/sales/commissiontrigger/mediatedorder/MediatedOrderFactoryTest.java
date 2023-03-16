@@ -33,6 +33,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
@@ -76,6 +78,8 @@ public class MediatedOrderFactoryTest
 	@BeforeEach
 	public void beforeEach()
 	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+
 		commissionProductServiceMock = Mockito.mock(CommissionProductService.class);
 		mediatedOrderFactory = new MediatedOrderFactory(commissionProductServiceMock);
 	}

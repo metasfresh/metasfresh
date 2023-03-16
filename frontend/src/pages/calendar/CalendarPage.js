@@ -9,7 +9,7 @@ import { buildURL } from '../../utils';
 
 import './CalendarPage.scss';
 
-const DEFAULT_CALENDAR_VIEW = 'resourceTimelineYear';
+const DEFAULT_CALENDAR_VIEW = 'resourceTimelineMonth';
 
 const updateURI = (
   history,

@@ -1,6 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
-import de.metas.acct.api.IProductAcctDAO;
+import de.metas.acct.api.ProductActivityProvider;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -64,7 +64,7 @@ public class DistributeAndMoveReceiptCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
