@@ -24,11 +24,11 @@ const ButtonWithIndicator = ({
 
   const allergensWithColor = allergens != null && allergens.filter((allergen) => allergen.color != null);
 
-  const displayAllergens = allergensWithColor.length > 0;
+  const displayAllergens = allergensWithColor && allergensWithColor.length > 0;
 
   const displayHazards = hazardSymbols != null && hazardSymbols.length > 0;
 
-  const showHazardsAndAllergens = displayHazards || displayAllergens;
+  const displayHazardsAndAllergens = displayHazards || displayAllergens;
 
   return (
     <button
@@ -46,7 +46,7 @@ const ButtonWithIndicator = ({
             <div className="row">
               <span>{caption}</span>
             </div>
-            {showHazardsAndAllergens && (
+            {displayHazardsAndAllergens && (
               <div
                 className="row hazard-icons-btn"
                 style={{
