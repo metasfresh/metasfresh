@@ -1,18 +1,3 @@
-package de.metas.util.web;
-
-import de.metas.util.web.security.UserAuthTokenFilter;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-// import springfox.documentation.builders.ApiInfoBuilder;
-// import springfox.documentation.builders.ParameterBuilder;
-// import springfox.documentation.schema.ModelRef;
-// import springfox.documentation.service.ApiInfo;
-// import springfox.documentation.service.Parameter;
-// import springfox.documentation.spring.web.plugins.Docket;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
@@ -35,28 +20,36 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
+package de.metas.util.web;
+
+import de.metas.util.web.security.UserAuthTokenFilter;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.compiere.Adempiere;
+
 @UtilityClass
 public class SwaggerUtil
 {
-	// /**
-	//  * If you create swagger documentation for an API that is controlled by {@link UserAuthTokenFilter},
-	//  * then you can add this parameter to the {@link Docket}'s globalOperationParameters
-	//  */
-	// public static final Parameter SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER = new ParameterBuilder()
-	// 		.name(UserAuthTokenFilter.HEADER_Authorization)
-	// 		.description("Authorization token")
-	// 		.modelRef(new ModelRef("string"))
-	// 		.parameterType("header")
-	// 		.required(false) // not required because we have some endpoints which are excluded (like the /auth one)
-	// 		.build();
+	public static final Parameter SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER = new Parameter()
+			.name(UserAuthTokenFilter.HEADER_Authorization)
+			.description("Authorization token")
+			.in("header")
+			.allowEmptyValue(true)
+			.required(false);
 
 	public OpenAPI createApiInfo(
 			@NonNull final String title,
 			@NonNull final String description)
 	{
-		return new OpenAPI()
-				.info(new Info().title(title)
-							  .description(description)
-							  .license(new License().name("GNU General Public License, version 2").url("http://www.gnu.org/licenses/gpl-2.0.html")));
+		return new OpenAPI().info(new Info()
+						  .title(title)
+						  .description(description)
+						  .version(Adempiere.getBuildAndDateVersion())
+						  .license(new License().name("GNU General Public License, version 2")
+										   .url("http://www.gnu.org/licenses/gpl-2.0.html")));
 	}
 }
