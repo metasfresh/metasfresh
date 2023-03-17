@@ -11,14 +11,18 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.calculation_methods.CostCalculationMethod;
+import de.metas.order.costs.calculation_methods.CostCalculationMethodParams;
 import de.metas.order.costs.calculation_methods.FixedAmountCostCalculationMethodParams;
+import de.metas.order.costs.calculation_methods.PercentageCostCalculationMethodParams;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverters;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,10 +73,28 @@ class OrderCostTest
 
 	@Builder(builderMethodName = "orderCost", builderClassName = "$OrderCostBuilder")
 	private OrderCost createOrderCost(
-			@NonNull String fixedCostAmount,
+			@Nullable String fixedCostAmount,
+			@Nullable String percentageOfAmount,
 			@NonNull CostDistributionMethod distributionMethod,
 			@Singular ImmutableList<OrderCostDetail> details)
 	{
+		CostCalculationMethod calculationMethod;
+		CostCalculationMethodParams calculationMethodParams;
+		if (fixedCostAmount != null)
+		{
+			calculationMethod = CostCalculationMethod.FixedAmount;
+			calculationMethodParams = FixedAmountCostCalculationMethodParams.builder().fixedAmount(euro(fixedCostAmount)).build();
+		}
+		else if (percentageOfAmount != null)
+		{
+			calculationMethod = CostCalculationMethod.PercentageOfAmount;
+			calculationMethodParams = PercentageCostCalculationMethodParams.builder().percentage(Percent.of(percentageOfAmount)).build();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot determine the calculation method");
+		}
+
 		return OrderCost.builder()
 				.orderId(OrderId.ofRepoId(1))
 				.soTrx(SOTrx.PURCHASE)
@@ -80,10 +102,10 @@ class OrderCostTest
 				.bpartnerId(BPartnerId.ofRepoId(2))
 				.costElementId(CostElementId.ofRepoId(3))
 				.costTypeId(OrderCostTypeId.ofRepoId(4))
-				.calculationMethod(CostCalculationMethod.FixedAmount)
-				.calculationMethodParams(FixedAmountCostCalculationMethodParams.builder().fixedAmount(euro(fixedCostAmount)).build())
+				.calculationMethod(calculationMethod)
+				.calculationMethodParams(calculationMethodParams)
 				.distributionMethod(distributionMethod)
-				.costAmount(euro(fixedCostAmount))
+				.costAmount(euro("0")) // to be updated if needed
 				.details(details)
 				.build();
 	}
@@ -92,7 +114,7 @@ class OrderCostTest
 	class updateCostAmount
 	{
 		@Test
-		void amountBased()
+		void fixedAmount_distributeByAmount()
 		{
 			final OrderCost orderCost = orderCost()
 					.fixedCostAmount("10")
@@ -112,7 +134,39 @@ class OrderCostTest
 		}
 
 		@Test
-		void qtyBased()
+		void percentageOfAmount_distributeByAmount()
+		{
+			final OrderCost orderCost = orderCost()
+					.percentageOfAmount("10")
+					.distributionMethod(CostDistributionMethod.Amount)
+					.detail(detail().qty("1").orderLineNetAmt("100").build())
+					.detail(detail().qty("1").orderLineNetAmt("95").build())
+					.build();
+
+			orderCost.updateCostAmount(currencyId -> CurrencyPrecision.ofInt(4), QuantityUOMConverters.noConversion());
+			assertThat(orderCost.getCostAmount()).isEqualTo(euro("19.5"));
+			assertThat(orderCost.getDetails().get(0).getCostAmount()).isEqualTo(euro("10"));
+			assertThat(orderCost.getDetails().get(1).getCostAmount()).isEqualTo(euro("9.5"));
+		}
+
+		@Test
+		void percentageOfAmount_distributeByQty()
+		{
+			final OrderCost orderCost = orderCost()
+					.percentageOfAmount("10")
+					.distributionMethod(CostDistributionMethod.Quantity)
+					.detail(detail().qty("95").orderLineNetAmt("500").build())
+					.detail(detail().qty("5").orderLineNetAmt("500").build())
+					.build();
+
+			orderCost.updateCostAmount(currencyId -> CurrencyPrecision.ofInt(4), QuantityUOMConverters.noConversion());
+			assertThat(orderCost.getCostAmount()).isEqualTo(euro("100"));
+			assertThat(orderCost.getDetails().get(0).getCostAmount()).isEqualTo(euro("95"));
+			assertThat(orderCost.getDetails().get(1).getCostAmount()).isEqualTo(euro("5"));
+		}
+
+		@Test
+		void fixedAmount_distributeByQuantity()
 		{
 			final OrderCost orderCost = orderCost()
 					.fixedCostAmount("10")
