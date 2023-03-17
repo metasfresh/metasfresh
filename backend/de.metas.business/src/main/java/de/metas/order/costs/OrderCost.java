@@ -113,8 +113,42 @@ public class OrderCost
 			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		this.costAmount = computeCostAmount(currencyPrecisionProvider);
-		distributeCostAmountToDetails(currencyPrecisionProvider, uomConverter);
+		if (CostCalculationMethod.PercentageOfAmount.equals(calculationMethod)
+				&& CostDistributionMethod.Amount.equals(distributionMethod))
+		{
+			updateCostAmount_AmountBasedDistribution_using_PercetangeOfAmountCalculationMethod(currencyPrecisionProvider);
+		}
+		else
+		{
+			this.costAmount = computeCostAmount(currencyPrecisionProvider);
+			distributeCostAmountToDetails(currencyPrecisionProvider, uomConverter);
+		}
+	}
+
+	private void updateCostAmount_AmountBasedDistribution_using_PercetangeOfAmountCalculationMethod(
+			@NonNull final Function<CurrencyId, CurrencyPrecision> currencyPrecisionProvider)
+	{
+		final PercentageCostCalculationMethodParams calculationMethodParams = (PercentageCostCalculationMethodParams)getCalculationMethodParams();
+		if (calculationMethodParams == null)
+		{
+			throw new AdempiereException("No PercentageCostCalculationMethodParams found");
+		}
+		final Percent percent = calculationMethodParams.getPercentage();
+
+		final CurrencyId currencyId = getCurrencyId();
+		Money lineCostAmountSum = Money.zero(currencyId);
+		final CurrencyPrecision precision = currencyPrecisionProvider.apply(currencyId);
+
+		for (int i = 0, lastIndex = details.size() - 1; i <= lastIndex; i++)
+		{
+			final OrderCostDetail detail = details.get(i);
+			final Money lineCostAmount = detail.getOrderLineNetAmt().multiply(percent, precision);
+			lineCostAmountSum = lineCostAmountSum.add(lineCostAmount);
+
+			detail.setCostAmount(lineCostAmount);
+		}
+
+		this.costAmount = lineCostAmountSum;
 	}
 
 	private Money computeCostAmount(
