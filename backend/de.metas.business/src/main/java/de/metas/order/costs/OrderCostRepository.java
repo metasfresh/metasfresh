@@ -30,13 +30,7 @@ public class OrderCostRepository
 
 	public List<OrderCost> getByOrderId(@NonNull final OrderId orderId)
 	{
-		final ImmutableSet<OrderCostId> orderCostIds = queryBL.createQueryBuilder(I_C_Order_Cost.class)
-				.addEqualsFilter(I_C_Order_Cost.COLUMNNAME_C_Order_ID, orderId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.listIds(OrderCostId::ofRepoId);
-
-		return getByIds(orderCostIds);
+		return newSession().getByOrderId(orderId);
 	}
 
 	public List<OrderCost> getByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
