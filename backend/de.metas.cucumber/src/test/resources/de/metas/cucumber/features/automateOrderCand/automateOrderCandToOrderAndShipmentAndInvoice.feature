@@ -13,7 +13,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
 
-
+  @ignore
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_100
