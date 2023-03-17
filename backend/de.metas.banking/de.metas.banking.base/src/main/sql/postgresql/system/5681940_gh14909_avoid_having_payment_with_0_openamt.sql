@@ -84,3 +84,10 @@ COMMENT ON FUNCTION getopenpayments(
 * Used in de.mets.paymentallocation.form.Allocation.queryPaymentTable()
 * Uses the view T_GetOpenPayments as return type'
 ;
+
+
+ALTER FUNCTION paymentallocatedamt(numeric) STABLE
+;
+
+ALTER FUNCTION paymentavailable(numeric) STABLE
+;
