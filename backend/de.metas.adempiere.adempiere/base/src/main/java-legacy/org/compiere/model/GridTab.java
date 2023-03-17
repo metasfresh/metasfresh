@@ -2769,7 +2769,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	@Override
 	public <T> T getModelBeforeChanges(final Class<T> modelClass)
 	{
-		return InterfaceWrapperHelper.createOld(this, modelClass);
+		final T model = InterfaceWrapperHelper.create(this, modelClass);
+		return InterfaceWrapperHelper.createOld(model, modelClass);
 	}
 
 	/**

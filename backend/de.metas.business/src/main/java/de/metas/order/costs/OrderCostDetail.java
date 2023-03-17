@@ -23,52 +23,61 @@ public class OrderCostDetail
 	@Setter(AccessLevel.PACKAGE)
 	@Getter @Nullable OrderCostDetailId id;
 
-	@Getter @NonNull private final OrderLineId orderLineId;
-	@Getter @NonNull private final ProductId productId;
-	@Getter @NonNull private final Quantity qtyOrdered;
-	@Getter @NonNull private final Money orderLineNetAmt;
+	@Getter @NonNull private OrderCostDetailOrderLinePart orderLineInfo;
 	@Getter private Money costAmount;
-
 	@Getter @NonNull Quantity inoutQty;
 	@Getter @NonNull Money inoutCostAmount;
 
 	@Builder(toBuilder = true)
 	private OrderCostDetail(
 			@Nullable final OrderCostDetailId id,
-			@NonNull final OrderLineId orderLineId,
-			@NonNull final ProductId productId,
-			@NonNull final Quantity qtyOrdered,
-			@NonNull final Money orderLineNetAmt,
+			@NonNull final OrderCostDetailOrderLinePart orderLineInfo,
 			@Nullable final Money costAmount,
 			@Nullable final Quantity inoutQty,
 			@Nullable Money inoutCostAmount)
 	{
+		final Money orderLineNetAmt = orderLineInfo.getOrderLineNetAmt();
+		final Quantity qtyOrdered = orderLineInfo.getQtyOrdered();
+
 		Money.assertSameCurrency(orderLineNetAmt, costAmount, inoutCostAmount);
 		Quantity.assertSameUOM(qtyOrdered, inoutQty);
 
 		this.id = id;
-		this.orderLineId = orderLineId;
-		this.productId = productId;
-		this.qtyOrdered = qtyOrdered;
-		this.orderLineNetAmt = orderLineNetAmt;
+		this.orderLineInfo = orderLineInfo;
 		this.costAmount = costAmount != null ? costAmount : orderLineNetAmt.toZero();
 		this.inoutQty = inoutQty != null ? inoutQty : qtyOrdered.toZero();
 		this.inoutCostAmount = inoutCostAmount != null ? inoutCostAmount : orderLineNetAmt.toZero();
 	}
 
+	public OrderLineId getOrderLineId() {return orderLineInfo.getOrderLineId();}
+
+	public Money getOrderLineNetAmt() {return orderLineInfo.getOrderLineNetAmt();}
+
+	public Quantity getQtyOrdered() {return orderLineInfo.getQtyOrdered();}
+
+	public ProductId getProductId() {return orderLineInfo.getProductId();}
+
 	public CurrencyId getCurrencyId()
 	{
-		return orderLineNetAmt.getCurrencyId();
+		return orderLineInfo.getCurrencyId();
 	}
 
 	public UomId getUomId()
 	{
-		return qtyOrdered.getUomId();
+		return orderLineInfo.getUomId();
+	}
+
+	public void setOrderLineInfo(@NonNull final OrderCostDetailOrderLinePart orderLineInfo)
+	{
+		this.costAmount.assertCurrencyId(orderLineInfo.getCurrencyId());
+		Quantity.assertSameUOM(this.inoutQty, orderLineInfo.getQtyOrdered());
+		
+		this.orderLineInfo = orderLineInfo;
 	}
 
 	void setCostAmount(@NonNull final Money costAmountNew)
 	{
-		Money.assertSameCurrency(this.orderLineNetAmt, costAmountNew);
+		costAmountNew.assertCurrencyId(orderLineInfo.getCurrencyId());
 		this.costAmount = costAmountNew;
 	}
 
@@ -82,7 +91,7 @@ public class OrderCostDetail
 	{
 		return toBuilder()
 				.id(null)
-				.orderLineId(mapper.getTargetOrderLineId(orderLineId))
+				.orderLineInfo(orderLineInfo.withOrderLineId(mapper.getTargetOrderLineId(orderLineInfo.getOrderLineId())))
 				.build();
 	}
 }

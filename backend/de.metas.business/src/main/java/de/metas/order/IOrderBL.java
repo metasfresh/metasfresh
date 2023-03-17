@@ -123,6 +123,8 @@ public interface IOrderBL extends ISingletonService
 
 	Map<OrderAndLineId, de.metas.interfaces.I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds);
 
+	de.metas.interfaces.I_C_OrderLine getLineById(@NonNull OrderAndLineId orderAndLineId);
+
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
 	 * <ul>
