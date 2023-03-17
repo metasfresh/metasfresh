@@ -2,11 +2,11 @@ package de.metas.order.costs.inout;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.order.costs.OrderCost;
@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public class InOutCostCreateCommand
 {
-	@NonNull final ICurrencyBL currencyBL;
+	@NonNull final MoneyService moneyService;
 	@NonNull private final IUOMConversionBL uomConversionBL;
 	@NonNull private final IInOutBL inoutBL;
 	@NonNull private final OrderCostRepository orderCostRepository;
@@ -36,7 +36,7 @@ public class InOutCostCreateCommand
 
 	@Builder
 	private InOutCostCreateCommand(
-			final @NonNull ICurrencyBL currencyBL,
+			final @NonNull MoneyService moneyService,
 			final @NonNull IUOMConversionBL uomConversionBL,
 			final @NonNull IInOutBL inoutBL,
 			final @NonNull OrderCostRepository orderCostRepository,
@@ -44,7 +44,7 @@ public class InOutCostCreateCommand
 			final @NonNull InOutId inoutId)
 
 	{
-		this.currencyBL = currencyBL;
+		this.moneyService = moneyService;
 		this.uomConversionBL = uomConversionBL;
 		this.inoutBL = inoutBL;
 		this.orderCostRepository = orderCostRepository;
@@ -86,7 +86,7 @@ public class InOutCostCreateCommand
 				}
 
 				final Quantity inoutQtyConv = inoutQty.getQtyInUOM(detail.getUomId(), uomConversionBL);
-				final CurrencyPrecision precision = currencyBL.getStdPrecision(orderCost.getCurrencyId());
+				final CurrencyPrecision precision = moneyService.getStdPrecision(orderCost.getCurrencyId());
 				final Money inoutCostAmount = orderCost.computeInOutCostAmountForQty(orderLineId, inoutQtyConv, precision);
 
 				final OrderCostAddInOutResult addResult = orderCost.addInOutCost(

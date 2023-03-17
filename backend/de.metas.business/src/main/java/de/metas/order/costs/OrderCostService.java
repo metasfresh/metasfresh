@@ -3,7 +3,6 @@ package de.metas.order.costs;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyRepository;
-import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -16,6 +15,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.order.costs.inout.InOutCostCreateCommand;
@@ -60,7 +60,6 @@ public class OrderCostService
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInOutBL inoutBL = Services.get(IInOutBL.class);
-	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final OrderCostRepository orderCostRepository;
 	@NonNull private final OrderCostTypeRepository costTypeRepository;
@@ -92,7 +91,7 @@ public class OrderCostService
 	{
 		OrderCostCreateCommand.builder()
 				.orderBL(orderBL)
-				.currencyBL(currencyBL)
+				.moneyService(moneyService)
 				.uomConverter(uomConversionBL)
 				.orderCostRepository(orderCostRepository)
 				.costTypeRepository(costTypeRepository)
@@ -125,7 +124,7 @@ public class OrderCostService
 	public void createInOutCosts(@NonNull final InOutId inoutId)
 	{
 		InOutCostCreateCommand.builder()
-				.currencyBL(currencyBL)
+				.moneyService(moneyService)
 				.uomConversionBL(uomConversionBL)
 				.inoutBL(inoutBL)
 				.orderCostRepository(orderCostRepository)
@@ -224,4 +223,34 @@ public class OrderCostService
 		orderCostRepository.saveAll(clonedOrderCosts);
 	}
 
+	public void updateOrderCostsOnOrderLineChanged(final OrderCostDetailOrderLinePart orderLineInfo)
+	{
+		orderCostRepository.changeByOrderLineId(
+				orderLineInfo.getOrderLineId(),
+				orderCost -> {
+					orderCost.updateOrderLineInfoIfApplies(orderLineInfo, moneyService::getStdPrecision, uomConversionBL);
+					updateCreatedOrderLineIfAny(orderCost);
+				});
+
+	}
+
+	private void updateCreatedOrderLineIfAny(@NonNull final OrderCost orderCost)
+	{
+		if (orderCost.getCreatedOrderLineId() == null)
+		{
+			return;
+		}
+
+		CreateOrUpdateOrderLineFromOrderCostCommand.builder()
+				.orderBL(orderBL)
+				.moneyService(moneyService)
+				.orderCost(orderCost)
+				.build()
+				.execute();
+	}
+
+	public void deleteByCreatedOrderLineId(@NonNull final OrderAndLineId createdOrderLineId)
+	{
+		orderCostRepository.deleteByCreatedOrderLineId(createdOrderLineId);
+	}
 }

@@ -54,12 +54,24 @@ import java.util.stream.StreamSupport;
  */
 
 /**
- * @author based on https://gist.github.com/JakeWharton/9734167
+ * @author based on <a href="https://gist.github.com/JakeWharton/9734167">GIST</a>
  * @author metas-dev <dev@metasfresh.com>
  */
 @UtilityClass
 public final class GuavaCollectors
 {
+	public static <T> Collector<T, ?, ArrayList<T>> toArrayList()
+	{
+		return Collector.of(
+				ArrayList::new,
+				ArrayList::add,
+				(acc1, acc2) -> {
+					acc1.addAll(acc2);
+					return acc1;
+				},
+				Function.identity());
+	}
+
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
 	 */
@@ -189,7 +201,6 @@ public final class GuavaCollectors
 	/**
 	 * Collect items and join them to String using given <code>joiner</code>.
 	 *
-	 * @param joiner
 	 * @return collector
 	 */
 	public static <T> Collector<T, ?, String> toString(final Joiner joiner)
@@ -211,7 +222,7 @@ public final class GuavaCollectors
 
 	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
 	{
-		return ImmutableMap.<Map.Entry<K, V>, K, V>toImmutableMap(e -> e.getKey(), e -> e.getValue());
+		return ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue);
 	}
 
 	/**
@@ -219,7 +230,6 @@ public final class GuavaCollectors
 	 * <p>
 	 * If duplicate key was found, the last provided item will be used.
 	 *
-	 * @param keyMapper
 	 * @return immutable map collector
 	 * @see #toImmutableMapByKeyKeepFirstDuplicate(Function)
 	 */
@@ -234,7 +244,6 @@ public final class GuavaCollectors
 	 * <p>
 	 * If duplicate key was found, the last provided item will be used.
 	 *
-	 * @param keyMapper
 	 * @return {@link HashMap} collector
 	 */
 	public static <K, V> Collector<V, ?, HashMap<K, V>> toHashMapByKey(final Function<? super V, ? extends K> keyMapper)
@@ -265,7 +274,6 @@ public final class GuavaCollectors
 	 * <p>
 	 * If duplicate key was found, the first provided item will be used.
 	 *
-	 * @param keyMapper
 	 * @return immutable map collector
 	 * @see #toImmutableMapByKey(Function)
 	 */
@@ -317,12 +325,12 @@ public final class GuavaCollectors
 
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap()
 	{
-		return ImmutableListMultimap.<Map.Entry<K, V>, K, V>toImmutableListMultimap(e -> e.getKey(), e -> e.getValue());
+		return ImmutableListMultimap.toImmutableListMultimap(Entry::getKey, Entry::getValue);
 	}
 
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableSetMultimap<K, V>> toImmutableSetMultimap()
 	{
-		return ImmutableSetMultimap.<Map.Entry<K, V>, K, V>toImmutableSetMultimap(e -> e.getKey(), e -> e.getValue());
+		return ImmutableSetMultimap.toImmutableSetMultimap(Entry::getKey, Entry::getValue);
 	}
 
 	public static <K, V> Collector<V, ?, ArrayListMultimap<K, V>> toArrayListMultimapByKey(@NonNull final Function<V, K> keyFunction)
