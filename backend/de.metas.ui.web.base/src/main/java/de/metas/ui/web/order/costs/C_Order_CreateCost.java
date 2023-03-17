@@ -124,7 +124,6 @@ public class C_Order_CreateCost extends JavaProcess
 
 			orderLine = OrderCostCreateRequest.OrderLine.builder()
 					.productId(p_InvoiceableProductId)
-					.bpartnerId2(p_bpartnerId)
 					.build();
 		}
 		else
