@@ -2,8 +2,12 @@ package de.metas.order.costs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -18,6 +22,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 
 class OrderCostCreateCommand
@@ -71,7 +76,7 @@ class OrderCostCreateCommand
 				.build();
 
 		orderCost.updateCostAmount(currencyBL::getStdPrecision, uomConverter);
-
+		createOrderLineIfNeeded(order, orderCost);
 		orderCostRepository.save(orderCost);
 
 		return orderCost;
@@ -105,4 +110,48 @@ class OrderCostCreateCommand
 				.qtyOrdered(IOrderBL.extractQtyEntered(orderLine))
 				.build();
 	}
+
+	public void createOrderLineIfNeeded(final I_C_Order order, final OrderCost orderCost)
+	{
+		final OrderCostCreateRequest.OrderLine addOrderLineRequest = request.getAddOrderLine();
+		if (addOrderLineRequest == null)
+		{
+			return;
+		}
+
+		final I_C_OrderLine orderLine = orderBL.createOrderLine(order);
+
+		orderBL.setProductId(orderLine, addOrderLineRequest.getProductId(), true);
+
+		orderLine.setQtyEntered(BigDecimal.ONE);
+		orderLine.setQtyOrdered(BigDecimal.ONE);
+
+		orderLine.setIsManualPrice(true);
+		orderLine.setIsPriceEditable(false);
+
+		final Money costAmountConv = convertToOrderCurrency(orderCost.getCostAmount(), order);
+		orderLine.setPriceEntered(costAmountConv.toBigDecimal());
+		orderLine.setPriceActual(costAmountConv.toBigDecimal());
+
+		orderLine.setIsManualDiscount(true);
+		orderLine.setDiscount(BigDecimal.ZERO);
+
+		orderLine.setC_BPartner2_ID(BPartnerId.toRepoId(addOrderLineRequest.getBpartnerId2()));
+
+		orderBL.save(orderLine);
+
+		orderCost.setCreatedOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+	}
+
+	private Money convertToOrderCurrency(final Money amt, final I_C_Order order)
+	{
+		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
+		final CurrencyConversionContext conversionCtx = orderBL.getCurrencyConversionContext(order);
+		return currencyBL.convert(
+						conversionCtx,
+						amt,
+						orderCurrencyId)
+				.getAmountAsMoney();
+	}
+
 }

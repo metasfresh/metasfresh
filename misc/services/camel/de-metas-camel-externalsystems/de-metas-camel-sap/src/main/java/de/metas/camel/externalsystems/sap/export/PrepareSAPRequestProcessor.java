@@ -23,13 +23,19 @@
 package de.metas.camel.externalsystems.sap.export;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.sap.export.generalledger.lobservices.RequestBuilder;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URI;
 import static de.metas.camel.externalsystems.sap.export.ExportAcctDetailsRouteBuilder.ROUTE_PROPERTY_EXPORT_ACCT_ROUTE_CONTEXT;
 
 public class PrepareSAPRequestProcessor implements Processor
@@ -43,16 +49,31 @@ public class PrepareSAPRequestProcessor implements Processor
 	}
 
 	@Override
-	public void process(final Exchange exchange)
+	public void process(final Exchange exchange) throws ParserConfigurationException, TransformerException
 	{
 		final JsonNode processResponse = exchange.getIn().getBody(JsonNode.class);
+
+		if (!processResponse.isArray())
+		{
+			throw new RuntimeException("Unexpected response! see: " + processResponse);
+		}
 
 		final ExportAcctDetailsRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange,
 																								   ROUTE_PROPERTY_EXPORT_ACCT_ROUTE_CONTEXT,
 																								   ExportAcctDetailsRouteContext.class);
 
-		processLogger.logMessage("TargetURL: \n" + routeContext.getCredentials().getPostAcctDocumentsURL()
-										 + "\n\nPostgREST response: \n" + processResponse.toString(),
-								 exchange.getIn().getHeader(ExternalSystemCamelConstants.HEADER_PINSTANCE_ID, Integer.class));
+		final ImmutableList<JsonNode> documentTypeGLItems = ImmutableList.copyOf(processResponse.iterator());
+
+		if (documentTypeGLItems.isEmpty())
+		{
+			processLogger.logMessage("No accounting records retrieved! see request: " + routeContext.getInvokePostgRESTRequest(),
+									 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
+		}
+
+		exchange.getIn().setHeader(HEADER_TARGET_URI, routeContext.getCredentials().getPostAcctDocumentsURL());
+
+		final String requestBody = RequestBuilder.getXMLRequest(documentTypeGLItems);
+
+		exchange.getIn().setBody(requestBody);
 	}
 }

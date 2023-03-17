@@ -1,17 +1,17 @@
 # About this document
 
-This file contains the tasks/issues which we implement in metasfresh, in a chronological fashion (latest first).
+THE RELEASE NOTES ARE NOW MAINTAINED AT https://github.com/metasfresh/metasfresh-release-info/blob/master/ReleaseNotes.md
 
-Additional notes:
- * The metasfresh source code is hosted at https://github.com/metasfresh/metasfresh
- * The metasfresh website is at [metasfresh.com/en](https://metasfresh.com/en) (English), [metasfresh.com](https://metasfresh.com/) (German)
- * You can also follow us on Twitter: [@metasfresh](https://twitter.com/metasfresh) (English), [@metasfreshDE](https://twitter.com/metasfreshde) (German D/A/CH)
-
-Here come the actual release notes:
+This file remains here just for "history".
+Here come the actual (historical) release notes:
 
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14879](https://github.com/metasfresh/metasfresh/issues/14879) Fix the Open Linked Accounting transactions action
+  * [#14722](https://github.com/metasfresh/metasfresh/issues/14722) Report Accounts information changes
+  * [#14835](https://github.com/metasfresh/metasfresh/issues/14835) Manage filtering with attributes in HU reservation screen
+  * [#14841](https://github.com/metasfresh/metasfresh/issues/14841) SAP GL Journal Window Adjustment
   * [#14849](https://github.com/metasfresh/metasfresh/pull/14849) Allow creation of goods issue for the qty that ws just received in the case of b2b
   * [#14813](https://github.com/metasfresh/metasfresh/issues/14813) Resource reservation presentation 
   * [#14755](https://github.com/metasfresh/metasfresh/issues/14755) Correction Invoices 

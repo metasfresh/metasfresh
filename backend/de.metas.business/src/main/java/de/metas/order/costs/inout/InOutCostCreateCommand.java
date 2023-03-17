@@ -87,7 +87,7 @@ public class InOutCostCreateCommand
 
 				final Quantity inoutQtyConv = inoutQty.getQtyInUOM(detail.getUomId(), uomConversionBL);
 				final CurrencyPrecision precision = currencyBL.getStdPrecision(orderCost.getCurrencyId());
-				final Money inoutCostAmount = orderCost.computeCostAmountForQty(orderLineId, inoutQtyConv, precision);
+				final Money inoutCostAmount = orderCost.computeInOutCostAmountForQty(orderLineId, inoutQtyConv, precision);
 
 				final OrderCostAddInOutResult addResult = orderCost.addInOutCost(
 						OrderCostAddInOutRequest.builder()

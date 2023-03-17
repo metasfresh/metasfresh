@@ -22,9 +22,14 @@
 
 package de.metas.camel.externalsystems.sap.export;
 
+import de.metas.camel.externalsystems.common.v2.InvokeProcessCamelRequest;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -32,4 +37,9 @@ public class ExportAcctDetailsRouteContext
 {
 	@NonNull
 	SAPCredentials credentials;
+
+	@Nullable
+	@NonFinal
+	@Setter
+	InvokeProcessCamelRequest invokePostgRESTRequest;
 }
