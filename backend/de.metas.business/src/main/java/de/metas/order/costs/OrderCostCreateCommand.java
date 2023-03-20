@@ -93,6 +93,17 @@ class OrderCostCreateCommand
 		// Make sure all lines are from a single order
 		CollectionUtils.extractSingleElement(orderAndLineIds, OrderAndLineId::getOrderId);
 
+<<<<<<< HEAD
+=======
+		// Do not allow order lines created by other costs
+		// Maybe in future we will support it, but now, that's the simplest way to avoid recursion.
+		final ImmutableSet<OrderLineId> orderLineIds = orderAndLineIds.stream().map(OrderAndLineId::getOrderLineId).collect(ImmutableSet.toImmutableSet());
+		if (orderCostRepository.hasCostsByCreatedOrderLineIds(orderLineIds))
+		{
+			throw new AdempiereException("Cannot use order lines which were created by other costs");
+		}
+
+>>>>>>> 5d1cf1d54a4 (hotfix cannot delete order line; show delete option in order windows/cost tab (#14934))
 		return orderBL.getLinesByIds(orderAndLineIds)
 				.values()
 				.stream()

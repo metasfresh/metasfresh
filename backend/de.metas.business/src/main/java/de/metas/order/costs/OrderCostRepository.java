@@ -285,6 +285,19 @@ public class OrderCostRepository
 				.delete();
 	}
 
+	public boolean hasCostsByCreatedOrderLineIds(final ImmutableSet<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_C_Order_Cost.class)
+				.addInArrayFilter(I_C_Order_Cost.COLUMNNAME_Created_OrderLine_ID, orderLineIds)
+				.create()
+				.anyMatch();
+	}
+
 	public void deleteByCreatedOrderLineId(@NonNull final OrderAndLineId createdOrderLineId)
 	{
 		final I_C_Order_Cost orderCostRecord = queryBL.createQueryBuilder(I_C_Order_Cost.class)
