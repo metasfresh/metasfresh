@@ -90,7 +90,7 @@ class OrderCostCreateCommand
 		// Do not allow order lines created by other costs
 		// Maybe in future we will support it, but now, that's the simplest way to avoid recursion.
 		final ImmutableSet<OrderLineId> orderLineIds = orderAndLineIds.stream().map(OrderAndLineId::getOrderLineId).collect(ImmutableSet.toImmutableSet());
-		if (!orderCostRepository.getByOrderLineIds(orderLineIds).isEmpty())
+		if (orderCostRepository.hasCostsByCreatedOrderLineIds(orderLineIds))
 		{
 			throw new AdempiereException("Cannot use order lines which were created by other costs");
 		}
