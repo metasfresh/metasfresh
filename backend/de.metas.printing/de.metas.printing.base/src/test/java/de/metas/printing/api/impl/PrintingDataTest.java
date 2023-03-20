@@ -55,7 +55,11 @@ class PrintingDataTest
 	final void beforeEach(TestInfo testInfo)
 	{
 		AdempiereTestHelper.get().init();
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> ba2bad2c3f6 (fix PrintingDataTest (depended on previous tests))
 		helper = new Helper(testInfo);
 		helper.setup(); // this also sets Adempiere.isUnitTestMode() to true, which we need when setting up the BLs below
 
