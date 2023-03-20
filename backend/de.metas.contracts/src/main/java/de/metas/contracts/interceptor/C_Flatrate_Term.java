@@ -281,7 +281,11 @@ public class C_Flatrate_Term
 				}
 
 				final LocalDateAndOrgId lastPeriodEndDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(periodsOfTerm.size() - 1).getEndDate(), orgId, orgDAO::getTimeZone);
+<<<<<<< HEAD
 				
+=======
+
+>>>>>>> 3ad6f3c5cd8 (port cucumber fixes for commission-scenarios (#14937))
 				if (lastPeriodEndDate.compareTo(endDate) < 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
