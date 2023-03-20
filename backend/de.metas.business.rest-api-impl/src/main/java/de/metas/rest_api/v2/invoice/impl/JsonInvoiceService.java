@@ -738,8 +738,8 @@ public class JsonInvoiceService
 	{
 		final BankAccountId bankAccountId = paymentService
 				.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
-				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for org-id: %s, currency: %s and iban: %s",
-																		orgId, currencyId, request.getTargetIBAN())));
+				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for the org-bpartner of org-id: %s, currency-id: %s and iban: %s",
+																		orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
 
 		final DefaultPaymentBuilder paymentBuilder = JsonPaymentDirection.INBOUND == request.getType()
 				? paymentService.newInboundReceiptBuilder()
