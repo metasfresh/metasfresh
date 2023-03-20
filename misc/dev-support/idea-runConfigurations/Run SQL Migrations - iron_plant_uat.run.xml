@@ -12,7 +12,7 @@
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
         <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
-        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="misc/dev-support/docker/infrastructure/env-files/iron_plant_uat.env" />
+        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/iron_plant_uat.env" />
       </ENTRIES>
     </extension>
     <method v="2">
