@@ -1,8 +1,7 @@
 
 ## It needs to run with an env-File
 
-In order to allow multiple databases, each running at the same time with the SQL from different base branches,
-the `docker-compose.yml` contains environment variables.
+In order to have different base-branches' databases, the `docker-compose.yml` contains environment variables.
 
 Therefor, docker-compose.yml file needs to be run in conjunction with a dedicated env-File.
 There is one env-File for each base branch (if one is missing, just add it :-D )
@@ -10,21 +9,11 @@ There is one env-File for each base branch (if one is missing, just add it :-D )
 ## There are scripts
 
 There are shell scripts in the `scripts` folder.
-
-### Example 1
-
 To spin up the docker-compose infrastructure for e.g. the release-branch, run (tested with git bash under windows):
+
 ```bash
 ./10_reset_db_to_seed_dump.sh release
 ```
-
-### Example 2
-
-To spin up the docker-compose infrastructure with the **default** ports (e.g. `5432` for PostgreSQL), you can run:
-```bash
-./10_reset_db_to_seed_dump.sh default
-```
-
 
 ## The long story - if you want to do it by foot
 

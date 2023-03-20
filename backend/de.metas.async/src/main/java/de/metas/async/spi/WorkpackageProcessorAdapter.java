@@ -40,7 +40,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	}
 
 	@Override
-	public final void setC_Queue_WorkPackage(I_C_Queue_WorkPackage workpackage)
+	public final void setC_Queue_WorkPackage(final I_C_Queue_WorkPackage workpackage)
 	{
 		this.workpackage = workpackage;
 	}
@@ -71,7 +71,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	public final Optional<ILock> getElementsLock()
 	{
 		final String elementsLockOwnerName = getParameters().getParameterAsString(PARAMETERNAME_ElementsLockOwner);
-		if (Check.isEmpty(elementsLockOwnerName, true))
+		if (Check.isBlank(elementsLockOwnerName))
 		{
 			return Optional.empty(); // no lock was created for this workpackage
 		}
@@ -84,7 +84,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		}
 		catch (final LockFailedException e)
 		{
-			// this can happen, if e.g. there was a restart, or if the WP was flaged as error once
+			// this can happen, if e.g. there was a restart, or if the WP was flagged as error once
 			Loggables.addLog("Missing lock for ownerName={}; was probably cleaned up meanwhile", elementsLockOwnerName);
 			return Optional.empty();
 		}

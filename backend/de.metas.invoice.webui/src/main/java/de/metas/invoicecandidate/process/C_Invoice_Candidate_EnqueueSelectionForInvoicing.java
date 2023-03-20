@@ -238,7 +238,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
 				// .setFailOnChanges(true) // NOTE: use the standard settings (which will fallback on SysConfig)
 				//
-				.enqueueSelection(pinstanceId);
+				.prepareAndEnqueueSelection(pinstanceId);
 
 		return enqueueResult.getSummaryTranslated(getCtx());
 	}

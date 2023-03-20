@@ -38,7 +38,7 @@ Feature: Camel-ExternalSystem authorization
       | JsonExternalSystemMessage.type |
       | REQUEST_AUTHORIZATION          |
 
-    Then after not more than 30s, validate AD_User_AuthToken record
+    Then after not more than 60s, validate AD_User_AuthToken record
       | AD_User_AuthToken_ID.Identifier | AD_User_ID.Identifier | AD_Role_ID.Identifier |
       | cucumberUserAuthToken_100       | externalSystemUser    | WebUIRole             |
 

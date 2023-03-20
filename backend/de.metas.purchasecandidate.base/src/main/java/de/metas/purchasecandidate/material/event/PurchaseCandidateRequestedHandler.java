@@ -61,6 +61,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
