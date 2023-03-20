@@ -385,8 +385,8 @@ public class PP_Order_Candidate_StepDef
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 
-		final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DatePromised);
-		final Instant dateStartSchedule = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
+		final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DatePromised);
+		final ZonedDateTime dateStartSchedule = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_Processed);
 		final Boolean isClosed = DataTableUtil.extractBooleanForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_IsClosed);
 
