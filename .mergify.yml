@@ -54,8 +54,8 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: &MERGIFY_PR_BODY # we include the original body, because it might reference the metasfresh-issue
+            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\n----\n\n**Original PR-body (if any):**\n{{ body }}\n\n----\n\n**Mergify-Cherry-Pick-Error (if any)**\n{{cherry_pick_error}}"
 
 #
 # PRs for hotfix => _uat
@@ -71,8 +71,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a big_coconut_hotfix-Branch PR is integrated, create a PR towards the big_coconut_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -85,8 +84,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a blonde_monkey_hotfix-Branch PR is integrated, create a PR towards the blonde_monkey_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -99,8 +97,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a hard_encoded_hotfix-Branch PR is integrated, create a PR towards the hard_encoded_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -113,8 +110,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a intensive_care_hotfix-Branch PR is integrated, create a PR towards the intensive_care_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -127,8 +123,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a mad_orange_hotfix-Branch PR is integrated, create a PR towards the mad_orange_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -141,8 +136,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a secondary_opinion_hotfix-Branch PR is integrated, create a PR towards the secondary_opinion_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -155,8 +149,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a scary_plum_hotfix-Branch PR is integrated, create a PR towards the scary_plum_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -169,8 +162,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a science_vessel_hotfix-Branch PR is integrated, create a PR towards the science_vessel_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -183,8 +175,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a tenacious_d_hotfix-Branch PR is integrated, create a PR towards the tenacious_d_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -197,8 +188,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a tasty_ham_hotfix-Branch PR is integrated, create a PR towards the tasty_ham_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -211,8 +201,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:  
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
   - name: When a yoyo_hotfix-Branch PR is integrated, create a PR towards the yoyo_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
@@ -225,8 +214,7 @@ pull_request_rules:
           - "{{ author }}"
         labels:
           - "ops:merge_towards_master"
-        body: # we include the original body, because it might reference the metasfresh-issue
-            "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\nOriginal PR-body:\n{{ body }}\n\n{{cherry_pick_error}}"
+        body: *MERGIFY_PR_BODY
 
 ############
 # Act on PRs
