@@ -22,6 +22,10 @@
 
 package de.metas.externalsystem.sap.export;
 
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalRepository;
+import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.DocTypeId;
@@ -53,6 +57,14 @@ public class AcctDocumentInfoProvider
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+
+	@NonNull
+	private final SAPGLJournalRepository sapglJournalRepository;
+
+	public AcctDocumentInfoProvider(final @NonNull SAPGLJournalRepository sapglJournalRepository)
+	{
+		this.sapglJournalRepository = sapglJournalRepository;
+	}
 
 	@NonNull
 	public AcctDocumentInfo loadDocumentInfo(@NonNull final TableRecordReference recordReference)
@@ -88,6 +100,12 @@ public class AcctDocumentInfoProvider
 				return AcctDocumentInfo.builder()
 						.docTypeId(DocTypeId.ofRepoId(movement.getC_DocType_ID()))
 						.orgId(OrgId.ofRepoId(movement.getAD_Org_ID()))
+						.build();
+			case I_SAP_GLJournal.Table_Name:
+				final SAPGLJournal sapglJournal = sapglJournalRepository.getById(recordReference.getIdAssumingTableName(I_SAP_GLJournal.Table_Name, SAPGLJournalId::ofRepoId));
+				return AcctDocumentInfo.builder()
+						.docTypeId(sapglJournal.getDocTypeId())
+						.orgId(sapglJournal.getOrgId())
 						.build();
 			default:
 				throw new AdempiereException("Unsupported TableRecordReference!")
