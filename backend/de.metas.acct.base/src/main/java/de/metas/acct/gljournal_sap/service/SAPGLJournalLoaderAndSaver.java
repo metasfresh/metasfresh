@@ -2,6 +2,7 @@ package de.metas.acct.gljournal_sap.service;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -14,6 +15,7 @@ import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.currency.FixedConversionRate;
+import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyConversionTypeId;
@@ -34,7 +36,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -160,6 +161,7 @@ public class SAPGLJournalLoaderAndSaver
 
 		return SAPGLJournal.builder()
 				.id(extractId(headerRecord))
+				.docTypeId(DocTypeId.ofRepoId(headerRecord.getC_DocType_ID()))
 				.conversionCtx(conversionCtx)
 				.acctSchemaId(AcctSchemaId.ofRepoId(headerRecord.getC_AcctSchema_ID()))
 				.postingType(PostingType.ofCode(headerRecord.getPostingType()))
