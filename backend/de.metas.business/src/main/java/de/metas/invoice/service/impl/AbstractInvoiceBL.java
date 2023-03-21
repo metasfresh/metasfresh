@@ -230,7 +230,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice,
-																											 false).toBigDecimal(); // creditMemoAdjusted = false
+																										   false).toBigDecimal(); // creditMemoAdjusted = false
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
@@ -1830,8 +1830,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-										 final I_C_Invoice creditMemo,
-										 final BigDecimal openAmt)
+			final I_C_Invoice creditMemo,
+			final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
@@ -1978,7 +1978,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public Optional<CountryId> getBillToCountryId(@NonNull final InvoiceId invoiceId)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		if(invoice == null)
+		if (invoice == null)
 		{
 			return Optional.empty();
 		}
