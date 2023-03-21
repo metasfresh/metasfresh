@@ -83,7 +83,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
-		int selectionCount = createSelection();
+		final int selectionCount = createSelection();
 
 		if (selectionCount <= 0)
 		{
@@ -161,15 +161,15 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 				.end()
 				.create();
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, p_OrgId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID)
 				.subQuery(subQuery_Product)
 				.end()
 				.addOnlyContextClient();
-
-		return queryBuilder;
 	}
 }
