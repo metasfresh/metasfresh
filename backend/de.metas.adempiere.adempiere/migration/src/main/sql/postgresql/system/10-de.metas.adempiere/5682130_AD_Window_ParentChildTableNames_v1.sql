@@ -67,7 +67,7 @@ FROM (SELECT w.AD_Window_ID
 ;
 
 /*
-select * from AD_Window_ParentChildTableNames_v1 
+select * from AD_Window_ParentChildTableNames_v1
 where true
 order by parentTableName, AD_Window_ID, childTableName;
 */
