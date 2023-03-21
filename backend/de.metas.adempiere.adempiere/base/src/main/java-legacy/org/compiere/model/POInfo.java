@@ -46,7 +46,7 @@ import java.util.Set;
  * @author Jorg Janke
  * @author Victor Perez, e-Evolution SC
  * <li>[ 2195894 ] Improve performance in PO engine
- * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335">http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335</a>
+ * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  */
 public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 {
@@ -503,7 +503,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	/**
 	 * @return list column names which compose the primary key or empty list; never return null
 	 */
-	@NonNull
 	public List<String> getKeyColumnNames()
 	{
 		return m_keyColumnNames;

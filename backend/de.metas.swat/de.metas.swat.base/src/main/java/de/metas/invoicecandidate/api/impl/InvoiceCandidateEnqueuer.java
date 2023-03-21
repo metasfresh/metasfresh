@@ -28,7 +28,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -36,7 +35,6 @@ import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -106,14 +104,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		// Here we just need the "set" if ICs and prepare them one by one.
-		// Since whe have the selection-PInstanceId, we don't need to go through the hassle of obtaining a guaranteed iterator.
-		final Iterable<I_C_Invoice_Candidate> unorderedICs = retrieveSelection(pinstanceId);
+		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
 
 		//
 		// Create invoice candidates changes checker.
 		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
-		icChangesChecker.setBeforeChanges(unorderedICs);
+		icChangesChecker.setBeforeChanges(invoiceCandidates);
 
 		//
 		// Prepare
@@ -134,7 +130,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
-		icChangesChecker.assertNoChanges(unorderedICs);
+		icChangesChecker.assertNoChanges(invoiceCandidates);
 
 		//
 		// Create workpackages.
@@ -153,14 +149,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
-		//
-		// now we get the ICs to enqueue, and we assume that their ordering is "stable".
-		// I.e. even if someone changes some values, that's nothing to bother us here
-		final Iterator<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForSelectionStableOrdering(pinstanceId);
-
-		while(invoiceCandidates.hasNext() )
+		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
 		{
-			final I_C_Invoice_Candidate icRecord = invoiceCandidates.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
@@ -324,10 +314,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	/**
 	 * NOTE: we designed this method for the case of enqueuing a big number of invoice candidates.
 	 */
-	private Iterable<I_C_Invoice_Candidate> retrieveSelection(@NonNull final PInstanceId pinstanceId)
+	private Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
-		return () -> invoiceCandDAO.retrieveIcForSelection(pinstanceId,
-														   PlainContextAware.newWithThreadInheritedTrx(getCtx()));
+		return () -> {
+			final Properties ctx = getCtx();
+			trxManager.assertThreadInheritedTrxExists();
+			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
+		};
 	}
 
 	@Override
@@ -363,7 +356,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setInvoicingParams(final IInvoicingParams invoicingParams)
+	public IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
@@ -408,7 +401,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(final BigDecimal totalNetAmtToInvoiceChecksum)
+	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		this._totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 		return this;
