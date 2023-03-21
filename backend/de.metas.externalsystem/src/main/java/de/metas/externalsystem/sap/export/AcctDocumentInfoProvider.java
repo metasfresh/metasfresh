@@ -22,6 +22,10 @@
 
 package de.metas.externalsystem.sap.export;
 
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalRepository;
+import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.DocTypeId;
@@ -59,6 +63,14 @@ public class AcctDocumentInfoProvider
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@NonNull
+	private final SAPGLJournalRepository sapglJournalRepository;
+
+	public AcctDocumentInfoProvider(final @NonNull SAPGLJournalRepository sapglJournalRepository)
+	{
+		this.sapglJournalRepository = sapglJournalRepository;
+	}
+
+	@NonNull
 	public AcctDocumentInfo loadDocumentInfo(@NonNull final TableRecordReference recordReference)
 	{
 		switch (recordReference.getTableName())
@@ -92,6 +104,12 @@ public class AcctDocumentInfoProvider
 				return AcctDocumentInfo.builder()
 						.docTypeId(DocTypeId.ofRepoId(movement.getC_DocType_ID()))
 						.orgId(OrgId.ofRepoId(movement.getAD_Org_ID()))
+						.build();
+			case I_SAP_GLJournal.Table_Name:
+				final SAPGLJournal sapglJournal = sapglJournalRepository.getById(recordReference.getIdAssumingTableName(I_SAP_GLJournal.Table_Name, SAPGLJournalId::ofRepoId));
+				return AcctDocumentInfo.builder()
+						.docTypeId(sapglJournal.getDocTypeId())
+						.orgId(sapglJournal.getOrgId())
 						.build();
 			case I_C_Invoice.Table_Name:
 				final I_C_Invoice invoice = invoiceBL.getById(recordReference.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId));

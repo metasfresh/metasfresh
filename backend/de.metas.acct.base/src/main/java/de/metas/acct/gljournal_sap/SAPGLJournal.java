@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
+import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
@@ -37,6 +38,8 @@ public class SAPGLJournal
 {
 	@NonNull @Getter private final SAPGLJournalId id;
 	@NonNull @Getter private final SAPGLJournalCurrencyConversionCtx conversionCtx;
+
+	@NonNull @Getter private final DocTypeId docTypeId;
 
 	@NonNull @Getter private final AcctSchemaId acctSchemaId;
 	@NonNull @Getter private final PostingType postingType;
