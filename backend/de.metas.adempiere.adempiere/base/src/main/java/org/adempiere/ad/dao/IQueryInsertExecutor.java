@@ -58,14 +58,19 @@ public interface IQueryInsertExecutor<ToModelType, FromModelType>
 
 	/**
 	 * Map a column name in target model and set it to a constant.
+	 *
+	 * @param toColumnName
+	 * @param constantValue
 	 */
 	IQueryInsertExecutor<ToModelType, FromModelType> mapColumnToConstant(String toColumnName, Object constantValue);
 
 	/**
 	 * Map a column name in target model to a given SQL (which is based on from model).
-	 * <p/>
+	 *
 	 * NOTE: calling this method is discouraged. Used mainly to port old code.
 	 *
+	 * @param toColumnName
+	 * @param fromSql
 	 */
 	IQueryInsertExecutor<ToModelType, FromModelType> mapColumnToSql(String toColumnName, String fromSql);
 
@@ -80,7 +85,7 @@ public interface IQueryInsertExecutor<ToModelType, FromModelType>
 	IQueryInsertExecutor<ToModelType, FromModelType> creatingSelectionOfInsertedRows();
 
 	@Immutable
-	final class QueryInsertExecutorResult
+	public static final class QueryInsertExecutorResult
 	{
 		public static QueryInsertExecutorResult of(final int rowsInserted, final PInstanceId insertSelectionId)
 		{

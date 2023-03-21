@@ -29,7 +29,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -38,7 +37,6 @@ import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -132,6 +130,37 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
+<<<<<<< HEAD
+=======
+		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
+
+		//
+		// Create invoice candidates changes checker.
+		final IInvoiceCandidatesChangesChecker icChangesChecker = newInvoiceCandidatesChangesChecker();
+		icChangesChecker.setBeforeChanges(invoiceCandidates);
+
+		//
+		// Prepare
+		prepareSelectionForEnqueueing(pinstanceId);
+		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
+		// * the ones which are in our selection, we will updated right now (see below)
+		// * the other ones will be updated later, asynchronously
+
+		//
+		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
+		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
+		invoiceCandBL.updateInvalid()
+				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.setLockedBy(icLock)
+				.setTaggedWithAnyTag()
+				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
+				.update();
+
+		//
+		// Make sure there are no changes in amounts or relevant fields (if that is required)
+		icChangesChecker.assertNoChanges(invoiceCandidates);
+
+>>>>>>> 2355629c199 (Revert "Make sure that ICs are always enqueued in their intended order (_hotfix)")
 		//
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
@@ -149,14 +178,17 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
+<<<<<<< HEAD
 		//
 		// now we get the ICs to enqueue, and we assume that their ordering is "stable".
 		// I.e. even if someone changes some values, that's nothing to bother us here
 		final Iterator<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForSelectionStableOrdering(pinstanceId);
 
 		while (invoiceCandidates.hasNext())
+=======
+		for (final I_C_Invoice_Candidate icRecord : invoiceCandidates)
+>>>>>>> 2355629c199 (Revert "Make sure that ICs are always enqueued in their intended order (_hotfix)")
 		{
-			final I_C_Invoice_Candidate icRecord = invoiceCandidates.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				// Fail if the invoice candidate has issues
@@ -358,10 +390,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	/**
 	 * NOTE: we designed this method for the case of enqueuing a big number of invoice candidates.
 	 */
-	private Iterable<I_C_Invoice_Candidate> retrieveSelection(@NonNull final PInstanceId pinstanceId)
+	private Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
-		return () -> invoiceCandDAO.retrieveIcForSelection(pinstanceId,
-														   PlainContextAware.newWithThreadInheritedTrx(getCtx()));
+		return () -> {
+			final Properties ctx = getCtx();
+			trxManager.assertThreadInheritedTrxExists();
+			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
+		};
 	}
 
 	@Override
@@ -397,7 +432,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setInvoicingParams(final IInvoicingParams invoicingParams)
+	public IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;
@@ -442,7 +477,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(final BigDecimal totalNetAmtToInvoiceChecksum)
+	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		this._totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 		return this;
