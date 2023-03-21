@@ -124,7 +124,7 @@ public class JsonPaymentService
 		if (!bankAccountIdOptional.isPresent())
 		{
 			return ResponseEntity.unprocessableEntity().body(String.format(
-					"Cannot find Bank Account for org-bpartner-id: %s, currency: %s and account: %s",
+					"Cannot find Bank Account for for the org-bpartner of org-id: %s, currency: %s and account: %s",
 					orgBPartnerIdOptional.get().getRepoId(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
 		}
 
