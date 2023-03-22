@@ -1,9 +1,6 @@
 package de.metas.handlingunits.allocation.strategy;
 
-<<<<<<< HEAD
 import de.metas.acct.api.ProductActivityProvider;
-=======
->>>>>>> 519a1f53a88 (#14542 prevent overallocation when using UniformAllocationStrategy (#14967))
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUTestHelper;
@@ -37,10 +34,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
-<<<<<<< HEAD
-import org.junit.Assert;
-=======
->>>>>>> 519a1f53a88 (#14542 prevent overallocation when using UniformAllocationStrategy (#14967))
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
