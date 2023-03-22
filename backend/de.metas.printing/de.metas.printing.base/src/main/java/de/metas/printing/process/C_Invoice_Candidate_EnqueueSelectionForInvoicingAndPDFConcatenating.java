@@ -74,15 +74,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	@RunOutOfTrx
 	protected void prepare()
 	{
-<<<<<<< HEAD
-		int selectionCount = createSelection();
-=======
-		final IParams params = getParameterAsIParams();
-		this.invoicingParams = new InvoicingParams(params);
-
 		final int selectionCount = createSelection();
-
->>>>>>> 9aa9c33d00f (Also ignore inactive ICs (don't ignore inactive masterdata though))
 		if (selectionCount <= 0)
 		{
 			throw new AdempiereException(IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P);
