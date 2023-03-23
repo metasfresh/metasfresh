@@ -180,7 +180,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			final boolean anonymousHuPickedOnTheFly)
 	{
 		// Retrieve VHU, TU and LU
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
 		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
 
 		// Create ShipmentSchedule Qty Picked record
