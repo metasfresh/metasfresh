@@ -4,8 +4,8 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.model.ICacheSourceModel;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
@@ -28,7 +28,7 @@ final class POServicesFacade
 	private ISessionBL _sessionBL;
 	private ISessionDAO _sessionDAO;
 	private IMigrationLogger _migrationLogger;
-	private IModelCacheInvalidationService _cacheInvalidationService;
+	private ModelCacheInvalidationService _cacheInvalidationService;
 	private IDocumentNoBuilderFactory _documentNoBuilderFactory;
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
@@ -84,12 +84,12 @@ final class POServicesFacade
 		return migrationLogger;
 	}
 
-	public IModelCacheInvalidationService cacheInvalidationService()
+	public ModelCacheInvalidationService cacheInvalidationService()
 	{
-		IModelCacheInvalidationService cacheInvalidationService = this._cacheInvalidationService;
+		ModelCacheInvalidationService cacheInvalidationService = this._cacheInvalidationService;
 		if (cacheInvalidationService == null)
 		{
-			cacheInvalidationService = this._cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+			cacheInvalidationService = this._cacheInvalidationService = ModelCacheInvalidationService.get();
 		}
 		return cacheInvalidationService;
 	}

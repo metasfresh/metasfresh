@@ -23,14 +23,13 @@
 package de.metas.deliveryplanning.impexp.process;
 
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataRepository;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,7 +55,7 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 {
 	final DeliveryPlanningRepository deliveryPlanningRepository = SpringContextHolder.instance.getBean(DeliveryPlanningRepository.class);
 	final DeliveryPlanningDataRepository deliveryPlanningDataRepository = SpringContextHolder.instance.getBean(DeliveryPlanningDataRepository.class);
-	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 
 	final Set<DeliveryPlanningDataId> deliveryPlanningDataIds = new HashSet<>();
 

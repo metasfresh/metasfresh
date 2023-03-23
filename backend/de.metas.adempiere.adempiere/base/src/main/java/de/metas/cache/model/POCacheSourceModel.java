@@ -1,14 +1,13 @@
 package de.metas.cache.model;
 
-import javax.annotation.Nullable;
-
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -42,7 +41,7 @@ public class POCacheSourceModel implements ICacheSourceModel
 	}
 
 	private static final ModelDynAttributeAccessor<PO, TableRecordReference> //
-	ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(IModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
+	ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(ModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
 
 	private final PO po;
 

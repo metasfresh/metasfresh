@@ -1,28 +1,22 @@
-package de.metas.cache.model.impl;
+package de.metas.cache.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.DirectModelCacheInvalidateRequestFactory;
-import de.metas.cache.model.ICacheSourceModel;
-import de.metas.cache.model.IModelCacheInvalidateRequestFactoryGroup;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.IModelCacheService;
-import de.metas.cache.model.ModelCacheInvalidateRequestFactory;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /*
@@ -47,25 +41,50 @@ import java.util.stream.Collectors;
  * #L%
  */
 
-public class ModelCacheInvalidationService implements IModelCacheInvalidationService
+/**
+ * Service responsible for invalidating model caches.
+ */
+@Service
+public class ModelCacheInvalidationService
 {
+	public static ModelCacheInvalidationService get()
+	{
+		return SpringContextHolder.instance.getBean(ModelCacheInvalidationService.class);
+	}
+
+	public static ModelCacheInvalidationService newInstanceForUnitTesting()
+	{
+		return new ModelCacheInvalidationService(Optional.empty());
+	}
+
 	private static final Logger logger = LogManager.getLogger(ModelCacheInvalidationService.class);
 	private final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
 
 	private static final ImmutableSet<ModelCacheInvalidateRequestFactory> DEFAULT_REQUEST_FACTORIES = ImmutableSet.of(DirectModelCacheInvalidateRequestFactory.instance);
 
-	private final CopyOnWriteArrayList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups = new CopyOnWriteArrayList<>();
+	private final ImmutableList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups;
 
-	@Override
-	public void registerFactoryGroup(@NonNull final IModelCacheInvalidateRequestFactoryGroup factoryGroup)
+	public ModelCacheInvalidationService(final Optional<List<IModelCacheInvalidateRequestFactoryGroup>> factoryGroups)
 	{
-		factoryGroups.add(factoryGroup);
-		logger.info("Registered {}", factoryGroup);
+		this.factoryGroups = factoryGroups.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
 
-		CacheMgt.get().enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation());
+		final CacheMgt cacheMgt = CacheMgt.get();
+		this.factoryGroups.forEach(factoryGroup -> cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation()));
+
+		logger.info("Registered {}", this.factoryGroups); // calling it last to make sure cache was warmed up, so we have more info to show
 	}
 
-	@Override
+	public void invalidateForModel(@NonNull final ICacheSourceModel model, @NonNull final ModelCacheInvalidationTiming timing)
+	{
+		final CacheInvalidateMultiRequest request = createRequestOrNull(model, timing);
+		if (request == null)
+		{
+			return;
+		}
+
+		invalidate(request, timing);
+	}
+
 	public void invalidate(@NonNull final CacheInvalidateMultiRequest request, @NonNull final ModelCacheInvalidationTiming timing)
 	{
 		//
@@ -82,7 +101,6 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, request);
 	}
 
-	@Override
 	public CacheInvalidateMultiRequest createRequestOrNull(
 			@NonNull final ICacheSourceModel model,
 			@NonNull final ModelCacheInvalidationTiming timing)

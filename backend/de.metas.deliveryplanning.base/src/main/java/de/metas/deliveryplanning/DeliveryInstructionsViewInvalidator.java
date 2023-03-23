@@ -1,8 +1,8 @@
 package de.metas.deliveryplanning;
 
 import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -24,7 +24,13 @@ import org.springframework.stereotype.Component;
 public class DeliveryInstructionsViewInvalidator
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
+
+	public DeliveryInstructionsViewInvalidator(
+			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService)
+	{
+		this.modelCacheInvalidationService = modelCacheInvalidationService;
+	}
 
 	public void invalidateByShipperTransportation(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final ModelChangeType changeType)
 	{

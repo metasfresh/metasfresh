@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
@@ -80,6 +80,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	private static final String M_SHIPMENT_SCHEDULE_RECOMPUTE = "M_ShipmentSchedule_Recompute";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 
 	/**
 	 * Invalidate by M_Product_ID
@@ -599,8 +600,6 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private void invalidateShipmentScheduleCache(@NonNull final Set<Integer> shipmentScheduleIds)
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
@@ -650,8 +649,6 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private void invalidateCacheForAllShipmentSchedules()
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
 		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}

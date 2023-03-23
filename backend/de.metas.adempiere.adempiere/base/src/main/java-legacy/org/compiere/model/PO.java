@@ -20,8 +20,8 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -4127,7 +4127,7 @@ public abstract class PO
 		//
 		// Create cache invalidation request
 		// (we have to do it here, before we reset all fields)
-		final IModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
 		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
 				p_info.isSingleKeyColumnName()
 						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.DELETE)
