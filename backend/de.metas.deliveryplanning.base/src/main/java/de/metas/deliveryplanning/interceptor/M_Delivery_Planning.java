@@ -22,8 +22,10 @@
 
 package de.metas.deliveryplanning.interceptor;
 
+import de.metas.deliveryplanning.DeliveryInstructionsViewInvalidator;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -37,10 +39,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
 public class M_Delivery_Planning
 {
 	private final DeliveryPlanningService deliveryPlanningService;
+	private final DeliveryInstructionsViewInvalidator deliveryInstructionsViewInvalidator;
 
-	public M_Delivery_Planning(@NonNull final DeliveryPlanningService deliveryPlanningService)
+	public M_Delivery_Planning(
+			@NonNull final DeliveryPlanningService deliveryPlanningService,
+			@NonNull final DeliveryInstructionsViewInvalidator deliveryInstructionsViewInvalidator)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
+		this.deliveryInstructionsViewInvalidator = deliveryInstructionsViewInvalidator;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void onBeforeChange(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryInstructionsViewInvalidator.invalidateByDeliveryPlanning(deliveryPlanning, ModelChangeType.BEFORE_CHANGE);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	public void onAfterChange(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryInstructionsViewInvalidator.invalidateByDeliveryPlanning(deliveryPlanning, ModelChangeType.AFTER_CHANGE);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
