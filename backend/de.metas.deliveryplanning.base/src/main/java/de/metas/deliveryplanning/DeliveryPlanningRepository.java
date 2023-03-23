@@ -51,7 +51,6 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -80,16 +79,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class DeliveryPlanningRepository
 {
-	private final DeliveryInstructionsViewInvalidator deliveryInstructionsViewInvalidator;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-
-	public DeliveryPlanningRepository(
-			@NonNull final DeliveryInstructionsViewInvalidator deliveryInstructionsViewInvalidator)
-	{
-		this.deliveryInstructionsViewInvalidator = deliveryInstructionsViewInvalidator;
-	}
 
 	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -482,8 +474,6 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 
 		saveRecord(shippingPackageRecord);
-
-		deliveryInstructionsViewInvalidator.invalidateByShippingPackage(shippingPackageRecord, ModelChangeType.AFTER_NEW);
 
 		return deliveryInstructionRecord;
 	}
