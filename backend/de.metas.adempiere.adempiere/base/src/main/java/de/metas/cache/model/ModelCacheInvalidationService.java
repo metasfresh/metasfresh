@@ -89,7 +89,9 @@ public class ModelCacheInvalidationService
 	{
 		//
 		// Reset model cache
-		if (timing != ModelCacheInvalidationTiming.NEW)
+		// * only on AFTER event
+		// * only if it's not NEW event because in case of NEW, the model was not already in cache, for sure
+		if (timing.isAfter() && !timing.isNew())
 		{
 			modelCacheService.invalidate(request);
 		}
@@ -107,7 +109,7 @@ public class ModelCacheInvalidationService
 	{
 		final String tableName = model.getTableName();
 
-		final HashSet<CacheInvalidateRequest> requests = getRequestFactoriesByTableName(tableName)
+		final HashSet<CacheInvalidateRequest> requests = getRequestFactoriesByTableName(tableName, timing)
 				.stream()
 				.map(requestFactory -> requestFactory.createRequestsFromModel(model, timing))
 				.filter(Objects::nonNull)
@@ -148,10 +150,10 @@ public class ModelCacheInvalidationService
 				.build();
 	}
 
-	private Set<ModelCacheInvalidateRequestFactory> getRequestFactoriesByTableName(@NonNull final String tableName)
+	private Set<ModelCacheInvalidateRequestFactory> getRequestFactoriesByTableName(@NonNull final String tableName, @NonNull final ModelCacheInvalidationTiming timing)
 	{
 		final Set<ModelCacheInvalidateRequestFactory> factories = factoryGroups.stream()
-				.flatMap(factoryGroup -> factoryGroup.getFactoriesByTableName(tableName).stream())
+				.flatMap(factoryGroup -> factoryGroup.getFactoriesByTableName(tableName, timing).stream())
 				.collect(ImmutableSet.toImmutableSet());
 		return factories != null && !factories.isEmpty() ? factories : DEFAULT_REQUEST_FACTORIES;
 	}

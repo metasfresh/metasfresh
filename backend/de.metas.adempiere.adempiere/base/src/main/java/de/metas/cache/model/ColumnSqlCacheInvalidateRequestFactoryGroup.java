@@ -3,6 +3,7 @@ package de.metas.cache.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.TableNamesGroup;
@@ -34,7 +35,7 @@ class ColumnSqlCacheInvalidateRequestFactoryGroup implements IModelCacheInvalida
 			.build();
 	private static final String TABLENAMES_GROUP_FACTORY_TABLES = ColumnSqlCacheInvalidateRequestFactoryGroup.class.getSimpleName();
 	private static final int DUMMY_CACHE_ID = 0;
-	private final CCache<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup>builder()
+	private final CCache<Integer, ImmutableModelCacheInvalidateRequestFactoriesList> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoriesList>builder()
 			.tableName(I_AD_SQLColumn_SourceTableColumn.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -46,28 +47,28 @@ class ColumnSqlCacheInvalidateRequestFactoryGroup implements IModelCacheInvalida
 
 	public String toString()
 	{
-		final ImmutableModelCacheInvalidateRequestFactoryGroup delegate = getDelegateIfLoaded();
+		final ImmutableModelCacheInvalidateRequestFactoriesList delegate = getDelegateIfLoaded();
 		return MoreObjects.toStringHelper(this)
 				.addValue(delegate != null ? delegate : "NOT LOADED")
 				.toString();
 	}
 
-	private ImmutableModelCacheInvalidateRequestFactoryGroup getDelegate()
+	private ImmutableModelCacheInvalidateRequestFactoriesList getDelegate()
 	{
 		return cache.getOrLoad(DUMMY_CACHE_ID, this::loadAndInit);
 	}
 
 	@Nullable
-	private ImmutableModelCacheInvalidateRequestFactoryGroup getDelegateIfLoaded()
+	private ImmutableModelCacheInvalidateRequestFactoriesList getDelegateIfLoaded()
 	{
 		return cache.get(DUMMY_CACHE_ID);
 	}
 
-	private ImmutableModelCacheInvalidateRequestFactoryGroup loadAndInit()
+	private ImmutableModelCacheInvalidateRequestFactoriesList loadAndInit()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final ImmutableModelCacheInvalidateRequestFactoryGroup actualFactoryGroup = new ImmutableFactoryGroupBuilder()
+		final ImmutableModelCacheInvalidateRequestFactoriesList actualFactoryGroup = new ImmutableFactoryGroupBuilder()
 				.addAll(adTableDAO.retrieveColumnSqlSourceDescriptors())
 				.build();
 
@@ -90,8 +91,15 @@ class ColumnSqlCacheInvalidateRequestFactoryGroup implements IModelCacheInvalida
 	}
 
 	@Override
-	public Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName)
+	public Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName, @NonNull final ModelCacheInvalidationTiming timing)
 	{
+		// Provide factories only for AFTER events.
+		// BEFORE events are useful for a few special cases (e.g. implementations that have to invalidate/refresh a live database view)
+		if (!timing.isAfter())
+		{
+			return ImmutableSet.of();
+		}
+
 		return getDelegate().getFactoriesByTableName(tableName);
 	}
 
@@ -106,9 +114,9 @@ class ColumnSqlCacheInvalidateRequestFactoryGroup implements IModelCacheInvalida
 		private final HashSet<String> tableNamesToEnableRemoveCacheInvalidation = new HashSet<>();
 		private final HashMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName = HashMultimap.create();
 
-		public ImmutableModelCacheInvalidateRequestFactoryGroup build()
+		public ImmutableModelCacheInvalidateRequestFactoriesList build()
 		{
-			return ImmutableModelCacheInvalidateRequestFactoryGroup.builder()
+			return ImmutableModelCacheInvalidateRequestFactoriesList.builder()
 					.factoriesByTableName(factoriesByTableName)
 					.tableNamesToEnableRemoveCacheInvalidation(TableNamesGroup.builder()
 							.groupId(TABLENAMES_GROUP_FACTORY_TABLES)

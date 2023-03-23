@@ -36,4 +36,6 @@ public interface ICacheSourceModel
 	TableRecordReference getRootRecordReferenceOrNull();
 
 	Integer getValueAsInt(String columnName, Integer defaultValue);
+
+	boolean isValueChanged(String columnName);
 }

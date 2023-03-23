@@ -44,7 +44,6 @@ public class C_AllocationHdr
 	/**
 	 * After {@link I_C_AllocationHdr} was completed/reversed/voided/reactivated,
 	 * update all {@link I_C_PaySelectionLine}s which were not already processed and which are about the invoices from this allocation.
-	 *
 	 * task 08972
 	 */
 	@DocValidate(timings = {
@@ -84,7 +83,7 @@ public class C_AllocationHdr
 		}
 
 		final ModelCacheInvalidationService cacheInvalidationService = ModelCacheInvalidationService.get();
-		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.CHANGE);
+		cacheInvalidationService.invalidate(CacheInvalidateMultiRequest.of(requests), ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	private static Set<PaymentId> extractPaymentIds(final List<I_C_AllocationLine> lines)
@@ -112,7 +111,7 @@ public class C_AllocationHdr
 
 		//
 		// Retrieve all C_PaySelectionLines which are about invoices from our allocation and which are not already processed.
-		// The C_PaySelectionLines will be groupped by C_PaySelection_ID.
+		// The C_PaySelectionLines will be grouped by C_PaySelection_ID.
 		//@formatter:off
 		final Collection<List<I_C_PaySelectionLine>> paySelectionLinesGroups =
 				Services.get(IPaySelectionDAO.class)

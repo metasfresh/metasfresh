@@ -19,12 +19,12 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +41,7 @@ public class POCacheSourceModel implements ICacheSourceModel
 	}
 
 	private static final ModelDynAttributeAccessor<PO, TableRecordReference> //
-	ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(ModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
+			ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(ModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
 
 	private final PO po;
 
@@ -72,5 +72,11 @@ public class POCacheSourceModel implements ICacheSourceModel
 	public Integer getValueAsInt(final String columnName, final Integer defaultValue)
 	{
 		return po.get_ValueAsInt(columnName, defaultValue);
+	}
+
+	@Override
+	public boolean isValueChanged(final String columnName)
+	{
+		return po.is_ValueChanged(columnName);
 	}
 }

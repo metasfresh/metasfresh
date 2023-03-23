@@ -601,7 +601,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	private void invalidateShipmentScheduleCache(@NonNull final Set<Integer> shipmentScheduleIds)
 	{
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	@Override
@@ -650,7 +650,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	private void invalidateCacheForAllShipmentSchedules()
 	{
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	/**

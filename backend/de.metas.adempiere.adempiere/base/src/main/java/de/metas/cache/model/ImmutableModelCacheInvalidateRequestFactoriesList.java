@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.cache.TableNamesGroup;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.Set;
@@ -31,13 +32,13 @@ import java.util.Set;
  * #L%
  */
 
-public final class ImmutableModelCacheInvalidateRequestFactoryGroup implements IModelCacheInvalidateRequestFactoryGroup
+final class ImmutableModelCacheInvalidateRequestFactoriesList
 {
 	private final ImmutableSetMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName;
-	private final TableNamesGroup tableNamesToEnableRemoveCacheInvalidation;
+	@Getter private final TableNamesGroup tableNamesToEnableRemoveCacheInvalidation;
 
 	@Builder
-	private ImmutableModelCacheInvalidateRequestFactoryGroup(
+	private ImmutableModelCacheInvalidateRequestFactoriesList(
 			@NonNull final SetMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName,
 			@NonNull final TableNamesGroup tableNamesToEnableRemoveCacheInvalidation)
 	{
@@ -54,13 +55,6 @@ public final class ImmutableModelCacheInvalidateRequestFactoryGroup implements I
 				.toString();
 	}
 
-	@Override
-	public TableNamesGroup getTableNamesToEnableRemoveCacheInvalidation()
-	{
-		return tableNamesToEnableRemoveCacheInvalidation;
-	}
-
-	@Override
 	public Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull final String tableName)
 	{
 		return factoriesByTableName.get(tableName);

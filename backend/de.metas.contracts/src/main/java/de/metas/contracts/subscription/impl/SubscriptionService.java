@@ -184,7 +184,7 @@ public class SubscriptionService
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataId, I_C_SubscriptionProgress.Table_Name),
 						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bpartnerId, I_C_SubscriptionProgress.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE
+				ModelCacheInvalidationTiming.AFTER_CHANGE
 		);
 	}
 

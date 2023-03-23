@@ -968,7 +968,7 @@ public class PriceListDAO implements IPriceListDAO
 			cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ProductPrice.Table_Name, productPriceQuery.listIds());
 		}
 		ModelCacheInvalidationService.get()
-				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.CHANGE);
+				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	@Override

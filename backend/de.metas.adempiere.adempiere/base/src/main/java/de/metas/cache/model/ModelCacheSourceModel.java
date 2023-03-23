@@ -42,4 +42,10 @@ class ModelCacheSourceModel implements ICacheSourceModel
 		final Object valueObj = InterfaceWrapperHelper.getValueOrNull(model, columnName);
 		return NumberUtils.asInteger(valueObj, defaultValue);
 	}
+
+	@Override
+	public boolean isValueChanged(final String columnName)
+	{
+		return InterfaceWrapperHelper.isValueChanged(model, columnName);
+	}
 }

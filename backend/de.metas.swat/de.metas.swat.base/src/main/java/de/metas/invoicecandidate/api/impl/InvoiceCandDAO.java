@@ -1174,7 +1174,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	protected final int untag(@NonNull final InvoiceCandRecomputeTagger tagger)

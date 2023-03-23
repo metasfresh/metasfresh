@@ -33,7 +33,7 @@ public class WindowBasedModelCacheInvalidateRequestFactoryGroup implements IMode
 	private static final Logger logger = LogManager.getLogger(WindowBasedModelCacheInvalidateRequestFactoryGroup.class);
 
 	private static final int DUMMY_CACHE_ID = 0;
-	private final CCache<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoryGroup>builder()
+	private final CCache<Integer, ImmutableModelCacheInvalidateRequestFactoriesList> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoriesList>builder()
 			.initialCapacity(1)
 			.tableName(I_AD_Window.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Tab.Table_Name)
@@ -42,7 +42,7 @@ public class WindowBasedModelCacheInvalidateRequestFactoryGroup implements IMode
 
 	public String toString()
 	{
-		final ImmutableModelCacheInvalidateRequestFactoryGroup delegate = getDelegateIfLoaded();
+		final ImmutableModelCacheInvalidateRequestFactoriesList delegate = getDelegateIfLoaded();
 		return MoreObjects.toStringHelper(this)
 				.addValue(delegate != null ? delegate : "NOT LOADED")
 				.toString();
@@ -55,23 +55,35 @@ public class WindowBasedModelCacheInvalidateRequestFactoryGroup implements IMode
 	}
 
 	@Override
+	public Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull final String tableName, @NonNull final ModelCacheInvalidationTiming timing)
+	{
+		// Provide factories only for AFTER events.
+		// BEFORE events are useful for a few special cases (e.g. implementations that have to invalidate/refresh a live database view)
+		if (!timing.isAfter())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getFactoriesByTableName(tableName);
+	}
+
 	public Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull final String tableName)
 	{
 		return getDelegate().getFactoriesByTableName(tableName);
 	}
 
-	private ImmutableModelCacheInvalidateRequestFactoryGroup getDelegate()
+	private ImmutableModelCacheInvalidateRequestFactoriesList getDelegate()
 	{
 		return cache.getOrLoad(DUMMY_CACHE_ID, this::retrieveFromDB);
 	}
 
 	@Nullable
-	private ImmutableModelCacheInvalidateRequestFactoryGroup getDelegateIfLoaded()
+	private ImmutableModelCacheInvalidateRequestFactoriesList getDelegateIfLoaded()
 	{
 		return cache.get(DUMMY_CACHE_ID);
 	}
 
-	private ImmutableModelCacheInvalidateRequestFactoryGroup retrieveFromDB()
+	private ImmutableModelCacheInvalidateRequestFactoriesList retrieveFromDB()
 	{
 		return new ImmutableFactoryGroupBuilder()
 				.addAll(retrieveParentChildInfos())
@@ -155,9 +167,9 @@ public class WindowBasedModelCacheInvalidateRequestFactoryGroup implements IMode
 		private final HashSet<String> tableNamesToEnableRemoveCacheInvalidation = new HashSet<>();
 		private final HashMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName = HashMultimap.create();
 
-		public ImmutableModelCacheInvalidateRequestFactoryGroup build()
+		public ImmutableModelCacheInvalidateRequestFactoriesList build()
 		{
-			return ImmutableModelCacheInvalidateRequestFactoryGroup.builder()
+			return ImmutableModelCacheInvalidateRequestFactoriesList.builder()
 					.factoriesByTableName(factoriesByTableName)
 					.tableNamesToEnableRemoveCacheInvalidation(
 							TableNamesGroup.builder()

@@ -12,8 +12,8 @@ import de.metas.banking.payment.InvoiceMatchingMode;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -617,7 +617,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_PaySelection.Table_Name, paySelectionId),
 						CacheInvalidateRequest.allChildRecords(I_C_PaySelection.Table_Name, paySelectionId, I_C_PaySelectionLine.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	private boolean isOnlyDiscount()

@@ -230,6 +230,6 @@ public class SqlShipmentScheduleLockRepository implements ShipmentScheduleLockRe
 		}
 
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
-		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 }

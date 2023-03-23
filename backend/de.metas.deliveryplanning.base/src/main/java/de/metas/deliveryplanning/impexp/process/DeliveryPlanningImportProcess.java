@@ -165,10 +165,11 @@ public class DeliveryPlanningImportProcess extends SimpleImportProcessTemplate<I
 						.toBuilder()
 						.processed(true)
 						.build()));
-		final List<CacheInvalidateMultiRequest> cacheInvalidationRequestList = deliveryPlanningDataIds.stream().map(DeliveryPlanningDataId::getRepoId)
+		final List<CacheInvalidateMultiRequest> cacheInvalidationRequestList = deliveryPlanningDataIds.stream()
+				.map(DeliveryPlanningDataId::getRepoId)
 				.map(id -> CacheInvalidateMultiRequest.allChildRecords(I_I_DeliveryPlanning_Data.Table_Name, id, I_I_DeliveryPlanning.Table_Name))
 				.collect(Collectors.toList());
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.ofMultiRequests(cacheInvalidationRequestList);
-		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 }

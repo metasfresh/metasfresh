@@ -277,7 +277,7 @@ public class ShipmentScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ShipmentSchedule> shipmentSchedules)

@@ -128,7 +128,7 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 		{
 			tryImport(deliveryPlanningDataId, attachmentEntry);
 			final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.allChildRecords(I_I_DeliveryPlanning_Data.Table_Name, tableRecordReference.getRecord_ID(), I_I_DeliveryPlanning.Table_Name);
-			modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.CHANGE);
+			modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.AFTER_CHANGE);
 		}
 		catch (final Exception ex)
 		{

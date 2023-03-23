@@ -118,6 +118,6 @@ public class C_PaySelectionLine
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.runAfterCommit(() -> modelCacheInvalidationService.invalidate(
 						CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, paySelectionId.getRepoId()),
-						ModelCacheInvalidationTiming.CHANGE));
+						ModelCacheInvalidationTiming.AFTER_CHANGE));
 	}
 }

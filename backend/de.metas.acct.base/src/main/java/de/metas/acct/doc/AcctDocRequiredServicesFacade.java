@@ -187,7 +187,7 @@ public class AcctDocRequiredServicesFacade
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(documentTableName, documentRecordId),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void runInThreadInheritedTrx(@NonNull final TrxRunnable2 runnable)

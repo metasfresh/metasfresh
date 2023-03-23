@@ -163,7 +163,7 @@ public class ReceiptScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ReceiptSchedule.Table_Name, receiptScheduleIds),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ReceiptSchedule> receiptSchedules)
