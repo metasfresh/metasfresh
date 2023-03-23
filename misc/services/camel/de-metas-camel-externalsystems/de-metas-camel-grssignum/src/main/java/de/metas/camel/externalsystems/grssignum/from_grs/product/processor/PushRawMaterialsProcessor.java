@@ -40,6 +40,7 @@ import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.product.v2.request.JsonRequestUpsertProductAllergen;
+import de.metas.common.product.v2.request.JsonRequestUpsertQualityAttribute;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
@@ -106,6 +107,7 @@ public class PushRawMaterialsProcessor implements Processor
 		requestProduct.setUomCode(GRSSignumConstants.DEFAULT_UOM_CODE);
 
 		getAllergens(grsJsonProduct).ifPresent(requestProduct::setProductAllergens);
+		requestProduct.setQualityAttributes(getQualityAttributes(grsJsonProduct));
 
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsJsonProduct.getProductId()))
@@ -207,5 +209,12 @@ public class PushRawMaterialsProcessor implements Processor
 		{
 			throw new RuntimeException("Cannot get the token credentials from the authenticated user! See message" + e.getMessage(), e);
 		}
+	}
+
+	@NonNull
+	private static JsonRequestUpsertQualityAttribute getQualityAttributes(@NonNull final JsonProduct jsonProduct)
+	{
+		return JsonRequestHelper.getQualityAttributeRequest(
+				JsonRequestHelper.initQualityAttributeLabelList(jsonProduct).build());
 	}
 }
