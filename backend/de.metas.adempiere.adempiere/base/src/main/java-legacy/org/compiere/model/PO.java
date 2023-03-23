@@ -19,9 +19,9 @@ package org.compiere.model;
 import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.POCacheSourceModel;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -3071,7 +3071,7 @@ public abstract class PO
 			try
 			{
 				services.invalidateForModel(
-						POCacheSourceModel.of(this),
+						CacheSourceModelFactory.ofPO(this),
 						newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
 			}
 			catch (final Exception ex)
@@ -4130,7 +4130,7 @@ public abstract class PO
 		final IModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
 		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
 				p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(POCacheSourceModel.of(this), ModelCacheInvalidationTiming.DELETE)
+						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.DELETE)
 						: null;
 
 		//

@@ -36,11 +36,6 @@ import lombok.ToString;
 @ToString
 public class POCacheSourceModel implements ICacheSourceModel
 {
-	public static POCacheSourceModel of(final PO po)
-	{
-		return new POCacheSourceModel(po);
-	}
-
 	public static void setRootRecordReference(@NonNull final PO po, @Nullable final TableRecordReference rootRecordReference)
 	{
 		ATTR_RootRecordReference.setValue(po, rootRecordReference);
@@ -51,7 +46,7 @@ public class POCacheSourceModel implements ICacheSourceModel
 
 	private final PO po;
 
-	private POCacheSourceModel(@NonNull final PO po)
+	POCacheSourceModel(@NonNull final PO po)
 	{
 		this.po = po;
 	}

@@ -3,9 +3,9 @@ package org.compiere.model;
 import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.cache.model.ICacheSourceModel;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.POCacheSourceModel;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
@@ -168,7 +168,7 @@ final class POServicesFacade
 		migrationLogger().logMigration(session, po, poInfo, actionType);
 	}
 
-	public void invalidateForModel(final POCacheSourceModel model, final ModelCacheInvalidationTiming timing)
+	public void invalidateForModel(final ICacheSourceModel model, final ModelCacheInvalidationTiming timing)
 	{
 		cacheInvalidationService().invalidateForModel(model, timing);
 	}
