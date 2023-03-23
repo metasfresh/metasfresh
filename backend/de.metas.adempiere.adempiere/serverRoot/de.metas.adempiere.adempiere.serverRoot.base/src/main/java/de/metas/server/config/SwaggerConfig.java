@@ -43,7 +43,9 @@ public class SwaggerConfig
 
 	@Bean
 	public OpenAPI appOpenAPI() {
-		return SwaggerUtil.createApiInfo("metasfresh application server REST API", "metasfresh REST API ( to switch to webui REST API on instances change above to /v3/api-docs )")
+		return SwaggerUtil.createApiInfo("metasfresh application server REST API",
+										 "metasfresh REST API ( to switch to webui REST API on instances change above to /v3/api-docs ) <br>" +
+											"Currently can't be executed because OpenAPI doesn't allow custom Authorization-header with name Authorization.")
 				.addServersItem(new Server().url("/app").description("default - used on instances to add /app after base-url"))
 				.addServersItem(new Server().url("/").description("for local development"));
 	}
