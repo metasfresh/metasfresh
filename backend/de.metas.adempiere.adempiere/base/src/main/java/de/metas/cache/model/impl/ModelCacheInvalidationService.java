@@ -1,18 +1,6 @@
 package de.metas.cache.model.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
@@ -26,6 +14,16 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -94,9 +92,9 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		final HashSet<CacheInvalidateRequest> requests = getRequestFactoriesByTableName(tableName)
 				.stream()
 				.map(requestFactory -> requestFactory.createRequestsFromModel(model, timing))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.flatMap(List::stream)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(HashSet::new));
 
 		//

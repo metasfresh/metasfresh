@@ -1,22 +1,8 @@
 package de.metas.cache.model;
 
-import static de.metas.util.Check.isEmpty;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.TableNamesGroup;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -24,6 +10,17 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+
+import static de.metas.util.Check.isBlank;
 
 /*
  * #%L
@@ -70,7 +67,7 @@ public class WindowBasedCacheInvalidateRequestInitializer
 		registry.registerFactoryGroup(factoryGroup);
 	}
 
-	private final Set<ParentChildInfo> retrieveParentChildInfos()
+	private ImmutableSet<ParentChildInfo> retrieveParentChildInfos()
 	{
 		final ImmutableSet.Builder<ParentChildInfo> infos = ImmutableSet.builder();
 		DB.forEachRow(
@@ -81,13 +78,13 @@ public class WindowBasedCacheInvalidateRequestInitializer
 		return infos.build();
 	}
 
-	private ParentChildInfo retrieveParentChildInfo(final ResultSet rs) throws SQLException
+	private static ParentChildInfo retrieveParentChildInfo(final ResultSet rs) throws SQLException
 	{
 		return ParentChildInfo.builder()
 				.parentTableName(rs.getString("ParentTableName"))
-				.parentNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Parent_Table_IsEnableRemoteCacheInvalidation"), false))
+				.parentNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Parent_Table_IsEnableRemoteCacheInvalidation")))
 				.childTableName(rs.getString("ChildTableName"))
-				.childNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Child_Table_IsEnableRemoteCacheInvalidation"), false))
+				.childNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Child_Table_IsEnableRemoteCacheInvalidation")))
 				.childKeyColumnName(rs.getString("ChildKeyColumnName"))
 				.childLinkColumnName(rs.getString("ChildLinkColumnName"))
 				.build();
@@ -115,12 +112,12 @@ public class WindowBasedCacheInvalidateRequestInitializer
 
 		private ParentChildModelCacheInvalidateRequestFactory toGenericModelCacheInvalidateRequestFactoryOrNull()
 		{
-			if (isEmpty(childTableName, true))
+			if (childTableName == null || isBlank(childTableName))
 			{
 				logger.warn("Cannot create parent/child cache invalidate request factory because childTableName is not set: {}", this);
 				return null;
 			}
-			if (isEmpty(childLinkColumnName, true))
+			if (childLinkColumnName == null || isBlank(childLinkColumnName))
 			{
 				logger.warn("Cannot create parent/child cache invalidate request factory because childLinkColumnName is not set: {}", this);
 				return null;
@@ -151,19 +148,17 @@ public class WindowBasedCacheInvalidateRequestInitializer
 		{
 			return ImmutableModelCacheInvalidateRequestFactoryGroup.builder()
 					.factoriesByTableName(factoriesByTableName)
-					.tableNamesToEnableRemoveCacheInvalidation(TableNamesGroup.builder()
-							.groupId(WindowBasedCacheInvalidateRequestInitializer.class.getSimpleName())
-							.tableNames(tableNamesToEnableRemoveCacheInvalidation)
-							.build())
+					.tableNamesToEnableRemoveCacheInvalidation(
+							TableNamesGroup.builder()
+									.groupId(WindowBasedCacheInvalidateRequestInitializer.class.getSimpleName())
+									.tableNames(tableNamesToEnableRemoveCacheInvalidation)
+									.build())
 					.build();
 		}
 
 		public ImmutableFactoryGroupBuilder addAll(@NonNull final Set<ParentChildInfo> parentChildInfos)
 		{
-			for (final ParentChildInfo info : parentChildInfos)
-			{
-				add(info);
-			}
+			parentChildInfos.forEach(this::add);
 			return this;
 		}
 
@@ -187,7 +182,7 @@ public class WindowBasedCacheInvalidateRequestInitializer
 		private void addForChildTable(final ParentChildInfo info)
 		{
 			final String childTableName = info.getChildTableName();
-			if (isEmpty(childTableName, true))
+			if (childTableName == null || isBlank(childTableName))
 			{
 				return;
 			}
