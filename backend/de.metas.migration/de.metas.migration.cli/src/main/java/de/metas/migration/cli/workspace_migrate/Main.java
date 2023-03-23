@@ -123,7 +123,11 @@ public class Main
 		}
 
 		throw new RuntimeException("Property '" + name + "' was not set. "
+<<<<<<< HEAD
 										   + "\n Please start JVM with '-D" + name + "=...'" 
+=======
+										   + "\n Please start JVM with '-D" + name + "=...'"
+>>>>>>> c0c63b5d89c (scary_plum_uat_update_configFiles and migration-tool (#14972))
 										   + " OR set environment-variable '" + name + "=...'.");
 	}
 
