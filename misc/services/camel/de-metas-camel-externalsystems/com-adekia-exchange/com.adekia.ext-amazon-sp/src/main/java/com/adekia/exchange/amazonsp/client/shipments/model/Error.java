@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Error response returned when the request is unsuccessful.
  */
-@ApiModel(description = "Error response returned when the request is unsuccessful.")
+@Schema(description = "Error response returned when the request is unsuccessful.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Error {
   @SerializedName("code")
@@ -48,7 +42,7 @@ public class Error {
    * An error code that identifies the type of error that occured.
    * @return code
   **/
-  @ApiModelProperty(required = true, value = "An error code that identifies the type of error that occured.")
+  @Schema(required = true, description = "An error code that identifies the type of error that occured.")
   public String getCode() {
     return code;
   }
@@ -66,7 +60,7 @@ public class Error {
    * A message that describes the error condition in a human-readable form.
    * @return message
   **/
-  @ApiModelProperty(required = true, value = "A message that describes the error condition in a human-readable form.")
+  @Schema(required = true, description = "A message that describes the error condition in a human-readable form.")
   public String getMessage() {
     return message;
   }
@@ -84,7 +78,7 @@ public class Error {
    * Additional details that can help the caller understand or fix the issue.
    * @return details
   **/
-  @ApiModelProperty(value = "Additional details that can help the caller understand or fix the issue.")
+  @Schema(description = "Additional details that can help the caller understand or fix the issue.")
   public String getDetails() {
     return details;
   }

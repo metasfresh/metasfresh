@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.service;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -16,21 +18,18 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
-import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
 @SuppressWarnings("OptionalGetWithoutIsPresent")
+@ExtendWith(SnapshotExtension.class)
 public class PickingJobService_UsingTUs_Test
 {
 	private PickingJobTestHelper helper;
@@ -42,11 +41,7 @@ public class PickingJobService_UsingTUs_Test
 
 	private TestRecorder results;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -103,7 +98,7 @@ public class PickingJobService_UsingTUs_Test
 	void createJobAndGet()
 	{
 		final PickingJob pickingJob = createJob();
-		results.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(results);
 
 		final PickingJob jobLoaded = helper.pickingJobService.getById(pickingJob.getId());
 		Assertions.assertThat(jobLoaded)
@@ -119,7 +114,7 @@ public class PickingJobService_UsingTUs_Test
 
 		results.reportStep("Picking Job after ABORT", pickingJob);
 		results.reportStepWithAllHUs("HUs after Picking Job ABORT");
-		results.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(results);
 	}
 
 	@Test
@@ -155,7 +150,7 @@ public class PickingJobService_UsingTUs_Test
 		results.reportStep("Picking Job after Complete", pickingJob);
 		results.reportStepWithAllHUs("HUs after Complete");
 
-		results.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(results);
 	}
 
 }

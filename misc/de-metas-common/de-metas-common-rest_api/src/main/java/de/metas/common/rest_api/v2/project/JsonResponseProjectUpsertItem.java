@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,7 +34,7 @@ import lombok.Value;
 @Value
 public class JsonResponseProjectUpsertItem
 {
-	@ApiModelProperty(value = "The metasfresh-ID of the C_Project record.\n", position = 10)
+	@Schema(description = "The metasfresh-ID of the C_Project record.\n")
 	JsonMetasfreshId metasfreshId;
 
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;

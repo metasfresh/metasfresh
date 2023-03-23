@@ -28,7 +28,7 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,121 +46,120 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER
 @EqualsAndHashCode
 public class JsonWorkOrderProjectUpsertRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = PROJECT_IDENTIFIER_DOC) //
+	@Schema(required = true,
+			description = PROJECT_IDENTIFIER_DOC) //
 	@Setter
 	String identifier;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	@Setter
 	JsonMetasfreshId projectTypeId;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	@Setter
 	SyncAdvise syncAdvise;
 
 	String value;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean valueSet;
 
 	String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean nameSet;
 
 	JsonMetasfreshId priceListVersionId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean priceListVersionIdSet;
 
 	String currencyCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean currencyCodeSet;
 
 	JsonMetasfreshId salesRepId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean salesRepIdSet;
 
 	String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean descriptionSet;
 
 	LocalDate dateContract;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean dateContractSet;
 
 	LocalDate dateFinish;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean dateFinishSet;
 
 	JsonMetasfreshId bpartnerId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean bpartnerIdSet;
 
-	@ApiModelProperty("Translates to `C_Project.C_Project_Reference_Ext`.")
+	@Schema(description = "Translates to `C_Project.C_Project_Reference_Ext`.")
 	String projectReferenceExt;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean projectReferenceExtSet;
 
 	JsonExternalId externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean externalIdSet;
 	
 	JsonMetasfreshId projectParentId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean projectParentIdSet;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	String orgCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean orgCodeSet;
 
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new project is created), then `true` is assumed")
+	@Schema(description = "If not specified but required (e.g. because a new project is created), then `true` is assumed")
 	Boolean isActive;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean activeSet;
 
 	String bpartnerDepartment;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean bpartnerDepartmentSet;
 
 	private String woOwner;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean woOwnerSet;
 
 	private String poReference;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean poReferenceSet;
 
 	private LocalDate bpartnerTargetDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean bpartnerTargetDateSet;
 
 	private LocalDate woProjectCreatedDate;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean woProjectCreatedDateSet;
 
 	private LocalDate dateOfProvisionByBPartner;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
 
 	private List<JsonWorkOrderStepUpsertItemRequest> steps = ImmutableList.of();

@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Contains the business invoice tax information. Available only in the TR marketplace.
  */
-@ApiModel(description = "Contains the business invoice tax information. Available only in the TR marketplace.")
+@Schema(description = "Contains the business invoice tax information. Available only in the TR marketplace.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class BuyerTaxInformation {
   @SerializedName("BuyerLegalCompanyName")
@@ -51,7 +45,7 @@ public class BuyerTaxInformation {
    * Business buyer&#39;s company legal name.
    * @return buyerLegalCompanyName
   **/
-  @ApiModelProperty(value = "Business buyer's company legal name.")
+  @Schema(description = "Business buyer's company legal name.")
   public String getBuyerLegalCompanyName() {
     return buyerLegalCompanyName;
   }
@@ -69,7 +63,7 @@ public class BuyerTaxInformation {
    * Business buyer&#39;s address.
    * @return buyerBusinessAddress
   **/
-  @ApiModelProperty(value = "Business buyer's address.")
+  @Schema(description = "Business buyer's address.")
   public String getBuyerBusinessAddress() {
     return buyerBusinessAddress;
   }
@@ -87,7 +81,7 @@ public class BuyerTaxInformation {
    * Business buyer&#39;s tax registration ID.
    * @return buyerTaxRegistrationId
   **/
-  @ApiModelProperty(value = "Business buyer's tax registration ID.")
+  @Schema(description = "Business buyer's tax registration ID.")
   public String getBuyerTaxRegistrationId() {
     return buyerTaxRegistrationId;
   }
@@ -105,7 +99,7 @@ public class BuyerTaxInformation {
    * Business buyer&#39;s tax office.
    * @return buyerTaxOffice
   **/
-  @ApiModelProperty(value = "Business buyer's tax office.")
+  @Schema(description = "Business buyer's tax office.")
   public String getBuyerTaxOffice() {
     return buyerTaxOffice;
   }

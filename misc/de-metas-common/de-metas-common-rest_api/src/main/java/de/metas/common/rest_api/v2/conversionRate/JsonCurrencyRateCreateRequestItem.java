@@ -23,8 +23,7 @@
 package de.metas.common.rest_api.v2.conversionRate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,31 +33,31 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@ApiModel
+@Schema
 @Value
 @Builder
 @Jacksonized
 public class JsonCurrencyRateCreateRequestItem
 {
-	@ApiModelProperty(required = true, position = 10, value = "Translated to `C_ConversionRate.C_Currency_To_ID")
+	@Schema(required = true, description = "Translated to `C_ConversionRate.C_Currency_To_ID")
 	@NonNull
 	String currencyCodeTo;
 
-	@ApiModelProperty(position = 20, value = "Translated to `C_ConversionRate.C_ConversionType_ID`")
+	@Schema(description = "Translated to `C_ConversionRate.C_ConversionType_ID`")
 	@Nullable
 	String conversionType;
 
-	@ApiModelProperty(required = true, position = 30, value = "Translated to `C_ConversionRate.ValidFrom`")
+	@Schema(required = true, description = "Translated to `C_ConversionRate.ValidFrom`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@NonNull
 	LocalDate validFrom;
 
-	@ApiModelProperty(position = 40, value = "Translated to `C_ConversionRate.ValidTo`")
+	@Schema(description = "Translated to `C_ConversionRate.ValidTo`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Nullable
 	LocalDate validTo;
 
-	@ApiModelProperty(required = true, position = 50, value = "Translated to `C_ConversionRate.DivideRate`")
+	@Schema(required = true, description = "Translated to `C_ConversionRate.DivideRate`")
 	@NonNull
 	BigDecimal divideRate;
 }

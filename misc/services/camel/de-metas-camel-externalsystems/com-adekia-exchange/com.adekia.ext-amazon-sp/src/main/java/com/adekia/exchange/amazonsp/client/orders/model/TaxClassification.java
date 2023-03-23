@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The tax classification for the order.
  */
-@ApiModel(description = "The tax classification for the order.")
+@Schema(description = "The tax classification for the order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class TaxClassification {
   @SerializedName("Name")
@@ -45,7 +39,7 @@ public class TaxClassification {
    * The type of tax.
    * @return name
   **/
-  @ApiModelProperty(value = "The type of tax.")
+  @Schema(description = "The type of tax.")
   public String getName() {
     return name;
   }
@@ -63,7 +57,7 @@ public class TaxClassification {
    * The buyer&#39;s tax identifier.
    * @return value
   **/
-  @ApiModelProperty(value = "The buyer's tax identifier.")
+  @Schema(description = "The buyer's tax identifier.")
   public String getValue() {
     return value;
   }

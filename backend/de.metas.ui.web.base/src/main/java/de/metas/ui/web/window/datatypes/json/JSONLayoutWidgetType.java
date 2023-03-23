@@ -1,14 +1,3 @@
-package de.metas.ui.web.window.datatypes.json;
-
-import com.google.common.collect.ImmutableBiMap;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
-import io.swagger.annotations.ApiModel;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.OptionalInt;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -31,7 +20,18 @@ import java.util.OptionalInt;
  * #L%
  */
 
-@ApiModel("widget-type")
+package de.metas.ui.web.window.datatypes.json;
+
+import com.google.common.collect.ImmutableBiMap;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.OptionalInt;
+
+@Schema(description = "widget-type")
 public enum JSONLayoutWidgetType
 {
 	Text, LongText, Link, Password,

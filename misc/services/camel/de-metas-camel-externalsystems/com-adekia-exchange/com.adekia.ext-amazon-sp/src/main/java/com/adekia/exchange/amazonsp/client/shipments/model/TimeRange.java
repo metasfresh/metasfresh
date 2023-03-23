@@ -13,22 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.threeten.bp.OffsetDateTime;
+
+import java.util.Objects;
 
 /**
  * The time range.
  */
-@ApiModel(description = "The time range.")
+@Schema(description = "The time range.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class TimeRange {
   @SerializedName("start")
@@ -46,7 +40,7 @@ public class TimeRange {
    * The start date and time. This defaults to the current date and time.
    * @return start
   **/
-  @ApiModelProperty(value = "The start date and time. This defaults to the current date and time.")
+  @Schema(description = "The start date and time. This defaults to the current date and time.")
   public OffsetDateTime getStart() {
     return start;
   }
@@ -64,7 +58,7 @@ public class TimeRange {
    * The end date and time. This must come after the value of start. This defaults to the next business day from the start.
    * @return end
   **/
-  @ApiModelProperty(value = "The end date and time. This must come after the value of start. This defaults to the next business day from the start.")
+  @Schema(description = "The end date and time. This must come after the value of start. This defaults to the next business day from the start.")
   public OffsetDateTime getEnd() {
     return end;
   }

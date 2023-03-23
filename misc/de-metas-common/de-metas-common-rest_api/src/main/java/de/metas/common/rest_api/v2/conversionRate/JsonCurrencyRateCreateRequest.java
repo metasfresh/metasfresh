@@ -22,8 +22,7 @@
 
 package de.metas.common.rest_api.v2.conversionRate;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,21 +31,21 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.util.List;
 
-@ApiModel
+@Schema
 @Value
 @Builder
 @Jacksonized
 public class JsonCurrencyRateCreateRequest
 {
-	@ApiModelProperty(position = 10, value = "Translated to `C_ConversionRate.AD_Org_ID")
+	@Schema(description = "Translated to `C_ConversionRate.AD_Org_ID")
 	@Nullable
 	String orgCode;
 
-	@ApiModelProperty(position = 20, value = "Translated to `C_ConversionRate.C_Currency_ID")
+	@Schema(description = "Translated to `C_ConversionRate.C_Currency_ID")
 	@NonNull
 	String currencyCodeFrom;
 
-	@ApiModelProperty(position = 30, dataType = "List of conversion rates")
+	@Schema(type = "List of conversion rates")
 	@NonNull
 	List<JsonCurrencyRateCreateRequestItem> requestItems;
 }

@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.ErrorList;
-import com.adekia.exchange.amazonsp.client.orders.model.OrderItemsList;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The response schema for the getOrderItems operation.
  */
-@ApiModel(description = "The response schema for the getOrderItems operation.")
+@Schema(description = "The response schema for the getOrderItems operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class GetOrderItemsResponse {
   @SerializedName("payload")
@@ -47,7 +39,7 @@ public class GetOrderItemsResponse {
    * The payload for the getOrderItems operation.
    * @return payload
   **/
-  @ApiModelProperty(value = "The payload for the getOrderItems operation.")
+  @Schema(description = "The payload for the getOrderItems operation.")
   public OrderItemsList getPayload() {
     return payload;
   }
@@ -65,7 +57,7 @@ public class GetOrderItemsResponse {
    * One or more unexpected errors occurred during the getOrderItems operation.
    * @return errors
   **/
-  @ApiModelProperty(value = "One or more unexpected errors occurred during the getOrderItems operation.")
+  @Schema(description = "One or more unexpected errors occurred during the getOrderItems operation.")
   public ErrorList getErrors() {
     return errors;
   }

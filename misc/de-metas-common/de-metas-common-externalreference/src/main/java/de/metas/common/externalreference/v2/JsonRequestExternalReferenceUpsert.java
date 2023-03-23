@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +35,7 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonRequestExternalReferenceUpsert.JsonRequestExternalReferenceUpsertBuilder.class)
 public class JsonRequestExternalReferenceUpsert
 {
-	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	@NonNull
 	JsonExternalSystemName systemName;
 

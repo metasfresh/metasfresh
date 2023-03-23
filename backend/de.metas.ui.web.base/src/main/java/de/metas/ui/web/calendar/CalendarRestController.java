@@ -63,7 +63,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
@@ -88,7 +88,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-@Api
+@Tag(name = "CalendarRestController")
 @RestController
 @RequestMapping(WebConfig.ENDPOINT_ROOT + "/calendars")
 public class CalendarRestController

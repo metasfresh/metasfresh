@@ -13,21 +13,20 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A field collected from the regulatory form.
  */
-@ApiModel(description = "A field collected from the regulatory form.")
+@Schema(description = "A field collected from the regulatory form.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class RegulatedInformationField {
   @SerializedName("FieldId")
@@ -98,7 +97,7 @@ public class RegulatedInformationField {
    * The unique identifier for the field.
    * @return fieldId
   **/
-  @ApiModelProperty(required = true, value = "The unique identifier for the field.")
+  @Schema(required = true, description = "The unique identifier for the field.")
   public String getFieldId() {
     return fieldId;
   }
@@ -116,7 +115,7 @@ public class RegulatedInformationField {
    * The human-readable name for the field.
    * @return fieldLabel
   **/
-  @ApiModelProperty(required = true, value = "The human-readable name for the field.")
+  @Schema(required = true, description = "The human-readable name for the field.")
   public String getFieldLabel() {
     return fieldLabel;
   }
@@ -134,7 +133,7 @@ public class RegulatedInformationField {
    * The type of field the field.
    * @return fieldType
   **/
-  @ApiModelProperty(required = true, value = "The type of field the field.")
+  @Schema(required = true, description = "The type of field the field.")
   public FieldTypeEnum getFieldType() {
     return fieldType;
   }
@@ -152,7 +151,7 @@ public class RegulatedInformationField {
    * The content of the field as collected in regulatory form. Note that FileAttachment type fields will contain an URL to download the attachment here.
    * @return fieldValue
   **/
-  @ApiModelProperty(required = true, value = "The content of the field as collected in regulatory form. Note that FileAttachment type fields will contain an URL to download the attachment here.")
+  @Schema(required = true, description = "The content of the field as collected in regulatory form. Note that FileAttachment type fields will contain an URL to download the attachment here.")
   public String getFieldValue() {
     return fieldValue;
   }

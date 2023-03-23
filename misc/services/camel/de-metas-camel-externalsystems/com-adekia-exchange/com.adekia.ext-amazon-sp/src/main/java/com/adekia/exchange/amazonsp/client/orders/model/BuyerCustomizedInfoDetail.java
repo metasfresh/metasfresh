@@ -14,20 +14,15 @@
 package com.adekia.exchange.amazonsp.client.orders.model;
 
 import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
 
 /**
  * Buyer information for custom orders from the Amazon Custom program.
  */
-@ApiModel(description = "Buyer information for custom orders from the Amazon Custom program.")
+@Schema(description = "Buyer information for custom orders from the Amazon Custom program.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class BuyerCustomizedInfoDetail {
   @SerializedName("CustomizedURL")
@@ -42,7 +37,7 @@ public class BuyerCustomizedInfoDetail {
    * The location of a zip file containing Amazon Custom data.
    * @return customizedURL
   **/
-  @ApiModelProperty(value = "The location of a zip file containing Amazon Custom data.")
+  @Schema(description = "The location of a zip file containing Amazon Custom data.")
   public String getCustomizedURL() {
     return customizedURL;
   }

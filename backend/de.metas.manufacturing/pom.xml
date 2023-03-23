@@ -11,7 +11,7 @@
 	</parent>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 	</properties>
 
 	<groupId>de.metas.manufacturing</groupId>

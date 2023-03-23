@@ -1,5 +1,7 @@
 package de.metas.handlingunits.qrcodes.model.json.v1;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
@@ -11,23 +13,19 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
-import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.util.UUID;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 class JsonConverterV1Test
 {
-	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+	private Expect expect;
 
 	private static HUQRCode newStandardHUQRCode()
 	{
@@ -88,6 +86,6 @@ class JsonConverterV1Test
 	public void checkJsonFormatIsNotChanging()
 	{
 		final JsonHUQRCodeV1 json = JsonConverterV1.toJson(newStandardHUQRCode());
-		expect(json).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(json);
 	}
 }

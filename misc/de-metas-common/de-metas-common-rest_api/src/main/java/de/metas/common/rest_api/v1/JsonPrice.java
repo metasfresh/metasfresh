@@ -24,25 +24,24 @@ package de.metas.common.rest_api.v1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
 import java.math.BigDecimal;
 
-@ApiModel("Price for one item, in the given unit of measurement and curency")
+@Schema(description = "Price for one item, in the given unit of measurement and currency")
 @Value
 public class JsonPrice
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	BigDecimal value;
 
-	@ApiModelProperty(position = 20, required = true)
+	@Schema(required = true)
 	String currencyCode;
 
-	@ApiModelProperty(position = 30, required = true, //
-			value = "Identify which unit of measurement this about")
+	@Schema(required = true, //
+			description = "Identify which unit of measurement this about")
 	String priceUomCode;
 
 	@Builder

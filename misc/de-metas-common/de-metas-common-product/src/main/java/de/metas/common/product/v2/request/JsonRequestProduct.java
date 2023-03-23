@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -46,116 +46,116 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 @EqualsAndHashCode
 public class JsonRequestProduct
 {
-	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")
+	@Schema(description = "Corresponding to `M_Product.Value`")
 	private String code;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to `M_Product.Name`", required = true)
+	@Schema(description = "Corresponding to `M_Product.Name`", required = true)
 	private String name;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to `M_Product.Type`", required = true)
+	@Schema(description = "Corresponding to `M_Product.Type`", required = true)
 	private Type type;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to `M_Product.C_UOM_ID`", required = true)
+	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", required = true)
 	private String uomCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean uomCodeSet;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to `M_Product.UPC`")
+	@Schema(description = "Corresponding to `M_Product.UPC`")
 	private String ean;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean eanSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `M_Product.GTIN`")
+	@Schema(description = "Corresponding to `M_Product.GTIN`")
 	private String gtin;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean gtinSet;
 
-	@ApiModelProperty(position = 80, value = "Corresponding to `M_Product.Description`")
+	@Schema(description = "Corresponding to `M_Product.Description`")
 	private String description;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 90, value = "Corresponding to `M_Product.isDiscontinued`")
+	@Schema(description = "Corresponding to `M_Product.isDiscontinued`")
 	private Boolean discontinued;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean discontinuedSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
+	@Schema(description = "Corresponding to `M_Product.discontinuedFrom`", example = "2021-11-08")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate discontinuedFrom;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean discontinuedFromSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isActive`")
+	@Schema(description = "Corresponding to `M_Product.isActive`")
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 120, value = "Corresponding to `M_Product.isStocked`")
+	@Schema(description = "Corresponding to `M_Product.isStocked`")
 	private Boolean stocked;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean stockedSet;
 
-	@ApiModelProperty(position = 130, value = PRODUCT_CATEGORY_IDENTIFIER_DOC)
+	@Schema(description = PRODUCT_CATEGORY_IDENTIFIER_DOC)
 	private String productCategoryIdentifier;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean productCategoryIdentifierSet;
 
-	@ApiModelProperty(position = 135)
+	@Schema
 	private String guaranteeMonths;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean guaranteeMonthsSet;
 
-	@ApiModelProperty(position = 136)
+	@Schema
 	private String warehouseTemperature;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean warehouseTemperatureSet;
 
-	@ApiModelProperty(position = 140, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = READ_ONLY_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(position = 150)
+	@Schema
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
 
-	@ApiModelProperty(position = 160)
+	@Schema
 	private String sectionCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean sectionCodeSet;
 
-	@ApiModelProperty(position = 170, value = "Corresponding to `M_Product.IsPurchased`")
+	@Schema(description = "Corresponding to `M_Product.IsPurchased`")
 	private Boolean purchased;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean purchasedSet;
 
-	@ApiModelProperty(position = 180, value = "Corresponding to `M_Product.SAP_ProductHierarchy`")
+	@Schema(description = "Corresponding to `M_Product.SAP_ProductHierarchy`")
 	private String sapProductHierarchy;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean sapProductHierarchySet;
 
-	@ApiModelProperty(position = 190)
+	@Schema
 	private JsonRequestUpsertProductAllergen productAllergens;
 
 	public void setCode(final @NonNull String code)

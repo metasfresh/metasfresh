@@ -1,6 +1,6 @@
 
 #Note: I played with openjdk:8-jdk-alpine, but wasn't able to get even the entrypoint shell script to actually run
-FROM docker.metasfresh.com:6000/ubuntu:16.04
+FROM ubuntu:20.04
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
@@ -13,13 +13,13 @@ ARG CACHEBUST=1
 #
 # Note that netcat is used to wait for the DMBS to be available on startup,
 # curl is needed for possible customizations while creating a derive docker image, and also as a possible tool for troubleshooting
-# postgresql-client-9.5 is used in performing the eventual migration script rollout
+# postgresql-client is used in performing the eventual migration script rollout
 RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
-    && apt -y install postgresql-client-9.5 \
+    && apt -y install postgresql-client \
     && apt -y install curl \
-    && apt -y install openjdk-8-jdk-headless \
+    && apt -y install openjdk-17-jdk-headless \
     && apt -y install dos2unix \
     && apt -y install unzip \
     && apt -y autoremove \

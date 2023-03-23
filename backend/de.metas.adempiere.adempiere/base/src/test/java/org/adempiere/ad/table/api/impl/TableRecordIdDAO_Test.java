@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.util.List;
 import java.util.Set;
@@ -19,7 +20,6 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableSet;
@@ -281,7 +281,7 @@ public class TableRecordIdDAO_Test
 	}
 
 	/**
-	 * tests {@link TableRecordIdDAO#retrieveTableRecordReferences()}
+	 * tests TableRecordIdDAO#retrieveTableRecordReferences()
 	 * Creates two <code>AD_ChangeLog</code> records, one referencing an <code>AD_Element</code>, the other one referencing an <code>AD_Field</code>.
 	 * Then verifies that the map returned by the method under test contains two entries. One for <code>AD_Element</code>, one for <code>AD_Field</code>.
 	 */
@@ -347,8 +347,8 @@ public class TableRecordIdDAO_Test
 
 		Mockito.doReturn(retrieveDistinctIdsResult)
 				.when(tableRecordIdDAO).retrieveDistinctIds(
-						Matchers.anyString(), // tableName
-						Matchers.anyString() // idColumnName
+						anyString(), // tableName
+						anyString() // idColumnName
 				);
 
 		return tableRecordIdDAO;

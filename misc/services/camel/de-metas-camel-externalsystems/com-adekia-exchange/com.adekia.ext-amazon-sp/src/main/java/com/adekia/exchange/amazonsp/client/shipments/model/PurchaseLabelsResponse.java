@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.ErrorList;
-import com.adekia.exchange.amazonsp.client.shipments.model.PurchaseLabelsResult;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The response schema for the purchaseLabels operation.
  */
-@ApiModel(description = "The response schema for the purchaseLabels operation.")
+@Schema(description = "The response schema for the purchaseLabels operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class PurchaseLabelsResponse {
   @SerializedName("payload")
@@ -47,7 +39,7 @@ public class PurchaseLabelsResponse {
    * The payload for purchaseLabels operation
    * @return payload
   **/
-  @ApiModelProperty(value = "The payload for purchaseLabels operation")
+  @Schema(description = "The payload for purchaseLabels operation")
   public PurchaseLabelsResult getPayload() {
     return payload;
   }
@@ -65,7 +57,7 @@ public class PurchaseLabelsResponse {
    * Encountered errors for the operation.
    * @return errors
   **/
-  @ApiModelProperty(value = "Encountered errors for the operation.")
+  @Schema(description = "Encountered errors for the operation.")
   public ErrorList getErrors() {
     return errors;
   }

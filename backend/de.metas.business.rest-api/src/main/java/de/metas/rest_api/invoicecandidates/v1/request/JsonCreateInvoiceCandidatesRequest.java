@@ -24,7 +24,7 @@ package de.metas.rest_api.invoicecandidates.v1.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,7 +35,7 @@ import java.util.List;
 @Value
 public class JsonCreateInvoiceCandidatesRequest
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	List<JsonCreateInvoiceCandidatesRequestItem> items;
 
 	@Builder

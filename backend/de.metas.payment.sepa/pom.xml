@@ -1,23 +1,37 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
-	<groupId>de.metas.payment.sepa</groupId>
-	<artifactId>de.metas.payment.sepa</artifactId>
-	<packaging>pom</packaging>
+    <version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
+    <groupId>de.metas.payment.sepa</groupId>
+    <artifactId>de.metas.payment.sepa</artifactId>
+    <packaging>pom</packaging>
 
-	<modules>
-		<module>base</module>
-		<module>schema-pain_001_01_03_ch_02</module>
-		<module>schema-pain_008_003_02</module>
-	</modules>
-
+    <modules>
+        <module>base</module>
+        <module>schema-pain_001_01_03_ch_02</module>
+        <module>schema-pain_008_003_02</module>
+    </modules>
+    
+    <dependencies>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+        </dependency>
+    </dependencies>
 </project>

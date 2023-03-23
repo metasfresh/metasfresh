@@ -13,17 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.OrderItem;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * A list of order items.
  */
-@ApiModel(description = "A list of order items.")
+@Schema(description = "A list of order items.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrderItemList extends ArrayList<OrderItem> {
 

@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.VerificationStatus;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The updated values of the VerificationStatus field.
  */
-@ApiModel(description = "The updated values of the VerificationStatus field.")
+@Schema(description = "The updated values of the VerificationStatus field.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class UpdateVerificationStatusRequestBody {
   @SerializedName("status")
@@ -49,7 +42,7 @@ public class UpdateVerificationStatusRequestBody {
    * The new verification status of the order.
    * @return status
   **/
-  @ApiModelProperty(required = true, value = "The new verification status of the order.")
+  @Schema(required = true, description = "The new verification status of the order.")
   public VerificationStatus getStatus() {
     return status;
   }
@@ -67,7 +60,7 @@ public class UpdateVerificationStatusRequestBody {
    * The identifier for the order&#39;s regulated information reviewer.
    * @return externalReviewerId
   **/
-  @ApiModelProperty(required = true, value = "The identifier for the order's regulated information reviewer.")
+  @Schema(required = true, description = "The identifier for the order's regulated information reviewer.")
   public String getExternalReviewerId() {
     return externalReviewerId;
   }
@@ -85,7 +78,7 @@ public class UpdateVerificationStatusRequestBody {
    * The unique identifier for the rejection reason used for rejecting the order&#39;s regulated information. Only required if the new status is rejected.
    * @return rejectionReasonId
   **/
-  @ApiModelProperty(value = "The unique identifier for the rejection reason used for rejecting the order's regulated information. Only required if the new status is rejected.")
+  @Schema(description = "The unique identifier for the rejection reason used for rejecting the order's regulated information. Only required if the new status is rejected.")
   public String getRejectionReasonId() {
     return rejectionReasonId;
   }

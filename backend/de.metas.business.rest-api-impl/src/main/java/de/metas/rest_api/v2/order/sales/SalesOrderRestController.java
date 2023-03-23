@@ -51,9 +51,9 @@ import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -94,12 +94,12 @@ public class SalesOrderRestController
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	@ApiOperation("Create new order payment")
+	@Operation(summary = "Create new order payment")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created new order payment"),
-			@ApiResponse(code = 401, message = "You are not authorized to create a new order payment"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created new order payment"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create a new order payment"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PostMapping("/payment")
 	public ResponseEntity<?> createOrderPayment(@NonNull @RequestBody final JsonOrderPaymentCreateRequest request)

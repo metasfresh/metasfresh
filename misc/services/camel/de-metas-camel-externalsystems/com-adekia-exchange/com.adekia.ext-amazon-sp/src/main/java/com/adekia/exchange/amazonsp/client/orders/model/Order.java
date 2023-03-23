@@ -13,30 +13,20 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.Address;
-import com.adekia.exchange.amazonsp.client.orders.model.AutomatedShippingSettings;
-import com.adekia.exchange.amazonsp.client.orders.model.BuyerInfo;
-import com.adekia.exchange.amazonsp.client.orders.model.BuyerTaxInformation;
-import com.adekia.exchange.amazonsp.client.orders.model.FulfillmentInstruction;
-import com.adekia.exchange.amazonsp.client.orders.model.MarketplaceTaxInfo;
-import com.adekia.exchange.amazonsp.client.orders.model.Money;
-import com.adekia.exchange.amazonsp.client.orders.model.PaymentExecutionDetailItemList;
-import com.adekia.exchange.amazonsp.client.orders.model.PaymentMethodDetailItemList;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Order information.
  */
-@ApiModel(description = "Order information.")
+@Schema(description = "Order information.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class Order {
   @SerializedName("AmazonOrderId")
@@ -441,7 +431,7 @@ public class Order {
    * An Amazon-defined order identifier, in 3-7-7 format.
    * @return amazonOrderId
   **/
-  @ApiModelProperty(required = true, value = "An Amazon-defined order identifier, in 3-7-7 format.")
+  @Schema(required = true, description = "An Amazon-defined order identifier, in 3-7-7 format.")
   public String getAmazonOrderId() {
     return amazonOrderId;
   }
@@ -459,7 +449,7 @@ public class Order {
    * A seller-defined order identifier.
    * @return sellerOrderId
   **/
-  @ApiModelProperty(value = "A seller-defined order identifier.")
+  @Schema(description = "A seller-defined order identifier.")
   public String getSellerOrderId() {
     return sellerOrderId;
   }
@@ -477,7 +467,7 @@ public class Order {
    * The date when the order was created.
    * @return purchaseDate
   **/
-  @ApiModelProperty(required = true, value = "The date when the order was created.")
+  @Schema(required = true, description = "The date when the order was created.")
   public String getPurchaseDate() {
     return purchaseDate;
   }
@@ -495,7 +485,7 @@ public class Order {
    * The date when the order was last updated.  Note: LastUpdateDate is returned with an incorrect date for orders that were last updated before 2009-04-01.
    * @return lastUpdateDate
   **/
-  @ApiModelProperty(required = true, value = "The date when the order was last updated.  Note: LastUpdateDate is returned with an incorrect date for orders that were last updated before 2009-04-01.")
+  @Schema(required = true, description = "The date when the order was last updated.  Note: LastUpdateDate is returned with an incorrect date for orders that were last updated before 2009-04-01.")
   public String getLastUpdateDate() {
     return lastUpdateDate;
   }
@@ -513,7 +503,7 @@ public class Order {
    * The current order status.
    * @return orderStatus
   **/
-  @ApiModelProperty(required = true, value = "The current order status.")
+  @Schema(required = true, description = "The current order status.")
   public OrderStatusEnum getOrderStatus() {
     return orderStatus;
   }
@@ -531,7 +521,7 @@ public class Order {
    * Whether the order was fulfilled by Amazon (AFN) or by the seller (MFN).
    * @return fulfillmentChannel
   **/
-  @ApiModelProperty(value = "Whether the order was fulfilled by Amazon (AFN) or by the seller (MFN).")
+  @Schema(description = "Whether the order was fulfilled by Amazon (AFN) or by the seller (MFN).")
   public FulfillmentChannelEnum getFulfillmentChannel() {
     return fulfillmentChannel;
   }
@@ -549,7 +539,7 @@ public class Order {
    * The sales channel of the first item in the order.
    * @return salesChannel
   **/
-  @ApiModelProperty(value = "The sales channel of the first item in the order.")
+  @Schema(description = "The sales channel of the first item in the order.")
   public String getSalesChannel() {
     return salesChannel;
   }
@@ -567,7 +557,7 @@ public class Order {
    * The order channel of the first item in the order.
    * @return orderChannel
   **/
-  @ApiModelProperty(value = "The order channel of the first item in the order.")
+  @Schema(description = "The order channel of the first item in the order.")
   public String getOrderChannel() {
     return orderChannel;
   }
@@ -585,7 +575,7 @@ public class Order {
    * The shipment service level of the order.
    * @return shipServiceLevel
   **/
-  @ApiModelProperty(value = "The shipment service level of the order.")
+  @Schema(description = "The shipment service level of the order.")
   public String getShipServiceLevel() {
     return shipServiceLevel;
   }
@@ -603,7 +593,7 @@ public class Order {
    * The total charge for this order.
    * @return orderTotal
   **/
-  @ApiModelProperty(value = "The total charge for this order.")
+  @Schema(description = "The total charge for this order.")
   public Money getOrderTotal() {
     return orderTotal;
   }
@@ -621,7 +611,7 @@ public class Order {
    * The number of items shipped.
    * @return numberOfItemsShipped
   **/
-  @ApiModelProperty(value = "The number of items shipped.")
+  @Schema(description = "The number of items shipped.")
   public Integer getNumberOfItemsShipped() {
     return numberOfItemsShipped;
   }
@@ -639,7 +629,7 @@ public class Order {
    * The number of items unshipped.
    * @return numberOfItemsUnshipped
   **/
-  @ApiModelProperty(value = "The number of items unshipped.")
+  @Schema(description = "The number of items unshipped.")
   public Integer getNumberOfItemsUnshipped() {
     return numberOfItemsUnshipped;
   }
@@ -657,7 +647,7 @@ public class Order {
    * Information about sub-payment methods for a Cash On Delivery (COD) order.  Note: For a COD order that is paid for using one sub-payment method, one PaymentExecutionDetailItem object is returned, with PaymentExecutionDetailItem/PaymentMethod &#x3D; COD. For a COD order that is paid for using multiple sub-payment methods, two or more PaymentExecutionDetailItem objects are returned.
    * @return paymentExecutionDetail
   **/
-  @ApiModelProperty(value = "Information about sub-payment methods for a Cash On Delivery (COD) order.  Note: For a COD order that is paid for using one sub-payment method, one PaymentExecutionDetailItem object is returned, with PaymentExecutionDetailItem/PaymentMethod = COD. For a COD order that is paid for using multiple sub-payment methods, two or more PaymentExecutionDetailItem objects are returned.")
+  @Schema(description = "Information about sub-payment methods for a Cash On Delivery (COD) order.  Note: For a COD order that is paid for using one sub-payment method, one PaymentExecutionDetailItem object is returned, with PaymentExecutionDetailItem/PaymentMethod = COD. For a COD order that is paid for using multiple sub-payment methods, two or more PaymentExecutionDetailItem objects are returned.")
   public PaymentExecutionDetailItemList getPaymentExecutionDetail() {
     return paymentExecutionDetail;
   }
@@ -675,7 +665,7 @@ public class Order {
    * The payment method for the order. This property is limited to Cash On Delivery (COD) and Convenience Store (CVS) payment methods. Unless you need the specific COD payment information provided by the PaymentExecutionDetailItem object, we recommend using the PaymentMethodDetails property to get payment method information.
    * @return paymentMethod
   **/
-  @ApiModelProperty(value = "The payment method for the order. This property is limited to Cash On Delivery (COD) and Convenience Store (CVS) payment methods. Unless you need the specific COD payment information provided by the PaymentExecutionDetailItem object, we recommend using the PaymentMethodDetails property to get payment method information.")
+  @Schema(description = "The payment method for the order. This property is limited to Cash On Delivery (COD) and Convenience Store (CVS) payment methods. Unless you need the specific COD payment information provided by the PaymentExecutionDetailItem object, we recommend using the PaymentMethodDetails property to get payment method information.")
   public PaymentMethodEnum getPaymentMethod() {
     return paymentMethod;
   }
@@ -693,7 +683,7 @@ public class Order {
    * A list of payment methods for the order.
    * @return paymentMethodDetails
   **/
-  @ApiModelProperty(value = "A list of payment methods for the order.")
+  @Schema(description = "A list of payment methods for the order.")
   public PaymentMethodDetailItemList getPaymentMethodDetails() {
     return paymentMethodDetails;
   }
@@ -711,7 +701,7 @@ public class Order {
    * The identifier for the marketplace where the order was placed.
    * @return marketplaceId
   **/
-  @ApiModelProperty(value = "The identifier for the marketplace where the order was placed.")
+  @Schema(description = "The identifier for the marketplace where the order was placed.")
   public String getMarketplaceId() {
     return marketplaceId;
   }
@@ -729,7 +719,7 @@ public class Order {
    * The shipment service level category of the order.  Possible values: Expedited, FreeEconomy, NextDay, SameDay, SecondDay, Scheduled, Standard.
    * @return shipmentServiceLevelCategory
   **/
-  @ApiModelProperty(value = "The shipment service level category of the order.  Possible values: Expedited, FreeEconomy, NextDay, SameDay, SecondDay, Scheduled, Standard.")
+  @Schema(description = "The shipment service level category of the order.  Possible values: Expedited, FreeEconomy, NextDay, SameDay, SecondDay, Scheduled, Standard.")
   public String getShipmentServiceLevelCategory() {
     return shipmentServiceLevelCategory;
   }
@@ -747,7 +737,7 @@ public class Order {
    * The status of the Amazon Easy Ship order. This property is included only for Amazon Easy Ship orders.  Possible values: PendingPickUp, LabelCanceled, PickedUp, OutForDelivery, Damaged, Delivered, RejectedByBuyer, Undeliverable, ReturnedToSeller, ReturningToSeller.
    * @return easyShipShipmentStatus
   **/
-  @ApiModelProperty(value = "The status of the Amazon Easy Ship order. This property is included only for Amazon Easy Ship orders.  Possible values: PendingPickUp, LabelCanceled, PickedUp, OutForDelivery, Damaged, Delivered, RejectedByBuyer, Undeliverable, ReturnedToSeller, ReturningToSeller.")
+  @Schema(description = "The status of the Amazon Easy Ship order. This property is included only for Amazon Easy Ship orders.  Possible values: PendingPickUp, LabelCanceled, PickedUp, OutForDelivery, Damaged, Delivered, RejectedByBuyer, Undeliverable, ReturnedToSeller, ReturningToSeller.")
   public String getEasyShipShipmentStatus() {
     return easyShipShipmentStatus;
   }
@@ -765,7 +755,7 @@ public class Order {
    * Custom ship label for Checkout by Amazon (CBA).
    * @return cbaDisplayableShippingLabel
   **/
-  @ApiModelProperty(value = "Custom ship label for Checkout by Amazon (CBA).")
+  @Schema(description = "Custom ship label for Checkout by Amazon (CBA).")
   public String getCbaDisplayableShippingLabel() {
     return cbaDisplayableShippingLabel;
   }
@@ -783,7 +773,7 @@ public class Order {
    * The type of the order.
    * @return orderType
   **/
-  @ApiModelProperty(value = "The type of the order.")
+  @Schema(description = "The type of the order.")
   public OrderTypeEnum getOrderType() {
     return orderType;
   }
@@ -801,7 +791,7 @@ public class Order {
    * The start of the time period within which you have committed to ship the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.  Note: EarliestShipDate might not be returned for orders placed before February 1, 2013.
    * @return earliestShipDate
   **/
-  @ApiModelProperty(value = "The start of the time period within which you have committed to ship the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.  Note: EarliestShipDate might not be returned for orders placed before February 1, 2013.")
+  @Schema(description = "The start of the time period within which you have committed to ship the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.  Note: EarliestShipDate might not be returned for orders placed before February 1, 2013.")
   public String getEarliestShipDate() {
     return earliestShipDate;
   }
@@ -819,7 +809,7 @@ public class Order {
    * The end of the time period within which you have committed to ship the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.  Note: LatestShipDate might not be returned for orders placed before February 1, 2013.
    * @return latestShipDate
   **/
-  @ApiModelProperty(value = "The end of the time period within which you have committed to ship the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.  Note: LatestShipDate might not be returned for orders placed before February 1, 2013.")
+  @Schema(description = "The end of the time period within which you have committed to ship the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.  Note: LatestShipDate might not be returned for orders placed before February 1, 2013.")
   public String getLatestShipDate() {
     return latestShipDate;
   }
@@ -837,7 +827,7 @@ public class Order {
    * The start of the time period within which you have committed to fulfill the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.
    * @return earliestDeliveryDate
   **/
-  @ApiModelProperty(value = "The start of the time period within which you have committed to fulfill the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.")
+  @Schema(description = "The start of the time period within which you have committed to fulfill the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders.")
   public String getEarliestDeliveryDate() {
     return earliestDeliveryDate;
   }
@@ -855,7 +845,7 @@ public class Order {
    * The end of the time period within which you have committed to fulfill the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders that do not have a PendingAvailability, Pending, or Canceled status.
    * @return latestDeliveryDate
   **/
-  @ApiModelProperty(value = "The end of the time period within which you have committed to fulfill the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders that do not have a PendingAvailability, Pending, or Canceled status.")
+  @Schema(description = "The end of the time period within which you have committed to fulfill the order. In ISO 8601 date time format. Returned only for seller-fulfilled orders that do not have a PendingAvailability, Pending, or Canceled status.")
   public String getLatestDeliveryDate() {
     return latestDeliveryDate;
   }
@@ -873,7 +863,7 @@ public class Order {
    * When true, the order is an Amazon Business order. An Amazon Business order is an order where the buyer is a Verified Business Buyer.
    * @return isBusinessOrder
   **/
-  @ApiModelProperty(value = "When true, the order is an Amazon Business order. An Amazon Business order is an order where the buyer is a Verified Business Buyer.")
+  @Schema(description = "When true, the order is an Amazon Business order. An Amazon Business order is an order where the buyer is a Verified Business Buyer.")
   public Boolean isIsBusinessOrder() {
     return isBusinessOrder;
   }
@@ -891,7 +881,7 @@ public class Order {
    * When true, the order is a seller-fulfilled Amazon Prime order.
    * @return isPrime
   **/
-  @ApiModelProperty(value = "When true, the order is a seller-fulfilled Amazon Prime order.")
+  @Schema(description = "When true, the order is a seller-fulfilled Amazon Prime order.")
   public Boolean isIsPrime() {
     return isPrime;
   }
@@ -909,7 +899,7 @@ public class Order {
    * When true, the order has a Premium Shipping Service Level Agreement. For more information about Premium Shipping orders, see \&quot;Premium Shipping Options\&quot; in the Seller Central Help for your marketplace.
    * @return isPremiumOrder
   **/
-  @ApiModelProperty(value = "When true, the order has a Premium Shipping Service Level Agreement. For more information about Premium Shipping orders, see \"Premium Shipping Options\" in the Seller Central Help for your marketplace.")
+  @Schema(description = "When true, the order has a Premium Shipping Service Level Agreement. For more information about Premium Shipping orders, see \"Premium Shipping Options\" in the Seller Central Help for your marketplace.")
   public Boolean isIsPremiumOrder() {
     return isPremiumOrder;
   }
@@ -927,7 +917,7 @@ public class Order {
    * When true, the order is a GlobalExpress order.
    * @return isGlobalExpressEnabled
   **/
-  @ApiModelProperty(value = "When true, the order is a GlobalExpress order.")
+  @Schema(description = "When true, the order is a GlobalExpress order.")
   public Boolean isIsGlobalExpressEnabled() {
     return isGlobalExpressEnabled;
   }
@@ -945,7 +935,7 @@ public class Order {
    * The order ID value for the order that is being replaced. Returned only if IsReplacementOrder &#x3D; true.
    * @return replacedOrderId
   **/
-  @ApiModelProperty(value = "The order ID value for the order that is being replaced. Returned only if IsReplacementOrder = true.")
+  @Schema(description = "The order ID value for the order that is being replaced. Returned only if IsReplacementOrder = true.")
   public String getReplacedOrderId() {
     return replacedOrderId;
   }
@@ -963,7 +953,7 @@ public class Order {
    * When true, this is a replacement order.
    * @return isReplacementOrder
   **/
-  @ApiModelProperty(value = "When true, this is a replacement order.")
+  @Schema(description = "When true, this is a replacement order.")
   public Boolean isIsReplacementOrder() {
     return isReplacementOrder;
   }
@@ -981,7 +971,7 @@ public class Order {
    * Indicates the date by which the seller must respond to the buyer with an estimated ship date. Returned only for Sourcing on Demand orders.
    * @return promiseResponseDueDate
   **/
-  @ApiModelProperty(value = "Indicates the date by which the seller must respond to the buyer with an estimated ship date. Returned only for Sourcing on Demand orders.")
+  @Schema(description = "Indicates the date by which the seller must respond to the buyer with an estimated ship date. Returned only for Sourcing on Demand orders.")
   public String getPromiseResponseDueDate() {
     return promiseResponseDueDate;
   }
@@ -999,7 +989,7 @@ public class Order {
    * When true, the estimated ship date is set for the order. Returned only for Sourcing on Demand orders.
    * @return isEstimatedShipDateSet
   **/
-  @ApiModelProperty(value = "When true, the estimated ship date is set for the order. Returned only for Sourcing on Demand orders.")
+  @Schema(description = "When true, the estimated ship date is set for the order. Returned only for Sourcing on Demand orders.")
   public Boolean isIsEstimatedShipDateSet() {
     return isEstimatedShipDateSet;
   }
@@ -1017,7 +1007,7 @@ public class Order {
    * When true, the item within this order was bought and re-sold by Amazon Business EU SARL (ABEU). By buying and instantly re-selling your items, ABEU becomes the seller of record, making your inventory available for sale to customers who would not otherwise purchase from a third-party seller.
    * @return isSoldByAB
   **/
-  @ApiModelProperty(value = "When true, the item within this order was bought and re-sold by Amazon Business EU SARL (ABEU). By buying and instantly re-selling your items, ABEU becomes the seller of record, making your inventory available for sale to customers who would not otherwise purchase from a third-party seller.")
+  @Schema(description = "When true, the item within this order was bought and re-sold by Amazon Business EU SARL (ABEU). By buying and instantly re-selling your items, ABEU becomes the seller of record, making your inventory available for sale to customers who would not otherwise purchase from a third-party seller.")
   public Boolean isIsSoldByAB() {
     return isSoldByAB;
   }
@@ -1035,7 +1025,7 @@ public class Order {
    * When true, the item within this order was bought and re-sold by Amazon Business EU SARL (ABEU). By buying and instantly re-selling your items, ABEU becomes the seller of record, making your inventory available for sale to customers who would not otherwise purchase from a third-party seller.
    * @return isIBA
   **/
-  @ApiModelProperty(value = "When true, the item within this order was bought and re-sold by Amazon Business EU SARL (ABEU). By buying and instantly re-selling your items, ABEU becomes the seller of record, making your inventory available for sale to customers who would not otherwise purchase from a third-party seller.")
+  @Schema(description = "When true, the item within this order was bought and re-sold by Amazon Business EU SARL (ABEU). By buying and instantly re-selling your items, ABEU becomes the seller of record, making your inventory available for sale to customers who would not otherwise purchase from a third-party seller.")
   public Boolean isIsIBA() {
     return isIBA;
   }
@@ -1053,7 +1043,7 @@ public class Order {
    * The recommended location for the seller to ship the items from. It is calculated at checkout. The seller may or may not choose to ship from this location.
    * @return defaultShipFromLocationAddress
   **/
-  @ApiModelProperty(value = "The recommended location for the seller to ship the items from. It is calculated at checkout. The seller may or may not choose to ship from this location.")
+  @Schema(description = "The recommended location for the seller to ship the items from. It is calculated at checkout. The seller may or may not choose to ship from this location.")
   public Address getDefaultShipFromLocationAddress() {
     return defaultShipFromLocationAddress;
   }
@@ -1071,7 +1061,7 @@ public class Order {
    * The buyer&#39;s invoicing preference. Available only in the TR marketplace.
    * @return buyerInvoicePreference
   **/
-  @ApiModelProperty(value = "The buyer's invoicing preference. Available only in the TR marketplace.")
+  @Schema(description = "The buyer's invoicing preference. Available only in the TR marketplace.")
   public BuyerInvoicePreferenceEnum getBuyerInvoicePreference() {
     return buyerInvoicePreference;
   }
@@ -1089,7 +1079,7 @@ public class Order {
    * Contains the business invoice tax information.
    * @return buyerTaxInformation
   **/
-  @ApiModelProperty(value = "Contains the business invoice tax information.")
+  @Schema(description = "Contains the business invoice tax information.")
   public BuyerTaxInformation getBuyerTaxInformation() {
     return buyerTaxInformation;
   }
@@ -1107,7 +1097,7 @@ public class Order {
    * Contains the instructions about the fulfillment like where should it be fulfilled from.
    * @return fulfillmentInstruction
   **/
-  @ApiModelProperty(value = "Contains the instructions about the fulfillment like where should it be fulfilled from.")
+  @Schema(description = "Contains the instructions about the fulfillment like where should it be fulfilled from.")
   public FulfillmentInstruction getFulfillmentInstruction() {
     return fulfillmentInstruction;
   }
@@ -1125,7 +1115,7 @@ public class Order {
    * When true, this order is marked to be picked up from a store rather than delivered.
    * @return isISPU
   **/
-  @ApiModelProperty(value = "When true, this order is marked to be picked up from a store rather than delivered.")
+  @Schema(description = "When true, this order is marked to be picked up from a store rather than delivered.")
   public Boolean isIsISPU() {
     return isISPU;
   }
@@ -1143,7 +1133,7 @@ public class Order {
    * When true, this order is marked to be delivered to an Access Point. The access location is chosen by the customer. Access Points include Amazon Hub Lockers, Amazon Hub Counters, and pickup points operated by carriers.
    * @return isAccessPointOrder
   **/
-  @ApiModelProperty(value = "When true, this order is marked to be delivered to an Access Point. The access location is chosen by the customer. Access Points include Amazon Hub Lockers, Amazon Hub Counters, and pickup points operated by carriers.")
+  @Schema(description = "When true, this order is marked to be delivered to an Access Point. The access location is chosen by the customer. Access Points include Amazon Hub Lockers, Amazon Hub Counters, and pickup points operated by carriers.")
   public Boolean isIsAccessPointOrder() {
     return isAccessPointOrder;
   }
@@ -1161,7 +1151,7 @@ public class Order {
    * Tax information about the marketplace.
    * @return marketplaceTaxInfo
   **/
-  @ApiModelProperty(value = "Tax information about the marketplace.")
+  @Schema(description = "Tax information about the marketplace.")
   public MarketplaceTaxInfo getMarketplaceTaxInfo() {
     return marketplaceTaxInfo;
   }
@@ -1179,7 +1169,7 @@ public class Order {
    * The seller’s friendly name registered in the marketplace.
    * @return sellerDisplayName
   **/
-  @ApiModelProperty(value = "The seller’s friendly name registered in the marketplace.")
+  @Schema(description = "The seller’s friendly name registered in the marketplace.")
   public String getSellerDisplayName() {
     return sellerDisplayName;
   }
@@ -1197,7 +1187,7 @@ public class Order {
    * Get shippingAddress
    * @return shippingAddress
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public Address getShippingAddress() {
     return shippingAddress;
   }
@@ -1215,7 +1205,7 @@ public class Order {
    * Get buyerInfo
    * @return buyerInfo
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public BuyerInfo getBuyerInfo() {
     return buyerInfo;
   }
@@ -1233,7 +1223,7 @@ public class Order {
    * Contains information regarding the Shipping Settings Automaton program, such as whether the order&#39;s shipping settings were generated automatically, and what those settings are.
    * @return automatedShippingSettings
   **/
-  @ApiModelProperty(value = "Contains information regarding the Shipping Settings Automaton program, such as whether the order's shipping settings were generated automatically, and what those settings are.")
+  @Schema(description = "Contains information regarding the Shipping Settings Automaton program, such as whether the order's shipping settings were generated automatically, and what those settings are.")
   public AutomatedShippingSettings getAutomatedShippingSettings() {
     return automatedShippingSettings;
   }
@@ -1251,7 +1241,7 @@ public class Order {
    * Whether the order contains regulated items which may require additional approval steps before being fulfilled.
    * @return hasRegulatedItems
   **/
-  @ApiModelProperty(value = "Whether the order contains regulated items which may require additional approval steps before being fulfilled.")
+  @Schema(description = "Whether the order contains regulated items which may require additional approval steps before being fulfilled.")
   public Boolean isHasRegulatedItems() {
     return hasRegulatedItems;
   }

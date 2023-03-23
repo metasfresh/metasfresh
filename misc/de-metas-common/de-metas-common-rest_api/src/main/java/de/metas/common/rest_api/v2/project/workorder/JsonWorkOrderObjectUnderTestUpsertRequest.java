@@ -25,8 +25,7 @@ package de.metas.common.rest_api.v2.project.workorder;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -40,16 +39,16 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
-@ApiModel
+@Schema
 public class JsonWorkOrderObjectUnderTestUpsertRequest
 {
-	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_ObjectUnderTest.C_Project_ID`", required = true)
+	@Schema(description = "Corresponding to `C_Project_WO_ObjectUnderTest.C_Project_ID`", required = true)
 	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(position = 20, required = true)
+	@Schema(required = true)
 	List<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems;
 
-	@ApiModelProperty(position = 30, value = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	@Schema(description = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@Builder

@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.LabelSpecification;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The label details of the container.
  */
-@ApiModel(description = "The label details of the container.")
+@Schema(description = "The label details of the container.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Label {
   @SerializedName("labelStream")
@@ -46,7 +39,7 @@ public class Label {
    * Get labelStream
    * @return labelStream
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public String getLabelStream() {
     return labelStream;
   }
@@ -64,7 +57,7 @@ public class Label {
    * Get labelSpecification
    * @return labelSpecification
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public LabelSpecification getLabelSpecification() {
     return labelSpecification;
   }

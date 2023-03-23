@@ -24,7 +24,7 @@ package de.metas.common.externalsystem;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,7 +34,7 @@ import java.util.Map;
 @Value
 public class JsonInvokeExternalSystemParams
 {
-	@ApiModelProperty("Parameters to the process action. The parameter keys translate to `AD_Process_Para.ColumnName`s")
+	@Schema(description = "Parameters to the process action. The parameter keys translate to `AD_Process_Para.ColumnName`s")
 	Map<String, String> params;
 
 	@Builder

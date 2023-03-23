@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The monetary value of the order.
  */
-@ApiModel(description = "The monetary value of the order.")
+@Schema(description = "The monetary value of the order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class Money {
   @SerializedName("CurrencyCode")
@@ -45,7 +39,7 @@ public class Money {
    * The three-digit currency code. In ISO 4217 format.
    * @return currencyCode
   **/
-  @ApiModelProperty(value = "The three-digit currency code. In ISO 4217 format.")
+  @Schema(description = "The three-digit currency code. In ISO 4217 format.")
   public String getCurrencyCode() {
     return currencyCode;
   }
@@ -63,7 +57,7 @@ public class Money {
    * The currency amount.
    * @return amount
   **/
-  @ApiModelProperty(value = "The currency amount.")
+  @Schema(description = "The currency amount.")
   public String getAmount() {
     return amount;
   }

@@ -69,7 +69,7 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	}
 
 	/**
-	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
+	 * Creates filter that accepts a model if the given {@code columnName} has one of the given {@code values}.
 	 *
 	 * @param values may also be {@link RepoIdAware}s
 	 */
