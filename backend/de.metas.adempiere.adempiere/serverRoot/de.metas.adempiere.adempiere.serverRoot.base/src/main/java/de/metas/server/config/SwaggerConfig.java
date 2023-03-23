@@ -43,8 +43,8 @@ public class SwaggerConfig
 
 	@Bean
 	public OpenAPI appOpenAPI() {
-		return SwaggerUtil.createApiInfo("metasfresh application server REST API", "metasfresh REST API")
-				.addServersItem(new Server().url("/app"))
-				.addServersItem(new Server().url("/"));
+		return SwaggerUtil.createApiInfo("metasfresh application server REST API", "metasfresh REST API ( to switch to webui REST API on instances change above to /v3/api-docs )")
+				.addServersItem(new Server().url("/app").description("default - used on instances to add /app after base-url"))
+				.addServersItem(new Server().url("/").description("for local development"));
 	}
 }

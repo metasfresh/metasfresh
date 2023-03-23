@@ -35,7 +35,7 @@ public class SwaggerConfig
 	@Bean
 	public OpenAPI appOpenAPI() {
 		return SwaggerUtil.createApiInfo(
-				"metasfresh webui REST API",
-				"REST API backend for metasfresh UIs");
+				"metasfresh webui (webapi) REST API",
+				"REST API backend for metasfresh UIs ( to switch to app REST API on instances change above to /app/v3/api-docs )");
 	}
 }
