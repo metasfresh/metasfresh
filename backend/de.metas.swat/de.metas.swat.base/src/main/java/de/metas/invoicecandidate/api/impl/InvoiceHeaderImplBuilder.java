@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -31,6 +32,8 @@ import java.util.Set;
 public class InvoiceHeaderImplBuilder
 {
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
+
+	private DocTypeId docTypeInvoiceId = null;
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -84,6 +87,7 @@ public class InvoiceHeaderImplBuilder
 
 		// Document Type
 		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
+		invoiceHeader.setDocTypeInvoiceId(getDocTypeInvoiceId());
 		invoiceHeader.setIsSOTrx(isSOTrx());
 
 		// Pricing and currency
@@ -144,8 +148,38 @@ public class InvoiceHeaderImplBuilder
 					.setParameter("this.docTypeInvoicingPoolId", this.docTypeInvoicingPoolId)
 					.setParameter("docTypeInvoicingPoolId", docTypeInvoicingPoolId);
 		}
-		
+
 		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+
+	@Nullable
+	public DocTypeId getDocTypeInvoiceId()
+	{
+		return docTypeInvoiceId;
+	}
+
+	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
+	{
+		if (this.docTypeInvoiceId != null && !this.docTypeInvoiceId.equals(docTypeInvoiceId))
+		{
+			if (isEnforceUnique)
+			{
+				throw new AdempiereException("DocTypeInvoiceIds do not match!")
+						.appendParametersToMessage()
+						.setParameter("this.docTypeInvoiceId", this.docTypeInvoiceId)
+						.setParameter("docTypeInvoiceId", docTypeInvoiceId);
+			}
+
+			else
+			{
+				this.docTypeInvoiceId = null; // if the invoice doctypes in the selection are different, the field should not be set to any value // todo is this ok?
+			}
+		}
+
+		else
+		{
+			this.docTypeInvoiceId = docTypeInvoiceId;
+		}
 	}
 
 	public String getPOReference()
@@ -237,8 +271,7 @@ public class InvoiceHeaderImplBuilder
 			}
 		}
 
-
-		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+		if (this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
 		{
 			this.billTo = billTo.withContactId(null);
 		}
@@ -446,4 +479,5 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
+
 }

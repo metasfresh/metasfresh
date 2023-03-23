@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -9,7 +10,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import lombok.NonNull;
-import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -62,7 +62,9 @@ public interface IInvoiceHeader
 	int getM_InOut_ID();
 
 	@Nullable
-	I_C_DocType getC_DocTypeInvoice();
+	Optional<DocTypeId> getDocTypeInvoiceId();
+
+	void setDocTypeInvoiceId(DocTypeId docTypeInvoiceId);
 
 	@NonNull
 	Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId();
