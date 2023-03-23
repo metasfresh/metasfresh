@@ -2,7 +2,8 @@
 Feature: sales order
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber

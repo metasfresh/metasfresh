@@ -4,7 +4,8 @@ Feature:product create/update using metasfresh api
   I want want to be able to upsert products
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And no product external reference with value '345' exists
     And no bpartner external reference with value '345' exists
     And no bpartner external reference with value '456' exists

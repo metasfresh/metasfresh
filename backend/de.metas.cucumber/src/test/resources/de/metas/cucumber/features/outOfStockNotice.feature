@@ -1,7 +1,8 @@
 Feature: warehouse out of stock notice
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: warehouse out of stock notice api test
     Given metasfresh contains M_Products:

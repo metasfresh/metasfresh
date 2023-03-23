@@ -6,7 +6,8 @@ Feature: material-dispo updates on StockEstimateEvent events
   So that the ATP is always correct
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh initially has no MD_Candidate data
     And metasfresh initially has no MD_Candidate_StockChange_detail data
     And no product with value 'product_value1234' exists
