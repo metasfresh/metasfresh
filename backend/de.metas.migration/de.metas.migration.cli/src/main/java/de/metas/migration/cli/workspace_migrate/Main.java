@@ -123,7 +123,11 @@ public class Main
 		}
 
 		throw new RuntimeException("Property '" + name + "' was not set. "
+<<<<<<< HEAD
 										   + "\n Please start JVM with '-D" + name + "=...'" 
+=======
+										   + "\n Please start JVM with '-D" + name + "=...'"
+>>>>>>> 97263183560 (port change from master such that Main.java picks up env variables)
 										   + " OR set environment-variable '" + name + "=...'.");
 	}
 
