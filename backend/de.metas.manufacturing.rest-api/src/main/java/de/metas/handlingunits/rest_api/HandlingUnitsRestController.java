@@ -48,7 +48,7 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -160,7 +160,7 @@ public class HandlingUnitsRestController
 
 	@GetMapping("/byId/{M_HU_ID}")
 	public ResponseEntity<JsonGetSingleHUResponse> getById(
-			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
 		return getByIdSupplier(() -> GetByIdRequest.builder()

@@ -123,7 +123,7 @@ import static org.assertj.core.api.Assertions.*;
 	}
 
 
-	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull BigDecimal price)
+	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull final BigDecimal price)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();

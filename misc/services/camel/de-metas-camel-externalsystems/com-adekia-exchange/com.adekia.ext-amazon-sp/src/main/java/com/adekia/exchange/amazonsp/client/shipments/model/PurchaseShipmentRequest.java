@@ -13,26 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Address;
-import com.adekia.exchange.amazonsp.client.shipments.model.ContainerList;
-import com.adekia.exchange.amazonsp.client.shipments.model.LabelSpecification;
-import com.adekia.exchange.amazonsp.client.shipments.model.ServiceType;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.threeten.bp.OffsetDateTime;
+
+import java.util.Objects;
 
 /**
  * The payload schema for the purchaseShipment operation.
  */
-@ApiModel(description = "The payload schema for the purchaseShipment operation.")
+@Schema(description = "The payload schema for the purchaseShipment operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class PurchaseShipmentRequest {
   @SerializedName("clientReferenceId")
@@ -65,7 +55,7 @@ public class PurchaseShipmentRequest {
    * Get clientReferenceId
    * @return clientReferenceId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getClientReferenceId() {
     return clientReferenceId;
   }
@@ -83,7 +73,7 @@ public class PurchaseShipmentRequest {
    * Get shipTo
    * @return shipTo
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipTo() {
     return shipTo;
   }
@@ -101,7 +91,7 @@ public class PurchaseShipmentRequest {
    * Get shipFrom
    * @return shipFrom
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipFrom() {
     return shipFrom;
   }
@@ -119,7 +109,7 @@ public class PurchaseShipmentRequest {
    * The start date and time. This defaults to the current date and time.
    * @return shipDate
   **/
-  @ApiModelProperty(value = "The start date and time. This defaults to the current date and time.")
+  @Schema(description = "The start date and time. This defaults to the current date and time.")
   public OffsetDateTime getShipDate() {
     return shipDate;
   }
@@ -137,7 +127,7 @@ public class PurchaseShipmentRequest {
    * Get serviceType
    * @return serviceType
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ServiceType getServiceType() {
     return serviceType;
   }
@@ -155,7 +145,7 @@ public class PurchaseShipmentRequest {
    * Get containers
    * @return containers
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ContainerList getContainers() {
     return containers;
   }
@@ -173,7 +163,7 @@ public class PurchaseShipmentRequest {
    * Get labelSpecification
    * @return labelSpecification
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public LabelSpecification getLabelSpecification() {
     return labelSpecification;
   }

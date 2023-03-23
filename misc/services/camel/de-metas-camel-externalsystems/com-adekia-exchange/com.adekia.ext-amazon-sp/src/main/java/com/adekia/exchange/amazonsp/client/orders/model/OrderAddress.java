@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.Address;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The shipping address for the order.
  */
-@ApiModel(description = "The shipping address for the order.")
+@Schema(description = "The shipping address for the order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrderAddress {
   @SerializedName("AmazonOrderId")
@@ -46,7 +39,7 @@ public class OrderAddress {
    * An Amazon-defined order identifier, in 3-7-7 format.
    * @return amazonOrderId
   **/
-  @ApiModelProperty(required = true, value = "An Amazon-defined order identifier, in 3-7-7 format.")
+  @Schema(required = true, description = "An Amazon-defined order identifier, in 3-7-7 format.")
   public String getAmazonOrderId() {
     return amazonOrderId;
   }
@@ -64,7 +57,7 @@ public class OrderAddress {
    * Get shippingAddress
    * @return shippingAddress
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public Address getShippingAddress() {
     return shippingAddress;
   }

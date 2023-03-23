@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -42,41 +42,37 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @Value
 public class JsonEnqueueForInvoicingRequest
 {
-	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the invoice candidates to be invoiced.")
+	@Schema(required = true, //
+			description = "Specifies the invoice candidates to be invoiced.")
 	List<JsonInvoiceCandidateReference> invoiceCandidates;
 
-	@ApiModelProperty(position = 20, value = "Optional invoices' document date", example = "2019-10-30")
+	@Schema(description = "Optional invoices' document date", example = "2019-10-30")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate dateInvoiced;
 
-	@ApiModelProperty(position = 30, value = "Optional invoices' accounting date", example = "2019-10-30")
+	@Schema(description = "Optional invoices' accounting date", example = "2019-10-30")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate dateAcct;
 
-	@ApiModelProperty(position = 40, value = "Optional customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
+	@Schema(description = "Optional customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
 	String poReference;
 
-	@ApiModelProperty(position = 50, required = false, //
-			value = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.\n"
+	@Schema(description = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.\n"
 					+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected\n"
 					+ "Default = `false`")
 	Boolean ignoreInvoiceSchedule;
 
-	@ApiModelProperty(position = 60, required = false,//
-			value = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.\n"
+	@Schema(description = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.\n"
 					+ "Default = `true`")
 	Boolean supplementMissingPaymentTermIds;
 
-	@ApiModelProperty(position = 70, required = false,//
-			value = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.\n"
+	@Schema(description = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.\n"
 					+ "Default = `false`")
 	Boolean updateLocationAndContactForInvoice;
 
-	@ApiModelProperty(position = 80, required = false,//
-			value = "When this parameter is set on true, the newly generated invoices are directly completed.\n"
+	@Schema(description = "When this parameter is set on true, the newly generated invoices are directly completed.\n"
 					+ "Otherwise they are just prepared and left in the DocStatus IP (in progress). Default = `true`")
 	Boolean completeInvoices;
 

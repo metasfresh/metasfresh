@@ -13,22 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * The total value of all items in the container.
  */
-@ApiModel(description = "The total value of all items in the container.")
+@Schema(description = "The total value of all items in the container.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Currency {
   @SerializedName("value")
@@ -46,7 +40,7 @@ public class Currency {
    * The amount of currency.
    * @return value
   **/
-  @ApiModelProperty(required = true, value = "The amount of currency.")
+  @Schema(required = true, description = "The amount of currency.")
   public BigDecimal getValue() {
     return value;
   }
@@ -64,7 +58,7 @@ public class Currency {
    * A 3-character currency code.
    * @return unit
   **/
-  @ApiModelProperty(required = true, value = "A 3-character currency code.")
+  @Schema(required = true, description = "A 3-character currency code.")
   public String getUnit() {
     return unit;
   }

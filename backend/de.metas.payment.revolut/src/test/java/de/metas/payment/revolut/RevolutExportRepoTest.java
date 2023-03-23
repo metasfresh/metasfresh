@@ -22,6 +22,8 @@
 
 package de.metas.payment.revolut;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -34,22 +36,20 @@ import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_PaySelection;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class RevolutExportRepoTest
 {
 	private RevolutExportRepo revolutExportRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -57,18 +57,6 @@ public class RevolutExportRepoTest
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 		revolutExportRepo = new RevolutExportRepo();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -82,7 +70,7 @@ public class RevolutExportRepoTest
 
 		//then
 		assertThat(savedList.size()).isEqualTo(1);
-		expect(savedList).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(savedList);
 	}
 
 	private RevolutPaymentExport createMockRevolutPaymentExportModel()

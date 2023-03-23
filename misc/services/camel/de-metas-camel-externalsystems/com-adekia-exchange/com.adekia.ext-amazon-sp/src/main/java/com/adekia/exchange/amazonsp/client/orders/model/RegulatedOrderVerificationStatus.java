@@ -13,25 +13,17 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.RejectionReason;
-import com.adekia.exchange.amazonsp.client.orders.model.VerificationStatus;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The verification status of the order along with associated approval or rejection metadata.
  */
-@ApiModel(description = "The verification status of the order along with associated approval or rejection metadata.")
+@Schema(description = "The verification status of the order along with associated approval or rejection metadata.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class RegulatedOrderVerificationStatus {
   @SerializedName("Status")
@@ -61,7 +53,7 @@ public class RegulatedOrderVerificationStatus {
    * The verification status of the order.
    * @return status
   **/
-  @ApiModelProperty(required = true, value = "The verification status of the order.")
+  @Schema(required = true, description = "The verification status of the order.")
   public VerificationStatus getStatus() {
     return status;
   }
@@ -79,7 +71,7 @@ public class RegulatedOrderVerificationStatus {
    * Whether the regulated information provided in the order requires a review by the merchant.
    * @return requiresMerchantAction
   **/
-  @ApiModelProperty(required = true, value = "Whether the regulated information provided in the order requires a review by the merchant.")
+  @Schema(required = true, description = "Whether the regulated information provided in the order requires a review by the merchant.")
   public Boolean isRequiresMerchantAction() {
     return requiresMerchantAction;
   }
@@ -102,7 +94,7 @@ public class RegulatedOrderVerificationStatus {
    * A list of valid rejection reasons that may be used to reject the order&#39;s regulated information.
    * @return validRejectionReasons
   **/
-  @ApiModelProperty(required = true, value = "A list of valid rejection reasons that may be used to reject the order's regulated information.")
+  @Schema(required = true, description = "A list of valid rejection reasons that may be used to reject the order's regulated information.")
   public List<RejectionReason> getValidRejectionReasons() {
     return validRejectionReasons;
   }
@@ -120,7 +112,7 @@ public class RegulatedOrderVerificationStatus {
    * The reason for rejecting the order&#39;s regulated information. Not present if the order isn&#39;t rejected.
    * @return rejectionReason
   **/
-  @ApiModelProperty(value = "The reason for rejecting the order's regulated information. Not present if the order isn't rejected.")
+  @Schema(description = "The reason for rejecting the order's regulated information. Not present if the order isn't rejected.")
   public RejectionReason getRejectionReason() {
     return rejectionReason;
   }
@@ -138,7 +130,7 @@ public class RegulatedOrderVerificationStatus {
    * The date the order was reviewed. In ISO 8601 date time format.
    * @return reviewDate
   **/
-  @ApiModelProperty(value = "The date the order was reviewed. In ISO 8601 date time format.")
+  @Schema(description = "The date the order was reviewed. In ISO 8601 date time format.")
   public String getReviewDate() {
     return reviewDate;
   }
@@ -156,7 +148,7 @@ public class RegulatedOrderVerificationStatus {
    * The identifier for the order&#39;s regulated information reviewer.
    * @return externalReviewerId
   **/
-  @ApiModelProperty(value = "The identifier for the order's regulated information reviewer.")
+  @Schema(description = "The identifier for the order's regulated information reviewer.")
   public String getExternalReviewerId() {
     return externalReviewerId;
   }

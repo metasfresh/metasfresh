@@ -1,7 +1,7 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-common:$REFNAME as common
 
-FROM maven:3.6.3-adoptopenjdk-14 as build
+FROM maven:3.8.4-eclipse-temurin-17 as build
 
 COPY --from=common /root/.m2 /root/.m2/
 

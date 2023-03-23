@@ -1,5 +1,8 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
@@ -92,8 +95,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -120,9 +121,6 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
 import static de.metas.rest_api.v1.ordercandidates.impl.TestMasterdata.RESOURCE_PATH;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -150,7 +148,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
  * #L%
  */
 
-@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
 public class
 OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
@@ -179,17 +177,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 	private OLCandBL olCandBL;
 
-	@BeforeAll
-	public static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void init()
@@ -364,7 +352,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final X12DE355 x12DE355 = uomDAO.getX12DE355ById(UomId.ofRepoId(productRecord.getC_UOM_ID()));
 			assertThat(x12DE355.getCode()).isEqualTo(request.getProduct().getUomCode());
 		}
-		expect(olCands).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(olCands);
 	}
 
 	@Test
@@ -631,7 +619,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 		assertThat(olCand.getPricingSystemId()).isEqualTo(pricingSystemId.getRepoId());
 
-		expect(olCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 
 		final I_C_OLCand olCandRecord = load(olCand.getId(), I_C_OLCand.class);
 		assertThat(olCandRecord.getM_PricingSystem_ID()).isEqualByComparingTo(pricingSystemId.getRepoId());
@@ -716,7 +704,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getPrice()).isEqualByComparingTo(new BigDecimal("13.24"));
 		assertThat(olCand.getWarehouseDestId()).isEqualTo(testWarehouseDestId.getRepoId());
 
-		expect(olCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	@Test
@@ -816,7 +804,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 
-		expect(olCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	@Test
@@ -934,7 +922,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
 
-		expect(olCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	@Test
@@ -1060,7 +1048,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
 				.contains(tuple(dropShipBpartnerLocationId.getBpartnerId().getRepoId(), expectedDropShipLocationId.getRepoId()));
 
-		expect(olCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(olCand);
 	}
 
 	/**
@@ -1085,7 +1073,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
-		expect(jsonOLCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(jsonOLCand);
 
 		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
@@ -1158,7 +1146,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
-		expect(jsonOLCand).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(jsonOLCand);
 
 		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)

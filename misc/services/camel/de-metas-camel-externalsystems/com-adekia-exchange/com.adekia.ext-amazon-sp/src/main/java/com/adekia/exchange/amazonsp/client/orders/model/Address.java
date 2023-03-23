@@ -13,21 +13,20 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * The shipping address for the order.
  */
-@ApiModel(description = "The shipping address for the order.")
+@Schema(description = "The shipping address for the order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class Address {
   @SerializedName("Name")
@@ -125,7 +124,7 @@ public class Address {
    * The name.
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "The name.")
+  @Schema(required = true, description = "The name.")
   public String getName() {
     return name;
   }
@@ -143,7 +142,7 @@ public class Address {
    * The street address.
    * @return addressLine1
   **/
-  @ApiModelProperty(value = "The street address.")
+  @Schema(description = "The street address.")
   public String getAddressLine1() {
     return addressLine1;
   }
@@ -161,7 +160,7 @@ public class Address {
    * Additional street address information, if required.
    * @return addressLine2
   **/
-  @ApiModelProperty(value = "Additional street address information, if required.")
+  @Schema(description = "Additional street address information, if required.")
   public String getAddressLine2() {
     return addressLine2;
   }
@@ -179,7 +178,7 @@ public class Address {
    * Additional street address information, if required.
    * @return addressLine3
   **/
-  @ApiModelProperty(value = "Additional street address information, if required.")
+  @Schema(description = "Additional street address information, if required.")
   public String getAddressLine3() {
     return addressLine3;
   }
@@ -197,7 +196,7 @@ public class Address {
    * The city 
    * @return city
   **/
-  @ApiModelProperty(value = "The city ")
+  @Schema(description = "The city ")
   public String getCity() {
     return city;
   }
@@ -215,7 +214,7 @@ public class Address {
    * The county.
    * @return county
   **/
-  @ApiModelProperty(value = "The county.")
+  @Schema(description = "The county.")
   public String getCounty() {
     return county;
   }
@@ -233,7 +232,7 @@ public class Address {
    * The district.
    * @return district
   **/
-  @ApiModelProperty(value = "The district.")
+  @Schema(description = "The district.")
   public String getDistrict() {
     return district;
   }
@@ -251,7 +250,7 @@ public class Address {
    * The state or region.
    * @return stateOrRegion
   **/
-  @ApiModelProperty(value = "The state or region.")
+  @Schema(description = "The state or region.")
   public String getStateOrRegion() {
     return stateOrRegion;
   }
@@ -269,7 +268,7 @@ public class Address {
    * The municipality.
    * @return municipality
   **/
-  @ApiModelProperty(value = "The municipality.")
+  @Schema(description = "The municipality.")
   public String getMunicipality() {
     return municipality;
   }
@@ -287,7 +286,7 @@ public class Address {
    * The postal code.
    * @return postalCode
   **/
-  @ApiModelProperty(value = "The postal code.")
+  @Schema(description = "The postal code.")
   public String getPostalCode() {
     return postalCode;
   }
@@ -305,7 +304,7 @@ public class Address {
    * The country code. A two-character country code, in ISO 3166-1 alpha-2 format.
    * @return countryCode
   **/
-  @ApiModelProperty(value = "The country code. A two-character country code, in ISO 3166-1 alpha-2 format.")
+  @Schema(description = "The country code. A two-character country code, in ISO 3166-1 alpha-2 format.")
   public String getCountryCode() {
     return countryCode;
   }
@@ -323,7 +322,7 @@ public class Address {
    * The phone number. Not returned for Fulfillment by Amazon (FBA) orders.
    * @return phone
   **/
-  @ApiModelProperty(value = "The phone number. Not returned for Fulfillment by Amazon (FBA) orders.")
+  @Schema(description = "The phone number. Not returned for Fulfillment by Amazon (FBA) orders.")
   public String getPhone() {
     return phone;
   }
@@ -341,7 +340,7 @@ public class Address {
    * The address type of the shipping address.
    * @return addressType
   **/
-  @ApiModelProperty(value = "The address type of the shipping address.")
+  @Schema(description = "The address type of the shipping address.")
   public AddressTypeEnum getAddressType() {
     return addressType;
   }

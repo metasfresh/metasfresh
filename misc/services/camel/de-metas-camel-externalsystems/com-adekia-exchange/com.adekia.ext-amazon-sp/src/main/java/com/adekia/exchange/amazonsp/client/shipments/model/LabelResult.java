@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Label;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Label details including label stream, format, size.
  */
-@ApiModel(description = "Label details including label stream, format, size.")
+@Schema(description = "Label details including label stream, format, size.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class LabelResult {
   @SerializedName("containerReferenceId")
@@ -49,7 +42,7 @@ public class LabelResult {
    * Get containerReferenceId
    * @return containerReferenceId
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public String getContainerReferenceId() {
     return containerReferenceId;
   }
@@ -67,7 +60,7 @@ public class LabelResult {
    * The tracking identifier assigned to the container.
    * @return trackingId
   **/
-  @ApiModelProperty(value = "The tracking identifier assigned to the container.")
+  @Schema(description = "The tracking identifier assigned to the container.")
   public String getTrackingId() {
     return trackingId;
   }
@@ -85,7 +78,7 @@ public class LabelResult {
    * Get label
    * @return label
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public Label getLabel() {
     return label;
   }

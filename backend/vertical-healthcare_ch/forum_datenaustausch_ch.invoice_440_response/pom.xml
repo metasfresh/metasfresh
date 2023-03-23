@@ -94,6 +94,20 @@
 						</configuration>
 					</execution>
 				</executions>
+				<dependencies>
+					<!-- without this dependency, XJC fails with a very obscure error! Thx to https://stackoverflow.com/a/58800280/1012103-->
+					<dependency>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
+						<version>${jaxb.api.version}</version>
+					</dependency>
+					<!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
+					<dependency>
+						<groupId>org.glassfish.jaxb</groupId>
+						<artifactId>jaxb-runtime</artifactId>
+						<version>2.3.3</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

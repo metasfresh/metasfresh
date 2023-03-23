@@ -22,6 +22,9 @@
 
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder;
 
+import au.com.origin.snapshots.Expect;
+
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
@@ -51,24 +54,26 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 import static org.mockito.ArgumentMatchers.eq;
 
+@ExtendWith(SnapshotExtension.class)
 public class MediatedOrderFactoryTest
 {
 	private MediatedOrderFactory mediatedOrderFactory;
 	private CommissionProductService commissionProductServiceMock;
+
+	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
@@ -82,7 +87,6 @@ public class MediatedOrderFactoryTest
 	@BeforeAll
 	static void init()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -114,7 +118,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -144,7 +148,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -193,7 +197,7 @@ public class MediatedOrderFactoryTest
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		;
+
 		orgInfo.setAD_Org_ID(orgId.getRepoId());
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		InterfaceWrapperHelper.save(orgInfo);

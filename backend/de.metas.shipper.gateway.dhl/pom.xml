@@ -104,6 +104,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <!-- java 17 support https://github.com/highsource/maven-jaxb2-plugin/issues/201 -->
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>2.3.3</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <!-- generating a package name makes the process fail with "duplicate class/interface names." -->
                     <!-- <generatePackage>de.metas.shipper.gateway.dhl.schematbp</generatePackage> -->

@@ -37,8 +37,8 @@
     <version>10.0.0</version>
 
     <properties>
-        <java.version>14</java.version>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <java.version>17</java.version>
+        <spring-boot.version>2.7.7</spring-boot.version>
         <camel.version>3.7.3</camel.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
@@ -46,7 +46,7 @@
         -->
         <assertj.version>3.19.0</assertj.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <jackson.version>2.12.1</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -102,6 +102,23 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${byte-buddy.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>${objenesis.version}</version>
             <scope>test</scope>
         </dependency>
 

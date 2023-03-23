@@ -42,10 +42,10 @@ import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.externlasystem.dto.InvokeExternalSystemProcessRequest;
 import de.metas.rest_api.v2.process.response.RunProcessResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -74,18 +74,18 @@ public class ExternalSystemRestController
 		this.externalSystemService = externalSystemService;
 	}
 
-	@ApiOperation("Invoke an external system.")
+	@Operation(summary = "Invoke an external system.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully invoked external system"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke process"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully invoked external system"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke process"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@PostMapping(path = "/invoke/{externalSystemConfigType}/{externalSystemChildConfigValue}/{request}")
 	public ResponseEntity<?> invokeExternalSystem(
 			@PathVariable final String externalSystemConfigType,
 			@PathVariable final String externalSystemChildConfigValue,
-			@ApiParam("The actual request like `getOrders` of the external system invocation process") @PathVariable final String request,
+			@Parameter(description = "The actual request like `getOrders` of the external system invocation process") @PathVariable final String request,
 			@RequestBody @Nullable final JsonInvokeExternalSystemParams externalSystemParams)
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
@@ -104,13 +104,13 @@ public class ExternalSystemRestController
 		return getResponse(externalSystemService.invokeExternalSystem(invokeExternalSystemProcessRequest));
 	}
 
-	@ApiOperation("Enables an external system to create an `AD_PInstance_Log`." 
+	@Operation(summary = "Enables an external system to create an `AD_PInstance_Log`." 
 			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully stored external AD_PInstance logs"),
-			@ApiResponse(code = 401, message = "You are not authorized to store AD_PInstance logs"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully stored external AD_PInstance logs"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to store AD_PInstance logs"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 
 	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/message", consumes = "application/json")
@@ -122,14 +122,14 @@ public class ExternalSystemRestController
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation("Create an AD_Issue. "
+	@Operation(summary = "Create an AD_Issue. "
 			+ "\nThe `AD_PInstance_ID` is the one the external system was invoked with."
 			+ "\nNote: it's not necessary that the process in question was started by the `invoke` endpoint.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created issue"),
-			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created issue"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create new issue"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PostMapping(path = "/externalstatus/{AD_PInstance_ID}/error", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonCreateIssueResponse> handleError(
@@ -140,12 +140,12 @@ public class ExternalSystemRestController
 		return ResponseEntity.ok(issueResponse);
 	}
 
-	@ApiOperation("Upsert external system runtime parameter")
+	@Operation(summary = "Upsert external system runtime parameter")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully stored external system runtime parameter"),
-			@ApiResponse(code = 401, message = "You are not authorized to store external system runtime parameters"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully stored external system runtime parameter"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to store external system runtime parameters"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PutMapping(path = "/runtimeParameter/bulk", consumes = "application/json")
 	public ResponseEntity<?> storeRuntimeParameters(@RequestBody @NonNull final JsonESRuntimeParameterUpsertRequest request)
@@ -154,18 +154,18 @@ public class ExternalSystemRestController
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation("Store external system status.")
+	@Operation(summary = "Store external system status.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully stored external system status"),
-			@ApiResponse(code = 401, message = "You are not authorized to store external system status"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully stored external system status"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to store external system status"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@PostMapping(path = "/service/{externalSystemConfigType}/{externalSystemChildConfigValue}/{serviceValue}/status")
 	public ResponseEntity<?> storeExternalSystemStatus(@RequestBody @NonNull final JsonStatusRequest request,
-			@ApiParam("Used to identify the type of the external system. Translates to 'ExternalSystem_Config.Type'.") @PathVariable @NonNull final String externalSystemConfigType,
-			@ApiParam("Used to identify an IExternalSystemChildConfig together with 'externalSystemConfigType'.") @PathVariable @NonNull final String externalSystemChildConfigValue,
-			@ApiParam("Used to identify an ExternalSystemService. Translates to 'ExternalSystem_Service.Value'.") @PathVariable @NonNull final String serviceValue)
+			@Parameter(description = "Used to identify the type of the external system. Translates to 'ExternalSystem_Config.Type'.") @PathVariable @NonNull final String externalSystemConfigType,
+			@Parameter(description = "Used to identify an IExternalSystemChildConfig together with 'externalSystemConfigType'.") @PathVariable @NonNull final String externalSystemChildConfigValue,
+			@Parameter(description = "Used to identify an ExternalSystemService. Translates to 'ExternalSystem_Service.Value'.") @PathVariable @NonNull final String serviceValue)
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
 
@@ -204,12 +204,12 @@ public class ExternalSystemRestController
 	}
 
 
-	@ApiOperation("Get external system info.\n Note, only externalSystemConfigType=GRSSignum is supported at the moment.")
+	@Operation(summary = "Get external system info.\n Note, only externalSystemConfigType=GRSSignum is supported at the moment.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved external system info"),
-			@ApiResponse(code = 401, message = "You are not authorized to retrieve external system info"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved external system info"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to retrieve external system info"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@GetMapping(path = "/{externalSystemConfigType}/{externalSystemChildConfigValue}/info")
 	public ResponseEntity<?> getExternalSystemInfo(

@@ -19,7 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -51,7 +51,7 @@ import java.util.Set;
  * #L%
  */
 
-@ApiModel("field")
+@Schema(description = "field")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutElementField
 {
@@ -74,7 +74,7 @@ public final class JSONDocumentLayoutElementField
 	 * <p>
 	 * Please keep in sync with {@link FieldType}
 	 */
-	@ApiModel("field-type")
+	@Schema(description = "field-type")
 	public enum JSONFieldType
 	{
 		/**
@@ -123,7 +123,7 @@ public final class JSONDocumentLayoutElementField
 	 * <p>
 	 * Please keep in sync with {@link LookupSource}.
 	 */
-	@ApiModel("lookup-source")
+	@Schema(description = "lookup-source")
 	public enum JSONLookupSource
 	{
 		lookup, list,

@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Contains the instructions about the fulfillment like where should it be fulfilled from.
  */
-@ApiModel(description = "Contains the instructions about the fulfillment like where should it be fulfilled from.")
+@Schema(description = "Contains the instructions about the fulfillment like where should it be fulfilled from.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class FulfillmentInstruction {
   @SerializedName("FulfillmentSupplySourceId")
@@ -42,7 +36,7 @@ public class FulfillmentInstruction {
    * Denotes the recommended sourceId where the order should be fulfilled from.
    * @return fulfillmentSupplySourceId
   **/
-  @ApiModelProperty(value = "Denotes the recommended sourceId where the order should be fulfilled from.")
+  @Schema(description = "Denotes the recommended sourceId where the order should be fulfilled from.")
   public String getFulfillmentSupplySourceId() {
     return fulfillmentSupplySourceId;
   }

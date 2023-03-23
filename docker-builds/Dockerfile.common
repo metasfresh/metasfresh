@@ -1,4 +1,4 @@
-FROM maven:3.8.4-jdk-8
+FROM maven:3.8.4-eclipse-temurin-17
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 

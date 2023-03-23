@@ -78,7 +78,7 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 		private static final String EVAL_CTXNAME_Record_ID = "Record_ID";
 
-		@Builder
+		@lombok.Builder
 		private FetchFromSQL(
 				@NonNull final String targetTableName,
 				@Nullable final String sqlToGetTargetRecordIdBySourceRecordId)

@@ -23,7 +23,7 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,44 +39,43 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.OBJECT_UNDER_TEST_
 @EqualsAndHashCode
 public class JsonWorkOrderObjectUnderTestUpsertItemRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = OBJECT_UNDER_TEST_IDENTIFIER_DOC) //
+	@Schema(required = true,
+			description = OBJECT_UNDER_TEST_IDENTIFIER_DOC) //
 	@Setter
 	String identifier;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	@Setter
 	Integer numberOfObjectsUnderTest;
 
 	String woDeliveryNote;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woDeliveryNoteSet;
 
 	String woManufacturer;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woManufacturerSet;
 
 	String woObjectType;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woObjectTypeSet;
 
 	String woObjectName;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woObjectNameSet;
 
 	String woObjectWhereabouts;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean woObjectWhereaboutsSet;
 
 	String externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean externalIdSet;
 
 	public void setWoDeliveryNote(final String woDeliveryNote)

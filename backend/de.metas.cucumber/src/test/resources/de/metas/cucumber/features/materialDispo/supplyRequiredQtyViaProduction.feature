@@ -372,7 +372,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
     When the order identified by o_1 is completed
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-11T06:00:00Z | 2021-04-11T06:00:00Z | false    |
+      | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-11T07:00:00Z | 2021-04-11T07:00:00Z | false    |
     And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
@@ -380,9 +380,9 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-03T21:00:00Z | -10  | -10                    |
-      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-11T06:00:00Z | 10   | 0                      |
-      | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-11T06:00:00Z | -100 | -100                   |
-      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-11T06:00:00Z | 100  | 0                      |
+      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-11T07:00:00Z | 10   | 0                      |
+      | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-11T07:00:00Z | -100 | -100                   |
+      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-11T07:00:00Z | 100  | 0                      |
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
@@ -399,7 +399,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | oc_1                             |
     And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
-      | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-11T06:00:00Z |
+      | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-11T07:00:00Z |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppo_1                  | p_2                     | 100          | false           | PCE               | CO            |

@@ -41,8 +41,8 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -92,7 +92,7 @@ import java.util.stream.Stream;
 /**
  * This is the rest controller used when processes are invoked from the <b>WebUI</b>.
  */
-@Api
+@Tag(name = "ProcessRestController")
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
 public class ProcessRestController
@@ -331,7 +331,7 @@ public class ProcessRestController
 	}
 
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
-	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
+	@Operation(summary = "Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<Resource> getReport(
 			@PathVariable("processId") final String processIdStr,

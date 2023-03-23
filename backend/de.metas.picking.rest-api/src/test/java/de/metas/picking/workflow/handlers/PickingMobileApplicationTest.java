@@ -1,5 +1,7 @@
 package de.metas.picking.workflow.handlers;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -39,13 +41,12 @@ import de.metas.workflow.rest_api.service.WFActivityHandlersRegistry;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -54,9 +55,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
 //@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith(SnapshotExtension.class)
 class PickingMobileApplicationTest
 {
 	private PickingJobTestHelper helper;
@@ -73,11 +73,7 @@ class PickingMobileApplicationTest
 	private TestRecorder recorder;
 	private PickingSlotIdAndCaption pickingSlot;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, PickingJobTestHelper.snapshotSerializeFunction);
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -204,7 +200,7 @@ class PickingMobileApplicationTest
 		final JsonWFProcess wfProcess = startWFProcess();
 		assertEqualsToDatabaseVersion(wfProcess);
 
-		recorder.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(recorder);
 	}
 
 	@Test
@@ -218,7 +214,7 @@ class PickingMobileApplicationTest
 		wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());
 		record_WFProcess_PickingJob_AllHUs("After ABORT", wfProcess);
 
-		recorder.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(recorder);
 	}
 
 	@Test
@@ -300,7 +296,7 @@ class PickingMobileApplicationTest
 			record_WFProcess_PickingJob_AllHUs("After Complete", wfProcess);
 		}
 
-		recorder.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(recorder);
 	}
 
 	@Test
@@ -359,7 +355,7 @@ class PickingMobileApplicationTest
 		assertEqualsToDatabaseVersion(wfProcess);
 		record_WFProcess_PickingJob_AllHUs("After Complete", wfProcess);
 
-		recorder.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(recorder);
 	}
 
 	@Test
@@ -430,6 +426,6 @@ class PickingMobileApplicationTest
 			record_WFProcess_PickingJob_AllHUs("After ABORT", wfProcess);
 		}
 
-		recorder.assertMatchesSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(recorder);
 	}
 }

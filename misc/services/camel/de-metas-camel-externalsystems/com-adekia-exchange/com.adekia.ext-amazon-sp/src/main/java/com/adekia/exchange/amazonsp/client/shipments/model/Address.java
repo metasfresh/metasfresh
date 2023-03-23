@@ -13,23 +13,17 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The address.
  */
-@ApiModel(description = "The address.")
+@Schema(description = "The address.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Address {
   @SerializedName("name")
@@ -74,7 +68,7 @@ public class Address {
    * The name of the person, business or institution at that address.
    * @return name
   **/
-  @ApiModelProperty(required = true, value = "The name of the person, business or institution at that address.")
+  @Schema(required = true, description = "The name of the person, business or institution at that address.")
   public String getName() {
     return name;
   }
@@ -92,7 +86,7 @@ public class Address {
    * First line of that address.
    * @return addressLine1
   **/
-  @ApiModelProperty(required = true, value = "First line of that address.")
+  @Schema(required = true, description = "First line of that address.")
   public String getAddressLine1() {
     return addressLine1;
   }
@@ -110,7 +104,7 @@ public class Address {
    * Additional address information, if required.
    * @return addressLine2
   **/
-  @ApiModelProperty(value = "Additional address information, if required.")
+  @Schema(description = "Additional address information, if required.")
   public String getAddressLine2() {
     return addressLine2;
   }
@@ -128,7 +122,7 @@ public class Address {
    * Additional address information, if required.
    * @return addressLine3
   **/
-  @ApiModelProperty(value = "Additional address information, if required.")
+  @Schema(description = "Additional address information, if required.")
   public String getAddressLine3() {
     return addressLine3;
   }
@@ -146,7 +140,7 @@ public class Address {
    * Get stateOrRegion
    * @return stateOrRegion
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getStateOrRegion() {
     return stateOrRegion;
   }
@@ -164,7 +158,7 @@ public class Address {
    * Get city
    * @return city
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getCity() {
     return city;
   }
@@ -182,7 +176,7 @@ public class Address {
    * Get countryCode
    * @return countryCode
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getCountryCode() {
     return countryCode;
   }
@@ -200,7 +194,7 @@ public class Address {
    * Get postalCode
    * @return postalCode
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getPostalCode() {
     return postalCode;
   }
@@ -218,7 +212,7 @@ public class Address {
    * The email address of the contact associated with the address.
    * @return email
   **/
-  @ApiModelProperty(value = "The email address of the contact associated with the address.")
+  @Schema(description = "The email address of the contact associated with the address.")
   public String getEmail() {
     return email;
   }
@@ -244,7 +238,7 @@ public class Address {
    * The email cc addresses of the contact associated with the address.
    * @return copyEmails
   **/
-  @ApiModelProperty(value = "The email cc addresses of the contact associated with the address.")
+  @Schema(description = "The email cc addresses of the contact associated with the address.")
   public List<String> getCopyEmails() {
     return copyEmails;
   }
@@ -262,7 +256,7 @@ public class Address {
    * The phone number of the person, business or institution located at that address.
    * @return phoneNumber
   **/
-  @ApiModelProperty(value = "The phone number of the person, business or institution located at that address.")
+  @Schema(description = "The phone number of the person, business or institution located at that address.")
   public String getPhoneNumber() {
     return phoneNumber;
   }

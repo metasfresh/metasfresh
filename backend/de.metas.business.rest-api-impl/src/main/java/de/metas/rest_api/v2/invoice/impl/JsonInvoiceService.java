@@ -110,7 +110,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.core.Tuple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;

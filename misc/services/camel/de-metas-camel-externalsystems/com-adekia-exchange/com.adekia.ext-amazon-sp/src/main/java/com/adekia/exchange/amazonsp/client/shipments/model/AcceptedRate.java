@@ -13,25 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Currency;
-import com.adekia.exchange.amazonsp.client.shipments.model.ServiceType;
-import com.adekia.exchange.amazonsp.client.shipments.model.ShippingPromiseSet;
-import com.adekia.exchange.amazonsp.client.shipments.model.Weight;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The specific rate purchased for the shipment, or null if unpurchased.
  */
-@ApiModel(description = "The specific rate purchased for the shipment, or null if unpurchased.")
+@Schema(description = "The specific rate purchased for the shipment, or null if unpurchased.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class AcceptedRate {
   @SerializedName("totalCharge")
@@ -55,7 +45,7 @@ public class AcceptedRate {
    * The total charge that will be billed for the rate.
    * @return totalCharge
   **/
-  @ApiModelProperty(value = "The total charge that will be billed for the rate.")
+  @Schema(description = "The total charge that will be billed for the rate.")
   public Currency getTotalCharge() {
     return totalCharge;
   }
@@ -73,7 +63,7 @@ public class AcceptedRate {
    * The weight that was used to calculate the totalCharge.
    * @return billedWeight
   **/
-  @ApiModelProperty(value = "The weight that was used to calculate the totalCharge.")
+  @Schema(description = "The weight that was used to calculate the totalCharge.")
   public Weight getBilledWeight() {
     return billedWeight;
   }
@@ -91,7 +81,7 @@ public class AcceptedRate {
    * Get serviceType
    * @return serviceType
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public ServiceType getServiceType() {
     return serviceType;
   }
@@ -109,7 +99,7 @@ public class AcceptedRate {
    * Get promise
    * @return promise
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public ShippingPromiseSet getPromise() {
     return promise;
   }

@@ -13,25 +13,16 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Address;
-import com.adekia.exchange.amazonsp.client.shipments.model.ContainerSpecificationList;
-import com.adekia.exchange.amazonsp.client.shipments.model.ServiceTypeList;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.threeten.bp.OffsetDateTime;
+
+import java.util.Objects;
 
 /**
  * The payload schema for the getRates operation.
  */
-@ApiModel(description = "The payload schema for the getRates operation.")
+@Schema(description = "The payload schema for the getRates operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class GetRatesRequest {
   @SerializedName("shipTo")
@@ -58,7 +49,7 @@ public class GetRatesRequest {
    * Get shipTo
    * @return shipTo
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipTo() {
     return shipTo;
   }
@@ -76,7 +67,7 @@ public class GetRatesRequest {
    * Get shipFrom
    * @return shipFrom
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipFrom() {
     return shipFrom;
   }
@@ -94,7 +85,7 @@ public class GetRatesRequest {
    * Get serviceTypes
    * @return serviceTypes
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ServiceTypeList getServiceTypes() {
     return serviceTypes;
   }
@@ -112,7 +103,7 @@ public class GetRatesRequest {
    * The start date and time. This defaults to the current date and time.
    * @return shipDate
   **/
-  @ApiModelProperty(value = "The start date and time. This defaults to the current date and time.")
+  @Schema(description = "The start date and time. This defaults to the current date and time.")
   public OffsetDateTime getShipDate() {
     return shipDate;
   }
@@ -130,7 +121,7 @@ public class GetRatesRequest {
    * Get containerSpecifications
    * @return containerSpecifications
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ContainerSpecificationList getContainerSpecifications() {
     return containerSpecifications;
   }

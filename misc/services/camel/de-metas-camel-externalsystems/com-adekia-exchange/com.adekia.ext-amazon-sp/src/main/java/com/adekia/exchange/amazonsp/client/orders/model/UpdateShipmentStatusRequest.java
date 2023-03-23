@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.OrderItems;
-import com.adekia.exchange.amazonsp.client.orders.model.ShipmentStatus;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Request to update the status of shipment of an order.
  */
-@ApiModel(description = "Request to update the status of shipment of an order.")
+@Schema(description = "Request to update the status of shipment of an order.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class UpdateShipmentStatusRequest {
   @SerializedName("marketplaceId")
@@ -50,7 +42,7 @@ public class UpdateShipmentStatusRequest {
    * Get marketplaceId
    * @return marketplaceId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getMarketplaceId() {
     return marketplaceId;
   }
@@ -68,7 +60,7 @@ public class UpdateShipmentStatusRequest {
    * Get shipmentStatus
    * @return shipmentStatus
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ShipmentStatus getShipmentStatus() {
     return shipmentStatus;
   }
@@ -86,7 +78,7 @@ public class UpdateShipmentStatusRequest {
    * Get orderItems
    * @return orderItems
   **/
-  @ApiModelProperty(value = "")
+  @Schema(description = "")
   public OrderItems getOrderItems() {
     return orderItems;
   }

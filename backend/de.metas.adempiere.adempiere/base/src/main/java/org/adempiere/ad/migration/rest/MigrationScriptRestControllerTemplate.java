@@ -25,7 +25,7 @@ package org.adempiere.ad.migration.rest;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
@@ -222,7 +222,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 			@PathVariable("filename") final String filename,
 
-			@ApiParam("Decides over the reponse's " + HttpHeaders.CONTENT_DISPOSITION + " header value; If set to <code>false</code>, the file is returned as attachment (download)") //
+			@Parameter(description = "Decides over the reponse's " + HttpHeaders.CONTENT_DISPOSITION + " header value; If set to <code>false</code>, the file is returned as attachment (download)") //
 			@RequestParam(name = "inline", required = false, defaultValue = "true") final boolean inline)
 	{
 		assertAuth();

@@ -1,11 +1,10 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.window.descriptor.LayoutAlign;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Map;
 
 /*
  * #%L
@@ -29,7 +28,7 @@ import io.swagger.annotations.ApiModel;
  * #L%
  */
 
-@ApiModel("layout-align")
+@Schema(description = "layout-align")
 public enum JSONLayoutAlign
 {
 	left, center, right, justify;

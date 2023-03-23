@@ -10,7 +10,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.lang.RepoIdAware;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,7 +53,7 @@ import java.util.function.IntFunction;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ApiModel("document-change-event")
+@Schema(description = "document-change-event")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JSONDocumentChangedEvent
@@ -69,7 +69,7 @@ public class JSONDocumentChangedEvent
 		return new JSONDocumentChangedEvent(JSONOperation.replace, fieldName, valueJson);
 	}
 
-	@ApiModel("operation")
+	@Schema(description = "operation")
 	public enum JSONOperation
 	{
 		replace;

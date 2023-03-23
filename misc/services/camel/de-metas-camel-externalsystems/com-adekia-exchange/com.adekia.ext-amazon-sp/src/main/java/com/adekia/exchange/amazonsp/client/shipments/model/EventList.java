@@ -13,17 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Event;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * A list of events of a shipment.
  */
-@ApiModel(description = "A list of events of a shipment.")
+@Schema(description = "A list of events of a shipment.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class EventList extends ArrayList<Event> {
 

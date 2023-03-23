@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.OrderItemList;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The order items list along with the order ID.
  */
-@ApiModel(description = "The order items list along with the order ID.")
+@Schema(description = "The order items list along with the order ID.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class OrderItemsList {
   @SerializedName("OrderItems")
@@ -49,7 +42,7 @@ public class OrderItemsList {
    * Get orderItems
    * @return orderItems
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public OrderItemList getOrderItems() {
     return orderItems;
   }
@@ -67,7 +60,7 @@ public class OrderItemsList {
    * When present and not empty, pass this string token in the next request to return the next response page.
    * @return nextToken
   **/
-  @ApiModelProperty(value = "When present and not empty, pass this string token in the next request to return the next response page.")
+  @Schema(description = "When present and not empty, pass this string token in the next request to return the next response page.")
   public String getNextToken() {
     return nextToken;
   }
@@ -85,7 +78,7 @@ public class OrderItemsList {
    * An Amazon-defined order identifier, in 3-7-7 format.
    * @return amazonOrderId
   **/
-  @ApiModelProperty(required = true, value = "An Amazon-defined order identifier, in 3-7-7 format.")
+  @Schema(required = true, description = "An Amazon-defined order identifier, in 3-7-7 format.")
   public String getAmazonOrderId() {
     return amazonOrderId;
   }

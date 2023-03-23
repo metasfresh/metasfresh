@@ -23,7 +23,7 @@
 package de.metas.ui.web.debug;
 
 import de.metas.ui.web.session.UserSession;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +50,7 @@ public class DebugRecordQueriesWithMicrometerRestController
 
 	@GetMapping
 	public void setRecordSqlQueriesWithMicrometer(
-			@ApiParam("If Enabled, all SQL queries execution times are recorded with micrometer")
+			@Parameter(description = "If Enabled, all SQL queries execution times are recorded with micrometer")
 			@RequestParam("enabled") final boolean enabled)
 	{
 		userSession.assertLoggedIn();

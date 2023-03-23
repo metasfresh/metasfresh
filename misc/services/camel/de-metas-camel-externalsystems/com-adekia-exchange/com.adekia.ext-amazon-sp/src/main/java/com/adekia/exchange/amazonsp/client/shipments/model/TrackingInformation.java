@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.EventList;
-import com.adekia.exchange.amazonsp.client.shipments.model.TrackingSummary;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The payload schema for the getTrackingInformation operation.
  */
-@ApiModel(description = "The payload schema for the getTrackingInformation operation.")
+@Schema(description = "The payload schema for the getTrackingInformation operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class TrackingInformation {
   @SerializedName("trackingId")
@@ -53,7 +45,7 @@ public class TrackingInformation {
    * Get trackingId
    * @return trackingId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getTrackingId() {
     return trackingId;
   }
@@ -71,7 +63,7 @@ public class TrackingInformation {
    * Get summary
    * @return summary
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public TrackingSummary getSummary() {
     return summary;
   }
@@ -89,7 +81,7 @@ public class TrackingInformation {
    * Get promisedDeliveryDate
    * @return promisedDeliveryDate
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getPromisedDeliveryDate() {
     return promisedDeliveryDate;
   }
@@ -107,7 +99,7 @@ public class TrackingInformation {
    * Get eventHistory
    * @return eventHistory
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public EventList getEventHistory() {
     return eventHistory;
   }
