@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -73,6 +51,7 @@ public interface I_C_DocType_Invoicing_Pool
 
 	/**
 	 * Set Invoicing Pool.
+	 * Configuration used for aggregating invoices and credit memos into a single document. When the amount to be invoiced is positive, the invoice will be created with the positive doctype of the pool and vice versa for the negative one.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -82,6 +61,7 @@ public interface I_C_DocType_Invoicing_Pool
 
 	/**
 	 * Get Invoicing Pool.
+	 * Configuration used for aggregating invoices and credit memos into a single document. When the amount to be invoiced is positive, the invoice will be created with the positive doctype of the pool and vice versa for the negative one.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -139,6 +119,29 @@ public interface I_C_DocType_Invoicing_Pool
 
 	ModelColumn<I_C_DocType_Invoicing_Pool, Object> COLUMN_IsActive = new ModelColumn<>(I_C_DocType_Invoicing_Pool.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Only On Distinct Invoice DocTypes.
+	 * When on 'Y' , the invoicing pool is only applied when the invoice candidates from the selection have different invoice doc types. When 'N', the pool is applied in any circumstances.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOnDistinctICTypes (boolean IsOnDistinctICTypes);
+
+	/**
+	 * Get Only On Distinct Invoice DocTypes.
+	 * When on 'Y' , the invoicing pool is only applied when the invoice candidates from the selection have different invoice doc types. When 'N', the pool is applied in any circumstances.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOnDistinctICTypes();
+
+	ModelColumn<I_C_DocType_Invoicing_Pool, Object> COLUMN_IsOnDistinctICTypes = new ModelColumn<>(I_C_DocType_Invoicing_Pool.class, "IsOnDistinctICTypes", null);
+	String COLUMNNAME_IsOnDistinctICTypes = "IsOnDistinctICTypes";
 
 	/**
 	 * Set Sales Transaction.
