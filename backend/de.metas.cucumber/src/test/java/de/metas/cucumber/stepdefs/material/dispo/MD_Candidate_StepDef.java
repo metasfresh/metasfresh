@@ -126,6 +126,7 @@ public class MD_Candidate_StepDef
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
+<<<<<<< HEAD
 		this.productTable = productTable;
 		this.stockCandidateTable = stockCandidateTable;
 		this.orderLineTable = orderLineTable;
@@ -136,6 +137,10 @@ public class MD_Candidate_StepDef
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
+=======
+		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 	}
 	
 	@When("metasfresh initially has this MD_Candidate data")

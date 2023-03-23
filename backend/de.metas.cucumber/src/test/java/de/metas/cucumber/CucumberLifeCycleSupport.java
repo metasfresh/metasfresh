@@ -27,7 +27,10 @@ import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
 
+<<<<<<< HEAD
 import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
+=======
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.model.validator.Main.SYSCONFIG_DEBOUNCER_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
@@ -42,11 +45,13 @@ import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_H
  */
 public class CucumberLifeCycleSupport
 {
-	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
-	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
-
 	private static boolean beforeAllMethodDone;
 
+<<<<<<< HEAD
+	private static boolean beforeAllMethodDone;
+
+=======
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 	public static void beforeAll()
 	{
 		synchronized (CucumberLifeCycleSupport.class)
@@ -68,11 +73,14 @@ public class CucumberLifeCycleSupport
 			System.setProperty("app-server-run-headless", "true"); //
 			System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
 			System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
+<<<<<<< HEAD
 			System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
 			System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
 			System.setProperty(SYSCONFIG_DEBOUNCER_DELAY_MILLIS, "100");
 			System.setProperty(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, "true");
 			System.setProperty(SYS_Config_AUTO_SHIP_AND_INVOICE, "false");
+=======
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 
 			// This is a workaround;
 			// Apparently, backend/metasfresh-dist/serverRoot/src/main/resources/c3p0.properties is not found in the classpass when we run this on github.

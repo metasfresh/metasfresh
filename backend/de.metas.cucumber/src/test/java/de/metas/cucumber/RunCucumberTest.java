@@ -36,7 +36,11 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
 		glue = "de.metas.cucumber.stepdefs",
 		tags = "not @ignore", // use this tag to temporatily ignore single scenarios
+<<<<<<< HEAD
 		// tags = "@dev:runThisOne", // use this tag to run only particular scenarios
+=======
+		//tags = "@dev:runThisOne", // use this tag to run only particular scenarios
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 		plugin = {
 				"html:target/cucumber.html",
 				"json:target/cucumber.1json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,

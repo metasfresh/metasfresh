@@ -3,7 +3,11 @@ Feature: Group invoices and credit memos into a single document
 
   Background:
     Given infrastructure and metasfresh are running
+<<<<<<< HEAD
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+=======
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
     And metasfresh has date and time 2022-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 

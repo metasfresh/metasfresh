@@ -7,7 +7,12 @@ Feature: stock changes accordingly
 
   Background:
     Given infrastructure and metasfresh are running
+<<<<<<< HEAD
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+=======
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh initially has no MD_Stock data
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
     And no product with value 'product_value222' exists
     And metasfresh contains M_Products:
       | Identifier | Name               |

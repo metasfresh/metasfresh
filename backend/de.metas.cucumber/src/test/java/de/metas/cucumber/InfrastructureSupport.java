@@ -23,9 +23,15 @@
 package de.metas.cucumber;
 
 import de.metas.common.util.CoalesceUtil;
+<<<<<<< HEAD
 import de.metas.logging.LogManager;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.util.StringUtils;
+=======
+import de.metas.common.util.StringUtils;
+import de.metas.logging.LogManager;
+import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
@@ -43,7 +49,11 @@ public class InfrastructureSupport
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
+<<<<<<< HEAD
 	
+=======
+
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 	/**
 	 * Can be set when running/developing cucumber-tests locally.
 	 * If set, then cucumber runs against your local DB, and not an ephemeral DB-image.
@@ -58,7 +68,11 @@ public class InfrastructureSupport
 	public static final String ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL = "CUCUMBER_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL";
 
 	/**
+<<<<<<< HEAD
 	 * {@code true} means that a database with all required migration-scripts is already running 
+=======
+	 * {@code true} means that a database with all required migration-scripts is already running
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 	 * {@code false} means that we need to start up our own postgresql and will also apply the location migration-scripts to bring that DB up to date.
 	 */
 	@Getter

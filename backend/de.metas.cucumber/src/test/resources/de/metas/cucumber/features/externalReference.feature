@@ -6,7 +6,11 @@ Feature: external references for metasfresh resources
 
   Background:
     Given infrastructure and metasfresh are running
+<<<<<<< HEAD
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+=======
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
 
   @from:cucumber
   Scenario: external resource is not referenced to a metasfresh resource

@@ -3,7 +3,11 @@ Feature: API Audit DELETE http method
 
   Background:
     Given infrastructure and metasfresh are running
+<<<<<<< HEAD
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+=======
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
     And all the API audit data is reset
 
   @from:cucumber

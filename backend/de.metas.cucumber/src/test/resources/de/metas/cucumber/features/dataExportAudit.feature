@@ -4,7 +4,11 @@ Feature: data export audit using bpartner metasfresh api
 
   Background:
     Given infrastructure and metasfresh are running
+<<<<<<< HEAD
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+=======
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
     And all the export audit data is reset
 
   Scenario: The request is good and the export audit data is created

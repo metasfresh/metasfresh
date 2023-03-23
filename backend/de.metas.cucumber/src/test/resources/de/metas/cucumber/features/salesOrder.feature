@@ -2,9 +2,14 @@
 Feature: sales order
 
   Background:
+<<<<<<< HEAD
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
+=======
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+
+>>>>>>> 028a7bd91a8 (enable cucumber tests to be run via intellij)
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
