@@ -8,6 +8,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,18 @@ public class ModelCacheInvalidationService
 {
 	public static ModelCacheInvalidationService get()
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final ModelCacheInvalidationService instance = SpringContextHolder.instance.getBeanOr(ModelCacheInvalidationService.class, null);
+			if (instance != null)
+			{
+				return instance;
+			}
+
+			logger.warn("ModelCacheInvalidationService.get() called -> returning newInstanceForUnitTesting()");
+			return newInstanceForUnitTesting();
+		}
+
 		return SpringContextHolder.instance.getBean(ModelCacheInvalidationService.class);
 	}
 
