@@ -6,6 +6,47 @@ Feature: Group invoices and credit memos into a single document
     And metasfresh has date and time 2022-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
+    Given load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+
+    And metasfresh contains M_Products:
+      | Identifier          | Value               | Name                |
+      | product_PO_17062022 | product_PO_17062022 | product_PO_17062022 |
+
+    And load M_HU_PI:
+      | M_HU_PI_ID.Identifier  | M_HU_PI_ID |
+      | huPackingTauschpalette | 1000006    |
+    And load M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_Version_ID |
+      | packingItem_IFCO              | 2002669            |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
+      | huPiItem_IFCO              | packingItem_IFCO              | 0   | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | huPiItemProduct_17062022           | huPiItem_IFCO              | product_PO_17062022     | 10  | 2022-03-01 |
+
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name  | Value |
+      | ps_PO      | ps_PO | ps_PO |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_PO      | ps_PO                         | DE                        | EUR                 | pl_PO_name | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
+      | plv_PO     | pl_PO                     | plv_PO | 2022-03-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_PO      | plv_PO                            | product_PO_17062022     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier  | Name                 | Value                | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | supplier_PO | supplier_PO_17062022 | supplier_PO_17062022 | Y            | N              | ps_PO                         |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | supplierLocation_PO | 1706202211111 | supplier_PO              | Y                   | Y                   |
+
   @from:cucumber
   @Id:S0242_100
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo amt > invoice amt => one invoice with 2 lines, DocType=CreditMemo
@@ -640,3 +681,69 @@ Feature: Group invoices and credit memos into a single document
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | 10          | true      | 10             |
+
+
+
+
+
+
+
+
+  @from:cucumber
+  @Id:S0242_401
+  Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; no invoicing pool setup => 1 invoice with 2 lines, DocType=SalesInvoice
+
+    Given metasfresh contains C_Orders:
+      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_PO_S0156_100 | N       | supplier_PO              | 2022-06-10  | po_ref_S0156_100 | POO             | ps_PO                             | supplierLocation_PO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier             | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_S0156_100 | order_PO_S0156_100    | product_PO_17062022     | 26         |
+
+    When the order identified by order_PO_S0156_100 is completed
+
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_100    | order_PO_S0156_100 | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_PO_S0156_100          | orderLine_PO_S0156_100    | 0            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
+      | invoiceCand_PO_S0156_100          | order_PO_S0156_100        | orderLine_PO_S0156_100        | 0            | 26             | 0                | false                |
+
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_S0156_100                | hu_S0156_100       | receiptSchedule_PO_S0156_100    | N               | 1     | N               | 3     | N               | 8     | huPiItemProduct_17062022           | huPackingTauschpalette       |
+
+    When create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_S0156_100       | receiptSchedule_PO_S0156_100    | inOut_PO_S0156_100    |
+    Then validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_100    | order_PO_S0156_100 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_PO_S0156_100          | orderLine_PO_S0156_100    | 24           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
+      | invoiceCand_PO_S0156_100          | order_PO_S0156_100        | orderLine_PO_S0156_100        | 24           | 26             | 24               | false                |
+
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_PO_S0156_100          |
+
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoiceCand_PO_S0156_100                  |
+
+
+    And validate created invoices
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus | OPT.GrandTotal |
+      | invoice_1          | supplier_PO              | supplierLocation_PO               | po_ref_S0156_100 | 30 Tage netto | true      | CO        | 285.60          |
