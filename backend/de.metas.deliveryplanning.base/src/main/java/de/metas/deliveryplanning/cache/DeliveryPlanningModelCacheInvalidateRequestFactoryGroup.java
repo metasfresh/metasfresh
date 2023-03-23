@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * Reacts on source table changes and invalidates M_Delivery_Planning_Delivery_Instructions_V records in all parent/child combinations.
+ */
 @Component
 public class DeliveryPlanningModelCacheInvalidateRequestFactoryGroup implements IModelCacheInvalidateRequestFactoryGroup, ModelCacheInvalidateRequestFactory
 {
