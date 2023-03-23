@@ -382,6 +382,7 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
+			Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 
