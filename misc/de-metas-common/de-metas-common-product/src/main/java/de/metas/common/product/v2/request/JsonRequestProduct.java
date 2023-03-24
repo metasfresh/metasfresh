@@ -158,7 +158,7 @@ public class JsonRequestProduct
 	@Schema
 	private JsonRequestUpsertProductAllergen productAllergens;
 
-	@ApiModelProperty(position = 170)
+	@Schema
 	private JsonRequestUpsertQualityAttribute qualityAttributes;
 
 	public void setCode(final @NonNull String code)
@@ -278,7 +278,11 @@ public class JsonRequestProduct
 		this.warehouseTemperatureSet = true;
 	}
 
-<<<<<<< HEAD
+	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
+	{
+		this.qualityAttributes = qualityAttribute;
+	}
+
 	@AllArgsConstructor
 	public static enum Type
 	{
@@ -305,11 +309,4 @@ public class JsonRequestProduct
 			return type;
 		}
 	}
-=======
-	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
-	{
-		this.qualityAttributes = qualityAttribute;
-	}
-
->>>>>>> 27a255271c6 (GRS Interface - Transfer Bio Label (#14977))
 }

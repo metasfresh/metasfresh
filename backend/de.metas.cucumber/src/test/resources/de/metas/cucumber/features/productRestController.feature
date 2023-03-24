@@ -173,17 +173,12 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
       | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
-<<<<<<< HEAD
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
-=======
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
-      | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
     And validate created M_Quality_Attributes for product: p_1
       | OPT.QualityAttribute  |
       | BearbeitetBio         |
       | EU/Non-EU-Agriculture |
->>>>>>> 27a255271c6 (GRS Interface - Transfer Bio Label (#14977))
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API '/api/v2/products/001' and fulfills with '200' status code
 """
