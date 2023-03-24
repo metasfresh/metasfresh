@@ -5,7 +5,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
