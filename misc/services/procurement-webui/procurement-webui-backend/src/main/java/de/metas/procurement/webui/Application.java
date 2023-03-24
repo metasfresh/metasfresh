@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -75,12 +78,11 @@ public class Application
 		return executor;
 	}
 
-	// @Bean
-	// public Docket docket()
-	// {
-	// 	return new Docket(DocumentationType.OAS_30)
-	// 			.select()
-	// 			.paths(PathSelectors.any())
-	// 			.build();
-	// }
+	@Bean
+	public OpenAPI appOpenAPI() {
+		return new OpenAPI().info(new Info()
+										  .title("metasfresh webui (webapi) REST API")
+										  .license(new License().name("GNU General Public License, version 2")
+														   .url("http://www.gnu.org/licenses/gpl-2.0.html")));
+	}
 }
