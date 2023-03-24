@@ -1,3 +1,117 @@
+
+-- Column: AD_Tab_Trl.Description
+-- 2023-03-24T10:09:18.012Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 12:09:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=267 AND FieldLength < 2000
+;
+
+
+-- 2023-03-24T10:15:10.587Z
+INSERT INTO t_alter_column SELECT 'ad_tab_trl','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=267 AND FieldLength=2000)
+;
+
+
+
+-- Column: AD_Window_Trl.Description
+-- 2023-03-24T12:09:19.044Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 14:09:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=308 AND FieldLength < 2000
+;
+
+-- 2023-03-24T12:09:19.793Z
+INSERT INTO t_alter_column SELECT 'ad_window_trl','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=308 AND FieldLength=2000)
+;
+
+
+-- Column: AD_Menu_Trl.Description
+-- 2023-03-24T12:14:54.945Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 14:14:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=248 AND FieldLength < 2000
+;
+
+-- 2023-03-24T12:14:55.859Z
+INSERT INTO t_alter_column SELECT 'ad_menu_trl','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=248 AND FieldLength = 2000)
+;
+
+
+-- Column: AD_Element.Description
+-- 2023-03-24T12:23:06.853Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 14:23:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2604 AND FieldLength < 2000
+;
+
+-- 2023-03-24T12:23:07.454Z
+INSERT INTO t_alter_column SELECT 'ad_element','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=2604 AND FieldLength = 2000)
+;
+
+-- Column: AD_Element_Trl.Description
+-- 2023-03-24T12:23:23.267Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 14:23:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2647 AND FieldLength < 2000
+;
+
+-- 2023-03-24T12:23:24.483Z
+INSERT INTO t_alter_column SELECT 'ad_element_trl','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=2647 AND FieldLength = 2000)
+;
+
+
+-- Column: AD_Process_Para.Description
+-- 2023-03-24T12:53:57.005Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 14:53:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2823  AND FieldLength < 2000
+;
+
+-- 2023-03-24T12:53:57.837Z
+INSERT INTO t_alter_column SELECT 'ad_process_para','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=2823  AND FieldLength = 2000)
+;
+
+-- Column: AD_Process_Para_Trl.Description
+-- 2023-03-24T12:54:15.081Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 14:54:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2841  AND FieldLength < 2000
+;
+
+-- 2023-03-24T12:54:15.771Z
+INSERT INTO t_alter_column SELECT 'ad_process_para_trl','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=2841  AND FieldLength = 2000)
+;
+
+
+
+
+
+-- Column: AD_Window.Description
+-- 2023-03-24T13:21:43.288Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 15:21:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=157 AND FieldLength < 2000
+;
+
+-- 2023-03-24T13:21:44.071Z
+INSERT INTO t_alter_column SELECT 'ad_window','Description','VARCHAR(2000)',null,null  WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=157  AND FieldLength = 2000)
+;
+
+
+
+
+
+-- Column: AD_Menu.Description
+-- 2023-03-24T13:22:45.611Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 15:22:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=230 AND FieldLength < 2000
+;
+
+-- 2023-03-24T13:22:46.251Z
+INSERT INTO t_alter_column SELECT 'ad_menu','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=230  AND FieldLength = 2000)
+;
+
+
+
+
+
+
+-- Column: AD_Tab.Description
+-- 2023-03-24T13:06:22.166Z
+UPDATE AD_Column SET FieldLength=2000,Updated=TO_TIMESTAMP('2023-03-24 15:06:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=162 AND FieldLength < 2000
+;
+
+-- 2023-03-24T13:06:22.915Z
+INSERT INTO t_alter_column SELECT 'ad_tab','Description','VARCHAR(2000)',null,null WHERE EXISTS (SELECT 1 from AD_Column WHERE AD_Column_ID=162  AND FieldLength = 2000)
+;
+
+
+
+
+
 -- Element: C_DocType_Invoicing_Pool_ID
 -- 2023-03-23T16:28:54.296Z
 UPDATE AD_Element_Trl SET Name='Rechnungspool', PrintName='Rechnungspool',Updated=TO_TIMESTAMP('2023-03-23 18:28:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581911 AND AD_Language='de_CH'
