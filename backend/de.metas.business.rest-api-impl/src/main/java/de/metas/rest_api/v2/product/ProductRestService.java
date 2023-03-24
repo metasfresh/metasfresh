@@ -56,8 +56,12 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+<<<<<<< HEAD
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
+=======
+import de.metas.product.quality.attribute.QualityAttributeService;
+>>>>>>> 27a255271c6 (GRS Interface - Transfer Bio Label (#14977))
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -96,17 +100,26 @@ public class ProductRestService
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final SectionCodeService sectionCodeService;
 	private final ProductAllergenRestService productAllergenRestService;
+	private final QualityAttributeService qualityAttributeService;
 
 	public ProductRestService(
+<<<<<<< HEAD
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final SectionCodeService sectionCodeService,
 			final ProductAllergenRestService productAllergenRestService)
+=======
+			final ProductRepository productRepository,
+			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			final ProductAllergenRestService productAllergenRestService,
+			final QualityAttributeService qualityAttributeService)
+>>>>>>> 27a255271c6 (GRS Interface - Transfer Bio Label (#14977))
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.sectionCodeService = sectionCodeService;
 		this.productAllergenRestService = productAllergenRestService;
+		this.qualityAttributeService = qualityAttributeService;
 	}
 
 	@NonNull
@@ -217,6 +230,14 @@ public class ProductRestService
 			productAllergenRestService.upsertProductAllergens(org,
 															  productId,
 															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes() != null)
+		{
+			qualityAttributeService.upsertProductQualityAttributes(
+					org,
+					productId,
+					jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes());
 		}
 
 		handleProductExternalReference(org,

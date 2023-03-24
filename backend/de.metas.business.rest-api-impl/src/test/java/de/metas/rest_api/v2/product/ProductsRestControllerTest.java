@@ -43,6 +43,7 @@ import de.metas.logging.LogManager;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.sectionCode.SectionCodeId;
@@ -120,10 +121,14 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
+<<<<<<< HEAD
 		final ProductRestService productRestService = new ProductRestService(productRepository,
 																			 externalReferenceRestControllerService,
 																			 new SectionCodeService(sectionCodeRepository),
 																			 Mockito.mock(ProductAllergenRestService.class));
+=======
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, Mockito.mock(ProductAllergenRestService.class), Mockito.mock(QualityAttributeService.class));
+>>>>>>> 27a255271c6 (GRS Interface - Transfer Bio Label (#14977))
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}
