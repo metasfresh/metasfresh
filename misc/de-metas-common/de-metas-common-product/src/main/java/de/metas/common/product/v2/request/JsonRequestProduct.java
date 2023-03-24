@@ -141,6 +141,9 @@ public class JsonRequestProduct
 	@ApiModelProperty(position = 160)
 	private JsonRequestUpsertProductAllergen productAllergens;
 
+	@ApiModelProperty(position = 170)
+	private JsonRequestUpsertQualityAttribute qualityAttributes;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -239,4 +242,10 @@ public class JsonRequestProduct
 		this.warehouseTemperature = warehouseTemperature;
 		this.warehouseTemperatureSet = true;
 	}
+
+	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
+	{
+		this.qualityAttributes = qualityAttribute;
+	}
+
 }
