@@ -459,6 +459,10 @@ public final class AggregationEngine
 					{
 						invoiceHeader.setDocTypeInvoiceId(DocTypeId.ofRepoId(icRecord.getC_DocTypeInvoice_ID()), false);
 					}
+					else
+					{
+						invoiceHeader.setDocTypeInvoiceId(null, false);
+					}
 				}
 
 				else

@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -160,7 +161,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
 	{
-		if (this.docTypeInvoiceId != null && !this.docTypeInvoiceId.equals(docTypeInvoiceId))
+		if (!Objects.equals(this.docTypeInvoiceId,docTypeInvoiceId))
 		{
 			if (isEnforceUnique)
 			{
