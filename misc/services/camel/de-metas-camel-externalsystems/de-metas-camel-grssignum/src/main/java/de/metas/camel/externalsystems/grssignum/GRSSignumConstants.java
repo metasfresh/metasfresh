@@ -55,4 +55,10 @@ public interface GRSSignumConstants
 	String HERKUNFT_ATTRIBUTE_CODE = "1000001";
 
 	int CUSTOMER_FLAG = 500;
+
+	String EU_AGRICULTURE = "EU-Landwirtschaft";
+
+	String NON_EU_AGRICULTURE = "Nicht-EU-Landwirtschaft";
+
+	String EU_NON_EU_AGRICULTURE = "EU-/Nicht-EU-Landwirtschaft";
 }

@@ -56,6 +56,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -93,15 +94,18 @@ public class ProductRestService
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductAllergenRestService productAllergenRestService;
+	private final QualityAttributeService qualityAttributeService;
 
 	public ProductRestService(
 			final ProductRepository productRepository,
 			final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			final ProductAllergenRestService productAllergenRestService)
+			final ProductAllergenRestService productAllergenRestService,
+			final QualityAttributeService qualityAttributeService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.productAllergenRestService = productAllergenRestService;
+		this.qualityAttributeService = qualityAttributeService;
 	}
 
 	@NonNull
@@ -212,6 +216,14 @@ public class ProductRestService
 			productAllergenRestService.upsertProductAllergens(org,
 															  productId,
 															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes() != null)
+		{
+			qualityAttributeService.upsertProductQualityAttributes(
+					org,
+					productId,
+					jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes());
 		}
 
 		handleProductExternalReference(org,
