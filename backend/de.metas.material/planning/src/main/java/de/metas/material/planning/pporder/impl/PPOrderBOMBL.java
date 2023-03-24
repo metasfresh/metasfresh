@@ -24,7 +24,11 @@ package de.metas.material.planning.pporder.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
+=======
+import de.metas.common.util.CoalesceUtil;
+>>>>>>> 4bd0abefd8f (In case I_PP_Order_BOMLine.QtyBOM is 0, use QtyEntered as fallback. (#14975))
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.exception.MrpException;
@@ -396,7 +400,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				//
 				.productId(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()))
 				.qtyPercentage(orderBOMLine.isQtyPercentage())
-				.qtyForOneFinishedGood(orderBOMLine.getQtyBOM())
+				.qtyForOneFinishedGood(CoalesceUtil.firstPositiveOrZero(orderBOMLine.getQtyBOM(),orderBOMLine.getQtyEntered()))
 				.percentOfFinishedGood(Percent.of(orderBOMLine.getQtyBatch()))
 				.scrap(Percent.of(orderBOMLine.getScrap()))
 				//
