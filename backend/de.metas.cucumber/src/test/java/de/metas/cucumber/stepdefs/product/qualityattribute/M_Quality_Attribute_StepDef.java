@@ -30,9 +30,11 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Quality_Attribute;
+import org.compiere.util.DB;
 
 import java.util.List;
 
@@ -72,5 +74,11 @@ public class M_Quality_Attribute_StepDef
 		}
 
 		softly.assertAll();
+	}
+
+	@And("no M_Quality_Attribute data is found")
+	public void reset_data()
+	{
+		DB.executeUpdateEx("TRUNCATE TABLE M_Quality_Attribute cascade", ITrx.TRXNAME_None);
 	}
 }

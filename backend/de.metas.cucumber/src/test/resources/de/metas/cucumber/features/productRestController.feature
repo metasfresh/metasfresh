@@ -8,6 +8,7 @@ Feature:product get/create/update using metasfresh api
       | ALBERTA        | 345               | Product  |
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
+    And no M_Quality_Attribute data is found
     And no product with value 'code345' exists
 
   @from:cucumber
@@ -218,8 +219,8 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | false               |
       | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | true                |
     And validate created M_Quality_Attributes for product: p_1
-      | OPT.QualityAttribute  |
-      | Halal         |
+      | OPT.QualityAttribute |
+      | Halal                |
 
   @from:cucumber
   Scenario: get Product, as a REST-API invoker
