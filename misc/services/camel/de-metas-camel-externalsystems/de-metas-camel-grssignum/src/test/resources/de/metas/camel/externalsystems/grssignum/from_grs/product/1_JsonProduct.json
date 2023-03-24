@@ -5,6 +5,8 @@
   "TEXT": "Name1",
   "TEXT2": "Name2",
   "INAKTIV": 0,
+  "BI0" : 0,
+  "HALAL" : 1,
   "KRED": [
     {
       "MKREDID": "vendorId",
