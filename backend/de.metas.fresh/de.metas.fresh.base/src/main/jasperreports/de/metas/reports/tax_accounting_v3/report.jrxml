@@ -543,6 +543,9 @@ order by vatcode, accountno
 				<subreportParameter name="c_tax_id">
 					<subreportParameterExpression><![CDATA[$F{c_tax_id}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="currency">
+					<subreportParameterExpression><![CDATA[$F{currency}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/tax_accounting_v3/report_details.jasper"]]></subreportExpression>
 			</subreport>
