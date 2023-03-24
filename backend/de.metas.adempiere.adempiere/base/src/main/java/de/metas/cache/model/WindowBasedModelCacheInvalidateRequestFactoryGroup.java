@@ -12,9 +12,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_Window;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -35,9 +32,11 @@ public class WindowBasedModelCacheInvalidateRequestFactoryGroup implements IMode
 	private static final int DUMMY_CACHE_ID = 0;
 	private final CCache<Integer, ImmutableModelCacheInvalidateRequestFactoriesList> cache = CCache.<Integer, ImmutableModelCacheInvalidateRequestFactoriesList>builder()
 			.initialCapacity(1)
-			.tableName(I_AD_Window.Table_Name)
-			.additionalTableNameToResetFor(I_AD_Tab.Table_Name)
-			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
+			.cacheName("WindowBasedModelCacheInvalidateRequestFactoryGroup.cache")
+			// NOTE: don't reset on each window/tab/table change because that's too. React just on full cache reset.
+			// .tableName(I_AD_Window.Table_Name)
+			// .additionalTableNameToResetFor(I_AD_Tab.Table_Name)
+			// .additionalTableNameToResetFor(I_AD_Table.Table_Name)
 			.build();
 
 	public String toString()
