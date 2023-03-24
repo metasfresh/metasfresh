@@ -49,7 +49,7 @@ class ColumnSqlCacheInvalidateRequestFactoryGroup implements IModelCacheInvalida
 	{
 		final ImmutableModelCacheInvalidateRequestFactoriesList delegate = getDelegateIfLoaded();
 		return MoreObjects.toStringHelper(this)
-				.addValue(delegate != null ? delegate : "NOT LOADED")
+				.add("size", delegate != null ? delegate.size() : "NOT LOADED")
 				.toString();
 	}
 

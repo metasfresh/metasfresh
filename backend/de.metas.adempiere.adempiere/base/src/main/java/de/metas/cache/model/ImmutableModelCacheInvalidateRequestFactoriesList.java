@@ -32,7 +32,7 @@ import java.util.Set;
  * #L%
  */
 
-final class ImmutableModelCacheInvalidateRequestFactoriesList
+public final class ImmutableModelCacheInvalidateRequestFactoriesList
 {
 	private final ImmutableSetMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName;
 	@Getter private final TableNamesGroup tableNamesToEnableRemoveCacheInvalidation;
@@ -51,9 +51,11 @@ final class ImmutableModelCacheInvalidateRequestFactoriesList
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("size", factoriesByTableName.size())
-				//.add("factories", factoriesByTableName) // hide this because it's too much to print/log
+				.add("factories", factoriesByTableName)
 				.toString();
 	}
+
+	public int size() {return factoriesByTableName.size();}
 
 	public Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull final String tableName)
 	{
