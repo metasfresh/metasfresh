@@ -31,14 +31,14 @@ import java.util.Set;
  * Reacts on source table changes and invalidates M_Delivery_Planning_Delivery_Instructions_V records in all parent/child combinations.
  */
 @Component
-public class DeliveryPlanningModelCacheInvalidateRequestFactoryGroup implements IModelCacheInvalidateRequestFactoryGroup
+public class M_Delivery_Planning_Delivery_Instructions_V_CacheInvalidateRequestFactoryGroup implements IModelCacheInvalidateRequestFactoryGroup
 {
-	private static final Logger logger = LogManager.getLogger(DeliveryPlanningModelCacheInvalidateRequestFactoryGroup.class);
+	private static final Logger logger = LogManager.getLogger(M_Delivery_Planning_Delivery_Instructions_V_CacheInvalidateRequestFactoryGroup.class);
 
 	private final ImmutableSetMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName;
 	private final TableNamesGroup tableNamesToEnableRemoveCacheInvalidation;
 
-	public DeliveryPlanningModelCacheInvalidateRequestFactoryGroup(
+	public M_Delivery_Planning_Delivery_Instructions_V_CacheInvalidateRequestFactoryGroup(
 			@NonNull final WindowBasedModelCacheInvalidateRequestFactoryGroup windowBasedModelCacheInvalidateRequestFactoryGroup)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -49,7 +49,7 @@ public class DeliveryPlanningModelCacheInvalidateRequestFactoryGroup implements 
 				.build();
 
 		this.tableNamesToEnableRemoveCacheInvalidation = TableNamesGroup.builder()
-				.groupId(DeliveryPlanningModelCacheInvalidateRequestFactoryGroup.class.getSimpleName())
+				.groupId(M_Delivery_Planning_Delivery_Instructions_V_CacheInvalidateRequestFactoryGroup.class.getSimpleName())
 				.tableNames(factoriesByTableName.keySet())
 				.build();
 
