@@ -67,6 +67,7 @@ public class ModelCacheInvalidationService
 
 	public static ModelCacheInvalidationService newInstanceForUnitTesting()
 	{
+		Adempiere.assertUnitTestMode();
 		return new ModelCacheInvalidationService(Optional.empty());
 	}
 
