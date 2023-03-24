@@ -33,6 +33,8 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -43,6 +45,7 @@ import org.adempiere.mmovement.MovementId;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
@@ -57,6 +60,7 @@ public class AcctDocumentInfoProvider
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@NonNull
 	private final SAPGLJournalRepository sapglJournalRepository;
@@ -106,6 +110,12 @@ public class AcctDocumentInfoProvider
 				return AcctDocumentInfo.builder()
 						.docTypeId(sapglJournal.getDocTypeId())
 						.orgId(sapglJournal.getOrgId())
+						.build();
+			case I_C_Invoice.Table_Name:
+				final I_C_Invoice invoice = invoiceBL.getById(recordReference.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId));
+				return AcctDocumentInfo.builder()
+						.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+						.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
 						.build();
 			default:
 				throw new AdempiereException("Unsupported TableRecordReference!")
