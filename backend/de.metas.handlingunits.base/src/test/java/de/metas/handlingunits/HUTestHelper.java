@@ -18,6 +18,8 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -555,6 +557,7 @@ public class HUTestHelper
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
 	{
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(newHandlingUnitsModelInterceptor());
 	}

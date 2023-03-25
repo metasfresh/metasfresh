@@ -24,7 +24,7 @@ package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -38,7 +38,10 @@ import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
+<<<<<<< HEAD
 import de.metas.serviceprovider.github.config.GithubConfigRepository;
+=======
+>>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -96,17 +99,21 @@ public class GithubImporterServiceTest
 			new ImportQueue<>(ISSUE_QUEUE_CAPACITY, IMPORT_LOG_MESSAGE_PREFIX);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+<<<<<<< HEAD
 	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+=======
+>>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 
 	private ExternalReferenceRepository externalReferenceRepository;
 
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 
 	private final LabelService labelService = new LabelService();
 
 	private final GithubImporterService githubImporterService =
+<<<<<<< HEAD
 			new GithubImporterService(importIssuesQueue,
 									  mockGithubClient,
 									  externalReferenceRepository,
@@ -114,6 +121,9 @@ public class GithubImporterServiceTest
 									  externalProjectRepository,
 									  labelService,
 									  new GithubConfigRepository(queryBL));
+=======
+			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
+>>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 
 	@Before
 	public void init()
@@ -222,6 +232,7 @@ public class GithubImporterServiceTest
 				.build();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private FetchIssueByIdRequest getMockFetchIssueByIdRequest(final Integer issueNo)
 	{
 		return FetchIssueByIdRequest.builder()

@@ -66,12 +66,53 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
+<<<<<<< HEAD
+=======
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+
+import de.metas.cache.model.ModelCacheInvalidationService;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+>>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 @Repository
 public class ReceiptScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final ModelCacheInvalidationService cacheInvalidationService;
+
+	public ReceiptScheduleRepository(
+			@NonNull final ModelCacheInvalidationService cacheInvalidationService)
+	{
+		this.cacheInvalidationService = cacheInvalidationService;
+	}
 
 	public List<ReceiptSchedule> getBy(@NonNull final ReceiptScheduleQuery query)
 	{
@@ -156,7 +197,7 @@ public class ReceiptScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ReceiptSchedule.Table_Name, receiptScheduleIds),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ReceiptSchedule> receiptSchedules)

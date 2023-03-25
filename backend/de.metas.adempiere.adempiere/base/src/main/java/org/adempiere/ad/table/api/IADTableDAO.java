@@ -203,9 +203,13 @@ public interface IADTableDAO extends ISingletonService
 	MinimalColumnInfo getMinimalColumnInfo(@NonNull AdColumnId adColumnId);
 	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByIds(@NonNull Collection<AdColumnId> adColumnIds);
 
+<<<<<<< HEAD
 	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull String columnName);
 
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);
+=======
+	List<ViewSourceDescriptor> retrieveViewSourceDescriptors();
+>>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 }

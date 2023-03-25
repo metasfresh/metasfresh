@@ -24,8 +24,8 @@ package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
@@ -68,9 +68,9 @@ import java.util.stream.Stream;
 public class IssueRepository
 {
 	private final IQueryBL queryBL;
-	private final IModelCacheInvalidationService modelCacheInvalidationService;
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
 
-	public IssueRepository(final IQueryBL queryBL, final IModelCacheInvalidationService modelCacheInvalidationService)
+	public IssueRepository(final IQueryBL queryBL, final ModelCacheInvalidationService modelCacheInvalidationService)
 	{
 		this.queryBL = queryBL;
 		this.modelCacheInvalidationService = modelCacheInvalidationService;
@@ -155,7 +155,7 @@ public class IssueRepository
 		final CacheInvalidateMultiRequest multiRequest =
 				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_S_Issue.Table_Name, recordIds);
 
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	/**
