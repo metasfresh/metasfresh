@@ -1,7 +1,3 @@
---
--- IMPORTANT: when changing the structure of this view, please also check/adjust AD_ViewSource definitions.
---
-
 DROP VIEW IF EXISTS M_Delivery_Planning_Delivery_Instructions_V$new
 ;
 

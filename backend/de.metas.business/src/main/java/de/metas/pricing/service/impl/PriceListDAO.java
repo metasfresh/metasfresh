@@ -29,9 +29,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.common.util.Check;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -968,9 +967,8 @@ public class PriceListDAO implements IPriceListDAO
 		{
 			cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ProductPrice.Table_Name, productPriceQuery.listIds());
 		}
-		Services
-				.get(IModelCacheInvalidationService.class)
-				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.CHANGE);
+		ModelCacheInvalidationService.get()
+				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	@Override
