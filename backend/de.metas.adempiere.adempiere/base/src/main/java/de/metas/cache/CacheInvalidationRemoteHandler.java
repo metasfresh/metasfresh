@@ -15,10 +15,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
-<<<<<<< HEAD
-=======
 import org.compiere.SpringContextHolder;
->>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 

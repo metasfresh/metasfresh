@@ -6,12 +6,9 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-<<<<<<< HEAD
+import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-=======
-import de.metas.logging.LogManager;
->>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -23,17 +20,12 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-<<<<<<< HEAD
-
-import java.util.List;
-import java.util.concurrent.Callable;
-=======
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
->>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
+import java.util.concurrent.Callable;
 
 final class POServicesFacade
 {

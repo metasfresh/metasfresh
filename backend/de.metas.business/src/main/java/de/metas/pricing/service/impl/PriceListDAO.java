@@ -29,11 +29,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-<<<<<<< HEAD
-=======
 import de.metas.cache.model.ModelCacheInvalidationService;
->>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;

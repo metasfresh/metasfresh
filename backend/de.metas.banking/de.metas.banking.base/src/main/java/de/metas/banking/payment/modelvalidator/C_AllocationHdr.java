@@ -8,7 +8,7 @@ import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 <<<<<<< HEAD
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 =======
 import de.metas.cache.model.ModelCacheInvalidationService;
 >>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
@@ -48,10 +48,6 @@ public class C_AllocationHdr
 	/**
 	 * After {@link I_C_AllocationHdr} was completed/reversed/voided/reactivated,
 	 * update all {@link I_C_PaySelectionLine}s which were not already processed and which are about the invoices from this allocation.
-<<<<<<< HEAD
-	 * <p>
-	 * Task 08972
-=======
 	 * task 08972
 >>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 	 */
