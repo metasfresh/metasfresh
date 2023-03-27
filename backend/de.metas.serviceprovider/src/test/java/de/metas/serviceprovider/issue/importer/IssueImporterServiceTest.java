@@ -24,7 +24,7 @@ package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -55,7 +55,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -78,10 +77,9 @@ class IssueImporterServiceTest
 		AdempiereTestHelper.get().init();
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 
 		final ExternalSystems externalSystems = new ExternalSystems();
 		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);

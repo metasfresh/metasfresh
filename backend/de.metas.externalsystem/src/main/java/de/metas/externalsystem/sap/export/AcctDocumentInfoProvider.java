@@ -22,6 +22,10 @@
 
 package de.metas.externalsystem.sap.export;
 
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalRepository;
+import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.DocTypeId;
@@ -29,6 +33,8 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -39,6 +45,7 @@ import org.adempiere.mmovement.MovementId;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
@@ -53,6 +60,15 @@ public class AcctDocumentInfoProvider
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+	@NonNull
+	private final SAPGLJournalRepository sapglJournalRepository;
+
+	public AcctDocumentInfoProvider(final @NonNull SAPGLJournalRepository sapglJournalRepository)
+	{
+		this.sapglJournalRepository = sapglJournalRepository;
+	}
 
 	@NonNull
 	public AcctDocumentInfo loadDocumentInfo(@NonNull final TableRecordReference recordReference)
@@ -88,6 +104,18 @@ public class AcctDocumentInfoProvider
 				return AcctDocumentInfo.builder()
 						.docTypeId(DocTypeId.ofRepoId(movement.getC_DocType_ID()))
 						.orgId(OrgId.ofRepoId(movement.getAD_Org_ID()))
+						.build();
+			case I_SAP_GLJournal.Table_Name:
+				final SAPGLJournal sapglJournal = sapglJournalRepository.getById(recordReference.getIdAssumingTableName(I_SAP_GLJournal.Table_Name, SAPGLJournalId::ofRepoId));
+				return AcctDocumentInfo.builder()
+						.docTypeId(sapglJournal.getDocTypeId())
+						.orgId(sapglJournal.getOrgId())
+						.build();
+			case I_C_Invoice.Table_Name:
+				final I_C_Invoice invoice = invoiceBL.getById(recordReference.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId));
+				return AcctDocumentInfo.builder()
+						.docTypeId(DocTypeId.ofRepoId(invoice.getC_DocType_ID()))
+						.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
 						.build();
 			default:
 				throw new AdempiereException("Unsupported TableRecordReference!")

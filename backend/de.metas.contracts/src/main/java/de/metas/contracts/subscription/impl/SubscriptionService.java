@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.contracts.FlatrateDataId;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -179,12 +179,12 @@ public class SubscriptionService
 	 */
 	private static void resetCache(@NonNull final BPartnerId bpartnerId, @NonNull final FlatrateDataId flatrateDataId)
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataId, I_C_SubscriptionProgress.Table_Name),
 						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bpartnerId, I_C_SubscriptionProgress.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE
+				ModelCacheInvalidationTiming.AFTER_CHANGE
 		);
 	}
 

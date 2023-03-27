@@ -24,7 +24,6 @@ package de.metas.serviceprovider.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.i18n.IMsgBL;
@@ -101,11 +100,5 @@ public class ApplicationConfiguration
 	public IMsgBL msgBL()
 	{
 		return Services.get(IMsgBL.class);
-	}
-
-	@Bean
-	public IModelCacheInvalidationService modelCacheInvalidationService()
-	{
-		return Services.get(IModelCacheInvalidationService .class);
 	}
 }
