@@ -41,8 +41,8 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author tsa
  */
-@JsonDeserialize(using = Quantitys.QuantityDeserializer.class)
-@JsonSerialize(using = Quantitys.QuantitySerializer.class)
+@JsonDeserialize(using = QuantityDeserializer.class)
+@JsonSerialize(using = QuantitySerializer.class)
 public final class Quantity implements Comparable<Quantity>
 {
 	/**

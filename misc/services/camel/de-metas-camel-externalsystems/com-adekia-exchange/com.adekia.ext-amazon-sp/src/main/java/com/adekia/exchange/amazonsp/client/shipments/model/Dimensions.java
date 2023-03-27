@@ -13,22 +13,21 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * A set of measurements for a three-dimensional object.
  */
-@ApiModel(description = "A set of measurements for a three-dimensional object.")
+@Schema(description = "A set of measurements for a three-dimensional object.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class Dimensions {
   @SerializedName("length")
@@ -99,7 +98,7 @@ public class Dimensions {
    * The length of the container.
    * @return length
   **/
-  @ApiModelProperty(required = true, value = "The length of the container.")
+  @Schema(required = true, description = "The length of the container.")
   public BigDecimal getLength() {
     return length;
   }
@@ -117,7 +116,7 @@ public class Dimensions {
    * The width of the container.
    * @return width
   **/
-  @ApiModelProperty(required = true, value = "The width of the container.")
+  @Schema(required = true, description = "The width of the container.")
   public BigDecimal getWidth() {
     return width;
   }
@@ -135,7 +134,7 @@ public class Dimensions {
    * The height of the container.
    * @return height
   **/
-  @ApiModelProperty(required = true, value = "The height of the container.")
+  @Schema(required = true, description = "The height of the container.")
   public BigDecimal getHeight() {
     return height;
   }
@@ -153,7 +152,7 @@ public class Dimensions {
    * The unit of these measurements.
    * @return unit
   **/
-  @ApiModelProperty(required = true, value = "The unit of these measurements.")
+  @Schema(required = true, description = "The unit of these measurements.")
   public UnitEnum getUnit() {
     return unit;
   }

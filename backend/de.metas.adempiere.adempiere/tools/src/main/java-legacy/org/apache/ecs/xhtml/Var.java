@@ -42,7 +42,7 @@ import org.apache.ecs.Printable;
 
 */
 
-public class var extends MultiPartElement implements Printable, MouseEvents, KeyEvents
+public class Var extends MultiPartElement implements Printable, MouseEvents, KeyEvents
 
 {
 
@@ -75,7 +75,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
     */
 
-    public var()
+    public Var()
 
     {
 
@@ -91,7 +91,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
     */
 
-    public var(Element element)
+    public Var(Element element)
 
     {
 
@@ -109,7 +109,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
     */
 
-    public var(String element)
+    public Var(String element)
 
     {
 
@@ -151,7 +151,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
      */
 
-    public var addElement(String hashcode,Element element)
+    public Var addElement(String hashcode,Element element)
 
     {
 
@@ -173,7 +173,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
      */
 
-    public var addElement(String hashcode,String element)
+    public Var addElement(String hashcode,String element)
 
     {
 
@@ -193,7 +193,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
      */
 
-    public var addElement(Element element)
+    public Var addElement(Element element)
 
     {
 
@@ -213,7 +213,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
      */
 
-    public var addElement(String element)
+    public Var addElement(String element)
 
     {
 
@@ -231,7 +231,7 @@ public class var extends MultiPartElement implements Printable, MouseEvents, Key
 
     */
 
-    public var removeElement(String hashcode)
+    public Var removeElement(String hashcode)
 
     {
 

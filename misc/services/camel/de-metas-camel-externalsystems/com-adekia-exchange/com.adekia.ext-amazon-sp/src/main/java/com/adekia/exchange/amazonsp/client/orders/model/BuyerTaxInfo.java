@@ -13,24 +13,17 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.TaxClassification;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Tax information about the buyer.
  */
-@ApiModel(description = "Tax information about the buyer.")
+@Schema(description = "Tax information about the buyer.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class BuyerTaxInfo {
   @SerializedName("CompanyLegalName")
@@ -51,7 +44,7 @@ public class BuyerTaxInfo {
    * The legal name of the company.
    * @return companyLegalName
   **/
-  @ApiModelProperty(value = "The legal name of the company.")
+  @Schema(description = "The legal name of the company.")
   public String getCompanyLegalName() {
     return companyLegalName;
   }
@@ -69,7 +62,7 @@ public class BuyerTaxInfo {
    * The country or region imposing the tax.
    * @return taxingRegion
   **/
-  @ApiModelProperty(value = "The country or region imposing the tax.")
+  @Schema(description = "The country or region imposing the tax.")
   public String getTaxingRegion() {
     return taxingRegion;
   }
@@ -95,7 +88,7 @@ public class BuyerTaxInfo {
    * A list of tax classifications that apply to the order.
    * @return taxClassifications
   **/
-  @ApiModelProperty(value = "A list of tax classifications that apply to the order.")
+  @Schema(description = "A list of tax classifications that apply to the order.")
   public List<TaxClassification> getTaxClassifications() {
     return taxClassifications;
   }

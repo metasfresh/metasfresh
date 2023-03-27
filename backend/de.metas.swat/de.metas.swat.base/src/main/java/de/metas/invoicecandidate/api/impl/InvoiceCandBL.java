@@ -1287,12 +1287,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			translateAndPrependNote(existingIla, note);
 			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
-			// 2022-10-27 metas-ts: 
+			// 2022-10-27 metas-ts:
 			// We ignore requests with existing ila with and requested qtysInvoiced:=zero for a long time and IDK why exactly,
 			// though it's very probably related to issue "#5664 Rest endpoint which allows the client to create invoices"
 			// I'm going to leave it like that for now, *unless* we are voiding the invoice in question.
 			final boolean invoiceVoided = InvoiceLineAllocType.InvoiceVoided.equals(request.getInvoiceLineAllocType());
-			
+
 			//
 			// FIXME in follow-up task! (06162)
 			if (qtysInvoiced.signum() == 0 && !invoiceVoided)

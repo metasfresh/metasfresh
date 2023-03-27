@@ -110,7 +110,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.core.Tuple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -741,8 +741,8 @@ public class JsonInvoiceService
 	{
 		final BankAccountId bankAccountId = paymentService
 				.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
-				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for org-id: %s, currency: %s and iban: %s",
-																		orgId, currencyId, request.getTargetIBAN())));
+				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for the org-bpartner of org-id: %s, currency-id: %s and iban: %s",
+																		orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
 
 		final DefaultPaymentBuilder paymentBuilder = JsonPaymentDirection.INBOUND == request.getType()
 				? paymentService.newInboundReceiptBuilder()

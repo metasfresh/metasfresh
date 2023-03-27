@@ -1,14 +1,17 @@
 package de.metas.acct.gljournal_sap;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
+import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
@@ -19,7 +22,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -36,6 +38,8 @@ public class SAPGLJournal
 {
 	@NonNull @Getter private final SAPGLJournalId id;
 	@NonNull @Getter private final SAPGLJournalCurrencyConversionCtx conversionCtx;
+
+	@NonNull @Getter private final DocTypeId docTypeId;
 
 	@NonNull @Getter private final AcctSchemaId acctSchemaId;
 	@NonNull @Getter private final PostingType postingType;
@@ -107,6 +111,7 @@ public class SAPGLJournal
 			@NonNull PostingSign postingSign,
 			@NonNull Account account,
 			@NonNull BigDecimal amountBD,
+			@Nullable SectionCodeId sectionCodeId,
 			@Nullable TaxId taxId,
 			@NonNull SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -121,7 +126,7 @@ public class SAPGLJournal
 				.amountAcct(amountAcct)
 				.taxId(taxId)
 				.orgId(orgId)
-				.dimension(dimension)
+				.dimension(sectionCodeId != null ? dimension.withSectionCodeId(sectionCodeId) : dimension)
 				.build();
 		lines.add(line);
 

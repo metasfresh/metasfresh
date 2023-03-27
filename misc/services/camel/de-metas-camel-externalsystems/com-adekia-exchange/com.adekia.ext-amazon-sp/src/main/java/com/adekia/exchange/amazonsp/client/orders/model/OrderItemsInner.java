@@ -13,16 +13,10 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * OrderItemsInner
@@ -44,7 +38,7 @@ public class OrderItemsInner {
    * the unique identifier for the order item
    * @return orderItemId
   **/
-  @ApiModelProperty(value = "the unique identifier for the order item")
+  @Schema(description = "the unique identifier for the order item")
   public String getOrderItemId() {
     return orderItemId;
   }
@@ -62,7 +56,7 @@ public class OrderItemsInner {
    * the quantity of items that needs an update of the shipment status
    * @return quantity
   **/
-  @ApiModelProperty(value = "the quantity of items that needs an update of the shipment status")
+  @Schema(description = "the quantity of items that needs an update of the shipment status")
   public Integer getQuantity() {
     return quantity;
   }

@@ -13,25 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Currency;
-import com.adekia.exchange.amazonsp.client.shipments.model.ServiceType;
-import com.adekia.exchange.amazonsp.client.shipments.model.ShippingPromiseSet;
-import com.adekia.exchange.amazonsp.client.shipments.model.Weight;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The specific rate for a shipping service, or null if no service available.
  */
-@ApiModel(description = "The specific rate for a shipping service, or null if no service available.")
+@Schema(description = "The specific rate for a shipping service, or null if no service available.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class ServiceRate {
   @SerializedName("totalCharge")
@@ -55,7 +45,7 @@ public class ServiceRate {
    * The total charge that will be billed for the rate.
    * @return totalCharge
   **/
-  @ApiModelProperty(required = true, value = "The total charge that will be billed for the rate.")
+  @Schema(required = true, description = "The total charge that will be billed for the rate.")
   public Currency getTotalCharge() {
     return totalCharge;
   }
@@ -73,7 +63,7 @@ public class ServiceRate {
    * The weight that was used to calculate the totalCharge.
    * @return billableWeight
   **/
-  @ApiModelProperty(required = true, value = "The weight that was used to calculate the totalCharge.")
+  @Schema(required = true, description = "The weight that was used to calculate the totalCharge.")
   public Weight getBillableWeight() {
     return billableWeight;
   }
@@ -91,7 +81,7 @@ public class ServiceRate {
    * Get serviceType
    * @return serviceType
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ServiceType getServiceType() {
     return serviceType;
   }
@@ -109,7 +99,7 @@ public class ServiceRate {
    * Get promise
    * @return promise
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ShippingPromiseSet getPromise() {
     return promise;
   }

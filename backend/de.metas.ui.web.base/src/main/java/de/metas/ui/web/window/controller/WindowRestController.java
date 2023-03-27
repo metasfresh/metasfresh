@@ -84,9 +84,9 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -108,7 +108,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-@Api
+@Tag(name = "WindowRestController")
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
 public class WindowRestController
@@ -227,7 +227,7 @@ public class WindowRestController
 	public List<JSONDocument> getRootDocuments(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
 		userSession.assertLoggedIn();
@@ -247,8 +247,8 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
-			@RequestParam(name = "ids", required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = "ids", required = false) @Parameter(description = "comma separated rowIds") final String rowIdsListStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
@@ -314,7 +314,7 @@ public class WindowRestController
 			@PathVariable("rowId") final String rowIdStr
 			//
 			,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr
 			//
 			,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
@@ -484,7 +484,7 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
-			@RequestParam(name = "ids") @ApiParam("comma separated documentIds") final String idsListStr
+			@RequestParam(name = "ids") @Parameter(description = "comma separated documentIds") final String idsListStr
 			//
 	)
 	{
@@ -531,7 +531,7 @@ public class WindowRestController
 			@PathVariable("tabId") final String tabId
 			//
 			,
-			@RequestParam(name = "ids") @ApiParam("comma separated rowIds") final String rowIdsListStr
+			@RequestParam(name = "ids") @Parameter(description = "comma separated rowIds") final String rowIdsListStr
 			//
 	)
 	{
@@ -692,7 +692,7 @@ public class WindowRestController
 	}
 
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
-	@ApiOperation("field current value's window layout to zoom into")
+	@Operation(summary = "field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr
@@ -711,7 +711,7 @@ public class WindowRestController
 	}
 
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
-	@ApiOperation("field current value's window layout to zoom into")
+	@Operation(summary = "field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr

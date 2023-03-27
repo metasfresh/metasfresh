@@ -13,21 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * Information about whether or not a buyer requested cancellation.
  */
-@ApiModel(description = "Information about whether or not a buyer requested cancellation.")
+@Schema(description = "Information about whether or not a buyer requested cancellation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class BuyerRequestedCancel {
   @SerializedName("IsBuyerRequestedCancel")
@@ -45,7 +39,7 @@ public class BuyerRequestedCancel {
    * When true, the buyer has requested cancellation.
    * @return isBuyerRequestedCancel
   **/
-  @ApiModelProperty(value = "When true, the buyer has requested cancellation.")
+  @Schema(description = "When true, the buyer has requested cancellation.")
   public Boolean isIsBuyerRequestedCancel() {
     return isBuyerRequestedCancel;
   }
@@ -63,7 +57,7 @@ public class BuyerRequestedCancel {
    * The reason that the buyer requested cancellation.
    * @return buyerCancelReason
   **/
-  @ApiModelProperty(value = "The reason that the buyer requested cancellation.")
+  @Schema(description = "The reason that the buyer requested cancellation.")
   public String getBuyerCancelReason() {
     return buyerCancelReason;
   }

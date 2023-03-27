@@ -2907,8 +2907,8 @@ public class GridTable extends AbstractTableModel
 						// give the other processes a chance
 						try
 						{
-							yield();
-							sleep(10); // .01 second
+							Thread.yield();
+							Thread.sleep(10); // .01 second
 						}
 						catch (InterruptedException ie)
 						{
@@ -3021,7 +3021,7 @@ public class GridTable extends AbstractTableModel
 	 * Feature Request [1707462]
 	 * Enable runtime change of VFormat
 	 *
-	 * @param Identifier field ident
+	 * @param identifier field ident
 	 * @param strNewFormat new mask
 	 * @author fer_luck
 	 */

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
@@ -21,7 +23,6 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
@@ -29,16 +30,14 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
+@ExtendWith(SnapshotExtension.class)
 class PickingJobRepositoryTest
 {
 	// Services
@@ -49,9 +48,7 @@ class PickingJobRepositoryTest
 	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final OrderId salesOrderId = OrderId.ofRepoId(2);
 	private I_C_UOM uomEach;
-
-	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -131,7 +128,7 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
-		expect(jobCreated).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(jobCreated);
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)

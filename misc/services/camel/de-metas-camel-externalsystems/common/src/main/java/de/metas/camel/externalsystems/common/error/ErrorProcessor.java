@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
 @UtilityClass
 public class ErrorProcessor
@@ -50,7 +51,6 @@ public class ErrorProcessor
 	@NonNull
 	public JsonErrorItem getErrorItem(@NonNull final Exchange exchange)
 	{
-
 		final JsonErrorItem.JsonErrorItemBuilder errorBuilder = JsonErrorItem
 				.builder()
 				.orgCode(exchange.getIn().getHeader(HEADER_ORG_CODE, String.class));
@@ -60,31 +60,14 @@ public class ErrorProcessor
 		if (exception == null)
 		{
 			errorBuilder.message("No error message available!");
-		}
-		else
-		{
-			final StringWriter sw = new StringWriter();
-			final PrintWriter pw = new PrintWriter(sw);
-			exception.printStackTrace(pw);
-
-			errorBuilder.message(exception.getLocalizedMessage());
-			errorBuilder.stackTrace(sw.toString());
-
-			final Optional<StackTraceElement> sourceStackTraceElem = exception.getStackTrace() != null && exception.getStackTrace().length > 0
-					? Optional.ofNullable(exception.getStackTrace()[0])
-					: Optional.empty();
-
-			sourceStackTraceElem.ifPresent(stackTraceElement -> {
-				errorBuilder.sourceClassName(sourceStackTraceElem.get().getClassName());
-				errorBuilder.sourceMethodName(sourceStackTraceElem.get().getMethodName());
-			});
+			return errorBuilder.build();
 		}
 
-		return errorBuilder.build();
+		return getJsonErrorItemFor(exception, errorBuilder);
 	}
 
 	@NonNull
-	public JsonError processHttpErrorEncounteredResponse(@NonNull final Exchange exchange)
+	public JsonError processMetasfreshHttpError(@NonNull final Exchange exchange)
 	{
 		final Exception exception = CoalesceUtil.coalesce(exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class),
 														  exchange.getIn().getHeader(Exchange.EXCEPTION_CAUGHT, Exception.class));
@@ -103,13 +86,26 @@ public class ErrorProcessor
 			return JsonError.ofSingleItem(getErrorItem(exchange));
 		}
 
-		return getRemoteJsonError(httpError.getResponseBody(), exchange);
+		return getMetasfreshRemoteJsonError(httpError.getResponseBody(), exchange);
+	}
+
+	public void prepareJsonErrorRequest(@NonNull final Exchange exchange)
+	{
+		final String pInstanceId = exchange.getIn().getHeader(HEADER_PINSTANCE_ID, String.class);
+
+		if (pInstanceId == null)
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
+
+		exchange.getIn().setBody(JsonError.ofSingleItem(getErrorItem(exchange)));
 	}
 
 	@NonNull
-	private JsonError getRemoteJsonError(@NonNull final String httpResponse, @NonNull final Exchange exchange)
+	private JsonError getMetasfreshRemoteJsonError(@NonNull final String httpResponse, @NonNull final Exchange exchange)
 	{
-		Optional<JsonError> jsonError = getJsonErrorFromV2Response(httpResponse, exchange);
+		Optional<JsonError> jsonError = getJsonErrorFromV2Response(httpResponse);
 
 		if (jsonError.isEmpty())
 		{
@@ -128,7 +124,7 @@ public class ErrorProcessor
 	}
 
 	@NonNull
-	private Optional<JsonError> getJsonErrorFromV2Response(@NonNull final String response, @NonNull final Exchange exchange)
+	private Optional<JsonError> getJsonErrorFromV2Response(@NonNull final String response)
 	{
 		try
 		{
@@ -171,5 +167,52 @@ public class ErrorProcessor
 		{
 			return Optional.empty();
 		}
+	}
+
+	@NonNull
+	private JsonErrorItem getJsonErrorItemFor(@NonNull final Exception exception, @NonNull final JsonErrorItem.JsonErrorItemBuilder errorBuilder)
+	{
+		errorBuilder.message(getErrorMessagePrefix(exception) + exception.getLocalizedMessage());
+		errorBuilder.stackTrace(getStackTrace(exception));
+
+		getSourceStackTraceElement(exception).ifPresent(sourceStackTraceElement -> {
+			errorBuilder.sourceClassName(sourceStackTraceElement.getClassName());
+			errorBuilder.sourceMethodName(sourceStackTraceElement.getMethodName());
+		});
+
+		return errorBuilder.build();
+	}
+
+	@NonNull
+	private String getErrorMessagePrefix(@NonNull final Exception exception)
+	{
+		if (exception instanceof HttpOperationFailedException)
+		{
+			final HttpOperationFailedException httpError = (HttpOperationFailedException)exception;
+
+			return Optional.ofNullable(httpError.getResponseBody())
+					.map(responseBody -> responseBody + "\n ")
+					.orElse("");
+		}
+
+		return "";
+	}
+
+	@NonNull
+	private String getStackTrace(@NonNull final Exception exception)
+	{
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
+		exception.printStackTrace(pw);
+
+		return sw.toString();
+	}
+
+	@NonNull
+	private Optional<StackTraceElement> getSourceStackTraceElement(@NonNull final Exception exception)
+	{
+		return exception.getStackTrace() != null && exception.getStackTrace().length > 0
+				? Optional.ofNullable(exception.getStackTrace()[0])
+				: Optional.empty();
 	}
 }

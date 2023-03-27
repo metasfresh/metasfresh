@@ -13,22 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.TimeRange;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The promised delivery time and pickup time.
  */
-@ApiModel(description = "The promised delivery time and pickup time.")
+@Schema(description = "The promised delivery time and pickup time.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class ShippingPromiseSet {
   @SerializedName("deliveryWindow")
@@ -46,7 +39,7 @@ public class ShippingPromiseSet {
    * The time window in which the shipment will be delivered.
    * @return deliveryWindow
   **/
-  @ApiModelProperty(value = "The time window in which the shipment will be delivered.")
+  @Schema(description = "The time window in which the shipment will be delivered.")
   public TimeRange getDeliveryWindow() {
     return deliveryWindow;
   }
@@ -64,7 +57,7 @@ public class ShippingPromiseSet {
    * The time window in which Amazon Shipping will pick up the shipment.
    * @return receiveWindow
   **/
-  @ApiModelProperty(value = "The time window in which Amazon Shipping will pick up the shipment.")
+  @Schema(description = "The time window in which Amazon Shipping will pick up the shipment.")
   public TimeRange getReceiveWindow() {
     return receiveWindow;
   }

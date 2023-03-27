@@ -13,21 +13,20 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Information about withheld taxes.
  */
-@ApiModel(description = "Information about withheld taxes.")
+@Schema(description = "Information about withheld taxes.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class TaxCollection {
   /**
@@ -135,7 +134,7 @@ public class TaxCollection {
    * The tax collection model applied to the item.
    * @return model
   **/
-  @ApiModelProperty(value = "The tax collection model applied to the item.")
+  @Schema(description = "The tax collection model applied to the item.")
   public ModelEnum getModel() {
     return model;
   }
@@ -153,7 +152,7 @@ public class TaxCollection {
    * The party responsible for withholding the taxes and remitting them to the taxing authority.
    * @return responsibleParty
   **/
-  @ApiModelProperty(value = "The party responsible for withholding the taxes and remitting them to the taxing authority.")
+  @Schema(description = "The party responsible for withholding the taxes and remitting them to the taxing authority.")
   public ResponsiblePartyEnum getResponsibleParty() {
     return responsibleParty;
   }

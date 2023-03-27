@@ -22,11 +22,6 @@
 
 package de.metas.common.bpartner.v1.response;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,29 +29,32 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
-import de.metas.common.util.EmptyUtil;
 import de.metas.common.rest_api.common.JsonExternalId;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import de.metas.common.util.EmptyUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-@ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n" //
+import java.util.List;
+import java.util.Objects;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
+@Schema(description = "A BPartner with `n` contacts and `n` locations.\n" //
 		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonResponseComposite
 {
-	@ApiModelProperty(required = true, value = "The `AD_Org.Value` of the `C_BPartner`'s AD_Org_ID")
+	@Schema(required = true, description = "The `AD_Org.Value` of the `C_BPartner`'s AD_Org_ID")
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
 	JsonResponseBPartner bpartner;
 
-	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
+	@Schema(description = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseLocation> locations;
 

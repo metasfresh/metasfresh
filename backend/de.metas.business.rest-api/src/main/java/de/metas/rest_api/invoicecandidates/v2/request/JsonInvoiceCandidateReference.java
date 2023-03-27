@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonExternalId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -40,12 +40,12 @@ import java.util.List;
 @Value
 public class JsonInvoiceCandidateReference
 {
-	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
-			value = "Used to select which invoice candidates should be enqueued.")
+	@Schema(minLength = 1, example = "ExternalHeaderId_1",
+			description = "Used to select which invoice candidates should be enqueued.")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
-			value = "Optional, used to select which invoice candidates which have these `C_Invoice_Candidate.ExternalLineId`s should be enqueued.\n"
+	@Schema(example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]",
+			description = "Optional, used to select which invoice candidates which have these `C_Invoice_Candidate.ExternalLineId`s should be enqueued.\n"
 					+ "Inherited from order line candidates.\n"
 					+ "If not specified, then all invoice candidate with the specified `externalHeaderId` are matched")
 	@JsonInclude(Include.NON_EMPTY)

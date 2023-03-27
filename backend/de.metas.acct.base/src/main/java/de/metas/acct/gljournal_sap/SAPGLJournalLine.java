@@ -1,5 +1,6 @@
 package de.metas.acct.gljournal_sap;
 
+import de.metas.acct.Account;
 import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -12,7 +13,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 

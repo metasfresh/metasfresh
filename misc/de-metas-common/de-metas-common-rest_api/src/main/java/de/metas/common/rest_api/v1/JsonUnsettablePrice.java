@@ -22,7 +22,7 @@
 
 package de.metas.common.rest_api.v1;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -32,11 +32,10 @@ public class JsonUnsettablePrice extends JsonUnsettableValue
 {
 	public static final JsonUnsettablePrice EMPTY = new JsonUnsettablePrice(null, null);
 
-	@ApiModelProperty(position = 10, required = false)
+	@Schema
 	JsonPrice value;
 
-	@ApiModelProperty(position = 20, required = false, //
-			value = "Optional property to *explicitly* unset a candidate's override property.\n"
+	@Schema(description = "Optional property to *explicitly* unset a candidate's override property.\n"
 					+ "If set to `true`, it takes precedence to a possibly set `value`")
 	Boolean unsetValue;
 }

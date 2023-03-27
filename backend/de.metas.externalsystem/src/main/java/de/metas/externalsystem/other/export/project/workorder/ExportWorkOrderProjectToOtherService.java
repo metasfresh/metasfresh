@@ -77,6 +77,13 @@ public class ExportWorkOrderProjectToOtherService extends ExportProjectToOtherSe
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_WORK_ORDER;
 	}
 
+	@NonNull
+	@Override
+	protected String getExportADProcessClassname()
+	{
+		return C_WorkOrderProject_SyncTo_Other.class.getName();
+	}
+
 	@Override
 	protected @NonNull Optional<Set<IExternalSystemChildConfigId>> getAdditionalExternalSystemConfigIds(final @NonNull ProjectId projectId)
 	{

@@ -666,7 +666,6 @@ public class InfoSimple extends Info
 			whereClause.append(" AND ");
 		}
 
-		//
 		if (where.length() > 0)
 		{
 			whereClause.append(" ( ").append(where).append(" ) ");

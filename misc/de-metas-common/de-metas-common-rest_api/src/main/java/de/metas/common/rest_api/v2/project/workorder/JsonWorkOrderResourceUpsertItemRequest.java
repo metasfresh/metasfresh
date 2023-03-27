@@ -23,7 +23,7 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -43,52 +43,51 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIE
 @EqualsAndHashCode
 public class JsonWorkOrderResourceUpsertItemRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = RESOURCE_IDENTIFIER_DOC + "\n"
+	@Schema(required = true,
+			description = RESOURCE_IDENTIFIER_DOC + "\n"
 					+ "Note that `C_Project_WO_Resource.S_Resource_ID` is needed for the calendar view!") //
 	@Setter
 	String resourceIdentifier;
 
 	LocalDate assignDateFrom;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean assignDateFromSet;
 
 	LocalDate assignDateTo;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean assignDateToSet;
 
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new resource is created), then `true` is assumed")
+	@Schema(description = "If not specified but required (e.g. because a new resource is created), then `true` is assumed")
 	Boolean isActive;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean activeSet;
 
 	Boolean isAllDay;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean allDaySet;
 
 	BigDecimal duration;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean durationSet;
 
 	JsonDurationUnit durationUnit;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean durationUnitSet;
 
 	String testFacilityGroupName;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean testFacilityGroupNameSet;
 
 	String externalId;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	boolean externalIdSet;
 
 	public void setAssignDateFrom(final LocalDate assignDateFrom)

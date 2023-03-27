@@ -25,8 +25,8 @@ package de.metas.rest_api.v2.currency;
 import de.metas.common.rest_api.v2.conversionRate.JsonConversionRateResponse;
 import de.metas.common.rest_api.v2.conversionRate.JsonCurrencyRateCreateRequest;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,10 +47,10 @@ public class CurrencyRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Conversion rate successfully created"),
-			@ApiResponse(code = 401, message = "You are not authorized to invoke the endpoint"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request could not be processed")
+			@ApiResponse(responseCode = "200", description = "Conversion rate successfully created"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke the endpoint"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request could not be processed")
 	})
 	@PostMapping("/rates")
 	public ResponseEntity<JsonConversionRateResponse> createConversionRate(@RequestBody @NonNull final JsonCurrencyRateCreateRequest jsonCurrencyRateCreateRequest)

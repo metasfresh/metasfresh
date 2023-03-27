@@ -60,6 +60,7 @@ public class SAPGLJournalService
 							request.getPostingSign(),
 							request.getAccount(),
 							request.getAmount(),
+							request.getSectionCodeId(),
 							request.getTaxId(),
 							currencyConverter);
 				}

@@ -22,13 +22,15 @@
 
 package de.metas.common.rest_api.v2.invoice;
 
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(enumAsRef = true, description = "JsonPaymentDirection: \n" +
+		"* `INBOUND` - Inbound payment\n" +
+		"* `OUTBOUND` - Outbound payment\n" +
+		"")
 public enum JsonPaymentDirection
 {
-	@ApiEnum("Inbound payment")
 	INBOUND,
 
-	@ApiEnum("Outbound payment")
-	OUTBOUND;
+	OUTBOUND
 }

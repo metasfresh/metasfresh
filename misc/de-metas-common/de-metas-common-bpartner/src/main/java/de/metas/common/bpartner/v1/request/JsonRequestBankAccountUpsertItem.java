@@ -22,41 +22,39 @@
 
 package de.metas.common.bpartner.v1.request;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+
 @Value
 @Builder
-@ApiModel(description = "Contains the bank account to be inserted or delete. The bank account is identified by IBAN.")
+@Schema(description = "Contains the bank account to be inserted or delete. The bank account is identified by IBAN.")
 public class JsonRequestBankAccountUpsertItem
 {
-	@ApiModelProperty(position = 10, allowEmptyValue = false)
+	@Schema(minLength = 1)
 	@JsonProperty("iban")
 	final String iban;
 
-	@ApiModelProperty(position = 20, allowEmptyValue = true)
+	@Schema(nullable = true)
 	@JsonProperty("currencyCode")
 	final String currencyCode;
 
-	@ApiModelProperty(position = 30, required = false, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	@JsonInclude(Include.NON_NULL)
 	@JsonProperty("active")
 	Boolean active;
 
-	@ApiModelProperty(position = 40, required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+	@Schema(description = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 

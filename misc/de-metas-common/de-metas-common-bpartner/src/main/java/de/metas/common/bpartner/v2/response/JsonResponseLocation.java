@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,16 +76,16 @@ public class JsonResponseLocation
 
 	public static final String COUNTRY_NAME = "countryName";
 
-	@ApiModelProperty(dataType = "java.lang.Integer")
+	@Schema
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty()
+	@Schema
 	boolean active;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
+	@Schema(description = "This translates to `C_BPartner_Location.Name`")
 	String name;
 
-	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
+	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
 	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -121,21 +121,21 @@ public class JsonResponseLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String email;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
+	@Schema(nullable = true, description = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
 	String countryName;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean shipTo;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean shipToDefault;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean billTo;
 
-	@ApiModelProperty()
+	@Schema()
 	boolean billToDefault;
 
 	boolean ephemeral;
@@ -143,29 +143,29 @@ public class JsonResponseLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String setupPlaceNo;
 
-	@ApiModelProperty
+	@Schema
 	boolean remitTo;
 
-	@ApiModelProperty
+	@Schema
 	boolean visitorsAddress;
 
-	@ApiModelProperty
+	@Schema
 	boolean handoverLocation;
 
-	@ApiModelProperty
+	@Schema
 	boolean replicationLookupDefault;
 
-	@ApiModelProperty
+	@Schema
 	String vatId;
 
-	@ApiModelProperty
+	@Schema
 	String sapPaymentMethod;
 
-	@ApiModelProperty
+	@Schema
 	String sapBPartnerCode;
 
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(position = 20) // shall be last
+	@Schema // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)

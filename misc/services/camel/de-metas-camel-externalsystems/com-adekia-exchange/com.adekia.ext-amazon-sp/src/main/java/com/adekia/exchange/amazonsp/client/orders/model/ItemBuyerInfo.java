@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.orders.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.orders.model.BuyerCustomizedInfoDetail;
-import com.adekia.exchange.amazonsp.client.orders.model.Money;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * A single item&#39;s buyer information.
  */
-@ApiModel(description = "A single item's buyer information.")
+@Schema(description = "A single item's buyer information.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-07-02T14:17:07.399+02:00")
 public class ItemBuyerInfo {
   @SerializedName("BuyerCustomizedInfo")
@@ -56,7 +48,7 @@ public class ItemBuyerInfo {
    * Buyer information for custom orders from the Amazon Custom program.
    * @return buyerCustomizedInfo
   **/
-  @ApiModelProperty(value = "Buyer information for custom orders from the Amazon Custom program.")
+  @Schema(description = "Buyer information for custom orders from the Amazon Custom program.")
   public BuyerCustomizedInfoDetail getBuyerCustomizedInfo() {
     return buyerCustomizedInfo;
   }
@@ -74,7 +66,7 @@ public class ItemBuyerInfo {
    * The gift wrap price of the item.
    * @return giftWrapPrice
   **/
-  @ApiModelProperty(value = "The gift wrap price of the item.")
+  @Schema(description = "The gift wrap price of the item.")
   public Money getGiftWrapPrice() {
     return giftWrapPrice;
   }
@@ -92,7 +84,7 @@ public class ItemBuyerInfo {
    * The tax on the gift wrap price.
    * @return giftWrapTax
   **/
-  @ApiModelProperty(value = "The tax on the gift wrap price.")
+  @Schema(description = "The tax on the gift wrap price.")
   public Money getGiftWrapTax() {
     return giftWrapTax;
   }
@@ -110,7 +102,7 @@ public class ItemBuyerInfo {
    * A gift message provided by the buyer.
    * @return giftMessageText
   **/
-  @ApiModelProperty(value = "A gift message provided by the buyer.")
+  @Schema(description = "A gift message provided by the buyer.")
   public String getGiftMessageText() {
     return giftMessageText;
   }
@@ -128,7 +120,7 @@ public class ItemBuyerInfo {
    * The gift wrap level specified by the buyer.
    * @return giftWrapLevel
   **/
-  @ApiModelProperty(value = "The gift wrap level specified by the buyer.")
+  @Schema(description = "The gift wrap level specified by the buyer.")
   public String getGiftWrapLevel() {
     return giftWrapLevel;
   }

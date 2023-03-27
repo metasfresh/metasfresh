@@ -13,23 +13,15 @@
 
 package com.adekia.exchange.amazonsp.client.shipments.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.adekia.exchange.amazonsp.client.shipments.model.Address;
-import com.adekia.exchange.amazonsp.client.shipments.model.ContainerList;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 /**
  * The request schema for the createShipment operation.
  */
-@ApiModel(description = "The request schema for the createShipment operation.")
+@Schema(description = "The request schema for the createShipment operation.")
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaClientCodegen", date = "2022-08-12T14:28:53.571+02:00")
 public class CreateShipmentRequest {
   @SerializedName("clientReferenceId")
@@ -53,7 +45,7 @@ public class CreateShipmentRequest {
    * Get clientReferenceId
    * @return clientReferenceId
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public String getClientReferenceId() {
     return clientReferenceId;
   }
@@ -71,7 +63,7 @@ public class CreateShipmentRequest {
    * Get shipTo
    * @return shipTo
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipTo() {
     return shipTo;
   }
@@ -89,7 +81,7 @@ public class CreateShipmentRequest {
    * Get shipFrom
    * @return shipFrom
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public Address getShipFrom() {
     return shipFrom;
   }
@@ -107,7 +99,7 @@ public class CreateShipmentRequest {
    * Get containers
    * @return containers
   **/
-  @ApiModelProperty(required = true, value = "")
+  @Schema(required = true, description = "")
   public ContainerList getContainers() {
     return containers;
   }

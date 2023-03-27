@@ -98,7 +98,7 @@ public class AttributeSetDescriptionBuilderCommandTest
 	}
 
 	@Nested
-	public static class AttributesBL_getNumberDisplayType_assumptions
+	public class AttributesBL_getNumberDisplayType_assumptions
 	{
 		@BeforeEach
 		public void init()
