@@ -462,6 +462,7 @@ public final class AggregationEngine
 					else
 					{
 						invoiceHeader.setDocTypeInvoiceId(null, false);
+						invoiceHeader.setIsTakeDocTypeFromPool(true);
 					}
 				}
 
@@ -813,14 +814,17 @@ public final class AggregationEngine
 	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
+		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
 
 		final DocTypeId docTypeIdToBeUsed;
 
 		final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
-		if (docTypeInvoiceId.isPresent())
+		if (docTypeInvoiceId.isPresent() && !isTakeDocTypeFromPool)
 		{
 			docTypeIdToBeUsed = docTypeInvoiceId.get();
+
 		}
+
 		else if (invoiceHeader.getDocTypeInvoicingPoolId().isPresent())
 		{
 			final DocTypeInvoicingPool docTypeInvoicingPool = docTypeInvoicingPoolService.getById(invoiceHeader.getDocTypeInvoicingPoolId().get());

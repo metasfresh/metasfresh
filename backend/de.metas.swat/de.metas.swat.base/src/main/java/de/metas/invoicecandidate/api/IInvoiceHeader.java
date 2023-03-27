@@ -59,6 +59,8 @@ public interface IInvoiceHeader
 
 	boolean isSOTrx();
 
+	boolean isTakeDocTypeFromPool();
+
 	int getM_InOut_ID();
 
 	@Nullable

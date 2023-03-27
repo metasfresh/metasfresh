@@ -34,6 +34,8 @@ public class InvoiceHeaderImplBuilder
 {
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
+	private boolean isTakeDocTypeFromPool = false;
+
 	private DocTypeId docTypeInvoiceId = null;
 
 	private final Set<String> POReferences = new HashSet<>();
@@ -90,6 +92,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
 		invoiceHeader.setDocTypeInvoiceId(getDocTypeInvoiceId());
 		invoiceHeader.setIsSOTrx(isSOTrx());
+		invoiceHeader.setIsTakeDocTypeFromPool(isTakeDocTypeFromPool());
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
@@ -173,7 +176,7 @@ public class InvoiceHeaderImplBuilder
 
 			else
 			{
-				this.docTypeInvoiceId = null; // if the invoice doctypes in the selection are different, the field should not be set to any value // todo is this ok?
+				this.isTakeDocTypeFromPool = true;
 			}
 		}
 
@@ -332,6 +335,17 @@ public class InvoiceHeaderImplBuilder
 	public void setIsSOTrx(final boolean isSOTrx)
 	{
 		this.isSOTrx = checkOverrideBoolean("IsSOTrx", this.isSOTrx, isSOTrx);
+	}
+
+
+	public boolean isTakeDocTypeFromPool()
+	{
+		return isTakeDocTypeFromPool;
+	}
+
+	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
+	{
+		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
 	}
 
 	public int getM_InOut_ID()

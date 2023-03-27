@@ -69,6 +69,8 @@ import java.util.Optional;
 
 	private boolean isSOTrx;
 
+	private boolean isTakeDocTypeFromPool;
+
 	// 06630
 	private int M_InOut_ID = -1;
 
@@ -227,6 +229,7 @@ import java.util.Optional;
 		this.isSOTrx = isSOTrx;
 	}
 
+
 	@Override
 	public int getM_InOut_ID()
 	{
@@ -251,6 +254,21 @@ import java.util.Optional;
 	{
 		return Optional.ofNullable(docTypeInvoicingPoolId);
 	}
+
+
+
+
+	@Override
+	public boolean isTakeDocTypeFromPool()
+	{
+		return isTakeDocTypeFromPool;
+	}
+
+	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
+	{
+		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
+	}
+
 
 	@Override
 	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
