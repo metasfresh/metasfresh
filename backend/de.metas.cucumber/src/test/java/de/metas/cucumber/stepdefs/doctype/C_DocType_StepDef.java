@@ -98,7 +98,7 @@ public class C_DocType_StepDef
 		assertThat(docTypeRecord).isNotNull();
 
 
-		final String invoiceDocTypeIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID);
+		final String invoiceDocTypeIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID+ "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(invoiceDocTypeIdentifier))
 
 		{
