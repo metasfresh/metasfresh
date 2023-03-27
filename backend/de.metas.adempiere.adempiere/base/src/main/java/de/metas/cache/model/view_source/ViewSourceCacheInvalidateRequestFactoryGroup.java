@@ -21,12 +21,16 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_ViewSource;
 import org.compiere.model.I_AD_ViewSource_Column;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Set;
 
 @Component
+// NOTE: the only reason we need Adempiere as dependency is that CacheMgt is using "SpringContextHolder.getBean" to get the EventBusFactory,
+// By asking for Adempiere dependency here we make sure that the spring context is set to SpringContextHolder
+@DependsOn(Adempiere.BEAN_NAME)
 public class ViewSourceCacheInvalidateRequestFactoryGroup implements IModelCacheInvalidateRequestFactoryGroup
 {
 	private static final Logger logger = LogManager.getLogger(ViewSourceCacheInvalidateRequestFactoryGroup.class);
@@ -49,12 +53,8 @@ public class ViewSourceCacheInvalidateRequestFactoryGroup implements IModelCache
 			.build();
 
 	public ViewSourceCacheInvalidateRequestFactoryGroup(
-			@NonNull final WindowBasedModelCacheInvalidateRequestFactoryGroup windowBasedModelCacheInvalidateRequestFactoryGroup,
-			@SuppressWarnings("unused") final Adempiere adempiere)
+			@NonNull final WindowBasedModelCacheInvalidateRequestFactoryGroup windowBasedModelCacheInvalidateRequestFactoryGroup)
 	{
-		// NOTE: the only reason we need Adempiere as dependency is that CacheMgt is using "SpringContextHolder.getBean" to get the EventBusFactory,
-		// By asking for Adempiere dependency here we make sure that the spring context is set to SpringContextHolder
-
 		this.windowBasedModelCacheInvalidateRequestFactoryGroup = windowBasedModelCacheInvalidateRequestFactoryGroup;
 
 		CacheMgt.get().enableRemoteCacheInvalidationForTableNamesGroup(CONFIG_TABLENAMES);
