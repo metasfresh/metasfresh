@@ -51,7 +51,7 @@ public interface I_C_DocType_Invoicing_Pool
 
 	/**
 	 * Set Invoicing Pool.
-	 * Configuration used for aggregating invoices and credit memos into a single document. When the amount to be invoiced is positive, the invoice will be created with the positive doctype of the pool and vice versa for the negative one.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -61,7 +61,7 @@ public interface I_C_DocType_Invoicing_Pool
 
 	/**
 	 * Get Invoicing Pool.
-	 * Configuration used for aggregating invoices and credit memos into a single document. When the amount to be invoiced is positive, the invoice will be created with the positive doctype of the pool and vice versa for the negative one.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -121,8 +121,7 @@ public interface I_C_DocType_Invoicing_Pool
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Only On Distinct Invoice DocTypes.
-	 * When on 'Y' , the invoicing pool is only applied when the invoice candidates from the selection have different invoice doc types. When 'N', the pool is applied in any circumstances.
+	 * Set (Apply to) different invoice document types only.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -131,8 +130,7 @@ public interface I_C_DocType_Invoicing_Pool
 	void setIsOnDistinctICTypes (boolean IsOnDistinctICTypes);
 
 	/**
-	 * Get Only On Distinct Invoice DocTypes.
-	 * When on 'Y' , the invoicing pool is only applied when the invoice candidates from the selection have different invoice doc types. When 'N', the pool is applied in any circumstances.
+	 * Get (Apply to) different invoice document types only.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
