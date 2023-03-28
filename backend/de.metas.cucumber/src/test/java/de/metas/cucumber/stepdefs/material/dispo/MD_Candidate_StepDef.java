@@ -81,8 +81,9 @@ public class MD_Candidate_StepDef
 	public MD_Candidate_StepDef(@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData)
 	{
 		this.materialDispoDataItemStepDefData = materialDispoDataItemStepDefData;
-		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
+		this.postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
+		this.materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
+
 	}
 
 	@Given("metasfresh initially has no MD_Candidate data")
