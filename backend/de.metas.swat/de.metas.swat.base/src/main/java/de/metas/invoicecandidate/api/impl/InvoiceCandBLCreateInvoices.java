@@ -471,8 +471,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
-			final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
-			final I_C_DocType invoiceHeaderDocType = docTypeInvoiceId.isPresent()? docTypeDAO.getById(docTypeInvoiceId.get()) : null;
+			final DocTypeId docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId().orElse(null);
+			final I_C_DocType invoiceHeaderDocType = docTypeInvoiceId == null ? null : docTypeDAO.getById(docTypeInvoiceId);
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());

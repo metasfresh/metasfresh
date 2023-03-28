@@ -164,7 +164,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
 	{
-		if (this.docTypeInvoiceId != null && !Objects.equals(this.docTypeInvoiceId,docTypeInvoiceId))
+		if (this.docTypeInvoiceId != null && !DocTypeId.equals(this.docTypeInvoiceId,docTypeInvoiceId))
 		{
 			if (isEnforceUnique)
 			{
