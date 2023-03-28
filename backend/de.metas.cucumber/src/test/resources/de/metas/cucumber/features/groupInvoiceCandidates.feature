@@ -649,15 +649,10 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | dt_si                       |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | invoice_1          | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36          | dt_si                       |
 
     And validate created invoice lines
-<<<<<<< HEAD
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
-      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_2               | invoice_1               | product_SO              | 10          | true      | 10             |
-=======
       | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.QtyEntered |
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | 10          | true      | 10             |
@@ -1198,4 +1193,4 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1          | product_SO              | 12          | true      | 12             |
       | invoice_1          | product_SO              | 10          | true      | 10             |
 
->>>>>>> 7f22aa0299b (Invoice doc type improvements (#14993))
+
