@@ -63,7 +63,6 @@ public interface IInvoiceHeader
 
 	int getM_InOut_ID();
 
-	@Nullable
 	Optional<DocTypeId> getDocTypeInvoiceId();
 
 	void setDocTypeInvoiceId(DocTypeId docTypeInvoiceId);
