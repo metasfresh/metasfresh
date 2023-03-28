@@ -37,6 +37,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
+import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_IsOnDistinctICTypes;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_Name;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_Negative_Amt_C_DocType_ID;
@@ -71,6 +72,7 @@ public class C_DocType_Invoicing_Pool_StepDef
 		final String positiveAmtDocTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Positive_Amt_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final String negativeAmtDocTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Negative_Amt_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(tableRow, COLUMNNAME_IsSOTrx);
+		final boolean isOnDistinctICTypes = DataTableUtil.extractBooleanForColumnName(tableRow, COLUMNNAME_IsOnDistinctICTypes);
 
 		final I_C_DocType positiveAmtDocTypeRecord = docTypeTable.get(positiveAmtDocTypeIdentifier);
 		assertThat(positiveAmtDocTypeRecord).isNotNull();
@@ -81,6 +83,7 @@ public class C_DocType_Invoicing_Pool_StepDef
 		final I_C_DocType_Invoicing_Pool docTypeInvoicingPoolRecord = InterfaceWrapperHelper.newInstance(I_C_DocType_Invoicing_Pool.class);
 		docTypeInvoicingPoolRecord.setName(name);
 		docTypeInvoicingPoolRecord.setIsSOTrx(soTrx);
+		docTypeInvoicingPoolRecord.setIsOnDistinctICTypes(isOnDistinctICTypes);
 		docTypeInvoicingPoolRecord.setPositive_Amt_C_DocType_ID(positiveAmtDocTypeRecord.getC_DocType_ID());
 		docTypeInvoicingPoolRecord.setNegative_Amt_C_DocType_ID(negativeAmtDocTypeRecord.getC_DocType_ID());
 

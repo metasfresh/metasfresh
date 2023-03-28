@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
@@ -15,7 +16,6 @@ import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -69,10 +69,13 @@ public interface IInvoiceHeader
 
 	boolean isSOTrx();
 
+	boolean isTakeDocTypeFromPool();
+
 	int getM_InOut_ID();
 
-	@Nullable
-	I_C_DocType getC_DocTypeInvoice();
+	Optional<DocTypeId> getDocTypeInvoiceId();
+
+	void setDocTypeInvoiceId(DocTypeId docTypeInvoiceId);
 
 	@NonNull
 	Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId();

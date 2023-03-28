@@ -97,6 +97,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -361,8 +362,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
-				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
-						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getDocTypeInvoiceId().isPresent()
+						? invoiceHeader.getDocTypeInvoiceId().get()
 						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
@@ -529,7 +530,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
-			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
+
+			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getById).orElse(null);
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());

@@ -36,7 +36,7 @@ public class DocTypeInvoicingPool
 {
 	@NonNull
 	DocTypeInvoicingPoolId id;
-	
+
 	@NonNull
 	String name;
 
@@ -48,7 +48,10 @@ public class DocTypeInvoicingPool
 
 	@NonNull
 	SOTrx isSoTrx;
-	
+
+	@Default
+	boolean isOnDistinctICTypes = true;
+
 	@Default
 	boolean isActive = true;
 
