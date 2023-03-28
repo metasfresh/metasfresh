@@ -344,15 +344,12 @@ import java.util.Optional;
 		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
 	}
 
-<<<<<<< HEAD
-=======
 	@Override
 	public void setDocTypeInvoiceId(@Nullable final DocTypeId docTypeId)
 	{
 		this.docTypeInvoiceId = docTypeId;
 	}
-	
->>>>>>> 7f22aa0299b (Invoice doc type improvements (#14993))
+
 	@Override
 	public boolean isTaxIncluded()
 	{
@@ -442,7 +439,6 @@ import java.util.Optional;
 		return this.externalId = externalId;
 	}
 
-<<<<<<< HEAD
 	@Override
 	public int getC_Incoterms_ID()
 	{
@@ -482,11 +478,6 @@ import java.util.Optional;
 		return sectionCodeId;
 	}
 
-	void setC_DocTypeInvoice(@Nullable final I_C_DocType docType)
-	{
-		this.docTypeInvoice = docType;
-	}
-
 	@Nullable
 	@Override
 	public String getInvoiceAdditionalText()
@@ -521,7 +512,5 @@ import java.util.Optional;
 	{
 		return C_PaymentInstruction_ID;
 	}
-=======
 
->>>>>>> 7f22aa0299b (Invoice doc type improvements (#14993))
 }

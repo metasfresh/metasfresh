@@ -895,7 +895,6 @@ public final class AggregationEngine
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
 
-<<<<<<< HEAD
 	@NonNull
 	private Optional<SectionCodeId> getSectionCodeId(
 			@NonNull final I_C_Invoice_Candidate icRecord,
@@ -940,10 +939,7 @@ public final class AggregationEngine
 															  headerAggregationId.getRepoId()));
 	}
 
-	private void setDocType(@NonNull final InvoiceHeaderImpl invoiceHeader)
-=======
 	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
->>>>>>> 7f22aa0299b (Invoice doc type improvements (#14993))
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
 		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
@@ -975,38 +971,11 @@ public final class AggregationEngine
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
 	}
 
-<<<<<<< HEAD
-	@NonNull
-	private DocTypeInvoicingPool getOrCreateDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
-	{
-		final I_C_DocType docTypeInvoice = docTypeBL.getByIdInTrx(docTypeId);
-
-		return Optional.ofNullable(DocTypeInvoicingPoolId.ofRepoIdOrNull(docTypeInvoice.getC_DocType_Invoicing_Pool_ID()))
-				.map(docTypeInvoicingPoolService::getById)
-				.orElseGet(() -> {
-					final DocTypeInvoicingPoolCreateRequest request = DocTypeInvoicingPoolCreateRequest.builder()
-							.name(docTypeInvoice.getName())
-							.positiveAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoice.getC_DocType_ID()))
-							.negativeAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoice.getC_DocType_ID()))
-							.isSoTrx(SOTrx.ofBooleanNotNull(docTypeInvoice.isSOTrx()))
-							.build();
-
-					final DocTypeInvoicingPool pool = docTypeInvoicingPoolService.create(request);
-
-					docTypeInvoice.setC_DocType_Invoicing_Pool_ID(pool.getId().getRepoId());
-
-					docTypeBL.save(docTypeInvoice);
-
-					return pool;
-				});
-=======
-	@Nullable
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType docTypeInvoice = docTypeBL.getByIdInTrx(docTypeId);
 
 		return Optional.ofNullable(DocTypeInvoicingPoolId.ofRepoIdOrNull(docTypeInvoice.getC_DocType_Invoicing_Pool_ID()))
 				.map(docTypeInvoicingPoolService::getById);
->>>>>>> 7f22aa0299b (Invoice doc type improvements (#14993))
 	}
 }
