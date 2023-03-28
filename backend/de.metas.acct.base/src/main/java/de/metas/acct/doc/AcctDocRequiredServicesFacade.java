@@ -21,8 +21,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
@@ -58,6 +58,8 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -77,6 +79,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -134,6 +137,7 @@ public class AcctDocRequiredServicesFacade
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
@@ -430,5 +434,11 @@ public class AcctDocRequiredServicesFacade
 	public Dimension extractDimensionFromModel(final Object model)
 	{
 		return dimensionService.getFromRecord(model);
+	}
+	
+	@NonNull
+	public I_C_Order getOrderById(@NonNull final OrderId orderId)
+	{
+		return orderBL.getById(orderId);
 	}
 }

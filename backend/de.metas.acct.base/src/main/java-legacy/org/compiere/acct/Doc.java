@@ -1442,6 +1442,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		return OrderId.ofRepoIdOrNull(getValueAsIntOrZero("C_OrderSO_ID"));
 	}
+	
+	@Nullable
+	protected OrderId getOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValueAsIntOrZero("C_Order_ID"));
+	}
 
 	protected final int getC_Campaign_ID()
 	{
