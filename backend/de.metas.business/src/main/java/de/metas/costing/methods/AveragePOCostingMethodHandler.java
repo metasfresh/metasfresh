@@ -156,11 +156,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
 		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
 		final CostAmount amtConv;
+		final CostAmount sourceAmt;
 		if (orderLine != null)
 		{
 			final InOutId receiptId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
-			CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
-			amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
+			final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
+			sourceAmt = getCostAmountInSourceCurrency(orderLine, request.getQty());
+			amtConv = utils.convertToAcctSchemaCurrency(sourceAmt, () -> currencyConversionContext, request.getAcctSchemaId());
 		}
 		else
 		{
@@ -168,10 +170,12 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			final CostAmount amt = currentCostPrice.multiply(request.getQty());
 			// NOTE: expect conversion to do nothing because the current cost price shall already be in accounting currency
 			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
+			// NOTE: no Source Amount in this case
+			sourceAmt = null;
 		}
 
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
+				request.withAmtAndSourceAmt(amtConv, sourceAmt),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 
@@ -392,21 +396,28 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		utils.saveCurrentCost(currentCosts);
 	}
 
+	@NonNull
 	private CostAmount getCostAmountInAcctCurrency(
 			@NonNull final I_C_OrderLine orderLine,
 			@NonNull final Quantity qty,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CurrencyConversionContext currencyConversionContext)
 	{
-		final ProductPrice costPriceConv = utils.convertToUOM(
-				orderLineBL.getCostPrice(orderLine),
-				qty.getUomId());
-
-		final CostAmount amt = CostAmount.ofProductPrice(costPriceConv).multiply(qty);
+		final CostAmount amt = getCostAmountInSourceCurrency(orderLine, qty);
 
 		return utils.convertToAcctSchemaCurrency(
 				amt,
 				() -> currencyConversionContext,
 				acctSchemaId);
+	}
+
+	@NonNull
+	private CostAmount getCostAmountInSourceCurrency(@NonNull final I_C_OrderLine orderLine, @NonNull final Quantity qty)
+	{
+		final ProductPrice costPriceConv = utils.convertToUOM(
+				orderLineBL.getCostPrice(orderLine),
+				qty.getUomId());
+
+		return CostAmount.ofProductPrice(costPriceConv).multiply(qty);
 	}
 }

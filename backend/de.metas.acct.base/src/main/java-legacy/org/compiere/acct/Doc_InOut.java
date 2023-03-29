@@ -37,7 +37,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.costs.OrderCostService;
@@ -45,7 +44,6 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -354,7 +352,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
-				.setAmtSource(getCostAmountInOrderCurrency(costs, as).orElseGet(() -> toMoneyAndRoundToStdPrecision(costs)), null)
+				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
 				.setQty(line.getQty()) // (+) Qty
 				.bpartnerId(line.getBPartnerId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
@@ -374,7 +372,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setAccount(costElement.isMaterialElement()
 									? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
 									: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
-				.setAmtSource(null, getCostAmountInOrderCurrency(costs, as).orElseGet(() -> toMoneyAndRoundToStdPrecision(costs)))
+				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
 				.setQty(line.getQty().negate()) // (-) Qty
 				.bpartnerId(line.getBPartnerId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
@@ -414,7 +412,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine dr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
-				.setAmtSource(getCostAmountInOrderCurrency(costs, as).orElseGet(() -> toMoneyAndRoundToStdPrecision(costs)), null)
+				.setAmtSource(toMoneyAndRoundToStdPrecision(costs), null)
 				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
@@ -438,7 +436,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		final FactLine cr = fact.createLine()
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
-				.setAmtSource(null, getCostAmountInOrderCurrency(costs, as).orElseGet(() -> toMoneyAndRoundToStdPrecision(costs)))
+				.setAmtSource(null, toMoneyAndRoundToStdPrecision(costs))
 				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
@@ -507,24 +505,5 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//noinspection DataFlowIssue
 		return optionalSalesOrderId.orElse(null);
-	}
-
-	@NonNull
-	private Optional<CurrencyId> getOrderCurrencyId()
-	{
-		return Optional.ofNullable(getOrderId())
-				.map(services::getOrderById)
-				.map(I_C_Order::getC_Currency_ID)
-				.map(CurrencyId::ofRepoId);
-	}
-
-	@NonNull
-	private Optional<Money> getCostAmountInOrderCurrency(
-			@NonNull final CostAmount costs,
-			@NonNull final AcctSchema as)
-	{
-		return getOrderCurrencyId()
-				.map(orderCurrencyId -> services.getCurrencyRate(getCurrencyConversionContext(as), costs.getCurrencyId(), orderCurrencyId))
-				.map(currencyRate -> currencyRate.convertAmount(costs.toMoney()));
 	}
 }   // Doc_InOut

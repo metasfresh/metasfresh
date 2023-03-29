@@ -67,6 +67,8 @@ public class CostDetail
 
 	@With Instant dateAcct;
 
+	CostAmount sourceAmt;
+
 	@Builder
 	private CostDetail(
 			final CostDetailId id,
@@ -83,7 +85,8 @@ public class CostDetail
 			final CostDetailPreviousAmounts previousAmounts,
 			@NonNull final CostingDocumentRef documentRef,
 			@Nullable final String description,
-			@NonNull Instant dateAcct)
+			@NonNull Instant dateAcct,
+			@Nullable final CostAmount sourceAmt)
 	{
 		this.id = id;
 		this.clientId = clientId;
@@ -100,6 +103,7 @@ public class CostDetail
 		this.documentRef = documentRef;
 		this.description = description;
 		this.dateAcct = dateAcct;
+		this.sourceAmt = sourceAmt;
 
 		if (this.previousAmounts != null
 				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getCurrencyId()))

@@ -162,6 +162,7 @@ public class CostDetailService implements ICostDetailService
 				.costSegment(extractCostSegment(costDetail))
 				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
 				.amt(CostAmountDetailed.ofAmtAndType(costDetail.getAmt(), costDetail.getAmtType()))
+				.sourceAmt(CostAmountDetailed.ofNullableAmtAndType(costDetail.getSourceAmt(), costDetail.getAmtType()))
 				.qty(costDetail.getQty())
 				.build();
 	}

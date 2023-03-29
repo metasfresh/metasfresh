@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_CostDetail
  *  @author metasfresh (generated) 
@@ -913,6 +914,47 @@ public interface I_M_CostDetail
 
 	ModelColumn<I_M_CostDetail, Object> COLUMN_Qty = new ModelColumn<>(I_M_CostDetail.class, "Qty", null);
 	String COLUMNNAME_Qty = "Qty";
+
+	/**
+	 * Set Source Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource_Currency_ID (int Source_Currency_ID);
+
+	/**
+	 * Get Source Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSource_Currency_ID();
+
+	String COLUMNNAME_Source_Currency_ID = "Source_Currency_ID";
+
+	/**
+	 * Set Source Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSourceAmt (@Nullable BigDecimal SourceAmt);
+
+	/**
+	 * Get Source Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSourceAmt();
+
+	ModelColumn<I_M_CostDetail, Object> COLUMN_SourceAmt = new ModelColumn<>(I_M_CostDetail.class, "SourceAmt", null);
+	String COLUMNNAME_SourceAmt = "SourceAmt";
 
 	/**
 	 * Get Updated.

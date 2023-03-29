@@ -7,6 +7,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -36,17 +38,20 @@ public class CostDetailCreateResult
 	@NonNull CostElement costElement;
 	@With @NonNull CostAmountDetailed amt;
 	@NonNull Quantity qty;
+	@Nullable CostAmountDetailed sourceAmt;
 
 	@Builder
 	private CostDetailCreateResult(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
 			@NonNull final CostAmountDetailed amt,
-			@NonNull final Quantity qty)
+			@NonNull final Quantity qty,
+			@Nullable final CostAmountDetailed sourceAmt)
 	{
 		this.costSegment = costSegment;
 		this.costElement = costElement;
 		this.amt = amt;
 		this.qty = qty;
+		this.sourceAmt = sourceAmt;
 	}
 }

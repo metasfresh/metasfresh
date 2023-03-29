@@ -162,6 +162,7 @@ public class CostingService implements ICostingService
 		}
 	}
 
+	@NonNull
 	private static AggregatedCostAmount toAggregatedCostAmount(final List<CostDetailCreateResult> costElementResults)
 	{
 		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
@@ -172,12 +173,14 @@ public class CostingService implements ICostingService
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costElementResults)));
 
-		final Map<CostElement, CostAmountDetailed> amountsByCostElement = costElementResults
+		final Map<CostElement, List<CostDetailCreateResult>> resultsByCostElement = costElementResults
 				.stream()
-				.collect(Collectors.toMap(
-						CostDetailCreateResult::getCostElement, // keyMapper
-						CostDetailCreateResult::getAmt, // valueMapper
-						CostAmountDetailed::add)); // mergeFunction
+				.collect(Collectors.groupingBy(CostDetailCreateResult::getCostElement));
+		
+		final Map<CostElement, CostAmountDetailed> amountsByCostElement = resultsByCostElement
+				.entrySet()
+				.stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, CostingService::aggregateByAmtOrSourceAmt));
 
 		return AggregatedCostAmount.builder()
 				.costSegment(costSegment)
@@ -573,5 +576,32 @@ public class CostingService implements ICostingService
 
 		//
 		return result.build();
+	}
+
+	@NonNull
+	private static CostAmountDetailed aggregateByAmtOrSourceAmt(@NonNull final Map.Entry<CostElement, List<CostDetailCreateResult>> entry)
+	{
+		final List<CostDetailCreateResult> results = entry.getValue();
+
+		final boolean aggregateBySourceAmt = results
+				.stream()
+				.allMatch(result -> result.getSourceAmt() != null);
+
+		if (aggregateBySourceAmt)
+		{
+			return results
+					.stream()
+					.map(CostDetailCreateResult::getSourceAmt)
+					.reduce(CostAmountDetailed::add)
+					.orElseThrow(() -> new AdempiereException("CostAmountDetailed cannot be null at this point!"));
+		}
+		else
+		{
+			return results
+					.stream()
+					.map(CostDetailCreateResult::getAmt)
+					.reduce(CostAmountDetailed::add)
+					.orElseThrow(() -> new AdempiereException("CostAmountDetailed cannot be null at this point!"));
+		}
 	}
 }
