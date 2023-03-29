@@ -7,11 +7,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-<<<<<<< HEAD
 import de.metas.cache.model.ModelCacheInvalidationService;
-=======
-import de.metas.cache.model.ModelCacheInvalidationService;
->>>>>>> 6294c21905b (Introduce AD_ViewSource | Fix cache invalidation for Delivery Planning -> Delivery Instructions included tab (#14976))
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
