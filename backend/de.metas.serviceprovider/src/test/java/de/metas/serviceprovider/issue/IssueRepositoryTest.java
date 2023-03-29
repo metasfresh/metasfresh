@@ -22,7 +22,7 @@
 
 package de.metas.serviceprovider.issue;
 
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,18 +33,15 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static de.metas.serviceprovider.issue.IssueServiceTest.prepareDataContext;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class IssueRepositoryTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
-
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 
 	private IssueEntity MOCK_ISSUE_ENTITY;
-
 
 	@BeforeEach
 	void init()
@@ -53,8 +50,6 @@ public class IssueRepositoryTest
 
 		MOCK_ISSUE_ENTITY = IssueTestHelper.createMockIssueEntity();
 	}
-
-	
 
 	@Test
 	public void save()
@@ -69,7 +64,7 @@ public class IssueRepositoryTest
 
 	/**
 	 * Given the following issue hierarchy:
-	 *
+	 * <p>
 	 * ----1----
 	 * ---/-\---
 	 * --2---3--
@@ -77,7 +72,7 @@ public class IssueRepositoryTest
 	 * --4---5--
 	 * /-|-\----
 	 * 6-7-8----
-	 *
+	 * <p>
 	 * When {@link IssueRepository#buildUpStreamIssueHierarchy(IssueId)} for 8
 	 * Then return: IssueHierarchy(root=1) with nodes: [1,2,4,8]
 	 */

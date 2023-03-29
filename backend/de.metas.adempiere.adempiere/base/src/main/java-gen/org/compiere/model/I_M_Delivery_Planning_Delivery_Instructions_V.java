@@ -18,7 +18,7 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 
 
 	/**
-	 * Set Actual Discharge Quantity.
+	 * Set Act Delivered Qty.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -27,7 +27,7 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 	void setActualDischargeQuantity (@Nullable BigDecimal ActualDischargeQuantity);
 
 	/**
-	 * Get Actual Discharge Quantity.
+	 * Get Act Delivered Qty.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
 
 	/**
-	 * Set Actual Loaded Quantity.
+	 * Set Act Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -48,7 +48,7 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 	void setActualLoadQty (@Nullable BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Actual Loaded Quantity.
+	 * Get Act Load Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -270,8 +270,8 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Set Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -280,8 +280,8 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Get Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -496,6 +496,27 @@ public interface I_M_Delivery_Planning_Delivery_Instructions_V
 
 	ModelColumn<I_M_Delivery_Planning_Delivery_Instructions_V, Object> COLUMN_M_ShipperTransportation_ID = new ModelColumn<>(I_M_Delivery_Planning_Delivery_Instructions_V.class, "M_ShipperTransportation_ID", null);
 	String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+
+	/**
+	 * Set Shipping Package.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShippingPackage_ID (int M_ShippingPackage_ID);
+
+	/**
+	 * Get Shipping Package.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShippingPackage_ID();
+
+	ModelColumn<I_M_Delivery_Planning_Delivery_Instructions_V, Object> COLUMN_M_ShippingPackage_ID = new ModelColumn<>(I_M_Delivery_Planning_Delivery_Instructions_V.class, "M_ShippingPackage_ID", null);
+	String COLUMNNAME_M_ShippingPackage_ID = "M_ShippingPackage_ID";
 
 	/**
 	 * Get Updated.
