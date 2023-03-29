@@ -204,7 +204,7 @@ public class CostingMethodHandlerUtils
 				amt.toMoney(),
 				acctCurrencyId);
 
-		return CostAmount.of(result.getAmount(), acctCurrencyId);
+		return CostAmount.of(result.getAmount(), acctCurrencyId, result.getSourceAmount(), result.getSourceCurrencyId());
 	}
 
 	@NonNull

@@ -66,7 +66,6 @@ public class CostDetailCreateRequest
 	@Nullable String description;
 
 	@Nullable CostAmount explicitCostPrice;
-	@Nullable CostAmount sourceAmt;
 
 	@Builder(toBuilder = true)
 	private CostDetailCreateRequest(
@@ -84,8 +83,7 @@ public class CostDetailCreateRequest
 			@Nullable final CurrencyConversionContext currencyConversionContext,
 			@NonNull final Instant date,
 			@Nullable final String description,
-			@Nullable final CostAmount explicitCostPrice,
-			@Nullable final CostAmount sourceAmt)
+			@Nullable final CostAmount explicitCostPrice)
 	{
 		this.acctSchemaId = acctSchemaId;
 		this.clientId = clientId;
@@ -102,7 +100,6 @@ public class CostDetailCreateRequest
 		this.date = date;
 		this.description = description;
 		this.explicitCostPrice = explicitCostPrice;
-		this.sourceAmt = sourceAmt;
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -223,12 +220,6 @@ public class CostDetailCreateRequest
 	{
 		return withQty(qty.toZero());
 	}
-	
-	@NonNull
-	public CostDetailCreateRequest withAmtAndSourceAmt(@NonNull final CostAmount amt, @Nullable final CostAmount sourceAmt)
-	{
-		return toBuilder().amt(amt).sourceAmt(sourceAmt).build();
-	}
 
 	public CostDetailBuilder toCostDetailBuilder()
 	{
@@ -245,8 +236,7 @@ public class CostDetailCreateRequest
 				//
 				.documentRef(getDocumentRef())
 				.description(getDescription())
-				.dateAcct(getDate())
-				.sourceAmt(getSourceAmt());
+				.dateAcct(getDate());
 
 		if (!isAllMaterialCostElements())
 		{

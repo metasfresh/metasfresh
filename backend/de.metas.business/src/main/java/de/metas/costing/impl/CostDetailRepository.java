@@ -15,6 +15,7 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -35,7 +36,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Objects;
@@ -92,6 +92,13 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setAmt(cd.getAmt().toBigDecimal());
 		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
 
+		final Money sourceAmt = cd.getAmt().toSourceMoney();
+		if (sourceAmt != null)
+		{
+			record.setSourceAmt(sourceAmt.toBigDecimal());
+			record.setSource_Currency_ID(sourceAmt.getCurrencyId().getRepoId());
+		}
+
 		record.setQty(cd.getQty().toBigDecimal());
 		record.setC_UOM_ID(cd.getQty().getUomId().getRepoId());
 
@@ -99,11 +106,11 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostDetailPreviousAmounts previousAmounts = cd.getPreviousAmounts();
 		if (previousAmounts != null)
 		{
-			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().getValue());
-			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().getValue());
+			record.setPrev_CurrentCostPrice(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal());
+			record.setPrev_CurrentCostPriceLL(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal());
 			record.setPrev_CurrentQty(previousAmounts.getQty().toBigDecimal());
 
-			record.setPrev_CumulatedAmt(previousAmounts.getCumulatedAmt().getValue());
+			record.setPrev_CumulatedAmt(previousAmounts.getCumulatedAmt().toBigDecimal());
 			record.setPrev_CumulatedQty(previousAmounts.getCumulatedQty().toBigDecimal());
 		}
 
@@ -113,13 +120,6 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setDescription(cd.getDescription());
 
 		record.setDateAcct(Timestamp.from(cd.getDateAcct()));
-		
-		final CostAmount sourceAmt = cd.getSourceAmt(); 
-		if (sourceAmt != null)
-		{
-			record.setSourceAmt(sourceAmt.toBigDecimal());
-			record.setSource_Currency_ID(sourceAmt.getCurrencyId().getRepoId());
-		}
 
 		record.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
 		saveRecord(record);
@@ -320,10 +320,11 @@ public class CostDetailRepository implements ICostDetailRepository
 		final I_C_UOM productUOM = uomDAO.getById(record.getC_UOM_ID());
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
+		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(record.getSource_Currency_ID());
+		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId, record.getSourceAmt(), sourceCurrencyId);
 		final Quantity qty = Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 
-		final CostDetail.CostDetailBuilder costDetailBuilder = CostDetail.builder()
+		return CostDetail.builder()
 				.id(CostDetailId.ofRepoId(record.getM_CostDetail_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
@@ -336,28 +337,18 @@ public class CostDetailRepository implements ICostDetailRepository
 				.qty(qty)
 				.changingCosts(record.isChangingCosts())
 				.previousAmounts(CostDetailPreviousAmounts.builder()
-										 .costPrice(CostPrice.builder()
-															.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), currencyId))
-															.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
-															.uomId(UomId.ofRepoId(productUOM.getC_UOM_ID())) // TODO: introduce M_CostDetail.Prev_CurrentQty_UOM_ID
-															.build())
-										 .qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
-										 .cumulatedAmt(CostAmount.of(record.getPrev_CumulatedAmt(), currencyId))
-										 .cumulatedQty(Quantity.of(record.getPrev_CumulatedQty(), productUOM))
-										 .build())
+						.costPrice(CostPrice.builder()
+								.ownCostPrice(CostAmount.of(record.getPrev_CurrentCostPrice(), currencyId))
+								.componentsCostPrice(CostAmount.of(record.getPrev_CurrentCostPriceLL(), currencyId))
+								.uomId(UomId.ofRepoId(productUOM.getC_UOM_ID())) // TODO: introduce M_CostDetail.Prev_CurrentQty_UOM_ID
+								.build())
+						.qty(Quantity.of(record.getPrev_CurrentQty(), productUOM))
+						.cumulatedAmt(CostAmount.of(record.getPrev_CumulatedAmt(), currencyId))
+						.cumulatedQty(Quantity.of(record.getPrev_CumulatedQty(), productUOM))
+						.build())
 				.documentRef(extractDocumentRef(record))
 				.description(record.getDescription())
-				.dateAcct(record.getDateAcct().toInstant());
-
-		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(record.getSource_Currency_ID());
-		final BigDecimal sourceAmt = record.getSourceAmt();
-
-		if (sourceCurrencyId != null && sourceAmt != null)
-		{
-			costDetailBuilder.sourceAmt(CostAmount.of(sourceAmt, sourceCurrencyId));
-		}
-
-		return costDetailBuilder
+				.dateAcct(record.getDateAcct().toInstant())
 				.build();
 	}
 

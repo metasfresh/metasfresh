@@ -156,12 +156,11 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final I_M_InOutLine receiptLine = inoutBL.getLineByIdInTrx(receipLineId);
 		final I_C_OrderLine orderLine = receiptLine.getC_OrderLine();
 		final CostAmount amtConv;
-		final CostAmount sourceAmt;
 		if (orderLine != null)
 		{
 			final InOutId receiptId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
 			final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
-			sourceAmt = getCostAmountInSourceCurrency(orderLine, request.getQty());
+			final CostAmount sourceAmt = getCostAmountInSourceCurrency(orderLine, request.getQty());
 			amtConv = utils.convertToAcctSchemaCurrency(sourceAmt, () -> currencyConversionContext, request.getAcctSchemaId());
 		}
 		else
@@ -170,12 +169,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			final CostAmount amt = currentCostPrice.multiply(request.getQty());
 			// NOTE: expect conversion to do nothing because the current cost price shall already be in accounting currency
 			amtConv = utils.convertToAcctSchemaCurrency(amt, request);
-			// NOTE: no Source Amount in this case
-			sourceAmt = null;
 		}
 
 		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmtAndSourceAmt(amtConv, sourceAmt),
+				request.withAmount(amtConv),
 				CostDetailPreviousAmounts.of(currentCost));
 	}
 

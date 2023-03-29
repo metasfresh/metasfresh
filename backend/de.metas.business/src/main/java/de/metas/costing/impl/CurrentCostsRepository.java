@@ -315,10 +315,10 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		cost.setC_Currency_ID(from.getCurrencyId().getRepoId());
 		cost.setC_UOM_ID(from.getUomId().getRepoId());
 
-		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().getValue());
-		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().getValue());
+		cost.setCurrentCostPrice(from.getCostPrice().getOwnCostPrice().toBigDecimal());
+		cost.setCurrentCostPriceLL(from.getCostPrice().getComponentsCostPrice().toBigDecimal());
 		cost.setCurrentQty(from.getCurrentQty().toBigDecimal());
-		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
+		cost.setCumulatedAmt(from.getCumulatedAmt().toBigDecimal());
 		cost.setCumulatedQty(from.getCumulatedQty().toBigDecimal());
 	}
 

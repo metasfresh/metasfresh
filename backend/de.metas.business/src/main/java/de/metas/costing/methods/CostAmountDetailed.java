@@ -32,7 +32,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 @Value
 
@@ -76,14 +75,6 @@ public class CostAmountDetailed
 			default:
 				throw new AdempiereException("Unknown type: " + type);
 		}
-	}
-
-	@Nullable
-	public static CostAmountDetailed ofNullableAmtAndType(@Nullable final CostAmount amt, @NonNull final CostAmountType type)
-	{
-		return Optional.ofNullable(amt)
-				.map(amount -> ofAmtAndType(amount, type))
-				.orElse(null);
 	}
 
 	public CostAmountDetailed add(@NonNull final CostAmountDetailed amtToAdd)
