@@ -26,16 +26,17 @@ public class M_ShipperTransportation
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	public M_ShipperTransportation(
+			@NonNull final DeliveryPlanningService deliveryPlanningService)
+	{
+		this.deliveryPlanningService = deliveryPlanningService;
+	}
+
 	@Init
 	public void onInit()
 	{
 		// Setup event bus topics on which client notification listener shall subscribe
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(DeliveryInstructionUserNotificationsProducer.EVENTBUS_TOPIC);
-	}
-
-	public M_ShipperTransportation(@NonNull final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)

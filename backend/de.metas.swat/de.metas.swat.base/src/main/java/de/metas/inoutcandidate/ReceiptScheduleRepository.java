@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -71,7 +71,13 @@ public class ReceiptScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final ModelCacheInvalidationService cacheInvalidationService;
+
+	public ReceiptScheduleRepository(
+			@NonNull final ModelCacheInvalidationService cacheInvalidationService)
+	{
+		this.cacheInvalidationService = cacheInvalidationService;
+	}
 
 	public List<ReceiptSchedule> getBy(@NonNull final ReceiptScheduleQuery query)
 	{
@@ -156,7 +162,7 @@ public class ReceiptScheduleRepository
 
 		cacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRepoIdAwares(I_M_ReceiptSchedule.Table_Name, receiptScheduleIds),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void saveAll(@NonNull final ImmutableCollection<ReceiptSchedule> receiptSchedules)

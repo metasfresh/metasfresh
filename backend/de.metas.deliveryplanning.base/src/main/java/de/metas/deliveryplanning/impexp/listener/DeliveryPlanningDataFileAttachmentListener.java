@@ -28,8 +28,8 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.impexp.DeliveryPlanningDataId;
@@ -41,7 +41,6 @@ import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.process.AttachmentImportCommand;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -61,7 +60,7 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 	private final DeliveryPlanningDataService deliveryPlanningDataService = SpringContextHolder.instance.getBean(DeliveryPlanningDataService.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
-	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 
 	@Override
 	@NonNull
@@ -129,7 +128,7 @@ public class DeliveryPlanningDataFileAttachmentListener implements AttachmentLis
 		{
 			tryImport(deliveryPlanningDataId, attachmentEntry);
 			final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.allChildRecords(I_I_DeliveryPlanning_Data.Table_Name, tableRecordReference.getRecord_ID(), I_I_DeliveryPlanning.Table_Name);
-			modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.CHANGE);
+			modelCacheInvalidationService.invalidate(request, ModelCacheInvalidationTiming.AFTER_CHANGE);
 		}
 		catch (final Exception ex)
 		{
