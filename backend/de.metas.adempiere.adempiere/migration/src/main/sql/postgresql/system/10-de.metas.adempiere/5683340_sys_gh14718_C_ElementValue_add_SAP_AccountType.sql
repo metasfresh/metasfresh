@@ -63,3 +63,37 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET SeqNo=25,Updated=TO_TIMESTAMP('2023-03-30 13:48:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=616487
 ;
 
+
+-- Element: SAP_AccountType
+-- 2023-03-30T11:42:47.231Z
+UPDATE AD_Element_Trl SET Name='SAP-Kontotyp', PrintName='SAP-Kontotyp',Updated=TO_TIMESTAMP('2023-03-30 14:42:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582196 AND AD_Language='de_CH'
+;
+
+-- 2023-03-30T11:42:47.237Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582196,'de_CH')
+;
+
+-- Element: SAP_AccountType
+-- 2023-03-30T11:42:51.568Z
+UPDATE AD_Element_Trl SET Name='SAP-Kontotyp', PrintName='SAP-Kontotyp',Updated=TO_TIMESTAMP('2023-03-30 14:42:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582196 AND AD_Language='de_DE'
+;
+
+-- 2023-03-30T11:42:51.569Z
+UPDATE AD_Element SET Name='SAP-Kontotyp', PrintName='SAP-Kontotyp' WHERE AD_Element_ID=582196
+;
+
+-- 2023-03-30T11:42:52.210Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(582196,'de_DE')
+;
+
+-- 2023-03-30T11:42:52.215Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582196,'de_DE')
+;
+
+-- Element: SAP_AccountType
+-- 2023-03-30T11:43:18.770Z
+UPDATE AD_Element_Trl SET Name='SAP-Kontotyp', PrintName='SAP-Kontotyp',Updated=TO_TIMESTAMP('2023-03-30 14:43:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582196 AND AD_Language='nl_NL'
+;
+
+-- 2023-03-30T11:43:18.772Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582196,'nl_NL')
