@@ -38,8 +38,8 @@ import static org.junit.Assert.assertEquals;
 
 public class IssueRepositoryTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+	private IQueryBL queryBL;
+	private IssueRepository issueRepository;
 
 	private IssueEntity MOCK_ISSUE_ENTITY;
 
@@ -47,7 +47,8 @@ public class IssueRepositoryTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
-
+		queryBL = Services.get(IQueryBL.class);
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 		MOCK_ISSUE_ENTITY = IssueTestHelper.createMockIssueEntity();
 	}
 
