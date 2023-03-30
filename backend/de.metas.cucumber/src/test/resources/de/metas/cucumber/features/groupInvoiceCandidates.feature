@@ -728,6 +728,10 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 10               |
 
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.NetAmtToInvoice |
+      | invoiceCand_SO                    | 20                  |
+
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_SO                    |
@@ -819,6 +823,11 @@ Feature: Group invoices and credit memos into a single document
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 10               |
+
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.NetAmtToInvoice |
+      | invoiceCand_SO                    | 20                  |
+
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_SO                    |
@@ -911,6 +920,11 @@ Feature: Group invoices and credit memos into a single document
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 10               |
+
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.NetAmtToInvoice |
+      | invoiceCand_SO                    | 20                  |
+
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_SO                    |
