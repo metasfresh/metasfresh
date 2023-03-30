@@ -20,6 +20,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostElementType;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
@@ -299,21 +300,29 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
-		return request.isAllMaterialCostElements()
-				? getMaterialCostingMethods(request.getClientId())
-				: ImmutableList.of(request.getCostElement());
+		if (request.isExplicitCostElement())
+		{
+			return ImmutableList.of(request.getCostElement());
+		}
+		else if (request.getDocumentRef().isMatchInv())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
+		else if (request.isOutbound())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
+		}
+		else // inbound
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
 	}
 
 	private List<CostElement> extractCostElements(final MoveCostsRequest request)
 	{
-		return request.isAllMaterialCostElements()
-				? getMaterialCostingMethods(request.getClientId())
-				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
-	}
-
-	private List<CostElement> getMaterialCostingMethods(@NonNull final ClientId clientId)
-	{
-		return costElementsRepo.getMaterialCostingMethods(clientId);
+		return request.isExplicitCostElement()
+				? ImmutableList.of(Objects.requireNonNull(request.getCostElement()))
+				: costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
 	}
 
 	private Set<CostingMethodHandler> getCostingMethodHandlers(@NonNull final CostingMethod costingMethod)

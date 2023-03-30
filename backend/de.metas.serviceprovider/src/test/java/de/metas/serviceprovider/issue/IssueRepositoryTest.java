@@ -47,7 +47,10 @@ public class IssueRepositoryTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1a940fd4cc8 (Costing: for outbound costs consider Material and Overhead cost elements too (#15022))
 		queryBL = Services.get(IQueryBL.class);
 		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 		MOCK_ISSUE_ENTITY = IssueTestHelper.createMockIssueEntity();
