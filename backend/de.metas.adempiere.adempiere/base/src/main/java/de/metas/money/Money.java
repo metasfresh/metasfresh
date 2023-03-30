@@ -353,6 +353,11 @@ public class Money implements Comparable<Money>
 		return withValue(precision.round(this.value));
 	}
 
+	public Money roundIfNeeded(@NonNull final CurrencyPrecision precision)
+	{
+		return withValue(precision.roundIfNeeded(this.value));
+	}
+
 	public Money round(@NonNull final Function<CurrencyId, CurrencyPrecision> precisionProvider)
 	{
 		final CurrencyPrecision precision = precisionProvider.apply(currencyId);

@@ -147,7 +147,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		if (orderLine != null)
 		{
 			final InOutId receiptId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
-			CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
+			final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
 			amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
 		}
 		else
@@ -476,21 +476,28 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		utils.saveCurrentCost(currentCosts);
 	}
 
+	@NonNull
 	private CostAmount getCostAmountInAcctCurrency(
 			@NonNull final I_C_OrderLine orderLine,
 			@NonNull final Quantity qty,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CurrencyConversionContext currencyConversionContext)
 	{
-		final ProductPrice costPriceConv = utils.convertToUOM(
-				orderLineBL.getCostPrice(orderLine),
-				qty.getUomId());
-
-		final CostAmount amt = CostAmount.ofProductPrice(costPriceConv).multiply(qty);
+		final CostAmount amt = getCostAmountInSourceCurrency(orderLine, qty);
 
 		return utils.convertToAcctSchemaCurrency(
 				amt,
 				() -> currencyConversionContext,
 				acctSchemaId);
+	}
+
+	@NonNull
+	private CostAmount getCostAmountInSourceCurrency(@NonNull final I_C_OrderLine orderLine, @NonNull final Quantity qty)
+	{
+		final ProductPrice costPriceConv = utils.convertToUOM(
+				orderLineBL.getCostPrice(orderLine),
+				qty.getUomId());
+
+		return CostAmount.ofProductPrice(costPriceConv).multiply(qty);
 	}
 }
