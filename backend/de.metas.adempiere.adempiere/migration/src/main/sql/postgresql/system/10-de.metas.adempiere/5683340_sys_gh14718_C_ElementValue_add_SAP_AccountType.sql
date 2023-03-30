@@ -97,3 +97,4 @@ UPDATE AD_Element_Trl SET Name='SAP-Kontotyp', PrintName='SAP-Kontotyp',Updated=
 
 -- 2023-03-30T11:43:18.772Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582196,'nl_NL')
+;
