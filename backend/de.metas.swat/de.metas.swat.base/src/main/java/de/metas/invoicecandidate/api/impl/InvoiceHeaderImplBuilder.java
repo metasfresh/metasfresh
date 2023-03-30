@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.forex.ForexContractRef;
 import de.metas.impex.InputDataSourceId;
@@ -41,6 +42,10 @@ import java.util.Set;
 public class InvoiceHeaderImplBuilder
 {
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
+
+	private boolean isTakeDocTypeFromPool = false;
+
+	private DocTypeId docTypeInvoiceId = null;
 
 	private final Set<String> POReferences = new HashSet<>();
 
@@ -116,7 +121,9 @@ public class InvoiceHeaderImplBuilder
 
 		// Document Type
 		invoiceHeader.setDocTypeInvoicingPoolId(getDocTypeInvoicingPoolId());
+		invoiceHeader.setDocTypeInvoiceId(getDocTypeInvoiceId());
 		invoiceHeader.setIsSOTrx(isSOTrx());
+		invoiceHeader.setIsTakeDocTypeFromPool(isTakeDocTypeFromPool());
 
 		// Pricing and currency
 		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
@@ -221,6 +228,36 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+
+	@Nullable
+	public DocTypeId getDocTypeInvoiceId()
+	{
+		return docTypeInvoiceId;
+	}
+
+	public void setDocTypeInvoiceId(final DocTypeId docTypeInvoiceId, final boolean isEnforceUnique)
+	{
+		if (this.docTypeInvoiceId != null && !DocTypeId.equals(this.docTypeInvoiceId,docTypeInvoiceId))
+		{
+			if (isEnforceUnique)
+			{
+				throw new AdempiereException("DocTypeInvoiceIds do not match!")
+						.appendParametersToMessage()
+						.setParameter("this.docTypeInvoiceId", this.docTypeInvoiceId)
+						.setParameter("docTypeInvoiceId", docTypeInvoiceId);
+			}
+
+			else
+			{
+				this.isTakeDocTypeFromPool = true;
+			}
+		}
+
+		else
+		{
+			this.docTypeInvoiceId = docTypeInvoiceId;
+		}
 	}
 
 	public String getPOReference()
@@ -431,6 +468,17 @@ public class InvoiceHeaderImplBuilder
 	public void setIsSOTrx(final boolean isSOTrx)
 	{
 		this.isSOTrx = checkOverrideBoolean("IsSOTrx", this.isSOTrx, isSOTrx);
+	}
+
+
+	public boolean isTakeDocTypeFromPool()
+	{
+		return isTakeDocTypeFromPool;
+	}
+
+	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
+	{
+		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
 	}
 
 	public int getM_InOut_ID()
@@ -658,4 +706,5 @@ public class InvoiceHeaderImplBuilder
 	{
 		C_PaymentInstruction_ID = c_PaymentInstruction_ID;
 	}
+
 }
