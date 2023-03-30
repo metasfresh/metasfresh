@@ -304,6 +304,10 @@ public class CostingService implements ICostingService
 		{
 			return ImmutableList.of(request.getCostElement());
 		}
+		else if (request.getDocumentRef().isMatchInv())
+		{
+			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material);
+		}
 		else if (request.isOutbound())
 		{
 			return costElementsRepo.getByTypes(request.getClientId(), CostElementType.Material, CostElementType.Overhead);
@@ -327,7 +331,7 @@ public class CostingService implements ICostingService
 		if (costingMethodHandlers.isEmpty())
 		{
 			throw new AdempiereException("No " + CostingMethodHandler.class.getName() + " found for " + costingMethod
-					+ ". Available costing methods are: " + this.costingMethodHandlers.keySet());
+												 + ". Available costing methods are: " + this.costingMethodHandlers.keySet());
 		}
 		return costingMethodHandlers;
 	}
@@ -572,9 +576,9 @@ public class CostingService implements ICostingService
 
 		//
 		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
-				.qty(currentCost.getCurrentQty())
-				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
-				.build());
+												  .qty(currentCost.getCurrentQty())
+												  .costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
+												  .build());
 
 		//
 		return result.build();
