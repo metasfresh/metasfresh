@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -366,6 +367,27 @@ public interface I_C_Project_WO_Resource
 
 	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_IsAllDay = new ModelColumn<>(I_C_Project_WO_Resource.class, "IsAllDay", null);
 	String COLUMNNAME_IsAllDay = "IsAllDay";
+
+	/**
+	 * Set Resolved hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setResolvedHours (int ResolvedHours);
+
+	/**
+	 * Get Resolved hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getResolvedHours();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ResolvedHours = new ModelColumn<>(I_C_Project_WO_Resource.class, "ResolvedHours", null);
+	String COLUMNNAME_ResolvedHours = "ResolvedHours";
 
 	/**
 	 * Set Resource.

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.status.RStatusService;
 import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
@@ -47,14 +48,17 @@ import lombok.NonNull;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 import static de.metas.project.ProjectConstants.DEFAULT_WO_CALENDAR_ENTRY_COLOR;
+import static org.apache.commons.lang3.math.NumberUtils.min;
 
 @Service
 public class WOProjectService
@@ -63,17 +67,20 @@ public class WOProjectService
 	private final WOProjectResourceRepository woProjectResourceRepository;
 	private final WOProjectStepRepository woProjectStepRepository;
 	private final RStatusService statusService;
+	private final ProjectTypeRepository projectTypeRepository;
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
 			final WOProjectResourceRepository woProjectResourceRepository,
 			final WOProjectStepRepository woProjectStepRepository,
-			final RStatusService statusService)
+			final RStatusService statusService,
+			final ProjectTypeRepository projectTypeRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
 		this.woProjectStepRepository = woProjectStepRepository;
 		this.statusService = statusService;
+		this.projectTypeRepository = projectTypeRepository;
 	}
 
 	@NonNull
@@ -211,5 +218,54 @@ public class WOProjectService
 		return Optional.ofNullable(woProject.getStatusId())
 				.map(statusService::getCalendarColorForStatus)
 				.orElse(DEFAULT_WO_CALENDAR_ENTRY_COLOR);
+	}
+
+	@NonNull
+	public Optional<ProjectId> getParentProjectId(@NonNull final ProjectId projectId)
+	{
+		return Optional.ofNullable(getById(projectId).getProjectParentId());
+	}
+
+	public boolean isReservationOrder(@NonNull final ProjectId projectId)
+	{
+		final WOProject project = getById(projectId);
+
+		return projectTypeRepository.isReservationOrder(project.getProjectTypeId());
+	}
+
+	public boolean hasResourcesAssigned(@NonNull final ProjectId projectId)
+	{
+		return woProjectResourceRepository.existsResourcesForProject(projectId);
+	}
+
+	public void allocateHoursToResources(
+			@NonNull final Integer hoursToResolve,
+			@NonNull final Stream<WOProjectResourceId> resourceIdsStream)
+	{
+		resourceIdsStream.forEach(
+				resourceId -> {
+					final WOProjectResource woProjectResource = woProjectResourceRepository.getById(resourceId);
+
+					final Duration toResolve = woProjectResource.getResolvedHours()
+							.plusHours(min(woProjectResource.getUnresolvedHours().toHours(), hoursToResolve));
+
+					woProjectResourceRepository.updateAll(ImmutableList.of(woProjectResource.toBuilder()
+																		.resolvedHours(toResolve)
+																		.build()));
+				}
+		);
+	}
+
+	public void resetAllocatedHours(@NonNull final Stream<WOProjectResourceId> resourceIdsStream)
+	{
+		resourceIdsStream.forEach(
+				resourceId -> {
+					final WOProjectResource woProjectResource = woProjectResourceRepository.getById(resourceId);
+
+					woProjectResourceRepository.updateAll(ImmutableList.of(woProjectResource.toBuilder()
+																		.resolvedHours(Duration.ZERO)
+																		.build()));
+				}
+		);
 	}
 }

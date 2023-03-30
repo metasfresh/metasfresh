@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,39 +20,22 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.ui.web.view.descriptor;
 
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.organization.ClientAndOrgId;
-import lombok.Builder;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
-import javax.annotation.Nullable;
-
-import static de.metas.project.ProjectConstants.RESERVATION_PROJECT_TYPE;
-
-@Value
-@Builder
-public class ProjectType
+@UtilityClass
+public class RelatedProcessDescriptorUtil
 {
 	@NonNull
-	ClientAndOrgId clientAndOrgId;
-
-	@NonNull
-	ProjectTypeId id;
-
-	@NonNull
-	ProjectCategory projectCategory;
-
-	@NonNull
-	String name;
-
-	@Nullable
-	DocSequenceId docSequenceId;
-
-	public boolean isReservation()
+	public RelatedProcessDescriptor createRelatedProcessDescriptor(@NonNull final IADProcessDAO adProcessDAO, @NonNull final Class<?> processClass)
 	{
-		return name.equals(RESERVATION_PROJECT_TYPE);
+		return RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
+				.build();
 	}
 }

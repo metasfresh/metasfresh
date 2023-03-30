@@ -54,6 +54,8 @@ public class CalendarQuery
 	@Nullable Instant startDate;
 	@Nullable Instant endDate;
 
+	boolean skipAllocatedResources;
+
 	public boolean isMatchingSimulationId(@Nullable final SimulationPlanId simulationId)
 	{
 		return SimulationPlanId.equals(this.simulationId, simulationId);
