@@ -162,6 +162,7 @@ public class CostingService implements ICostingService
 		}
 	}
 
+	@NonNull
 	private static AggregatedCostAmount toAggregatedCostAmount(final List<CostDetailCreateResult> costElementResults)
 	{
 		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
