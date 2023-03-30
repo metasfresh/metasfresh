@@ -136,7 +136,7 @@ public class CostDetailCreateRequest
 
 	public boolean isOutbound()
 	{
-		return getQty().signum() < 0;
+		return getQty().signum() < 0 && !isReversal();
 	}
 
 	public CostDetailCreateRequest withAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
