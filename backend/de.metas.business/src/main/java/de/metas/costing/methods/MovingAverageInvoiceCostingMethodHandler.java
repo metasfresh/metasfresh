@@ -148,8 +148,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		{
 			final InOutId receiptId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
 			final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(receiptId);
-			final CostAmount sourceAmt = getCostAmountInSourceCurrency(orderLine, request.getQty());
-			amtConv = utils.convertToAcctSchemaCurrency(sourceAmt, () -> currencyConversionContext, request.getAcctSchemaId());
+			amtConv = getCostAmountInAcctCurrency(orderLine, request.getQty(), request.getAcctSchemaId(), currencyConversionContext);
 		}
 		else
 		{
