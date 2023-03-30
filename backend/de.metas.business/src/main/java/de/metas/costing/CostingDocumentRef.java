@@ -166,6 +166,11 @@ public class CostingDocumentRef
 
 	public boolean isCostRevaluationLine() {return isTableName(TABLE_NAME_M_CostRevaluationLine);}
 
+	public boolean isMatchInv()
+	{
+		return isTableName(TABLE_NAME_M_MatchInv);
+	}
+
 	public PPCostCollectorId getCostCollectorId()
 	{
 		return getId(PPCostCollectorId.class);
