@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.cache.CacheMgt;
 import de.metas.document.engine.DocStatus;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.InOutId;
@@ -56,7 +55,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.model.I_M_Delivery_Planning_Delivery_Instructions_V;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
@@ -477,13 +475,11 @@ public class DeliveryPlanningRepository
 
 		saveRecord(shippingPackageRecord);
 
-		CacheMgt.get().reset(I_M_Delivery_Planning_Delivery_Instructions_V.Table_Name, shippingPackageRecord.getM_ShippingPackage_ID());
-
 		return deliveryInstructionRecord;
 	}
 
 	public void updateDeliveryPlanningFromInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId,
-			@NonNull final I_M_ShipperTransportation deliveryInstruction)
+													  @NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = getById(deliveryPlanningId);
 		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo());

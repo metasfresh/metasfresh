@@ -12,7 +12,7 @@ import de.metas.banking.payment.InvoiceMatchingMode;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
@@ -58,7 +58,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private static final Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
-	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	private boolean _configurable = true;
@@ -617,7 +617,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_PaySelection.Table_Name, paySelectionId),
 						CacheInvalidateRequest.allChildRecords(I_C_PaySelection.Table_Name, paySelectionId, I_C_PaySelectionLine.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	private boolean isOnlyDiscount()

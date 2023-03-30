@@ -33,7 +33,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
@@ -187,7 +187,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final transient ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -2121,13 +2121,13 @@ public class FlatrateBL implements IFlatrateBL
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, oldFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.of(
 						CacheInvalidateRequest.rootRecord(I_C_Flatrate_Data.Table_Name, newFlatrateDataId),
 						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, newFlatrateDataId, I_C_Flatrate_Term.Table_Name)),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 
 	}
 

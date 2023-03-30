@@ -19,9 +19,9 @@ package org.compiere.model;
 import de.metas.ad_reference.ADRefList;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.POCacheSourceModel;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -2949,6 +2949,22 @@ public abstract class PO
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
 		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
+		//
+		// Create cache invalidation request
+		if(p_info.isSingleKeyColumnName())
+		{
+			try
+			{
+				final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+				final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.BEFORE_NEW : ModelCacheInvalidationTiming.BEFORE_CHANGE;
+				cacheInvalidationService.invalidateForModel(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on before new/change failed for {}. Ignored.", this, ex);
+			}
+		}
+
 		// Save
 		if (newRecord)
 		{
@@ -3032,6 +3048,15 @@ public abstract class PO
 					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
 
+		//
+		// Create cache invalidation request
+		// (we have to do it here, before we reset all fields)
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final ModelCacheInvalidationTiming cacheInvalidationTiming = newRecord ? ModelCacheInvalidationTiming.AFTER_NEW : ModelCacheInvalidationTiming.AFTER_CHANGE;
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+						? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), cacheInvalidationTiming)
+						: null;
+
 		final int columnsCount = p_info.getColumnCount();
 
 		// OK
@@ -3083,13 +3108,11 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		if (p_info.isSingleKeyColumnName())
+		if (cacheInvalidateRequest != null)
 		{
 			try
 			{
-				services.invalidateForModel(
-						POCacheSourceModel.of(this),
-						newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, cacheInvalidationTiming);
 			}
 			catch (final Exception ex)
 			{
@@ -3097,10 +3120,9 @@ public abstract class PO
 			}
 		}
 
-		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
-
 		if (get_ID() > 0)
 		{
+			final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
 			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
 		}
 
@@ -4122,6 +4144,15 @@ public abstract class PO
 		PO_Record.deleteCascade(AD_Table_ID, Record_ID, trxName);
 
 		//
+		// Create cache invalidation request
+		// We have to do it here, before we actually delete in case we have to compute what rows are "disappearing" from a view because this record was deleted.
+		final ModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName()
+				? cacheInvalidationService.createRequestOrNull(CacheSourceModelFactory.ofPO(this), ModelCacheInvalidationTiming.AFTER_DELETE)
+				: null;
+
+
+		//
 		// Execute SQL DELETE
 		final StringBuilder sql = new StringBuilder("DELETE FROM ")
 				.append(p_info.getTableName())
@@ -4143,15 +4174,6 @@ public abstract class PO
 
 		// Save ID
 		m_idOld = get_ID();
-
-		//
-		// Create cache invalidation request
-		// (we have to do it here, before we reset all fields)
-		final IModelCacheInvalidationService cacheInvalidationService = services.cacheInvalidationService();
-		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
-				p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequestOrNull(POCacheSourceModel.of(this), ModelCacheInvalidationTiming.DELETE)
-						: null;
 
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
@@ -4190,7 +4212,7 @@ public abstract class PO
 		{
 			try
 			{
-				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.AFTER_DELETE);
 			}
 			catch (final Exception ex)
 			{
