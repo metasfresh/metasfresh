@@ -1,5 +1,6 @@
 package de.metas.ui.web.menu.datatypes.json;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,6 +16,23 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+=======
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.ui.web.menu.MenuNode;
+import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+>>>>>>> a719bfa4a0d (webui menu: hide empty groups)
 
 /*
  * #%L
@@ -42,10 +60,14 @@ import java.util.Objects;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class JSONMenuNode
 {
+<<<<<<< HEAD
 	public static JSONMenuNode ofPath(
 			final List<MenuNode> path,
 			final boolean includeLastNode,
 			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+=======
+	public static JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+>>>>>>> a719bfa4a0d (webui menu: hide empty groups)
 	{
 		if (path == null || path.isEmpty())
 		{
@@ -117,9 +139,20 @@ public class JSONMenuNode
 			maxLeafNodes.decrementAndGet();
 		}
 
-		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+
+		// Avoid empty groups, makes no sense and looks ugly to show them to user.
+		if (jsonNode.isEmptyGroup())
+		{
+			return null;
 	}
 
+<<<<<<< HEAD
+=======
+		return jsonNode;
+	}
+
+>>>>>>> a719bfa4a0d (webui menu: hide empty groups)
 	public static Builder builder(final MenuNode node)
 	{
 		return new Builder(node);
@@ -223,6 +256,11 @@ public class JSONMenuNode
 	//
 	// -----------------
 	//
+
+	public boolean isEmptyGroup()
+	{
+		return JSONMenuNodeType.group.equals(type) && isLeaf();
+	}
 
 	public static final class Builder
 	{
