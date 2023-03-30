@@ -124,14 +124,19 @@ public class CostDetailCreateRequest
 		return getCostElement().getId();
 	}
 
-	public boolean isAllMaterialCostElements()
+	public boolean isExplicitCostElement()
 	{
-		return costElement == null;
+		return costElement != null;
 	}
 
 	public boolean isReversal()
 	{
 		return getInitialDocumentRef() != null;
+	}
+
+	public boolean isOutbound()
+	{
+		return getQty().signum() < 0 && !isReversal();
 	}
 
 	public CostDetailCreateRequest withAcctSchemaId(@NonNull final AcctSchemaId acctSchemaId)
@@ -238,7 +243,7 @@ public class CostDetailCreateRequest
 				.description(getDescription())
 				.dateAcct(getDate());
 
-		if (!isAllMaterialCostElements())
+		if (isExplicitCostElement())
 		{
 			costDetail.costElementId(getCostElementId());
 		}
