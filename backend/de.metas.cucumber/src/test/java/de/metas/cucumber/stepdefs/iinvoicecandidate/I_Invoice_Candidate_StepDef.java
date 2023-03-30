@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -56,7 +57,9 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -73,6 +76,8 @@ public class I_Invoice_Candidate_StepDef
 	private final AD_Org_StepDefData orgTable;
 	private final C_Activity_StepDefData activityTable;
 
+	private final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -85,7 +90,8 @@ public class I_Invoice_Candidate_StepDef
 			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_UOM_StepDefData uomTable,
 			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final C_Activity_StepDefData activityTable)
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable)
 	{
 		this.iInvoiceCandidateTable = iInvoiceCandidateTable;
 		this.bpartnerTable = bpartnerTable;
@@ -96,6 +102,7 @@ public class I_Invoice_Candidate_StepDef
 		this.uomTable = uomTable;
 		this.orgTable = orgTable;
 		this.activityTable = activityTable;
+		this.iInvoiceCandidateListTable = iInvoiceCandidateListTable;
 	}
 
 	@And("I_Invoice_Candidate is found: searching by product value")
@@ -104,6 +111,49 @@ public class I_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			validateCreatedIInvoiceCandidate(row);
+		}
+	}
+
+	@And("^multiple I_Invoice_Candidate records are found after not more than (.*)s: searching by bill partner value$")
+	public void load_I_Invoice_Candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final Supplier<Boolean> recordsFound = () -> {
+				final String billBPartnerValue = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value);
+
+				final List<I_I_Invoice_Candidate> invoiceCandidates = queryBL.createQueryBuilder(I_I_Invoice_Candidate.class)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value, billBPartnerValue)
+						.orderByDescending(I_I_Invoice_Candidate.COLUMNNAME_Created)
+						.create()
+						.list(I_I_Invoice_Candidate.class);
+
+				if (invoiceCandidates == null)
+				{
+					return false;
+				}
+				if (invoiceCandidates.size() == 0)
+				{
+					return false;
+				}
+
+				final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.CandidateBatchSize");
+				if (numberOfCandidates != null)
+				{
+					if (invoiceCandidates.size() != numberOfCandidates)
+					{
+						return false;
+					}
+				}
+
+				final String iInvoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+				iInvoiceCandidateListTable.putOrReplace(iInvoiceCandidateIdentifier, invoiceCandidates);
+
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 1000, recordsFound);
 		}
 	}
 

@@ -23,8 +23,12 @@
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -41,8 +45,10 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_List_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
@@ -71,6 +77,8 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
+import de.metas.rest_api.invoicecandidates.v2.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.v2.request.JsonInvoiceCandidateReference;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -116,10 +124,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -136,6 +147,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
@@ -178,6 +190,8 @@ public class C_Invoice_Candidate_StepDef
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
@@ -198,6 +212,10 @@ public class C_Invoice_Candidate_StepDef
 	private final S_Issue_StepDefData issueTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Activity_StepDefData activityTable;
+	private final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable;
+	private final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable;
+
+	private final TestContext testContext;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -219,7 +237,10 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil,
 			@NonNull final S_Issue_StepDefData issueTable,
 			@NonNull final C_Project_StepDefData projectTable,
-			@NonNull final C_Activity_StepDefData activityTable)
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final C_Invoice_Candidate_List_StepDefData invoiceCandidateListTable,
+			@NonNull final I_Invoice_Candidate_List_StepDefData iInvoiceCandidateListTable,
+			@NonNull final TestContext testContext)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -241,6 +262,9 @@ public class C_Invoice_Candidate_StepDef
 		this.projectTable = projectTable;
 		this.activityTable = activityTable;
 		this.shipmentTable = shipmentTable;
+		this.invoiceCandidateListTable = invoiceCandidateListTable;
+		this.iInvoiceCandidateListTable = iInvoiceCandidateListTable;
+		this.testContext = testContext;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -889,7 +913,11 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			updateInvoiceCandidates(tableRow);
+			final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
+
+			updateInvoiceCandidates(tableRow, invoiceCandidateRecord);
 		}
 	}
 
@@ -951,11 +979,57 @@ public class C_Invoice_Candidate_StepDef
 		assertThat(invoiceCandidateInOutLine).isNull();
 	}
 
-	private void updateInvoiceCandidates(@NonNull final Map<String, String> row)
+	@And("^locate invoice candidate list by record reference after (.*)s:$")
+	public void locate_invoice_candidate_list_by_record_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			final Supplier<Boolean> invoiceCandidatesFound = () -> {
+				final String iInvoiceCandListIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+				final List<I_I_Invoice_Candidate> iIInvoiceCandidateList = iInvoiceCandidateListTable.get(iInvoiceCandListIdentifier);
 
-		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
+				final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
+
+				for (final I_I_Invoice_Candidate iIInvoiceCandidate : iIInvoiceCandidateList)
+				{
+					final String tableName = DataTableUtil.extractStringForColumnName(row, "TableName");
+
+					if (tableName.equals(I_I_Invoice_Candidate.Table_Name))
+					{
+						final int tableId = tableDAO.retrieveTableId(tableName);
+						final TableRecordReference recordReference = TableRecordReference.of(tableId, iIInvoiceCandidate.getI_Invoice_Candidate_ID());
+
+						final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.retrieveReferencing(recordReference);
+
+						if (!invoiceCandidateRecords.isEmpty())
+						{
+							invoiceCandidates.add(invoiceCandidateRecords.get(0));
+						}
+					}
+				}
+
+				final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.CandidateBatchSize");
+				if (numberOfCandidates != null)
+				{
+					if (invoiceCandidates.size() != numberOfCandidates)
+					{
+						return false;
+					}
+				}
+
+				final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+				invoiceCandidateListTable.putOrReplace(invoiceCandidateListIdentifier, invoiceCandidates);
+
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 1000, invoiceCandidatesFound);
+		}
+	}
+
+	private void updateInvoiceCandidates(@NonNull final Map<String, String> row, @NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
 
 		final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyToInvoice_Override);
 		final BigDecimal priceEnteredOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceEntered_Override);
@@ -965,6 +1039,7 @@ public class C_Invoice_Candidate_StepDef
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final BigDecimal qualityDiscountOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QualityDiscountPercent_Override);
 		final String docTypeInvoiceName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID + "." + I_C_DocType.COLUMNNAME_Name);
+		final String externalHeaderId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalHeaderId);
 
 		if (qtyToInvoiceOverride != null)
 		{
@@ -1012,6 +1087,11 @@ public class C_Invoice_Candidate_StepDef
 
 			assertThat(docTypeId).isNotNull();
 			invoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
+		}
+
+		if (Check.isNotBlank(externalHeaderId))
+		{
+			invoiceCandidateRecord.setExternalHeaderId(externalHeaderId);
 		}
 
 		saveRecord(invoiceCandidateRecord);
@@ -1160,6 +1240,130 @@ public class C_Invoice_Candidate_StepDef
 
 			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(icReferencedRecord);
 			assertThat(invoiceCandidates.isEmpty()).isTrue();
+		}
+	}
+
+	@And("update invoice candidate list")
+	public void update_invoice_candidate_list(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+
+			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidateListTable.get(invoiceCandidateListIdentifier);
+
+			invoiceCandidateList.forEach(invoiceCandidate -> updateInvoiceCandidates(tableRow, invoiceCandidate));
+		}
+	}
+
+	@And("update invoice candidate list with unique external header identifier")
+	public void update_invoice_candidate_external_header_identifier_list(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+
+			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidateListTable.get(invoiceCandidateListIdentifier);
+
+			final List<I_C_Invoice_Candidate> updatedList = new ArrayList<>();
+
+			for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidateList)
+			{
+				invoiceCandidate.setExternalHeaderId(UUID.randomUUID().toString());
+
+				InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+
+				updatedList.add(invoiceCandidate);
+			}
+
+			invoiceCandidateListTable.putOrReplace(invoiceCandidateListIdentifier, updatedList);
+		}
+	}
+
+	@And("build request payload to enqueue invoice candidate list for invoicing via API with DateInvoiced and set it to context")
+	public void enqueue_invoice_candidates_list_for_invoicing_via_API(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+			final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(tableRow, "OPT.DateInvoiced");
+
+			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidateListTable.get(invoiceCandidateListIdentifier);
+
+			final Function<String, JsonInvoiceCandidateReference> getInvoiceCandidateReference = (externalId) -> JsonInvoiceCandidateReference.builder()
+					.externalHeaderId(JsonExternalId.of(externalId))
+					.build();
+
+			final List<JsonInvoiceCandidateReference> invoiceCandidateReferences = invoiceCandidateList.stream()
+					.map(I_C_Invoice_Candidate::getExternalHeaderId)
+					.distinct()
+					.map(getInvoiceCandidateReference)
+					.collect(ImmutableList.toImmutableList());
+
+			final JsonEnqueueForInvoicingRequest enqueueForInvoicingRequest = JsonEnqueueForInvoicingRequest.builder()
+					.dateInvoiced(dateInvoiced != null ? dateInvoiced : LocalDate.now())
+					.dateAcct(dateInvoiced != null ? dateInvoiced : LocalDate.now())
+					.invoiceCandidates(invoiceCandidateReferences)
+					.build();
+
+			testContext.setRequestPayload(objectMapper.writeValueAsString(enqueueForInvoicingRequest));
+		}
+	}
+
+	@And("update invoice candidate list external header id")
+	public void update_invoice_candidate_list_external_header_id(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final String invoiceCanidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
+			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateListTable.get(invoiceCanidateListIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final String externalHeaderId = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalHeaderId);
+
+			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidates.stream()
+					.peek(invoiceCandidate -> {
+						if (invoiceCandidate.getM_Product_ID() == product.getM_Product_ID())
+						{
+							invoiceCandidate.setExternalHeaderId(externalHeaderId);
+							InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+						}
+					})
+					.collect(ImmutableList.toImmutableList());
+
+			invoiceCandidateListTable.putOrReplace(invoiceCanidateListIdentifier, invoiceCandidateList);
+		}
+	}
+
+	@And("^after not more than (.*)s check number of invoice candidates having external header id$")
+	public void check_number_of_invoice_candidates_having_external_header_id(final int timeoutSeconds, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			final Supplier<Boolean> invoiceCandidatesFound = () ->
+			{
+				final String externalHeaderId = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_ExternalHeaderId);
+				final int numberOfInvoiceCandidates = DataTableUtil.extractIntForColumnName(tableRow, "NumberOfCandidates");
+
+				final List<I_C_Invoice_Candidate> invoiceCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+						.addEqualsFilter(COLUMNNAME_ExternalHeaderId, externalHeaderId)
+						.create()
+						.list(I_C_Invoice_Candidate.class);
+
+				if (invoiceCandidates == null)
+				{
+					return false;
+				}
+				if (invoiceCandidates.size() != numberOfInvoiceCandidates)
+				{
+					return false;
+				}
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSeconds, 1000, invoiceCandidatesFound);
 		}
 	}
 

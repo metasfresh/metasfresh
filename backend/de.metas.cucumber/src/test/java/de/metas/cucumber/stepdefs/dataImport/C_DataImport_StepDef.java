@@ -39,7 +39,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -159,5 +162,24 @@ public class C_DataImport_StepDef
 				+ activityValue + ";";
 
 		testContext.setRequestPayload(payload.replaceAll("null", ""));
+	}
+
+	@And("store file content as requestBody in context")
+	public void store_file_content_requestBody_in_context(@NonNull final DataTable dataTable) throws IOException, IOException
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final String fileName = DataTableUtil.extractStringForColumnName(row, "FileName");
+
+ 		final InputStream inputStream = C_DataImport_StepDef.class.getClassLoader().getResourceAsStream(fileName);
+
+		if (inputStream != null)
+		{
+			final byte[] fileContentByteArray = new byte[inputStream.available()];
+
+			inputStream.read(fileContentByteArray);
+
+			testContext.setRequestPayload(new String(fileContentByteArray, StandardCharsets.UTF_8));
+		}
 	}
 }

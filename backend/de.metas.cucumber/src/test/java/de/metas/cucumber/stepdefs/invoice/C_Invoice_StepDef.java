@@ -117,6 +117,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -412,6 +413,68 @@ public class C_Invoice_StepDef
 			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
 
 			softly.assertAll();
+		}
+	}
+
+
+
+	@And("^locate invoice by external id after not more than (.*)s and validate$")
+	public void  locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final Supplier<Boolean> invoiceFound = () ->
+			{
+				final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+				final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NumberOfCandidates");
+				final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+
+				final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)
+						.addEqualsFilter(COLUMNNAME_ExternalId, externalId)
+						.create()
+						.firstOnlyOrNull(I_C_Invoice.class);
+
+				if (invoice == null)
+				{
+					return false;
+				}
+
+				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+				if (dateInvoiced != null)
+				{
+					final LocalDate expectedDateInvoiced = TimeUtil.asLocalDateTime(dateInvoiced).toLocalDate();
+					final LocalDate invoiceDateInvoiced = TimeUtil.asLocalDateTime(invoice.getDateInvoiced()).toLocalDate();
+
+					if (!invoiceDateInvoiced.equals(expectedDateInvoiced))
+					{
+						return false;
+					}
+					for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+					{
+						final LocalDate invoiceCandidateDateInvoiced = TimeUtil.asLocalDateTime(invoiceCandidate.getDateInvoiced()).toLocalDate();
+						if (!invoiceCandidateDateInvoiced.equals(expectedDateInvoiced))
+						{
+							return false;
+						}
+					}
+				}
+
+				if (numberOfCandidates != null)
+				{
+					if (invoiceCandidates.size() != numberOfCandidates)
+					{
+						return false;
+					}
+				}
+
+				final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+				invoiceTable.put(invoiceIdentifier, invoice);
+
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 2000, invoiceFound);
 		}
 	}
 
