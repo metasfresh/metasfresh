@@ -39,6 +39,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
 
@@ -119,6 +120,26 @@ public class C_DocType_StepDef
 		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
 		assertThat(docTypeRecord).isNotNull();
+
+
+		final String invoiceDocTypeIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID+ "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(invoiceDocTypeIdentifier))
+
+		{
+			final String invoiceDocTypeIdentifierValue = DataTableUtil.nullToken2Null(invoiceDocTypeIdentifier);
+			if (invoiceDocTypeIdentifierValue != null)
+			{
+				final I_C_DocType invoiceDocTypeRecord = docTypeTable.get(invoiceDocTypeIdentifier);
+				assertThat(invoiceDocTypeRecord).isNotNull();
+
+				docTypeRecord.setC_DocTypeInvoice_ID(invoiceDocTypeRecord.getC_DocType_ID());
+			}
+			else
+			{
+				docTypeRecord.setC_DocTypeInvoice_ID(0);
+			}
+		}
+
 
 		final String invoicingPoolIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_C_DocType_Invoicing_Pool_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(invoicingPoolIdentifier))
