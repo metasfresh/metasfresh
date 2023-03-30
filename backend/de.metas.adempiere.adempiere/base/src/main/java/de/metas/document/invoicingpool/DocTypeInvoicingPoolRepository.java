@@ -87,6 +87,7 @@ public class DocTypeInvoicingPoolRepository
 				.positiveAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoicingPoolRecord.getPositive_Amt_C_DocType_ID()))
 				.negativeAmountDocTypeId(DocTypeId.ofRepoId(docTypeInvoicingPoolRecord.getNegative_Amt_C_DocType_ID()))
 				.isSoTrx(SOTrx.ofBoolean(docTypeInvoicingPoolRecord.isSOTrx()))
+				.isOnDistinctICTypes(docTypeInvoicingPoolRecord.isOnDistinctICTypes())
 				.isActive(docTypeInvoicingPoolRecord.isActive())
 				.build();
 	}
