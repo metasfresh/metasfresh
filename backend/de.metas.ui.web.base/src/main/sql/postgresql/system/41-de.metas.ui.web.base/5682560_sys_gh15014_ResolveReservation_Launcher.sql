@@ -263,3 +263,12 @@ UPDATE AD_SQLColumn_SourceTableColumn SET FetchTargetRecordsMethod='S', Link_Col
 -- 2023-03-31T08:43:51.920Z
 UPDATE AD_SQLColumn_SourceTableColumn SET SQL_GetTargetRecordIdBySourceRecordId='select c_project_id from c_project where c_projecttype_id = 540007',Updated=TO_TIMESTAMP('2023-03-31 11:43:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540145
 ;
+
+-- 2023-03-31T08:43:51.920Z
+UPDATE AD_Process SET IsActive='N',Updated=TO_TIMESTAMP('2023-03-31 08:47:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585245
+;
+
+-- 2023-03-31T08:43:51.920Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET IsActive='N',Updated=TO_TIMESTAMP('2023-03-31 08:47:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585245 AND AD_Table_ID=203
+;
