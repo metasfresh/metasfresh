@@ -30,7 +30,7 @@ Feature: Invoice candidate separation based on header aggregation key validation
       | endCustomer_1 | ps_1_29032023                     |
 
   @from:cucumber
-  Scenario: Verify that when there are a lot of invoice candidates enqueued only one invoice is created per invoice candidate that has the same header aggregation key
+  Scenario: Verify that when there are a lot of invoice candidates enqueued only one invoice is created per invoice candidate with the same header aggregation key
     Given metasfresh contains M_Products:
       | Identifier         | Name               | Value                    |
       | product_1_29032023 | Product_1_29032023 | Product_1_Value_29032023 |
