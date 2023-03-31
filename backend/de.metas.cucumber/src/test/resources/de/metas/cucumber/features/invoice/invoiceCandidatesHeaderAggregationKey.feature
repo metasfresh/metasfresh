@@ -28,12 +28,6 @@ Feature: Invoice candidate separation based on header aggregation key validation
     And update C_BPartner:
       | Identifier    | OPT.M_PricingSystem_ID.Identifier |
       | endCustomer_1 | ps_1_29032023                     |
-    And load AD_ImpFormat:
-      | AD_ImpFormat_ID.Identifier | Name                     |
-      | importFormat               | Import Invoice Candidate |
-    And load AD_Org from AD_ImpFormat config:
-      | AD_Org_ID.Identifier | AD_ImpFormat_ID.Identifier | OrgCode.ImportRowFieldName |
-      | importFormatOrg      | importFormat               | Default Org Suchschlüssel  |
 
   @from:cucumber
   Scenario: Verify that when there are a lot of invoice candidates enqueued only one invoice is created per invoice candidate that has the same header aggregation key
@@ -94,7 +88,6 @@ Feature: Invoice candidate separation based on header aggregation key validation
     And add HTTP header
       | Key          | Value            |
       | Content-Type | application/json |
-      | Accept       | */*              |
 
     Then the metasfresh REST-API endpoint path 'api/v2/invoices/enqueueForInvoicing' receives a 'POST' request with the payload from context and responds with '202' status code
 
