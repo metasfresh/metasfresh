@@ -419,7 +419,7 @@ public class C_Invoice_StepDef
 
 
 	@And("^locate invoice by external id after not more than (.*)s and validate$")
-	public void  locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void   locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{

@@ -25,7 +25,7 @@ Feature: Invoice candidate separation based on header aggregation key validation
       | location_1_29032023      | DE          | addr 22      | 456        | locationCity_2 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier            | OPT.C_BPartner_Location_ID | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
-      | bpLocation_1_29032020 | 2873409                    | 1234567890123 | endCustomer_1_29032023   | location_1_29032023          | true         | true         |
+      | bpLocation_1_29032020 | 2873409                    | 2894678902567 | endCustomer_1_29032023   | location_1_29032023          | true         | true         |
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | OPT.AD_User_ID | Name            | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | endUser_1_29032023    | 2964590        | bpUser_29032023 | endCustomer_1_29032023       | bpLocation_1_29032020                 |
@@ -64,9 +64,6 @@ Feature: Invoice candidate separation based on header aggregation key validation
       | C_Invoice_Candidate_ID_List.Identifier | TableName           | I_Invoice_Candidate_ID_List.Identifier | OPT.CandidateBatchSize |
       | invoiceCandidateList_1                 | I_Invoice_Candidate | iInvoiceCandidateList_1                | 1000                   |
 
-    And update invoice candidate list
-      | C_Invoice_Candidate_ID_List.Identifier | OPT.InvoiceRule_Override |
-      | invoiceCandidateList_1                 | I                        |
     And update invoice candidate list external header id
       | C_Invoice_Candidate_ID_List.Identifier | M_Product_ID.Identifier | ExternalHeaderId            |
       | invoiceCandidateList_1                 | product_1_29032023      | externalHeaderId_1_29032023 |
@@ -83,7 +80,7 @@ Feature: Invoice candidate separation based on header aggregation key validation
       | externalHeaderId_4_29032023 | 200                |
       | externalHeaderId_5_29032023 | 200                |
 
-    When build request payload to enqueue invoice candidate list for invoicing via API with DateInvoiced and set it to context
+    When build request payload with DateInvoiced set to enqueue invoice candidates for invoicing via API and add it to context
       | C_Invoice_Candidate_ID_List.Identifier | OPT.DateInvoiced |
       | invoiceCandidateList_1                 | 2023-03-28       |
     And add HTTP header
