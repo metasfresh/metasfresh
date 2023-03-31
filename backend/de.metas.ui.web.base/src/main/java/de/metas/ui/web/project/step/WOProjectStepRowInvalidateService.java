@@ -57,7 +57,7 @@ public class WOProjectStepRowInvalidateService
 	@NonNull
 	private ImmutableList<WOProjectStepResourceRow> documentId2Row(@NonNull final ImmutableSet<WOProjectResourceId> woProjectResourceIds)
 	{
-		return woProjectStepResourceService.streamByResourceIds(woProjectResourceIds)
+		return woProjectStepResourceService.streamUnresolvedByResourceIds(woProjectResourceIds)
 				.map(WOProjectStepResourceRowsLoader::buildFromWOStepResource)
 				.collect(ImmutableList.toImmutableList());
 	}

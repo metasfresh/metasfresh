@@ -1900,3 +1900,16 @@ UPDATE AD_Process_Trl SET Description='Weist den ausgewählten Ressourcen eine b
 -- 2023-03-30T13:37:11.341Z
 UPDATE AD_Process_Trl SET Description='Weist den ausgewählten Ressourcen eine bestimmte Anzahl von Stunden zu.',Updated=TO_TIMESTAMP('2023-03-30 16:37:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585246
 ;
+
+-- 2023-03-31T06:43:30.568Z
+UPDATE AD_SQLColumn_SourceTableColumn SET Link_Column_ID=582994,Updated=TO_TIMESTAMP('2023-03-31 09:43:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540145
+;
+
+-- 2023-03-31T06:48:09.092Z
+UPDATE AD_SQLColumn_SourceTableColumn SET FetchTargetRecordsMethod='L', Link_Column_ID=1349, SQL_GetTargetRecordIdBySourceRecordId='',Updated=TO_TIMESTAMP('2023-03-31 09:48:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540145
+;
+
+-- 2023-03-31T06:49:00.330Z
+UPDATE AD_SQLColumn_SourceTableColumn SET Link_Column_ID=583243, Source_Table_ID=542161,Updated=TO_TIMESTAMP('2023-03-31 09:49:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540146
+;
+

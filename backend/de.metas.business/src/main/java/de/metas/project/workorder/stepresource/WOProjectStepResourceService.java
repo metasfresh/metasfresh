@@ -93,9 +93,10 @@ public class WOProjectStepResourceService
 	}
 
 	@NonNull
-	public Stream<WOProjectStepResource> streamByResourceIds(@NonNull final ImmutableSet<WOProjectResourceId> resourceIds)
+	public Stream<WOProjectStepResource> streamUnresolvedByResourceIds(@NonNull final ImmutableSet<WOProjectResourceId> resourceIds)
 	{
 		return resourceRepository.streamForResourceIds(resourceIds)
+				.filter(WOProjectResource::isNotFullyResolved)
 				.map(this::buildWOProjectStepResource);
 	}
 
