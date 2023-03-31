@@ -7,7 +7,11 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
+<<<<<<< HEAD
 import de.metas.project.ProjectType;
+=======
+import de.metas.project.ProjectTypeId;
+>>>>>>> 18f069d4c1e (Resolve reservations (#15038))
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
@@ -65,7 +69,7 @@ class WOProjectCalendarServiceTest
 		this.woProjectRepository = new WOProjectRepository();
 		final WOProjectResourceRepository woProjectResourceRepository = new WOProjectResourceRepository();
 		final RStatusRepository statusRepository = new RStatusRepository();
-		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), new RStatusService(statusRepository));
+		final WOProjectService woProjectService = new WOProjectService(woProjectRepository, woProjectResourceRepository, new WOProjectStepRepository(), new RStatusService(statusRepository), new ProjectTypeRepository());
 		final BudgetProjectService budgetProjectService = new BudgetProjectService(resourceService, budgetProjectRepository, new BudgetProjectResourceRepository());
 		final WOProjectSimulationRepository woProjectSimulationRepository = new WOProjectSimulationRepository();
 		final SimulationPlanRepository simulationPlanRepository = new SimulationPlanRepository();

@@ -200,6 +200,7 @@ public class WOProjectCalendarService implements CalendarService
 						.simulationId(calendarQuery.getSimulationId())
 						.startDate(calendarQuery.getStartDate())
 						.endDate(calendarQuery.getEndDate())
+						.skipAllocatedResources(calendarQuery.isSkipAllocatedResources())
 						//
 						.build().execute());
 		result.addAll(

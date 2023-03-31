@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,16 +20,22 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.ui.web.view.descriptor;
 
-import java.time.Duration;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
-public interface ProjectConstants
+@UtilityClass
+public class RelatedProcessDescriptorUtil
 {
-	Duration DEFAULT_DURATION = Duration.ofHours(1);
-
-	String DEFAULT_WO_CALENDAR_ENTRY_COLOR = "#FFCF60";
-	String DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR = "#89D72D";
-
-	String RESERVATION_PROJECT_TYPE = "Reservierungsauftrag";
+	@NonNull
+	public RelatedProcessDescriptor createRelatedProcessDescriptor(@NonNull final IADProcessDAO adProcessDAO, @NonNull final Class<?> processClass)
+	{
+		return RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
+				.build();
+	}
 }

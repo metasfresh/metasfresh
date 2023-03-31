@@ -122,8 +122,15 @@ class WorkOrderProjectRestServiceTest
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
 
+<<<<<<< HEAD
 		requestStatusCategory = newInstance(I_R_StatusCategory.class);
 		save(requestStatusCategory);
+=======
+		projectType = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
+		projectType.setProjectCategory(PROJECTCATEGORY_WorkOrderJob);
+		projectType.setName("projectTypeName");
+		InterfaceWrapperHelper.save(projectType);
+>>>>>>> 18f069d4c1e (Resolve reservations (#15038))
 
 		projectType = newInstance(I_C_ProjectType.class);
 		projectType.setProjectCategory(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob);
@@ -890,7 +897,7 @@ class WorkOrderProjectRestServiceTest
 	@Builder(builderMethodName = "createProjectWOObjectUnderTestRecord")
 	private I_C_Project_WO_ObjectUnderTest createProjectWOObjectUnderTest(
 			@NonNull final ProjectId projectId,
-			@NonNull final int numberOfObjectsUnderTest,
+			final int numberOfObjectsUnderTest,
 			@Nullable final String externalId)
 	{
 		final I_C_Project_WO_ObjectUnderTest objectUnderTest = InterfaceWrapperHelper.newInstance(I_C_Project_WO_ObjectUnderTest.class);
