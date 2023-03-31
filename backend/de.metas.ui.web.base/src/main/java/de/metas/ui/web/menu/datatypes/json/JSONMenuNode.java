@@ -1,12 +1,5 @@
 package de.metas.ui.web.menu.datatypes.json;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,6 +9,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -42,7 +41,7 @@ import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
 @SuppressWarnings("serial")
 public final class JSONMenuNode implements Serializable
 {
-	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	public static JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (path == null || path.isEmpty())
 		{
@@ -109,10 +108,18 @@ public final class JSONMenuNode implements Serializable
 			maxLeafNodes.decrementAndGet();
 		}
 
-		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+
+		// Avoid empty groups, makes no sense and looks ugly to show them to user.
+		if (jsonNode.isEmptyGroup())
+		{
+			return null;
 	}
 
-	public static final Builder builder(final MenuNode node)
+		return jsonNode;
+	}
+
+	public static Builder builder(final MenuNode node)
 	{
 		return new Builder(node);
 	}
@@ -273,6 +280,11 @@ public final class JSONMenuNode implements Serializable
 	public Boolean getMatched()
 	{
 		return matched;
+	}
+
+	public boolean isEmptyGroup()
+	{
+		return JSONMenuNodeType.group.equals(type) && isLeaf();
 	}
 
 	public static final class Builder
