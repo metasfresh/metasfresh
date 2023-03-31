@@ -24,6 +24,7 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
 import de.metas.document.DocBaseType;
@@ -192,7 +193,9 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		}
 
 		final I_C_OrderLine orderLine = docLine.getOrderLine();
-		factLine.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(orderLine.getC_BPartner_ID(), orderLine.getC_BPartner_Location_ID());
+		factLine.setC_BPartner_Location_ID(bPartnerLocationId);
 		factLine.setFromDimension(services.extractDimensionFromModel(orderLine));
 	}
 

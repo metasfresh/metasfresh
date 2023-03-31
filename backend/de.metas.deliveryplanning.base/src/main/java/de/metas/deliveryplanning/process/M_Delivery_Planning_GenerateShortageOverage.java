@@ -52,6 +52,7 @@ import de.metas.inventory.impexp.InventoryImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -212,6 +213,12 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		inventoryRecord.setC_DocType_ID(doctypeId.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(inOutRecord.getM_Warehouse_ID());
 		inventoryRecord.setMovementDate(inOutRecord.getMovementDate());
+		inventoryRecord.setC_BPartner_ID(inOutRecord.getC_BPartner_ID());
+		inventoryRecord.setC_BPartner_Location_ID(inOutRecord.getC_BPartner_Location_ID());
+
+		Optional.ofNullable(receiptInfo.getPurchaseOrderId())
+				.map(OrderId::getRepoId)
+				.ifPresent(inventoryRecord::setC_PO_Order_ID);
 
 		saveRecord(inventoryRecord);
 		logger.trace("Insert inventory - {}", inventoryRecord);
@@ -228,7 +235,6 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsMultimap = huAssignmentDAO.retrieveHUsByRecordRefs(mInOutLineTableRecordReferenceSet);
 		final Collection<HuId> huIds = huIdsMultimap.get(mInOutLineTableRecordReference);
 		final I_M_HU huRecord = handlingUnitsDAO.getById(CollectionUtils.singleElement(huIds));
-
 
 		final ShortageAndOverageStrategy shortageAndOverageStrategy = HUsForInventoryStrategies.shortageAndOverage()
 				.huForInventoryLineFactory(huForInventoryLineFactory)

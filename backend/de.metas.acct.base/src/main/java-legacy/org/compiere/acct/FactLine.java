@@ -85,7 +85,8 @@ public final class FactLine extends X_Fact_Acct
 	private DocLine<?> m_docLine = null;
 	private CurrencyConversionContext currencyConversionCtx = null;
 	@Getter(AccessLevel.PACKAGE)
-	@NonNull private final AcctDocRequiredServicesFacade services;
+	@NonNull
+	private final AcctDocRequiredServicesFacade services;
 
 	FactLine(
 			@NonNull final AcctDocRequiredServicesFacade services,
@@ -276,10 +277,16 @@ public final class FactLine extends X_Fact_Acct
 		}
 	}
 
-	AcctSchema getAcctSchema() {return acctSchema;}
+	AcctSchema getAcctSchema()
+	{
+		return acctSchema;
+	}
 
 	@NonNull
-	private CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
+	private CurrencyId getAcctCurrencyId()
+	{
+		return getAcctSchema().getCurrencyId();
+	}
 
 	private void assertAcctCurrency(@NonNull final Money amt)
 	{
@@ -305,8 +312,8 @@ public final class FactLine extends X_Fact_Acct
 	{
 		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr);
 		setAmtSource(currencyId,
-				amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
-				amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
+					 amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
+					 amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
 	}
 
 	public void setAmtSource(final CurrencyId currencyId, @Nullable BigDecimal AmtSourceDr, @Nullable BigDecimal AmtSourceCr)
@@ -598,13 +605,25 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		// BPartner
+
 		if (m_docLine != null)
 		{
-			setC_BPartner_ID(m_docLine.getBPartnerId());
+			setC_BPartner_Location_ID(m_docLine.getBPartnerLocationId());
+
+			if (getC_BPartner_ID() <= 0)
+			{
+				setC_BPartner_ID(m_docLine.getBPartnerId());
+			}
 		}
-		if (getC_BPartner_ID() <= 0)
+
+		if (getC_BPartner_Location_ID() <= 0)
 		{
-			setC_BPartner_ID(m_doc.getBPartnerId());
+			setC_BPartner_Location_ID(m_doc.getBPartnerLocationId());
+
+			if (getC_BPartner_ID() <= 0)
+			{
+				setC_BPartner_ID(m_doc.getBPartnerId());
+			}
 		}
 
 		// Sales Region from BPLocation/Sales Rep
@@ -813,7 +832,10 @@ public final class FactLine extends X_Fact_Acct
 		return getSourceBalance().signum() >= 0;
 	}
 
-	public Balance getAcctBalance() {return Balance.of(getAcctCurrencyId(), getAmtAcctDr(), getAmtAcctCr());}
+	public Balance getAcctBalance()
+	{
+		return Balance.of(getAcctCurrencyId(), getAmtAcctDr(), getAmtAcctCr());
+	}
 
 	/**
 	 * @return true if the given fact line is booked on same DR/CR side as this line
@@ -1426,11 +1448,11 @@ public final class FactLine extends X_Fact_Acct
 			if (log.isInfoEnabled())
 			{
 				log.info("Not Found (try later) "
-						+ ",C_AcctSchema_ID=" + getC_AcctSchema_ID()
-						+ ", AD_Table_ID=" + AD_Table_ID
-						+ ",Record_ID=" + Record_ID
-						+ ",Line_ID=" + Line_ID
-						+ ", Account_ID=" + m_acct.getAccount_ID());
+								 + ",C_AcctSchema_ID=" + getC_AcctSchema_ID()
+								 + ", AD_Table_ID=" + AD_Table_ID
+								 + ",Record_ID=" + Record_ID
+								 + ",Line_ID=" + Line_ID
+								 + ", Account_ID=" + m_acct.getAccount_ID());
 			}
 
 			return false; // not updated
@@ -1460,13 +1482,13 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		setVATCode(services.findVATCode(VATCodeMatchingRequest.builder()
-						.setC_AcctSchema_ID(getC_AcctSchema_ID())
-						.setC_Tax_ID(taxId)
-						.setIsSOTrx(isSOTrx)
-						.setDate(getDateAcct())
-						.build())
-				.map(VATCode::getCode)
-				.orElse(null));
+												.setC_AcctSchema_ID(getC_AcctSchema_ID())
+												.setC_Tax_ID(taxId)
+												.setIsSOTrx(isSOTrx)
+												.setDate(getDateAcct())
+												.build())
+						   .map(VATCode::getCode)
+						   .orElse(null));
 	}
 
 	public void setQty(@NonNull final Quantity quantity)
@@ -1507,7 +1529,7 @@ public final class FactLine extends X_Fact_Acct
 
 	public void setC_BPartner_ID(@Nullable final BPartnerId bpartnerId)
 	{
-		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		services.setC_BPartner_ID(this, bpartnerId);
 	}
 
 	public void setC_BPartner2_ID(@Nullable final BPartnerId bpartnerId)
@@ -1545,7 +1567,10 @@ public final class FactLine extends X_Fact_Acct
 		setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
 	}
 
-	public void setGL_Category_ID(@Nullable GLCategoryId glCategoryId) {setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));}
+	public void setGL_Category_ID(@Nullable GLCategoryId glCategoryId)
+	{
+		setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));
+	}
 
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{
@@ -1567,5 +1592,10 @@ public final class FactLine extends X_Fact_Acct
 		setUserElementString5(dimension.getUserElementString5());
 		setUserElementString6(dimension.getUserElementString6());
 		setUserElementString7(dimension.getUserElementString7());
+	}
+
+	public void setC_BPartner_Location_ID(@Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		services.setC_BPartner_Location_ID(this, bPartnerLocationId);
 	}
 }    // FactLine

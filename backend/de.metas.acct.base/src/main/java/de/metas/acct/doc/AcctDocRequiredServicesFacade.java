@@ -17,6 +17,7 @@ import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -71,6 +72,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -78,6 +80,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.PO;
@@ -123,7 +126,8 @@ public class AcctDocRequiredServicesFacade
 	private final ModelCacheInvalidationService modelCacheInvalidationService;
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	@Getter private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@Getter
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -134,12 +138,15 @@ public class AcctDocRequiredServicesFacade
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final GLCategoryRepository glCategoryRepository;
 	private final BankAccountService bankAccountService;
 	private final AccountProviderFactory accountProviderFactory;
 	private final InvoiceAcctRepository invoiceAcctRepository;
-	@Getter private final MatchInvoiceService matchInvoiceService;
-	@Getter private final OrderCostService orderCostService;
+	@Getter
+	private final MatchInvoiceService matchInvoiceService;
+	@Getter
+	private final OrderCostService orderCostService;
 
 	//
 	// Needed for DocLine:
@@ -362,7 +369,10 @@ public class AcctDocRequiredServicesFacade
 		return orgDAO.getTimeZone(orgId);
 	}
 
-	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId) {return invoiceAcctRepository.getById(invoiceId);}
+	public Optional<InvoiceAcct> getInvoiceAcct(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceAcctRepository.getById(invoiceId);
+	}
 
 	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
 	{
@@ -430,5 +440,15 @@ public class AcctDocRequiredServicesFacade
 	public Dimension extractDimensionFromModel(final Object model)
 	{
 		return dimensionService.getFromRecord(model);
+	}
+
+	public void setC_BPartner_Location_ID(@NonNull final I_Fact_Acct factAcct, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		factAcctBL.setC_BPartner_Location_ID(factAcct, bPartnerLocationId);
+	}
+
+	public void setC_BPartner_ID(@NonNull final I_Fact_Acct factAcct, @Nullable final BPartnerId bpartnerId)
+	{
+		factAcctBL.setC_BPartner_ID(factAcct, bpartnerId);
 	}
 }

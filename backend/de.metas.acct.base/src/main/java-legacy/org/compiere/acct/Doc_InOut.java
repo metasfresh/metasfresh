@@ -354,6 +354,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setAmt(roundToStdPrecision(costs), null)
 				.setQty(line.getQty()) // (+) Qty
 				.bpartnerId(line.getBPartnerId(costElement.getId()))
+				.bpartnerLocationId(line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -374,6 +375,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setAmt(null, roundToStdPrecision(costs))
 				.setQty(line.getQty().negate()) // (-) Qty
 				.bpartnerId(line.getBPartnerId(costElement.getId()))
+				.bpartnerLocationId(line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())

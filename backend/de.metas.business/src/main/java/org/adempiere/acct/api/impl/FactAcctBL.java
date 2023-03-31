@@ -27,12 +27,16 @@ import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 public class FactAcctBL implements IFactAcctBL
@@ -113,7 +117,7 @@ public class FactAcctBL implements IFactAcctBL
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.BPartner))
 		{
-			fa.setC_BPartner_ID(dim.getC_BPartner_ID());
+			setC_BPartner_ID(fa, BPartnerId.ofRepoIdOrNull(dim.getC_BPartner_ID()));
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.OrgTrx))
 		{
@@ -194,6 +198,32 @@ public class FactAcctBL implements IFactAcctBL
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
 		{
 			fa.setUserElementString7(dim.getUserElementString7());
+		}
+	}
+
+	public void setC_BPartner_ID(@NonNull final I_Fact_Acct factAcct, @Nullable final BPartnerId bpartnerId)
+	{
+		final BPartnerId currentBPartnerId = BPartnerId.ofRepoIdOrNull(factAcct.getC_BPartner_ID());
+
+		if (BPartnerId.equals(currentBPartnerId, bpartnerId))
+		{
+			return;
+		}
+
+		factAcct.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+		factAcct.setC_BPartner_Location_ID(-1);
+	}
+
+	public void setC_BPartner_Location_ID(@NonNull final I_Fact_Acct factAcct, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		if (bPartnerLocationId != null)
+		{
+			factAcct.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			factAcct.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+		}
+		else
+		{
+			factAcct.setC_BPartner_Location_ID(-1);
 		}
 	}
 }

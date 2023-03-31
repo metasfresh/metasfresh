@@ -356,7 +356,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					continue;
 				}
 
-				final FactLine fl_Payment;
+				final FactLineBuilder fl_PaymentBuilder = fact.createLine()
+						.orgId(line.getPaymentOrgId())
+						.setDocLine(line)
+						.setAccount(paymentAcct)
+						.bpartnerId(line.getPaymentBPartnerId())
+						.bpartnerLocationId(line.getPaymentBPartnerLocationId());
 
 				final BigDecimal allocatedAmt = line.getAllocatedAmt();
 
@@ -364,32 +369,23 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (line.isPaymentReceipt())
 				{
 					// Originally on Credit. The amount must be moved to Debit
-					fl_Payment = fact.createLine()
-							.setDocLine(line)
-							.setAccount(paymentAcct)
+					fl_PaymentBuilder
 							.setAmtSource(getCurrencyId(), allocatedAmt, null)
 							.alsoAddZeroLine()
 							.buildAndAdd();
-
 				}
 				// Outgoing payment
 				else
 				{
 					// Originally on Debit. The amount must be moved to Credit, with different sign
-					fl_Payment = fact.createLine()
-							.setDocLine(line)
-							.setAccount(paymentAcct)
+					fl_PaymentBuilder
 							.setAmtSource(getCurrencyId(), null, allocatedAmt.negate())
 							.alsoAddZeroLine()
 							.buildAndAdd();
-
 				}
 
 				// Make sure the fact line was created
-				Check.assumeNotNull(fl_Payment, "fl_Payment not null");
-
-				fl_Payment.setAD_Org_ID(line.getPaymentOrgId().getRepoId());
-				fl_Payment.setC_BPartner_ID(line.getPaymentBPartnerId());
+				Check.assumeNotNull(fl_PaymentBuilder, "fl_Payment not null");
 			}
 		}
 	}
@@ -500,10 +496,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		Check.assumeNotNull(fl_Payment, "fl_Payment not null");
 		fl_Payment.setAD_Org_ID(payment.getAD_Org_ID());
 		fl_Payment.setC_BPartner_ID(payment.getC_BPartner_ID());
+		fl_Payment.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
 		//
 		Check.assumeNotNull(fl_Discount, "fl_Discount not null");
 		fl_Discount.setAD_Org_ID(payment.getAD_Org_ID());
 		fl_Discount.setC_BPartner_ID(payment.getC_BPartner_ID());
+		fl_Discount.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
 	}
 
 	/**
@@ -535,6 +533,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
 				.bpartnerId(line.getPaymentBPartnerId())
+				.bpartnerLocationId(line.getPaymentBPartnerLocationId())
 				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
@@ -615,6 +614,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			{
 				fl.setAD_Org_ID(payment.getAD_Org_ID());
 				fl.setC_BPartner_ID(payment.getC_BPartner_ID());
+				fl.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
 			}
 
 		}
@@ -678,6 +678,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					{
 						fl.setAD_Org_ID(payment.getAD_Org_ID());
 						fl.setC_BPartner_ID(payment.getC_BPartner_ID());
+						fl.setC_BPartner_Location_ID(payment.getC_BPartner_Location_ID());
 					}
 					discountAmtSourceAndAcct.add(fl.getAmtSourceAndAcctDrOrCr());
 				}
@@ -787,6 +788,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
 				.bpartnerId(line.getPaymentBPartnerId())
+				.bpartnerLocationId(line.getPaymentBPartnerLocationId())
 				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
@@ -857,6 +859,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 				.orgId(line.getInvoiceOrgId())
 				.bpartnerId(line.getInvoiceBPartnerId())
+				.bpartnerLocationId(line.getInvoiceBPartnerLocationId())
 				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
@@ -958,6 +961,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.orgId(counterLine.getInvoiceOrgId())
 				.bpartnerId(counterLine.getInvoiceBPartnerId())
+				.bpartnerLocationId(counterLine.getInvoiceBPartnerLocationId())
 				.alsoAddZeroLine();
 		if (counterLine.isSOTrxInvoice())
 		{
@@ -1065,6 +1069,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Update created gain/loss fact line (description, dimensions etc)
 		fl.setAD_Org_ID(invoiceFactLine.getAD_Org_ID());
 		fl.setC_BPartner_ID(invoiceFactLine.getC_BPartner_ID());
+		fl.setC_BPartner_Location_ID(invoiceFactLine.getC_BPartner_Location_ID());
 		fl.addDescription(description.toString());
 
 	}
