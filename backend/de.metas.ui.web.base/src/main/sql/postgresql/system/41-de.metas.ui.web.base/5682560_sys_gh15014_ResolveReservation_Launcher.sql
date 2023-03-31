@@ -45,9 +45,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=712945
 /* DDL */ select AD_Element_Link_Create_Missing_Field(712945)
 ;
 
+-- commented out to prevent error:
+-- ERROR:  insert or update on table "ad_ui_elementgroup" violates foreign key constraint "aduicolumn_aduielementgroup"
+-- DETAIL:  Key (ad_ui_column_id)=(546300) is not present in table "ad_ui_column".
 -- 2023-03-27T06:21:25.521Z
-INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546300,550447,TO_TIMESTAMP('2023-03-27 09:21:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','reservation',25,TO_TIMESTAMP('2023-03-27 09:21:25','YYYY-MM-DD HH24:MI:SS'),100)
-;
+--INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546300,550447,TO_TIMESTAMP('2023-03-27 09:21:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','reservation',25,TO_TIMESTAMP('2023-03-27 09:21:25','YYYY-MM-DD HH24:MI:SS'),100)
+--;
 
 -- UI Element: Prüfauftrag -> Prüfschritt.Resolved hours
 -- Column: C_Project_WO_Step.ResolvedHours
