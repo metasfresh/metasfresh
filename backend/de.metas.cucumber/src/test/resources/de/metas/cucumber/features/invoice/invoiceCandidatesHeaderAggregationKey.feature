@@ -1,4 +1,5 @@
 @from:cucumber
+@headerAggregationKey
 Feature: Invoice candidate separation based on header aggregation key validation
 
   Background:
@@ -7,15 +8,6 @@ Feature: Invoice candidate separation based on header aggregation key validation
     And metasfresh has date and time 2023-03-30T13:30:13+01:00[Europe/Berlin]
 
     And  metasfresh initially has no I_Invoice_Candidate data
-    And load C_BPartner:
-      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
-      | endCustomer_1            | 2156425           |
-    And load AD_User:
-      | AD_User_ID.Identifier | Login      |
-      | loginUser             | metasfresh |
-    And update AD_User:
-      | AD_User_ID.Identifier | OPT.C_BPartner_ID.Identifier |
-      | loginUser             | endCustomer_1                |
     And metasfresh contains M_PricingSystems
       | Identifier    | Name                       | Value       | OPT.IsActive |
       | ps_1_29032023 | PricingSystemName_29032023 | ps_29032023 | true         |
@@ -25,9 +17,18 @@ Feature: Invoice candidate separation based on header aggregation key validation
     And metasfresh contains M_PriceList_Versions
       | Identifier     | M_PriceList_ID.Identifier | ValidFrom  | Name                          |
       | plv_1_29032023 | pl_1_29032023             | 2022-08-01 | PriceListVersionTest_29032023 |
-    And update C_BPartner:
-      | Identifier    | OPT.M_PricingSystem_ID.Identifier |
-      | endCustomer_1 | ps_1_29032023                     |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier             | Name                   | Value                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endCustomer_1_29032023 | Endcustomer_1_29032023 | Endcustomer_1_Value_29032023 | N            | Y              | ps_1_29032023                 |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
+      | location_1_29032023      | DE          | addr 22      | 456        | locationCity_2 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | OPT.C_BPartner_Location_ID | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | bpLocation_1_29032020 | 2873409                    | 1234567890123 | endCustomer_1_29032023   | location_1_29032023          | true         | true         |
+    And metasfresh contains AD_Users:
+      | AD_User_ID.Identifier | OPT.AD_User_ID | Name            | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | endUser_1_29032023    | 2964590        | bpUser_29032023 | endCustomer_1_29032023       | bpLocation_1_29032020                 |
 
   @from:cucumber
   Scenario: Verify that when there are a lot of invoice candidates enqueued only one invoice is created per invoice candidate with the same header aggregation key
@@ -46,8 +47,8 @@ Feature: Invoice candidate separation based on header aggregation key validation
       | pp_4_29032023 | plv_1_29032023                    | product_4_29032023      | 10.0     | PCE               | Normal                        |
       | pp_5_29032023 | plv_1_29032023                    | product_5_29032023      | 10.0     | PCE               | Normal                        |
     And store file content as requestBody in context
-      | FileName                  |
-      | I_I_InvoiceCandidates.csv |
+      | FileName                                       |
+      | InvoiceCandidatesAggregationTestImportData.csv |
     And add HTTP header
       | Key          | Value      |
       | Content-Type | text/plain |
@@ -56,8 +57,8 @@ Feature: Invoice candidate separation based on header aggregation key validation
     Then the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And multiple I_Invoice_Candidate records are found after not more than 60s: searching by bill partner value
-      | Bill_BPartner_Value | I_Invoice_Candidate_ID_List.Identifier | OPT.CandidateBatchSize |
-      | G0001               | iInvoiceCandidateList_1                | 1000                   |
+      | Bill_BPartner_Value          | I_Invoice_Candidate_ID_List.Identifier | OPT.CandidateBatchSize |
+      | Endcustomer_1_Value_29032023 | iInvoiceCandidateList_1                | 1000                   |
 
     And locate invoice candidate list by record reference after 60s:
       | C_Invoice_Candidate_ID_List.Identifier | TableName           | I_Invoice_Candidate_ID_List.Identifier | OPT.CandidateBatchSize |
@@ -91,10 +92,10 @@ Feature: Invoice candidate separation based on header aggregation key validation
 
     Then the metasfresh REST-API endpoint path 'api/v2/invoices/enqueueForInvoicing' receives a 'POST' request with the payload from context and responds with '202' status code
 
-    And locate invoice by external id after not more than 300s and validate
-      | C_Invoice_ID.Identifier | ExternalId                  | OPT.NumberOfCandidates | OPT.DateInvoiced        |
-      | invoice_1               | externalHeaderId_1_29032023 | 200                    | 2023-03-28T01:00:00.000 |
-      | invoice_2               | externalHeaderId_2_29032023 | 200                    | 2023-03-28T01:00:00.000 |
-      | invoice_3               | externalHeaderId_3_29032023 | 200                    | 2023-03-28T01:00:00.000 |
-      | invoice_4               | externalHeaderId_4_29032023 | 200                    | 2023-03-28T01:00:00.000 |
-      | invoice_5               | externalHeaderId_5_29032023 | 200                    | 2023-03-28T01:00:00.000 |
+    And locate invoice by external id after not more than 420s and validate
+      | C_Invoice_ID.Identifier | ExternalId                  | OPT.NumberOfCandidates | OPT.DateInvoiced |
+      | invoice_1               | externalHeaderId_1_29032023 | 200                    | 2023-03-28       |
+      | invoice_2               | externalHeaderId_2_29032023 | 200                    | 2023-03-28       |
+      | invoice_3               | externalHeaderId_3_29032023 | 200                    | 2023-03-28       |
+      | invoice_4               | externalHeaderId_4_29032023 | 200                    | 2023-03-28       |
+      | invoice_5               | externalHeaderId_5_29032023 | 200                    | 2023-03-28       |
