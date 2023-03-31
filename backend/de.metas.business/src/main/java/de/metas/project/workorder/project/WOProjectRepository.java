@@ -227,6 +227,7 @@ public class WOProjectRepository
 			@NonNull final ProjectTypeId projectTypeId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Parent_ID, parentProjectId)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_C_ProjectType_ID, projectTypeId)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())

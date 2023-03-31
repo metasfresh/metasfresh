@@ -111,6 +111,7 @@ public class ProjectTypeRepository
 	public Optional<ProjectType> getByName(@NonNull final String name)
 	{
 		final I_C_ProjectType projectTypeRecord = queryBL.createQueryBuilder(I_C_ProjectType.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ProjectType.COLUMNNAME_Name, name)
 				.create()
 				.firstOnlyNotNull(I_C_ProjectType.class);
