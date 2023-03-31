@@ -39,7 +39,7 @@ public interface ICostElementRepository
 	@NonNull
 	CostElement getOrCreateMaterialCostElement(ClientId adClientId, CostingMethod costingMethod);
 
-	List<CostElement> getMaterialCostingMethods(ClientId adClientId);
+	List<CostElement> getByTypes(@NonNull ClientId clientId, @NonNull CostElementType... types);
 
 	List<CostElement> getByCostingMethod(ClientId clientId, CostingMethod costingMethod);
 
@@ -48,5 +48,4 @@ public interface ICostElementRepository
 	Set<CostElementId> getIdsByClientId(@NonNull ClientId clientId);
 
 	Set<CostElementId> getIdsByCostingMethod(ClientId adClientId, CostingMethod costingMethod);
-
 }

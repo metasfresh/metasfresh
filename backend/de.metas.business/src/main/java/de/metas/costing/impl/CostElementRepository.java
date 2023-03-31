@@ -23,6 +23,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostElement;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -154,11 +155,18 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
-	public List<CostElement> getMaterialCostingMethods(@NonNull final ClientId clientId)
+	public List<CostElement> getByTypes(@NonNull final ClientId clientId, @NonNull final CostElementType... types)
 	{
+		if (types.length == 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final List<CostElementType> typesList = Arrays.asList(types);
+
 		return getIndexedCostElements()
 				.streamByClientId(clientId)
-				.filter(CostElement::isMaterialElement)
+				.filter(costElement -> typesList.contains(costElement.getCostElementType()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
