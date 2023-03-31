@@ -1913,3 +1913,32 @@ UPDATE AD_SQLColumn_SourceTableColumn SET FetchTargetRecordsMethod='L', Link_Col
 UPDATE AD_SQLColumn_SourceTableColumn SET Link_Column_ID=583243, Source_Table_ID=542161,Updated=TO_TIMESTAMP('2023-03-31 09:49:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540146
 ;
 
+-- 2023-03-31T07:24:39.505Z
+UPDATE AD_SQLColumn_SourceTableColumn SET Source_Column_ID=583243,Updated=TO_TIMESTAMP('2023-03-31 10:24:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540146
+;
+
+-- 2023-03-31T08:13:19.785Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Source_Table_ID,SQL_GetTargetRecordIdBySourceRecordId,Updated,UpdatedBy) VALUES (0,586366,0,540147,203,TO_TIMESTAMP('2023-03-31 11:13:19','YYYY-MM-DD HH24:MI:SS'),100,'S','Y',542161,'select distinct (c1.c_project_id) from c_project c1 join c_project c2
+    on c1.c_project_parent_id = c2.c_project_parent_id
+         join c_project_wo_resource r on r.c_project_id = c2.c_project_id
+    where c1.c_projecttype_id = 540007
+and r.duration <>0 ',TO_TIMESTAMP('2023-03-31 11:13:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2023-03-31T08:19:25.642Z
+UPDATE AD_SQLColumn_SourceTableColumn SET Link_Column_ID=583243, Source_Table_ID=542161,Updated=TO_TIMESTAMP('2023-03-31 11:19:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540145
+;
+
+-- 2023-03-31T08:23:01.715Z
+UPDATE AD_SQLColumn_SourceTableColumn SET FetchTargetRecordsMethod='S', Link_Column_ID=NULL, Source_Table_ID=203, SQL_GetTargetRecordIdBySourceRecordId='select distinct (c1.c_project_id) from c_project c1 join c_project c2
+    on c1.c_project_parent_id = c2.c_project_parent_id
+    where c1.c_projecttype_id = 540007
+      and c2.c_projecttype_id = 540011;',Updated=TO_TIMESTAMP('2023-03-31 11:23:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540145
+;
+
+-- 2023-03-31T08:43:51.920Z
+UPDATE AD_SQLColumn_SourceTableColumn SET SQL_GetTargetRecordIdBySourceRecordId='select c_project_id from c_project where c_projecttype_id = 540007',Updated=TO_TIMESTAMP('2023-03-31 11:43:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SQLColumn_SourceTableColumn_ID=540145
+;
+
+
+
