@@ -53,16 +53,19 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -283,6 +286,44 @@ public class WOProjectResourceRepository
 	}
 
 	@NonNull
+	public WOProjectResource getById(@NonNull final WOProjectResourceId woProjectResourceId)
+	{
+		final I_C_Project_WO_Resource resource = Optional.ofNullable(load(woProjectResourceId, I_C_Project_WO_Resource.class))
+				.orElseThrow(() -> new AdempiereException("Couldn't find any WOResource for given C_Project_WO_Resource_ID :" + woProjectResourceId.getRepoId()));
+
+		return ofRecord(resource);
+	}
+
+	@NonNull
+	public Stream<WOProjectResource> streamUnresolvedForProjectIds(@NonNull final ImmutableSet<ProjectId> projectIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds)
+				.create()
+				.stream()
+				.map(WOProjectResourceRepository::ofRecord)
+				.filter(WOProjectResource::isNotFullyResolved);
+	}
+
+	@NonNull
+	public Stream<WOProjectResource> streamForResourceIds(@NonNull final ImmutableSet<WOProjectResourceId> resourceIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, resourceIds)
+				.create()
+				.stream()
+				.map(WOProjectResourceRepository::ofRecord);
+	}
+
+	public boolean existsResourcesForProject(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectId)
+				.create()
+				.anyMatch();
+	}
+
+	@NonNull
 	public static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
 	{
 		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
@@ -326,6 +367,7 @@ public class WOProjectResourceRepository
 
 				.testFacilityGroupName(resourceRecord.getWOTestFacilityGroupName())
 				.description(StringUtils.trimBlankToNull(resourceRecord.getDescription()))
+				.resolvedHours(Duration.ofHours(resourceRecord.getResolvedHours()))
 				.build();
 	}
 
@@ -388,6 +430,7 @@ public class WOProjectResourceRepository
 
 		resourceRecord.setDuration(DurationUtils.toBigDecimal(projectResource.getDuration(), projectResource.getDurationUnit().getTemporalUnit()));
 		resourceRecord.setDurationUnit(projectResource.getDurationUnit().getCode());
+		resourceRecord.setResolvedHours((int)projectResource.getResolvedHours().toHours());
 
 		saveRecord(resourceRecord);
 	}
