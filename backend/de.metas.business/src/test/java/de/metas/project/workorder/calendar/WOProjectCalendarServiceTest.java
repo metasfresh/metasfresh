@@ -94,6 +94,7 @@ class WOProjectCalendarServiceTest
 		final I_C_ProjectType projectTypeRecord = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
 		projectTypeRecord.setProjectCategory(projectCategory.getCode());
 		projectTypeRecord.setR_StatusCategory_ID(111);
+		projectTypeRecord.setName("projectTypeName");
 		InterfaceWrapperHelper.save(projectTypeRecord);
 
 		return ProjectTypeRepository.toProjectType(projectTypeRecord);

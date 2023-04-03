@@ -89,6 +89,7 @@ public class ProjectServiceTest
 		projectTypeRecord.setProjectCategory("N");
 		projectTypeRecord.setAD_Org_ID(1000000);
 		projectTypeRecord.setR_StatusCategory_ID(statusCategory.getR_StatusCategory_ID());
+		projectTypeRecord.setName("projectTypeName");
 
 		saveRecord(projectTypeRecord);
 
