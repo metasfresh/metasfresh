@@ -61,6 +61,12 @@ public class JsonBOM
 	@JsonProperty("INAKTIV")
 	boolean isActive;
 
+	@JsonProperty("BIO")
+	boolean isBio;
+
+	@JsonProperty("HALAL")
+	boolean isHalal;
+
 	@Nullable
 	@JsonProperty("VERLUST")
 	BigDecimal scrap;
@@ -97,6 +103,8 @@ public class JsonBOM
 			@JsonProperty("TEXT") final @Nullable String name1,
 			@JsonProperty("TEXT2") final @Nullable String name2,
 			@JsonProperty("INAKTIV") final int inactive,
+			@JsonProperty("BIO") final int bio,
+			@JsonProperty("HALAL") final int halal,
 			@JsonProperty("VERLUST") final @Nullable BigDecimal scrap,
 			@JsonProperty("GTIN") final @Nullable String gtin,
 			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
@@ -111,6 +119,8 @@ public class JsonBOM
 		this.name1 = name1;
 		this.name2 = name2;
 		this.isActive = inactive != 1;
+		this.isBio = bio == 1;
+		this.isHalal = halal == 1;
 		this.scrap = scrap;
 		this.gtin = gtin;
 		this.bPartnerMetasfreshId = bPartnerMetasfreshId;

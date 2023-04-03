@@ -56,6 +56,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.uom.IUOMDAO;
@@ -96,17 +97,21 @@ public class ProductRestService
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final SectionCodeService sectionCodeService;
 	private final ProductAllergenRestService productAllergenRestService;
+	private final QualityAttributeService qualityAttributeService;
 
 	public ProductRestService(
+
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final SectionCodeService sectionCodeService,
-			final ProductAllergenRestService productAllergenRestService)
+			@NonNull final ProductAllergenRestService productAllergenRestService,
+			@NonNull final QualityAttributeService qualityAttributeService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.sectionCodeService = sectionCodeService;
 		this.productAllergenRestService = productAllergenRestService;
+		this.qualityAttributeService = qualityAttributeService;
 	}
 
 	@NonNull
@@ -217,6 +222,14 @@ public class ProductRestService
 			productAllergenRestService.upsertProductAllergens(org,
 															  productId,
 															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes() != null)
+		{
+			qualityAttributeService.upsertProductQualityAttributes(
+					org,
+					productId,
+					jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes());
 		}
 
 		handleProductExternalReference(org,
@@ -871,7 +884,7 @@ public class ProductRestService
 			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
 		}
 
-		if(jsonRequestProductUpsertItem.isCodeSet())
+		if (jsonRequestProductUpsertItem.isCodeSet())
 		{
 			builder.productNo(jsonRequestProductUpsertItem.getCode());
 		}

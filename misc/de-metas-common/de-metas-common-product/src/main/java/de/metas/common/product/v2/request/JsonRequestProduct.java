@@ -158,6 +158,9 @@ public class JsonRequestProduct
 	@Schema
 	private JsonRequestUpsertProductAllergen productAllergens;
 
+	@Schema
+	private JsonRequestUpsertQualityAttribute qualityAttributes;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -273,6 +276,11 @@ public class JsonRequestProduct
 	{
 		this.warehouseTemperature = warehouseTemperature;
 		this.warehouseTemperatureSet = true;
+	}
+
+	public void setQualityAttributes(@Nullable final JsonRequestUpsertQualityAttribute qualityAttribute)
+	{
+		this.qualityAttributes = qualityAttribute;
 	}
 
 	@AllArgsConstructor

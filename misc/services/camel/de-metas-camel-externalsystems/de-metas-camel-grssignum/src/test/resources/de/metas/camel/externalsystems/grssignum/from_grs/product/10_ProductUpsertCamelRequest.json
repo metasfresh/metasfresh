@@ -100,7 +100,16 @@
               "usedForVendor": true,
               "usedForVendorSet": true
             }
-          ]
+          ],
+          "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "HALAL"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
+          }
         }
       }
     ],

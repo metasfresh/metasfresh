@@ -81,6 +81,16 @@
               "ifNotExists": "CREATE",
               "ifExists": "REPLACE"
             }
+          },
+          "qualityAttributes": {
+            "qualityAttributeLabels": [
+              "BIO",
+              "EU_NON_EU_AGRICULTURE"
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "REPLACE"
+            }
           }
         }
       }

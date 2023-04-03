@@ -9,6 +9,8 @@
   "GTIN": 12345678,
   "METASFRESHID": "100",
   "ANHANGDATEI": "bpartnerValue/directory/Attachment.pdf",
+  "BIO": 1,
+  "HALAL" : 0,
   "DETAIL": [
     {
       "ARTNR": "ProductValue1",
@@ -31,7 +33,8 @@
       ],
       "Rezeptur_Angaben_GTIN": "additional_gtin",
       "Lagerungsbedingungen_Lagerungstemperatur": "warehouse_temperature",
-      "Lagerungsbedingungen_MHD_in_Monaten": 12
+      "Lagerungsbedingungen_MHD_in_Monaten": 12,
+      "Rezeptur_Angaben_Landwirtschaftliche_Herkunft": "EU-/Nicht-EU-Landwirtschaft"
     }
   ],
   "ALLERGENE": [
