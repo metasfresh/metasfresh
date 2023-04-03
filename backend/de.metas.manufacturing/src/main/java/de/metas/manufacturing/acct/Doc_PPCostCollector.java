@@ -188,7 +188,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final String description = costElement.getName();
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 
-		final FactLine dr = fact.createLine(docLine, debit, cost.getCurrencyId(), cost.getValue(), null);
+		final FactLine dr = fact.createLine(docLine, debit, cost.getCurrencyId(), cost.toBigDecimal(), null);
 		dr.setQty(qty);
 		dr.addDescription(description);
 		dr.setC_Project_ID(docLine.getC_Project_ID());
@@ -196,7 +196,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
 		dr.setM_Locator_ID(docLine.getM_Locator_ID());
 
-		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
+		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.toBigDecimal());
 		cr.setQty(qty);
 		cr.addDescription(description);
 		cr.setC_Project_ID(docLine.getC_Project_ID());

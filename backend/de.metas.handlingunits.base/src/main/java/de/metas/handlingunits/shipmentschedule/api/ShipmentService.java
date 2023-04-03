@@ -30,6 +30,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -130,7 +131,7 @@ public class ShipmentService implements IShipmentService
 			final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
 			final PickingJobService pickingJobService = new PickingJobService(
 					pickingJobRepository,
-					new PickingJobLockService(new SqlShipmentScheduleLockRepository()),
+					new PickingJobLockService(new SqlShipmentScheduleLockRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())),
 					pickingJobSlotService,
 					new PickingCandidateService(
 							new PickingConfigRepository(),

@@ -174,7 +174,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			dr = fact.createLine(m_line,
 					getProjectAccount(acctType, as),
 					cost.getCurrencyId(),
-					cost.getValue(), null);
+					cost.toBigDecimal(), null);
 			dr.setQty(m_line.getQty().negate());
 		}
 
@@ -189,7 +189,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			cr = fact.createLine(m_line,
 					m_line.getAccount(acctType, as),
 					cost.getCurrencyId(),
-					null, cost.getValue());
+					null, cost.toBigDecimal());
 			cr.setM_Locator_ID(m_line.getM_Locator_ID());
 			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);    // from Loc
 		}

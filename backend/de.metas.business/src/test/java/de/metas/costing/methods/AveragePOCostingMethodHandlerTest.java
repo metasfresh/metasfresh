@@ -777,8 +777,8 @@ public class AveragePOCostingMethodHandlerTest
 																				   //
 																				   .build());
 
-				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+				assertThat(result.getOutboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
+				assertThat(result.getInboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
 			}
 
 			@Test
@@ -811,8 +811,8 @@ public class AveragePOCostingMethodHandlerTest
 																				   //
 																				   .build());
 
-				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+				assertThat(result.getOutboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
+				assertThat(result.getInboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
 			}
 
 			@Test
@@ -846,8 +846,8 @@ public class AveragePOCostingMethodHandlerTest
 																				   //
 																				   .build());
 
-				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("-1300");
-				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("+1300");
+				assertThat(result.getOutboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("-1300");
+				assertThat(result.getInboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("+1300");
 			}
 
 		}

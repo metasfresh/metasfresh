@@ -26,7 +26,7 @@ pull_request_rules:
        - base=blonde_monkey_uat
        - base=clone_wars_uat
        - base=epic_party_uat
-       - base=hard_encoded_uat 
+       - base=hard_encoded_uat
        - base=holy_cow_uat
        - base=hostile_tractor_uat
        - base=inner_silence_uat
@@ -36,8 +36,8 @@ pull_request_rules:
        - base=mad_orange_uat
        - base=magic_oak_uat
        - base=neon_underwear_uat
-       - base=nerdy_frog_uat 
-       - base=pot_hole_uat 
+       - base=nerdy_frog_uat
+       - base=pot_hole_uat
        - base=release
        - base=scary_plum_uat
        - base=science_vessel_uat
@@ -46,13 +46,14 @@ pull_request_rules:
        - base=tenacious_d_uat
        - base=week_end_uat
        - base=yoyo_uat
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - master
         assignees: # the original PR's author shall be notified when the merge-towards-master build fails
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: &MERGIFY_PR_BODY # we include the original body, because it might reference the metasfresh-issue
             "This is an automatic copy of pull request #{{number}} done by [Mergify](https://mergify.com).\n\n----\n\n**Original PR-body (if any):**\n{{ body }}\n\n----\n\n**Mergify-Cherry-Pick-Error (if any)**\n{{cherry_pick_error}}"
@@ -63,149 +64,161 @@ pull_request_rules:
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=adorable_badger_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - adorable_badger_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a big_coconut_hotfix-Branch PR is integrated, create a PR towards the big_coconut_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=big_coconut_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - big_coconut_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a blonde_monkey_hotfix-Branch PR is integrated, create a PR towards the blonde_monkey_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=blonde_monkey_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - blonde_monkey_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a hard_encoded_hotfix-Branch PR is integrated, create a PR towards the hard_encoded_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=hard_encoded_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - hard_encoded_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a intensive_care_hotfix-Branch PR is integrated, create a PR towards the intensive_care_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=intensive_care_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - intensive_care_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a mad_orange_hotfix-Branch PR is integrated, create a PR towards the mad_orange_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=mad_orange_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - mad_orange_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a secondary_opinion_hotfix-Branch PR is integrated, create a PR towards the secondary_opinion_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=secondary_opinion_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - secondary_opinion_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a scary_plum_hotfix-Branch PR is integrated, create a PR towards the scary_plum_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=scary_plum_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - scary_plum_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a science_vessel_hotfix-Branch PR is integrated, create a PR towards the science_vessel_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=science_vessel_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - science_vessel_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a tenacious_d_hotfix-Branch PR is integrated, create a PR towards the tenacious_d_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=tenacious_d_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - tenacious_d_uat
         assignees:
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a tasty_ham_hotfix-Branch PR is integrated, create a PR towards the tasty_ham_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=tasty_ham_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
           - tasty_ham_uat
         assignees: # the original PR's author shall be notified when the merge-towards-_uat build fails
           - "{{ author }}"
-        labels:  
+        labels:
           - "ops:merge_towards_master"
         body: *MERGIFY_PR_BODY
   - name: When a yoyo_hotfix-Branch PR is integrated, create a PR towards the yoyo_uat-branch
     conditions:
      - merged-at > '2023-03-15 00:00Z' # don't jump on every merged PR throughout history
      - base=yoyo_hotfix
+     - not: label="ops:dont_auto_create_PR"
     actions:
       copy:
         branches:
@@ -243,7 +256,7 @@ pull_request_rules:
       label:
         add:
           - "branch:{{base}}"
-      delete_head_branch:          
+      delete_head_branch:
 
   - name: Automatic squash-merge successful PRs into the base-branch
     conditions:
@@ -265,9 +278,10 @@ pull_request_rules:
       - check-success=continuous-integration/jenkins/branch
       - or:
         - or: *PROJECT_BRANCHES_UAT
-        - or: 
+        - or:
           - base=master
       - label=ops:merge_towards_master
+      - not: label="ops:dont_auto_create_PR"
     actions:
       queue:
         name: default

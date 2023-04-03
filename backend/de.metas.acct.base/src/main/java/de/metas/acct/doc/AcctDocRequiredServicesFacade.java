@@ -21,7 +21,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -120,7 +120,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final ModelCacheInvalidationService modelCacheInvalidationService;
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	@Getter private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
@@ -150,6 +150,7 @@ public class AcctDocRequiredServicesFacade
 	private final DimensionService dimensionService;
 
 	public AcctDocRequiredServicesFacade(
+			@NonNull final ModelCacheInvalidationService modelCacheInvalidationService,
 			@NonNull final GLCategoryRepository glCategoryRepository,
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final ICostingService costingService,
@@ -159,6 +160,7 @@ public class AcctDocRequiredServicesFacade
 			@NonNull final OrderCostService orderCostService,
 			@NonNull final DimensionService dimensionService)
 	{
+		this.modelCacheInvalidationService = modelCacheInvalidationService;
 		this.glCategoryRepository = glCategoryRepository;
 		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
@@ -185,7 +187,7 @@ public class AcctDocRequiredServicesFacade
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(documentTableName, documentRecordId),
-				ModelCacheInvalidationTiming.CHANGE);
+				ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	public void runInThreadInheritedTrx(@NonNull final TrxRunnable2 runnable)
