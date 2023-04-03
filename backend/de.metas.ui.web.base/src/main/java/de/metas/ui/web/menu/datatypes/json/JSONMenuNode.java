@@ -99,6 +99,7 @@ public class JSONMenuNode
 				.collect(ImmutableList.toImmutableList());
 	}
 
+<<<<<<< HEAD
 	@Nullable
 	private static JSONMenuNode newInstanceOrNull(
 			final MenuNode node,
@@ -106,18 +107,37 @@ public class JSONMenuNode
 			final int childrenLimit,
 			final MutableInt maxLeafNodes,
 			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+=======
+	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+												  final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+>>>>>>> 65bf12d2b02 (webui menu: hide empty groups (part 2) (#15044))
 	{
 		if (maxLeafNodes.getValue() <= 0)
 		{
 			return null;
 		}
 
+<<<<<<< HEAD
+=======
+		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+
+		// Avoid empty groups, makes no sense and looks ugly to show them to user.
+		if (jsonNode.isEmptyGroup())
+		{
+			return null;
+		}
+
+>>>>>>> 65bf12d2b02 (webui menu: hide empty groups (part 2) (#15044))
 		if (node.isEffectiveLeafNode())
 		{
 			maxLeafNodes.decrementAndGet();
 		}
 
+<<<<<<< HEAD
 		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+=======
+		return jsonNode;
+>>>>>>> 65bf12d2b02 (webui menu: hide empty groups (part 2) (#15044))
 	}
 
 	public static Builder builder(final MenuNode node)
@@ -147,12 +167,17 @@ public class JSONMenuNode
 
 	@JsonProperty("favorite") boolean favorite;
 
+<<<<<<< HEAD
 	private JSONMenuNode(
 			final MenuNode node,
 			final int depth,
 			final int childrenLimit,
 			final MutableInt maxLeafNodes,
 			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+=======
+	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+						 final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+>>>>>>> 65bf12d2b02 (webui menu: hide empty groups (part 2) (#15044))
 	{
 		nodeId = node.getId();
 		parentId = node.getParentId();
@@ -171,9 +196,12 @@ public class JSONMenuNode
 		{
 			children = node.getChildren()
 					.stream()
-					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
 					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
 					.filter(Objects::nonNull)
+<<<<<<< HEAD
+=======
+					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
+>>>>>>> 65bf12d2b02 (webui menu: hide empty groups (part 2) (#15044))
 					.collect(ImmutableList.toImmutableList());
 		}
 	}
