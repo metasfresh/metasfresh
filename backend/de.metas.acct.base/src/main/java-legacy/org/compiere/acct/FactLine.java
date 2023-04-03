@@ -1577,6 +1577,12 @@ public final class FactLine extends X_Fact_Acct
 	{
 		final BigDecimal amtAcct = getAmtAcctDr().add(getAmtAcctCr());
 		final BigDecimal amtSource = getAmtSourceDr().add(getAmtSourceCr());
+		
+		if (amtAcct.signum() == 0 || amtSource.signum() == 0)
+		{
+			return BigDecimal.ZERO; // dev-note: does not matter
+		}
+		
 		final CurrencyPrecision schemaCurrencyPrecision = getAcctSchema().getStandardPrecision();
 
 		return amtAcct
@@ -1585,7 +1591,7 @@ public final class FactLine extends X_Fact_Acct
 	
 	private void updateCurrencyRateIfNotSet()
 	{
-		if (getCurrencyRate().compareTo(BigDecimal.ZERO) == 0 || getCurrencyRate().compareTo(BigDecimal.ONE) == 0)
+		if (getCurrencyRate().signum() == 0 || getCurrencyRate().compareTo(BigDecimal.ONE) == 0)
 		{
 			setCurrencyRate(computeCurrencyRate());
 		}
