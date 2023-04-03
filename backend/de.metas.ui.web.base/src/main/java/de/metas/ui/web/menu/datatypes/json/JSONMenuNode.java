@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
 import org.adempiere.exceptions.AdempiereException;
@@ -15,6 +14,7 @@ import org.adempiere.util.lang.MutableInt;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -96,16 +96,11 @@ public final class JSONMenuNode implements Serializable
 	}
 
 	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
-			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+												  final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (maxLeafNodes.getValue() <= 0)
 		{
 			return null;
-		}
-
-		if (node.isEffectiveLeafNode())
-		{
-			maxLeafNodes.decrementAndGet();
 		}
 
 		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
@@ -114,7 +109,12 @@ public final class JSONMenuNode implements Serializable
 		if (jsonNode.isEmptyGroup())
 		{
 			return null;
-	}
+		}
+
+		if (node.isEffectiveLeafNode())
+		{
+			maxLeafNodes.decrementAndGet();
+		}
 
 		return jsonNode;
 	}
@@ -156,7 +156,7 @@ public final class JSONMenuNode implements Serializable
 	private final boolean favorite;
 
 	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
-			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+						 final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		super();
 		nodeId = node.getId();
@@ -176,9 +176,9 @@ public final class JSONMenuNode implements Serializable
 		{
 			children = node.getChildren()
 					.stream()
-					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
 					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
-					.filter(jsonNode -> jsonNode != null)
+					.filter(Objects::nonNull)
+					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
 					.collect(ImmutableList.toImmutableList());
 		}
 	}
