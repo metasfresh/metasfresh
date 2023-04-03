@@ -15,13 +15,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 
 /*
  * #%L
@@ -241,7 +234,7 @@ public class JSONMenuNode
 
 	public boolean isEmptyGroup()
 	{
-		return JSONMenuNodeType.group.equals(type) && isLeaf();
+		return JSONMenuNodeType.group.equals(type) && (children == null || children.isEmpty());
 	}
 
 	public static final class Builder
