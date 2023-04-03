@@ -51,13 +51,11 @@ public class ProjectType
 	@Nullable
 	DocSequenceId docSequenceId;
 
-<<<<<<< HEAD
 	@NonNull
 	RequestStatusCategoryId requestStatusCategoryId;
-=======
+
 	public boolean isReservation()
 	{
 		return name.equals(RESERVATION_PROJECT_TYPE);
 	}
->>>>>>> 18f069d4c1e (Resolve reservations (#15038))
 }
