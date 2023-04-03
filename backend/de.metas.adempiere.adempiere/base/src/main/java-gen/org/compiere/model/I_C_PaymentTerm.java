@@ -75,6 +75,48 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_AfterDelivery = "AfterDelivery";
 
 	/**
+	 * Set Base Line Types.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBaseLineTypes (@Nullable java.lang.String BaseLineTypes);
+
+	/**
+	 * Get Base Line Types.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBaseLineTypes();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_BaseLineTypes = new ModelColumn<>(I_C_PaymentTerm.class, "BaseLineTypes", null);
+	String COLUMNNAME_BaseLineTypes = "BaseLineTypes";
+
+	/**
+	 * Set Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCalculationMethod (@Nullable java.lang.String CalculationMethod);
+
+	/**
+	 * Get Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCalculationMethod();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_CalculationMethod = new ModelColumn<>(I_C_PaymentTerm.class, "CalculationMethod", null);
+	String COLUMNNAME_CalculationMethod = "CalculationMethod";
+
+	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *

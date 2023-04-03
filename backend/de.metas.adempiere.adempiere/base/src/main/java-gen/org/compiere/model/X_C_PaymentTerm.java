@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_PaymentTerm, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -941580544L;
+	private static final long serialVersionUID = 1137723496L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm (final Properties ctx, final int C_PaymentTerm_ID, @Nullable final String trxName)
@@ -45,6 +45,52 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	public boolean isAfterDelivery() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_AfterDelivery);
+	}
+
+	/** 
+	 * BaseLineTypes AD_Reference_ID=541725
+	 * Reference name: Base Line Types List
+	 */
+	public static final int BASELINETYPES_AD_Reference_ID=541725;
+	/** After Delivery = AD */
+	public static final String BASELINETYPES_AfterDelivery = "AD";
+	/** After Bill of Landing = ABL */
+	public static final String BASELINETYPES_AfterBillOfLanding = "ABL";
+	/** Invoice Date = ID */
+	public static final String BASELINETYPES_InvoiceDate = "ID";
+	@Override
+	public void setBaseLineTypes (final @Nullable java.lang.String BaseLineTypes)
+	{
+		set_Value (COLUMNNAME_BaseLineTypes, BaseLineTypes);
+	}
+
+	@Override
+	public java.lang.String getBaseLineTypes() 
+	{
+		return get_ValueAsString(COLUMNNAME_BaseLineTypes);
+	}
+
+	/** 
+	 * CalculationMethod AD_Reference_ID=541726
+	 * Reference name: Calculation Method List
+	 */
+	public static final int CALCULATIONMETHOD_AD_Reference_ID=541726;
+	/** Base Line Date +X days = BLDX */
+	public static final String CALCULATIONMETHOD_BaseLineDatePlusXDays = "BLDX";
+	/** Base Line Date +X days and then end of month = BLDXE */
+	public static final String CALCULATIONMETHOD_BaseLineDatePlusXDaysAndThenEndOfMonth = "BLDXE";
+	/** End of the month of baseline date plus X days = EBLDX */
+	public static final String CALCULATIONMETHOD_EndOfTheMonthOfBaselineDatePlusXDays = "EBLDX";
+	@Override
+	public void setCalculationMethod (final @Nullable java.lang.String CalculationMethod)
+	{
+		set_Value (COLUMNNAME_CalculationMethod, CalculationMethod);
+	}
+
+	@Override
+	public java.lang.String getCalculationMethod() 
+	{
+		return get_ValueAsString(COLUMNNAME_CalculationMethod);
 	}
 
 	@Override
