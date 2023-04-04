@@ -215,7 +215,14 @@ public final class FactLineBuilder
 			line.setAD_Org_ID(orgId.getRepoId());
 		}
 		//
-		line.setBPartnerIdAndLocation(getBpartnerId(), getBPartnerLocationId());
+		if (getBPartnerLocationId() != null)
+		{
+			line.setBPartnerIdAndLocation(getBpartnerId(), getBPartnerLocationId());
+		}
+		else if (getBpartnerId() != null)
+		{
+			line.setBPartnerId(getBpartnerId());
+		}
 		//
 		final TaxId taxId = getC_Tax_ID();
 		if (taxId != null)
