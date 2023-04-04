@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_PaymentTerm, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -941580544L;
+	private static final long serialVersionUID = 159349203L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm (final Properties ctx, final int C_PaymentTerm_ID, @Nullable final String trxName)
@@ -35,16 +35,50 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+	/** 
+	 * BaseLineType AD_Reference_ID=541725
+	 * Reference name: Base Line Types List
+	 */
+	public static final int BASELINETYPE_AD_Reference_ID=541725;
+	/** After Delivery = AD */
+	public static final String BASELINETYPE_AfterDelivery = "AD";
+	/** After Bill of Landing = ABL */
+	public static final String BASELINETYPE_AfterBillOfLanding = "ABL";
+	/** Invoice Date = ID */
+	public static final String BASELINETYPE_InvoiceDate = "ID";
 	@Override
-	public void setAfterDelivery (final boolean AfterDelivery)
+	public void setBaseLineType (final java.lang.String BaseLineType)
 	{
-		set_Value (COLUMNNAME_AfterDelivery, AfterDelivery);
+		set_Value (COLUMNNAME_BaseLineType, BaseLineType);
 	}
 
 	@Override
-	public boolean isAfterDelivery() 
+	public java.lang.String getBaseLineType() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_AfterDelivery);
+		return get_ValueAsString(COLUMNNAME_BaseLineType);
+	}
+
+	/** 
+	 * CalculationMethod AD_Reference_ID=541726
+	 * Reference name: Calculation Method List
+	 */
+	public static final int CALCULATIONMETHOD_AD_Reference_ID=541726;
+	/** Base Line Date +X days = BLDX */
+	public static final String CALCULATIONMETHOD_BaseLineDatePlusXDays = "BLDX";
+	/** Base Line Date +X days and then end of month = BLDXE */
+	public static final String CALCULATIONMETHOD_BaseLineDatePlusXDaysAndThenEndOfMonth = "BLDXE";
+	/** End of the month of baseline date plus X days = EBLDX */
+	public static final String CALCULATIONMETHOD_EndOfTheMonthOfBaselineDatePlusXDays = "EBLDX";
+	@Override
+	public void setCalculationMethod (final java.lang.String CalculationMethod)
+	{
+		set_Value (COLUMNNAME_CalculationMethod, CalculationMethod);
+	}
+
+	@Override
+	public java.lang.String getCalculationMethod() 
+	{
+		return get_ValueAsString(COLUMNNAME_CalculationMethod);
 	}
 
 	@Override
@@ -230,18 +264,6 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	public boolean isDueFixed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDueFixed);
-	}
-
-	@Override
-	public void setIsNextBusinessDay (final boolean IsNextBusinessDay)
-	{
-		set_Value (COLUMNNAME_IsNextBusinessDay, IsNextBusinessDay);
-	}
-
-	@Override
-	public boolean isNextBusinessDay() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsNextBusinessDay);
 	}
 
 	@Override
