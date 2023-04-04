@@ -39,8 +39,9 @@ import java.sql.Timestamp;
 
 @Builder
 @Value
-public class PaymentTerm
+public final class PaymentTerm
 {
+
 	@NonNull PaymentTermId id;
 	@NonNull OrgId orgId;
 	@NonNull ClientId clientId;
@@ -60,11 +61,15 @@ public class PaymentTerm
 	boolean allowOverrideDueDate;
 	boolean _default;
 
+	/**
+	 * Computes the due date based on the calculation method and net days of this payment term.
+	 *
+	 * @param baseLineDate the base line date to compute the due date from
+	 * @return the computed due date
+	 * @throws AdempiereException if the calculation method is unknown
+	 */
 	public Timestamp computeDueDate(@NonNull final Timestamp baseLineDate)
 	{
-		int netDays = getNetDays();
-
-		@NonNull CalculationMethod calculationMethod = getCalculationMethod();
 		switch (calculationMethod)
 		{
 			case BaseLineDatePlusXDays:
@@ -76,9 +81,7 @@ public class PaymentTerm
 				final Timestamp endOfMonthDate = TimeUtil.getMonthLastDay(baseLineDate);
 				return TimeUtil.addDays(endOfMonthDate, netDays);
 			default:
-				throw new AdempiereException("Unknown type for " + this);
+				throw new AdempiereException("Unknown calculation method for payment term " + id);
 		}
-
 	}
 }
-

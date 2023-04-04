@@ -24,9 +24,7 @@ package de.metas.invoicecandidate.process.params;
 
 import de.metas.forex.ForexContractRef;
 import de.metas.forex.process.utils.ForexContractParameters;
-import de.metas.forex.process.utils.ForexContracts;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.process.IProcessDefaultParametersProvider;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -133,29 +131,4 @@ public class InvoicingParams
 
 		return map;
 	}
-
-	@Nullable
-	public Object getParameterDefaultValue(
-			@NonNull final String parameterName,
-			@Nullable final ForexContracts contracts)
-	{
-		switch (parameterName)
-		{
-			case ForexContractParameters.PARAM_IsFEC:
-				return contracts != null && !contracts.isEmpty();
-			case ForexContractParameters.PARAM_FEC_Order_Currency_ID:
-				return contracts != null ? contracts.getOrderCurrencyId() : null;
-			case ForexContractParameters.PARAM_C_ForeignExchangeContract_ID:
-				return contracts != null ? contracts.getSingleForexContractIdOrNull() : null;
-			case ForexContractParameters.PARAM_FEC_From_Currency_ID:
-				return contracts != null ? contracts.suggestFromCurrencyId() : null;
-			case ForexContractParameters.PARAM_FEC_To_Currency_ID:
-				return contracts != null ? contracts.suggestToCurrencyId() : null;
-			case ForexContractParameters.PARAM_FEC_CurrencyRate:
-				return contracts != null ? contracts.suggestCurrencyRate() : null;
-			default:
-				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-		}
-	}
-
 }
