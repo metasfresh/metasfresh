@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BP_BankAccount_Acct
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_BankAccount_Acct extends org.compiere.model.PO implements I_C_BP_BankAccount_Acct, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 349311753L;
+	private static final long serialVersionUID = -1210025809L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount_Acct (final Properties ctx, final int C_BP_BankAccount_Acct_ID, @Nullable final String trxName)
@@ -425,5 +425,53 @@ public class X_C_BP_BankAccount_Acct extends org.compiere.model.PO implements I_
 	public int getPayment_WriteOff_Acct() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Payment_WriteOff_Acct);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ValidCombination getRealizedGain_A()
+	{
+		return get_ValueAsPO(COLUMNNAME_RealizedGain_Acct, org.compiere.model.I_C_ValidCombination.class);
+	}
+
+	@Override
+	public void setRealizedGain_A(final org.compiere.model.I_C_ValidCombination RealizedGain_A)
+	{
+		set_ValueFromPO(COLUMNNAME_RealizedGain_Acct, org.compiere.model.I_C_ValidCombination.class, RealizedGain_A);
+	}
+
+	@Override
+	public void setRealizedGain_Acct (final int RealizedGain_Acct)
+	{
+		set_Value (COLUMNNAME_RealizedGain_Acct, RealizedGain_Acct);
+	}
+
+	@Override
+	public int getRealizedGain_Acct() 
+	{
+		return get_ValueAsInt(COLUMNNAME_RealizedGain_Acct);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ValidCombination getRealizedLoss_A()
+	{
+		return get_ValueAsPO(COLUMNNAME_RealizedLoss_Acct, org.compiere.model.I_C_ValidCombination.class);
+	}
+
+	@Override
+	public void setRealizedLoss_A(final org.compiere.model.I_C_ValidCombination RealizedLoss_A)
+	{
+		set_ValueFromPO(COLUMNNAME_RealizedLoss_Acct, org.compiere.model.I_C_ValidCombination.class, RealizedLoss_A);
+	}
+
+	@Override
+	public void setRealizedLoss_Acct (final int RealizedLoss_Acct)
+	{
+		set_Value (COLUMNNAME_RealizedLoss_Acct, RealizedLoss_Acct);
+	}
+
+	@Override
+	public int getRealizedLoss_Acct() 
+	{
+		return get_ValueAsInt(COLUMNNAME_RealizedLoss_Acct);
 	}
 }

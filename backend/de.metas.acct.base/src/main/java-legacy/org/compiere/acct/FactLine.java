@@ -1250,6 +1250,9 @@ public final class FactLine extends X_Fact_Acct
 						toAccountDimension()));
 			}
 		}
+
+		updateCurrencyRateIfNotSet();
+
 		return true;
 	}    // beforeSave
 
@@ -1729,6 +1732,31 @@ public final class FactLine extends X_Fact_Acct
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
 		{
 			setUserElementString7(dim.getUserElementString7());
+		}
+	}
+
+	@NonNull
+	private BigDecimal computeCurrencyRate()
+	{
+		final BigDecimal amtAcct = getAmtAcctDr().add(getAmtAcctCr());
+		final BigDecimal amtSource = getAmtSourceDr().add(getAmtSourceCr());
+
+		if (amtAcct.signum() == 0 || amtSource.signum() == 0)
+		{
+			return BigDecimal.ZERO; // dev-note: does not matter
+		}
+
+		final CurrencyPrecision schemaCurrencyPrecision = getAcctSchema().getStandardPrecision();
+
+		return amtAcct
+				.divide(amtSource, schemaCurrencyPrecision.toInt(), schemaCurrencyPrecision.getRoundingMode());
+	}
+
+	private void updateCurrencyRateIfNotSet()
+	{
+		if (getCurrencyRate().signum() == 0 || getCurrencyRate().compareTo(BigDecimal.ONE) == 0)
+		{
+			setCurrencyRate(computeCurrencyRate());
 		}
 	}
 }    // FactLine
