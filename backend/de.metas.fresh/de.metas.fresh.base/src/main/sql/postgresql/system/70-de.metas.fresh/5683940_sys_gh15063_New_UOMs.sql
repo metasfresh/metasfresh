@@ -30,7 +30,7 @@ UPDATE C_UOM_Trl trl SET UOMSymbol='DR' WHERE C_UOM_ID=540058 AND (IsTranslated=
 ;
 
 -- 2023-04-04T08:02:59.909Z
-INSERT INTO C_UOM (AD_Client_ID,AD_Org_ID,CostingPrecision,Created,CreatedBy,C_UOM_ID,IsActive,IsDefault,Name,StdPrecision,UOMSymbol,Updated,UpdatedBy,X12DE355) VALUES (1000000,0,2,TO_TIMESTAMP('2023-04-04 10:02:59','YYYY-MM-DD HH24:MI:SS'),100,540059,'Y','N','Hectoliter pure alcohol',2,'HLA',TO_TIMESTAMP('2023-04-04 10:02:59','YYYY-MM-DD HH24:MI:SS'),100,'HLA')
+INSERT INTO C_UOM (AD_Client_ID,AD_Org_ID,CostingPrecision,Created,CreatedBy,C_UOM_ID,IsActive,IsDefault,Name,StdPrecision,UOMSymbol,Updated,UpdatedBy,X12DE355) VALUES (1000000,0,2,TO_TIMESTAMP('2023-04-04 10:02:59','YYYY-MM-DD HH24:MI:SS'),100,540059,'Y','N','Hectoliter',2,'HLA',TO_TIMESTAMP('2023-04-04 10:02:59','YYYY-MM-DD HH24:MI:SS'),100,'HLA')
 ;
 
 -- 2023-04-04T08:02:59.912Z
