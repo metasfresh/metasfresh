@@ -1210,7 +1210,7 @@ public abstract class PO
 				final ADRefList adRefList = services.getRefListById(p_info.getColumn(index).AD_Reference_Value_ID);
 				if (!adRefList.containsValue((String)valueToUse))
 				{
-					throw new AdempiereException(ColumnName + " Invalid value - " + valueToUse + " - " + adRefList);
+					throw new AdempiereException(get_TableName() + "." + ColumnName + " Invalid value - " + valueToUse + " - " + adRefList);
 				}
 			}
 			if (log.isTraceEnabled())
