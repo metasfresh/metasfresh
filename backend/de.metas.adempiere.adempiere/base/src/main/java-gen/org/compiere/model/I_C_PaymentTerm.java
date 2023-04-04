@@ -111,7 +111,7 @@ public interface I_C_PaymentTerm
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCalculationMethod();
+	java.lang.String getCalculationMethod();
 
 	ModelColumn<I_C_PaymentTerm, Object> COLUMN_CalculationMethod = new ModelColumn<>(I_C_PaymentTerm.class, "CalculationMethod", null);
 	String COLUMNNAME_CalculationMethod = "CalculationMethod";

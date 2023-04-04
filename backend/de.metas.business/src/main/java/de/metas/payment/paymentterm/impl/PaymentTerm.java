@@ -23,14 +23,19 @@
 package de.metas.payment.paymentterm.impl;
 
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.CalculationMethod;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 @Builder
 @Value
@@ -39,6 +44,8 @@ public class PaymentTerm
 	@NonNull PaymentTermId id;
 	@NonNull OrgId orgId;
 	@NonNull ClientId clientId;
+	@NonNull CalculationMethod calculationMethod;
+	@NonNull BaseLineType baseLineType;
 
 	@Nullable String value;
 	@Nullable String name;
@@ -52,5 +59,26 @@ public class PaymentTerm
 	int netDays;
 	boolean allowOverrideDueDate;
 	boolean _default;
+
+	public Timestamp computeDueDate(@NonNull final Timestamp baseLineDate)
+	{
+		int netDays = getNetDays();
+
+		@NonNull CalculationMethod calculationMethod = getCalculationMethod();
+		switch (calculationMethod)
+		{
+			case BaseLineDatePlusXDays:
+				return TimeUtil.addDays(baseLineDate, netDays);
+			case BaseLineDatePlusXDaysAndThenEndOfMonth:
+				final Timestamp computedBLDate = TimeUtil.addDays(baseLineDate, netDays);
+				return TimeUtil.getMonthLastDay(computedBLDate);
+			case EndOfTheMonthOfBaselineDatePlusXDays:
+				final Timestamp endOfMonthDate = TimeUtil.getMonthLastDay(baseLineDate);
+				return TimeUtil.addDays(endOfMonthDate, netDays);
+			default:
+				throw new AdempiereException("Unknown type for " + this);
+		}
+
+	}
 }
 

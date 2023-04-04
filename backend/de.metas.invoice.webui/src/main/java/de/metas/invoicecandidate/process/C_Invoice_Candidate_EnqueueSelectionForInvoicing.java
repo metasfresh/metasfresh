@@ -28,6 +28,7 @@ package de.metas.invoicecandidate.process;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.BPartnerId;
 import de.metas.forex.ForexContractService;
 import de.metas.forex.process.utils.ForexContractParameters;
 import de.metas.forex.process.utils.ForexContracts;
@@ -38,6 +39,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -67,12 +69,17 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.function.Supplier;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
@@ -149,6 +156,11 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
+		if (InvoicingParams.PARA_OverrideDueDate.contentEquals(parameter.getColumnName()))
+		{
+			return computeOverrideDueDate();
+		}
+
 		return p_FECParams.getParameterDefaultValue(parameter.getColumnName(), getContracts());
 	}
 
@@ -337,6 +349,39 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		return createICQueryBuilder(selectionFilter, false)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
+	}
+
+	private int countPaymentTerms()
+	{
+		return createICQueryBuilder()
+				.create()
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID)
+				.size();
+
+	}
+
+	private Timestamp retrieveEarliestBaseLineDate()
+	{
+
+		final Timestamp  earliestDateInvoice =  createICQueryBuilder()
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+				.create()
+				.first()
+				.getDateInvoiced();
+
+		return earliestDateInvoice;
+
+
+	}
+
+	private LocalDate computeOverrideDueDate()
+	{
+		if (countPaymentTerms() > 0)
+		{
+			return null;
+		}
+
+		return null;
 	}
 
 }
