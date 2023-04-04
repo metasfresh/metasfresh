@@ -35,7 +35,6 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -72,7 +71,7 @@ public class C_Invoice // 03771
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	private final  IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
+	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
@@ -166,8 +165,7 @@ public class C_Invoice // 03771
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		@SuppressWarnings("ConstantConditions")
-		final I_M_PriceList_Version priceListVersion = priceListDAO
+		@SuppressWarnings("ConstantConditions") final I_M_PriceList_Version priceListVersion = priceListDAO
 				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
@@ -282,7 +280,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
-																							   false).toBigDecimal(); // creditMemoAdjusted = false
+					false).toBigDecimal(); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
@@ -403,12 +401,12 @@ public class C_Invoice // 03771
 		final Money grandTotal = extractGrandTotal(salesInvoice);
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-														.salesOrderId(salesOrderId)
-														.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
-														.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
-														.dateTrx(dateTrx)
-														.amount(grandTotal)
-														.build());
+				.salesOrderId(salesOrderId)
+				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+				.dateTrx(dateTrx)
+				.amount(grandTotal)
+				.build());
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
@@ -423,13 +421,68 @@ public class C_Invoice // 03771
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_SectionCode_ID })
-	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_M_SectionCode_ID)
-	public void updateSectionCode(@NonNull final I_C_Invoice invoice)
+			ifColumnsChanged = {
+					I_C_Invoice.COLUMNNAME_M_SectionCode_ID,
+					I_C_Invoice.COLUMNNAME_UserElementString1,
+					I_C_Invoice.COLUMNNAME_UserElementString2,
+					I_C_Invoice.COLUMNNAME_UserElementString3,
+					I_C_Invoice.COLUMNNAME_UserElementString4,
+					I_C_Invoice.COLUMNNAME_UserElementString5,
+					I_C_Invoice.COLUMNNAME_UserElementString6,
+					I_C_Invoice.COLUMNNAME_UserElementString7,
+			})
+	public void copyDimensionToLines(@NonNull final I_C_Invoice invoice)
 	{
-		for (final I_C_InvoiceLine line : invoiceDAO.retrieveLines(invoice))
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice);
+		if (lines.isEmpty())
 		{
-			line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+			return;
+		}
+
+		final boolean sectionCodeChanged = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_M_SectionCode_ID);
+		final boolean userElementString1Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString1);
+		final boolean userElementString2Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString2);
+		final boolean userElementString3Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString3);
+		final boolean userElementString4Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString4);
+		final boolean userElementString5Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString5);
+		final boolean userElementString6Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString6);
+		final boolean userElementString7Changed = InterfaceWrapperHelper.isValueChanged(invoice, I_C_Invoice.COLUMNNAME_UserElementString7);
+
+		for (final I_C_InvoiceLine line : lines)
+		{
+			if (sectionCodeChanged)
+			{
+				line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+			}
+			if (userElementString1Changed)
+			{
+				line.setUserElementString1(invoice.getUserElementString1());
+			}
+			if (userElementString2Changed)
+			{
+				line.setUserElementString2(invoice.getUserElementString2());
+			}
+			if (userElementString3Changed)
+			{
+				line.setUserElementString3(invoice.getUserElementString3());
+			}
+			if (userElementString4Changed)
+			{
+				line.setUserElementString4(invoice.getUserElementString4());
+			}
+			if (userElementString5Changed)
+			{
+				line.setUserElementString5(invoice.getUserElementString5());
+			}
+			if (userElementString6Changed)
+			{
+				line.setUserElementString6(invoice.getUserElementString6());
+			}
+			if (userElementString7Changed)
+			{
+				line.setUserElementString7(invoice.getUserElementString7());
+			}
+
 			invoiceDAO.save(line);
 		}
 	}
@@ -439,8 +492,8 @@ public class C_Invoice // 03771
 	{
 		bPartnerStatisticsUpdater
 				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
-												  .bpartnerId(invoice.getC_BPartner_ID())
-												  .build());
+						.bpartnerId(invoice.getC_BPartner_ID())
+						.build());
 
 	}
 }
