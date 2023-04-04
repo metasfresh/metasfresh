@@ -290,3 +290,29 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,713600,0,184,550518,616515,'F',TO_TIMESTAMP('2023-04-03 18:08:55','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Calculation Method',20,0,0,TO_TIMESTAMP('2023-04-03 18:08:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- Column: C_PaymentTerm.ab182_isAfterArrival
+-- 2023-04-04T08:58:14.239Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=584181
+;
+
+-- 2023-04-04T08:58:14.241Z
+DELETE FROM AD_Column WHERE AD_Column_ID=584181
+;
+
+-- Column: C_PaymentTerm.ab182_isAfterBL
+-- 2023-04-04T08:58:19.875Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=584182
+;
+
+-- 2023-04-04T08:58:19.876Z
+DELETE FROM AD_Column WHERE AD_Column_ID=584182
+;
+
+
+ALTER TABLE c_paymentterm
+    DROP COLUMN ab182_isafterarrival
+;
+
+ALTER TABLE c_paymentterm
+    DROP COLUMN ab182_isafterbl
+;
