@@ -44,6 +44,16 @@ public enum BankAccountAcctType
 
 	Payment_WriteOff_Acct(I_C_BP_BankAccount_Acct.COLUMNNAME_Payment_WriteOff_Acct),
 
+
+	/**
+	 * Allocation - Realized Gain
+	 */
+	RealizedGain_Acct(I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedGain_Acct),
+
+	/**
+	 * Allocation - Realized Loss
+	 */
+	RealizedLoss_Acct(I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedLoss_Acct),
 	;
 
 	@Getter @NonNull private final String columnName;
