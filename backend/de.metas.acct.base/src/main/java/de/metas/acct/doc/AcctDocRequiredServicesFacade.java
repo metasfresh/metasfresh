@@ -17,7 +17,6 @@ import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -80,7 +79,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.PO;
@@ -440,15 +438,5 @@ public class AcctDocRequiredServicesFacade
 	public Dimension extractDimensionFromModel(final Object model)
 	{
 		return dimensionService.getFromRecord(model);
-	}
-
-	public void setC_BPartner_Location_ID(@NonNull final I_Fact_Acct factAcct, @Nullable final BPartnerLocationId bPartnerLocationId)
-	{
-		factAcctBL.setC_BPartner_Location_ID(factAcct, bPartnerLocationId);
-	}
-
-	public void setC_BPartner_ID(@NonNull final I_Fact_Acct factAcct, @Nullable final BPartnerId bpartnerId)
-	{
-		factAcctBL.setC_BPartner_ID(factAcct, bpartnerId);
 	}
 }

@@ -24,14 +24,9 @@ package org.adempiere.acct.api;
 
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_Fact_Acct;
-
-import javax.annotation.Nullable;
 
 public interface IFactAcctBL extends ISingletonService
 {
@@ -41,11 +36,5 @@ public interface IFactAcctBL extends ISingletonService
 	 */
 	Account getAccount(I_Fact_Acct factAcct);
 
-	void updateFactLineFromDimension(I_Fact_Acct fa, AccountDimension dim);
-
 	AccountDimension createAccountDimension(I_Fact_Acct fa);
-
-	void setC_BPartner_Location_ID(@NonNull I_Fact_Acct factAcct, @Nullable BPartnerLocationId bPartnerLocationId);
-
-	void setC_BPartner_ID(@NonNull I_Fact_Acct factAcct, @Nullable BPartnerId bpartnerId);
 }

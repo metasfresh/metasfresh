@@ -195,7 +195,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		final I_C_OrderLine orderLine = docLine.getOrderLine();
 
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(orderLine.getC_BPartner_ID(), orderLine.getC_BPartner_Location_ID());
-		factLine.setC_BPartner_Location_ID(bPartnerLocationId);
+		factLine.setBPartnerIdAndLocation(bPartnerLocationId.getBpartnerId(), bPartnerLocationId);
 		factLine.setFromDimension(services.extractDimensionFromModel(orderLine));
 	}
 

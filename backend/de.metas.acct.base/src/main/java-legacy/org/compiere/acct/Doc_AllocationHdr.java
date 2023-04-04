@@ -360,8 +360,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 						.orgId(line.getPaymentOrgId())
 						.setDocLine(line)
 						.setAccount(paymentAcct)
-						.bpartnerId(line.getPaymentBPartnerId())
-						.bpartnerLocationId(line.getPaymentBPartnerLocationId());
+						.bPartnerAndLocationId(line.getPaymentBPartnerId(), line.getPaymentBPartnerLocationId());
 
 				final BigDecimal allocatedAmt = line.getAllocatedAmt();
 
@@ -532,8 +531,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId())
-				.bpartnerLocationId(line.getPaymentBPartnerLocationId())
+				.bPartnerAndLocationId(line.getPaymentBPartnerId(), line.getPaymentBPartnerLocationId())
 				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
@@ -787,8 +785,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as))
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId())
-				.bpartnerLocationId(line.getPaymentBPartnerLocationId())
+				.bPartnerAndLocationId(line.getPaymentBPartnerId(), line.getPaymentBPartnerLocationId())
 				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
@@ -858,8 +855,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 				.orgId(line.getInvoiceOrgId())
-				.bpartnerId(line.getInvoiceBPartnerId())
-				.bpartnerLocationId(line.getInvoiceBPartnerLocationId())
+				.bPartnerAndLocationId(line.getInvoiceBPartnerId(), line.getInvoiceBPartnerLocationId())
 				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
@@ -960,8 +956,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setDocLine(counterLine)
 				.setCurrencyId(getCurrencyId())
 				.orgId(counterLine.getInvoiceOrgId())
-				.bpartnerId(counterLine.getInvoiceBPartnerId())
-				.bpartnerLocationId(counterLine.getInvoiceBPartnerLocationId())
+				.bPartnerAndLocationId(counterLine.getInvoiceBPartnerId(), counterLine.getInvoiceBPartnerLocationId())
 				.alsoAddZeroLine();
 		if (counterLine.isSOTrxInvoice())
 		{

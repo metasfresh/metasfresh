@@ -215,17 +215,7 @@ public final class FactLineBuilder
 			line.setAD_Org_ID(orgId.getRepoId());
 		}
 		//
-		final BPartnerLocationId bPartnerLocationId = getBPartnerLocationId();
-		if (bPartnerLocationId != null)
-		{
-			line.setC_BPartner_Location_ID(bPartnerLocationId);
-		}
-		//
-		final BPartnerId bpartnerId = getBpartnerId();
-		if (bpartnerId != null)
-		{
-			line.setC_BPartner_ID(bpartnerId);
-		}
+		line.setBPartnerIdAndLocation(getBpartnerId(), getBPartnerLocationId());
 		//
 		final TaxId taxId = getC_Tax_ID();
 		if (taxId != null)
@@ -576,9 +566,12 @@ public final class FactLineBuilder
 	}
 
 	@NonNull
-	public FactLineBuilder bpartnerLocationId(@Nullable final BPartnerLocationId bPartnerLocationId)
+	public FactLineBuilder bPartnerAndLocationId(
+			@Nullable final BPartnerId bPartnerId,
+			@Nullable final BPartnerLocationId bPartnerLocationId)
 	{
 		assertNotBuild();
+		this.bpartnerId = bPartnerId;
 		this.bPartnerLocationId = bPartnerLocationId;
 		return this;
 	}

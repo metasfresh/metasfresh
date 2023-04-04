@@ -353,8 +353,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(roundToStdPrecision(costs), null)
 				.setQty(line.getQty()) // (+) Qty
-				.bpartnerId(line.getBPartnerId(costElement.getId()))
-				.bpartnerLocationId(line.getBPartnerLocationId(costElement.getId()))
+				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -374,8 +373,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 									: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
 				.setAmt(null, roundToStdPrecision(costs))
 				.setQty(line.getQty().negate()) // (-) Qty
-				.bpartnerId(line.getBPartnerId(costElement.getId()))
-				.bpartnerLocationId(line.getBPartnerLocationId(costElement.getId()))
+				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
 				.toLocationOfLocator(line.getM_Locator_ID())
