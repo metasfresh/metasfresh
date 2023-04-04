@@ -273,4 +273,21 @@ public class WOProjectSimulationRepository
 				toSimulationId,
 				toSimulation -> toSimulation.mergeFrom(fromSimulationPlan));
 	}
+
+	@NonNull
+	public Collection<WOProjectSimulationPlan> getSimulationPlansByStepIds(@NonNull final WOProjectStepId stepId)
+	{
+		final ImmutableList<SimulationPlanId> matchingSimulationIds = queryBL.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_WO_Step_ID, stepId)
+				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_ID, stepId.getProjectId())
+				.create()
+				.listDistinct(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, SimulationPlanId.class);
+		if (matchingSimulationIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return cacheById.getAllOrLoad(matchingSimulationIds, this::retrieveSimulationPlansByIds);
+	}
 }

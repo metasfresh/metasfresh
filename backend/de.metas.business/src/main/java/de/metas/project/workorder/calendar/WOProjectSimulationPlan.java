@@ -63,6 +63,12 @@ public final class WOProjectSimulationPlan
 		return projectResourcesById.get(woProjectResourceId);
 	}
 
+	@Nullable
+	public WOProjectStepSimulation getProjectStepByIdOrNull(@NonNull final WOProjectStepId woProjectStepId)
+	{
+		return stepsById.get(woProjectStepId);
+	}
+
 	public WOProjectResource applyOn(@NonNull final WOProjectResource woProjectResource)
 	{
 		final WOProjectResourceSimulation simulation = getProjectResourceByIdOrNull(woProjectResource.getWoProjectResourceId());

@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Value
 public class CalendarDateRange
@@ -168,4 +169,8 @@ public class CalendarDateRange
 		}
 	}
 
+	public static boolean equals(final CalendarDateRange dateRange1, final CalendarDateRange dateRange2)
+	{
+		return Objects.equals(dateRange1, dateRange2);
+	}
 }

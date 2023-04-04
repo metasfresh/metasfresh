@@ -313,6 +313,7 @@ public class WOProjectRepository
 		return WOProject.builder()
 				.projectId(projectId)
 				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(projectRecord.getAD_Client_ID()))
 				.projectReferenceExt(projectRecord.getC_Project_Reference_Ext())
 				.externalId(ExternalId.ofOrNull(projectRecord.getExternalId()))
 

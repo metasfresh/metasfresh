@@ -209,6 +209,7 @@ public class WOProjectStepRepository
 			record.setWOPlannedPersonDurationHours(NumberUtils.asInt(step.getWoPlannedPersonDurationHours(), -1));
 			record.setWOFindingsReleasedDate(TimeUtil.asTimestamp(step.getWoFindingsReleasedDate()));
 			record.setWOFindingsCreatedDate(TimeUtil.asTimestamp(step.getWoFindingsCreatedDate()));
+			record.setWODueDate(TimeUtil.asTimestamp(step.getWoDueDate()));
 
 			if (step.getWoStepStatus() != null)
 			{
@@ -357,6 +358,8 @@ public class WOProjectStepRepository
 				.woStepStatus(WOStepStatus.ofNullableCode(stepRecord.getWOStepStatus()))
 				.woFindingsReleasedDate(TimeUtil.asInstant(stepRecord.getWOFindingsReleasedDate()))
 				.woFindingsCreatedDate(TimeUtil.asInstant(stepRecord.getWOFindingsCreatedDate()))
+				.woDueDate(TimeUtil.asInstant(stepRecord.getWODueDate()))
+				.manuallyLocked(stepRecord.isManuallyLocked())
 				.build();
 	}
 	
