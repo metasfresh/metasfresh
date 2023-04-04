@@ -47,6 +47,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impexp.InventoryImportProcess;
 import de.metas.logging.LogManager;
@@ -198,7 +199,7 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		Check.assumeNotNull(inOutId, "InOutId shall be set, because of isReceived() check in preconditions");
 
 		final I_M_InOut inOutRecord = inOutDAO.getById(inOutId);
-		final Set <InOutAndLineId> inOutLinesIds = inOutDAO.retrieveLinesForInOutId(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
+		final Set<InOutAndLineId> inOutLinesIds = inOutDAO.retrieveLinesForInOutId(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
 		if(inOutLinesIds.size() == 0)
 		{
 			throw new AdempiereException("No receipt lines found");
@@ -207,6 +208,8 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		{
 			throw new AdempiereException("More than 1 receipt line exists");
 		}
+
+		final InOutLineId receiptLineId = CollectionUtils.singleElement(inOutLinesIds).getInOutLineId();
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 		inventoryRecord.setAD_Org_ID(receiptInfo.getOrgId().getRepoId());
@@ -223,12 +226,12 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		saveRecord(inventoryRecord);
 		logger.trace("Insert inventory - {}", inventoryRecord);
 
-		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), CollectionUtils.singleElement(inOutLinesIds).getInOutLineId().getRepoId());
+		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), receiptLineId);
 
 		return inventoryRecord;
 	}
 
-	private void createInventoryLine(@NonNull final InventoryId inventoryId, final int inOutLineId)
+	private void createInventoryLine(@NonNull final InventoryId inventoryId, @NonNull final InOutLineId inOutLineId)
 	{
 		final TableRecordReference mInOutLineTableRecordReference = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineId);
 		final Set<TableRecordReference> mInOutLineTableRecordReferenceSet = Collections.singleton(mInOutLineTableRecordReference);
