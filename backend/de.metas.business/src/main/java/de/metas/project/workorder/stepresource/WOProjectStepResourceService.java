@@ -22,7 +22,6 @@
 
 package de.metas.project.workorder.stepresource;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.project.ProjectId;
@@ -45,7 +44,6 @@ import java.util.stream.Stream;
 import static de.metas.project.ProjectConstants.RESERVATION_PROJECT_TYPE;
 
 @Service
-@VisibleForTesting
 public class WOProjectStepResourceService
 {
 	@NonNull
