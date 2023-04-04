@@ -9,7 +9,6 @@ import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.CostElementAccountType;
-import de.metas.acct.accounts.DefaultAccountType;
 import de.metas.acct.accounts.GLAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
@@ -1080,13 +1079,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@NonNull
 	protected final Account getRealizedGainAcct(final AcctSchema as)
 	{
-		return AccountProvider.getDefaultAccount(as, DefaultAccountType.RealizedGain);
+		return getBankAccountAccount(BankAccountAcctType.RealizedGain_Acct, as);
 	}
 
 	@NonNull
 	protected final Account getRealizedLossAcct(final AcctSchema as)
 	{
-		return AccountProvider.getDefaultAccount(as, DefaultAccountType.RealizedLoss);
+		return getBankAccountAccount(BankAccountAcctType.RealizedLoss_Acct, as);
 	}
 
 	@Override
