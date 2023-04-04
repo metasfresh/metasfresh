@@ -1324,6 +1324,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Additional Text for Invoice.
+	 * If several invoice candidates are aggregated, add text to only one of them.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1333,6 +1334,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Additional Text for Invoice.
+	 * If several invoice candidates are aggregated, add text to only one of them.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1478,7 +1480,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsFEC = "IsFEC";
 
 	/**
-	 * Set isFixedInvoice.
+	 * Set IsFixedInvoice.
 	 * Invoices with this set to Y will not have the docActions RE, RC and VO available
 	 *
 	 * <br>Type: YesNo
@@ -1488,7 +1490,7 @@ public interface I_C_Invoice
 	void setIsFixedInvoice (boolean IsFixedInvoice);
 
 	/**
-	 * Get isFixedInvoice.
+	 * Get IsFixedInvoice.
 	 * Invoices with this set to Y will not have the docActions RE, RC and VO available
 	 *
 	 * <br>Type: YesNo
@@ -1612,6 +1614,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_Invoice.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
+
+	/**
+	 * Set Print local currency VAT.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintLocalCurrencyInfo (@Nullable java.lang.String IsPrintLocalCurrencyInfo);
+
+	/**
+	 * Get Print local currency VAT.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPrintLocalCurrencyInfo();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPrintLocalCurrencyInfo = new ModelColumn<>(I_C_Invoice.class, "IsPrintLocalCurrencyInfo", null);
+	String COLUMNNAME_IsPrintLocalCurrencyInfo = "IsPrintLocalCurrencyInfo";
 
 	/**
 	 * Set Sales partner required.
