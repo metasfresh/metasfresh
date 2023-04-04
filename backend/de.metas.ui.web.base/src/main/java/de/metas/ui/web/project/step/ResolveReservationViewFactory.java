@@ -43,7 +43,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -63,8 +62,18 @@ public class ResolveReservationViewFactory implements IViewFactory, IViewsIndexS
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-	private final WOProjectStepResourceService woProjectStepResourceService = SpringContextHolder.instance.getBean(WOProjectStepResourceService.class);
-	private final WOProjectStepRowInvalidateService woProjectStepRowInvalidateService = SpringContextHolder.instance.getBean(WOProjectStepRowInvalidateService.class);
+	@NonNull
+	private final WOProjectStepResourceService woProjectStepResourceService;
+	@NonNull
+	private final WOProjectStepRowInvalidateService woProjectStepRowInvalidateService;
+
+	public ResolveReservationViewFactory(
+			@NonNull final WOProjectStepResourceService woProjectStepResourceService,
+			@NonNull final WOProjectStepRowInvalidateService woProjectStepRowInvalidateService)
+	{
+		this.woProjectStepResourceService = woProjectStepResourceService;
+		this.woProjectStepRowInvalidateService = woProjectStepRowInvalidateService;
+	}
 
 	@Override
 	public IView createView(@NonNull final CreateViewRequest request)
