@@ -104,7 +104,7 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 
 		final HUTraceEventQuery huTraceEventQuery = de.metas.handlingunits.trace.HUTraceEventQuery.builder()
 				.vhuId(firstHUId)
-				.types(HUTraceType.typesToReport())				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
+				.types(HUTraceType.typesToReport()).recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
 				.build();
 
 		final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
@@ -144,7 +144,9 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				+ ", " + I_M_HU_Trace.COLUMNNAME_Created
 				+ ", " + I_M_HU_Trace.COLUMNNAME_Qty
 				+ " FROM " + I_M_HU_Trace.Table_Name
-				+ " WHERE M_HU_Trace_ID IN (select T_Selection_ID from T_Selection where AD_PInstance_ID= " + pinstanceId.getRepoId()+ ") ";
+				+ " WHERE EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=" + pinstanceId.getRepoId()
+				+ " AND s.T_Selection_ID= " + I_M_HU_Trace.Table_Name + "." + I_M_HU_Trace.COLUMNNAME_M_HU_Trace_ID
+				+ ")";
 	}
 
 	private List<String> getColumnHeaders()
