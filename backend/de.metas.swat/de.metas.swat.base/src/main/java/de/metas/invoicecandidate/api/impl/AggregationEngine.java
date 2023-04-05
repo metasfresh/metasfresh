@@ -574,7 +574,7 @@ public final class AggregationEngine
 
 	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+		final PaymentTermId paymentTermId = invoiceCandBL.getPaymentTermId(ic);
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
 
 		return CoalesceUtil.coalesceSuppliers(
@@ -603,14 +603,6 @@ public final class AggregationEngine
 					final Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
 					return TimeUtil.asLocalDate(paymentTerm.computeDueDate(baseLineDate), timeZone);
 				});
-	}
-
-	private PaymentTermId getC_PaymentTerm_ID(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		return CoalesceUtil.coalesceSuppliers(
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
-				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
-
 	}
 
 	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)

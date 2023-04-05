@@ -40,6 +40,7 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
@@ -72,6 +73,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isAllowedToCreateInvoiceCandidateFor(Object model);
 
 	Timestamp getBaseLineDate(@NonNull PaymentTerm paymentTerm, @NonNull I_C_Invoice_Candidate ic);
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Invoice_Candidate ic);
 
 	interface IInvoiceGenerateResult
 	{
