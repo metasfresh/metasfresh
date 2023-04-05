@@ -14,9 +14,9 @@ import java.util.Optional;
 
 public enum BaseLineType implements ReferenceListAwareEnum
 {
-	AfterDelivery(X_C_PaymentTerm.BASELINETYPES_AfterDelivery), // AD
-	AfterBillOfLanding(X_C_PaymentTerm.BASELINETYPES_AfterBillOfLanding), // ABL
-	InvoiceDate(X_C_PaymentTerm.BASELINETYPES_InvoiceDate) // ID
+	AfterDelivery(X_C_PaymentTerm.BASELINETYPE_AfterDelivery), // AD
+	AfterBillOfLanding(X_C_PaymentTerm.BASELINETYPE_AfterBillOfLanding), // ABL
+	InvoiceDate(X_C_PaymentTerm.BASELINETYPE_InvoiceDate) // ID
 	;
 
 	@Getter
