@@ -20,8 +20,10 @@
  * #L%
  */
 
+DROP FUNCTION IF EXISTS getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone, timestamp with time zone);
+
 CREATE OR REPLACE FUNCTION getLocalTaxReportingConversionRateDate(p_taxReportRateBase varchar, p_c_calendar_id numeric, p_dateinvoiced timestamp with time zone, p_movementdate timestamp with time zone)
-    RETURNS timestamp without time zone
+    RETURNS timestamp with time zone
     LANGUAGE plpgsql
 AS
 $$
@@ -29,8 +31,6 @@ $$
 DECLARE
 
     dateResult timestamp with time zone;
-    count numeric;
-    attempt int := 1;
 
 BEGIN
     IF (p_taxReportRateBase IS NULL OR TRIM(p_taxReportRateBase) = '') THEN
@@ -51,37 +51,19 @@ BEGIN
 
     -- I  - invoice date
     IF (p_taxReportRateBase = 'I') THEN
-        dateResult = trunc(p_dateinvoiced, 'DD');
-        dateResult = dateResult - 1;
+        dateResult = p_dateinvoiced;
 
     -- S  - goods issue / shipment date
     ELSIF (p_taxReportRateBase = 'S') THEN
-        dateResult = trunc(p_movementdate, 'DD');
-        dateResult = dateResult - 1;
+        dateResult = p_movementdate;
 
     -- BI - 1 day before invoice date
     ELSIF (p_taxReportRateBase = 'BI') THEN
-        dateResult = trunc(p_dateinvoiced, 'DD');
+        dateResult = p_dateinvoiced;
         dateResult = dateResult - 1;
     END IF;
 
-    WHILE (attempt < 100) LOOP
-            SELECT count(*)
-            FROM c_nonbusinessday
-            WHERE c_calendar_id = p_c_calendar_id
-              AND isactive = 'Y'
-              AND trunc(date1, 'DD') = dateResult
-            INTO count;
-
-            IF (count = 0) THEN
-                RETURN dateResult;
-            END IF;
-
-            dateResult = dateResult - 1;
-            attempt := attempt + 1;
-        END LOOP;
-
-    RAISE EXCEPTION 'No business day found after going back % days', attempt;
+    RETURN lastbusinessday(dateResult, p_c_calendar_id);
 
 EXCEPTION WHEN OTHERS THEN
     RAISE NOTICE '%', SQLERRM;

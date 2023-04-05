@@ -20,8 +20,53 @@
  * #L%
  */
 
+CREATE FUNCTION lastbusinessday(p_date timestamp with time zone, p_c_calendar_id numeric) RETURNS timestamp with time zone
+    LANGUAGE plpgsql
+AS
+$$
+
+DECLARE
+    v_nextDate	date := trunc(p_Date);
+    v_offset	numeric	:= 0;
+    v_Saturday	numeric	:= TO_CHAR(TO_DATE('2000-01-01', 'YYYY-MM-DD'), 'D');
+    v_Sunday	numeric	:= (case when v_Saturday = 7 then 1 else v_Saturday + 1 end);
+    v_isHoliday	boolean	:= true;
+    nbd C_NonBusinessDay%ROWTYPE;
+begin
+    v_isHoliday := true;
+    loop
+        SELECT	CASE TO_CHAR(v_nextDate,'D')::numeric
+                      WHEN v_Saturday THEN -1
+                      WHEN v_Sunday THEN -2
+                                      ELSE 0
+                  END INTO v_offset;
+        v_nextDate := v_nextDate + v_offset::integer;
+        v_isHoliday := false;
+        FOR nbd IN	SELECT *
+                      FROM C_NonBusinessDay
+                      WHERE c_calendar_id=p_c_calendar_id and IsActive ='Y' and Date1 <= v_nextDate
+                      ORDER BY Date1 DESC
+            LOOP
+                exit when v_nextDate <> trunc(nbd.Date1);
+                v_nextDate := v_nextDate - 1;
+                v_isHoliday := true;
+            end loop;
+        exit when v_isHoliday=false;
+    end loop;
+    --
+    return v_nextDate::timestamp with time zone;
+end;
+$$
+;
+
+COMMENT ON FUNCTION lastbusinessday(timestamp with time zone, numeric) IS
+    'Find last business day in given calendar including given date'
+;
+
+DROP FUNCTION IF EXISTS getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone, timestamp with time zone);
+
 CREATE OR REPLACE FUNCTION getLocalTaxReportingConversionRateDate(p_taxReportRateBase varchar, p_c_calendar_id numeric, p_dateinvoiced timestamp with time zone, p_movementdate timestamp with time zone)
-    RETURNS timestamp without time zone
+    RETURNS timestamp with time zone
     LANGUAGE plpgsql
 AS
 $$
@@ -29,8 +74,6 @@ $$
 DECLARE
 
     dateResult timestamp with time zone;
-    count numeric;
-    attempt int := 1;
 
 BEGIN
     IF (p_taxReportRateBase IS NULL OR TRIM(p_taxReportRateBase) = '') THEN
@@ -51,35 +94,19 @@ BEGIN
 
     -- I  - invoice date
     IF (p_taxReportRateBase = 'I') THEN
-        dateResult = trunc(p_dateinvoiced, 'DD');
+        dateResult = p_dateinvoiced;
 
-        -- S  - goods issue / shipment date
+    -- S  - goods issue / shipment date
     ELSIF (p_taxReportRateBase = 'S') THEN
-        dateResult = trunc(p_movementdate, 'DD');
+        dateResult = p_movementdate;
 
-        -- BI - 1 day before invoice date
+    -- BI - 1 day before invoice date
     ELSIF (p_taxReportRateBase = 'BI') THEN
-        dateResult = trunc(p_dateinvoiced, 'DD');
+        dateResult = p_dateinvoiced;
         dateResult = dateResult - 1;
     END IF;
 
-    WHILE (attempt < 100) LOOP
-            SELECT count(*)
-            FROM c_nonbusinessday
-            WHERE c_calendar_id = p_c_calendar_id
-              AND isactive = 'Y'
-              AND trunc(date1, 'DD') = dateResult
-            INTO count;
-
-            IF (count = 0) THEN
-                RETURN dateResult;
-            END IF;
-
-            dateResult = dateResult - 1;
-            attempt := attempt + 1;
-        END LOOP;
-
-    RAISE EXCEPTION 'No business day found after going back % days', attempt;
+    RETURN lastbusinessday(dateResult, p_c_calendar_id);
 
 EXCEPTION WHEN OTHERS THEN
     RAISE NOTICE '%', SQLERRM;

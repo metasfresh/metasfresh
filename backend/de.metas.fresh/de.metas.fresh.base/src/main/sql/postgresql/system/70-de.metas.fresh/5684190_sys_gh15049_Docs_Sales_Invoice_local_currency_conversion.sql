@@ -20,6 +20,8 @@
  * #L%
  */
 
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_local_currency_conversion(numeric);
+
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_local_currency_conversion(IN p_C_invoice_id numeric)
     RETURNS TABLE
             (
@@ -27,7 +29,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 IsPrintLocalTaxReporting    boolean,
                 local_iso_code              bpchar(3),
                 conversion_rate             numeric,
-                conversion_date             timestamp without time zone,
+                conversion_date             timestamp with time zone,
                 local_taxbaseamt            numeric,
                 local_taxamt                numeric
             )
@@ -37,7 +39,7 @@ $$
 WITH records as (
     SELECT it.C_Invoice_ID,
            CASE
-               WHEN i.m_inout_id IS NULL OR i.c_order_id IS NULL   THEN FALSE --aggregated ICs aren't printed
+               WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL   THEN FALSE --aggregated ICs aren't printed
                WHEN i.isprintlocalcurrencyinfo = 'N'               THEN FALSE
                WHEN bp.isprintlocalcurrencyinfo = 'N'
                    AND   i.isprintlocalcurrencyinfo <> 'Y'        THEN FALSE
@@ -47,7 +49,7 @@ WITH records as (
            c.c_currency_id AS currency_from,
            cu.c_currency_id AS currency_to,
            CASE
-               WHEN i.m_inout_id IS NULL OR i.c_order_id IS NULL THEN NULL --aggregated ICs aren't printed
+               WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL THEN NULL --aggregated ICs aren't printed
                                                                  ELSE
                                                                      getlocaltaxreportingconversionratedate(
                                                                              tr.taxreportingratebase,
