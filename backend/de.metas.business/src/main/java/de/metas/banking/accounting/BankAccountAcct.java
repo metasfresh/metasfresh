@@ -1,12 +1,12 @@
 package de.metas.banking.accounting;
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 
 import java.util.Optional;
 
@@ -52,6 +52,8 @@ public class BankAccountAcct
 	@NonNull Account B_InterestRev_Acct;
 	@NonNull Account B_InterestExp_Acct;
 	@NonNull Account PayBankFee_Acct;
+	@NonNull Account RealizedGain_Acct;
+	@NonNull Account RealizedLoss_Acct;
 
 	@NonNull Optional<Account> Payment_WriteOff_Acct;
 
@@ -79,6 +81,10 @@ public class BankAccountAcct
 				return Optional.of(B_InterestRev_Acct);
 			case B_InterestExp_Acct:
 				return Optional.of(B_InterestExp_Acct);
+			case RealizedGain_Acct:
+				return Optional.of(RealizedGain_Acct);
+			case RealizedLoss_Acct:
+				return Optional.of(RealizedLoss_Acct);
 			case Payment_WriteOff_Acct:
 				return Payment_WriteOff_Acct;
 

@@ -290,3 +290,37 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,713600,0,184,550518,616515,'F',TO_TIMESTAMP('2023-04-03 18:08:55','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Calculation Method',20,0,0,TO_TIMESTAMP('2023-04-03 18:08:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+DELETE
+FROM exp_formatline
+WHERE ad_column_id IN (3900, 2037)
+;
+
+
+
+-- Column: C_PaymentTerm.AfterDelivery
+-- 2023-04-04T10:45:47.271Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=2037
+;
+
+-- 2023-04-04T10:45:47.275Z
+DELETE FROM AD_Column WHERE AD_Column_ID=2037
+;
+
+-- Column: C_PaymentTerm.IsNextBusinessDay
+-- 2023-04-04T10:46:22.196Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=3900
+;
+
+-- 2023-04-04T10:46:22.199Z
+DELETE FROM AD_Column WHERE AD_Column_ID=3900
+;
+
+
+ALTER TABLE c_paymentterm
+    DROP COLUMN isnextbusinessday
+;
+
+ALTER TABLE c_paymentterm
+    DROP COLUMN afterdelivery
+;

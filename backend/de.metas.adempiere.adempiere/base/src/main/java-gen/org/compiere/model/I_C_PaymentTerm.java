@@ -52,27 +52,46 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set After Delivery.
-	 * Due after delivery rather than after invoicing
+	 * Set Special Baseline Date Determination.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAfterDelivery (boolean AfterDelivery);
+	void setBaseLineType (java.lang.String BaseLineType);
 
 	/**
-	 * Get After Delivery.
-	 * Due after delivery rather than after invoicing
+	 * Get Special Baseline Date Determination.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAfterDelivery();
+	java.lang.String getBaseLineType();
 
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_AfterDelivery = new ModelColumn<>(I_C_PaymentTerm.class, "AfterDelivery", null);
-	String COLUMNNAME_AfterDelivery = "AfterDelivery";
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_BaseLineType = new ModelColumn<>(I_C_PaymentTerm.class, "BaseLineType", null);
+	String COLUMNNAME_BaseLineType = "BaseLineType";
+
+	/**
+	 * Set Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCalculationMethod (java.lang.String CalculationMethod);
+
+	/**
+	 * Get Calculation Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCalculationMethod();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_CalculationMethod = new ModelColumn<>(I_C_PaymentTerm.class, "CalculationMethod", null);
+	String COLUMNNAME_CalculationMethod = "CalculationMethod";
 
 	/**
 	 * Set Base Line Types.
@@ -502,29 +521,6 @@ public interface I_C_PaymentTerm
 
 	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsDueFixed = new ModelColumn<>(I_C_PaymentTerm.class, "IsDueFixed", null);
 	String COLUMNNAME_IsDueFixed = "IsDueFixed";
-
-	/**
-	 * Set Next Business Day.
-	 * Payment due on the next business day
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsNextBusinessDay (boolean IsNextBusinessDay);
-
-	/**
-	 * Get Next Business Day.
-	 * Payment due on the next business day
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isNextBusinessDay();
-
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsNextBusinessDay = new ModelColumn<>(I_C_PaymentTerm.class, "IsNextBusinessDay", null);
-	String COLUMNNAME_IsNextBusinessDay = "IsNextBusinessDay";
 
 	/**
 	 * Set Is Valid.

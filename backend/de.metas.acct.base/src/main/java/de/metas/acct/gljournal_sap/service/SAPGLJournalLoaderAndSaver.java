@@ -217,6 +217,13 @@ public class SAPGLJournalLoaderAndSaver
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.userElementString1(record.getUserElementString1())
+				.userElementString2(record.getUserElementString2())
+				.userElementString3(record.getUserElementString3())
+				.userElementString4(record.getUserElementString4())
+				.userElementString5(record.getUserElementString5())
+				.userElementString6(record.getUserElementString6())
+				.userElementString7(record.getUserElementString7())
 				.build();
 	}
 
@@ -312,6 +319,13 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setM_Product_ID(ProductId.toRepoId(dimension.getProductId()));
 		lineRecord.setC_OrderSO_ID(OrderId.toRepoId(dimension.getSalesOrderId()));
 		lineRecord.setC_Activity_ID(ActivityId.toRepoId(dimension.getActivityId()));
+		lineRecord.setUserElementString1(dimension.getUserElementString1());
+		lineRecord.setUserElementString2(dimension.getUserElementString2());
+		lineRecord.setUserElementString3(dimension.getUserElementString3());
+		lineRecord.setUserElementString4(dimension.getUserElementString4());
+		lineRecord.setUserElementString5(dimension.getUserElementString5());
+		lineRecord.setUserElementString6(dimension.getUserElementString6());
+		lineRecord.setUserElementString7(dimension.getUserElementString7());
 	}
 
 	private void saveRecordIfAllowed(final I_SAP_GLJournal headerRecord)

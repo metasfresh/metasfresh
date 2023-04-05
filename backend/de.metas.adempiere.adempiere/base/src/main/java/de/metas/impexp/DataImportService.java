@@ -25,10 +25,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /*
@@ -223,13 +221,6 @@ public class DataImportService
 	{
 		final DataImportConfig dataImportConfig = dataImportConfigsRepo.getById(dataImportConfigId);
 		final ImpFormat importFormat = importFormatsRepo.getById(dataImportConfig.getImpFormatId());
-
-		final byte[] headerBytes = importFormat.getHeader().getBytes(StandardCharsets.UTF_8);
-
-		return ReportResultData.builder()
-				.reportData(new ByteArrayResource(headerBytes))
-				.reportFilename(importFormat.generateCSVFileName())
-				.reportContentType("text/csv")
-				.build();
+		return importFormat.generateTabularTemplate();
 	}
 }

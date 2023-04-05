@@ -3,6 +3,7 @@ package de.metas.banking.accounting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
@@ -13,7 +14,6 @@ import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.acct.Account;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 import org.compiere.util.DB;
@@ -91,6 +91,8 @@ public class BankAccountAcctRepository
 				.B_InterestRev_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestRev_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InterestRev_Acct))
 				.B_InterestExp_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestExp_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InterestExp_Acct))
 				.PayBankFee_Acct(Account.of(AccountId.ofRepoId(record.getPayBankFee_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_PayBankFee_Acct))
+				.RealizedGain_Acct(Account.of(AccountId.ofRepoId(record.getRealizedGain_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedGain_Acct))
+				.RealizedLoss_Acct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedLoss_Acct))
 				.Payment_WriteOff_Acct(AccountId.optionalOfRepoId(record.getPayment_WriteOff_Acct()).
 											   map(accountId -> Account.of(accountId, I_C_BP_BankAccount_Acct.COLUMNNAME_Payment_WriteOff_Acct)))
 				//

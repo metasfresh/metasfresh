@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Payment
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1042970415L;
+	private static final long serialVersionUID = -254865631L;
 
     /** Standard Constructor */
     public X_C_Payment (final Properties ctx, final int C_Payment_ID, @Nullable final String trxName)
@@ -258,6 +258,21 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
@@ -908,18 +923,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setMicr (final @Nullable java.lang.String Micr)
-	{
-		set_Value (COLUMNNAME_Micr, Micr);
-	}
-
-	@Override
-	public java.lang.String getMicr() 
-	{
-		return get_ValueAsString(COLUMNNAME_Micr);
-	}
-
-	@Override
 	public org.compiere.model.I_M_SectionCode getM_SectionCode()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
@@ -944,6 +947,18 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public void setMicr (final @Nullable java.lang.String Micr)
+	{
+		set_Value (COLUMNNAME_Micr, Micr);
+	}
+
+	@Override
+	public java.lang.String getMicr() 
+	{
+		return get_ValueAsString(COLUMNNAME_Micr);
 	}
 
 	@Override
@@ -1332,18 +1347,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1()
-	{
-		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
-	{
-		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
-	}
-
-	@Override
 	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
@@ -1356,18 +1359,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getUser1_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User1_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ElementValue getUser2()
-	{
-		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
-	{
-		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
 	@Override
