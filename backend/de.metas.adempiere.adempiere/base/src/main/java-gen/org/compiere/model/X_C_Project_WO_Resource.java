@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -234,6 +234,18 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	public boolean isAllDay() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllDay);
+	}
+
+	@Override
+	public void setResolvedHours (final int ResolvedHours)
+	{
+		set_Value (COLUMNNAME_ResolvedHours, ResolvedHours);
+	}
+
+	@Override
+	public int getResolvedHours() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ResolvedHours);
 	}
 
 	@Override

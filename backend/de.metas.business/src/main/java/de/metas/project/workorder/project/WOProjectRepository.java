@@ -224,6 +224,23 @@ public class WOProjectRepository
 				.iterate(I_C_Project.class);
 	}
 
+	@NonNull
+	public ImmutableSet<ProjectId> getByParentProjectAndProjectType(
+			@NonNull final ProjectId parentProjectId,
+			@NonNull final ProjectTypeId projectTypeId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Parent_ID, parentProjectId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_C_ProjectType_ID, projectTypeId)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.create()
+				.listIds()
+				.stream()
+				.map(ProjectId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@Nullable
 	private I_C_Project getRecordById(@NonNull final ProjectId id)
 	{

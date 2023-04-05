@@ -123,7 +123,7 @@ public class WOProjectStepRepository
 	}
 
 	@NonNull
-	public List<WOProjectStep> getByProjectId(@NonNull final ProjectId projectId)
+	public ImmutableList<WOProjectStep> getByProjectId(@NonNull final ProjectId projectId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,42 +20,36 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.project.workorder;
 
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.organization.ClientAndOrgId;
+import de.metas.project.ProjectId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.step.WOProjectStepId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-import static de.metas.project.ProjectConstants.RESERVATION_PROJECT_TYPE;
+import java.time.Duration;
 
 @Value
 @Builder
-public class ProjectType
+public class WOProjectStepResource
 {
 	@NonNull
-	ClientAndOrgId clientAndOrgId;
+	WOProjectStepId stepId;
 
 	@NonNull
-	ProjectTypeId id;
+	WOProjectResourceId resourceId;
 
 	@NonNull
-	ProjectCategory projectCategory;
+	ProjectId projectId;
 
 	@NonNull
-	String name;
-
-	@Nullable
-	DocSequenceId docSequenceId;
+	String stepName;
 
 	@NonNull
-	RequestStatusCategoryId requestStatusCategoryId;
+	Duration totalHours;
 
-	public boolean isReservation()
-	{
-		return name.equals(RESERVATION_PROJECT_TYPE);
-	}
+	@NonNull
+	Duration resolvedHours;
 }
