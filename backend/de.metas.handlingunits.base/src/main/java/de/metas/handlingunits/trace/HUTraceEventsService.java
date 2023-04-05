@@ -339,12 +339,16 @@ public class HUTraceEventsService
 				final int vhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(vhu);
 				Check.errorIf(vhuTopLevelHuId <= 0, "vhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", vhuTopLevelHuId, vhu);
 
+
+				final String lotNumberHUAttributeValue = huAttributeService.getHUAttributeValue(vhu, AttributeConstants.ATTR_LotNumber);
+
 				traceEventBuilder
 						.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 						.topLevelHuId(HuId.ofRepoId(vhuTopLevelHuId))
 						.productId(productAndQty.get().getLeft())
 						.qty(productAndQty.get().getRight().toBigDecimal())
-						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
+						.vhuStatus(trxLine.getHUStatus()) // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
+						.lotNumber(lotNumberHUAttributeValue);
 
 				final I_M_HU_Trx_Line sourceTrxLine = trxLine.getParent_HU_Trx_Line();
 				final List<I_M_HU> sourceVhus = getVhus.apply(sourceTrxLine);
