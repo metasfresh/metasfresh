@@ -51,18 +51,13 @@ public class SAPGLJournalService
 		glJournalRepository.updateById(glJournalId, consumer);
 	}
 
-	public SAPGLJournalLineId createLine(SAPGLJournalLineCreateRequest request)
+	@NonNull
+	public SAPGLJournalLineId createLine(@NonNull final SAPGLJournalLineCreateRequest request, @NonNull final SAPGLJournalId id)
 	{
 		final Supplier<SAPGLJournalLineId> lineIdSupplier = glJournalRepository.updateById(
-				request.getGlJournalId(),
+				id,
 				glJournal -> {
-					return glJournal.addLine(
-							request.getPostingSign(),
-							request.getAccount(),
-							request.getAmount(),
-							request.getSectionCodeId(),
-							request.getTaxId(),
-							currencyConverter);
+					return glJournal.addLine(request, currencyConverter);
 				}
 		);
 
@@ -84,5 +79,16 @@ public class SAPGLJournalService
 	public DocStatus getDocStatus(final SAPGLJournalId glJournalId)
 	{
 		return glJournalRepository.getDocStatus(glJournalId);
+	}
+
+	@NonNull
+	public SAPGLJournalId copy(@NonNull final SAPGLJournalCopyRequest copyRequest)
+	{
+		final SAPGLJournal journalToBeCopied = glJournalRepository.getById(copyRequest.getSourceJournalId());
+		final SAPGLJournalCreateRequest createRequest = SAPGLJournalCreateRequest.of(journalToBeCopied,
+																					 copyRequest.getDateDoc(),
+																					 copyRequest.getNegateAmounts());
+
+		return glJournalRepository.create(createRequest, currencyConverter);
 	}
 }

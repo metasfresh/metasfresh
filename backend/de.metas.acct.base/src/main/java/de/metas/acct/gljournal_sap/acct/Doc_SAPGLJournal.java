@@ -76,17 +76,12 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 		for (final SAPGLJournalLine line : glJournal.getLines())
 		{
 			final BigDecimal amtSourceDr;
-			final BigDecimal amtAcctDr;
 			final BigDecimal amtSourceCr;
-			final BigDecimal amtAcctCr;
 			final PostingSign postingSign = line.getPostingSign();
 			if (postingSign.isDebit())
 			{
 				amtSourceDr = line.getAmount().toBigDecimal();
 				amtSourceCr = BigDecimal.ZERO;
-
-				amtAcctDr = line.getAmountAcct().toBigDecimal();
-				amtAcctCr = BigDecimal.ZERO;
 			}
 			else
 			{
@@ -94,9 +89,6 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 
 				amtSourceDr = BigDecimal.ZERO;
 				amtSourceCr = line.getAmount().toBigDecimal();
-
-				amtAcctDr = BigDecimal.ZERO;
-				amtAcctCr = line.getAmountAcct().toBigDecimal();
 			}
 
 			final FactLine factLine = fact.createLine(
@@ -111,10 +103,6 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 			}
 
 			factLine.setLine_ID(line.getIdNotNull().getRepoId());
-			factLine.setCurrencyConversionCtx(currencyConversionCtx);
-			factLine.convert();
-			factLine.setAmtAcctDr(amtAcctDr);
-			factLine.setAmtAcctCr(amtAcctCr);
 
 			if (line.isTaxLine())
 			{

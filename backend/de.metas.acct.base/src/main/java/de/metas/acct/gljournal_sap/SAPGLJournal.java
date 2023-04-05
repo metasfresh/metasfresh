@@ -2,16 +2,17 @@ package de.metas.acct.gljournal_sap;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
+import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalLineCreateRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
@@ -23,8 +24,6 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.ListIterator;
@@ -51,6 +50,8 @@ public class SAPGLJournal
 
 	@NonNull @Getter private final OrgId orgId;
 	@NonNull @Getter private final Dimension dimension;
+	@NonNull @Getter private final String description;
+	@NonNull @Getter private final GLCategoryId glCategoryId;
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -108,25 +109,23 @@ public class SAPGLJournal
 	}
 
 	public Supplier<SAPGLJournalLineId> addLine(
-			@NonNull PostingSign postingSign,
-			@NonNull Account account,
-			@NonNull BigDecimal amountBD,
-			@Nullable SectionCodeId sectionCodeId,
-			@Nullable TaxId taxId,
-			@NonNull SAPGLJournalCurrencyConverter currencyConverter)
+			@NonNull final SAPGLJournalLineCreateRequest request,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
-		final Money amount = Money.of(amountBD, conversionCtx.getCurrencyId());
+		final Money amount = Money.of(request.getAmount(), conversionCtx.getCurrencyId());
 		final Money amountAcct = currencyConverter.convertToAcctCurrency(amount, conversionCtx);
 
 		final SAPGLJournalLine line = SAPGLJournalLine.builder()
 				.line(getNextLineNo())
-				.account(account)
-				.postingSign(postingSign)
+				.description(request.getDescription())
+				.account(request.getAccount())
+				.postingSign(request.getPostingSign())
 				.amount(amount)
 				.amountAcct(amountAcct)
-				.taxId(taxId)
+				.taxId(request.getTaxId())
 				.orgId(orgId)
-				.dimension(sectionCodeId != null ? dimension.withSectionCodeId(sectionCodeId) : dimension)
+				.dimension(request.getDimension())
+				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
 				.build();
 		lines.add(line);
 
