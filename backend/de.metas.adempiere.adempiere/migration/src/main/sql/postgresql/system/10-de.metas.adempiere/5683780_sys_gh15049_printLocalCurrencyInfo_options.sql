@@ -118,6 +118,12 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2023-04-03 18:37:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=616516
 ;
 
+-- Field: Rechnung(167,D) -> Rechnung(263,D) -> Druck lokale Mehrwertsteuer
+-- Column: C_Invoice.IsPrintLocalCurrencyInfo
+-- 2023-04-04T10:58:33.769Z
+UPDATE AD_Field SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2023-04-04 12:58:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713601
+;
+
 -- Field: Geschäftspartner(123,D) -> Kunde(223,D) -> Druck lokale Mehrwertsteuer
 -- Column: C_BPartner.IsPrintLocalCurrencyInfo
 -- 2023-04-03T17:10:50.774Z

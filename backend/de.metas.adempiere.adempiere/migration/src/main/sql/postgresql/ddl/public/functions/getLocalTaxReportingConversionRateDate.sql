@@ -20,15 +20,15 @@
  * #L%
  */
 
-CREATE OR REPLACE FUNCTION getLocalTaxReportingConversionRateDate(p_taxReportRateBase varchar, p_c_calendar_id numeric, p_date timestamp with time zone)
-    RETURNS timestamp with time zone
+CREATE OR REPLACE FUNCTION getLocalTaxReportingConversionRateDate(p_taxReportRateBase varchar, p_c_calendar_id numeric, p_dateinvoiced timestamp with time zone, p_movementdate timestamp with time zone)
+    RETURNS timestamp without time zone
     LANGUAGE plpgsql
 AS
 $$
 
 DECLARE
 
-    dateResult timestamp with time zone := trunc(p_date, 'DD');
+    dateResult timestamp with time zone;
     count numeric;
     attempt int := 1;
 
@@ -41,14 +41,23 @@ BEGIN
         RAISE EXCEPTION 'c_calendar_id is not set';
     END IF;
 
-    IF (p_date IS NULL) THEN
+    IF (p_dateinvoiced IS NULL) THEN
         RAISE EXCEPTION 'date is not set';
     END IF;
 
-    -- BI - 1 day before invoice date
     -- I  - invoice date
+    IF (p_taxReportRateBase = 'I') THEN
+        dateResult = trunc(p_dateinvoiced, 'DD');
+        dateResult = dateResult - 1;
+    END IF;
     -- S  - goods issue / shipment date
+    IF (p_taxReportRateBase = 'S') THEN
+        dateResult = trunc(p_movementdate, 'DD');
+        dateResult = dateResult - 1;
+    END IF;
+    -- BI - 1 day before invoice date
     IF (p_taxReportRateBase = 'BI') THEN
+        dateResult = trunc(p_dateinvoiced, 'DD');
         dateResult = dateResult - 1;
     END IF;
 
@@ -78,10 +87,10 @@ END;
 $$
 ;
 
-COMMENT ON FUNCTION getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone) IS
+COMMENT ON FUNCTION getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone, timestamp with time zone) IS
     'Find last business day in given calendar starting from given date or 1 day back if p_taxReportRateBase is BI ( 1 day before invoice date )'
 ;
 
-ALTER FUNCTION getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone) OWNER TO metasfresh
+ALTER FUNCTION getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone, timestamp with time zone) OWNER TO metasfresh
 ;
 
