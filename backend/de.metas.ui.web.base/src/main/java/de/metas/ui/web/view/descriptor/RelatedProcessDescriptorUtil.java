@@ -31,7 +31,7 @@ import lombok.experimental.UtilityClass;
 public class RelatedProcessDescriptorUtil
 {
 	@NonNull
-	public RelatedProcessDescriptor createRelatedProcessDescriptor(@NonNull final IADProcessDAO adProcessDAO, @NonNull final Class<?> processClass)
+	public RelatedProcessDescriptor viewQuickAction(@NonNull final IADProcessDAO adProcessDAO, @NonNull final Class<?> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))

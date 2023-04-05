@@ -119,12 +119,12 @@ class WOProjectCalendarServiceTest
 		void only_given_BudgetProject()
 		{
 			final BudgetProject budgetProject = budgetProjectRepository.create(CreateBudgetProjectRequest.builder()
-					.value("test")
-					.name("test")
-					.orgId(OrgId.MAIN)
-					.currencyId(CurrencyId.ofRepoId(102))
-					.projectType(projectType(ProjectCategory.Budget))
-					.build());
+																					   .value("test")
+																					   .name("test")
+																					   .orgId(OrgId.MAIN)
+																					   .currencyId(CurrencyId.ofRepoId(102))
+																					   .projectType(projectType(ProjectCategory.Budget))
+																					   .build());
 
 			final InSetPredicate<ProjectId> projectIds = woProjectCalendarService.getProjectIdsPredicate(
 					budgetProject.getProjectId(), // onlyProjectId,
@@ -139,12 +139,12 @@ class WOProjectCalendarServiceTest
 		void only_given_WOProject()
 		{
 			final WOProject woProject = woProjectRepository.create(CreateWOProjectRequest.builder()
-					.value("test")
-					.name("test")
-					.orgId(OrgId.MAIN)
-					.currencyId(CurrencyId.ofRepoId(102))
-					.projectType(projectType(ProjectCategory.WorkOrderJob))
-					.build());
+																		   .value("test")
+																		   .name("test")
+																		   .orgId(OrgId.MAIN)
+																		   .currencyId(CurrencyId.ofRepoId(102))
+																		   .projectType(projectType(ProjectCategory.WorkOrderJob))
+																		   .build());
 
 			final InSetPredicate<ProjectId> projectIds = woProjectCalendarService.getProjectIdsPredicate(
 					woProject.getProjectId(), // onlyProjectId,
