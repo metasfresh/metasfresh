@@ -51,6 +51,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -76,6 +77,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -572,13 +574,16 @@ public final class AggregationEngine
 
 	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
+		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(ic.getAD_Org_ID()));
+
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (overrideDueDateParam != null)
 					{
 						logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
 					}
-					final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+
 					if (paymentTermId == null)
 					{
 						return null;
@@ -592,9 +597,11 @@ public final class AggregationEngine
 					return null;
 				},
 				() -> {
-					logger.debug("Due Date will be set on null for now");
+					logger.debug("Due Date will now be computed based on payment term settings");
 
-					return null;
+					final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+					final Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
+					return TimeUtil.asLocalDate(paymentTerm.computeDueDate(baseLineDate), timeZone);
 				});
 	}
 

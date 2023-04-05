@@ -41,7 +41,6 @@ import java.sql.Timestamp;
 @Value
 public final class PaymentTerm
 {
-
 	@NonNull PaymentTermId id;
 	@NonNull OrgId orgId;
 	@NonNull ClientId clientId;
@@ -70,18 +69,25 @@ public final class PaymentTerm
 	 */
 	public Timestamp computeDueDate(@NonNull final Timestamp baseLineDate)
 	{
+		final Timestamp computedDate;
+
 		switch (calculationMethod)
 		{
 			case BaseLineDatePlusXDays:
-				return TimeUtil.addDays(baseLineDate, netDays);
+				computedDate= TimeUtil.addDays(baseLineDate, netDays);
+				break;
 			case BaseLineDatePlusXDaysAndThenEndOfMonth:
 				final Timestamp computedBLDate = TimeUtil.addDays(baseLineDate, netDays);
-				return TimeUtil.getMonthLastDay(computedBLDate);
+				computedDate = TimeUtil.getMonthLastDay(computedBLDate);
+				break;
 			case EndOfTheMonthOfBaselineDatePlusXDays:
 				final Timestamp endOfMonthDate = TimeUtil.getMonthLastDay(baseLineDate);
-				return TimeUtil.addDays(endOfMonthDate, netDays);
+				computedDate = TimeUtil.addDays(endOfMonthDate, netDays);
+				break;
 			default:
 				throw new AdempiereException("Unknown calculation method for payment term " + id);
 		}
+
+		return computedDate;
 	}
 }

@@ -108,6 +108,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -182,6 +184,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -2651,4 +2654,35 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		return ZERO;
 	}
+
+	@Override
+	public Timestamp getBaseLineDate(@NonNull final PaymentTerm paymentTerm, @NonNull final I_C_Invoice_Candidate ic)
+	{
+		final ZoneId timeZone = orgDAO.getTimeZone(paymentTerm.getOrgId());
+		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
+
+		final Timestamp baseLineDate;
+
+		switch (baseLineType)
+		{
+
+			case AfterDelivery:
+				baseLineDate = ic.getDeliveryDate();
+				break;
+			case AfterBillOfLanding:
+				baseLineDate = ic.getActualLoadingDate();
+				break;
+			case InvoiceDate:
+				baseLineDate = ic.getDateInvoiced();
+				break;
+			default:
+				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
+		}
+
+		if (baseLineDate == null)
+			return TimeUtil.asLocalDate(ic.getDateInvoiced(), timeZone);
+		else
+			return TimeUtil.asLocalDate(baseLineDate, timeZone);
+	}
+
 }

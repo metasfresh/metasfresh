@@ -55,20 +55,4 @@ public enum BaseLineType implements ReferenceListAwareEnum
 	}
 
 	private static final ImmutableMap<String, BaseLineType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), BaseLineType::getCode);
-
-
-	public boolean isAfterDelivery()
-	{
-		return this == AfterDelivery;
-	}
-
-	public boolean isAfterBillOfLanding()
-	{
-		return this == AfterBillOfLanding;
-	}
-
-	public boolean isInvoiceDate()
-	{
-		return this == InvoiceDate;
-	}
 }
