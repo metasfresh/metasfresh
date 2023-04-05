@@ -2658,7 +2658,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public Timestamp getBaseLineDate(@NonNull final PaymentTerm paymentTerm, @NonNull final I_C_Invoice_Candidate ic)
 	{
-		final ZoneId timeZone = orgDAO.getTimeZone(paymentTerm.getOrgId());
 		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
 
 		final Timestamp baseLineDate;
@@ -2679,10 +2678,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
 		}
 
-		if (baseLineDate == null)
-			return TimeUtil.asLocalDate(ic.getDateInvoiced(), timeZone);
-		else
-			return TimeUtil.asLocalDate(baseLineDate, timeZone);
+		return baseLineDate != null ? baseLineDate : ic.getDateInvoiced();
 	}
-
 }

@@ -196,7 +196,7 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.allowOverrideDueDate(record.isAllowOverrideDueDate())
 				.discount(Percent.of(record.getDiscount()))
 				.calculationMethod(CalculationMethod.ofCode(record.getCalculationMethod()))
-				.baseLineType(BaseLineType.ofCode(record.getBaseLineTypes()))
+				.baseLineType(BaseLineType.ofCode(record.getBaseLineType()))
 				.build();
 
 	}

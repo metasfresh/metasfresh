@@ -40,6 +40,8 @@ import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -360,16 +362,40 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 	}
 
-	private Timestamp retrieveEarliestBaseLineDate()
+	private Timestamp retrieveEarliestBaseLineDate(@NonNull final PaymentTerm paymentTerm)
 	{
+		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
 
-		final Timestamp  earliestDateInvoice =  createICQueryBuilder()
-				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
-				.create()
-				.first()
-				.getDateInvoiced();
+		final  IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = createICQueryBuilder();
 
-		return earliestDateInvoice;
+		Timestamp  earliestDate = null;
+
+		switch (baseLineType)
+		{
+
+			case AfterDelivery:
+				icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+						.create()
+						.first()
+						.getDeliveryDate();
+				break;
+			case AfterBillOfLanding:
+				icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_ActualLoadingDate)
+						.create()
+						.first()
+						.getActualLoadingDate();
+				break;
+			case InvoiceDate:
+				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+						.create()
+						.first()
+						.getDateInvoiced();
+				break;
+			default:
+				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
+		}
+
+		return earliestDate;
 
 
 	}
@@ -381,6 +407,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 			return null;
 		}
 
+		final Timestamp baseLineDate = retrieveEarliestBaseLineDate()
 		return null;
 	}
 
