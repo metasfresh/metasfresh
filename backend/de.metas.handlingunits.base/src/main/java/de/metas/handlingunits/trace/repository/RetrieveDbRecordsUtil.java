@@ -317,6 +317,12 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, query.getProductId());
 			queryIsEmpty = false;
 		}
+
+		if(query.getLotNumber() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_LotNumber, query.getLotNumber());
+			queryIsEmpty = false;
+		}
 		if (query.getQty() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty());
