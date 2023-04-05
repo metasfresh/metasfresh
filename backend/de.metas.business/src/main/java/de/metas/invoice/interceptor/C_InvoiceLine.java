@@ -95,9 +95,17 @@ public class C_InvoiceLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void updateSectionCode(final I_C_InvoiceLine invoiceLine)
+	public void copyDimensionFromHeader(final I_C_InvoiceLine invoiceLine)
 	{
-		invoiceLine.setM_SectionCode_ID(invoiceLine.getC_Invoice().getM_SectionCode_ID());
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		invoiceLine.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+		invoiceLine.setUserElementString1(invoice.getUserElementString1());
+		invoiceLine.setUserElementString2(invoice.getUserElementString2());
+		invoiceLine.setUserElementString3(invoice.getUserElementString3());
+		invoiceLine.setUserElementString4(invoice.getUserElementString4());
+		invoiceLine.setUserElementString5(invoice.getUserElementString5());
+		invoiceLine.setUserElementString6(invoice.getUserElementString6());
+		invoiceLine.setUserElementString7(invoice.getUserElementString7());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //

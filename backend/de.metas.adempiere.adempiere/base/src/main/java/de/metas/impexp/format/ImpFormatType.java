@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_ImpFormat;
@@ -35,18 +36,25 @@ import java.util.Arrays;
 
 public enum ImpFormatType implements ReferenceListAwareEnum
 {
-	FIXED_POSITION(X_AD_ImpFormat.FORMATTYPE_FixedPosition), //
-	COMMA_SEPARATED(X_AD_ImpFormat.FORMATTYPE_CommaSeparated), //
-	SEMICOLON_SEPARATED(X_AD_ImpFormat.FORMATTYPE_SemicolonSeparated), //
-	TAB_SEPARATED(X_AD_ImpFormat.FORMATTYPE_TabSeparated), //
-	XML(X_AD_ImpFormat.FORMATTYPE_XML) //
+	FIXED_POSITION(X_AD_ImpFormat.FORMATTYPE_FixedPosition, "text/plain", ".txt"), //
+	COMMA_SEPARATED(X_AD_ImpFormat.FORMATTYPE_CommaSeparated, "text/csv", ".csv"), //
+	SEMICOLON_SEPARATED(X_AD_ImpFormat.FORMATTYPE_SemicolonSeparated, "text/csv", ".csv"), //
+	TAB_SEPARATED(X_AD_ImpFormat.FORMATTYPE_TabSeparated, "text/tab-separated-values", ".tsv"), //
+	XML(X_AD_ImpFormat.FORMATTYPE_XML, "text/xml", ".xml") //
 	;
 
 	private final String code;
+	@Getter private final String contentType;
+	@Getter private final String fileExtensionIncludingDot;
 
-	private ImpFormatType(@NonNull final String code)
+	ImpFormatType(
+			@NonNull final String code,
+			@NonNull final String contentType,
+			@NonNull final String fileExtensionIncludingDot)
 	{
 		this.code = code;
+		this.contentType = contentType;
+		this.fileExtensionIncludingDot = fileExtensionIncludingDot;
 	}
 
 	@Override

@@ -9,12 +9,14 @@ import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
+import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -85,7 +87,8 @@ public final class FactLine extends X_Fact_Acct
 	private DocLine<?> m_docLine = null;
 	private CurrencyConversionContext currencyConversionCtx = null;
 	@Getter(AccessLevel.PACKAGE)
-	@NonNull private final AcctDocRequiredServicesFacade services;
+	@NonNull
+	private final AcctDocRequiredServicesFacade services;
 
 	FactLine(
 			@NonNull final AcctDocRequiredServicesFacade services,
@@ -276,10 +279,16 @@ public final class FactLine extends X_Fact_Acct
 		}
 	}
 
-	AcctSchema getAcctSchema() {return acctSchema;}
+	AcctSchema getAcctSchema()
+	{
+		return acctSchema;
+	}
 
 	@NonNull
-	private CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
+	private CurrencyId getAcctCurrencyId()
+	{
+		return getAcctSchema().getCurrencyId();
+	}
 
 	private void assertAcctCurrency(@NonNull final Money amt)
 	{
@@ -305,8 +314,8 @@ public final class FactLine extends X_Fact_Acct
 	{
 		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr);
 		setAmtSource(currencyId,
-				amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
-				amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
+					 amtSourceDr != null ? amtSourceDr.toBigDecimal() : BigDecimal.ZERO,
+					 amtSourceCr != null ? amtSourceCr.toBigDecimal() : BigDecimal.ZERO);
 	}
 
 	public void setAmtSource(final CurrencyId currencyId, @Nullable BigDecimal AmtSourceDr, @Nullable BigDecimal AmtSourceCr)
@@ -598,13 +607,13 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		// BPartner
-		if (m_docLine != null)
+		if (m_docLine != null && (m_docLine.getBPartnerId() != null || m_docLine.getBPartnerLocationId() != null))
 		{
-			setC_BPartner_ID(m_docLine.getBPartnerId());
+			setBPartnerIdAndLocation(m_docLine.getBPartnerId(), m_docLine.getBPartnerLocationId());
 		}
-		if (getC_BPartner_ID() <= 0)
+		else
 		{
-			setC_BPartner_ID(m_doc.getBPartnerId());
+			setBPartnerIdAndLocation(m_doc.getBPartnerId(), m_doc.getBPartnerLocationId());
 		}
 
 		// Sales Region from BPLocation/Sales Rep
@@ -813,7 +822,10 @@ public final class FactLine extends X_Fact_Acct
 		return getSourceBalance().signum() >= 0;
 	}
 
-	public Balance getAcctBalance() {return Balance.of(getAcctCurrencyId(), getAmtAcctDr(), getAmtAcctCr());}
+	public Balance getAcctBalance()
+	{
+		return Balance.of(getAcctCurrencyId(), getAmtAcctDr(), getAmtAcctCr());
+	}
 
 	/**
 	 * @return true if the given fact line is booked on same DR/CR side as this line
@@ -1238,6 +1250,9 @@ public final class FactLine extends X_Fact_Acct
 						toAccountDimension()));
 			}
 		}
+
+		updateCurrencyRateIfNotSet();
+
 		return true;
 	}    // beforeSave
 
@@ -1426,11 +1441,11 @@ public final class FactLine extends X_Fact_Acct
 			if (log.isInfoEnabled())
 			{
 				log.info("Not Found (try later) "
-						+ ",C_AcctSchema_ID=" + getC_AcctSchema_ID()
-						+ ", AD_Table_ID=" + AD_Table_ID
-						+ ",Record_ID=" + Record_ID
-						+ ",Line_ID=" + Line_ID
-						+ ", Account_ID=" + m_acct.getAccount_ID());
+								 + ",C_AcctSchema_ID=" + getC_AcctSchema_ID()
+								 + ", AD_Table_ID=" + AD_Table_ID
+								 + ",Record_ID=" + Record_ID
+								 + ",Line_ID=" + Line_ID
+								 + ", Account_ID=" + m_acct.getAccount_ID());
 			}
 
 			return false; // not updated
@@ -1460,13 +1475,13 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		setVATCode(services.findVATCode(VATCodeMatchingRequest.builder()
-						.setC_AcctSchema_ID(getC_AcctSchema_ID())
-						.setC_Tax_ID(taxId)
-						.setIsSOTrx(isSOTrx)
-						.setDate(getDateAcct())
-						.build())
-				.map(VATCode::getCode)
-				.orElse(null));
+												.setC_AcctSchema_ID(getC_AcctSchema_ID())
+												.setC_Tax_ID(taxId)
+												.setIsSOTrx(isSOTrx)
+												.setDate(getDateAcct())
+												.build())
+						   .map(VATCode::getCode)
+						   .orElse(null));
 	}
 
 	public void setQty(@NonNull final Quantity quantity)
@@ -1505,11 +1520,6 @@ public final class FactLine extends X_Fact_Acct
 		return CurrencyId.ofRepoId(getC_Currency_ID());
 	}
 
-	public void setC_BPartner_ID(@Nullable final BPartnerId bpartnerId)
-	{
-		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
-	}
-
 	public void setC_BPartner2_ID(@Nullable final BPartnerId bpartnerId)
 	{
 		super.setC_BPartner2_ID(BPartnerId.toRepoId(bpartnerId));
@@ -1545,7 +1555,10 @@ public final class FactLine extends X_Fact_Acct
 		setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
 	}
 
-	public void setGL_Category_ID(@Nullable GLCategoryId glCategoryId) {setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));}
+	public void setGL_Category_ID(@Nullable GLCategoryId glCategoryId)
+	{
+		setGL_Category_ID(GLCategoryId.toRepoId(glCategoryId));
+	}
 
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{
@@ -1567,5 +1580,183 @@ public final class FactLine extends X_Fact_Acct
 		setUserElementString5(dimension.getUserElementString5());
 		setUserElementString6(dimension.getUserElementString6());
 		setUserElementString7(dimension.getUserElementString7());
+	}
+
+	public void setBPartnerIdAndLocation(@Nullable final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		if (bPartnerId != null && bPartnerLocationId != null)
+		{
+			Check.assume(bPartnerLocationId.getBpartnerId().getRepoId() == bPartnerId.getRepoId(),
+						 "BPartnerId && BPartnerLocation.BPartnerId must match!"
+								 + " BPartnerId=" + bPartnerId.getRepoId()
+								 + " BPartnerLocationID=" + bPartnerLocationId.getRepoId());
+		}
+
+		if (bPartnerLocationId != null)
+		{
+			setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+		}
+		else if (bPartnerId != null)
+		{
+			setC_BPartner_ID(bPartnerId.getRepoId());
+			setC_BPartner_Location_ID(-1);
+		}
+		else
+		{
+			setC_BPartner_ID(-1);
+			setC_BPartner_Location_ID(-1);
+		}
+	}
+
+	public void setBPartnerId(@Nullable final BPartnerId bPartnerId)
+	{
+		final BPartnerId currentBPartnerId = BPartnerId.ofRepoIdOrNull(getC_BPartner_ID());
+
+		if (BPartnerId.equals(currentBPartnerId, bPartnerId))
+		{
+			return;
+		}
+
+		setC_BPartner_ID(BPartnerId.toRepoId(bPartnerId));
+		setC_BPartner_Location_ID(-1);
+	}
+
+	public void updateFromDimension(final AccountDimension dim)
+	{
+		if (dim.getAcctSchemaId() != null)
+		{
+			super.setC_AcctSchema_ID(dim.getAcctSchemaId().getRepoId());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Client))
+		{
+			// fa.setAD_Client_ID(dim.getAD_Client_ID());
+			de.metas.util.Check.assume(getAD_Client_ID() == dim.getAD_Client_ID(), "Fact_Acct and dimension shall have the same AD_Client_ID");
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Organization))
+		{
+			setAD_Org_ID(dim.getAD_Org_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Account))
+		{
+			setAccount_ID(dim.getC_ElementValue_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SubAccount))
+		{
+			setC_SubAcct_ID(dim.getC_SubAcct_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Product))
+		{
+			setM_Product_ID(dim.getM_Product_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.BPartner))
+		{
+			setBPartnerId(BPartnerId.ofRepoIdOrNull(dim.getC_BPartner_ID()));
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.OrgTrx))
+		{
+			setAD_OrgTrx_ID(dim.getAD_OrgTrx_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.LocationFrom))
+		{
+			setC_LocFrom_ID(dim.getC_LocFrom_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.LocationTo))
+		{
+			setC_LocTo_ID(dim.getC_LocTo_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SalesRegion))
+		{
+			setC_SalesRegion_ID(dim.getC_SalesRegion_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Project))
+		{
+			setC_Project_ID(dim.getC_Project_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Campaign))
+		{
+			setC_Campaign_ID(dim.getC_Campaign_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Activity))
+		{
+			setC_Activity_ID(dim.getC_Activity_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SalesOrder))
+		{
+			setC_OrderSO_ID(dim.getSalesOrderId());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
+		{
+			setM_SectionCode_ID(dim.getM_SectionCode_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserList1))
+		{
+			setUser1_ID(dim.getUser1_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserList2))
+		{
+			setUser2_ID(dim.getUser2_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElement1))
+		{
+			setUserElement1_ID(dim.getUserElement1_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElement2))
+		{
+			setUserElement2_ID(dim.getUserElement2_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString1))
+		{
+			setUserElementString1(dim.getUserElementString1());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString2))
+		{
+			setUserElementString2(dim.getUserElementString2());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString3))
+		{
+			setUserElementString3(dim.getUserElementString3());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString4))
+		{
+			setUserElementString4(dim.getUserElementString4());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString5))
+		{
+			setUserElementString5(dim.getUserElementString5());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString6))
+		{
+			setUserElementString6(dim.getUserElementString6());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
+		{
+			setUserElementString7(dim.getUserElementString7());
+		}
+	}
+
+	@NonNull
+	private BigDecimal computeCurrencyRate()
+	{
+		final BigDecimal amtAcct = getAmtAcctDr().add(getAmtAcctCr());
+		final BigDecimal amtSource = getAmtSourceDr().add(getAmtSourceCr());
+
+		if (amtAcct.signum() == 0 || amtSource.signum() == 0)
+		{
+			return BigDecimal.ZERO; // dev-note: does not matter
+		}
+
+		final CurrencyPrecision schemaCurrencyPrecision = getAcctSchema().getStandardPrecision();
+
+		return amtAcct
+				.divide(amtSource, schemaCurrencyPrecision.toInt(), schemaCurrencyPrecision.getRoundingMode());
+	}
+
+	private void updateCurrencyRateIfNotSet()
+	{
+		if (getCurrencyRate().signum() == 0 || getCurrencyRate().compareTo(BigDecimal.ONE) == 0)
+		{
+			setCurrencyRate(computeCurrencyRate());
+		}
 	}
 }    // FactLine

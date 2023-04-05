@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BP_BankAccount_Acct
  *  @author metasfresh (generated) 
@@ -541,6 +542,60 @@ public interface I_C_BP_BankAccount_Acct
 
 	ModelColumn<I_C_BP_BankAccount_Acct, org.compiere.model.I_C_ValidCombination> COLUMN_Payment_WriteOff_Acct = new ModelColumn<>(I_C_BP_BankAccount_Acct.class, "Payment_WriteOff_Acct", org.compiere.model.I_C_ValidCombination.class);
 	String COLUMNNAME_Payment_WriteOff_Acct = "Payment_WriteOff_Acct";
+
+	/**
+	 * Set Realized Gain Acct.
+	 * Realized Gain Account
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRealizedGain_Acct (int RealizedGain_Acct);
+
+	/**
+	 * Get Realized Gain Acct.
+	 * Realized Gain Account
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRealizedGain_Acct();
+
+	org.compiere.model.I_C_ValidCombination getRealizedGain_A();
+
+	void setRealizedGain_A(org.compiere.model.I_C_ValidCombination RealizedGain_A);
+
+	ModelColumn<I_C_BP_BankAccount_Acct, org.compiere.model.I_C_ValidCombination> COLUMN_RealizedGain_Acct = new ModelColumn<>(I_C_BP_BankAccount_Acct.class, "RealizedGain_Acct", org.compiere.model.I_C_ValidCombination.class);
+	String COLUMNNAME_RealizedGain_Acct = "RealizedGain_Acct";
+
+	/**
+	 * Set Realized Loss Acct.
+	 * Realized Loss Account
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRealizedLoss_Acct (int RealizedLoss_Acct);
+
+	/**
+	 * Get Realized Loss Acct.
+	 * Realized Loss Account
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRealizedLoss_Acct();
+
+	org.compiere.model.I_C_ValidCombination getRealizedLoss_A();
+
+	void setRealizedLoss_A(org.compiere.model.I_C_ValidCombination RealizedLoss_A);
+
+	ModelColumn<I_C_BP_BankAccount_Acct, org.compiere.model.I_C_ValidCombination> COLUMN_RealizedLoss_Acct = new ModelColumn<>(I_C_BP_BankAccount_Acct.class, "RealizedLoss_Acct", org.compiere.model.I_C_ValidCombination.class);
+	String COLUMNNAME_RealizedLoss_Acct = "RealizedLoss_Acct";
 
 	/**
 	 * Get Updated.

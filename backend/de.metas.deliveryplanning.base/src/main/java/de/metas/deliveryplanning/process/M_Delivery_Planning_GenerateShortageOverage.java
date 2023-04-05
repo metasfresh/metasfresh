@@ -47,11 +47,13 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impexp.InventoryImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -197,7 +199,7 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		Check.assumeNotNull(inOutId, "InOutId shall be set, because of isReceived() check in preconditions");
 
 		final I_M_InOut inOutRecord = inOutDAO.getById(inOutId);
-		final Set <InOutAndLineId> inOutLinesIds = inOutDAO.retrieveLinesForInOutId(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
+		final Set<InOutAndLineId> inOutLinesIds = inOutDAO.retrieveLinesForInOutId(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
 		if(inOutLinesIds.size() == 0)
 		{
 			throw new AdempiereException("No receipt lines found");
@@ -207,28 +209,35 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 			throw new AdempiereException("More than 1 receipt line exists");
 		}
 
+		final InOutLineId receiptLineId = CollectionUtils.singleElement(inOutLinesIds).getInOutLineId();
+
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 		inventoryRecord.setAD_Org_ID(receiptInfo.getOrgId().getRepoId());
 		inventoryRecord.setC_DocType_ID(doctypeId.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(inOutRecord.getM_Warehouse_ID());
 		inventoryRecord.setMovementDate(inOutRecord.getMovementDate());
+		inventoryRecord.setC_BPartner_ID(inOutRecord.getC_BPartner_ID());
+		inventoryRecord.setC_BPartner_Location_ID(inOutRecord.getC_BPartner_Location_ID());
+
+		Optional.ofNullable(receiptInfo.getPurchaseOrderId())
+				.map(OrderId::getRepoId)
+				.ifPresent(inventoryRecord::setC_PO_Order_ID);
 
 		saveRecord(inventoryRecord);
 		logger.trace("Insert inventory - {}", inventoryRecord);
 
-		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), CollectionUtils.singleElement(inOutLinesIds).getInOutLineId().getRepoId());
+		createInventoryLine(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()), receiptLineId);
 
 		return inventoryRecord;
 	}
 
-	private void createInventoryLine(@NonNull final InventoryId inventoryId, final int inOutLineId)
+	private void createInventoryLine(@NonNull final InventoryId inventoryId, @NonNull final InOutLineId inOutLineId)
 	{
 		final TableRecordReference mInOutLineTableRecordReference = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineId);
 		final Set<TableRecordReference> mInOutLineTableRecordReferenceSet = Collections.singleton(mInOutLineTableRecordReference);
 		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsMultimap = huAssignmentDAO.retrieveHUsByRecordRefs(mInOutLineTableRecordReferenceSet);
 		final Collection<HuId> huIds = huIdsMultimap.get(mInOutLineTableRecordReference);
 		final I_M_HU huRecord = handlingUnitsDAO.getById(CollectionUtils.singleElement(huIds));
-
 
 		final ShortageAndOverageStrategy shortageAndOverageStrategy = HUsForInventoryStrategies.shortageAndOverage()
 				.huForInventoryLineFactory(huForInventoryLineFactory)
