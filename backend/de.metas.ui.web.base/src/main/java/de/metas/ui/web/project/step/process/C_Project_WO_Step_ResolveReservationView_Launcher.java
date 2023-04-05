@@ -86,8 +86,8 @@ public class C_Project_WO_Step_ResolveReservationView_Launcher extends JavaProce
 	{
 		try
 		{
-			final ImmutableList<RelatedProcessDescriptor> relatedProcesses = ImmutableList.of(RelatedProcessDescriptorUtil.createRelatedProcessDescriptor(adProcessDAO, C_Project_WO_Step_ResolveHours.class),
-																							  RelatedProcessDescriptorUtil.createRelatedProcessDescriptor(adProcessDAO, C_Project_WO_Step_UndoResolution.class));
+			final ImmutableList<RelatedProcessDescriptor> relatedProcesses = ImmutableList.of(RelatedProcessDescriptorUtil.viewQuickAction(adProcessDAO, C_Project_WO_Step_ResolveHours.class),
+																							  RelatedProcessDescriptorUtil.viewQuickAction(adProcessDAO, C_Project_WO_Step_UndoResolution.class));
 
 			final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(ResolveReservationViewFactory.WINDOWID)
 																  .setParameter(VIEW_FACTORY_PARAM_WO_PROJECT_ID, ProjectId.ofRepoId(getRecord_ID()))
