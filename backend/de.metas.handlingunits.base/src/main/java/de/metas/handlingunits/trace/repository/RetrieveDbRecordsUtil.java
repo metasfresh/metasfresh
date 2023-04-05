@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import de.metas.handlingunits.trace.HUTraceType;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
@@ -297,9 +298,9 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trace_ID, query.getHuTraceEventId().getAsInt());
 			queryIsEmpty = false;
 		}
-		if(query.getType() != null)
+		if(!query.getTypes().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_HUTraceType, query.getType().getCode());
+			queryBuilder.addInArrayFilter(I_M_HU_Trace.COLUMN_HUTraceType, query.getTypes().stream().map(HUTraceType::getCode).collect(ImmutableList.toImmutableList()));
 			queryIsEmpty = false;
 		}
 		if (query.getOrgId() != null)

@@ -170,7 +170,7 @@ final class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("LotNumber", query.getType(), query);
+		errorIfQueryValueNotNull("LotNumber", query.getLotNumber(), query);
 
 		return query.withLotNumber(extractString(parameter));
 	}
@@ -224,9 +224,9 @@ final class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("Type", query.getType(), query);
+		errorIfQueryValueNotNull("Type", query.getTypes(), query);
 
-		return query.withType(HUTraceType.valueOf(extractString(parameter)));
+		return query.withTypes(ImmutableSet.of(HUTraceType.valueOf(extractString(parameter))));
 	}
 
 	private static HUTraceEventQuery updateVhuStatusFromParameter(

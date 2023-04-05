@@ -1,6 +1,9 @@
 package de.metas.handlingunits.trace;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.X_M_HU_Trace;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -12,12 +15,12 @@ import de.metas.handlingunits.model.X_M_HU_Trace;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,9 +29,8 @@ import de.metas.handlingunits.model.X_M_HU_Trace;
 
 /**
  * <b>Please</b> keep this in sync with the trace types of {@code M_HU_Trace}, or bad things will happen {@link X_M_HU_Trace#HUTRACETYPE_AD_Reference_ID}.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public enum HUTraceType
 {
@@ -70,16 +72,23 @@ public enum HUTraceType
 	/**
 	 * Used for records/events related zo changes in the parent HU relation.
 	 */
-	TRANSFORM_PARENT
-	;
-	
+	TRANSFORM_PARENT;
+
+	private static final ImmutableSet<HUTraceType> TYPES_TO_REPORT = ImmutableSet.of(PRODUCTION_ISSUE, PRODUCTION_RECEIPT, MATERIAL_RECEIPT, MATERIAL_SHIPMENT);
+
 	public static HUTraceType ofCode(final String code)
 	{
 		return valueOf(code);
 	}
-	
+
 	public String getCode()
 	{
 		return name();
 	}
+
+	public static Set<HUTraceType> typesToReport()
+	{
+		return TYPES_TO_REPORT;
+	}
+
 }

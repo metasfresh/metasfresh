@@ -123,7 +123,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(huTraceQuery.getDocTypeId().get().getRepoId()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
-		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
+		assertThat(huTraceQuery.getTypes().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
 		assertThat(huTraceQuery.getTopLevelHuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(60)));
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);

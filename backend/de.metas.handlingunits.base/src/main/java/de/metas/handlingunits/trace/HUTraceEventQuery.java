@@ -93,7 +93,9 @@ public class HUTraceEventQuery
 
 	OrgId orgId;
 
-	HUTraceType type;
+	@NonNull
+	@Singular
+	ImmutableSet<HUTraceType> types;
 
 	@NonNull
 	@Singular
