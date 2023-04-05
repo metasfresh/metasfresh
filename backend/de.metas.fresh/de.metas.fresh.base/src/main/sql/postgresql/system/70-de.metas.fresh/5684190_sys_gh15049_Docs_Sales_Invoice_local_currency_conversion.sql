@@ -40,6 +40,7 @@ WITH records as (
     SELECT it.C_Invoice_ID,
            CASE
                WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL   THEN FALSE --aggregated ICs aren't printed
+               WHEN tr.taxreportingratebase IS NULL                THEN FALSE --if tax reporting has no entry in doctype
                WHEN i.isprintlocalcurrencyinfo = 'N'               THEN FALSE
                WHEN bp.isprintlocalcurrencyinfo = 'N'
                    AND   i.isprintlocalcurrencyinfo <> 'Y'        THEN FALSE
@@ -50,6 +51,7 @@ WITH records as (
            cu.c_currency_id AS currency_to,
            CASE
                WHEN (i.m_inout_id IS NULL AND tr.taxreportingratebase = 'S') OR i.c_order_id IS NULL THEN NULL --aggregated ICs aren't printed
+               WHEN tr.taxreportingratebase IS NULL THEN NULL --if tax reporting has no entry in doctype
                                                                  ELSE
                                                                      getlocaltaxreportingconversionratedate(
                                                                              tr.taxreportingratebase,
@@ -71,7 +73,7 @@ WITH records as (
              INNER JOIN c_location l ON i.c_bpartner_location_value_id = l.c_location_id
              INNER JOIN c_country co ON l.c_country_id = co.c_country_id
              INNER JOIN c_currency cu ON co.c_currency_id = cu.c_currency_id
-             INNER JOIN c_doctype_taxreporting tr ON i.c_doctype_id = tr.c_doctype_id AND co.c_country_id = tr.c_country_id
+             LEFT JOIN c_doctype_taxreporting tr ON i.c_doctype_id = tr.c_doctype_id AND co.c_country_id = tr.c_country_id
     WHERE it.C_Invoice_ID = p_C_invoice_id
     GROUP BY it.C_Invoice_ID,
              i.c_order_id,
