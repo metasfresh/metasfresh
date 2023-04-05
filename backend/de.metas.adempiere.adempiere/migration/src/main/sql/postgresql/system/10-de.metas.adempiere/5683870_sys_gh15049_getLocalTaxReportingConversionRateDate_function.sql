@@ -41,27 +41,31 @@ BEGIN
         RAISE EXCEPTION 'c_calendar_id is not set';
     END IF;
 
-    IF (p_dateinvoiced IS NULL) THEN
-        RAISE EXCEPTION 'date is not set';
+    IF (p_dateinvoiced IS NULL AND (p_taxReportRateBase = 'I' OR p_taxReportRateBase = 'BI')) THEN
+        RAISE EXCEPTION 'invoicedate is not set';
+    END IF;
+
+    IF (p_movementdate IS NULL AND p_taxReportRateBase = 'S') THEN
+        RAISE EXCEPTION 'movementdate is not set';
     END IF;
 
     -- I  - invoice date
     IF (p_taxReportRateBase = 'I') THEN
         dateResult = trunc(p_dateinvoiced, 'DD');
         dateResult = dateResult - 1;
-    END IF;
-    -- S  - goods issue / shipment date
-    IF (p_taxReportRateBase = 'S') THEN
+
+        -- S  - goods issue / shipment date
+    ELSIF (p_taxReportRateBase = 'S') THEN
         dateResult = trunc(p_movementdate, 'DD');
         dateResult = dateResult - 1;
-    END IF;
-    -- BI - 1 day before invoice date
-    IF (p_taxReportRateBase = 'BI') THEN
+
+        -- BI - 1 day before invoice date
+    ELSIF (p_taxReportRateBase = 'BI') THEN
         dateResult = trunc(p_dateinvoiced, 'DD');
         dateResult = dateResult - 1;
     END IF;
 
-    WHILE (attempt < 10) LOOP
+    WHILE (attempt < 100) LOOP
             SELECT count(*)
             FROM c_nonbusinessday
             WHERE c_calendar_id = p_c_calendar_id
@@ -89,8 +93,5 @@ $$
 
 COMMENT ON FUNCTION getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone, timestamp with time zone) IS
     'Find last business day in given calendar starting from given date or 1 day back if p_taxReportRateBase is BI ( 1 day before invoice date )'
-;
-
-ALTER FUNCTION getLocalTaxReportingConversionRateDate(varchar, numeric, timestamp with time zone, timestamp with time zone) OWNER TO metasfresh
 ;
 

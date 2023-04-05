@@ -51,7 +51,7 @@ SELECT it.C_Invoice_ID,
                     i.ad_client_id,
                     i.ad_org_id) AS conversion_rate,
        CASE
-           WHEN i.m_inout_id IS NULL THEN NULL
+           WHEN i.m_inout_id IS NULL OR i.c_order_id IS NULL THEN NULL
                                      ELSE
                                          getlocaltaxreportingconversionratedate(
                                                  tr.taxreportingratebase,
@@ -60,23 +60,23 @@ SELECT it.C_Invoice_ID,
                                                  m.movementdate)
        END AS conversion_date,
        CASE
-           WHEN i.m_inout_id IS NULL THEN NULL
+           WHEN i.m_inout_id IS NULL OR i.c_order_id IS NULL THEN NULL
                                      ELSE
                                          currencyconvert(SUM(TaxBaseAmt),
                                                          c.c_currency_id,
                                                          cu.c_currency_id,
-                                                         i.dateinvoiced,
+                                                         conversion_date,
                                                          tr.c_conversiontype_id,
                                                          i.ad_client_id,
                                                          i.ad_org_id)
        END AS local_taxbaseamt,
        CASE
-           WHEN i.m_inout_id IS NULL THEN NULL
+           WHEN i.m_inout_id IS NULL OR i.c_order_id IS NULL THEN NULL
                                      ELSE
                                          currencyconvert(SUM(TaxAmt),
                                                          c.c_currency_id,
                                                          cu.c_currency_id,
-                                                         i.dateinvoiced,
+                                                         conversion_date,
                                                          tr.c_conversiontype_id,
                                                          i.ad_client_id,
                                                          i.ad_org_id)
@@ -112,8 +112,5 @@ GROUP BY it.C_Invoice_ID,
 $$
 
     LANGUAGE sql STABLE
-;
-
-ALTER FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_local_currency_conversion(numeric) OWNER TO metasfresh
 ;
 
