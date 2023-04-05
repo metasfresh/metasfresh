@@ -13,6 +13,7 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -127,4 +128,6 @@ public class HUTraceEventQuery
 	Optional<DocTypeId> docTypeId = Optional.empty();
 
 	int huTrxLineId;
+
+	@Nullable String lotNumber;
 }

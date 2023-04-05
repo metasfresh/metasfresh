@@ -11,6 +11,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -94,6 +95,8 @@ public class HUTraceEvent
 
 	int huTrxLineId;
 
+	@Nullable String lotNumber;
+
 	public HUTraceEventQueryBuilder asQueryBuilder()
 	{
 		return HUTraceEventQuery.builder()
@@ -113,7 +116,8 @@ public class HUTraceEvent
 				.docStatus(docStatus)
 				.docTypeId(docTypeId)
 				.huTrxLineId(huTrxLineId)
-		        .vhuSourceId(vhuSourceId);
+		        .vhuSourceId(vhuSourceId)
+				.lotNumber(lotNumber);
 
 	}
 }

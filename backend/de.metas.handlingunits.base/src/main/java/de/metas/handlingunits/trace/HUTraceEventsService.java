@@ -7,6 +7,7 @@ import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -17,7 +18,6 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
-import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -25,12 +25,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -91,6 +93,8 @@ public class HUTraceEventsService
 	private final transient HUAccessService huAccessService;
 
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	
+	private final IHUAttributesBL huAttributeService = Services.get(IHUAttributesBL.class);
 
 	public HUTraceEventsService(
 			@NonNull final HUTraceRepository huTraceRepository,
@@ -476,11 +480,14 @@ public class HUTraceEventsService
 				continue;
 			}
 
+			final String lotNumberHUAttributeValue = huAttributeService.getHUAttributeValue(vhu, AttributeConstants.ATTR_LotNumber);
+
 			builder.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 					.vhuStatus(vhu.getHUStatus())
 					.productId(productAndQty.get().getLeft())
 					.topLevelHuId(oldTopLevelHuId)
-					.qty(productAndQty.get().getRight().toBigDecimal().negate());
+					.qty(productAndQty.get().getRight().toBigDecimal().negate())
+					.lotNumber(lotNumberHUAttributeValue);
 			huTraceRepository.addEvent(builder.build());
 
 			builder.topLevelHuId(newTopLevelHuId)
@@ -563,9 +570,13 @@ public class HUTraceEventsService
 		final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 		Check.errorUnless(productAndQty.isPresent(), "Missing product and quantity for vhu={}", vhu);
 
+		final String lotNumberHUAttributeValue = huAttributeService.getHUAttributeValue(vhu, AttributeConstants.ATTR_LotNumber);
+
+
 		return builder
 				.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.productId(productAndQty.get().getLeft())
-				.qty(productAndQty.get().getRight().toBigDecimal());
+				.qty(productAndQty.get().getRight().toBigDecimal())
+				.lotNumber(lotNumberHUAttributeValue);
 	}
 }

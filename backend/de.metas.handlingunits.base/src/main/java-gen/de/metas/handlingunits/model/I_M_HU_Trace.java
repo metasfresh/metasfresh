@@ -120,7 +120,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Event Time.
+	 * Set Date/Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -129,7 +129,7 @@ public interface I_M_HU_Trace
 	void setEventTime (java.sql.Timestamp EventTime);
 
 	/**
-	 * Get Event Time.
+	 * Get Date/Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -141,7 +141,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_EventTime = "EventTime";
 
 	/**
-	 * Set HU Trace Type.
+	 * Set Trace Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -150,7 +150,7 @@ public interface I_M_HU_Trace
 	void setHUTraceType (java.lang.String HUTraceType);
 
 	/**
-	 * Get HU Trace Type.
+	 * Get Trace Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -185,6 +185,27 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Lot number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNumber (@Nullable java.lang.String LotNumber);
+
+	/**
+	 * Get Lot number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLotNumber();
+
+	ModelColumn<I_M_HU_Trace, Object> COLUMN_LotNumber = new ModelColumn<>(I_M_HU_Trace.class, "LotNumber", null);
+	String COLUMNNAME_LotNumber = "LotNumber";
+
+	/**
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
@@ -210,7 +231,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Rückverfolgbarkeit.
+	 * Set Handling Unit Trace.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -219,7 +240,7 @@ public interface I_M_HU_Trace
 	void setM_HU_Trace_ID (int M_HU_Trace_ID);
 
 	/**
-	 * Get Rückverfolgbarkeit.
+	 * Get Handling Unit Trace.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -231,7 +252,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_HU_Trace_ID = "M_HU_Trace_ID";
 
 	/**
-	 * Set HU Transaction Line.
+	 * Set Transaction Line HU.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -240,7 +261,7 @@ public interface I_M_HU_Trace
 	void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
 
 	/**
-	 * Get HU Transaction Line.
+	 * Get Transaction Line HU.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -283,8 +304,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Movement Document.
-	 * Bewegung von Warenbestand
+	 * Set Movement.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -293,8 +313,7 @@ public interface I_M_HU_Trace
 	void setM_Movement_ID (int M_Movement_ID);
 
 	/**
-	 * Get Movement Document.
-	 * Bewegung von Warenbestand
+	 * Get Movement.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -480,7 +499,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_VHU_ID = "VHU_ID";
 
 	/**
-	 * Set Quell-HU.
+	 * Set Virtual Handling Unit Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -489,7 +508,7 @@ public interface I_M_HU_Trace
 	void setVHU_Source_ID (int VHU_Source_ID);
 
 	/**
-	 * Get Quell-HU.
+	 * Get Virtual Handling Unit Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -505,7 +524,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_VHU_Source_ID = "VHU_Source_ID";
 
 	/**
-	 * Set CU (VHU) Gebindestatus.
+	 * Set Status Customer Unit.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -514,7 +533,7 @@ public interface I_M_HU_Trace
 	void setVHUStatus (java.lang.String VHUStatus);
 
 	/**
-	 * Get CU (VHU) Gebindestatus.
+	 * Get Status Customer Unit.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

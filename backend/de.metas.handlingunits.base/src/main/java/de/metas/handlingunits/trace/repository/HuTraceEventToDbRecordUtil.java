@@ -60,7 +60,8 @@ public class HuTraceEventToDbRecordUtil
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(dbRecord.getM_ShipmentSchedule_ID()))
-				.type(HUTraceType.ofCode(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
+				.type(HUTraceType.ofCode(dbRecord.getHUTraceType())) // HUTraceType is also a mandatory column, so no NPE
+				.lotNumber(dbRecord.getLotNumber());
 
 		if (dbRecord.getM_HU_Trace_ID() > 0)
 		{
@@ -104,5 +105,6 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(huTraceRecord.getShipmentScheduleId()));
 		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getPpCostCollectorId());
 		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
+		dbRecord.setLotNumber(huTraceRecord.getLotNumber());
 	}
 }
