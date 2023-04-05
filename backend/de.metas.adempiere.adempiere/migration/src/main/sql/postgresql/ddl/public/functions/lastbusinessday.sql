@@ -57,7 +57,8 @@ begin
     end loop;
     --
     return v_nextDate::timestamp with time zone;
-end
+end;
+
 $$
 ;
 
