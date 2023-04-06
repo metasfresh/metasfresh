@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: Invoice candidate separation based on header aggregation key validation
+Feature: Invoice candidate separation based on header aggregation key
 
   Background:
     Given infrastructure and metasfresh are running

@@ -63,6 +63,7 @@ import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.AggregationBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -160,6 +161,7 @@ public class C_Invoice_StepDef
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final AggregationBL aggregationBL = Services.get(AggregationBL.class);
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
@@ -416,10 +418,8 @@ public class C_Invoice_StepDef
 		}
 	}
 
-
-
 	@And("^locate invoice by external id after not more than (.*)s and validate$")
-	public void   locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -465,6 +465,19 @@ public class C_Invoice_StepDef
 					if (invoiceCandidates.size() != numberOfCandidates)
 					{
 						return false;
+					}
+				}
+
+				if (!invoiceCandidates.isEmpty())
+				{
+					final String invoiceCandidatesHeaderAggregationKey = aggregationBL.mkHeaderAggregationKey(invoiceCandidates.get(0)).getAggregationKeyString();
+
+					for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+					{
+						if (!invoiceCandidate.getHeaderAggregationKey().equals(invoiceCandidatesHeaderAggregationKey))
+						{
+							return false;
+						}
 					}
 				}
 

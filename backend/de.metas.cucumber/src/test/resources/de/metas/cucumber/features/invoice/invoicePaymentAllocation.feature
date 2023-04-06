@@ -984,7 +984,7 @@ Feature: invoice payment allocation
       | credit_memo_31102022_1  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | inv_31102022_1              | 2.4        | 21.4             | 0               | 0               |
+      | inv_31102022_1              | 2.4        | 21.42            | 0               | 0               |
       | credit_memo_31102022_1      | -2.4       | 0                | 0               | 0.02            |
 
     And metasfresh contains C_Invoice:
@@ -1073,8 +1073,8 @@ Feature: invoice payment allocation
       | credit_memo_31102022_10 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | inv_31102022_10             | -2.4       | -21.4            | 0               | 0               |
-      | credit_memo_31102022_10     | 2.4        | 0                | 0               | -0.02           |
+      | inv_31102022_10             | -2.38      | -21.42           | 0               | 0               |
+      | credit_memo_31102022_10     | 2.38       | 0                | 0               | -0.02           |
 
     And metasfresh contains C_Invoice:
       | Identifier              | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -1193,6 +1193,6 @@ Feature: invoice payment allocation
       | purchase_invoice_01112022_2 | -21.2      | -0.01            | 0               | 0               |
     And validate C_AllocationLines for invoice inv_01112022_1
       | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
-      | 2.36       | 21.44            | 0               | 0               |
+      | 2.36       | 21.42            | 0               | 0               |
       | 21.2       | 0                | 0               | 0.24            |
     
