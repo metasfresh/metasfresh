@@ -287,7 +287,11 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Nullable
 	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
 	{
-		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValue(attributeCode);
+		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
+		if (attributeId == null)
+		{
+			return null;
+		}
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(hu, attributeId);
 
 		return huAttribute == null ? null : huAttribute.getValue();

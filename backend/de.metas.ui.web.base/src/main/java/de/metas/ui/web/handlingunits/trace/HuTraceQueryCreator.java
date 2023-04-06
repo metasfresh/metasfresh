@@ -224,7 +224,7 @@ final class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("Type", query.getTypes(), query);
+		errorIfQueryValueNotEmpty("Type", query.getTypes(), query);
 
 		return query.withTypes(ImmutableSet.of(HUTraceType.valueOf(extractString(parameter))));
 	}
