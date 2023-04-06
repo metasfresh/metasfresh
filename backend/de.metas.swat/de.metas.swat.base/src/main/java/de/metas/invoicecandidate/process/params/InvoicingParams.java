@@ -28,6 +28,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.api.IParams;
 
 import javax.annotation.Nullable;
@@ -50,7 +52,7 @@ public class InvoicingParams
 	public static String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	public static String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	public static String PARA_IsCompleteInvoices = "IsCompleteInvoices";
-	public static String PARA_OverrideDueDate= "OverrideDueDate";
+	public static String PARA_OverrideDueDate = "OverrideDueDate";
 
 	boolean onlyApprovedForInvoicing;
 	boolean consolidateApprovedICs;
@@ -60,18 +62,12 @@ public class InvoicingParams
 	boolean assumeOneInvoice;
 	@Nullable LocalDate dateInvoiced;
 	@Nullable LocalDate dateAcct;
-	@Nullable LocalDate overrideDueDate;
 	@Nullable String poReference;
 	@Nullable BigDecimal check_NetAmtToInvoice;
 	boolean updateLocationAndContactForInvoice;
 	@Builder.Default boolean completeInvoices = true; // default=true for backwards-compatibility
 	@Nullable ForexContractParameters forexContractParameters;
-
-	@Nullable
-	public ForexContractRef getForexContractRef()
-	{
-		return forexContractParameters != null ? forexContractParameters.getForexContractRef() : null;
-	}
+	@NonFinal @Nullable LocalDate overrideDueDate;
 
 	public static InvoicingParams ofParams(@NonNull final IParams params)
 	{
@@ -89,6 +85,12 @@ public class InvoicingParams
 				.forexContractParameters(ForexContractParameters.ofParams(params))
 				.overrideDueDate(params.getParameterAsLocalDate(PARA_OverrideDueDate))
 				.build();
+	}
+
+	@Nullable
+	public ForexContractRef getForexContractRef()
+	{
+		return forexContractParameters != null ? forexContractParameters.getForexContractRef() : null;
 	}
 
 	public Map<String, ?> toMap()
@@ -131,4 +133,18 @@ public class InvoicingParams
 
 		return map;
 	}
+
+	public void updateOnDateInvoicedParameterChanged(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
+	{
+		final LocalDate dueDate = HelperDueDateParameter.computeOverrideDueDate(icQueryBuilder, getDateInvoiced());
+		this.overrideDueDate = dueDate;
+	}
+
+	private LocalDate computeOverrideDueDate(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
+	{
+		return HelperDueDateParameter.computeOverrideDueDate(icQueryBuilder, getDateInvoiced());
+	}
+
+	@Nullable
+	public Object getParameteDueDaterDefaultValue(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder) {return computeOverrideDueDate(icQueryBuilder);}
 }

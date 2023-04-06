@@ -37,6 +37,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.HelperDueDateParameter;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -100,8 +101,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@NestedParams
 	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
@@ -166,7 +165,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	{
 		if (InvoicingParams.PARA_OverrideDueDate.contentEquals(parameter.getColumnName()))
 		{
-			return computeOverrideDueDate();
+			return getInvoicingParams().getParameteDueDaterDefaultValue(createICQueryBuilder());
 		}
 
 		return p_FECParams.getParameterDefaultValue(parameter.getColumnName(), getContracts());
@@ -175,6 +174,11 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
+		if (InvoicingParams.PARA_DateInvoiced.contentEquals(parameterName))
+		{
+			getInvoicingParams().updateOnDateInvoicedParameterChanged(createICQueryBuilder());
+		}
+
 		p_FECParams.updateOnParameterChanged(parameterName, getContracts());
 	}
 
@@ -358,76 +362,4 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
 	}
-
-	private int countPaymentTerms()
-	{
-		return createICQueryBuilder()
-				.create()
-				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID)
-				.size();
-
-	}
-
-	private LocalDate computeOverrideDueDate()
-	{
-		if (countPaymentTerms() > 1)
-		{
-			return null;
-		}
-
-		final int paymentTermId =  createICQueryBuilder()
-				.setLimit(QueryLimit.ONE)
-				.create()
-				.first()
-				.getC_PaymentTerm_ID();
-
-		final PaymentTerm paymentTerm = paymentTermRepository.getById(PaymentTermId.ofRepoId(paymentTermId));
-		final Timestamp baseLineDate = retrieveEarliestBaseLineDate(paymentTerm);
-		if (baseLineDate == null)
-		{
-			return null;
-		}
-
-		final Timestamp dueDate = paymentTerm.computeDueDate(baseLineDate);
-		final ZoneId zoneId = orgDAO.getTimeZone(paymentTerm.getOrgId());
-
-		return TimeUtil.asLocalDate(dueDate,zoneId);
-	}
-
-	private Timestamp retrieveEarliestBaseLineDate(@NonNull final PaymentTerm paymentTerm )
-	{
-		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
-
-		final  IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = createICQueryBuilder();
-
-		Timestamp  earliestDate = null;
-
-		switch (baseLineType)
-		{
-
-			case AfterDelivery:
-				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
-						.create()
-						.first()
-						.getDeliveryDate();
-				break;
-			case AfterBillOfLanding:
-				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_ActualLoadingDate)
-						.create()
-						.first()
-						.getActualLoadingDate();
-				break;
-			case InvoiceDate:
-				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Effective)
-						.create()
-						.first()
-						.getDateToInvoice_Effective();
-				break;
-			default:
-				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
-		}
-
-		return earliestDate;
-	}
-
 }

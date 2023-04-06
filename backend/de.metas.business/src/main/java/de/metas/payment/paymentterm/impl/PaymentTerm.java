@@ -90,4 +90,9 @@ public final class PaymentTerm
 
 		return computedDate;
 	}
+
+	public boolean isBaseLineTypeInvoiceDate()
+	{
+		return baseLineType.isInvoiceDate();
+	}
 }
