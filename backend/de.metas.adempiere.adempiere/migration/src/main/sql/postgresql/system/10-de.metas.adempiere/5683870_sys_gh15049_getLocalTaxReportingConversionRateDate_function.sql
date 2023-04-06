@@ -21,7 +21,7 @@
  */
 
 CREATE OR REPLACE FUNCTION getLocalTaxReportingConversionRateDate(p_taxReportRateBase varchar, p_c_calendar_id numeric, p_dateinvoiced timestamp with time zone, p_movementdate timestamp with time zone)
-    RETURNS timestamp without time zone
+    RETURNS timestamp with time zone
     LANGUAGE plpgsql
 AS
 $$
