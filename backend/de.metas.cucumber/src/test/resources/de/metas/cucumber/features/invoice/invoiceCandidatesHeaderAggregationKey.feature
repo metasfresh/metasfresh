@@ -1,5 +1,4 @@
 @from:cucumber
-@headerAggregationKey
 Feature: Invoice candidate separation based on header aggregation key validation
 
   Background:

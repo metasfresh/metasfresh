@@ -1243,19 +1243,6 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("update invoice candidate list")
-	public void update_invoice_candidate_list(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			final String invoiceCandidateListIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Invoice_Candidate_ID + "_List." + TABLECOLUMN_IDENTIFIER);
-
-			final List<I_C_Invoice_Candidate> invoiceCandidateList = invoiceCandidateListTable.get(invoiceCandidateListIdentifier);
-
-			invoiceCandidateList.forEach(invoiceCandidate -> updateInvoiceCandidates(tableRow, invoiceCandidate));
-		}
-	}
-
 	@And("update invoice candidate list with unique external header identifier")
 	public void update_invoice_candidate_external_header_identifier_list(@NonNull final DataTable dataTable)
 	{
@@ -1280,7 +1267,7 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("build request payload to enqueue invoice candidate list for invoicing via API with DateInvoiced and set it to context")
+	@And("build request payload with DateInvoiced set to enqueue invoice candidates for invoicing via API and add it to context")
 	public void enqueue_invoice_candidates_list_for_invoicing_via_API(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
