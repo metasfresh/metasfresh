@@ -22,12 +22,9 @@
 
 package de.metas.handlingunits.trace.process;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceType;
@@ -39,24 +36,28 @@ import de.metas.process.Param;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.apache.poi.ss.usermodel.Font;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Trx;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class M_HU_Trace_Report_Excel extends JavaProcess
 {
 	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 	private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
@@ -72,43 +73,32 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
-				.setContext(getCtx(), ITrx.TRXNAME_None);
+		final HUTraceEventQuery.HUTraceEventQueryBuilder huTraceEventQueryBuilder = HUTraceEventQuery.builder();
 
 		if (p_M_Product_ID != null)
 		{
 
-			huQueryBuilder.addOnlyWithProductId(p_M_Product_ID);
+			huTraceEventQueryBuilder.productId(p_M_Product_ID);
 		}
 
 		if (p_LotNumber != null)
 		{
-			huQueryBuilder.addOnlyWithAttributeInList(AttributeConstants.ATTR_LotNumber, p_LotNumber);
+			huTraceEventQueryBuilder.lotNumber(p_LotNumber);
 		}
 
 		if (p_VHU_ID != null)
 		{
-			huQueryBuilder.addOnlyHUIds(ImmutableSet.of(p_VHU_ID));
+			huTraceEventQueryBuilder.vhuId(p_VHU_ID);
 		}
 
-		huQueryBuilder.addHUStatusesToExclude(ImmutableSet.of(X_M_HU.HUSTATUS_Planning));
-
-		final HuId firstHUId = huQueryBuilder
-				.createQuery()
-
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
-				.listIds(HuId::ofRepoId)
-				.stream()
-				.sorted()
-				.findFirst().orElseThrow(() -> new AdempiereException("@NotFound@" + huQueryBuilder));
-
-		final HUTraceEventQuery huTraceEventQuery = de.metas.handlingunits.trace.HUTraceEventQuery.builder()
-				.vhuId(firstHUId)
-				.types(HUTraceType.typesToReport()).recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
+		final HUTraceEventQuery huTraceEventQuery = huTraceEventQueryBuilder
+				.types(HUTraceType.typesToReport())
+				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
 				.build();
 
 		final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
 
+		Services.get(ITrxManager.class).commit(Trx.TRXNAME_ThreadInherited);
 		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 				.ctx(getCtx())
 				.columnHeaders(getColumnHeaders())
@@ -136,22 +126,59 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 
 	private String getSql(@NonNull final PInstanceId pinstanceId)
 	{
-		return "SELECT " + I_M_HU_Trace.COLUMNNAME_HUTraceType
-				+ ", " + I_M_HU_Trace.COLUMNNAME_M_Product_ID
-				+ ", " + I_M_HU_Trace.COLUMNNAME_M_InOut_ID
-				+ ", " + I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID
-				+ ", " + I_M_HU_Trace.COLUMNNAME_PP_Order_ID
-				+ ", " + I_M_HU_Trace.COLUMNNAME_Created
-				+ ", " + I_M_HU_Trace.COLUMNNAME_Qty
-				+ " FROM " + I_M_HU_Trace.Table_Name
-				+ " WHERE EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=" + pinstanceId.getRepoId()
-				+ " AND s.T_Selection_ID= " + I_M_HU_Trace.Table_Name + "." + I_M_HU_Trace.COLUMNNAME_M_HU_Trace_ID
-				+ ")";
+		final AttributeId lotNumberAttributeId = attributesRepo.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumber);
+
+		final StringBuilder sqlBuilder = new StringBuilder().append(" SELECT ")
+				.append(I_M_HU_Trace.COLUMNNAME_LotNumber)
+				.append(", 'CURRENT STOCK'")
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_M_Product_ID)
+				.append(", null ")
+				.append(", null ")
+				.append(", null ")
+				.append(",  now()")
+				.append(", getCurrentStorageStock (").append(I_M_HU_Trace.COLUMNNAME_M_Product_ID)
+				.append(", ").append(lotNumberAttributeId == null ? " null " : AttributeId.toRepoId(lotNumberAttributeId))
+				.append(", ").append(lotNumberAttributeId == null ? " null " : I_M_HU_Trace.COLUMNNAME_LotNumber)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_AD_Client_ID)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_AD_Org_ID)
+				.append(" ) ")
+				.append(" FROM ")
+				.append(I_M_HU_Trace.Table_Name)
+				.append(" WHERE EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=").append(pinstanceId.getRepoId())
+				.append(" AND s.T_Selection_ID= ").append(I_M_HU_Trace.Table_Name).append(".").append(I_M_HU_Trace.COLUMNNAME_M_HU_Trace_ID)
+				.append(")").append(" AND ").append(I_M_HU_Trace.COLUMNNAME_HUTraceType)
+				.append(" IN (").append(HUTraceType
+												.typesToReport()
+												.stream()
+												.map(type -> "'" + type.getCode() + "'")
+												.collect(Collectors.joining(",")))
+				.append(")")
+				.append(" UNION SELECT ")
+				.append(I_M_HU_Trace.COLUMNNAME_LotNumber)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_HUTraceType)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_M_Product_ID)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_M_InOut_ID)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_PP_Order_ID)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_Created)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_Qty)
+				.append(" FROM ").append(I_M_HU_Trace.Table_Name)
+				.append(" WHERE EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=").append(pinstanceId.getRepoId())
+				.append(" AND s.T_Selection_ID= ").append(I_M_HU_Trace.Table_Name).append(".").append(I_M_HU_Trace.COLUMNNAME_M_HU_Trace_ID)
+				.append(")").append(" AND ").append(I_M_HU_Trace.COLUMNNAME_HUTraceType)
+				.append(" IN (").append(HUTraceType
+												.typesToReport()
+												.stream()
+												.map(type -> "'" + type.getCode() + "'")
+												.collect(Collectors.joining(",")))
+				.append(")");
+		return sqlBuilder.toString();
 	}
 
 	private List<String> getColumnHeaders()
 	{
 		final List<String> columnHeaders = new ArrayList<>();
+		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_LotNumber);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_HUTraceType);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_Product_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_InOut_ID);
