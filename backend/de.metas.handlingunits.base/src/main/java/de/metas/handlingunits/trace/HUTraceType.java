@@ -65,12 +65,15 @@ public enum HUTraceType
 	PRODUCTION_RECEIPT,
 
 	/**
-	 * Used for records/events related HU-loading (e.g. split of qtys from an aggregate HU).
+	 * Used for records/events related HU-loading (e.g. split of qtys from an aggregate HU). Those records aparently come in pairs.
+	 * The {@code VHU_Source_ID} is used in every other record
 	 */
 	TRANSFORM_LOAD,
 
 	/**
-	 * Used for records/events related zo changes in the parent HU relation.
+	 * Used for records/events related to changes in the parent HU relation. Those records come in pairs.
+	 * The record's {@code M_HU_ID} is the parent. If the qty is negative, the VHU in question was removed from the parent.
+	 * If a VHU was taken out of it's parent, then the record with positive qty also has {@code M_HU_ID = VHU_ID}.
 	 */
 	TRANSFORM_PARENT;
 

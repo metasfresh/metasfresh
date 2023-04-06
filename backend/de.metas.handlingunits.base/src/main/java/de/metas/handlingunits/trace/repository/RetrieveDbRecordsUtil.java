@@ -85,15 +85,11 @@ public class RetrieveDbRecordsUtil
 
 		/**
 		 * Get the {@code VHU_ID}s from the records we already found so far. Needed to recurse forwards.
-		 *
-		 * @return
 		 */
 		List<HuId> getVhuIds();
 
 		/**
 		 * Get the {@code VHU_Source_ID} from the records we already found so far. Needed to recurse backwards.
-		 *
-		 * @return
 		 */
 		List<HuId> getVhuSourceIds();
 	}
@@ -421,6 +417,9 @@ public class RetrieveDbRecordsUtil
 		return false;
 	}
 
+	/**
+	 * Creates and executes a query in which the {@code vhuSourceIds} of the given {@code resultIn} are the  {@code vhuId}s of the additional records we want to load
+	 */
 	private Result recurseBackwards(@NonNull final Result resultIn)
 	{
 		final Result resultOut = resultIn.newEmptyResult();
@@ -503,8 +502,6 @@ public class RetrieveDbRecordsUtil
 
 	/**
 	 * Return all records; this makes absolutely no sense in production; Intended to be used only use for testing.
-	 *
-	 * @return
 	 */
 	@VisibleForTesting
 	public List<HUTraceEvent> queryAll()
