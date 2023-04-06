@@ -303,20 +303,6 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
-		if (isDueFixed())
-		{
-			int dd = getFixMonthDay();
-			if (dd < 1 || dd > 31)
-			{
-				throw new AdempiereException("@Invalid@ @FixMonthDay@");
-			}
-			dd = getFixMonthCutoff();
-			if (dd < 1 || dd > 31)
-			{
-				throw new AdempiereException("@Invalid@ @FixMonthCutoff@");
-			}
-		}
-
 		if (!newRecord || !isValid())
 			validate();
 		return true;

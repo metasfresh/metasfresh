@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_PaymentTerm, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 159349203L;
+	private static final long serialVersionUID = 1628231354L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm (final Properties ctx, final int C_PaymentTerm_ID, @Nullable final String trxName)
@@ -183,42 +183,6 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	}
 
 	@Override
-	public void setFixMonthCutoff (final int FixMonthCutoff)
-	{
-		set_Value (COLUMNNAME_FixMonthCutoff, FixMonthCutoff);
-	}
-
-	@Override
-	public int getFixMonthCutoff() 
-	{
-		return get_ValueAsInt(COLUMNNAME_FixMonthCutoff);
-	}
-
-	@Override
-	public void setFixMonthDay (final int FixMonthDay)
-	{
-		set_Value (COLUMNNAME_FixMonthDay, FixMonthDay);
-	}
-
-	@Override
-	public int getFixMonthDay() 
-	{
-		return get_ValueAsInt(COLUMNNAME_FixMonthDay);
-	}
-
-	@Override
-	public void setFixMonthOffset (final int FixMonthOffset)
-	{
-		set_Value (COLUMNNAME_FixMonthOffset, FixMonthOffset);
-	}
-
-	@Override
-	public int getFixMonthOffset() 
-	{
-		return get_ValueAsInt(COLUMNNAME_FixMonthOffset);
-	}
-
-	@Override
 	public void setGraceDays (final int GraceDays)
 	{
 		set_Value (COLUMNNAME_GraceDays, GraceDays);
@@ -252,18 +216,6 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
-	}
-
-	@Override
-	public void setIsDueFixed (final boolean IsDueFixed)
-	{
-		set_Value (COLUMNNAME_IsDueFixed, IsDueFixed);
-	}
-
-	@Override
-	public boolean isDueFixed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDueFixed);
 	}
 
 	@Override
