@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated)
@@ -1829,6 +1828,30 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsPOTaxExempt = "IsPOTaxExempt";
 
 	/**
+	 * Set Print local currency VAT.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintLocalCurrencyInfo (@Nullable java.lang.String IsPrintLocalCurrencyInfo);
+
+	/**
+	 * Get Print local currency VAT.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPrintLocalCurrencyInfo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsPrintLocalCurrencyInfo = new ModelColumn<>(I_C_BPartner.class, "IsPrintLocalCurrencyInfo", null);
+	String COLUMNNAME_IsPrintLocalCurrencyInfo = "IsPrintLocalCurrencyInfo";
+
+	/**
+	 * Set Prospect.
 	 * Set Aktiver Interessent/Kunde.
 	 * Indicates this is a Prospect
 	 *
