@@ -573,7 +573,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
 
 		final Collection<DocStatus> docStatuses = query.getDocStatuses();
-		if (docStatuses != null && docStatuses.isEmpty())
+		if (docStatuses != null && !docStatuses.isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses);
 		}

@@ -29,26 +29,15 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 
 @Value
-@Builder(toBuilder = true)
-public class InvoiceReview
+@Builder
+public class InvoiceReviewCreateUpdateRequest
 {
-	@Nullable InvoiceReviewId id;
-
 	@NonNull InvoiceId invoiceId;
 
 	@NonNull OrgId orgId;
 
 	@Singular Map<String, Object> extendedProps;
-
-	public InvoiceReview withExtendedProps(final Map<String, Object> extendedProps)
-	{
-		return toBuilder().clearExtendedProps()
-				.extendedProps(extendedProps)
-				.build();
-	}
-
 }

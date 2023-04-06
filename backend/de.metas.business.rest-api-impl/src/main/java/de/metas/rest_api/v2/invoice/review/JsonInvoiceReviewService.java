@@ -20,14 +20,13 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.invoice.review.impl;
+package de.metas.rest_api.v2.invoice.review;
 
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
-import de.metas.invoice.review.InvoiceReview;
+import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.impl.InvoiceReviewRepository;
@@ -65,27 +64,31 @@ public class JsonInvoiceReviewService
 		{
 			return Optional.empty();
 		}
-		final Optional<InvoiceId> invoiceId = invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
-		if (!invoiceId.isPresent())
-		{
-			return Optional.empty();
-		}
 
 		final Map<String, Object> extendedProps = CoalesceUtil.coalesceNotNull(jsonInvoiceReviewUpsertItem.getExtendedProps(), Collections.emptyMap());
-		final InvoiceReview invoiceReview = invoiceReviewRepository.getOrCreateByInvoiceId(invoiceId.get(), orgId)
-				.withExtendedProps(extendedProps);
-		final InvoiceReviewId id = invoiceReviewRepository.save(invoiceReview);
-		return Optional.of(JsonCreateInvoiceReviewResponse.builder()
+		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery)
+				.map((invoiceId) -> InvoiceReviewCreateUpdateRequest.builder()
+								.invoiceId(invoiceId)
+								.orgId(orgId)
+								.extendedProps(extendedProps)
+								.build())
+						.map(this::upsert);
+	}
+
+	@NonNull
+	private JsonCreateInvoiceReviewResponse upsert(final @NonNull InvoiceReviewCreateUpdateRequest request)
+	{
+		final InvoiceReviewId id = invoiceReviewRepository.createOrUpdateByInvoiceId(request);
+		return JsonCreateInvoiceReviewResponse.builder()
 				.result(JsonCreateInvoiceReviewResponseResult.builder()
 						.reviewId(JsonMetasfreshId.of(id.getRepoId()))
 						.build())
-				.build());
+				.build();
 	}
 
 	@Nullable
-	private InvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
+	private static InvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
 	{
-
 		final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
 				.orgId(orgId);
 

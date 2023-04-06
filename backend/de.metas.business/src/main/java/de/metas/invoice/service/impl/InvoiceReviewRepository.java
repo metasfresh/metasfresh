@@ -23,7 +23,7 @@
 package de.metas.invoice.service.impl;
 
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.review.InvoiceReview;
+import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
 import de.metas.organization.OrgId;
 import de.metas.po.CustomColumnService;
@@ -46,44 +46,31 @@ public class InvoiceReviewRepository
 		this.customColumnService = customColumnService;
 	}
 
-	public InvoiceReview getOrCreateByInvoiceId(@NonNull final InvoiceId invoiceId, @NonNull final OrgId orgId)
+	public InvoiceReviewId createOrUpdateByInvoiceId(final InvoiceReviewCreateUpdateRequest request)
+	{
+		final I_C_Invoice_Review review = getOrCreateByInvoiceId(request.getInvoiceId(), request.getOrgId());
+		customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(review), request.getExtendedProps());
+		InterfaceWrapperHelper.save(review);
+		return InvoiceReviewId.ofRepoId(review.getC_Invoice_Review_ID());
+	}
+
+	private I_C_Invoice_Review getOrCreateByInvoiceId(@NonNull final InvoiceId invoiceId, @NonNull final OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Review.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Review.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.create()
 				.firstOnlyOptional()
-				.map(this::fromDB)
 				.orElseGet(() -> this.create(invoiceId, orgId));
 	}
 
-	private InvoiceReview create(@NonNull final InvoiceId invoiceId, @NonNull final OrgId orgId)
+	private I_C_Invoice_Review create(@NonNull final InvoiceId invoiceId, @NonNull final OrgId orgId)
 	{
-		return InvoiceReview.builder()
-				.invoiceId(invoiceId)
-				.orgId(orgId)
-				.build();
-	}
-
-	private InvoiceReview fromDB(@NonNull final I_C_Invoice_Review review)
-	{
-		return InvoiceReview.builder()
-				.id(InvoiceReviewId.ofRepoId(review.getC_Invoice_Review_ID()))
-				.invoiceId(InvoiceId.ofRepoId(review.getC_Invoice_ID()))
-				.orgId(OrgId.ofRepoId(review.getAD_Org_ID()))
-				.extendedProps(customColumnService.getCustomColumnsAsMap(InterfaceWrapperHelper.getPO(review)))
-				.build();
-	}
-
-	public InvoiceReviewId save(@NonNull final InvoiceReview invoiceReview)
-	{
-		final I_C_Invoice_Review review = InterfaceWrapperHelper.loadOrNew(invoiceReview.getId(), I_C_Invoice_Review.class);
-		review.setC_Invoice_ID(invoiceReview.getInvoiceId().getRepoId());
-		review.setAD_Org_ID(invoiceReview.getOrgId().getRepoId());
-		customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(review), invoiceReview.getExtendedProps());
-		InterfaceWrapperHelper.save(review);
-
-		return InvoiceReviewId.ofRepoId(review.getC_Invoice_Review_ID());
+		final I_C_Invoice_Review newReview = InterfaceWrapperHelper.newInstance(I_C_Invoice_Review.class);
+		newReview.setC_Invoice_ID(invoiceId.getRepoId());
+		newReview.setAD_Org_ID(orgId.getRepoId());
+		InterfaceWrapperHelper.save(newReview);
+		return newReview;
 	}
 
 }

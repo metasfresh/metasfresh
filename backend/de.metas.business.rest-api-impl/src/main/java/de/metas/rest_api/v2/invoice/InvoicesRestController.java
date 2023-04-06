@@ -49,7 +49,7 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
-import de.metas.rest_api.v2.invoice.review.impl.JsonInvoiceReviewService;
+import de.metas.rest_api.v2.invoice.review.JsonInvoiceReviewService;
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionServiceFactories;
@@ -327,13 +327,12 @@ public class InvoicesRestController
 	{
 		try
 		{
-			final Optional<JsonCreateInvoiceReviewResponse> response = jsonInvoiceReviewService.upsert(jsonInvoiceReviewUpsertItem);
-
-			return response.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
+			return jsonInvoiceReviewService.upsert(jsonInvoiceReviewUpsertItem)
+					.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
 		}
 		catch (final Exception ex)
 		{
-			logger.error(ex.getMessage(), ex);
+			logger.error("Failed to create invoice review", ex);
 
 			return ResponseEntity.unprocessableEntity()
 					.body(JsonCreateInvoiceReviewResponse.builder()
