@@ -15,6 +15,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.X_C_PaymentTerm;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -186,6 +187,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		I_C_PaymentTerm pt = InterfaceWrapperHelper.newInstance(I_C_PaymentTerm.class);
 		pt.setC_PaymentTerm_ID(100);
 		pt.setIsAllowOverrideDueDate(true);
+		pt.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
+		pt.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
 		InterfaceWrapperHelper.save(pt);
 
 		return pt.getC_PaymentTerm_ID();
