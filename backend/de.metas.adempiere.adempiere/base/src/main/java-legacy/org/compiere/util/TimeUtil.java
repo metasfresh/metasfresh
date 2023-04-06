@@ -261,12 +261,6 @@ public class TimeUtil
 		return new Timestamp(cal.getTimeInMillis());
 	}    // getNextDay
 
-	static public LocalDate getLastDayOfTheMonth(@NonNull final LocalDate givenDate)
-	{
-		 return givenDate.withDayOfMonth(
-			givenDate.getMonth().length(givenDate.isLeapYear()));
-	}
-
 	/**
 	 * Get 15'th day in month
 	 *
