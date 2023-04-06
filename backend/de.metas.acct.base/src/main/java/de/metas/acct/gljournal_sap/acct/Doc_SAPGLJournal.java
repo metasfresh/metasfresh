@@ -99,22 +99,18 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 				amtAcctCr = line.getAmountAcct().toBigDecimal();
 			}
 
-			final FactLine factLine = fact.createLine(
-					null,
-					line.getAccount(),
-					glJournalCurrencyConversionCtx.getCurrencyId(),
-					amtSourceDr,
-					amtSourceCr);
+			final FactLine factLine = fact.createLine()
+					.setAccount(line.getAccount())
+					.setAmtSource(glJournalCurrencyConversionCtx.getCurrencyId(), amtSourceDr, amtSourceCr)
+					.setAmtAcct(amtAcctDr, amtAcctCr)
+					.buildAndAdd();
+
 			if (factLine == null)
 			{
 				continue;
 			}
 
 			factLine.setLine_ID(line.getIdNotNull().getRepoId());
-			factLine.setCurrencyConversionCtx(currencyConversionCtx);
-			factLine.convert();
-			factLine.setAmtAcctDr(amtAcctDr);
-			factLine.setAmtAcctCr(amtAcctCr);
 
 			if (line.isTaxLine())
 			{
