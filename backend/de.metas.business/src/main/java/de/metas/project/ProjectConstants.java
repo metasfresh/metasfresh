@@ -30,4 +30,6 @@ public interface ProjectConstants
 
 	String DEFAULT_WO_CALENDAR_ENTRY_COLOR = "#FFCF60";
 	String DEFAULT_BUDGET_CALENDAR_ENTRY_COLOR = "#89D72D";
+
+	String RESERVATION_PROJECT_TYPE = "Reservierungsauftrag";
 }

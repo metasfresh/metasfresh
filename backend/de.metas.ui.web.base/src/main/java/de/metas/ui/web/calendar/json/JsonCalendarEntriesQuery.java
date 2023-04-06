@@ -50,4 +50,7 @@ public class JsonCalendarEntriesQuery
 
 	@Nullable JsonDateTime startDate;
 	@Nullable JsonDateTime endDate;
+
+	@Builder.Default
+	boolean skipAllocatedResources = true;
 }

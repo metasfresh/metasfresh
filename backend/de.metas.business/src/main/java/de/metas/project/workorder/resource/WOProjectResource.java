@@ -85,6 +85,9 @@ public class WOProjectResource
 	@Nullable
 	String description;
 
+	@Nullable
+	Duration resolvedHours;
+
 	@Builder(toBuilder = true)
 	private WOProjectResource(
 			@NonNull final OrgId orgId,
@@ -99,7 +102,8 @@ public class WOProjectResource
 			@Nullable final BudgetProjectResourceId projectResourceBudgetId,
 			@Nullable final ExternalId externalId,
 			@Nullable final String testFacilityGroupName,
-			@Nullable final String description)
+			@Nullable final String description,
+			@Nullable final Duration resolvedHours)
 	{
 		if (!ProjectId.equals(woProjectResourceId.getProjectId(), woProjectStepId.getProjectId()))
 		{
@@ -119,6 +123,7 @@ public class WOProjectResource
 		this.externalId = externalId;
 		this.testFacilityGroupName = testFacilityGroupName;
 		this.description = description;
+		this.resolvedHours = resolvedHours;
 	}
 
 	@NonNull
@@ -156,11 +161,28 @@ public class WOProjectResource
 		return Optional.ofNullable(dateRange)
 				.map(CalendarDateRange::getEndDate);
 	}
-	
+
+	@NonNull
+	public Duration getResolvedHours()
+	{
+		return resolvedHours == null ? Duration.ZERO : resolvedHours;
+	}
+
+	@NonNull
+	public Duration getUnresolvedHours()
+	{
+		return getDuration().minus(getResolvedHours());
+	}
+
 	public boolean isAllDay()
 	{
 		return Optional.ofNullable(dateRange)
 				.map(CalendarDateRange::isAllDay)
 				.orElse(false);
+	}
+
+	public boolean isNotFullyResolved()
+	{
+		return duration.minus(getResolvedHours()).compareTo(Duration.ZERO) > 0;
 	}
 }

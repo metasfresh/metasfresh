@@ -32,6 +32,7 @@ import de.metas.camel.externalsystems.grssignum.from_grs.helper.JsonRequestHelpe
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOM;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBOMAdditionalInfo;
+import de.metas.common.product.v2.JsonQualityAttribute;
 import de.metas.common.product.v2.request.JsonRequestAllergenItem;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
@@ -87,16 +88,21 @@ public class PushProductProcessor implements Processor
 		requestProduct.setBpartnerProductItems(ImmutableList.of(getBPartnerProductUpsertRequest(jsonBOM)));
 		requestProduct.setProductAllergens(getUpsertAllergenRequest(jsonBOM));
 
+		final ImmutableList.Builder<JsonQualityAttribute> qualityAttributeLabelBuilder = JsonRequestHelper.initQualityAttributeLabelList(jsonBOM);
+
 		getSingleAdditionalInfo(jsonBOM)
 				.ifPresent(additionalInfo -> {
 					requestProduct.setGuaranteeMonths(additionalInfo.getGuaranteeMonthsAsString());
 					requestProduct.setWarehouseTemperature(additionalInfo.getWarehouseTemperature());
 
-					if (additionalInfo.getGtin() != null)
-					{
-						requestProduct.setGtin(additionalInfo.getGtin());
-					}
+					Optional.ofNullable(additionalInfo.getGtin()).ifPresent(requestProduct::setGtin);
+					Optional.ofNullable(additionalInfo.getAgricultureOrigin())
+							.filter(Check::isNotBlank)
+							.map(JsonRequestHelper::getQualityLabelForAgricultureOrigin)
+							.ifPresent(qualityAttributeLabelBuilder::add);
 				});
+
+		requestProduct.setQualityAttributes(JsonRequestHelper.getQualityAttributeRequest(qualityAttributeLabelBuilder.build()));
 
 		final JsonRequestProductUpsertItem productUpsertItem = JsonRequestProductUpsertItem.builder()
 				.productIdentifier(ExternalIdentifierFormat.asExternalIdentifier(jsonBOM.getProductId()))

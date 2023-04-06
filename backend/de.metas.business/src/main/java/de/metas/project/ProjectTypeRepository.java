@@ -36,6 +36,7 @@ import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Repository
 public class ProjectTypeRepository
@@ -51,7 +52,8 @@ public class ProjectTypeRepository
 	{
 		return projectTypes.getOrLoad(id, this::retrieveById);
 	}
-		@NonNull
+
+	@NonNull
 	public ProjectType getById(@NonNull final ProjectTypeId id)
 	{
 		final ProjectType result = projectTypes.getOrLoad(id, this::retrieveById);
@@ -78,6 +80,7 @@ public class ProjectTypeRepository
 				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(record.getR_StatusCategory_ID()))
 				.docSequenceId(DocSequenceId.ofRepoIdOrNull(record.getAD_Sequence_ProjectValue_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
+				.name(record.getName())
 				.build();
 	}
 
@@ -105,4 +108,20 @@ public class ProjectTypeRepository
 		return projectTypeId;
 	}
 
+	@NonNull
+	public Optional<ProjectType> getByName(@NonNull final String name)
+	{
+		final I_C_ProjectType projectTypeRecord = queryBL.createQueryBuilder(I_C_ProjectType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ProjectType.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyNotNull(I_C_ProjectType.class);
+
+		return Optional.ofNullable(toProjectType(projectTypeRecord));
+	}
+
+	public boolean isReservationOrder(@NonNull final ProjectTypeId projectTypeId)
+	{
+		return getById(projectTypeId).isReservation();
+	}
 }

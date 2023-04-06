@@ -53,6 +53,8 @@ public final class WOProjectsCalendarQueryExecutor
 	private ImmutableMap<WOProjectStepId, WOProjectStep> _stepsById;
 	private SimulationHeaderAndPlan _simulationHeaderAndPlan;
 
+	private final boolean skipAllocatedResources;
+
 	@Builder
 	private WOProjectsCalendarQueryExecutor(
 			final @NonNull ResourceService resourceService,
@@ -65,7 +67,8 @@ public final class WOProjectsCalendarQueryExecutor
 			final @NonNull InSetPredicate<CalendarResourceId> calendarResourceIds,
 			final @Nullable SimulationPlanId simulationId,
 			final @Nullable Instant startDate,
-			final @Nullable Instant endDate)
+			final @Nullable Instant endDate,
+			final boolean skipAllocatedResources)
 	{
 		this.resourceService = resourceService;
 		this.simulationPlanService = simulationPlanService;
@@ -78,6 +81,7 @@ public final class WOProjectsCalendarQueryExecutor
 		this.simulationId = simulationId;
 		this.startDate = startDate;
 		this.endDate = endDate;
+		this.skipAllocatedResources = skipAllocatedResources;
 	}
 
 	@NonNull
@@ -86,6 +90,7 @@ public final class WOProjectsCalendarQueryExecutor
 		return getProjectResources()
 				.stream()
 				.filter(this::isActiveProject)
+				.filter(this::isAllocatedResource)
 				.map(this::toCalendarEntry)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
@@ -147,11 +152,6 @@ public final class WOProjectsCalendarQueryExecutor
 		return this._simulationHeaderAndPlan;
 	}
 
-	public boolean isActiveProject(@NonNull final WOProjectResource projectResource)
-	{
-		return getActiveProject(projectResource) != null;
-	}
-
 	private WOProject getActiveProject(final @NonNull WOProjectResource projectResource)
 	{
 		return getActiveProjects().get(projectResource.getProjectId());
@@ -167,6 +167,21 @@ public final class WOProjectsCalendarQueryExecutor
 				getStep(projectResource),
 				getActiveProject(projectResource),
 				simulationHeaderAndPlan.getHeader());
+	}
+
+	private boolean isActiveProject(@NonNull final WOProjectResource projectResource)
+	{
+		return getActiveProject(projectResource) != null;
+	}
+
+	private boolean isAllocatedResource(@NonNull final WOProjectResource projectResource)
+	{
+		if (!skipAllocatedResources)
+		{
+			return false;
+		}
+
+		return projectResource.isNotFullyResolved();
 	}
 
 	public static InSetPredicate<ResourceId> getResourceIdsPredicate(

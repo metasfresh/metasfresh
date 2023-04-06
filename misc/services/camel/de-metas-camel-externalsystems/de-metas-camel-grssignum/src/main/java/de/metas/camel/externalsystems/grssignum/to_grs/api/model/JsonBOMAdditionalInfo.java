@@ -56,17 +56,23 @@ public class JsonBOMAdditionalInfo
 	@Nullable
 	String gtin;
 
+	@JsonProperty("Rezeptur_Angaben_Landwirtschaftliche_Herkunft")
+	@Nullable
+	String agricultureOrigin;
+
 	@Builder
 	public JsonBOMAdditionalInfo(
 			@Nullable @JsonProperty("Produktion_Maschinengrößen") final List<Map<String, BigDecimal>> plantConfig,
 			@Nullable @JsonProperty("Lagerungsbedingungen_MHD_in_Monaten") final Integer guaranteeMonths,
 			@Nullable @JsonProperty("Lagerungsbedingungen_Lagerungstemperatur") final String warehouseTemperature,
-			@Nullable @JsonProperty("Rezeptur_Angaben_GTIN") final String gtin)
+			@Nullable @JsonProperty("Rezeptur_Angaben_GTIN") final String gtin,
+			@Nullable @JsonProperty("Rezeptur_Angaben_Landwirtschaftliche_Herkunft") final String agricultureOrigin)
 	{
 		this.plantConfig = plantConfig;
 		this.guaranteeMonths = guaranteeMonths;
 		this.warehouseTemperature = warehouseTemperature;
 		this.gtin = gtin;
+		this.agricultureOrigin = agricultureOrigin;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

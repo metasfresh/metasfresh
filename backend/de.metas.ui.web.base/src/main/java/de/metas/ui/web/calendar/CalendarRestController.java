@@ -185,6 +185,7 @@ public class CalendarRestController
 
 			result.onlyCustomerId(query.getOnlyCustomerId());
 			result.onlyProjectResponsibleId(query.getOnlyResponsibleId());
+			result.skipAllocatedResources(query.isSkipAllocatedResources());
 		}
 
 		return result.build();
