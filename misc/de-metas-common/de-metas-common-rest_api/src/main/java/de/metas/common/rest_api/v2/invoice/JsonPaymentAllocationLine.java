@@ -40,17 +40,8 @@ import java.math.BigDecimal;
 public class JsonPaymentAllocationLine
 {
 	@NonNull
-<<<<<<< HEAD
 	@Schema(required = true,
-			description = "Identifier of the Invoice in question. Can be\n"
-					+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-					+ "* or something like `doc-<C_Invoice.documentNo>`"
-					+ "* or something like `ext-<C_Invoice.ExternalId>`")
-=======
-	@ApiModelProperty(position = 10, required = true,
-			dataType = "java.lang.String",
-			value = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
->>>>>>> a76b8c750bd (create C_Invoice_Review (#15076))
+			description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 
 	@Schema
@@ -120,8 +111,8 @@ public class JsonPaymentAllocationLine
 		if (!getInvIdentifier().equals(line.getInvIdentifier()))
 		{
 			throw new RuntimeException("JsonPaymentAllocationLines must share the same InvoiceIdentifier in order to be able to aggregate!"
-											   + " this.InvoiceIdentifier=" + this.getInvIdentifier()
-											   + " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
+					+ " this.InvoiceIdentifier=" + this.getInvIdentifier()
+					+ " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
 		}
 
 		return JsonPaymentAllocationLine.builder()

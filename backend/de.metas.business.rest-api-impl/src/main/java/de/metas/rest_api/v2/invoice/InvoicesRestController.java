@@ -45,14 +45,11 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
-<<<<<<< HEAD
 import de.metas.rest_api.v2.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CloseInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CreateInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.EnqueueForInvoicingService;
-=======
 import de.metas.rest_api.v2.invoice.review.JsonInvoiceReviewService;
->>>>>>> a76b8c750bd (create C_Invoice_Review (#15076))
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionServiceFactories;
