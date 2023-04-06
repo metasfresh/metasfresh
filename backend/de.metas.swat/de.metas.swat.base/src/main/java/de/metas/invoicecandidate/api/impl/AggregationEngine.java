@@ -603,7 +603,7 @@ public final class AggregationEngine
 					Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
 					if (baseLineDate == null)
 					{
-						baseLineDate = Timestamp.valueOf(computeDateInvoiced(ic).atStartOfDay());
+						baseLineDate = TimeUtil.asTimestamp(computeDateInvoiced(ic));
 					}
 					return TimeUtil.asLocalDate(paymentTerm.computeDueDate(baseLineDate), timeZone);
 				});
