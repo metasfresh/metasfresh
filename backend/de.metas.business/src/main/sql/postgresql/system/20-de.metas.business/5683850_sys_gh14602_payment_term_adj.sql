@@ -1,9 +1,3 @@
--- UI Element: Payment Term(141,D) -> Payment Term(184,D) -> main -> 20 -> flags.Nächster Geschäftstag
--- Column: C_PaymentTerm.IsNextBusinessDay
--- 2023-04-03T15:24:37.876Z
-DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545048
-;
-
 -- UI Element: Payment Term(141,D) -> Payment Term(184,D) -> main -> 20 -> flags.Nach Lieferung
 -- Column: C_PaymentTerm.AfterDelivery
 -- 2023-04-03T15:24:41.745Z
@@ -34,26 +28,6 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=1068
 
 -- 2023-04-03T15:25:35.129Z
 DELETE FROM AD_Field WHERE AD_Field_ID=1068
-;
-
--- Field: Payment Term(141,D) -> Payment Term(184,D) -> Next Business Day
--- Column: C_PaymentTerm.IsNextBusinessDay
--- 2023-04-03T15:26:08.028Z
-UPDATE AD_Field SET IsDisplayed='N', IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2023-04-03 17:26:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3081
-;
-
--- 2023-04-03T15:26:10.807Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=3081
-;
-
--- Field: Payment Term(141,D) -> Payment Term(184,D) -> Next Business Day
--- Column: C_PaymentTerm.IsNextBusinessDay
--- 2023-04-03T15:26:10.810Z
-DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=3081
-;
-
--- 2023-04-03T15:26:10.813Z
-DELETE FROM AD_Field WHERE AD_Field_ID=3081
 ;
 
 -- 2023-04-03T15:48:08.952Z
@@ -293,7 +267,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 DELETE
 FROM exp_formatline
-WHERE ad_column_id IN (3900, 2037)
+WHERE ad_column_id = 2037
 ;
 
 
@@ -307,19 +281,6 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=2037
 DELETE FROM AD_Column WHERE AD_Column_ID=2037
 ;
 
--- Column: C_PaymentTerm.IsNextBusinessDay
--- 2023-04-04T10:46:22.196Z
-DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=3900
-;
-
--- 2023-04-04T10:46:22.199Z
-DELETE FROM AD_Column WHERE AD_Column_ID=3900
-;
-
-
-ALTER TABLE c_paymentterm
-    DROP COLUMN isnextbusinessday
-;
 
 ALTER TABLE c_paymentterm
     DROP COLUMN afterdelivery

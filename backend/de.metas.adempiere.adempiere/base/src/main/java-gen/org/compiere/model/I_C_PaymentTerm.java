@@ -389,6 +389,29 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
+	 * Set Next Business Day.
+	 * Payment due on the next business day
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsNextBusinessDay (boolean IsNextBusinessDay);
+
+	/**
+	 * Get Next Business Day.
+	 * Payment due on the next business day
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isNextBusinessDay();
+
+	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsNextBusinessDay = new ModelColumn<>(I_C_PaymentTerm.class, "IsNextBusinessDay", null);
+	String COLUMNNAME_IsNextBusinessDay = "IsNextBusinessDay";
+
+	/**
 	 * Set Is Valid.
 	 * The element is valid
 	 *

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_PaymentTerm, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1628231354L;
+	private static final long serialVersionUID = -915123046L;
 
     /** Standard Constructor */
     public X_C_PaymentTerm (final Properties ctx, final int C_PaymentTerm_ID, @Nullable final String trxName)
@@ -216,6 +216,18 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+	}
+
+	@Override
+	public void setIsNextBusinessDay (final boolean IsNextBusinessDay)
+	{
+		set_Value (COLUMNNAME_IsNextBusinessDay, IsNextBusinessDay);
+	}
+
+	@Override
+	public boolean isNextBusinessDay() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNextBusinessDay);
 	}
 
 	@Override
