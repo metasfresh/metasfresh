@@ -67,7 +67,6 @@ public class MPaymentTerm extends X_C_PaymentTerm
 			setDiscountDays (0);
 			setDiscountDays2 (0);
 			setGraceDays (0);
-			setIsDueFixed (false);
 			setIsValid (false);
 		}	}	//	MPaymentTerm
 
