@@ -1,8 +1,9 @@
 package de.metas.acct.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for SAP_GLJournal
  *  @author metasfresh (generated) 
@@ -259,7 +260,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (java.lang.String Description);
+	void setDescription (String Description);
 
 	/**
 	 * Get Description.
@@ -268,7 +269,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDescription();
+	String getDescription();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_Description = new ModelColumn<>(I_SAP_GLJournal.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -280,7 +281,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocAction (java.lang.String DocAction);
+	void setDocAction (String DocAction);
 
 	/**
 	 * Get Process Batch.
@@ -289,7 +290,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocAction();
+	String getDocAction();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_DocAction = new ModelColumn<>(I_SAP_GLJournal.class, "DocAction", null);
 	String COLUMNNAME_DocAction = "DocAction";
@@ -301,7 +302,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (String DocStatus);
 
 	/**
 	 * Get Status.
@@ -310,7 +311,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocStatus();
+	String getDocStatus();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_DocStatus = new ModelColumn<>(I_SAP_GLJournal.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
@@ -323,7 +324,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -333,7 +334,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocumentNo();
+	String getDocumentNo();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_DocumentNo = new ModelColumn<>(I_SAP_GLJournal.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -486,7 +487,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPostingType (java.lang.String PostingType);
+	void setPostingType (String PostingType);
 
 	/**
 	 * Get Posting Type.
@@ -495,7 +496,7 @@ public interface I_SAP_GLJournal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPostingType();
+	String getPostingType();
 
 	ModelColumn<I_SAP_GLJournal, Object> COLUMN_PostingType = new ModelColumn<>(I_SAP_GLJournal.class, "PostingType", null);
 	String COLUMNNAME_PostingType = "PostingType";

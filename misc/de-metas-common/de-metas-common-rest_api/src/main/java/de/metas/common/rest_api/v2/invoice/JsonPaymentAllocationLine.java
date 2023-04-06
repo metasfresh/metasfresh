@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2.invoice;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.NumberUtils;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -41,10 +42,7 @@ public class JsonPaymentAllocationLine
 	@NonNull
 	@ApiModelProperty(position = 10, required = true,
 			dataType = "java.lang.String",
-			value = "Identifier of the Invoice in question. Can be\n"
-					+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-					+ "* or something like `doc-<C_Invoice.documentNo>`"
-					+ "* or something like `ext-<C_Invoice.ExternalId>`")
+			value = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 
 	@ApiModelProperty(position = 20)
