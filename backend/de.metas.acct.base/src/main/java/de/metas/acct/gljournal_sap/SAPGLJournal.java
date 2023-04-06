@@ -124,7 +124,9 @@ public class SAPGLJournal
 				.amountAcct(amountAcct)
 				.taxId(request.getTaxId())
 				.orgId(orgId)
-				.dimension(request.getDimension())
+				.dimension(request.getDimension().getSectionCodeId() != null
+								   ? request.getDimension()
+								   : request.getDimension().withSectionCodeId(dimension.getSectionCodeId()))
 				.determineTaxBaseSAP(request.isDetermineTaxBaseSAP())
 				.build();
 		lines.add(line);
