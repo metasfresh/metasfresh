@@ -55,6 +55,7 @@ import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -68,6 +69,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -179,7 +181,10 @@ public class InvoiceCandBLCreateInvoicesTest
 	public void test_InvalidInvoiceCandidate_NoUserInCharge_FlagItAsError()
 	{
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_PaymentTerm paymentTerm =icTestSupport.paymentTerm("test-paymentTerm");
+
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
+		ic.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		InterfaceWrapperHelper.save(ic);
 
 		// clear C_Invoice_Candidate_Recompute; otherwise we won't get our error out of DefaultAggregator.mkLineAggregationKeyToUse()
@@ -210,6 +215,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+		final I_C_PaymentTerm paymentTerm =icTestSupport.paymentTerm("test-paymentTerm");
 
 		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -217,6 +223,7 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setQtyOrdered(3)
 				.setManual(false)
 				.setSOTrx(true)
+				.setPaymentTermId(PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID()))
 				.build();
 
 		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate()
@@ -224,6 +231,7 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setPriceEntered(10)
 				.setQtyOrdered(3)
 				.setManual(false)
+				.setPaymentTermId(PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID()))
 				.setSOTrx(true)
 				.build();
 
@@ -231,9 +239,12 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
 				.setQtyOrdered(3)
+				.setPaymentTermId(PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID()))
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
+		ic3.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2, ic3);
 
 		//
@@ -283,11 +294,14 @@ public class InvoiceCandBLCreateInvoicesTest
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_PaymentTerm paymentTerm =icTestSupport.paymentTerm("test-paymentTerm");
 
 		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
 		ic1.setDescription("IC1 - normal");
+		ic1.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
 		ic2.setDescription("IC2 - partial qty");
+		ic2.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
@@ -349,15 +363,18 @@ public class InvoiceCandBLCreateInvoicesTest
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_PaymentTerm paymentTerm =icTestSupport.paymentTerm("test-paymentTerm");
 
 		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		ic1.setDescription("IC1 - normal");
+		ic1.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 
 		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		POJOWrapper.setInstanceName(ic2, "ic2");
 		ic2.setDescription("IC2 - partial qty");
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
+		ic2.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 
 		final BigDecimal discount1 = ic1.getDiscount();
 		BigDecimal discount_override1 = ic1.getDiscount_Override();
@@ -442,6 +459,8 @@ public class InvoiceCandBLCreateInvoicesTest
 		SpringContextHolder.registerJUnitBean(new ChargeRepository());
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_PaymentTerm paymentTerm =icTestSupport.paymentTerm("test-paymentTerm");
+
 		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerId(bpartner.getC_BPartner_ID())
 				.setPriceEntered(10)
@@ -450,6 +469,8 @@ public class InvoiceCandBLCreateInvoicesTest
 				.setManual(false)
 				.setSOTrx(true)
 				.build(); // priceEntered, qty, discount
+
+		ic.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 
 		new InvoiceCandidateDimensionFactory().updateRecord(
 				ic,
