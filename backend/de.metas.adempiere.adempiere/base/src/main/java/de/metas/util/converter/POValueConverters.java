@@ -120,6 +120,10 @@ public class POValueConverters
 			{
 				return new BigDecimal((String)value);
 			}
+			else if (Integer.class.equals(valueClass))
+			{
+				return BigDecimal.valueOf((Integer)value);
+			}
 		}
 
 		throw new RuntimeException("TargetClass " + targetClass + " does not match any supported classes!");
