@@ -36,7 +36,9 @@ public enum ConversionTypeMethod implements ReferenceListAwareEnum
 	PeriodEnd("P"),
 	Average("A"),
 	Company("C"),
-	ForeignExchangeContract("F");
+	ForeignExchangeContract("F"),
+	TaxReportingRate("T");
+
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ConversionTypeMethod> index = ReferenceListAwareEnums.index(values());
 
