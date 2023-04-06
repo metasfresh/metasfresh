@@ -214,7 +214,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
-<<<<<<< HEAD
 	 * Set Affiliate.
 	 *
 	 * <br>Type: YesNo
