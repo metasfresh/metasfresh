@@ -63,7 +63,7 @@ BEGIN
         dateResult = dateResult - 1;
     END IF;
 
-    RETURN lastbusinessday(dateResult, p_c_calendar_id);
+    RETURN previousBusinessDay(dateResult, p_c_calendar_id);
 
 EXCEPTION WHEN OTHERS THEN
     RAISE NOTICE '%', SQLERRM;

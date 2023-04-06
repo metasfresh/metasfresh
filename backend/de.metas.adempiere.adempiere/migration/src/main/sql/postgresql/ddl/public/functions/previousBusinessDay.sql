@@ -20,9 +20,9 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS lastbusinessday(timestamp with time zone, numeric);
+DROP FUNCTION IF EXISTS previousBusinessDay(timestamp with time zone, numeric);
 
-CREATE FUNCTION lastbusinessday(p_date timestamp with time zone, p_c_calendar_id numeric) RETURNS timestamp with time zone
+CREATE FUNCTION previousBusinessDay(p_date timestamp with time zone, p_c_calendar_id numeric) RETURNS timestamp with time zone
     LANGUAGE plpgsql
 AS
 $$
@@ -62,7 +62,7 @@ end;
 $$
 ;
 
-COMMENT ON FUNCTION lastbusinessday(timestamp with time zone, numeric) IS
+COMMENT ON FUNCTION previousBusinessDay(timestamp with time zone, numeric) IS
     'Find last business day in given calendar including given date'
 ;
 
