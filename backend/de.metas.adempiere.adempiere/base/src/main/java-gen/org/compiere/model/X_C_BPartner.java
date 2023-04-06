@@ -1214,6 +1214,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
 	}
 
+	/** 
+	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISPRINTLOCALCURRENCYINFO_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISPRINTLOCALCURRENCYINFO_Yes = "Y";
+	/** No = N */
+	public static final String ISPRINTLOCALCURRENCYINFO_No = "N";
+	@Override
+	public void setIsPrintLocalCurrencyInfo (final @Nullable java.lang.String IsPrintLocalCurrencyInfo)
+	{
+		set_Value (COLUMNNAME_IsPrintLocalCurrencyInfo, IsPrintLocalCurrencyInfo);
+	}
+
+	@Override
+	public java.lang.String getIsPrintLocalCurrencyInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
+	}
+
 	@Override
 	public void setIsProspect (final boolean IsProspect)
 	{
