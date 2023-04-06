@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2.invoice;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.NumberUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -40,10 +41,7 @@ public class JsonPaymentAllocationLine
 {
 	@NonNull
 	@Schema(required = true,
-			description = "Identifier of the Invoice in question. Can be\n"
-					+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-					+ "* or something like `doc-<C_Invoice.documentNo>`"
-					+ "* or something like `ext-<C_Invoice.ExternalId>`")
+			description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 
 	@Schema
@@ -113,8 +111,8 @@ public class JsonPaymentAllocationLine
 		if (!getInvIdentifier().equals(line.getInvIdentifier()))
 		{
 			throw new RuntimeException("JsonPaymentAllocationLines must share the same InvoiceIdentifier in order to be able to aggregate!"
-											   + " this.InvoiceIdentifier=" + this.getInvIdentifier()
-											   + " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
+					+ " this.InvoiceIdentifier=" + this.getInvIdentifier()
+					+ " lineToAggregate.InvoiceIdentifier=" + line.getInvIdentifier());
 		}
 
 		return JsonPaymentAllocationLine.builder()

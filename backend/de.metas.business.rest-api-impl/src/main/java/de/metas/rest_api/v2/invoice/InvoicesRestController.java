@@ -49,6 +49,7 @@ import de.metas.rest_api.v2.invoicecandidates.impl.CheckInvoiceCandidatesStatusS
 import de.metas.rest_api.v2.invoicecandidates.impl.CloseInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.CreateInvoiceCandidatesService;
 import de.metas.rest_api.v2.invoicecandidates.impl.EnqueueForInvoicingService;
+import de.metas.rest_api.v2.invoice.review.JsonInvoiceReviewService;
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionServiceFactories;
@@ -93,6 +94,8 @@ public class InvoicesRestController
 	private final JsonRetrieverService jsonRetrieverService;
 	private final SectionCodeService sectionCodeService;
 
+	private final JsonInvoiceReviewService jsonInvoiceReviewService;
+
 	public InvoicesRestController(
 			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
@@ -102,7 +105,8 @@ public class InvoicesRestController
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final SectionCodeService sectionCodeService)
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final JsonInvoiceReviewService jsonInvoiceReviewService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
@@ -113,6 +117,7 @@ public class InvoicesRestController
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.sectionCodeService = sectionCodeService;
+		this.jsonInvoiceReviewService = jsonInvoiceReviewService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -299,21 +304,40 @@ public class InvoicesRestController
 			final ManualInvoice invoice = jsonInvoiceService.createInvoice(request, masterdataProvider);
 
 			return ResponseEntity.ok().body(JsonCreateInvoiceResponse.builder()
-													.result(JsonCreateInvoiceResponseResult.builder()
-																	.documentNo(invoice.getDocNumber())
-																	.build())
-													.build());
+					.result(JsonCreateInvoiceResponseResult.builder()
+							.documentNo(invoice.getDocNumber())
+							.build())
+					.build());
 		}
 		catch (final Exception ex)
 		{
-			logger.error(ex.getMessage(), ex);
+			logger.error("failed to create invoice", ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 			return ResponseEntity.unprocessableEntity()
 					.body(JsonCreateInvoiceResponse.builder()
-								  .errors(ImmutableList.of(JsonErrors.ofThrowable(ex, adLanguage)))
-								  .build());
+							.errors(ImmutableList.of(JsonErrors.ofThrowable(ex, adLanguage)))
+							.build());
+		}
+	}
+
+	@PostMapping("/docReview")
+	public ResponseEntity<JsonCreateInvoiceReviewResponse> createReview(@NonNull @RequestBody final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem)
+	{
+		try
+		{
+			return jsonInvoiceReviewService.upsert(jsonInvoiceReviewUpsertItem)
+					.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.badRequest().build());
+		}
+		catch (final Exception ex)
+		{
+			logger.error("Failed to create invoice review", ex);
+
+			return ResponseEntity.unprocessableEntity()
+					.body(JsonCreateInvoiceReviewResponse.builder()
+							.errors(ImmutableList.of(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage())))
+							.build());
 		}
 	}
 }
