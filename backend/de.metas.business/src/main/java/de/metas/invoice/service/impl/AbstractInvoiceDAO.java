@@ -488,7 +488,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 		if (query.getExternalId() != null)
 		{
-			return getInvoiceIdByExternalIdIfCOorCL(query);
+			return getInvoiceIdByExternalId(query);
 		}
 		if (!Check.isEmpty(query.getDocType()))
 		{
@@ -556,12 +556,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
 				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQueryBuilder.create());
 
-		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
+		final int invoiceRepoId = queryBuilder.create()
+				.firstIdOnly();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
 	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByExternalIdIfCOorCL(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final InvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -569,10 +570,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue())
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
 
-				// we only want invoices that payments or other invoices can be allocated against
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed);
+		final Collection<DocStatus> docStatuses = query.getDocStatuses();
+		if (docStatuses != null && !docStatuses.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses);
+		}
 
 		final int invoiceRepoId = queryBuilder.create()
 				.firstIdOnly(); // this firstIdOnly() corresponds to the UC "c_invoice_uc_externalId_org"
