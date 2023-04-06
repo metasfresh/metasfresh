@@ -33,6 +33,7 @@ import de.metas.common.rest_api.v1.payment.JsonPaymentAllocationLine;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -256,7 +257,11 @@ public class JsonPaymentService
 	@NonNull
 	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
 	{
-		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier).docType(docType).orgId(orgId).build();
+		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier)
+				.docType(docType)
+				.orgId(orgId)
+				.docStatuses(DocStatus.completedOrClosedStatuses())
+				.build();
 		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
 	}
 
