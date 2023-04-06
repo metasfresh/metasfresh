@@ -311,7 +311,7 @@ public class InvoicesRestController
 		}
 		catch (final Exception ex)
 		{
-			logger.error(ex.getMessage(), ex);
+			logger.error("failed to create invoice", ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
