@@ -26,32 +26,54 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class GLCategoryId implements RepoIdAware
 {
+	public static final GLCategoryId NONE = new GLCategoryId(0);
+
 	int repoId;
 
 	@JsonCreator
 	public static GLCategoryId ofRepoId(final int repoId)
 	{
+		if (repoId == NONE.getRepoId())
+		{
+			return NONE;
+		}
+
 		return new GLCategoryId(repoId);
 	}
 
-	public static GLCategoryId ofRepoIdOrNull(final int repoId)
+	@NonNull
+	public static GLCategoryId ofRepoIdOrNone(final int repoId)
 	{
-		return repoId > 0 ? new GLCategoryId(repoId) : null;
+		return repoId > 0 ? new GLCategoryId(repoId) : NONE;
 	}
 
-	public static int toRepoId(GLCategoryId glCategoryId)
+	public static int toRepoId(@Nullable final GLCategoryId glCategoryId)
 	{
 		return glCategoryId != null ? glCategoryId.getRepoId() : -1;
 	}
 
+	@Nullable
+	public static GLCategoryId ofRepoIdOrNull(final int repoId)
+	{
+		if (repoId < 0)
+		{
+			return null;
+		}
+
+		return ofRepoIdOrNone(repoId);
+	}
+
 	private GLCategoryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "GL_Category_ID");
+		this.repoId = Check.assumeGreaterOrEqualToZero(repoId, "GL_Category_ID");
 	}
 
 	@Override

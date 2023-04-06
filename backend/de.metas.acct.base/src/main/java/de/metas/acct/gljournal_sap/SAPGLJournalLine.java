@@ -37,6 +37,7 @@ public class SAPGLJournalLine
 
 	@NonNull @Getter private final OrgId orgId;
 	@NonNull @Getter private final Dimension dimension;
+	@Getter private final boolean determineTaxBaseSAP;
 
 	public SAPGLJournalLineId getIdNotNull()
 	{

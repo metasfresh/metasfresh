@@ -36,6 +36,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.elementvalue.ElementValue;
@@ -226,14 +227,14 @@ public class JsonInvoiceService
 			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
-									.lineNumber(line.getLine())
-									.productName(productName)
-									.qtyInvoiced(line.getQtyEntered())
-									.price(line.getPriceEntered())
-									.taxRate(taxRate)
-									.lineNetAmt(line.getLineNetAmt())
-									.currency(currency)
-									.build());
+					.lineNumber(line.getLine())
+					.productName(productName)
+					.qtyInvoiced(line.getQtyEntered())
+					.price(line.getPriceEntered())
+					.taxRate(taxRate)
+					.lineNetAmt(line.getLineNetAmt())
+					.currency(currency)
+					.build());
 		}
 
 		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));
@@ -338,9 +339,9 @@ public class JsonInvoiceService
 				.stream()
 				.peek(identifier2InvoiceEntry -> validateInvoiceType(identifier2InvoiceEntry.getValue(), identifier2InvoiceEntry.getKey(), request.getType()))
 				.map(identifier2InvoiceEntry -> buildPayableDocument(identifier2InvoiceEntry.getValue(),
-																	 transactionDate,
-																	 requestCurrencyId,
-																	 identifier2Line.get(identifier2InvoiceEntry.getKey())))
+						transactionDate,
+						requestCurrencyId,
+						identifier2Line.get(identifier2InvoiceEntry.getKey())))
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList<PaymentDocument> paymentDocuments = ImmutableList.of(paymentDocument);
@@ -393,10 +394,10 @@ public class JsonInvoiceService
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(getAmountsToAllocate(invoiceToAllocate,
-														allocationLine,
-														requestCurrencyId,
-														convertToInvoiceCurrency,
-														invoiceProcessingFeeCalculation))
+						allocationLine,
+						requestCurrencyId,
+						convertToInvoiceCurrency,
+						invoiceProcessingFeeCalculation))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
 	}
@@ -444,11 +445,11 @@ public class JsonInvoiceService
 	{
 		final ClientAndOrgId clientAndOrgId = invoiceToAllocate.getClientAndOrgId();
 		return currencyBL.getCurrencyRate(currencyFromId,
-										  currencyToId,
-										  invoiceToAllocate.getEvaluationDate().toInstant(),
-										  invoiceToAllocate.getCurrencyConversionTypeId(),
-										  clientAndOrgId.getClientId(),
-										  clientAndOrgId.getOrgId());
+				currencyToId,
+				invoiceToAllocate.getEvaluationDate().toInstant(),
+				invoiceToAllocate.getCurrencyConversionTypeId(),
+				clientAndOrgId.getClientId(),
+				clientAndOrgId.getOrgId());
 
 	}
 
@@ -464,13 +465,13 @@ public class JsonInvoiceService
 		final ZonedDateTime transactionDateAndTime = TimeUtil.asZonedDateTime(transactionDate, zoneId);
 
 		return invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
-																		 .orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
-																		 .evaluationDate(transactionDateAndTime)
-																		 .customerId(invoiceToAllocate.getBpartnerId())
-																		 .docTypeId(invoiceToAllocate.getDocTypeId())
-																		 .invoiceId(invoiceToAllocate.getInvoiceId())
-																		 .invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
-																		 .build());
+				.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+				.evaluationDate(transactionDateAndTime)
+				.customerId(invoiceToAllocate.getBpartnerId())
+				.docTypeId(invoiceToAllocate.getDocTypeId())
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+				.build());
 	}
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
@@ -484,7 +485,7 @@ public class JsonInvoiceService
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		final CreateInvoiceRequest createInvoiceRequest = buildCreateInvoiceRequest(request.getInvoice(),
-																					masterdataProvider);
+				masterdataProvider);
 
 		return manualInvoiceService.createInvoice(createInvoiceRequest);
 	}
@@ -595,9 +596,9 @@ public class JsonInvoiceService
 				.billContactId(bPartnerInfo.getContactId())
 				.dateInvoiced(dateInvoiced)
 				.dateAcct(invoiceHeader.getDateAcctAsInstant(zoneId)
-								  .orElse(dateInvoiced))
+						.orElse(dateInvoiced))
 				.dateOrdered(invoiceHeader.getDateOrderedAsInstant(zoneId)
-									 .orElse(dateInvoiced))
+						.orElse(dateInvoiced))
 				.docTypeId(docTypeId)
 				.poReference(invoiceHeader.getPoReference())
 				.soTrx(SOTrx.ofNameNotNull(invoiceHeader.getSoTrx()))
@@ -742,7 +743,7 @@ public class JsonInvoiceService
 		final BankAccountId bankAccountId = paymentService
 				.determineOrgBPartnerBankAccountId(orgId, currencyId, request.getTargetIBAN())
 				.orElseThrow(() -> new AdempiereException(String.format("Cannot find Bank Account for the org-bpartner of org-id: %s, currency-id: %s and iban: %s",
-																		orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
+						orgId.getRepoId(), currencyId.getRepoId(), request.getTargetIBAN())));
 
 		final DefaultPaymentBuilder paymentBuilder = JsonPaymentDirection.INBOUND == request.getType()
 				? paymentService.newInboundReceiptBuilder()
@@ -885,7 +886,8 @@ public class JsonInvoiceService
 		{
 			final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
 					.orgId(orgId)
-					.docType(getDocType(invoiceIdentifier));
+					.docType(getDocType(invoiceIdentifier))
+					.docStatuses(DocStatus.completedOrClosedStatuses());
 
 			final IdentifierString identifierString = IdentifierString.of(invoiceIdentifier.getInvoiceIdentifier());
 

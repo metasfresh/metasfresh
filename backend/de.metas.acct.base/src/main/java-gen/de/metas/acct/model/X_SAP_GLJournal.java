@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.acct.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for SAP_GLJournal
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJournal, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 877924889L;
+	private static final long serialVersionUID = 2051816088L;
 
     /** Standard Constructor */
     public X_SAP_GLJournal (final Properties ctx, final int SAP_GLJournal_ID, @Nullable final String trxName)
@@ -160,13 +160,13 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -207,13 +207,13 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	@Override
-	public void setDocAction (final java.lang.String DocAction)
+	public void setDocAction (final String DocAction)
 	{
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
 	@Override
-	public java.lang.String getDocAction() 
+	public String getDocAction() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
@@ -248,25 +248,25 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
+	public void setDocStatus (final String DocStatus)
 	{
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
 	@Override
-	public java.lang.String getDocStatus() 
+	public String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (final String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
 	@Override
-	public java.lang.String getDocumentNo() 
+	public String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -286,7 +286,7 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	@Override
 	public void setGL_Category_ID (final int GL_Category_ID)
 	{
-		if (GL_Category_ID < 1) 
+		if (GL_Category_ID < 0) 
 			set_Value (COLUMNNAME_GL_Category_ID, null);
 		else 
 			set_Value (COLUMNNAME_GL_Category_ID, GL_Category_ID);
@@ -382,13 +382,13 @@ public class X_SAP_GLJournal extends org.compiere.model.PO implements I_SAP_GLJo
 	/** Actual Year End = Y */
 	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	@Override
-	public void setPostingType (final java.lang.String PostingType)
+	public void setPostingType (final String PostingType)
 	{
 		set_Value (COLUMNNAME_PostingType, PostingType);
 	}
 
 	@Override
-	public java.lang.String getPostingType() 
+	public String getPostingType() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostingType);
 	}

@@ -371,6 +371,14 @@ public final class FactLineBuilder
 		return this;
 	}
 
+	public FactLineBuilder setAmtAcct(@Nullable final BigDecimal amtAcctDr, @Nullable final BigDecimal amtAcctCr)
+	{
+		assertNotBuild();
+		this.amtAcctDr = amtAcctDr;
+		this.amtAcctCr = amtAcctCr;
+		return this;
+	}
+
 	public FactLineBuilder setAmtSource(@Nullable final CostAmount amtSourceDr, @Nullable final CostAmount amtSourceCr)
 	{
 		assertNotBuild();

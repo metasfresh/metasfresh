@@ -1,8 +1,10 @@
 package de.metas.acct.gljournal_sap.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.acct.Account;
+import de.metas.acct.GLCategoryId;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -36,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -49,6 +52,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class SAPGLJournalLoaderAndSaver
 {
@@ -66,6 +71,7 @@ public class SAPGLJournalLoaderAndSaver
 		headerIdsToAvoidSaving.add(glJournalId);
 	}
 
+	@NonNull
 	public SAPGLJournal getById(@NonNull final SAPGLJournalId id)
 	{
 		final I_SAP_GLJournal headerRecord = getHeaderRecordById(id);
@@ -73,6 +79,7 @@ public class SAPGLJournalLoaderAndSaver
 		return fromRecord(headerRecord, lineRecords);
 	}
 
+	@NonNull
 	private I_SAP_GLJournal getHeaderRecordById(@NonNull final SAPGLJournalId id)
 	{
 		return getHeaderRecordByIdIfExists(id)
@@ -166,15 +173,17 @@ public class SAPGLJournalLoaderAndSaver
 				.acctSchemaId(AcctSchemaId.ofRepoId(headerRecord.getC_AcctSchema_ID()))
 				.postingType(PostingType.ofCode(headerRecord.getPostingType()))
 				.lines(lineRecords.stream()
-						.map(lineRecord -> fromRecord(lineRecord, conversionCtx))
-						.sorted(Comparator.comparing(SAPGLJournalLine::getLine).thenComparing(SAPGLJournalLine::getIdNotNull))
-						.collect(Collectors.toCollection(ArrayList::new)))
+							   .map(lineRecord -> fromRecord(lineRecord, conversionCtx))
+							   .sorted(Comparator.comparing(SAPGLJournalLine::getLine).thenComparing(SAPGLJournalLine::getIdNotNull))
+							   .collect(Collectors.toCollection(ArrayList::new)))
 				.totalAcctDR(Money.of(headerRecord.getTotalDr(), conversionCtx.getAcctCurrencyId()))
 				.totalAcctCR(Money.of(headerRecord.getTotalCr(), conversionCtx.getAcctCurrencyId()))
 				.docStatus(DocStatus.ofCode(headerRecord.getDocStatus()))
 				//
 				.orgId(OrgId.ofRepoId(headerRecord.getAD_Org_ID()))
 				.dimension(extractDimension(headerRecord))
+				.description(headerRecord.getDescription())
+				.glCategoryId(GLCategoryId.ofRepoIdOrNone(headerRecord.getGL_Category_ID()))
 				//
 				.build();
 	}
@@ -206,6 +215,8 @@ public class SAPGLJournalLoaderAndSaver
 				//
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.dimension(extractDimension(record))
+				//
+				.determineTaxBaseSAP(record.isSAP_DetermineTaxBase())
 				//
 				.build();
 	}
@@ -310,6 +321,7 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
 
 		lineRecord.setAD_Org_ID(line.getOrgId().getRepoId());
+		lineRecord.setSAP_DetermineTaxBase(line.isDetermineTaxBaseSAP());
 		updateLineRecordFromDimension(lineRecord, line.getDimension());
 	}
 
@@ -366,5 +378,48 @@ public class SAPGLJournalLoaderAndSaver
 		return getHeaderRecordByIdIfExists(glJournalId)
 				.map(headerRecord -> DocStatus.ofNullableCodeOrUnknown(headerRecord.getDocStatus()))
 				.orElse(DocStatus.Unknown);
+	}
+
+	@NonNull
+	SAPGLJournal create(
+			@NonNull final SAPGLJournalCreateRequest createRequest,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
+	{
+		final I_SAP_GLJournal headerRecord = InterfaceWrapperHelper.newInstance(I_SAP_GLJournal.class);
+
+		headerRecord.setTotalDr(createRequest.getTotalAcctDR().toBigDecimal());
+		headerRecord.setTotalCr(createRequest.getTotalAcctCR().toBigDecimal());
+		headerRecord.setC_DocType_ID(createRequest.getDocTypeId().getRepoId());
+		headerRecord.setC_AcctSchema_ID(createRequest.getAcctSchemaId().getRepoId());
+		headerRecord.setPostingType(createRequest.getPostingType().getCode());
+		headerRecord.setAD_Org_ID(createRequest.getOrgId().getRepoId());
+		headerRecord.setDescription(createRequest.getDescription());
+		headerRecord.setDocStatus(DocStatus.Drafted.getCode());
+
+		headerRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(createRequest.getDimension().getSectionCodeId()));
+
+		final SAPGLJournalCurrencyConversionCtx conversionCtx = createRequest.getConversionCtx();
+
+		headerRecord.setAcct_Currency_ID(conversionCtx.getAcctCurrencyId().getRepoId());
+		headerRecord.setC_Currency_ID(conversionCtx.getCurrencyId().getRepoId());
+		headerRecord.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(conversionCtx.getConversionTypeId()));
+
+		Optional.ofNullable(conversionCtx.getFixedConversionRate())
+				.ifPresent(fixedConversionRate -> headerRecord.setCurrencyRate(fixedConversionRate.getMultiplyRate()));
+
+		headerRecord.setDateAcct(TimeUtil.asTimestamp(createRequest.getDateDoc()));
+		headerRecord.setDateDoc(TimeUtil.asTimestamp(createRequest.getDateDoc()));
+		headerRecord.setGL_Category_ID(createRequest.getGlCategoryId().getRepoId());
+
+		saveRecord(headerRecord);
+
+		final SAPGLJournal createdJournal = fromRecord(headerRecord, ImmutableList.of());
+
+		createRequest.getLines()
+				.forEach(createLineRequest -> createdJournal.addLine(createLineRequest, currencyConverter));
+
+		save(createdJournal);
+		
+		return createdJournal;
 	}
 }
