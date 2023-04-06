@@ -61,18 +61,11 @@ public class SAPGLJournalRepository
 	}
 
 	@NonNull
-	public SAPGLJournalId create(
+	public SAPGLJournal create(
 			@NonNull final SAPGLJournalCreateRequest createRequest,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
 		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
-		final SAPGLJournal createdJournal = loaderAndSaver.createHeader(createRequest);
-
-		createRequest.getLines()
-				.forEach(createLineRequest -> createdJournal.addLine(createLineRequest, currencyConverter));
-
-		loaderAndSaver.save(createdJournal);
-
-		return createdJournal.getId();
+		return loaderAndSaver.create(createRequest, currencyConverter);
 	}
 }

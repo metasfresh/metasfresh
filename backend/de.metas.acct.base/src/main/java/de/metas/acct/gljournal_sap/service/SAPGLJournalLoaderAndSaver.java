@@ -381,22 +381,24 @@ public class SAPGLJournalLoaderAndSaver
 	}
 
 	@NonNull
-	public SAPGLJournal createHeader(@NonNull final SAPGLJournalCreateRequest sapglJournalCreateRequest)
+	SAPGLJournal create(
+			@NonNull final SAPGLJournalCreateRequest createRequest,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
 		final I_SAP_GLJournal headerRecord = InterfaceWrapperHelper.newInstance(I_SAP_GLJournal.class);
 
-		headerRecord.setTotalDr(sapglJournalCreateRequest.getTotalAcctDR().toBigDecimal());
-		headerRecord.setTotalCr(sapglJournalCreateRequest.getTotalAcctCR().toBigDecimal());
-		headerRecord.setC_DocType_ID(sapglJournalCreateRequest.getDocTypeId().getRepoId());
-		headerRecord.setC_AcctSchema_ID(sapglJournalCreateRequest.getAcctSchemaId().getRepoId());
-		headerRecord.setPostingType(sapglJournalCreateRequest.getPostingType().getCode());
-		headerRecord.setAD_Org_ID(sapglJournalCreateRequest.getOrgId().getRepoId());
-		headerRecord.setDescription(sapglJournalCreateRequest.getDescription());
+		headerRecord.setTotalDr(createRequest.getTotalAcctDR().toBigDecimal());
+		headerRecord.setTotalCr(createRequest.getTotalAcctCR().toBigDecimal());
+		headerRecord.setC_DocType_ID(createRequest.getDocTypeId().getRepoId());
+		headerRecord.setC_AcctSchema_ID(createRequest.getAcctSchemaId().getRepoId());
+		headerRecord.setPostingType(createRequest.getPostingType().getCode());
+		headerRecord.setAD_Org_ID(createRequest.getOrgId().getRepoId());
+		headerRecord.setDescription(createRequest.getDescription());
 		headerRecord.setDocStatus(DocStatus.Drafted.getCode());
 
-		headerRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(sapglJournalCreateRequest.getSectionCodeId()));
+		headerRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(createRequest.getDimension().getSectionCodeId()));
 
-		final SAPGLJournalCurrencyConversionCtx conversionCtx = sapglJournalCreateRequest.getConversionCtx();
+		final SAPGLJournalCurrencyConversionCtx conversionCtx = createRequest.getConversionCtx();
 
 		headerRecord.setAcct_Currency_ID(conversionCtx.getAcctCurrencyId().getRepoId());
 		headerRecord.setC_Currency_ID(conversionCtx.getCurrencyId().getRepoId());
@@ -405,12 +407,19 @@ public class SAPGLJournalLoaderAndSaver
 		Optional.ofNullable(conversionCtx.getFixedConversionRate())
 				.ifPresent(fixedConversionRate -> headerRecord.setCurrencyRate(fixedConversionRate.getMultiplyRate()));
 
-		headerRecord.setDateAcct(TimeUtil.asTimestamp(sapglJournalCreateRequest.getDateDoc()));
-		headerRecord.setDateDoc(TimeUtil.asTimestamp(sapglJournalCreateRequest.getDateDoc()));
-		headerRecord.setGL_Category_ID(sapglJournalCreateRequest.getGlCategoryId().getRepoId());
+		headerRecord.setDateAcct(TimeUtil.asTimestamp(createRequest.getDateDoc()));
+		headerRecord.setDateDoc(TimeUtil.asTimestamp(createRequest.getDateDoc()));
+		headerRecord.setGL_Category_ID(createRequest.getGlCategoryId().getRepoId());
 
 		saveRecord(headerRecord);
 
-		return fromRecord(headerRecord, ImmutableList.of());
+		final SAPGLJournal createdJournal = fromRecord(headerRecord, ImmutableList.of());
+
+		createRequest.getLines()
+				.forEach(createLineRequest -> createdJournal.addLine(createLineRequest, currencyConverter));
+
+		save(createdJournal);
+		
+		return createdJournal;
 	}
 }

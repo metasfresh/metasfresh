@@ -41,6 +41,11 @@ public class GLCategoryId implements RepoIdAware
 	@JsonCreator
 	public static GLCategoryId ofRepoId(final int repoId)
 	{
+		if (repoId == NONE.getRepoId())
+		{
+			return NONE;
+		}
+
 		return new GLCategoryId(repoId);
 	}
 

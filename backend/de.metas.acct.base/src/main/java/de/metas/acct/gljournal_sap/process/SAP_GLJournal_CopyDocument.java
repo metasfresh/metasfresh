@@ -22,6 +22,7 @@
 
 package de.metas.acct.gljournal_sap.process;
 
+import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCopyRequest;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
@@ -73,13 +74,13 @@ public class SAP_GLJournal_CopyDocument extends JavaProcess implements IProcessP
 	@Override
 	protected String doIt()
 	{
-		final SAPGLJournalId createdJournalId = glJournalService.copy(SAPGLJournalCopyRequest.builder()
+		final SAPGLJournal createdJournal = glJournalService.copy(SAPGLJournalCopyRequest.builder()
 																			  .sourceJournalId(SAPGLJournalId.ofRepoId(getRecord_ID()))
 																			  .dateDoc(dateDoc)
 																			  .negateAmounts(negateAmounts)
 																			  .build());
 
-		getResult().setRecordToOpen(TableRecordReference.of(I_SAP_GLJournal.Table_Name, createdJournalId),
+		getResult().setRecordToOpen(TableRecordReference.of(I_SAP_GLJournal.Table_Name, createdJournal.getId()),
 									getProcessInfo().getAD_Window_ID(),
 									ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);
 

@@ -82,7 +82,7 @@ public class SAPGLJournalService
 	}
 
 	@NonNull
-	public SAPGLJournalId copy(@NonNull final SAPGLJournalCopyRequest copyRequest)
+	public SAPGLJournal copy(@NonNull final SAPGLJournalCopyRequest copyRequest)
 	{
 		final SAPGLJournal journalToBeCopied = glJournalRepository.getById(copyRequest.getSourceJournalId());
 		final SAPGLJournalCreateRequest createRequest = SAPGLJournalCreateRequest.of(journalToBeCopied,
