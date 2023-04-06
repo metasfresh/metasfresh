@@ -23,7 +23,7 @@
 package de.metas.rest_api.v2.invoice;
 
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,18 +38,16 @@ import java.util.Map;
 public class JsonInvoiceReviewUpsertItem
 {
 	@NonNull
-	@ApiModelProperty(position = 10,
-			dataType = "java.lang.String",
-			value = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 
-	@ApiModelProperty(position = 20, value = "Optional, to specify the `AD_Org_ID`.\n"
+	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"
 			+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 			+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
 	String orgCode;
 
 	@Nullable
-	@ApiModelProperty(position = 13)
+	@Schema
 	Map<String, Object> extendedProps;
 }
