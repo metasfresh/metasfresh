@@ -14,6 +14,7 @@ import java.util.function.Function;
 @Repository
 public class SAPGLJournalRepository
 {
+	@NonNull
 	public SAPGLJournal getById(@NonNull final SAPGLJournalId id)
 	{
 		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
@@ -57,5 +58,14 @@ public class SAPGLJournalRepository
 	{
 		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
 		return loader.getDocStatus(glJournalId);
+	}
+
+	@NonNull
+	public SAPGLJournal create(
+			@NonNull final SAPGLJournalCreateRequest createRequest,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
+	{
+		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
+		return loaderAndSaver.create(createRequest, currencyConverter);
 	}
 }
