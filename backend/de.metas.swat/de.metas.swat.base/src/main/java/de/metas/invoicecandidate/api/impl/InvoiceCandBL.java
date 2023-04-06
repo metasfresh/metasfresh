@@ -2681,7 +2681,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
 		}
 
-		return baseLineDate != null ? baseLineDate : ic.getDateInvoiced();
+		return baseLineDate;
 	}
 
 	@Override

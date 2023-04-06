@@ -600,7 +600,11 @@ public final class AggregationEngine
 					logger.debug("Due Date will now be computed based on payment term settings");
 
 					final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
-					final Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
+					Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
+					if (baseLineDate == null)
+					{
+						baseLineDate = Timestamp.valueOf(computeDateInvoiced(ic).atStartOfDay());
+					}
 					return TimeUtil.asLocalDate(paymentTerm.computeDueDate(baseLineDate), timeZone);
 				});
 	}

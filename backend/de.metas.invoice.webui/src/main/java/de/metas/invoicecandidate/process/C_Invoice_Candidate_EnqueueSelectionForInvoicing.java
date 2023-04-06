@@ -370,7 +370,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 	private LocalDate computeOverrideDueDate()
 	{
-		if (countPaymentTerms() > 0)
+		if (countPaymentTerms() > 1)
 		{
 			return null;
 		}
@@ -383,6 +383,11 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 
 		final PaymentTerm paymentTerm = paymentTermRepository.getById(PaymentTermId.ofRepoId(paymentTermId));
 		final Timestamp baseLineDate = retrieveEarliestBaseLineDate(paymentTerm);
+		if (baseLineDate == null)
+		{
+			return null;
+		}
+
 		final Timestamp dueDate = paymentTerm.computeDueDate(baseLineDate);
 		final ZoneId zoneId = orgDAO.getTimeZone(paymentTerm.getOrgId());
 
@@ -401,22 +406,22 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		{
 
 			case AfterDelivery:
-				icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 						.create()
 						.first()
 						.getDeliveryDate();
 				break;
 			case AfterBillOfLanding:
-				icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_ActualLoadingDate)
+				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_ActualLoadingDate)
 						.create()
 						.first()
 						.getActualLoadingDate();
 				break;
 			case InvoiceDate:
-				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+				earliestDate = icQueryBuilder.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Effective)
 						.create()
 						.first()
-						.getDateInvoiced();
+						.getDateToInvoice_Effective();
 				break;
 			default:
 				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
