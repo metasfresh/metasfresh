@@ -61,6 +61,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		super(ctx, C_PaymentTerm_ID, trxName);
 		if (C_PaymentTerm_ID == 0)
 		{
+			setAfterDelivery (false);
 			setNetDays (0);
 			setDiscount (ZERO);
 			setDiscount2 (ZERO);
