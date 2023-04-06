@@ -236,8 +236,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_Affiliate = "Affiliate";
 
 	/**
-=======
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 * Set Role.
 	 *
 	 * <br>Type: List
@@ -391,11 +389,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-<<<<<<< HEAD
 	 * Set Mahnung.
-=======
-	 * Set Dunning.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 * Dunning Rules for overdue invoices
 	 *
 	 * <br>Type: TableDir
@@ -926,38 +920,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_DefaultShipTo_Postal = "DefaultShipTo_Postal";
 
 	/**
-<<<<<<< HEAD
 	 * Set Lieferart.
-=======
-	 * Set Delivery credit limit indicator %.
-	 * Percent of Credit used from the limit
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setDeliveryCreditLimitIndicator (@Nullable java.lang.String DeliveryCreditLimitIndicator);
-
-	/**
-	 * Get Delivery credit limit indicator %.
-	 * Percent of Credit used from the limit
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getDeliveryCreditLimitIndicator();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_DeliveryCreditLimitIndicator = new ModelColumn<>(I_C_BPartner.class, "DeliveryCreditLimitIndicator", null);
-	String COLUMNNAME_DeliveryCreditLimitIndicator = "DeliveryCreditLimitIndicator";
-
-	/**
-	 * Set Delivery Rule.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
@@ -1604,31 +1567,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
-	 * Set Blocked.
-	 * The record is blocked in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setIsBlocked (boolean IsBlocked);
-
-	/**
-	 * Get Blocked.
-	 * The record is blocked in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	boolean isBlocked();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_IsBlocked = new ModelColumn<>(I_C_BPartner.class, "IsBlocked", null);
-	String COLUMNNAME_IsBlocked = "IsBlocked";
-
-	/**
 	 * Set Company.
 	 *
 	 * <br>Type: YesNo
@@ -1891,9 +1829,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsPOTaxExempt = "IsPOTaxExempt";
 
 	/**
-<<<<<<< HEAD
-	 * Set Aktiver Interessent/Kunde.
-=======
 	 * Set Print local currency VAT.
 	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
 	 *
@@ -1918,7 +1853,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Prospect.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
+	 * Set Aktiver Interessent/Kunde.
 	 * Indicates this is a Prospect
 	 *
 	 * <br>Type: YesNo
@@ -2406,12 +2341,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_Memo = "Memo";
 
 	/**
-<<<<<<< HEAD
 	 * Set Memo_Delivery.
 	 * Memo Lieferung
-=======
-	 * Set Memo Shipment.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2420,12 +2351,8 @@ public interface I_C_BPartner
 	void setMemo_Delivery (@Nullable java.lang.String Memo_Delivery);
 
 	/**
-<<<<<<< HEAD
 	 * Get Memo_Delivery.
 	 * Memo Lieferung
-=======
-	 * Get Memo Shipment.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2437,12 +2364,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
 
 	/**
-<<<<<<< HEAD
 	 * Set Memo_Invoicing.
 	 * Memo Abrechnung
-=======
-	 * Set Memo Invoicing.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2451,12 +2374,8 @@ public interface I_C_BPartner
 	void setMemo_Invoicing (@Nullable java.lang.String Memo_Invoicing);
 
 	/**
-<<<<<<< HEAD
 	 * Get Memo_Invoicing.
 	 * Memo Abrechnung
-=======
-	 * Get Memo Invoicing.
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -2510,29 +2429,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
-<<<<<<< HEAD
-=======
-	 * Set Group/Mother Company.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMother_Company_ID (int Mother_Company_ID);
-
-	/**
-	 * Get Group/Mother Company.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMother_Company_ID();
-
-	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
-
-	/**
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
@@ -2575,7 +2471,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-<<<<<<< HEAD
 	 * Set MRN/ABN.
 	 *
 	 * <br>Type: String
@@ -2617,8 +2512,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
 
 	/**
-=======
->>>>>>> 8d1fa52394b (tax reporting local currency conversion (#15071))
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
