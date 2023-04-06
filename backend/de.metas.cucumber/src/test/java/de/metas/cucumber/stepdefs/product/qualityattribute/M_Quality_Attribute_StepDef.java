@@ -79,6 +79,6 @@ public class M_Quality_Attribute_StepDef
 	@And("no M_Quality_Attribute data is found")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE M_Quality_Attribute cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE M_Quality_Attribute cascade", ITrx.TRXNAME_None);
 	}
 }
