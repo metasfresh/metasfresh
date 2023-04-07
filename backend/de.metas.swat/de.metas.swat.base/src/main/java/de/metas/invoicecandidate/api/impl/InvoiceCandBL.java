@@ -1218,10 +1218,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
 	}
 
-	/**
-	 * For class-internal use
-	 */
-	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
+	@Override
+	public Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
 		if (dateToInvoiceOverride != null)

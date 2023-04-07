@@ -29,7 +29,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.api.IParams;
 
 import javax.annotation.Nullable;
@@ -134,17 +133,5 @@ public class InvoicingParams
 		return map;
 	}
 
-	public void updateOnDateInvoicedParameterChanged(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
-	{
-		final LocalDate dueDate = computeOverrideDueDate(icQueryBuilder);
-		this.overrideDueDate = dueDate;
-	}
-
-	private LocalDate computeOverrideDueDate(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
-	{
-		return HelperDueDateParameter.computeOverrideDueDate(icQueryBuilder, getDateInvoiced());
-	}
-
-	@Nullable
-	public Object getParameteDueDaterDefaultValue(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder) {return computeOverrideDueDate(icQueryBuilder);}
+	public void updateOnDateInvoicedParameterChanged(@NonNull final LocalDate dueDate) {this.overrideDueDate = dueDate;}
 }

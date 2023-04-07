@@ -1,17 +1,14 @@
 package de.metas.payment.paymentterm;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_PaymentTerm;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Optional;
-
+@AllArgsConstructor
 public enum CalculationMethod implements ReferenceListAwareEnum
 {
 	BaseLineDatePlusXDays(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays), // BLDX
@@ -19,41 +16,29 @@ public enum CalculationMethod implements ReferenceListAwareEnum
 	EndOfTheMonthOfBaselineDatePlusXDays(X_C_PaymentTerm.CALCULATIONMETHOD_EndOfTheMonthOfBaselineDatePlusXDays) // EBLDX
 	;
 
+	private static final ReferenceListAwareEnums.ValuesIndex<CalculationMethod> index = ReferenceListAwareEnums.index(values());
+
 	@Getter
 	private final String code;
 
-	CalculationMethod(@NonNull final String code)
-	{
-		this.code = code;
-	}
-
-	@Nullable
-	public static CalculationMethod ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
-
-	public static Optional<CalculationMethod> optionalOfCode(@Nullable final String code)
-	{
-		return Optional.ofNullable(ofNullableCode(code));
-	}
-
+	@NonNull
 	public static CalculationMethod ofCode(@NonNull final String code)
 	{
-		final CalculationMethod type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + CalculationMethod.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
 
-	@Nullable
-	public static String toCodeOrNull(@Nullable final CalculationMethod type)
+	@NonNull
+	public static CalculationMethod ofName(@NonNull final String name)
 	{
-		return type != null ? type.getCode() : null;
+		try
+		{
+			return CalculationMethod.valueOf(name);
+		}
+		catch (final Throwable t)
+		{
+			throw new AdempiereException("No " + CalculationMethod.class + " found for name: " + name)
+					.appendParametersToMessage()
+					.setParameter("AdditionalErrorMessage", t.getMessage());
+		}
 	}
-
-	private static final ImmutableMap<String, CalculationMethod> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), CalculationMethod::getCode);
-
 }

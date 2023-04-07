@@ -1,17 +1,14 @@
 package de.metas.payment.paymentterm;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_PaymentTerm;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Optional;
-
+@AllArgsConstructor
 public enum BaseLineType implements ReferenceListAwareEnum
 {
 	AfterDelivery(X_C_PaymentTerm.BASELINETYPE_AfterDelivery), // AD
@@ -19,42 +16,31 @@ public enum BaseLineType implements ReferenceListAwareEnum
 	InvoiceDate(X_C_PaymentTerm.BASELINETYPE_InvoiceDate) // ID
 	;
 
+	private static final ReferenceListAwareEnums.ValuesIndex<BaseLineType> index = ReferenceListAwareEnums.index(values());
+
 	@Getter
 	private final String code;
 
-	BaseLineType(@NonNull final String code)
-	{
-		this.code = code;
-	}
-
-	@Nullable
-	public static BaseLineType ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
-
-	public static Optional<BaseLineType> optionalOfCode(@Nullable final String code)
-	{
-		return Optional.ofNullable(ofNullableCode(code));
-	}
-
+	@NonNull
 	public static BaseLineType ofCode(@NonNull final String code)
 	{
-		final BaseLineType type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + BaseLineType.class + " found for code: " + code);
-		}
-		return type;
+		return index.ofCode(code);
 	}
 
-	@Nullable
-	public static String toCodeOrNull(@Nullable final BaseLineType type)
+	@NonNull
+	public static BaseLineType ofName(@NonNull final String name)
 	{
-		return type != null ? type.getCode() : null;
+		try
+		{
+			return BaseLineType.valueOf(name);
+		}
+		catch (final Throwable t)
+		{
+			throw new AdempiereException("No " + BaseLineType.class + " found for name: " + name)
+					.appendParametersToMessage()
+					.setParameter("AdditionalErrorMessage", t.getMessage());
+		}
 	}
-
-	private static final ImmutableMap<String, BaseLineType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), BaseLineType::getCode);
 
 	public boolean isInvoiceDate()
 	{

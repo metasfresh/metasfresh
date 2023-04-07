@@ -139,7 +139,7 @@ public class C_Invoice_Candidate_Builder
 		{
 			ic.setInvoiceRule_Override(invoiceRule_Override);
 		}
-		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		ic.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
 		ic.setBill_BPartner_ID(billBPartnerId.getRepoId());
 

@@ -38,6 +38,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -70,9 +75,13 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ForeignExchangeContract;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.function.Supplier;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
@@ -87,6 +96,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private final ForexContractService forexContractService = SpringContextHolder.instance.getBean(ForexContractService.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final LookupDataSource forexContractLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_ForeignExchangeContract.Table_Name);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@NestedParams
 	private final ForexContractParameters p_FECParams = ForexContractParameters.newInstance();
@@ -151,7 +162,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	{
 		if (InvoicingParams.PARA_OverrideDueDate.contentEquals(parameter.getColumnName()))
 		{
-			return getInvoicingParams().getParameteDueDaterDefaultValue(createICQueryBuilder());
+			return computeOverrideDueDate(getInvoicingParams().getDateInvoiced());
 		}
 
 		return p_FECParams.getParameterDefaultValue(parameter.getColumnName(), getContracts());
@@ -162,7 +173,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	{
 		if (InvoicingParams.PARA_DateInvoiced.contentEquals(parameterName))
 		{
-			getInvoicingParams().updateOnDateInvoicedParameterChanged(createICQueryBuilder());
+			getInvoicingParams().updateOnDateInvoicedParameterChanged(computeOverrideDueDate(getInvoicingParams().getDateInvoiced()));
 		}
 
 		p_FECParams.updateOnParameterChanged(parameterName, getContracts());
@@ -347,5 +358,90 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		return createICQueryBuilder(selectionFilter, false)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
+	}
+
+	private LocalDate computeOverrideDueDate(final @Nullable LocalDate manualDateInvoicedParam)
+	{
+		if (countPaymentTerms() != 1)
+			return null;
+
+		final I_C_Invoice_Candidate ic = createICQueryBuilder()
+				.setLimit(QueryLimit.ONE)
+				.create()
+				.firstNotNull(I_C_Invoice_Candidate.class);
+
+		final PaymentTermId paymentTermId = invoiceCandBL.getPaymentTermId(ic);
+		final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+		final Timestamp baseLineDate;
+		if (manualDateInvoicedParam != null && paymentTerm.isBaseLineTypeInvoiceDate())
+		{
+			baseLineDate = TimeUtil.asTimestamp(manualDateInvoicedParam);
+		}
+		else
+		{
+			baseLineDate = retrieveEarliestBaseLineDate(paymentTerm);
+			if (baseLineDate == null)
+			{
+				return null;
+			}
+		}
+
+		final Timestamp dueDate = paymentTerm.computeDueDate(baseLineDate);
+		final ZoneId zoneId = orgDAO.getTimeZone(paymentTerm.getOrgId());
+
+		return TimeUtil.asLocalDate(dueDate, zoneId);
+	}
+
+	private int countPaymentTerms()
+	{
+		return createICQueryBuilder()
+				.create()
+				.listDistinct(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID)
+				.size();
+
+	}
+
+	private Timestamp retrieveEarliestBaseLineDate(@NonNull final PaymentTerm paymentTerm)
+	{
+		final BaseLineType baseLineType = paymentTerm.getBaseLineType();
+
+		final Timestamp earliestDate;
+
+		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = createICQueryBuilder();
+
+		switch (baseLineType)
+		{
+
+			case AfterDelivery:
+				earliestDate = icQueryBuilder
+						.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+						.create()
+						.firstNotNull(I_C_Invoice_Candidate.class)
+						.getDeliveryDate();
+				break;
+			case AfterBillOfLanding:
+				earliestDate = icQueryBuilder
+						.orderBy(I_C_Invoice_Candidate.COLUMNNAME_ActualLoadingDate)
+						.create()
+						.firstNotNull(I_C_Invoice_Candidate.class)
+						.getActualLoadingDate();
+				break;
+			case InvoiceDate:
+
+				final I_C_Invoice_Candidate ic = icQueryBuilder
+						.orderBy()
+						.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override)
+						.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice)
+						.endOrderBy()
+						.create()
+						.firstNotNull(I_C_Invoice_Candidate.class);
+
+				earliestDate = invoiceCandBL.getDateToInvoiceTS(ic);
+				break;
+			default:
+				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);
+		}
+
+		return earliestDate;
 	}
 }

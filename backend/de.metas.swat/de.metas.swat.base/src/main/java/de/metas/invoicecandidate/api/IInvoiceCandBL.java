@@ -223,6 +223,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	IAutoCloseable setUpdateProcessInProgress();
 
+	Timestamp getDateToInvoiceTS(@NonNull I_C_Invoice_Candidate ic);
+
 	/**
 	 * Creates initial {@link IInvoiceGenerateResult}
 	 *
