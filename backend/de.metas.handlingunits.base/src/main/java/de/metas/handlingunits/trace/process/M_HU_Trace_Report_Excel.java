@@ -177,7 +177,10 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 												.stream()
 												.map(type -> "'" + type.getCode() + "'")
 												.collect(Collectors.joining(",")))
-				.append(")");
+				.append(")")
+				.append(" ORDER BY ")
+				.append(I_M_HU_Trace.COLUMNNAME_Created);
+
 		return sqlBuilder.toString();
 	}
 
