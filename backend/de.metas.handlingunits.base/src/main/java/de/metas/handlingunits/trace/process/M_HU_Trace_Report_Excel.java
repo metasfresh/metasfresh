@@ -159,7 +159,7 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 												.map(type -> "'" + type.getCode() + "'")
 												.collect(Collectors.joining(",")))
 				.append(")")
-				.append(" UNION SELECT ")
+				.append(" UNION (SELECT ")
 				.append(I_M_HU_Trace.COLUMNNAME_LotNumber)
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_HUTraceType)
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_M_Product_ID)
@@ -179,7 +179,8 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 												.collect(Collectors.joining(",")))
 				.append(")")
 				.append(" ORDER BY ")
-				.append(I_M_HU_Trace.COLUMNNAME_Created);
+				.append(I_M_HU_Trace.COLUMNNAME_Created)
+				.append(")");
 
 		return sqlBuilder.toString();
 	}
