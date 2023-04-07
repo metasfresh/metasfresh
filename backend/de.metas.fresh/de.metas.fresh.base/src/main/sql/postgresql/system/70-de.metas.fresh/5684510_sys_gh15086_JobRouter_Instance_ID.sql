@@ -38,12 +38,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=713823
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,713823,0,290,540226,616643,'F',TO_TIMESTAMP('2023-04-06 21:53:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Externe ID',50,0,0,TO_TIMESTAMP('2023-04-06 21:53:15','YYYY-MM-DD HH24:MI:SS'),100,'S')
 ;
 
--- Field: Invoice (Vendor)_OLD(183,D) -> Invoice(290,D) -> Externe ID
--- Column: C_Invoice.ExternalId
--- 2023-04-06T21:01:04.970Z
-UPDATE AD_Field SET DisplayLogic='@ExternalId@!NULL',Updated=TO_TIMESTAMP('2023-04-06 22:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713823
-;
-
 -- Column: C_Invoice.ExternalId
 -- 2023-04-06T21:04:08.565Z
 UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2023-04-06 22:04:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572375
