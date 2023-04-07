@@ -105,11 +105,35 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=713824
 -- UI Element: Invoice (Customer)_OLD(167,D) -> Invoice(263,D) -> main -> 20 -> Externe ID
 -- Column: C_Invoice.ExternalId
 -- 2023-04-06T22:11:37.741Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,713824,0,263,540027,616644,'F',TO_TIMESTAMP('2023-04-06 23:11:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'JobRouter Instance ID',32,0,0,TO_TIMESTAMP('2023-04-06 23:11:31','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,713824,0,263,540027,616644,'F',TO_TIMESTAMP('2023-04-06 23:11:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Externe ID',32,0,0,TO_TIMESTAMP('2023-04-06 23:11:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- Field: Invoice (Customer)_OLD(167,D) -> Invoice(263,D) -> JobRouter Instance ID
+-- Field: Invoice (Customer)_OLD(167,D) -> Invoice(263,D) -> Externe ID
 -- Column: C_Invoice.ExternalId
 -- 2023-04-06T22:12:26.180Z
 UPDATE AD_Field SET IsAlwaysUpdateable='',Updated=TO_TIMESTAMP('2023-04-06 23:12:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713824
+;
+
+-- UI Element: Rechnung(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Externe ID
+-- Column: C_Invoice.ExternalId
+-- 2023-04-07T10:47:14.775Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541214, SeqNo=100,Updated=TO_TIMESTAMP('2023-04-07 11:47:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=616644
+;
+
+-- UI Element: Rechnung(167,D) -> Rechnung(263,D) -> advanced edit -> 10 -> advanced edit.Externe ID
+-- Column: C_Invoice.ExternalId
+-- 2023-04-07T10:47:32.104Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-04-07 11:47:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=616644
+;
+
+-- UI Element: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D) -> advanced edit -> 10 -> advanced edit.Externe ID
+-- Column: C_Invoice.ExternalId
+-- 2023-04-07T10:48:41.917Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540218, SeqNo=350,Updated=TO_TIMESTAMP('2023-04-07 11:48:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=616643
+;
+
+-- UI Element: Eingangsrechnung(183,D) -> Eingangsrechnung(290,D) -> advanced edit -> 10 -> advanced edit.Externe ID
+-- Column: C_Invoice.ExternalId
+-- 2023-04-07T10:49:04.126Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2023-04-07 11:49:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=616643
 ;
