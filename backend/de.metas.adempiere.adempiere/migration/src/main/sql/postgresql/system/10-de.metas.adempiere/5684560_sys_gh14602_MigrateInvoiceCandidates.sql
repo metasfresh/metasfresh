@@ -11,7 +11,7 @@ FROM c_invoice_candidate
 ;
 
 
--- update
+-- update from based on orderline
 UPDATE c_invoice_candidate
 SET c_paymentterm_id=o.c_paymentterm_id
 FROM c_orderLine ol
@@ -20,6 +20,21 @@ WHERE c_invoice_candidate.ad_table_id = 260
   AND c_invoice_candidate.record_id = ol.c_orderLine_ID
   AND c_invoice_candidate.c_paymentterm_id IS NULL
 ;
+
+-- update from based on inoutline
+UPDATE c_invoice_candidate
+SET c_paymentterm_id=o.c_paymentterm_id
+FROM c_orderLine ol
+         JOIN c_order o ON ol.c_order_id = ol.c_order_id
+         JOIN m_inoutline iol on iol.c_orderline_id=ol.c_orderline_id
+WHERE c_invoice_candidate.ad_table_id = 320
+  AND c_invoice_candidate.record_id = iol.m_inoutline_ID
+  AND c_invoice_candidate.c_paymentterm_id IS NULL
+;
+
+-- update to default one
+UPDATE c_invoice_candidate
+SET c_paymentterm_id= (select c_paymentterm_id from c_paymentterm where isdefault='Y') where c_paymentterm_id IS NULL;
 
 
 -- make it mandatory
