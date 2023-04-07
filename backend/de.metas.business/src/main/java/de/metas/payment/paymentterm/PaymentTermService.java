@@ -85,6 +85,7 @@ public class PaymentTermService
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_BaseLineType, basePaymentTermRecord.getBaseLineType())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_GraceDays, basePaymentTermRecord.getGraceDays())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_CalculationMethod, basePaymentTermRecord.getCalculationMethod())
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsNextBusinessDay, basePaymentTermRecord.isNextBusinessDay())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDay, basePaymentTermRecord.getNetDay())
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, basePaymentTermRecord.getNetDays())
 				.orderBy().addColumn(I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID).endOrderBy()
