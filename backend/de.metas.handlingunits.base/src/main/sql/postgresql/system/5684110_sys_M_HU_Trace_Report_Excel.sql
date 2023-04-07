@@ -68,3 +68,15 @@ UPDATE AD_Process_Para SET AD_Element_ID=576652, ColumnName='LotNumber', Descrip
 
 
 
+-- Process: M_HU_Trace_Report_Excel(de.metas.handlingunits.trace.process.M_HU_Trace_Report_Excel)
+-- ParameterName: VHU_ID
+-- 2023-04-06T08:40:13.335Z
+UPDATE AD_Process_Para SET AD_Element_ID=542583, ColumnName='VHU_ID', Description='Customer Unit', Name='CU',Updated=TO_TIMESTAMP('2023-04-06 11:40:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542615
+;
+
+-- Process: M_HU_Trace_Report_Excel(de.metas.handlingunits.trace.process.M_HU_Trace_Report_Excel)
+-- ParameterName: VHU_ID
+-- 2023-04-06T08:41:42.583Z
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=540499,Updated=TO_TIMESTAMP('2023-04-06 11:41:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542615
+;
+
