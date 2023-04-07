@@ -136,7 +136,7 @@ public class InvoicingParams
 
 	public void updateOnDateInvoicedParameterChanged(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
 	{
-		final LocalDate dueDate = HelperDueDateParameter.computeOverrideDueDate(icQueryBuilder, getDateInvoiced());
+		final LocalDate dueDate = computeOverrideDueDate(icQueryBuilder);
 		this.overrideDueDate = dueDate;
 	}
 
