@@ -2673,7 +2673,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				baseLineDate = ic.getActualLoadingDate();
 				break;
 			case InvoiceDate:
-				baseLineDate = ic.getDateInvoiced();
+				baseLineDate = getDateToInvoiceTS(ic);
 				break;
 			default:
 				throw new AdempiereException("Unknown base line type for payment term " + paymentTerm);

@@ -130,6 +130,7 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
 				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
 				.setDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 14))
+				.setDateToInvoice(LocalDate.of(2019, Month.SEPTEMBER, 14))
 				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 1)) // dateInvoiced shall take precedence!
 				.build();
 

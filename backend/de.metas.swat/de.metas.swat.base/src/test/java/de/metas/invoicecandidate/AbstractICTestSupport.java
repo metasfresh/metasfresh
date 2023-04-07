@@ -109,6 +109,8 @@ import org.junit.BeforeClass;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -500,6 +502,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.setUomId(uomId)
 				.setDiscount(0)
 				.setPaymentTermId(paymentTermId)
+				.setDateToInvoice(LocalDate.parse("2020-06-01"))
 				.setC_Tax(tax_Default);
 	}
 
