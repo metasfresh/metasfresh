@@ -26,19 +26,4 @@ public enum CalculationMethod implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
-
-	@NonNull
-	public static CalculationMethod ofName(@NonNull final String name)
-	{
-		try
-		{
-			return CalculationMethod.valueOf(name);
-		}
-		catch (final Throwable t)
-		{
-			throw new AdempiereException("No " + CalculationMethod.class + " found for name: " + name)
-					.appendParametersToMessage()
-					.setParameter("AdditionalErrorMessage", t.getMessage());
-		}
-	}
 }

@@ -27,21 +27,6 @@ public enum BaseLineType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
-	@NonNull
-	public static BaseLineType ofName(@NonNull final String name)
-	{
-		try
-		{
-			return BaseLineType.valueOf(name);
-		}
-		catch (final Throwable t)
-		{
-			throw new AdempiereException("No " + BaseLineType.class + " found for name: " + name)
-					.appendParametersToMessage()
-					.setParameter("AdditionalErrorMessage", t.getMessage());
-		}
-	}
-
 	public boolean isInvoiceDate()
 	{
 		return this == InvoiceDate;
