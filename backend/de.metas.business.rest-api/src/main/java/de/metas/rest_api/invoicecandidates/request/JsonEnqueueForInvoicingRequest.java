@@ -64,11 +64,6 @@ public class JsonEnqueueForInvoicingRequest
 					+ "Default = `false`")
 	Boolean ignoreInvoiceSchedule;
 
-	@ApiModelProperty(position = 60, required = false,//
-			value = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.\n"
-					+ "Default = `true`")
-	Boolean supplementMissingPaymentTermIds;
-
 	@ApiModelProperty(position = 70, required = false,//
 			value = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.\n"
 					+ "Default = `false`")
@@ -87,7 +82,6 @@ public class JsonEnqueueForInvoicingRequest
 			@JsonProperty("dateAcct") @Nullable final LocalDate dateAcct,
 			@JsonProperty("poReference") @Nullable final String poReference,
 			@JsonProperty("ignoreInvoiceSchedule") @Nullable final Boolean ignoreInvoiceSchedule,
-			@JsonProperty("supplementMissingPaymentTermIds") @Nullable final Boolean supplementMissingPaymentTermIds,
 			@JsonProperty("updateLocationAndContactForInvoice") @Nullable final Boolean updateLocationAndContactForInvoice,
 			@JsonProperty("completeInvoices") @Nullable final Boolean completeInvoices)
 	{
@@ -96,7 +90,6 @@ public class JsonEnqueueForInvoicingRequest
 		this.dateAcct = dateAcct;
 		this.dateInvoiced = dateInvoiced;
 		this.ignoreInvoiceSchedule = coalesce(ignoreInvoiceSchedule, false);
-		this.supplementMissingPaymentTermIds = coalesce(supplementMissingPaymentTermIds, true);
 		this.updateLocationAndContactForInvoice = coalesce(updateLocationAndContactForInvoice, false);
 		this.completeInvoices = coalesce(completeInvoices, true);
 	}
