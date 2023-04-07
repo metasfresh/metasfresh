@@ -48,6 +48,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductActivityProvider;
@@ -133,6 +134,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -824,7 +826,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
-		return orderLineBL.getPaymentTermId(ol);
+
+		PaymentTermId paymentTermId = orderLineBL.getPaymentTermId(ol);
+
+		if (paymentTermId == null) // try to fallback to the default one
+		{
+			paymentTermId = Services.get(IPaymentTermRepository.class).getDefaultPaymentTermIdOrNull();
+		}
+
+		return paymentTermId;
 	}
 
 	/**

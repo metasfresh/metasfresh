@@ -1,5 +1,51 @@
 package de.metas.invoicecandidate;
 
+<<<<<<< HEAD
+=======
+import static de.metas.util.Check.assumeNotNull;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import de.metas.payment.paymentterm.PaymentTermId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+// import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+>>>>>>> ce28b40ba65 (#14602 Payment term extension  (#15065))
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
@@ -49,6 +95,7 @@ public class C_Invoice_Candidate_Builder
 	private String instanceName;
 	private OrgId orgId;
 	private BPartnerId billBPartnerId;
+	private PaymentTermId paymentTermId;
 	private BPartnerLocationId billBPartnerLocationId;
 	private int priceEntered;
 	private BigDecimal priceEntered_Override;
@@ -68,6 +115,7 @@ public class C_Invoice_Candidate_Builder
 	private String poReference;
 	private LocalDate dateAcct;
 	private LocalDate dateInvoiced;
+	private LocalDate dateToInvoice;
 	private LocalDate presetDateInvoiced;
 	private BigDecimal qualityDiscountPercent_Override;
 
@@ -102,6 +150,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 		ic.setPresetDateInvoiced(TimeUtil.asTimestamp(presetDateInvoiced));
 		ic.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
+		ic.setDateToInvoice(TimeUtil.asTimestamp(dateToInvoice));
 
 		// InvoiceRule
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
@@ -115,6 +164,7 @@ public class C_Invoice_Candidate_Builder
 		{
 			ic.setInvoiceRule_Override(invoiceRule_Override);
 		}
+		ic.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
 		ic.setBill_BPartner_ID(billBPartnerId.getRepoId());
 
@@ -273,6 +323,12 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
+	public C_Invoice_Candidate_Builder setPaymentTermId(@NonNull final PaymentTermId paymentTermId)
+	{
+		this.paymentTermId = paymentTermId;
+		return this;
+	}
+
 	public C_Invoice_Candidate_Builder setBillBPartner(final org.compiere.model.I_C_BPartner billBPartner)
 	{
 		return setBillBPartnerId(BPartnerId.ofRepoId(billBPartner.getC_BPartner_ID()));
@@ -425,6 +481,12 @@ public class C_Invoice_Candidate_Builder
 	public C_Invoice_Candidate_Builder setDateInvoiced(final LocalDate dateInvoiced)
 	{
 		this.dateInvoiced = dateInvoiced;
+		return this;
+	}
+
+	public C_Invoice_Candidate_Builder setDateToInvoice(final LocalDate dateToInvoice)
+	{
+		this.dateToInvoice = dateToInvoice;
 		return this;
 	}
 

@@ -910,7 +910,6 @@ public class C_Invoice_Candidate_StepDef
 
 			final InvoicingParams invoicingParams = InvoicingParams.builder()
 					.ignoreInvoiceSchedule(false)
-					.supplementMissingPaymentTermIds(true)
 					.updateLocationAndContactForInvoice(DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsUpdateLocationAndContactForInvoice", false))
 					.completeInvoices(DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + InvoicingParams.PARA_IsCompleteInvoices, true))
 					.build();

@@ -315,8 +315,14 @@ public class C_Invoice_StepDef
 		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
 		invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID())));
 
+<<<<<<< HEAD
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
 		assertThat(invoices.size()).isEqualTo(1);
+=======
+		final InvoicingParams invoicingParams = InvoicingParams.builder()
+				.ignoreInvoiceSchedule(false)
+				.build();
+>>>>>>> ce28b40ba65 (#14602 Payment term extension  (#15065))
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 		invoiceTable.put(invoiceIdentifier, invoices.get(0));

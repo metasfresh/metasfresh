@@ -165,7 +165,6 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 		return InvoicingParams.builder()
 				.updateLocationAndContactForInvoice(true)
 				.ignoreInvoiceSchedule(false)
-				.supplementMissingPaymentTermIds(true)
 				.build();
 	}
 

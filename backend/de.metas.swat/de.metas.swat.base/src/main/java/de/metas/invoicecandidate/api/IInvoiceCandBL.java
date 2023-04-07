@@ -41,6 +41,8 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -56,6 +58,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +71,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	void registerVetoer(ModelWithoutInvoiceCandidateVetoer vetoer, String tableName);
 
 	boolean isAllowedToCreateInvoiceCandidateFor(Object model);
+
+	Timestamp getBaseLineDate(@NonNull PaymentTerm paymentTerm, @NonNull I_C_Invoice_Candidate ic);
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Invoice_Candidate ic);
 
 	interface IInvoiceGenerateResult
 	{
@@ -215,6 +222,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @see #isUpdateProcessInProgress()
 	 */
 	IAutoCloseable setUpdateProcessInProgress();
+
+	Timestamp getDateToInvoiceTS(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * Creates initial {@link IInvoiceGenerateResult}

@@ -243,6 +243,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateApprovalForInvoicingToTrue(@NonNull PInstanceId selectionId);
 
 	/**
+<<<<<<< HEAD
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
 	 *
@@ -251,6 +252,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
 	/**
+=======
+>>>>>>> ce28b40ba65 (#14602 Payment term extension  (#15065))
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
 	 * amounts are converted to the currency which is set in the accounting schema of the bPartner's clients AD_ClientInfo.
 	 */

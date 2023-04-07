@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.BaseLineType;
+import de.metas.payment.paymentterm.CalculationMethod;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
@@ -193,6 +195,8 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				._default(record.isDefault())
 				.allowOverrideDueDate(record.isAllowOverrideDueDate())
 				.discount(Percent.of(record.getDiscount()))
+				.calculationMethod(CalculationMethod.ofCode(record.getCalculationMethod()))
+				.baseLineType(BaseLineType.ofCode(record.getBaseLineType()))
 				.build();
 
 	}

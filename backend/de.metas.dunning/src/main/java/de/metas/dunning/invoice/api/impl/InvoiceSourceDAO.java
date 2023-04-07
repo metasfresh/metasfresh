@@ -22,8 +22,11 @@ package de.metas.dunning.invoice.api.impl;
  * #L%
  */
 
+<<<<<<< HEAD
 import de.metas.adempiere.model.I_C_Invoice;
 import java.sql.Timestamp;
+=======
+>>>>>>> ce28b40ba65 (#14602 Payment term extension  (#15065))
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -32,9 +35,7 @@ import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.dunning.api.IDunningContext;
@@ -61,13 +62,6 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-
-	@Override
-	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());
-	}
 
 	@Override
 	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)
