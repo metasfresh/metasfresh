@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1357302419L;
+	private static final long serialVersionUID = -1594386687L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (final Properties ctx, final int M_HU_Trace_ID, @Nullable final String trxName)
@@ -242,6 +242,33 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public int getM_InOut_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Inventory getM_Inventory()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
+	}
+
+	@Override
+	public void setM_Inventory(final org.compiere.model.I_M_Inventory M_Inventory)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
+	}
+
+	@Override
+	public void setM_Inventory_ID (final int M_Inventory_ID)
+	{
+		if (M_Inventory_ID < 1) 
+			set_Value (COLUMNNAME_M_Inventory_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Inventory_ID, M_Inventory_ID);
+	}
+
+	@Override
+	public int getM_Inventory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Inventory_ID);
 	}
 
 	@Override

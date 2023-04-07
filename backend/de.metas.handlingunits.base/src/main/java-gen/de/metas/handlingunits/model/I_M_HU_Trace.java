@@ -231,7 +231,7 @@ public interface I_M_HU_Trace
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Handling Unit Trace.
+	 * Set HU Trace Id.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -240,7 +240,7 @@ public interface I_M_HU_Trace
 	void setM_HU_Trace_ID (int M_HU_Trace_ID);
 
 	/**
-	 * Get Handling Unit Trace.
+	 * Get HU Trace Id.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -302,6 +302,33 @@ public interface I_M_HU_Trace
 
 	ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_M_HU_Trace.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
+	 * Set Phys. Inventory.
+	 * Parameters for a Physical Inventory
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Inventory_ID (int M_Inventory_ID);
+
+	/**
+	 * Get Phys. Inventory.
+	 * Parameters for a Physical Inventory
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Inventory_ID();
+
+	@Nullable org.compiere.model.I_M_Inventory getM_Inventory();
+
+	void setM_Inventory(@Nullable org.compiere.model.I_M_Inventory M_Inventory);
+
+	ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_Inventory> COLUMN_M_Inventory_ID = new ModelColumn<>(I_M_HU_Trace.class, "M_Inventory_ID", org.compiere.model.I_M_Inventory.class);
+	String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
 	 * Set Movement.
