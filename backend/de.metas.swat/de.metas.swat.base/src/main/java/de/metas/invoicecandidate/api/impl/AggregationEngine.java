@@ -101,6 +101,7 @@ public final class AggregationEngine
 	// services
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
+	private static final AdMessageKey ERR_INVOICE_CAND_BASELINE_DATE_CANNOT_BE_DETERMINED = AdMessageKey.of("InvoiceCand_Cannot_be_determined");
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
@@ -603,7 +604,9 @@ public final class AggregationEngine
 					Timestamp baseLineDate = invoiceCandBL.getBaseLineDate(paymentTerm, ic);
 					if (baseLineDate == null)
 					{
-						baseLineDate = TimeUtil.asTimestamp(computeDateInvoiced(ic));
+						throw new AdempiereException(ERR_INVOICE_CAND_BASELINE_DATE_CANNOT_BE_DETERMINED)
+								.appendParametersToMessage()
+								.setParameter("C_PaymentTerm_ID", paymentTermId);
 					}
 					return TimeUtil.asLocalDate(paymentTerm.computeDueDate(baseLineDate), timeZone);
 				});
