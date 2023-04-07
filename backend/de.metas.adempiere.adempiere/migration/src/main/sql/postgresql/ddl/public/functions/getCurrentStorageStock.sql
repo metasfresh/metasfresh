@@ -18,21 +18,30 @@ $$
 SELECT SUM(s.qty)
 
 FROM m_hu_storage s
+ JOIN M_HU hu on s.m_hu_id = hu.m_hu_id
 
 WHERE p_M_Product_ID = s.M_Product_ID
   AND s.IsActive = 'Y'
   AND s.AD_Client_ID = p_AD_Client_ID
   AND s.AD_Org_ID = p_AD_Org_ID
-  AND ((p_AttrivuteValue IS NULL) OR (EXISTS (SELECT 1
+  AND hu.hustatus IN ('A',
+                      'S',
+                      'I')
+  AND hu.m_hu_item_parent_id IS NULL
+  AND ((p_AttrivuteValue IS NULL AND
+        (EXISTS (SELECT 1
+                 FROM m_hu_attribute hua
+                 WHERE s.m_hu_id = hua.m_hu_id
+                   AND hua.m_attribute_id = p_M_Attribute_ID
+                   AND hua.value is null
+        ))
+      )
+           OR (EXISTS (SELECT 1
                                               FROM m_hu_attribute hua
-                                                       JOIN M_HU hu ON hua.m_hu_id = hu.m_hu_id
                                               WHERE s.m_hu_id = hua.m_hu_id
                                                 AND hua.m_attribute_id = p_M_Attribute_ID
                                                 AND hua.value = p_AttrivuteValue
-                                                AND hu.hustatus IN ('A',
-                                                                    'S',
-                                                                    'I')
-                                                AND hu.m_hu_item_parent_id IS NULL)))
+                                               )))
 
 $$
     LANGUAGE SQL STABLE
@@ -57,4 +66,5 @@ COMMENT ON FUNCTION getCurrentStorageStock(p_M_Product_ID numeric,
     FROM M_Product
 ;'
 ;
+
 
