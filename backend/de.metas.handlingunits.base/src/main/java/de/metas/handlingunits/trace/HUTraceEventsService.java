@@ -17,6 +17,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -29,6 +30,8 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.CostCollectorType;
@@ -167,6 +170,20 @@ public class HUTraceEventsService
 				.eventTime(movement.getMovementDate().toInstant());
 
 		createAndAddEvents(builder, movementLines);
+	}
+
+	public void createAndAddFor(
+			@NonNull final I_M_Inventory inventory,
+			final List<I_M_InventoryLine> inventoryLines)
+	{
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.inventoryId(InventoryId.ofRepoId(inventory.getM_Inventory_ID()))
+				.docTypeId(DocTypeId.optionalOfRepoId(inventory.getC_DocType_ID()))
+				.docStatus(inventory.getDocStatus())
+				.type(HUTraceType.MATERIAL_INVENTORY)
+				.eventTime(inventory.getMovementDate().toInstant());
+
+		createAndAddEvents(builder, inventoryLines);
 	}
 
 	public void createAndAddFor(

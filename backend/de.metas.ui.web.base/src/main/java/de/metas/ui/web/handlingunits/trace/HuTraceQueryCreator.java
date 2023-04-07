@@ -10,6 +10,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -243,6 +244,14 @@ final class HuTraceQueryCreator
 		errorIfQueryValueGreaterThanZero("MovementId", query.getMovementId(), query);
 
 		return query.withMovementId(extractInt(parameter));
+	}
+
+	private static HUTraceEventQuery updateInventoryIdFromParameter(
+			@NonNull final HUTraceEventQuery query, @NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("InventoryId", query.getInventoryId(), query);
+
+		return query.withInventoryId(InventoryId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateHuTrxLineIdFromParameter(

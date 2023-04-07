@@ -54,6 +54,8 @@ public enum HUTraceType
 	 */
 	MATERIAL_PICKING,
 
+	MATERIAL_INVENTORY,
+
 	/**
 	 * Used for records/events related to HUs being used in production
 	 */

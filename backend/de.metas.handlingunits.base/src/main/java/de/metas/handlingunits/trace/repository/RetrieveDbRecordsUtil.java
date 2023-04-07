@@ -350,6 +350,12 @@ public class RetrieveDbRecordsUtil
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Movement_ID, query.getMovementId());
 			queryIsEmpty = false;
 		}
+
+		if (query.getInventoryId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Inventory_ID, query.getInventoryId());
+			queryIsEmpty = false;
+		}
 		if (query.getPpCostCollectorId() > 0)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Cost_Collector_ID, query.getPpCostCollectorId());

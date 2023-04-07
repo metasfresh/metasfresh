@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -118,6 +119,8 @@ public class HUTraceEventQuery
 	ShipmentScheduleId shipmentScheduleId;
 
 	int movementId;
+
+	InventoryId inventoryId;
 
 	int ppCostCollectorId;
 
