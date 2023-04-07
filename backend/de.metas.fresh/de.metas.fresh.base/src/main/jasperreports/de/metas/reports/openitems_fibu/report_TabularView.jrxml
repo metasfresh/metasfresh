@@ -48,7 +48,7 @@ FROM
 		i.C_BPartner_ID,
 		i.IsSOTrx,
 		i.DateInvoiced,
-		EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y') AS PassForPayment,
+		EXISTS (SELECT 0 FROM C_PaySelectionLine psl JOIN C_PaySelection ps on ps.C_PaySelection_id=psl.C_PaySelection_ID  WHERE psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y' and ps.DocStatus IN('CO', 'CL')) AS PassForPayment,
 		COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
 		p.DiscountDays,
 		COALESCE( i.DueDate::timestamp with time zone , ips.DueDate ) AS DueDate,
