@@ -45,7 +45,6 @@ public class InvoicingParams
 	public static String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
 	public static String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
 	public static String PARA_DateInvoiced = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced;
-	public static String PARA_SupplementMissingPaymentTermIds = "SupplementMissingPaymentTermIds";
 	public static String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
 	public static String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
 	public static String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
@@ -56,7 +55,6 @@ public class InvoicingParams
 	boolean onlyApprovedForInvoicing;
 	boolean consolidateApprovedICs;
 	boolean ignoreInvoiceSchedule;
-	boolean supplementMissingPaymentTermIds;
 	boolean storeInvoicesInResult;
 	boolean assumeOneInvoice;
 	@Nullable LocalDate dateInvoiced;
@@ -75,7 +73,6 @@ public class InvoicingParams
 				.consolidateApprovedICs(params.getParameterAsBool(PARA_IsConsolidateApprovedICs))
 				.ignoreInvoiceSchedule(params.getParameterAsBool(PARA_IgnoreInvoiceSchedule))
 				.dateInvoiced(params.getParameterAsLocalDate(PARA_DateInvoiced))
-				.supplementMissingPaymentTermIds(params.getParameterAsBool(PARA_SupplementMissingPaymentTermIds))
 				.dateAcct(params.getParameterAsLocalDate(PARA_DateAcct))
 				.poReference(params.getParameterAsString(PARA_POReference))
 				.check_NetAmtToInvoice(params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice))
@@ -121,7 +118,6 @@ public class InvoicingParams
 		map.put(PARA_IsConsolidateApprovedICs, isConsolidateApprovedICs());
 		map.put(PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		map.put(PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
-		map.put(PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
 		map.put(PARA_IsCompleteInvoices, isCompleteInvoices());
 
 		final ForexContractParameters forexContractParameters = getForexContractParameters();
