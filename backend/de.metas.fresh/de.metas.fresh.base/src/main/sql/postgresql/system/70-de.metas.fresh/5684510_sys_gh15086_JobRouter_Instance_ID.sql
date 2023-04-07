@@ -44,27 +44,9 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DisplayLogic='@ExternalId@!NULL',Updated=TO_TIMESTAMP('2023-04-06 22:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713823
 ;
 
--- Field: Invoice (Vendor)_OLD(183,D) -> Invoice(290,D) -> Externe ID
--- Column: C_Invoice.ExternalId
--- 2023-04-06T21:03:11.364Z
-UPDATE AD_Field SET DisplayLogic='', ReadOnlyLogic='@ExternalId@!NULL',Updated=TO_TIMESTAMP('2023-04-06 22:03:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713823
-;
-
 -- Column: C_Invoice.ExternalId
 -- 2023-04-06T21:04:08.565Z
 UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2023-04-06 22:04:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572375
-;
-
--- Field: Invoice (Vendor)_OLD(183,D) -> Invoice(290,D) -> Externe ID
--- Column: C_Invoice.ExternalId
--- 2023-04-06T21:09:05.735Z
-UPDATE AD_Field SET ReadOnlyLogic='',Updated=TO_TIMESTAMP('2023-04-06 22:09:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713823
-;
-
--- Field: Invoice (Vendor)_OLD(183,D) -> Invoice(290,D) -> Externe ID
--- Column: C_Invoice.ExternalId
--- 2023-04-06T21:13:51.918Z
-UPDATE AD_Field SET IsAlwaysUpdateable='', ReadOnlyLogic='@ExternalId@!NULL',Updated=TO_TIMESTAMP('2023-04-06 22:13:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=713823
 ;
 
 -- Field: Invoice (Customer)_OLD(167,D) -> Invoice(263,D) -> Externe ID
