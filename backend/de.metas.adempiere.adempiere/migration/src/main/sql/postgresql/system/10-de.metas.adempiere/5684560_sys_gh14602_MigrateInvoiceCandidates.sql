@@ -33,3 +33,15 @@ INSERT INTO t_alter_column values('c_invoice_candidate','C_PaymentTerm_ID','NUME
 INSERT INTO t_alter_column values('c_invoice_candidate','C_PaymentTerm_ID',null,'NOT NULL',null)
 ;
 
+
+--- drop unneeded parameter
+-- Process: C_Invoice_Candidate_EnqueueSelectionForInvoicing(de.metas.invoicecandidate.process.C_Invoice_Candidate_EnqueueSelectionForInvoicing)
+-- ParameterName: SupplementMissingPaymentTermIds
+-- 2023-04-07T12:19:10.617Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541281
+;
+
+-- 2023-04-07T12:19:10.628Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541281
+;
+
