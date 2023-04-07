@@ -37,6 +37,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -97,6 +98,11 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				.build();
 
 		final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
+
+		if (pInstanceId == null)
+		{
+			throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
+		}
 
 		Services.get(ITrxManager.class).commit(Trx.TRXNAME_ThreadInherited);
 		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()

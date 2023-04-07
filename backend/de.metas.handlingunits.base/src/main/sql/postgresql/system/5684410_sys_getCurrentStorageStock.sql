@@ -31,7 +31,8 @@ WHERE p_M_Product_ID = s.M_Product_ID
                                                 AND hua.value = p_AttrivuteValue
                                                 AND hu.hustatus IN ('A',
                                                                     'S',
-                                                                    'I'))))
+                                                                    'I')
+                                                AND hu.m_hu_item_parent_id IS NULL)))
 
 $$
     LANGUAGE SQL STABLE
@@ -56,6 +57,4 @@ COMMENT ON FUNCTION getCurrentStorageStock(p_M_Product_ID numeric,
     FROM M_Product
 ;'
 ;
-
-
 
