@@ -319,7 +319,7 @@ Feature: create multiple production candidates
 
     When the order identified by order_4_2 is completed
 
-    Then after not more than 100s, PP_Order_Candidates are found
+    Then after not more than 90s, PP_Order_Candidates are found
       | Identifier           | Processed | OPT.SeqNo | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_4_2 | false     | 10        | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5            | 0            | PCE               | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
 
