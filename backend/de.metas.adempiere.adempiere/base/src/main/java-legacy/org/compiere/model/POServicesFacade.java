@@ -9,6 +9,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;

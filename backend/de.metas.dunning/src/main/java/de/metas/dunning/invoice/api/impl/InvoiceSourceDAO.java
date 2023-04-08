@@ -32,9 +32,8 @@ import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.IQuery;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.dunning.api.IDunningContext;
@@ -50,7 +49,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_C_InvoicePaySchedule;
 
 import java.util.Optional;
@@ -61,13 +59,6 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-
-	@Override
-	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());
-	}
 
 	@Override
 	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)

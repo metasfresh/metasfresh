@@ -437,7 +437,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("C_DocType_Invoicing_Pool_ID is virtual column");	}
 
 	@Override
-	public int getC_DocType_Invoicing_Pool_ID() 
+	public int getC_DocType_Invoicing_Pool_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_Invoicing_Pool_ID);
 	}
@@ -1452,9 +1452,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isDeliveryClosed() 
+	public boolean isDeliveryClosed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+	}
+
+	@Override
+	public void setIsEdiEnabled (final boolean IsEdiEnabled)
+	{
+		set_Value (COLUMNNAME_IsEdiEnabled, IsEdiEnabled);
+	}
+
+	@Override
+	public boolean isEdiEnabled()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEdiEnabled);
 	}
 
 	@Override
@@ -1524,7 +1536,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isInEffect() 
+	public boolean isInEffect()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInEffect);
 	}
@@ -1548,7 +1560,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isInterimInvoice() 
+	public boolean isInterimInvoice()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoice);
 	}
@@ -1793,6 +1805,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getM_InOut_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
+	public void setM_Material_Tracking_ID (final int M_Material_Tracking_ID)
+	{
+		if (M_Material_Tracking_ID < 1)
+			set_Value (COLUMNNAME_M_Material_Tracking_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Material_Tracking_ID, M_Material_Tracking_ID);
+	}
+
+	@Override
+	public int getM_Material_Tracking_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Material_Tracking_ID);
 	}
 
 	@Override
@@ -2175,12 +2202,12 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getProductDescription() 
+	public java.lang.String getProductDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
 
-	/** 
+	/**
 	 * ProductType AD_Reference_ID=270
 	 * Reference name: M_Product_ProductType
 	 */
@@ -2246,6 +2273,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public BigDecimal getQtyEntered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyEnteredTU (final @Nullable BigDecimal QtyEnteredTU)
+	{
+		set_Value (COLUMNNAME_QtyEnteredTU, QtyEnteredTU);
+	}
+
+	@Override
+	public BigDecimal getQtyEnteredTU()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredTU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -2482,6 +2522,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	@Override
+	public void setQualityDiscountPercent_ReceiptSchedule (final @Nullable BigDecimal QualityDiscountPercent_ReceiptSchedule)
+	{
+		throw new IllegalArgumentException ("QualityDiscountPercent_ReceiptSchedule is virtual column");	}
+
+	@Override
+	public BigDecimal getQualityDiscountPercent_ReceiptSchedule()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent_ReceiptSchedule);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	/** 
 	 * QualityInvoiceLineGroupType AD_Reference_ID=540617
 	 * Reference name: QualityInvoiceLineGroupType
@@ -2511,6 +2563,17 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getQualityInvoiceLineGroupType() 
 	{
 		return get_ValueAsString(COLUMNNAME_QualityInvoiceLineGroupType);
+	}
+
+	@Override
+	public void setQualityNote_ReceiptSchedule (final @Nullable java.lang.String QualityNote_ReceiptSchedule)
+	{
+		throw new IllegalArgumentException ("QualityNote_ReceiptSchedule is virtual column");	}
+
+	@Override
+	public java.lang.String getQualityNote_ReceiptSchedule()
+	{
+		return get_ValueAsString(COLUMNNAME_QualityNote_ReceiptSchedule);
 	}
 
 	@Override

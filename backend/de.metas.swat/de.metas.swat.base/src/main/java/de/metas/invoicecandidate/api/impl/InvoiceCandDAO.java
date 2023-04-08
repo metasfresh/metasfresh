@@ -1359,37 +1359,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		);
 	}
 
-	@Override
-	public void updateMissingPaymentTermIds(final PInstanceId selectionId)
-	{
-		final PInstanceId selectionToUpdateId = retrieveIcsToUpdateSelectionId(selectionId);
-		if (selectionToUpdateId == null)
-		{
-			return;
-		}
-		final PaymentTermId paymentTermId = retrievePaymentTermId(selectionId);
-		if (paymentTermId == null)
-		{
-			return;
-		}
-
-		final int updateCount = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionToUpdateId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, paymentTermId)
-				.execute();
-
-		Loggables.withLogger(logger, Level.INFO)
-				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
-						updateCount, selectionId, paymentTermId);
-
-		// Invalidate the candidates which we updated
-		invalidateCandsForSelection(selectionToUpdateId);
-
-	}
-
 	private PInstanceId retrieveIcsToUpdateSelectionId(final PInstanceId selectionId)
 	{
 		final PInstanceId selectionToUpdateId = queryBL

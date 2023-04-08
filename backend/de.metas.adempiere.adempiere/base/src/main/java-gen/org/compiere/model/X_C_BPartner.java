@@ -1,19 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 923087334L;
+	private static final long serialVersionUID = 363708421L;
 
 	/** Standard Constructor */
 	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -643,6 +643,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	/**
+	@Override
+	public void setDeliveryCreditLimitIndicator (final @Nullable java.lang.String DeliveryCreditLimitIndicator)
+	{
+		throw new IllegalArgumentException ("DeliveryCreditLimitIndicator is virtual column");	}
+
+	@Override
+	public java.lang.String getDeliveryCreditLimitIndicator()
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryCreditLimitIndicator);
+	}
+
+	/**
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
 	 */
@@ -1071,6 +1083,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsBlocked (final boolean IsBlocked)
+	{
+		throw new IllegalArgumentException ("IsBlocked is virtual column");	}
+
+	@Override
+	public boolean isBlocked()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBlocked);
+	}
+
+	@Override
 	public void setIsCompany (final boolean IsCompany)
 	{
 		set_Value (COLUMNNAME_IsCompany, IsCompany);
@@ -1214,7 +1237,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
 	}
 
-	/** 
+	/**
 	 * IsPrintLocalCurrencyInfo AD_Reference_ID=540528
 	 * Reference name: Yes_No
 	 */
@@ -1230,7 +1253,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public java.lang.String getIsPrintLocalCurrencyInfo() 
+	public java.lang.String getIsPrintLocalCurrencyInfo()
 	{
 		return get_ValueAsString(COLUMNNAME_IsPrintLocalCurrencyInfo);
 	}
@@ -2507,7 +2530,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public java.lang.String getSO_Description()
+	public java.lang.String getSO_Description() 
 	{
 		return get_ValueAsString(COLUMNNAME_SO_Description);
 	}

@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import org.adempiere.ad.dao.IQueryBuilder;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
