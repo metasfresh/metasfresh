@@ -642,7 +642,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsString(COLUMNNAME_DefaultShipTo_Postal);
 	}
 
-	/**
 	@Override
 	public void setDeliveryCreditLimitIndicator (final @Nullable java.lang.String DeliveryCreditLimitIndicator)
 	{
