@@ -108,7 +108,6 @@ public class MD_Cockpit_StepDef
 				.dateGeneral(expectedResults.getDateGeneral())
 				.warehouseId(expectedResults.getWarehouseId())
 				.storageAttributesKey(expectedResults.getStorageAttributesKey())
-				.qtyStockCurrentAtDate(expectedResults.getQtyStockCurrentAtDate())
 				.build();
 		
 		final I_MD_Cockpit mdCockpitRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> getCockpitByQuery(cockpitQuery), () -> logCurrentContext(expectedResults));
@@ -391,11 +390,6 @@ public class MD_Cockpit_StepDef
 		{
 			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Warehouse_ID, cockpitQuery.getWarehouseId());
 		}
-		
-		if (cockpitQuery.getQtyStockCurrentAtDate() != null)
-		{
-			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_QtyStockCurrent_AtDate, cockpitQuery.getQtyStockCurrentAtDate());
-		}
 
 		return queryBuilder
 				.create()
@@ -479,8 +473,5 @@ public class MD_Cockpit_StepDef
 		
 		@Nullable
 		WarehouseId warehouseId;
-
-		@Nullable
-		BigDecimal qtyStockCurrentAtDate;
 	}
 }
