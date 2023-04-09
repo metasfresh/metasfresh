@@ -72,18 +72,20 @@ public class MainDataRequestHandler
 		final IQuery<I_MD_Cockpit> query = identifier.createQueryBuilder().create();
 
 		final I_MD_Cockpit existingDataRecord = query.firstOnly(I_MD_Cockpit.class);
-		if (existingDataRecord != null)
+		if (existingDataRecord == null)
 		{
-			return existingDataRecord;
+			synchronized (MainDataRequestHandler.class)
+			{
+				final I_MD_Cockpit newDataRecord = newInstance(I_MD_Cockpit.class);
+				newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
+				newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
+				newDataRecord.setDateGeneral(TimeUtil.asTimestamp(identifier.getDate()));
+				newDataRecord.setM_Warehouse_ID(NumberUtils.asInteger(identifier.getWarehouseId(), -1));
+
+				return newDataRecord;
+			}
 		}
-
-		final I_MD_Cockpit newDataRecord = newInstance(I_MD_Cockpit.class);
-		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
-		newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
-		newDataRecord.setDateGeneral(TimeUtil.asTimestamp(identifier.getDate()));
-		newDataRecord.setM_Warehouse_ID(NumberUtils.asInteger(identifier.getWarehouseId(), -1));
-
-		return newDataRecord;
+		return existingDataRecord;
 	}
 
 	private static void updateDataRecordWithRequestQtys(
