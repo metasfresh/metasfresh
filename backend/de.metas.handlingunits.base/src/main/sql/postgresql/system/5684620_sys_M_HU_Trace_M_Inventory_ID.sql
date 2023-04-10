@@ -140,3 +140,24 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2023-04-07 18:14:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546776
 ;
 
+
+
+
+
+
+-- Reference: HUTraceType
+-- Value: MATERIAL_INVENTORY
+-- ValueName: MATERIAL_INVENTORY
+-- 2023-04-10T09:02:37.515Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,540729,543435,TO_TIMESTAMP('2023-04-10 12:02:37','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','Inventur',TO_TIMESTAMP('2023-04-10 12:02:37','YYYY-MM-DD HH24:MI:SS'),100,'MATERIAL_INVENTORY','MATERIAL_INVENTORY')
+;
+
+-- 2023-04-10T09:02:37.520Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=543435 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+
+
+
+
+

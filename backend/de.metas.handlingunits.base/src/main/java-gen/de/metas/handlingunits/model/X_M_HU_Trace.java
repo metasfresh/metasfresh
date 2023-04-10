@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1594386687L;
+	private static final long serialVersionUID = -1212078735L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (final Properties ctx, final int M_HU_Trace_ID, @Nullable final String trxName)
@@ -124,6 +124,8 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String HUTRACETYPE_TRANSFORM_LOAD = "TRANSFORM_LOAD";
 	/** TRANSFORM_PARENT = TRANSFORM_PARENT */
 	public static final String HUTRACETYPE_TRANSFORM_PARENT = "TRANSFORM_PARENT";
+	/** MATERIAL_INVENTORY = MATERIAL_INVENTORY */
+	public static final String HUTRACETYPE_MATERIAL_INVENTORY = "MATERIAL_INVENTORY";
 	@Override
 	public void setHUTraceType (final java.lang.String HUTraceType)
 	{

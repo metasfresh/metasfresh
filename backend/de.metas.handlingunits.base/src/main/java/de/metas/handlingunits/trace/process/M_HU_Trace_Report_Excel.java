@@ -134,6 +134,8 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 	{
 		final AttributeId lotNumberAttributeId = attributesRepo.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_LotNumber);
 
+		// TODO make this a db function
+
 		final StringBuilder sqlBuilder = new StringBuilder().append(" SELECT ")
 				.append(I_M_HU_Trace.COLUMNNAME_LotNumber)
 				.append(", 'CURRENT STOCK'")

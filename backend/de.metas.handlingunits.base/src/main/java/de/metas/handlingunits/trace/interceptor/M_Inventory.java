@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.trace.interceptor;
 
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -32,7 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -69,9 +69,10 @@ class M_Inventory
 
 	private void addTraceEvent0(@NonNull final I_M_Inventory inventory)
 	{
-
-		final List<I_M_InventoryLine> inventoryLines = inventoryDAO.retrieveLinesForInventoryId(InventoryId.ofRepoIdOrNull(inventory.getM_Inventory_ID()));
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+		final List<I_M_InventoryLine> inventoryLines = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 
 		huTraceEventsService.createAndAddFor(inventory, inventoryLines);
 	}
+
 }

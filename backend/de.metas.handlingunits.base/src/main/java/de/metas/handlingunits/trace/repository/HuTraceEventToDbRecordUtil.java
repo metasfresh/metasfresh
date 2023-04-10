@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import de.metas.inventory.InventoryId;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeId;
@@ -102,6 +103,7 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setVHU_Source_ID(HuId.toRepoId(huTraceRecord.getVhuSourceId()));
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
+		dbRecord.setM_Inventory_ID(InventoryId.toRepoId(huTraceRecord.getInventoryId()));
 		dbRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(huTraceRecord.getShipmentScheduleId()));
 		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getPpCostCollectorId());
 		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
