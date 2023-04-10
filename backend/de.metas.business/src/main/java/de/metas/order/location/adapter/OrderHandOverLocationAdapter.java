@@ -22,6 +22,10 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
@@ -132,5 +136,16 @@ public class OrderHandOverLocationAdapter
 	{
 		InterfaceWrapperHelper.assertNotOldValues(delegate);
 		return new OrderHandOverLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Order.class));
+	}
+
+	public void setFromHandOverLocation(@NonNull final I_C_Order from)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(from.getHandOver_Partner_ID());
+		final BPartnerInfo bpartnerInfo = BPartnerInfo.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, from.getBill_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, from.getBill_User_ID()))
+				.build();
+		setFrom(bpartnerInfo);
 	}
 }
