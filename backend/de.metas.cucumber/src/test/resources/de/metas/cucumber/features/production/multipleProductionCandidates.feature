@@ -24,19 +24,28 @@ Feature: create multiple production candidates
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540006        |
+
+  @Id:S0129.1_140
+  @Id:S0212.100
+  @from:cucumber
+  Scenario:  The manufacturing candidate is created for a sales order line,
+  then the sales order is re-opened and the ordered quantity is increased,
+  resulting in a second manufacturing candidate to supply the additional demand.
+  Also validate that PP_Order_Candidate is marked as 'processed' after PP_Order is created.
+
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_29032022_2           | standard_category                    |
-      | p_2        | trackedProduct_component_29032022_2 | standard_category                    |
+      | p_1        | trackedProduct_10042023_1           | standard_category                    |
+      | p_2        | trackedProduct_component_10042023_1 | standard_category                    |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_29032022_2 | pricing_system_value_29032022_2 | pricing_system_description_29032022_2 | true         |
+      | ps_1       | pricing_system_name_10042023_1 | pricing_system_value_10042023_1 | pricing_system_description_10042023_1 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_29032022_2 | null            | true  | false         | 2              | true         |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_10042023_1 | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | trackedProduct-PLV29032022_2 | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
+      | plv_1      | pl_1                      | trackedProduct-PLV_10042023_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
@@ -50,18 +59,10 @@ Feature: create multiple production candidates
       | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains C_BPartners:
-      | Identifier    | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_2 | EndcustomerS0212 | N            | Y              | ps_1                          |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_2 | Endcustomer_10042023_1 | N            | Y              | ps_1                          |
 
-  @Id:S0129.1_140
-  @Id:S0212.100
-  @from:cucumber
-  Scenario:  The manufacturing candidate is created for a sales order line,
-  then the sales order is re-opened and the ordered quantity is increased,
-  resulting in a second manufacturing candidate to supply the additional demand.
-  Also validate that PP_Order_Candidate is marked as 'processed' after PP_Order is created.
-
-    Given metasfresh contains PP_Product_Plannings
+    And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
     And metasfresh contains C_Orders:
@@ -139,7 +140,36 @@ Feature: create multiple production candidates
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
   and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set.
 
-    Given metasfresh contains PP_Product_Plannings
+    Given metasfresh contains M_Products:
+      | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | trackedProduct_10042023_2           | standard_category                    |
+      | p_2        | trackedProduct_component_10042023_2 | standard_category                    |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_10042023_2 | pricing_system_value_10042023_2 | pricing_system_description_10042023_2 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_10042023_2 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
+      | plv_1      | pl_1                      | trackedProduct-PLV_10042023_2 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | pp_2       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
+      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
+    And the PP_Product_BOM identified by bom_1 is completed
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_2 | Endcustomer_10042023_2 | N            | Y              | ps_1                          |
+
+    And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | p_1                     | bomVersions_1                            | false        |
 
@@ -195,7 +225,36 @@ Feature: create multiple production candidates
   then `Generate PP_Order`process is invoked enforcing the candidates to be processed
   and both candidates are marked as processed
 
-    Given metasfresh contains PP_Product_Plannings
+    Given metasfresh contains M_Products:
+      | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | trackedProduct_10042023_3           | standard_category                    |
+      | p_2        | trackedProduct_component_10042023_3 | standard_category                    |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_10042023_3 | pricing_system_value_10042023_3 | pricing_system_description_10042023_3 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_10042023_3 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
+      | plv_1      | pl_1                      | trackedProduct-PLV_10042023_3 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | pp_2       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
+      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
+    And the PP_Product_BOM identified by bom_1 is completed
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_2 | Endcustomer_10042023_3 | N            | Y              | ps_1                          |
+
+    And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
       | ppln_1     | p_1                     | bomVersions_1                            | false        | 10                                  | PCE                                        | 10        |
 
@@ -272,7 +331,36 @@ Feature: create multiple production candidates
   _Then PP_Order_Candidate (for P2) with SeqNo = 10 will be manufactured first
   _And PP_Order_Candidate (for P1) with SeqNo = 20  will be manufactured second
 
-    Given metasfresh contains PP_Product_Plannings
+    Given metasfresh contains M_Products:
+      | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | trackedProduct_10042023_4           | standard_category                    |
+      | p_2        | trackedProduct_component_10042023_4 | standard_category                    |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_10042023_4 | pricing_system_value_10042023_4 | pricing_system_description_10042023_4 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_10042023_4 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
+      | plv_1      | pl_1                      | trackedProduct-PLV_10042023_4 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | pp_2       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
+      | bom_1      | p_1                     | 2021-04-01 | bomVersions_1                        |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
+    And the PP_Product_BOM identified by bom_1 is completed
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_2 | Endcustomer_10042023_4 | N            | Y              | ps_1                          |
+
+    And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
       | ppln_1     | p_1                     | bomVersions_1                            | false        | 5                                   | PCE                                        | 10        |
 

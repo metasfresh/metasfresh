@@ -28,7 +28,10 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-10T21:00:00Z | 10  | 10                     |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-10  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
     And metasfresh contains M_Inventories:
@@ -42,7 +45,10 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-10T21:00:00Z | 10  | 10                     |                                 |
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 20                     | 2021-04-16T00:00:00             |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-10  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
       | cp_2       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 20                             | 20                         | 0                                  |
@@ -68,7 +74,10 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-10T21:00:00Z | 10  | 10                     |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-10  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
     And metasfresh contains M_Inventories:
@@ -82,7 +91,10 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-10T21:00:00Z | 10  | 10                     |                                 |
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 20                     | 2021-04-16T00:00:00             |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_1                     | 2021-04-10  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
       | cp_2       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 20                             | 20                         | 0                                  |
@@ -108,7 +120,10 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_2                     | 2021-04-10T21:00:00Z | 10  | 10                     |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_2                     | 2021-04-10  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
     And metasfresh contains M_Inventories:
@@ -122,7 +137,10 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_2                     | 2021-04-10T21:00:00Z | 10  | 10                     |                                 |
       | c_2        | INVENTORY_UP      |                               | p_2                     |                      | 10  | 20                     | 2021-04-16T00:00:00             |
-    And after not more than 60s, metasfresh has this MD_Cockpit data
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
       | cp_1       | p_2                     | 2021-04-10  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
       | cp_2       | p_2                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 20                             | 20                         | 0                                  |
