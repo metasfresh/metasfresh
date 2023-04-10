@@ -96,8 +96,7 @@ public class HUTransformTracingTests
 		save(sysConfig);
 		modelInterceptorRegistry.addModelInterceptor(HUTraceModuleInterceptor.INSTANCE);
 
-		uomRecord = newInstance(I_C_UOM.class);
-		saveRecord(uomRecord);
+		uomRecord = testsBase.getData().helper.uomEach;
 	}
 
 	@Test
@@ -115,7 +114,7 @@ public class HUTransformTracingTests
 			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getInput().getM_HU_ID()));
 			assertThat(huTraceEvent.getVhuSourceId(), nullValue());
 			assertThat(huTraceEvent.getTopLevelHuId().getRepoId(), is(result.getInititalParent().getM_HU_ID()));
-			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE.negate()));
+			assertThat(huTraceEvent.getQty().toBigDecimal(), is(BigDecimal.ONE.negate()));
 		}
 
 		{
@@ -125,7 +124,7 @@ public class HUTransformTracingTests
 			assertThat(huTraceEvent.getVhuId().getRepoId(), is(result.getOutput().get(0).getM_HU_ID()));
 			assertThat(huTraceEvent.getVhuSourceId().getRepoId(), is(result.getInput().getM_HU_ID()));
 			assertThat(huTraceEvent.getTopLevelHuId(), is(huTraceEvent.getVhuId()));
-			assertThat(huTraceEvent.getQty(), is(BigDecimal.ONE));
+			assertThat(huTraceEvent.getQty().toBigDecimal(), is(BigDecimal.ONE));
 		}
 	}
 
