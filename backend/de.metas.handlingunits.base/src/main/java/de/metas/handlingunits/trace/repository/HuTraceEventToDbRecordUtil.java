@@ -1,13 +1,5 @@
 package de.metas.handlingunits.trace.repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.util.Optional;
-import java.util.OptionalInt;
-
-import de.metas.inventory.InventoryId;
-import org.compiere.util.TimeUtil;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
@@ -15,9 +7,18 @@ import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+
+import java.util.Optional;
+import java.util.OptionalInt;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
  * #%L
@@ -53,7 +54,7 @@ public class HuTraceEventToDbRecordUtil
 				.eventTime(dbRecord.getEventTime().toInstant()) // EeventTime is a mandatory column, so no NPE
 				.vhuId(HuId.ofRepoId(dbRecord.getVHU_ID()))
 				.productId(ProductId.ofRepoId(dbRecord.getM_Product_ID()))
-				.qty(dbRecord.getQty())
+				.qty(Quantitys.create(dbRecord.getQty(), UomId.ofRepoIdOrNull(dbRecord.getC_UOM_ID())))
 				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
 				.vhuStatus(dbRecord.getVHUStatus())
 				.topLevelHuId(HuId.ofRepoId(dbRecord.getM_HU_ID()))
@@ -96,7 +97,8 @@ public class HuTraceEventToDbRecordUtil
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
 		dbRecord.setVHU_ID(huTraceRecord.getVhuId().getRepoId());
 		dbRecord.setM_Product_ID(huTraceRecord.getProductId().getRepoId());
-		dbRecord.setQty(huTraceRecord.getQty());
+		dbRecord.setQty(huTraceRecord.getQty().toBigDecimal());
+		dbRecord.setC_UOM_ID(UomId.toRepoId(huTraceRecord.getQty().getUomId()));
 		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
 		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId().getRepoId());

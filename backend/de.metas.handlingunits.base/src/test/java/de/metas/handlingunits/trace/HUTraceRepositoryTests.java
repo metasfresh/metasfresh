@@ -1,5 +1,7 @@
 package de.metas.handlingunits.trace;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -10,8 +12,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,12 +58,16 @@ public class HUTraceRepositoryTests
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	private HUTraceRepository huTraceRepository;
+	private static I_C_UOM uomRecord;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		huTraceRepository = new HUTraceRepository();
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	public static HUTraceEventBuilder createCommonEventBuilder()
@@ -67,7 +75,7 @@ public class HUTraceRepositoryTests
 		return HUTraceEvent.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
-				.qty(BigDecimal.valueOf(100))
+				.qty(Quantity.of(100,uomRecord))
 				.productId(ProductId.ofRepoId(23))
 				.type(HUTraceType.TRANSFORM_LOAD);
 	}
@@ -99,7 +107,7 @@ public class HUTraceRepositoryTests
 				.eventTime(eventTime)
 				.topLevelHuId(HuId.ofRepoId(2))
 				.productId(ProductId.ofRepoId(23))
-				.qty(BigDecimal.TEN)
+				.qty(Quantity.of(BigDecimal.TEN, uomRecord))
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
 				.vhuId(HuId.ofRepoId(12))
 				.type(HUTraceType.TRANSFORM_LOAD)
@@ -122,7 +130,7 @@ public class HUTraceRepositoryTests
 				.eventTime(eventTime)
 				.topLevelHuId(HuId.ofRepoId(2))
 				.productId(ProductId.ofRepoId(23))
-				.qty(BigDecimal.TEN)
+				.qty(Quantity.of(BigDecimal.TEN, uomRecord))
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
 				.vhuId(HuId.ofRepoId(12))
 				.type(HUTraceType.TRANSFORM_LOAD)

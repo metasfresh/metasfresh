@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1212078735L;
+	private static final long serialVersionUID = 130181949L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (final Properties ctx, final int M_HU_Trace_ID, @Nullable final String trxName)
@@ -48,6 +48,21 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 

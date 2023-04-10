@@ -44,6 +44,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.apache.poi.ss.usermodel.Font;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Trx;
@@ -168,6 +169,7 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_M_InOut_ID)
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID)
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_PP_Order_ID)
+				.append(", ").append(I_M_HU_Trace.COLUMNNAME_M_Inventory_ID)
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_Created)
 				.append(", ").append(I_M_HU_Trace.COLUMNNAME_Qty)
 				.append(" FROM ").append(I_M_HU_Trace.Table_Name)
@@ -197,9 +199,10 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_InOut_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_PP_Order_ID);
+		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_Inventory_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_Created); // TODO documentDate
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_Qty);
-		//columnHeaders.add(I_M_HU_Trace.COLUMNNAME_C_UOM_ID); // TODO add UOM in HU Trace
+		columnHeaders.add(I_M_Product.COLUMNNAME_C_UOM_ID); // TODO add UOM in HU Trace
 
 		return columnHeaders;
 	}

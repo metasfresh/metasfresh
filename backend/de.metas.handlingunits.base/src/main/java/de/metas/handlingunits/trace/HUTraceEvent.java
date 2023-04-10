@@ -7,6 +7,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -65,7 +66,8 @@ public class HUTraceEvent
 	ProductId productId;
 
 	@NonNull
-	BigDecimal qty;
+	Quantity qty;
+
 
 	@NonNull
 	String vhuStatus;

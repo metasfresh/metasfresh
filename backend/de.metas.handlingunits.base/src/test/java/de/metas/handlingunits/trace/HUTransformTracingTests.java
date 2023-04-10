@@ -2,6 +2,7 @@ package de.metas.handlingunits.trace;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -11,9 +12,11 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.quantity.Quantity;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -72,6 +75,8 @@ public class HUTransformTracingTests
 
 	private HUTransformTestsBase testsBase;
 
+	private static I_C_UOM uomRecord;
+
 	@Before
 	public void init()
 	{
@@ -90,6 +95,9 @@ public class HUTransformTracingTests
 		sysConfig.setValue(StringUtils.ofBoolean(true));
 		save(sysConfig);
 		modelInterceptorRegistry.addModelInterceptor(HUTraceModuleInterceptor.INSTANCE);
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	@Test
@@ -153,7 +161,7 @@ public class HUTransformTracingTests
 		final HUTraceEvent tuTraceEventToCompareWith = tuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(tuTraceEventToCompareWith,
 				   is(common
-							  .qty(new BigDecimal("-3"))
+							  .qty(Quantity.of(new BigDecimal("-3"), uomRecord))
 							  .topLevelHuId(HuId.ofRepoId(parentTU.getM_HU_ID()))
 							  .build()));
 
@@ -165,7 +173,7 @@ public class HUTransformTracingTests
 		final HUTraceEvent cuTraceEventToCompareWith = cuTraceEvents.get(0).toBuilder().huTraceEventId(OptionalInt.empty()).build();
 		assertThat(cuTraceEventToCompareWith,
 				   is(common
-							  .qty(new BigDecimal("3"))
+							  .qty(Quantity.of(new BigDecimal("3"), uomRecord))
 							  .topLevelHuId(HuId.ofRepoId(cuToSplit.getM_HU_ID()))
 							  .build()));
 	}

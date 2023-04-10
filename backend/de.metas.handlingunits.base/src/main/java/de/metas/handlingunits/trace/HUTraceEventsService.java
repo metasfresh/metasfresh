@@ -367,7 +367,7 @@ public class HUTraceEventsService
 						.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 						.topLevelHuId(HuId.ofRepoId(vhuTopLevelHuId))
 						.productId(productAndQty.get().getLeft())
-						.qty(productAndQty.get().getRight().toBigDecimal())
+						.qty(productAndQty.get().getRight())
 						.vhuStatus(trxLine.getHUStatus()) // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
 						.lotNumber(lotNumberHUAttributeValue);
 
@@ -406,7 +406,7 @@ public class HUTraceEventsService
 							.vhuId(HuId.ofRepoId(sourceVhu.getM_HU_ID()))
 							.topLevelHuId(HuId.ofRepoId(sourceVhuTopLevelHuId))
 							.vhuSourceId(null)
-							.qty(productAndQty.get().getRight().toBigDecimal().negate())
+							.qty(productAndQty.get().getRight().negate())
 							.build();
 
 					// add the source before the destination because I think it's nicer if it has the lower ID
@@ -511,12 +511,12 @@ public class HUTraceEventsService
 					.vhuStatus(vhu.getHUStatus())
 					.productId(productAndQty.get().getLeft())
 					.topLevelHuId(oldTopLevelHuId)
-					.qty(productAndQty.get().getRight().toBigDecimal().negate())
+					.qty(productAndQty.get().getRight().negate())
 					.lotNumber(lotNumberHUAttributeValue);
 			huTraceRepository.addEvent(builder.build());
 
 			builder.topLevelHuId(newTopLevelHuId)
-					.qty(productAndQty.get().getRight().toBigDecimal());
+					.qty(productAndQty.get().getRight());
 			huTraceRepository.addEvent(builder.build());
 		}
 	}
@@ -644,7 +644,7 @@ public class HUTraceEventsService
 		return builder
 				.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.productId(productAndQty.get().getLeft())
-				.qty(productAndQty.get().getRight().toBigDecimal())
+				.qty(productAndQty.get().getRight())
 				.lotNumber(lotNumberHUAttributeValue);
 	}
 }
