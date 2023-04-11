@@ -105,7 +105,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setBillTo(getBillTo());
 		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
 
-		invoiceHeader.setSalesRepId(UserId.ofRepoIdOrNull(get_SaleRep_ID()));
+		invoiceHeader.setSalesRep_ID(UserId.ofRepoIdOrNull(get_SaleRep_ID()));
 
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());
@@ -271,9 +271,15 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
+		try
+		{
+			SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
+		}
+		catch (final AdempiereException e)
+		{
+			SalesRep_User_ID = -1;
+		}
 	}
-
 	public int getC_Currency_ID()
 	{
 		return C_Currency_ID;
