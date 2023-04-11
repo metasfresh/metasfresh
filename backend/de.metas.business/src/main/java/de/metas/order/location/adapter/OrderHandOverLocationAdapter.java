@@ -143,8 +143,8 @@ public class OrderHandOverLocationAdapter
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(from.getHandOver_Partner_ID());
 		final BPartnerInfo bpartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, from.getBill_Location_ID()))
-				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, from.getBill_User_ID()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, from.getHandOver_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, from.getHandOver_User_ID()))
 				.build();
 		setFrom(bpartnerInfo);
 	}
