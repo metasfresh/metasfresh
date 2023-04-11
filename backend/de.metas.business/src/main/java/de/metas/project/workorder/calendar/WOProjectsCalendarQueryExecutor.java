@@ -90,7 +90,7 @@ public final class WOProjectsCalendarQueryExecutor
 		return getProjectResources()
 				.stream()
 				.filter(this::isActiveProject)
-				.filter(this::isAllocatedResource)
+				.filter(this::isNotFullyAllocated)
 				.map(this::toCalendarEntry)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
@@ -174,11 +174,11 @@ public final class WOProjectsCalendarQueryExecutor
 		return getActiveProject(projectResource) != null;
 	}
 
-	private boolean isAllocatedResource(@NonNull final WOProjectResource projectResource)
+	private boolean isNotFullyAllocated(@NonNull final WOProjectResource projectResource)
 	{
 		if (!skipAllocatedResources)
 		{
-			return false;
+			return true;
 		}
 
 		return projectResource.isNotFullyResolved();
