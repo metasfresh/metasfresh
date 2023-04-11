@@ -613,7 +613,7 @@ public class HUTraceEventsService
 			{
 				final HuId huId = inventoryLineHU.getHuId();
 				final I_M_HU huRecord = handlingUnitsBL.getById(huId);
-				final HuId huId1 = inventoryLineHU.getHuId();
+
 				if (huStatusBL.isStatusDestroyed(huRecord))
 				{
 					continue; // particular HU of the given model was destroyed. It's up to other parts of huTracing to keep track of such events
