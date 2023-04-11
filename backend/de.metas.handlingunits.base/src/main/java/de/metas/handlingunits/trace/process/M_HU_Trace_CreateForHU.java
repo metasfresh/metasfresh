@@ -6,6 +6,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
@@ -105,6 +106,13 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 			{
 				addLog("Checking for PP_Cost_Collector={}", costCollector);
 				huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
+			}
+
+			final List<I_M_InventoryLine> inventoryLines = retrieveAnyModelForHU(hu, I_M_InventoryLine.class);
+			for (final I_M_InventoryLine inventoryLine : inventoryLines)
+			{
+				addLog("Checking for M_Inventory_Line={}", inventoryLine);
+				huTraceEventsCreateAndAdd.createAndAddFor(inventoryLine.getM_Inventory(), ImmutableList.of(inventoryLine));
 			}
 		}
 
