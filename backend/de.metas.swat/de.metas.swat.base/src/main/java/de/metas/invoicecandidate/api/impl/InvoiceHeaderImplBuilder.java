@@ -271,15 +271,16 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		try
-		{
-			SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
-		}
-		catch (final AdempiereException e)
+		if (SalesRep_User_ID > 0 && salesRep_ID > 0 && SalesRep_User_ID != salesRep_ID)
 		{
 			SalesRep_User_ID = -1;
 		}
+		else if (SalesRep_User_ID <= 0 && salesRep_ID > 0)
+		{
+			SalesRep_User_ID = salesRep_ID;
+		}
 	}
+
 	public int getC_Currency_ID()
 	{
 		return C_Currency_ID;
