@@ -19,6 +19,8 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.InventoryId;
@@ -26,6 +28,8 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,6 +43,7 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -103,6 +108,12 @@ public class HUTraceEventsService
 
 	private final IHUAttributesBL huAttributeService = Services.get(IHUAttributesBL.class);
 
+	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+	final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+
 	public HUTraceEventsService(
 			@NonNull final HUTraceRepository huTraceRepository,
 			@NonNull final HUAccessService huAccessService,
@@ -133,12 +144,15 @@ public class HUTraceEventsService
 		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
 			builder.type(HUTraceType.PRODUCTION_ISSUE);
+
+			createAndAddEventsForManufacturingIssue(builder, costCollector);
 		}
 		else
 		{
 			builder.type(HUTraceType.PRODUCTION_RECEIPT);
+
+			createAndAddEvents(builder, ImmutableList.of(costCollector));
 		}
-		createAndAddEvents(builder, ImmutableList.of(costCollector));
 	}
 
 	public void createAndAddFor(
@@ -232,7 +246,6 @@ public class HUTraceEventsService
 		final List<I_M_HU> vhus;
 		if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
 		{
-			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 			final HuId vhuId = HuId.ofRepoId(shipmentScheduleQtyPicked.getVHU_ID());
 			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
@@ -533,9 +546,6 @@ public class HUTraceEventsService
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 		for (final Object model : models)
 		{
 			final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(model);
@@ -591,12 +601,9 @@ public class HUTraceEventsService
 	@VisibleForTesting
 	void createAndAddEventsForInventoryLines(
 			@NonNull final HUTraceEventBuilder builder,
-			@NonNull final List<I_M_InventoryLine> models)
+			@NonNull final List<I_M_InventoryLine> inventoryLines)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
-		for (final I_M_InventoryLine inventoryLineRecord : models)
+		for (final I_M_InventoryLine inventoryLineRecord : inventoryLines)
 		{
 			final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord);
 
@@ -630,6 +637,51 @@ public class HUTraceEventsService
 				}
 			}
 		}
+	}
+
+	@VisibleForTesting
+	void createAndAddEventsForManufacturingIssue(
+			@NonNull final HUTraceEventBuilder builder,
+			@NonNull final I_PP_Cost_Collector ppCostCollector)
+	{
+
+		final List<I_M_HU_Assignment> huAssignments = huAccessService.retrieveHuAssignments(ppCostCollector);
+
+		for (final I_M_HU_Assignment huAssignment : huAssignments)
+		{
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
+
+			final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId);
+
+			final HuId topLevelHuId = huId;
+			Check.errorIf(topLevelHuId == null, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be > 0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
+
+			builder.orgId(OrgId.ofRepoIdOrNull(ppCostCollector.getAD_Org_ID()))
+					.eventTime(ppCostCollector.getUpdated().toInstant())
+					.topLevelHuId(huId);
+
+			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+
+			for (final I_M_HU vhu : vhus)
+			{
+				final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
+						ppOrderId,
+						HuId.ofRepoId(vhu.getM_HU_ID()));
+
+				if (!ppOrderQty.isPresent())
+				{
+					continue;
+				}
+
+				builderSetVhuProductAndQty(builder, vhu)
+						.vhuStatus(vhu.getHUStatus())
+						.qty(Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())));
+
+				huTraceRepository.addEvent(builder.build());
+			}
+		}
+
 	}
 
 	private HUTraceEventBuilder builderSetVhuProductAndQty(
