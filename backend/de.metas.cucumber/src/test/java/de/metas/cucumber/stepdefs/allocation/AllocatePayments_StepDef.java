@@ -33,7 +33,6 @@ import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
@@ -272,7 +271,7 @@ public class AllocatePayments_StepDef
 	private PaymentToAllocate getPaymentToAllocate(@NonNull final I_C_Payment payment)
 	{
 		final PaymentToAllocateQuery query = PaymentToAllocateQuery.builder()
-				.evaluationDate(SystemTime.asZonedDateTime())
+				.evaluationDate(ZonedDateTime.now())
 				.additionalPaymentIdToInclude(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.build();
 
