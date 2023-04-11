@@ -1,6 +1,6 @@
 -- Element: IsPrintLocalCurrencyInfo
 -- 2023-04-11T06:07:09.103Z
-UPDATE AD_Element_Trl SET Description='Legt fest, ob Mehrwertsteuerinformationen in lokaler Währung auf Verkaufsrechnungen gedruckt werden sollen. Kann in der Registerkarte Steuerbericht im Fenster Belegart konfiguriert werden. Wird standardmäßig gedruckt, wenn konfiguriert.',Updated=TO_TIMESTAMP('2023-04-11 08:07:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='Legt fest, ob Mehrwertsteuerinformationen in lokaler Währung auf Verkaufsrechnungen gedruckt werden sollen. Kann in der Registerkarte Steuerbericht im Fenster Belegart konfiguriert werden. Wenn das Feld leer gelassen wird oder auf Ja steht wird die Steuer gedruckt.',Updated=TO_TIMESTAMP('2023-04-11 08:07:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='de_CH'
 ;
 
 -- 2023-04-11T06:07:09.126Z
@@ -9,11 +9,11 @@ UPDATE AD_Element_Trl SET Description='Legt fest, ob Mehrwertsteuerinformationen
 
 -- Element: IsPrintLocalCurrencyInfo
 -- 2023-04-11T06:07:20.233Z
-UPDATE AD_Element_Trl SET Description='Legt fest, ob Mehrwertsteuerinformationen in lokaler Währung auf Verkaufsrechnungen gedruckt werden sollen. Kann in der Registerkarte Steuerbericht im Fenster Belegart konfiguriert werden. Wird standardmäßig gedruckt, wenn konfiguriert.',Updated=TO_TIMESTAMP('2023-04-11 08:07:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Legt fest, ob Mehrwertsteuerinformationen in lokaler Währung auf Verkaufsrechnungen gedruckt werden sollen. Kann in der Registerkarte Steuerbericht im Fenster Belegart konfiguriert werden. Wenn das Feld leer gelassen wird oder auf Ja steht wird die Steuer gedruckt.',Updated=TO_TIMESTAMP('2023-04-11 08:07:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='de_DE'
 ;
 
 -- 2023-04-11T06:07:20.234Z
-UPDATE AD_Element SET Description='Legt fest, ob Mehrwertsteuerinformationen in lokaler Währung auf Verkaufsrechnungen gedruckt werden sollen. Kann in der Registerkarte Steuerbericht im Fenster Belegart konfiguriert werden. Wird standardmäßig gedruckt, wenn konfiguriert.' WHERE AD_Element_ID=582207
+UPDATE AD_Element SET Description='Legt fest, ob Mehrwertsteuerinformationen in lokaler Währung auf Verkaufsrechnungen gedruckt werden sollen. Kann in der Registerkarte Steuerbericht im Fenster Belegart konfiguriert werden. Wenn das Feld leer gelassen wird oder auf Ja steht wird die Steuer gedruckt.' WHERE AD_Element_ID=582207
 ;
 
 -- 2023-04-11T06:07:27.876Z
@@ -26,7 +26,7 @@ UPDATE AD_Element SET Description='Legt fest, ob Mehrwertsteuerinformationen in 
 
 -- Element: IsPrintLocalCurrencyInfo
 -- 2023-04-11T06:09:55.997Z
-UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. Is printed by default, if configured.',Updated=TO_TIMESTAMP('2023-04-11 08:09:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.',Updated=TO_TIMESTAMP('2023-04-11 08:09:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='en_US'
 ;
 
 -- 2023-04-11T06:09:55.999Z
@@ -35,7 +35,7 @@ UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informat
 
 -- Element: IsPrintLocalCurrencyInfo
 -- 2023-04-11T06:10:14.671Z
-UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. Is printed by default, if configured.',Updated=TO_TIMESTAMP('2023-04-11 08:10:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='fr_CH'
+UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.',Updated=TO_TIMESTAMP('2023-04-11 08:10:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='fr_CH'
 ;
 
 -- 2023-04-11T06:10:14.674Z
@@ -44,7 +44,7 @@ UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informat
 
 -- Element: IsPrintLocalCurrencyInfo
 -- 2023-04-11T06:10:30.035Z
-UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. Is printed by default, if configured.',Updated=TO_TIMESTAMP('2023-04-11 08:10:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Description='Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type. If the field is left none or set to Yes, the tax report is printed.',Updated=TO_TIMESTAMP('2023-04-11 08:10:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582207 AND AD_Language='nl_NL'
 ;
 
 -- 2023-04-11T06:10:30.038Z
