@@ -1934,7 +1934,7 @@ Feature: create production order
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     
-    And after not more than 130s, metasfresh has this MD_Cockpit data
+    And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_3       | p_1                     | 2021-04-14  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 0                              | 0                          | 10                            | 0                             |
