@@ -236,7 +236,7 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			logger.debug("{} - Posting event: {}", this, event);
+			logger.info("{} - Posting event: {}", this, event);
 			eventBus.post(event);
 
 			micrometerEventBusStatsCollector.incrementEventsEnqueued();
