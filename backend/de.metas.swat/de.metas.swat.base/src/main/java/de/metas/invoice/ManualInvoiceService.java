@@ -33,6 +33,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.invoice.acct.AccountTypeName;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.acct.InvoiceAcctRule;
@@ -62,9 +64,11 @@ import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -89,6 +93,8 @@ public class ManualInvoiceService
 	private final InvoiceAcctService invoiceAcctService;
 	private final CustomColumnService customColumnService;
 	private final ManualInvoiceRepository manualInvoiceRepository;
+
+	public static final String API_DATA_SOURCE = "de.metas.rest_api.v2.invoice.InvoicesRestController";
 
 	public ManualInvoiceService(
 			@NonNull final InvoiceAcctService invoiceAcctService,
@@ -197,6 +203,10 @@ public class ManualInvoiceService
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
 		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
 		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
+		final int inputDataSourceRecordId = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), API_DATA_SOURCE, /* throwEx */true, ITrx.TRXNAME_None)
+				.getAD_InputDataSource_ID();
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
@@ -210,7 +220,8 @@ public class ManualInvoiceService
 				.docTypeId(requestHeader.getDocTypeId())
 				.poReference(requestHeader.getPoReference())
 				.soTrx(requestHeader.getSoTrx())
-				.currencyId(requestHeader.getCurrencyId());
+				.currencyId(requestHeader.getCurrencyId())
+				.inputDataSourceId(InputDataSourceId.ofRepoId(inputDataSourceRecordId));
 
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()
