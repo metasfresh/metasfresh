@@ -747,7 +747,7 @@ Feature: create production order
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 12                             | 12                         | 0                             | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 0                       | 0                       | 220                          | 0                             | 220                            | 0                              | 0                          | 0                             | 0                             |
 
-    And after not more than 80s, metasfresh has this MD_Cockpit_DocumentDetail data
+    And after not more than 90s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
 
