@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 public class WOProjectStepService
 {
 	private static final String SYS_CONFIG_WOStepDueDateTimeConfig = "de.metas.project.workorder.step.C_Project_WO_Step.DueDateTimeConfig";
-	private static final AdMessageKey ERROR_MSG_STEP_CANNOT_BE_LOCKED_SIMULATION_FOUND = AdMessageKey.of("WOProjectStepService.StepCannotBeLockeSimulationFound");
+	private static final AdMessageKey ERROR_MSG_STEP_CANNOT_BE_LOCKED_SIMULATION_FOUND = AdMessageKey.of("de.metas.project.workorder.step.StepCannotBeLockedSimulationFound");
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);

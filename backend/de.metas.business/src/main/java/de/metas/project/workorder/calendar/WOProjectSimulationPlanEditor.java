@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.project.WOProject;
@@ -31,6 +32,8 @@ import java.util.stream.Stream;
 
 public class WOProjectSimulationPlanEditor
 {
+	private static final AdMessageKey ERROR_MSG_STEP_CANNOT_BE_SHIFTED = AdMessageKey.of("de.metas.project.workorder.calendar.WoStepCannotBeShifted");
+
 	@NonNull private final WOProject _originalProject;
 	@NonNull private final WOProjectSteps _originalSteps;
 	@NonNull private final WOProjectResources _originalProjectResources;
@@ -231,6 +234,8 @@ public class WOProjectSimulationPlanEditor
 
 		for (final WOProjectStep step : getStepsBeforeFromLastToFirst(stepId))
 		{
+			validateStepCanBeShifted(step);
+
 			CalendarDateRange currentDateRange = step.getDateRange();
 			if (currentDateRange == null)
 			{
@@ -257,6 +262,8 @@ public class WOProjectSimulationPlanEditor
 
 		for (final WOProjectStep step : getStepsAfterInOrder(stepId))
 		{
+			validateStepCanBeShifted(step);
+
 			CalendarDateRange currentDateRange = step.getDateRange();
 			if (currentDateRange == null)
 			{
@@ -302,5 +309,16 @@ public class WOProjectSimulationPlanEditor
 				.map(_originalProjectResources::getById)
 				.map(WOProjectResource::getResourceId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private void validateStepCanBeShifted(@NonNull final WOProjectStep step)
+	{
+		if (!step.isManuallyLocked())
+		{
+			return;
+		}
+
+		throw new AdempiereException(ERROR_MSG_STEP_CANNOT_BE_SHIFTED, step.getName())
+				.markAsUserValidationError();
 	}
 }

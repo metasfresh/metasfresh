@@ -1,5 +1,6 @@
 package de.metas.project.workorder.interceptor;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.project.workorder.step.WOProjectStepService;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_C_Project_WO_Step.class)
 public class C_Project_WO_Step
 {
+	private static final AdMessageKey ERROR_MSG_STEP_NO_START_DATE_END_DATE_SPECIFIED = AdMessageKey.of("de.metas.project.workorder.interceptor.WOStepNoStartDateEndDateSpecified");
+
 	@NonNull final WOProjectStepService woProjectStepService;
 
 	public C_Project_WO_Step(final @NonNull WOProjectStepService woProjectStepService)
@@ -40,13 +43,14 @@ public class C_Project_WO_Step
 			return;
 		}
 
-		if (step.getDateRange() == null)
+		if (step.getDateRange() != null)
 		{
-			throw new AdempiereException("Cannot be manually locked! No date start - date end defined.")
-					.markAsUserValidationError();
+			woProjectStepService.validateWOStep(step);
+			return;
 		}
 
-		woProjectStepService.validateWOStep(step);
+		throw new AdempiereException(ERROR_MSG_STEP_NO_START_DATE_END_DATE_SPECIFIED)
+				.markAsUserValidationError();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
