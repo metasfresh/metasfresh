@@ -338,9 +338,4 @@ import java.util.List;
 	{
 		return this.externalId = externalId;
 	}
-
-	public void setSalesRep_ID(final UserId userId)
-	{
-		this.salesRepId = userId;
-	}
 }
