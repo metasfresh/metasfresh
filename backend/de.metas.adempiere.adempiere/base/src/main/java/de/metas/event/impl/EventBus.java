@@ -26,6 +26,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
+import de.metas.common.util.time.SystemTime;
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
@@ -236,7 +237,7 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			logger.info("{} - Posting event: {}", this, event);
+			logger.info("{} - Posting event: {}, Timestamp={}, ThreadId={}", this, event, SystemTime.asTimestamp(), Thread.currentThread().getId());
 			eventBus.post(event);
 
 			micrometerEventBusStatsCollector.incrementEventsEnqueued();

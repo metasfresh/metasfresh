@@ -1,5 +1,6 @@
 package de.metas.material.event;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
@@ -61,6 +62,6 @@ public class PostMaterialEventService
 	public void enqueueEventNow(final MaterialEvent event)
 	{
 		materialEventService.enqueueEvent(event);
-		logger.info("Posted MaterialEvent={}", event);
+		logger.info("Posted MaterialEvent={}, Timestamp={}, ThreadId={}", event, SystemTime.asTimestamp(), Thread.currentThread().getId());
 	}
 }
