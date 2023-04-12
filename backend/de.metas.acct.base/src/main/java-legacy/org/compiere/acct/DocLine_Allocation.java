@@ -488,6 +488,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				}
 			}
 
+			if (doc.getBPBankAccountId() != null)
+			{
+				return doc.getBankAccountAccount(BankAccountAcctType.B_UnallocatedCash_Acct, as);
+			}
+
 			//
 			throw doc.newPostingException()
 					.setDocLine(this)
