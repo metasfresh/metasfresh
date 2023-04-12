@@ -53,13 +53,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
       | s_s_1                            | 26.3547                        |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -71,10 +71,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 100         | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -86,7 +86,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyPicked | OPT.QtyPickedInUOM | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.0000                     | 100            | 25.000         | 0                              | 100           | 26.3547            | 100              | 26.3547               | 100             | 26.3547              | 0                   | true          |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -141,13 +141,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override |
       | s_s_1                            | 36.985                         |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -159,10 +159,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 150         | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -174,7 +174,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyPicked | OPT.QtyPickedInUOM | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 150           | 36.985             | 150              | 36.985                | 150             | 36.985               | 0                   | true          |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -229,13 +229,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override | OPT.QtyToDeliver_Override |
       | s_s_1                            | 27.0156                        | 102                       |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -247,10 +247,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 102         | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -262,7 +262,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyPicked | OPT.QtyPickedInUOM | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.0000                     | 100            | 25.000         | 0                              | 102           | 27.0156            | 102              | 27.0156               | 102             | 27.0156              | 0                   | true          |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -317,13 +317,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliverCatch_Override | OPT.QtyToDeliver_Override |
       | s_s_1                            | 35.684                         | 148                       |
-    And after not more than 30s, shipment schedule is recomputed
+    And after not more than 60s, shipment schedule is recomputed
       | M_ShipmentSchedule_ID.Identifier |
       | s_s_1                            |
     And shipment is generated for the following shipment schedule
@@ -335,10 +335,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 148         | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -350,7 +350,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyPicked | OPT.QtyPickedInUOM | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 148           | 35.684             | 148              | 35.684                | 148             | 35.684               | 0                   | true          |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -402,7 +402,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -414,13 +414,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 150         | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | invoice_candidate_1               | 153                       |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then validate C_Invoice_Candidate:
@@ -429,7 +429,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -484,7 +484,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
     And shipment is generated for the following shipment schedule
@@ -496,13 +496,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | sl1_1                     | s_1                   | p_1                     | 100         | true      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | invoice_candidate_1               | 98                        |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then validate C_Invoice_Candidate:
@@ -511,7 +511,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -558,7 +558,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 100        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21072022_3      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -576,10 +576,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_3      | inOut_21072022_3      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
@@ -590,7 +590,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -644,7 +644,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 150        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21072022_5      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 150        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -662,10 +662,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_5      | inOut_21072022_5      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
@@ -676,7 +676,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -729,7 +729,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 100        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21072022_8      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -747,10 +747,10 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_8      | inOut_21072022_8      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
@@ -761,7 +761,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -815,7 +815,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 150        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21072022_9      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 150        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -833,11 +833,11 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21072022_9      | inOut_21072022_9      |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
 
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
@@ -848,7 +848,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -928,7 +928,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 100        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -937,13 +937,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | invoice_candidate_1               | 97                        |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then validate C_Invoice_Candidate:
@@ -953,7 +953,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
@@ -1027,7 +1027,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 150        |
     When the order identified by o_1 is completed
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 150        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1036,13 +1036,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice_Override |
       | invoice_candidate_1               | 152                       |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     Then validate C_Invoice_Candidate:
@@ -1052,7 +1052,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:

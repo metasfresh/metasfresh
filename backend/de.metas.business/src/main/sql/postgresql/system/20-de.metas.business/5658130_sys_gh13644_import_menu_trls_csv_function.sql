@@ -1,3 +1,34 @@
+-- backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/system/10-de.metas.adempiere/5658170_sys_fix_trl_migration.sql
+SELECT public.db_alter_table('ad_tab_trl', 'alter table public.ad_tab_trl ALTER COLUMN Name TYPE varchar(255)')
+;
+SELECT public.db_alter_table('ad_window_trl', 'alter table public.ad_window_trl ALTER COLUMN Name TYPE varchar(255)')
+;
+SELECT public.db_alter_table('AD_Menu_Trl', 'alter table public.AD_Menu_Trl ALTER COLUMN Name TYPE varchar(255)')
+;
+SELECT public.db_alter_table('AD_Menu_Trl', 'alter table public.AD_Menu_Trl ALTER COLUMN webui_namebrowse TYPE varchar(255)')
+;
+SELECT public.db_alter_table('AD_Menu_Trl', 'alter table public.AD_Menu_Trl ALTER COLUMN webui_namenew TYPE varchar(255)')
+;
+SELECT public.db_alter_table('AD_Menu_Trl', 'alter table public.AD_Menu_Trl ALTER COLUMN webui_namenewbreadcrumb TYPE varchar(255)')
+;
+
+--
+SELECT public.db_alter_table('AD_Process_Trl', 'alter table public.AD_Process_Trl ALTER COLUMN name TYPE varchar(255)')
+;
+
+SELECT public.db_alter_table('AD_Ref_List_Trl', 'alter table public.AD_Ref_List_Trl ALTER COLUMN name TYPE varchar(255)')
+;
+SELECT public.db_alter_table('AD_Reference_Trl', 'alter table public.AD_Reference_Trl ALTER COLUMN name TYPE varchar(255)')
+;
+SELECT public.db_alter_table('C_ElementValue_Trl', 'alter table public.C_ElementValue_Trl ALTER COLUMN name TYPE varchar(255)')
+;
+SELECT public.db_alter_table('C_Tax_Trl', 'alter table public.C_Tax_Trl ALTER COLUMN name TYPE varchar(255)')
+;
+
+
+
+
+
 DO
 $$
     BEGIN
