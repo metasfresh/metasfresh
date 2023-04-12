@@ -281,6 +281,7 @@ Feature: create multiple production candidates
     And the order identified by o_3 is completed
     And after not more than 90s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.SeqNo |
+      | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
       | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    | 10        |
 
     And update PP_Order_Candidates
