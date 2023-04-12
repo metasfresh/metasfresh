@@ -234,8 +234,6 @@ public class WOProjectSimulationPlanEditor
 
 		for (final WOProjectStep step : getStepsBeforeFromLastToFirst(stepId))
 		{
-			validateStepCanBeShifted(step);
-
 			CalendarDateRange currentDateRange = step.getDateRange();
 			if (currentDateRange == null)
 			{
@@ -244,6 +242,8 @@ public class WOProjectSimulationPlanEditor
 
 			if (currentDateRange.getEndDate().isAfter(prevDateRange.getStartDate()))
 			{
+				validateStepCanBeShifted(step);
+
 				final Duration offset = Duration.between(prevDateRange.getStartDate(), currentDateRange.getEndDate()).negated();
 				currentDateRange = currentDateRange.plus(offset);
 				changeStep(step.getWoProjectStepId(), currentDateRange);
@@ -262,8 +262,6 @@ public class WOProjectSimulationPlanEditor
 
 		for (final WOProjectStep step : getStepsAfterInOrder(stepId))
 		{
-			validateStepCanBeShifted(step);
-
 			CalendarDateRange currentDateRange = step.getDateRange();
 			if (currentDateRange == null)
 			{
@@ -272,6 +270,8 @@ public class WOProjectSimulationPlanEditor
 
 			if (currentDateRange.getStartDate().isBefore(prevDateRange.getEndDate()))
 			{
+				validateStepCanBeShifted(step);
+
 				final Duration offset = Duration.between(currentDateRange.getStartDate(), prevDateRange.getEndDate());
 				currentDateRange = currentDateRange.plus(offset);
 				changeStep(step.getWoProjectStepId(), currentDateRange);
