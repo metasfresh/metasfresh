@@ -1,0 +1,22 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "SAP",
+  "externalSystemChildConfigValue": "sapValue",
+  "command": "startBPartnerSyncSFTP",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "fileFolder",
+  "parameters": {
+    "SFTP_HostName" : "localhost",
+    "SFTP_Port" : "22",
+    "SFTP_Username" : "doesntmatter",
+    "SFTP_Password" : "doesntmatter",
+    "SFTP_BPartner_Target_Directory" : "doesntmatter",
+    "SFTPProcessedDirectory": "doesntmatter",
+    "SFTPErroredDirectory": "doesntmatter",
+    "SFTPPollingFrequencyInMs": "1000",
+    "SFTPBPartnerFileNamePattern": "doesntmatter",
+    "SAP_BPartner_Import_Settings": "[{\"seqNo\": 200,\"partnerCodePattern\": \".*ASL.*\",\"singleBPartner\": true,\"bpGroupName\": \"Intercompany\"},{\"seqNo\": 100,\"partnerCodePattern\": \"^MC\",\"singleBPartner\": false,\"bpGroupName\": \"Intercompany\"}]"
+  }
+}

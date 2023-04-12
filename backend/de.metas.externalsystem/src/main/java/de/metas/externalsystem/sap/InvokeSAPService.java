@@ -25,7 +25,10 @@ package de.metas.externalsystem.sap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroup;
+import de.metas.bpartner.BPGroupRepository;
 import de.metas.common.externalsystem.JsonExternalMapping;
+import de.metas.common.externalsystem.JsonExternalSAPBPartnerImportSettings;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ByTypeAndSystemConfigIdQuery;
 import de.metas.externalreference.ExternalReference;
@@ -36,6 +39,7 @@ import de.metas.externalreference.uom.UOMExternalReferenceType;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.producttype.ProductTypeExternalMapping;
 import de.metas.externalsystem.producttype.ProductTypeExternalMappingRepo;
+import de.metas.externalsystem.sap.importsettings.SAPBPartnerImportSettings;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.i18n.BooleanWithReason;
@@ -73,6 +77,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ROOT_LOCATION;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_CATEGORY_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_TYPE_MAPPINGS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SAP_BPARTNER_IMPORT_SETTINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_APPROVED_BY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
@@ -105,12 +110,17 @@ public class InvokeSAPService
 	@NonNull
 	private final ProductTypeExternalMappingRepo productTypeExternalMappingRepo;
 
+	@NonNull
+	private final BPGroupRepository bpGroupRepository;
+
 	public InvokeSAPService(
 			@NonNull final ExternalReferenceRepository externalReferenceRepository,
-			@NonNull final ProductTypeExternalMappingRepo productTypeExternalMappingRepo)
+			@NonNull final ProductTypeExternalMappingRepo productTypeExternalMappingRepo,
+			@NonNull final BPGroupRepository bpGroupRepository)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.productTypeExternalMappingRepo = productTypeExternalMappingRepo;
+		this.bpGroupRepository = bpGroupRepository;
 	}
 
 	@NonNull
@@ -125,6 +135,8 @@ public class InvokeSAPService
 		parameters.putAll(extractContentSourceParameters(sapConfig, externalRequest));
 
 		parameters.putAll(getMappingParameters(sapConfig.getParentId()));
+
+		parameters.put(PARAM_SAP_BPARTNER_IMPORT_SETTINGS, ObjectMapperUtil.writeAsStringUnchecked(toJsonBPartnerImportSettingsList(sapConfig.getBPartnerImportSettings())));
 
 		return parameters;
 	}
@@ -297,5 +309,27 @@ public class InvokeSAPService
 	private static JsonExternalMapping getMappingFor(@NonNull final ProductTypeExternalMapping productTypeExternalMapping)
 	{
 		return JsonExternalMapping.of(productTypeExternalMapping.getExternalValue(), productTypeExternalMapping.getValue());
+	}
+
+	@NonNull
+	private ImmutableList<JsonExternalSAPBPartnerImportSettings> toJsonBPartnerImportSettingsList(@NonNull final ImmutableList<SAPBPartnerImportSettings> sapBPartnerImportSettingsList)
+	{
+		return sapBPartnerImportSettingsList.stream()
+				.map(this::toJsonBPartnerImportSettings)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private JsonExternalSAPBPartnerImportSettings toJsonBPartnerImportSettings(@NonNull final SAPBPartnerImportSettings sapbPartnerImportSettings)
+	{
+		return JsonExternalSAPBPartnerImportSettings.builder()
+				.partnerCodePattern(sapbPartnerImportSettings.getPartnerCodePattern())
+				.isSingleBPartner(sapbPartnerImportSettings.isSingleBPartner())
+				.seqNo(sapbPartnerImportSettings.getSeqNo())
+				.bpGroupName(Optional.ofNullable(sapbPartnerImportSettings.getBpGroupId())
+									 .map(bpGroupRepository::getbyId)
+									 .map(BPGroup::getName)
+									 .orElse(null))
+				.build();
 	}
 }

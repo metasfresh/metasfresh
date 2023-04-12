@@ -23,6 +23,7 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
@@ -43,6 +44,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -52,6 +54,7 @@ import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.SAPConfigMapper;
 import de.metas.externalsystem.sap.export.SAPExportAcctConfig;
+import de.metas.externalsystem.sap.importsettings.SAPBPartnerImportSettings;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
@@ -871,6 +874,7 @@ public class ExternalSystemConfigRepo
 				.signedVersion(config.getSignedVersion())
 				.signedPermissions(config.getSignedPermissions())
 				.exportAcctConfigList(getSAPAcctConfigBySAPConfigId(sapConfigId))
+				.bPartnerImportSettings(getBPartnerImportSettingsBySAPConfigId(sapConfigId))
 				.build();
 	}
 
@@ -909,5 +913,28 @@ public class ExternalSystemConfigRepo
 						.processId(AdProcessId.ofRepoId(exportConfigRecord.getAD_Process_ID()))
 						.build())
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<SAPBPartnerImportSettings> getBPartnerImportSettingsBySAPConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_SAP_BPartnerImportSettings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_SAP_BPartnerImportSettings.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
+				.orderBy(I_SAP_BPartnerImportSettings.COLUMNNAME_SeqNo)
+				.create()
+				.stream()
+				.map(ExternalSystemConfigRepo::ofBPartnerImportSettingsRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static SAPBPartnerImportSettings ofBPartnerImportSettingsRecord(@NonNull final I_SAP_BPartnerImportSettings bPartnerImportSettings)
+	{
+		return SAPBPartnerImportSettings.builder()
+				.seqNo(bPartnerImportSettings.getSeqNo())
+				.partnerCodePattern(bPartnerImportSettings.getPartnerCodePattern())
+				.isSingleBPartner(bPartnerImportSettings.isSingleBPartner())
+				.bpGroupId(BPGroupId.ofRepoIdOrNull(bPartnerImportSettings.getC_BP_Group_ID()))
+				.build();
 	}
 }

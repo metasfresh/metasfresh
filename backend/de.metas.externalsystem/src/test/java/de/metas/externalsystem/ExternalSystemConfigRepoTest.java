@@ -62,7 +62,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-class ExternalSystemConfigRepoTest
+class ExternalSystemConfigRepoTest//todo mi : include bp import settings and export acct
 {
 
 	private ExternalSystemConfigRepo externalSystemConfigRepo;
