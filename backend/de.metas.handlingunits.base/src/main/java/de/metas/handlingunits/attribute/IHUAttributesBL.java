@@ -108,4 +108,7 @@ public interface IHUAttributesBL extends ISingletonService
 	void transferAttributesForSingleProductHUs(@NonNull I_M_HU huFrom, @NonNull I_M_HU huTo);
 
 	void updateHUAttribute(@NonNull HuId huId, @NonNull AttributeCode attributeCode, @Nullable Object attributeValue);
+
+	@Nullable
+	String getHUAttributeValue(I_M_HU hu, AttributeCode attributeCode);
 }
