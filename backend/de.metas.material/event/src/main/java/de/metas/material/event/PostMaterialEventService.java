@@ -1,6 +1,5 @@
 package de.metas.material.event;
 
-import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
@@ -9,6 +8,8 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -62,6 +63,6 @@ public class PostMaterialEventService
 	public void enqueueEventNow(final MaterialEvent event)
 	{
 		materialEventService.enqueueEvent(event);
-		logger.info("Posted MaterialEvent={}, Timestamp={}, ThreadId={}", event, SystemTime.asTimestamp(), Thread.currentThread().getId());
+		logger.info("Posted MaterialEvent={}, Timestamp={}, ThreadId={}", event, Instant.now(), Thread.currentThread().getId());
 	}
 }

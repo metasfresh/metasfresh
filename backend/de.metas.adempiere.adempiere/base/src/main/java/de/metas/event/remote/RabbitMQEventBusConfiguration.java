@@ -23,8 +23,6 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /*
@@ -416,9 +414,7 @@ public class RabbitMQEventBusConfiguration
 		public AnonymousQueue materialEventsQueue()
 		{
 			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
-			final Map<String, Object> arguments = new HashMap<>();
-			arguments.put("x-single-active-consumer", true);	// dev-note: enforce messages to be consumed and processed in the same order they arrive in the queue
-			return new AnonymousQueue(eventQueueNamingStrategy, arguments);
+			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
 		@Bean
