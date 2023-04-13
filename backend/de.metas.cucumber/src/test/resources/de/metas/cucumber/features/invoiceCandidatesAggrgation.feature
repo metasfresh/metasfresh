@@ -64,6 +64,6 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | p_1                     | 10          | true      |
       | invoice_1               | p_1                     | 10          | true      |
-    And invoice has no sales rep
+    And invoice has no sales reps
       | C_Invoice_ID.Identifier | salesRep_ID |
       | invoice_1               |             |
