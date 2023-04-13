@@ -73,6 +73,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+<<<<<<< HEAD
 	protected final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	protected final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	protected final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
@@ -130,6 +131,9 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 
 		return ProcessPreconditionsResolution.accept();
 	}
+=======
+	private Optional<String> lotNumberFromSeq = null;
+>>>>>>> 28214529022 (revert optional initialization (#15110))
 
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
