@@ -80,11 +80,6 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 			huTraceEventQueryBuilder.lotNumber(p_LotNumber);
 		}
 
-		if (p_VHU_ID != null)
-		{
-			huTraceEventQueryBuilder.vhuId(p_VHU_ID);
-		}
-
 		final HUTraceEventQuery huTraceEventQuery = huTraceEventQueryBuilder
 				.types(HUTraceType.typesToReport())
 				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
@@ -140,7 +135,6 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_HUTraceType);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_Product_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_InOut_ID);
-		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_PP_Order_ID);
 		columnHeaders.add(I_M_HU_Trace.COLUMNNAME_M_Inventory_ID);
 		columnHeaders.add(I_M_InOut.COLUMNNAME_MovementDate);
