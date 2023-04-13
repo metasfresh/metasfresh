@@ -662,6 +662,7 @@ public class HUTraceEventsService
 					.topLevelHuId(huId);
 
 			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
+			vhus.add(huRecord);
 
 			for (final I_M_HU vhu : vhus)
 			{
