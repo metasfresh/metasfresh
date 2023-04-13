@@ -56,7 +56,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 class ManualInvoiceRepository
 {
-	public static final String API_DATA_SOURCE = "de.metas.rest_api.v2.invoice.InvoicesRestController";
+	public static final String API_DATA_SOURCE = "SOURCE.de.metas.rest_api.v2.invoice.InvoicesRestController";
 	@NonNull
 	public ManualInvoice save(@NonNull final CreateManualInvoiceRequest createManualInvoiceRequest)
 	{

@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
-import de.metas.impex.InputDataSourceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -78,9 +77,6 @@ public class CreateManualInvoiceRequest
 
 	@NonNull
 	CurrencyId currencyId;
-
-	@NonNull
-	InputDataSourceId inputDataSourceId;
 
 	@NonNull
 	ImmutableList<CreateManualInvoiceLineRequest> lines;
