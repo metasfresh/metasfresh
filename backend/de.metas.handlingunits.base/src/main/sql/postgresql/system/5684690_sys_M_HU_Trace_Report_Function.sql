@@ -18,7 +18,7 @@ AS
 $BODY$
 
 
-SELECT t.LotNumber              AS LotNumber,
+SELECT  t.LotNumber              AS LotNumber,
        'Current Stock'          AS HUTraceType,
        p.value || '_' || p.name AS Product,
        NULL                     AS InOut,
@@ -81,7 +81,7 @@ UNION
 
 
 UNION ALL
-(SELECT t.LotNumber                                                                 AS LotNumber,
+(SELECT distinct on (t.pp_cost_collector_id) t.LotNumber                                                                 AS LotNumber,
         t.hutracetype                                                               AS HUTraceType,
         p.value || '_' || p.name                                                    AS Product,
         io.documentno                                                               AS InOut,
