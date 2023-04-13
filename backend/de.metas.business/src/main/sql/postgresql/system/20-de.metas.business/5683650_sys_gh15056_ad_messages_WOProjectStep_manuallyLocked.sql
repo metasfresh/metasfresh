@@ -60,3 +60,18 @@ UPDATE AD_Message_Trl SET MsgText='Der simulierte Prüfschritt konnte nicht aktu
 -- 2023-04-12T09:16:18.358Z
 UPDATE AD_Message_Trl SET MsgText='Der simulierte Prüfschritt konnte nicht aktualisiert werden. Prüfschritt {0} ist manuell gesperrt und kann nicht entsprechend verschoben werden!',Updated=TO_TIMESTAMP('2023-04-12 12:16:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545261
 ;
+
+
+-- 2023-04-12T11:51:00.759Z
+UPDATE AD_Message SET MsgText='Prüfschritt kann nicht manuell gesperrt werden! Bitte Startdatum und Enddatum angeben.',Updated=TO_TIMESTAMP('2023-04-12 14:51:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545260
+;
+
+-- 2023-04-12T11:51:49.790Z
+UPDATE AD_Message SET MsgText='Der simulierte Prüfschritt konnte nicht aktualisiert werden. Prüfschritt {0} ist manuell gesperrt und kann nicht entsprechend verschoben werden!',Updated=TO_TIMESTAMP('2023-04-12 14:51:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545261
+;
+
+-- 2023-04-12T11:52:47.623Z
+UPDATE AD_Message SET MsgText='Schritt kann nicht gesperrt werden, da er andere simulierte Datumsangaben enthält als die tatsächlichen Daten der Simulation {0}.',Updated=TO_TIMESTAMP('2023-04-12 14:52:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545257
+;
+
+
