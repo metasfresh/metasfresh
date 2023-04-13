@@ -97,6 +97,20 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	@And("invoice has no sales reps")
+	public void validate_invoice_salesRep(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice invoice = invoiceTable.get(identifier);
+
+			validateInvoiceSalesRep(invoice, row);
+		}
+	}
+
+
 	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
 	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
@@ -152,6 +166,7 @@ public class C_Invoice_StepDef
 		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
+		final String salesRep_ID = DataTableUtil.extractStringForColumnName(row, "salesRep_ID");
 
 		final Integer expectedBPartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
@@ -166,6 +181,7 @@ public class C_Invoice_StepDef
 		assertThat(invoice.getPOReference()).isEqualTo(poReference);
 		assertThat(invoice.isProcessed()).isEqualTo(processed);
 		assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
+		assertThat(invoice.getSalesRep_ID()).isEqualTo(salesRep_ID);
 
 		final PaymentTermQuery query = PaymentTermQuery.builder()
 				.orgId(StepDefConstants.ORG_ID)
@@ -176,5 +192,13 @@ public class C_Invoice_StepDef
 
 		assertThat(paymentTermId).isNotNull();
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
+	}
+
+
+	private void validateInvoiceSalesRep(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
+	{
+		final String salesRep_ID = DataTableUtil.extractStringForColumnName(row, "salesRep_ID");
+
+		assertThat(invoice.getSalesRep_ID()).isEqualTo(salesRep_ID);
 	}
 }
