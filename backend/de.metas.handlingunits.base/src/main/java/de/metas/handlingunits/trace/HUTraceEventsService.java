@@ -661,28 +661,33 @@ public class HUTraceEventsService
 					.eventTime(ppCostCollector.getUpdated().toInstant())
 					.topLevelHuId(huId);
 
-			List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
-			vhus.add(huRecord);
+			createTraceForProductionIssueHU(builder, ppOrderId, huRecord);
+			final List<I_M_HU> vhus = huAccessService.retrieveVhus(huId);
 
 			for (final I_M_HU vhu : vhus)
 			{
-				final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
-						ppOrderId,
-						HuId.ofRepoId(vhu.getM_HU_ID()));
-
-				if (!ppOrderQty.isPresent())
-				{
-					continue;
-				}
-
-				builderSetVhuProductAndQty(builder, vhu)
-						.vhuStatus(vhu.getHUStatus())
-						.qty(Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())));
-
-				huTraceRepository.addEvent(builder.build());
+				createTraceForProductionIssueHU(builder, ppOrderId, vhu);
 			}
 		}
 
+	}
+
+	private void createTraceForProductionIssueHU(final @NonNull HUTraceEventBuilder builder, final @NonNull PPOrderId ppOrderId, @NonNull final I_M_HU hu)
+	{
+		final Optional<I_PP_Order_Qty> ppOrderQty = huPPOrderQtyDAO.retrieveOrderQtyForHu(
+				ppOrderId,
+				HuId.ofRepoId(hu.getM_HU_ID()));
+
+		if (!ppOrderQty.isPresent())
+		{
+			return;
+		}
+
+		builderSetVhuProductAndQty(builder, hu)
+				.vhuStatus(hu.getHUStatus())
+				.qty(Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())));
+
+		huTraceRepository.addEvent(builder.build());
 	}
 
 	private HUTraceEventBuilder builderSetVhuProductAndQty(
