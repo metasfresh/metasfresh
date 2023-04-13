@@ -78,4 +78,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 			@NonNull ProductId productId);
+
+	@Nullable
+	String getHUAttributeValue(I_M_HU hu, AttributeCode attributeCode);
 }
