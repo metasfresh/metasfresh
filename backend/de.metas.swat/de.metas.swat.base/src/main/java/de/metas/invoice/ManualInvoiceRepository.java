@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
+import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.invoice.request.CreateManualInvoiceLineRequest;
 import de.metas.invoice.request.CreateManualInvoiceRequest;
 import de.metas.lang.SOTrx;
@@ -38,10 +39,13 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -52,6 +56,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 class ManualInvoiceRepository
 {
+	public static final String API_DATA_SOURCE = "de.metas.rest_api.v2.invoice.InvoicesRestController";
 	@NonNull
 	public ManualInvoice save(@NonNull final CreateManualInvoiceRequest createManualInvoiceRequest)
 	{
@@ -158,6 +163,10 @@ class ManualInvoiceRepository
 	private I_C_Invoice saveInvoiceHeader(@NonNull final CreateManualInvoiceRequest createManualInvoiceRequest)
 	{
 		final I_C_Invoice invoiceRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
+		final int inputDataSourceRecordId = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), API_DATA_SOURCE, /* throwEx */true, ITrx.TRXNAME_None)
+				.getAD_InputDataSource_ID();
 
 		invoiceRecord.setAD_Org_ID(createManualInvoiceRequest.getOrgId().getRepoId());
 		invoiceRecord.setC_BPartner_ID(createManualInvoiceRequest.getBillBPartnerId().getRepoId());
@@ -173,7 +182,7 @@ class ManualInvoiceRepository
 		invoiceRecord.setIsSOTrx(createManualInvoiceRequest.getSoTrx().toBoolean());
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
-
+		invoiceRecord.setAD_InputDataSource_ID(inputDataSourceRecordId);
 		saveRecord(invoiceRecord);
 
 		return invoiceRecord;
