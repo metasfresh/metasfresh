@@ -195,8 +195,8 @@ public class C_Invoice_StepDef
 
 	private void validateInvoiceSalesRep(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
 	{
-		final String salesRep_ID = DataTableUtil.extractStringForColumnName(row, "salesRep_ID");
+		final Integer expectedSalesRep_ID = Integer.parseInt(DataTableUtil.extractStringForColumnName(row, "salesRep_ID"));
 
-		assertThat(invoice.getSalesRep_ID()).isEqualTo(salesRep_ID);
+		assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_ID);
 	}
 }
