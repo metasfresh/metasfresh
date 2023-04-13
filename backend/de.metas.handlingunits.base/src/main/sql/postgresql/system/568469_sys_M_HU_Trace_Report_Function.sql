@@ -80,7 +80,7 @@ UNION
                  AND s.T_Selection_ID = t.m_hu_trace_id))
 
 
-UNION
+UNION ALL
 (SELECT t.LotNumber                                                                 AS LotNumber,
         t.hutracetype                                                               AS HUTraceType,
         p.value || '_' || p.name                                                    AS Product,
