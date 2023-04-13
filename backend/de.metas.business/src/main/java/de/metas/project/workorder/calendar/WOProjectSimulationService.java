@@ -3,23 +3,18 @@ package de.metas.project.workorder.calendar;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
-import de.metas.calendar.util.CalendarDateRange;
-import de.metas.common.util.time.SystemTime;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
-import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
-import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.project.workorder.step.WOProjectSteps;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.Optional;
-
-import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
+import java.util.Set;
 
 @Service
 public class WOProjectSimulationService
@@ -59,9 +54,10 @@ public class WOProjectSimulationService
 				.currentSimulationPlan(woProjectSimulationPlan)
 				.build();
 
+		final WOProjectStepId currentStepId = woProjectResource.getWoProjectStepId();
+
 		simulationPlanEditor.changeResourceDateRangeAndShiftSteps(projectResourceId,
-																  getSimulationDateRange(woProjectSteps.getById(woProjectResource.getWoProjectStepId()),
-																						 simulationPlanEditor.getProject()),
+																  simulationPlanEditor.computeCalendarDateRange(currentStepId),
 																  woProjectResource.getWoProjectStepId());
 
 		final WOProjectSimulationPlan changedSimulation = simulationPlanEditor.toNewSimulationPlan();
@@ -109,21 +105,19 @@ public class WOProjectSimulationService
 		woProjectConflictService.checkSimulationConflicts(simulationPlan, resourceIds);
 	}
 
-	@NonNull
-	private CalendarDateRange getSimulationDateRange(
-			@NonNull final WOProjectStep woProjectStep,
-			@NonNull final WOProject woProject)
+	public void deleteStepFromSimulation(@NonNull final WOProjectStepSimulation stepSimulation, @NonNull final SimulationPlanId simulationPlanId)
 	{
-		return Optional.ofNullable(woProjectStep.getDateRange())
-				.orElseGet(() -> woProject.getCalendarDateRange()
-						.orElseGet(() -> {
-							final Instant defaultStartDate = SystemTime.asInstant();
+		final Set<WOProjectResourceId> resourceIds = woProjectService.getResourcesByProjectId(stepSimulation.getProjectId())
+				.stream()
+				.filter(woProjectResource -> woProjectResource.getWoProjectStepId().equals(stepSimulation.getStepId()))
+				.map(WOProjectResource::getWoProjectResourceId)
+				.collect(ImmutableSet.toImmutableSet());
 
-							return CalendarDateRange.builder()
-									.startDate(defaultStartDate)
-									.endDate(defaultStartDate.plus(DEFAULT_DURATION))
-									.allDay(false)
-									.build();
-						}));
+		final WOProjectSimulationPlan woProjectSimulationPlan = woProjectSimulationRepository.getById(simulationPlanId);
+
+		final WOProjectSimulationPlan updatedWoProjectSimulationPlan = woProjectSimulationPlan.removeStepSimulation(ImmutableSet.of(stepSimulation.getStepId()))
+				.removeResourceSimulation(resourceIds);
+
+		woProjectSimulationRepository.savePlan(updatedWoProjectSimulationPlan);
 	}
 }

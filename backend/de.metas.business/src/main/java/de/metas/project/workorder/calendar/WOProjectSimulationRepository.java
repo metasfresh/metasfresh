@@ -150,7 +150,7 @@ public class WOProjectSimulationRepository
 		return WOProjectStepId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Step_ID());
 	}
 
-	private static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)
+	public static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)
 	{
 		return WOProjectStepSimulation.builder()
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
@@ -257,8 +257,8 @@ public class WOProjectSimulationRepository
 			InterfaceWrapperHelper.save(record);
 		}
 
-		InterfaceWrapperHelper.deleteAll(existingStepRecordsById.entrySet());
-		InterfaceWrapperHelper.deleteAll(existingProjectResourceRecordsById.entrySet());
+		InterfaceWrapperHelper.deleteAll(existingStepRecordsById.values());
+		InterfaceWrapperHelper.deleteAll(existingProjectResourceRecordsById.values());
 
 		// NOTE: cache will be invalidated automatically after trx commit
 		//cacheById.remove(plan.getSimulationPlanId());

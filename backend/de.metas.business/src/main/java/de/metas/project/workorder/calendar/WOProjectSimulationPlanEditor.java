@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -24,11 +25,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.OldAndNewValues;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 
 public class WOProjectSimulationPlanEditor
 {
@@ -320,5 +324,66 @@ public class WOProjectSimulationPlanEditor
 
 		throw new AdempiereException(ERROR_MSG_STEP_CANNOT_BE_SHIFTED, step.getName())
 				.markAsUserValidationError();
+	}
+
+	@NonNull
+	public CalendarDateRange computeCalendarDateRange(@NonNull final WOProjectStepId stepId)
+	{
+		final List<WOProjectStep> beforeSteps = getStepsBeforeFromLastToFirst(stepId);
+
+		if (beforeSteps.isEmpty())
+		{
+			return getDefaultCalendarDateRange();
+		}
+
+		final WOProjectStep beforeStep = beforeSteps.get(0);
+		final WOProjectStepSimulation beforeStepSimulated = simulationStepsById.get(beforeStep.getWoProjectStepId());
+
+		if (beforeStepSimulated == null)
+		{
+			return getDefaultCalendarDateRange();
+		}
+
+		final List<WOProjectStep> afterSteps = getStepsAfterInOrder(stepId);
+
+		if (afterSteps.isEmpty())
+		{
+			return beforeStepSimulated.getDateRange().plus(DEFAULT_DURATION);
+		}
+
+		final WOProjectStep afterStep = afterSteps.get(0);
+		final WOProjectStepSimulation afterStepSimulated = simulationStepsById.get(afterStep.getWoProjectStepId());
+
+		if (afterStepSimulated == null)
+		{
+			return beforeStepSimulated.getDateRange().plus(DEFAULT_DURATION);
+		}
+
+		final Duration durationBetweenSteps = Duration.between(beforeStepSimulated.getDateRange().getEndDate(), afterStepSimulated.getDateRange().getStartDate());
+
+		if (durationBetweenSteps.isZero())
+		{
+			throw new AdempiereException("Resource cannot be simulated, as there's no time left to schedule between steps on simulation");
+		}
+
+		return CalendarDateRange.builder()
+				.startDate(beforeStepSimulated.getDateRange().getEndDate())
+				.endDate(beforeStepSimulated.getDateRange().getEndDate().plus(durationBetweenSteps))
+				.build();
+	}
+
+	@NonNull
+	private CalendarDateRange getDefaultCalendarDateRange()
+	{
+		return getProject().getCalendarDateRange()
+				.orElseGet(() -> {
+					final Instant defaultStartDate = SystemTime.asInstant();
+
+					return CalendarDateRange.builder()
+							.startDate(defaultStartDate)
+							.endDate(defaultStartDate.plus(DEFAULT_DURATION))
+							.allDay(false)
+							.build();
+				});
 	}
 }

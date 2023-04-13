@@ -18,6 +18,10 @@ import lombok.ToString;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @ToString
 public final class WOProjectSimulationPlan
@@ -82,6 +86,36 @@ public final class WOProjectSimulationPlan
 		return toBuilder()
 				.stepsById(CollectionUtils.mergeMaps(this.stepsById, from.stepsById))
 				.projectResourcesById(CollectionUtils.mergeMaps(this.projectResourcesById, from.projectResourcesById))
+				.build();
+	}
+
+	@NonNull
+	public WOProjectSimulationPlan removeStepSimulation(@NonNull final Set<WOProjectStepId> woProjectStepIdSet)
+	{
+		final ImmutableSet<WOProjectStepId> newStepIds = CollectionUtils.difference(this.stepsById.keySet(), woProjectStepIdSet);
+
+		final Map<WOProjectStepId, WOProjectStepSimulation> filteredStepsById = newStepIds.stream()
+				.map(stepId -> getStepsById().get(stepId))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toMap(WOProjectStepSimulation::getStepId, Function.identity()));
+
+		return toBuilder()
+				.stepsById(filteredStepsById)
+				.build();
+	}
+
+	@NonNull
+	public WOProjectSimulationPlan removeResourceSimulation(@NonNull final Set<WOProjectResourceId> woProjectResourceIds)
+	{
+		final ImmutableSet<WOProjectResourceId> filteredResourcesIds = CollectionUtils.difference(this.projectResourcesById.keySet(), woProjectResourceIds);
+
+		final Map<WOProjectResourceId, WOProjectResourceSimulation> filteredResourcesById = filteredResourcesIds.stream()
+				.map(resourceId -> getProjectResourcesById().get(resourceId))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toMap(WOProjectResourceSimulation::getProjectResourceId, Function.identity()));
+
+		return toBuilder()
+				.projectResourcesById(filteredResourcesById)
 				.build();
 	}
 }
