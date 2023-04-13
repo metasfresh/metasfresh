@@ -61,7 +61,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
-	private Optional<String> lotNumberFromSeq = Optional.empty();
+	private Optional<String> lotNumberFromSeq = null;
 
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
