@@ -73,11 +73,15 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+<<<<<<< HEAD
 	protected final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	protected final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	protected final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
 	
 	private Optional<String> lotNumberFromSeq = null;
+=======
+	private Optional<String> lotNumberFromSeq = Optional.empty();
+>>>>>>> c4bf6688ba2 (Tasty ham uat hu trace (#15073))
 
 	protected ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
