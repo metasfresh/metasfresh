@@ -8,7 +8,6 @@ CREATE OR REPLACE FUNCTION public.M_HU_Trace_Report(p_AD_PInstance_ID numeric)
                 HUTraceType   character varying,
                 Product       character varying,
                 "InOut"       character varying,
-                CostCollector character varying,
                 PPOrder       character varying,
                 Inventory     character varying,
                 DocumentDate  timestamp WITH TIME ZONE,
@@ -38,7 +37,6 @@ FROM M_HU_Trace t
          JOIN M_Product p ON t.m_product_id = p.m_product_id
          JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
          LEFT JOIN M_InOut io ON t.m_inout_id = io.m_inout_id
-         LEFT JOIN PP_cost_collector cc ON t.pp_cost_collector_id = cc.pp_cost_collector_id
          LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
          LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
 WHERE t.hutracetype IN ('PRODUCTION_ISSUE',
@@ -57,7 +55,6 @@ UNION
                                    t.hutracetype                                                                               AS HUTraceType,
                                    p.value || '_' || p.name                                                                    AS Product,
                                    io.documentno                                                                               AS InOut,
-                                   NULL                                                                                        AS CostCollector,
                                    NULL                                                                                        AS PPOrder,
                                    NULL                                                                                        AS Inventory,
                                    io.movementdate                                                                             AS DocumentDate,
@@ -75,7 +72,6 @@ UNION
                ON t.m_product_id = p.m_product_id
           JOIN C_UOM u ON t.C_UOM_ID = u.c_uom_id
           LEFT JOIN M_InOut io ON t.m_inout_id = io.m_inout_id
-          LEFT JOIN PP_cost_collector cc ON t.pp_cost_collector_id = cc.pp_cost_collector_id
           LEFT JOIN PP_Order po ON t.pp_order_id = po.pp_order_id
           LEFT JOIN M_Inventory i ON t.M_Inventory_ID = i.m_inventory_id
  WHERE t.hutracetype IN ('MATERIAL_RECEIPT', 'MATERIAL_SHIPMENT')
