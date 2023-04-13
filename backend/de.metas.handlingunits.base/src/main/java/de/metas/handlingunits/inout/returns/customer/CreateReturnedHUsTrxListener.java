@@ -140,7 +140,7 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 				.eventTime(Instant.now())
 				.orgId(OrgId.ofRepoId(returnLine.getAD_Org_ID()))
 				.productId(productId)
-				.qty(Quantitys.create(trxLine.getQty(), UomId.ofRepoIdOrNull(trxLine.getC_UOM_ID())))
+				.qty(Quantitys.create(trxLine.getQty(), UomId.ofRepoId(trxLine.getC_UOM_ID())))
 				.build();
 
 		return Optional.of(addTraceRequest);
