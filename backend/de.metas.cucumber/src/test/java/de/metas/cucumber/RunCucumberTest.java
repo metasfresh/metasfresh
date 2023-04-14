@@ -29,8 +29,8 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		glue = "de.metas.cucumber.stepdefs",
-		tags = "not @ignore",
-		//tags = "@onlyThis",
+		//tags = "not @ignore",
+		tags = "@ordersWithSameSalesRep",
 		plugin = {
 				"html:target/cucumber.html",
 				"json:target/cucumber.json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
