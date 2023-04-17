@@ -63,7 +63,7 @@ public class SAPGLJournalCreateRequest
 	public static SAPGLJournalCreateRequest of(
 			@NonNull final SAPGLJournal journal,
 			@NonNull final Instant dateDoc,
-			final boolean negateAmounts)
+			final boolean reversePostingSign)
 	{
 		return SAPGLJournalCreateRequest.builder()
 				.docTypeId(journal.getDocTypeId())
@@ -71,8 +71,8 @@ public class SAPGLJournalCreateRequest
 				.dateDoc(dateDoc)
 				.acctSchemaId(journal.getAcctSchemaId())
 				.postingType(journal.getPostingType())
-				.totalAcctDR(journal.getTotalAcctDR().negateIf(negateAmounts))
-				.totalAcctCR(journal.getTotalAcctCR().negateIf(negateAmounts))
+				.totalAcctDR(reversePostingSign ? journal.getTotalAcctCR() : journal.getTotalAcctDR())
+				.totalAcctCR(reversePostingSign ? journal.getTotalAcctDR() : journal.getTotalAcctCR())
 				.orgId(journal.getOrgId())
 				.dimension(journal.getDimension())
 				.description(journal.getDescription())
@@ -80,7 +80,7 @@ public class SAPGLJournalCreateRequest
 				//
 				.lines(journal.getLines()
 							   .stream()
-							   .map(line -> SAPGLJournalLineCreateRequest.of(line, negateAmounts))
+							   .map(line -> SAPGLJournalLineCreateRequest.of(line, reversePostingSign))
 							   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
