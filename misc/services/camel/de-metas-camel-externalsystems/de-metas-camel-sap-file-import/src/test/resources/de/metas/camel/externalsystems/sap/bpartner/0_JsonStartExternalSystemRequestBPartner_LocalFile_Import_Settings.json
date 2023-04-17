@@ -14,6 +14,6 @@
     "LocalFileErroredDirectory": "doesntmatter",
     "LocalFilePollingFrequencyInMs": "1000",
     "LocalFileBPartnerFileNamePattern": "doesntmatter",
-    "SAP_BPartner_Import_Settings": "[{\"seqNo\": 100,\"partnerCodePattern\": \".*ASL.*\",\"isSingleBPartner\": true,\"bpGroupName\": \"Intercompany\"},{\"seqNo\": 200,\"partnerCodePattern\": \"^MC\",\"isSingleBPartner\": false,\"bpGroupName\": \"Intercompany\"}]"
+    "SAP_BPartner_Import_Settings": "[{\"seqNo\": 100,\"partnerCodePattern\": \".*ASL.*\",\"isSingleBPartner\": true,\"bpGroupName\": \"Group1\"},{\"seqNo\": 200,\"partnerCodePattern\": \"^MC.*\",\"isSingleBPartner\": false,\"bpGroupName\": \"Group2\"}]"
   }
 }
