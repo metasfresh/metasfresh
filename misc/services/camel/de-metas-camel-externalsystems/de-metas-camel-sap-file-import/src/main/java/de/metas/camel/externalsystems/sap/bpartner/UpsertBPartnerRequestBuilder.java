@@ -134,6 +134,7 @@ public class UpsertBPartnerRequestBuilder
 	{
 		if (parentPartnerCode.getRawPartnerCode().equals(row.getPartnerCode().getRawPartnerCode()))
 		{
+			bPartnerRows.add(row);
 			return true;
 		}
 
