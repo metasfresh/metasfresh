@@ -39,7 +39,7 @@ public class InfrastructureSupport
 	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	@Getter
-	private boolean runAgainstDockerizedDatabase = false;
+	private boolean runAgainstDockerizedDatabase = true;
 
     @Getter
     private boolean cucumberIsUsingProvidedInfrastructure;
