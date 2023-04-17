@@ -201,6 +201,8 @@ public class C_Invoice_StepDef
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);
 		invoicingParams.setSupplementMissingPaymentTermIds(true);
+		invoicingParams.setAssumeOneInvoice(true);
+		
 
 		invoiceCandBL.enqueueForInvoicing()
 				.setContext(Env.getCtx())
