@@ -23,7 +23,6 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
@@ -921,20 +920,9 @@ public class ExternalSystemConfigRepo
 		return queryBL.createQueryBuilder(I_SAP_BPartnerImportSettings.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_SAP_BPartnerImportSettings.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
-				.orderBy(I_SAP_BPartnerImportSettings.COLUMNNAME_SeqNo)
 				.create()
 				.stream()
-				.map(ExternalSystemConfigRepo::ofBPartnerImportSettingsRecord)
+				.map(SAPConfigMapper::ofBPartnerImportSettingsRecord)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	private static SAPBPartnerImportSettings ofBPartnerImportSettingsRecord(@NonNull final I_SAP_BPartnerImportSettings bPartnerImportSettings)
-	{
-		return SAPBPartnerImportSettings.builder()
-				.seqNo(bPartnerImportSettings.getSeqNo())
-				.partnerCodePattern(bPartnerImportSettings.getPartnerCodePattern())
-				.isSingleBPartner(bPartnerImportSettings.isSingleBPartner())
-				.bpGroupId(BPGroupId.ofRepoIdOrNull(bPartnerImportSettings.getC_BP_Group_ID()))
-				.build();
 	}
 }

@@ -159,13 +159,7 @@ public class ExternalSystemTestUtil
 
 		saveRecord(exportConfig);
 
-		final I_SAP_BPartnerImportSettings sapBPartnerImportSettings = newInstance(I_SAP_BPartnerImportSettings.class);
-		sapBPartnerImportSettings.setExternalSystem_Config_SAP_ID(childRecord.getExternalSystem_Config_SAP_ID());
-		sapBPartnerImportSettings.setSeqNo(10);
-		sapBPartnerImportSettings.setPartnerCodePattern("TestPartnerPattern");
-		sapBPartnerImportSettings.setisSingleBPartner(true);
-
-		saveRecord(sapBPartnerImportSettings);
+		createSAPBPartnerImportSettings(childRecord.getExternalSystem_Config_SAP_ID());
 
 		return childRecord;
 	}
@@ -223,5 +217,20 @@ public class ExternalSystemTestUtil
 		saveRecord(contentSourceSAPLocalFile);
 
 		return contentSourceSAPLocalFile;
+	}
+
+	@NonNull
+	public I_SAP_BPartnerImportSettings createSAPBPartnerImportSettings(final int externalSystemConfigSAPId)
+	{
+		final I_SAP_BPartnerImportSettings importSettings = newInstance(I_SAP_BPartnerImportSettings.class);
+
+		importSettings.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
+		importSettings.setisSingleBPartner(true);
+		importSettings.setPartnerCodePattern("PartnerCode-Pattern");
+		importSettings.setSeqNo(10);
+
+		saveRecord(importSettings);
+
+		return importSettings;
 	}
 }

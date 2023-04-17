@@ -134,7 +134,10 @@ public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 		final UpsertBPartnerRouteContext getBPartnerRouteContext = UpsertBPartnerRouteContext.builder()
 				.orgCode(enabledByExternalSystemRequest.getOrgCode())
 				.externalSystemConfigId(enabledByExternalSystemRequest.getExternalSystemConfigId())
-				.bPartnerImportSettings(Optional.ofNullable(InvokeExternalSystemParametersUtil.getDeserializedParameter(enabledByExternalSystemRequest.getParameters(), PARAM_SAP_BPARTNER_IMPORT_SETTINGS, JsonExternalSAPBPartnerImportSettings[].class))
+				.bPartnerImportSettings(Optional.ofNullable(InvokeExternalSystemParametersUtil
+																	.getDeserializedParameter(enabledByExternalSystemRequest.getParameters(),
+																							  PARAM_SAP_BPARTNER_IMPORT_SETTINGS,
+																							  JsonExternalSAPBPartnerImportSettings[].class))
 												.map(ImmutableList::copyOf)
 												.orElseGet(ImmutableList::of)
 												.stream()

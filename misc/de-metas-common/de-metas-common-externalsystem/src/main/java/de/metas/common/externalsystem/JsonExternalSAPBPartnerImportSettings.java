@@ -22,62 +22,25 @@
 
 package de.metas.common.externalsystem;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonExternalSAPBPartnerImportSettings.JsonExternalSAPBPartnerImportSettingsBuilder.class)
+@Jacksonized
 public class JsonExternalSAPBPartnerImportSettings
 {
-	@NonNull
-	@JsonProperty("seqNo")
-	Integer seqNo;
+	int seqNo;
+
+	boolean isSingleBPartner;
 
 	@NonNull
-	@JsonProperty("partnerCodePattern")
 	String partnerCodePattern;
 
-	@NonNull
-	@JsonProperty("singleBPartner")
-	Boolean isSingleBPartner;
-
 	@Nullable
-	@JsonProperty("bpGroupName")
 	String bpGroupName;
-
-	@NonNull
-	public static JsonExternalSAPBPartnerImportSettings of(
-			@NonNull final Integer seqNo,
-			@NonNull final String partnerCodePattern,
-			@NonNull final Boolean isSingleBPartner,
-			@Nullable final String bpGroupName)
-	{
-		return JsonExternalSAPBPartnerImportSettings.builder()
-				.seqNo(seqNo)
-				.partnerCodePattern(partnerCodePattern)
-				.isSingleBPartner(isSingleBPartner)
-				.bpGroupName(bpGroupName)
-				.build();
-	}
-
-	@Builder
-	public JsonExternalSAPBPartnerImportSettings(
-			@NonNull final Integer seqNo,
-			@NonNull final String partnerCodePattern,
-			@NonNull final Boolean isSingleBPartner,
-			@Nullable final String bpGroupName)
-	{
-		this.seqNo = seqNo;
-		this.partnerCodePattern = partnerCodePattern;
-		this.isSingleBPartner = isSingleBPartner;
-		this.bpGroupName = bpGroupName;
-	}
 }

@@ -62,7 +62,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-class ExternalSystemConfigRepoTest//todo mi : include bp import settings and export acct
+class ExternalSystemConfigRepoTest
 {
 
 	private ExternalSystemConfigRepo externalSystemConfigRepo;
@@ -700,7 +700,6 @@ class ExternalSystemConfigRepoTest//todo mi : include bp import settings and exp
 		assertThat(shopware6Config.getPriceListId()).isEqualTo(newPriceListId);
 		assertThat(shopware6Config.getValue()).isEqualTo(value);
 	}
-
 
 	@Test
 	void externalSystem_Config_getActiveByType_RabbitMQ()
