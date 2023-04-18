@@ -317,14 +317,14 @@ INSERT INTO t_alter_column values('sap_bpartnerimportsettings','SeqNo','NUMERIC(
 ;
 
 -- 2023-04-11T12:33:16.559Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582234,0,'isSingleBPartner',TO_TIMESTAMP('2023-04-11 15:33:16','YYYY-MM-DD HH24:MI:SS'),100,'If true, the business partners having the partner code falling under the regex pattern, will not be aggregated based on the code and no section group business partner is created','de.metas.externalsystem','Y','Single Business Partner','Single Business Partner',TO_TIMESTAMP('2023-04-11 15:33:16','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,582234,0,'IsSingleBPartner',TO_TIMESTAMP('2023-04-11 15:33:16','YYYY-MM-DD HH24:MI:SS'),100,'If true, the business partners having the partner code falling under the regex pattern, will not be aggregated based on the code and no section group business partner is created','de.metas.externalsystem','Y','Single Business Partner','Single Business Partner',TO_TIMESTAMP('2023-04-11 15:33:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-04-11T12:33:16.563Z
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=582234 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T12:34:01.196Z
 UPDATE AD_Element_Trl SET Description='Bei "true" werden die Geschäftspartner, deren Partnercode unter das Regex-Muster fällt, nicht auf der Grundlage des Codes aggregiert und es wird keine Abschnittsgruppe Geschäftspartner erstellt.', Name='Einzelner Geschäftspartner', PrintName='Einzelner Geschäftspartner',Updated=TO_TIMESTAMP('2023-04-11 15:34:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='de_CH'
 ;
@@ -333,7 +333,7 @@ UPDATE AD_Element_Trl SET Description='Bei "true" werden die Geschäftspartner, 
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'de_CH') 
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T12:34:06.686Z
 UPDATE AD_Element_Trl SET Name='Einzelner Geschäftspartner', PrintName='Einzelner Geschäftspartner',Updated=TO_TIMESTAMP('2023-04-11 15:34:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='de_DE'
 ;
@@ -350,7 +350,7 @@ UPDATE AD_Element SET Name='Einzelner Geschäftspartner', PrintName='Einzelner G
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'de_DE') 
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T12:35:53.123Z
 UPDATE AD_Element_Trl SET Description='Bei "true" werden die Geschäftspartner, deren Partnercode unter das Regex-Muster fällt, nicht auf der Grundlage des Codes aggregiert und es wird keine Abschnittsgruppe Geschäftspartner erstellt.',Updated=TO_TIMESTAMP('2023-04-11 15:35:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='de_DE'
 ;
@@ -367,9 +367,9 @@ UPDATE AD_Element SET Description='Bei "true" werden die Geschäftspartner, dere
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'de_DE') 
 ;
 
--- Column: SAP_BPartnerImportSettings.isSingleBPartner
+-- Column: SAP_BPartnerImportSettings.IsSingleBPartner
 -- 2023-04-11T12:36:32.733Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586480,582234,0,20,542325,'isSingleBPartner',TO_TIMESTAMP('2023-04-11 15:36:32','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Bei "true" werden die Geschäftspartner, deren Partnercode unter das Regex-Muster fällt, nicht auf der Grundlage des Codes aggregiert und es wird keine Abschnittsgruppe Geschäftspartner erstellt.','de.metas.externalsystem',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Einzelner Geschäftspartner',0,0,TO_TIMESTAMP('2023-04-11 15:36:32','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,586480,582234,0,20,542325,'IsSingleBPartner',TO_TIMESTAMP('2023-04-11 15:36:32','YYYY-MM-DD HH24:MI:SS'),100,'N','N','Bei "true" werden die Geschäftspartner, deren Partnercode unter das Regex-Muster fällt, nicht auf der Grundlage des Codes aggregiert und es wird keine Abschnittsgruppe Geschäftspartner erstellt.','de.metas.externalsystem',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Einzelner Geschäftspartner',0,0,TO_TIMESTAMP('2023-04-11 15:36:32','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2023-04-11T12:36:32.743Z
@@ -381,7 +381,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2023-04-11T12:36:41.512Z
-/* DDL */ SELECT public.db_alter_table('SAP_BPartnerImportSettings','ALTER TABLE public.SAP_BPartnerImportSettings ADD COLUMN isSingleBPartner CHAR(1) DEFAULT ''N'' CHECK (isSingleBPartner IN (''Y'',''N'')) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('SAP_BPartnerImportSettings','ALTER TABLE public.SAP_BPartnerImportSettings ADD COLUMN IsSingleBPartner CHAR(1) DEFAULT ''N'' CHECK (IsSingleBPartner IN (''Y'',''N'')) NOT NULL')
 ;
 
 -- 2023-04-11T12:40:05.910Z
@@ -499,7 +499,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=713841
 ;
 
 -- Field: External system config SAP(541631,de.metas.externalsystem) -> Geschäftspartner-Import-Einstellungen(546903,de.metas.externalsystem) -> Einzelner Geschäftspartner
--- Column: SAP_BPartnerImportSettings.isSingleBPartner
+-- Column: SAP_BPartnerImportSettings.IsSingleBPartner
 -- 2023-04-11T12:45:08.371Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,586480,713842,0,546903,0,TO_TIMESTAMP('2023-04-11 15:45:08','YYYY-MM-DD HH24:MI:SS'),100,'Bei "true" werden die Geschäftspartner, deren Partnercode unter das Regex-Muster fällt, nicht auf der Grundlage des Codes aggregiert und es wird keine Abschnittsgruppe Geschäftspartner erstellt.',0,'de.metas.externalsystem',0,'Y','Y','Y','N','N','N','N','N','Einzelner Geschäftspartner',0,30,0,1,1,TO_TIMESTAMP('2023-04-11 15:45:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -631,7 +631,7 @@ UPDATE AD_Element SET Name='Partnercode-Muster', PrintName='Partnercode-Muster' 
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582232,'de_DE')
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T20:45:30.079Z
 UPDATE AD_Element_Trl SET Description='Wenn angehakt, werden Geschäftspartner mit einem Partnercode nach dem Regex-Muster nicht auf Grundlage ihres Codes aggregiert und es wird kein Sektionsgruppen-Geschäftspartner erstellt.',Updated=TO_TIMESTAMP('2023-04-11 23:45:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='de_CH'
 ;
@@ -640,7 +640,7 @@ UPDATE AD_Element_Trl SET Description='Wenn angehakt, werden Geschäftspartner m
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'de_CH')
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T20:45:36.220Z
 UPDATE AD_Element_Trl SET Description='Wenn angehakt, werden Geschäftspartner mit einem Partnercode nach dem Regex-Muster nicht auf Grundlage ihres Codes aggregiert und es wird kein Sektionsgruppen-Geschäftspartner erstellt.',Updated=TO_TIMESTAMP('2023-04-11 23:45:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='de_DE'
 ;
@@ -657,7 +657,7 @@ UPDATE AD_Element SET Description='Wenn angehakt, werden Geschäftspartner mit e
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'de_DE')
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T20:45:57.699Z
 UPDATE AD_Element_Trl SET Description='If ticked, business partners with a partner code according to the regex pattern will not be aggregated based on their code and no section group business partner will be created.',Updated=TO_TIMESTAMP('2023-04-11 23:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='en_US'
 ;
@@ -666,7 +666,7 @@ UPDATE AD_Element_Trl SET Description='If ticked, business partners with a partn
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'en_US')
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T20:46:02.355Z
 UPDATE AD_Element_Trl SET Description='If ticked, business partners with a partner code according to the regex pattern will not be aggregated based on their code and no section group business partner will be created.',Updated=TO_TIMESTAMP('2023-04-11 23:46:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='fr_CH'
 ;
@@ -675,7 +675,7 @@ UPDATE AD_Element_Trl SET Description='If ticked, business partners with a partn
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(582234,'fr_CH')
 ;
 
--- Element: isSingleBPartner
+-- Element: IsSingleBPartner
 -- 2023-04-11T20:46:13.728Z
 UPDATE AD_Element_Trl SET Description='If ticked, business partners with a partner code according to the regex pattern will not be aggregated based on their code and no section group business partner will be created.',Updated=TO_TIMESTAMP('2023-04-11 23:46:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=582234 AND AD_Language='nl_NL'
 ;
@@ -685,11 +685,11 @@ UPDATE AD_Element_Trl SET Description='If ticked, business partners with a partn
 ;
 
 -- 2023-04-11T20:46:30.018Z
-INSERT INTO t_alter_column values('sap_bpartnerimportsettings','isSingleBPartner','CHAR(1)',null,'N')
+INSERT INTO t_alter_column values('sap_bpartnerimportsettings','IsSingleBPartner','CHAR(1)',null,'N')
 ;
 
 -- 2023-04-11T20:46:30.125Z
-UPDATE SAP_BPartnerImportSettings SET isSingleBPartner='N' WHERE isSingleBPartner IS NULL
+UPDATE SAP_BPartnerImportSettings SET IsSingleBPartner='N' WHERE IsSingleBPartner IS NULL
 ;
 
 -- 2023-04-11T20:46:44.892Z

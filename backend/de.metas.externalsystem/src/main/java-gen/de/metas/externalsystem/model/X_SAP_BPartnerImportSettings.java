@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_SAP_BPartnerImportSettings extends org.compiere.model.PO implements I_SAP_BPartnerImportSettings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -648503013L;
+	private static final long serialVersionUID = -1751448261L;
 
     /** Standard Constructor */
     public X_SAP_BPartnerImportSettings (final Properties ctx, final int SAP_BPartnerImportSettings_ID, @Nullable final String trxName)
@@ -89,15 +89,15 @@ public class X_SAP_BPartnerImportSettings extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setisSingleBPartner (final boolean isSingleBPartner)
+	public void setIsSingleBPartner (final boolean IsSingleBPartner)
 	{
-		set_Value (COLUMNNAME_isSingleBPartner, isSingleBPartner);
+		set_Value (COLUMNNAME_IsSingleBPartner, IsSingleBPartner);
 	}
 
 	@Override
 	public boolean isSingleBPartner() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_isSingleBPartner);
+		return get_ValueAsBoolean(COLUMNNAME_IsSingleBPartner);
 	}
 
 	@Override
