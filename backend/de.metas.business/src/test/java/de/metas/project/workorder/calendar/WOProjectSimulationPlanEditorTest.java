@@ -17,6 +17,7 @@ import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectSteps;
 import de.metas.test.SnapshotFunctionFactory;
 import de.metas.workflow.WFDurationUnit;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,6 +68,7 @@ class WOProjectSimulationPlanEditorTest
 		final WOProjectSimulationPlanEditor planEditor = WOProjectSimulationPlanEditor.builder()
 				.project(WOProject.builder()
 								 .orgId(OrgId.ANY)
+								 .clientId(ClientId.METASFRESH)
 								 .projectId(ProjectId.ofRepoId(1))
 								 .currencyId(CurrencyId.ofRepoId(11))
 								 .name("work order 1")
