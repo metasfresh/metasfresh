@@ -1,5 +1,4 @@
 @from:cucumber
-@ordersWithMultipleSalesRep
 Feature: invoice generation and invoice candidates aggregation
 
   Background:
