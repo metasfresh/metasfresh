@@ -158,19 +158,13 @@ public class C_Invoice_StepDef
 				.setInvoicingParams(invoicingParams)
 				.enqueueSelection(invoiceCandidatesSelectionId);
 
-
 		//wait for the invoice to be created
 		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCandidateRecord::isProcessed);
 
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-
-
-
 		assertThat(invoices.size()).isEqualTo(1);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-
 		invoiceTable.put(invoiceIdentifier, invoices.get(0));
 	}
 
