@@ -22,6 +22,7 @@
 
 package de.metas.common.externalsystem;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,4 +44,10 @@ public class JsonExternalSAPBPartnerImportSettings
 
 	@Nullable
 	String bpGroupName;
+
+	@JsonProperty("isSingleBPartner")
+	public boolean isSingleBPartner()
+	{
+		return isSingleBPartner;
+	}
 }
