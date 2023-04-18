@@ -76,17 +76,6 @@ public class C_BPartner_StepDef
 		}
 	}
 
-
-	@Given("metasfresh contains salesReps users:")
-	public void metasfresh_contains_salesReps(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_BPartner(tableRow);
-		}
-	}
-
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow)
 	{
 		final String bPartnerName = tableRow.get("Name");
