@@ -21,6 +21,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -40,6 +41,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -57,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
@@ -104,6 +107,22 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list();
 	}
+
+	public List<InvoiceId> retrieveInvoicesForOrderLineIds(@NonNull final List<OrderLineId> orderLineIds)
+	{
+		final List<I_C_InvoiceLine> invoiceLines = queryBL
+				.createQueryBuilder(I_C_InvoiceLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.list();
+
+		return invoiceLines.stream()
+				.map(il -> InvoiceId.ofRepoId(il.getC_Invoice_ID()))
+				.distinct()
+				.collect(Collectors.toList());
+
+	}
+
 
 	@Override
 	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(@NonNull final List<OrderId> orderIds)

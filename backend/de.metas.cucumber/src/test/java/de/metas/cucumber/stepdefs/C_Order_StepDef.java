@@ -96,6 +96,7 @@ public class C_Order_StepDef
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
+			final int salesRepID = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_SalesRep_ID);
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -112,6 +113,11 @@ public class C_Order_StepDef
 			if (paymentTermId > 0)
 			{
 				order.setC_PaymentTerm_ID(paymentTermId);
+			}
+
+			if(salesRepID > 0)
+			{
+				order.setSalesRep_ID(salesRepID);
 			}
 
 			saveRecord(order);
