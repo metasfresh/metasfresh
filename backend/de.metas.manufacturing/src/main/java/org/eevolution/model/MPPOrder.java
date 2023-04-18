@@ -36,6 +36,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
@@ -47,7 +49,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -63,7 +64,6 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -73,6 +73,7 @@ import java.util.Properties;
  * @author Victor Perez www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
+@SuppressWarnings("unused")
 public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
@@ -117,7 +118,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// FIXME: do we still need this?
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override
@@ -205,7 +206,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.optionalOfNullable(getDocBaseType()).orElse(PPOrderDocBaseType.MANUFACTURING_ORDER);
 		if (docBaseType.isQualityOrder())
 		{
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
@@ -362,24 +363,25 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		//
+		// Validate BOM Lines before closing them
+		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
+		getLines().forEach(ppOrderBOMLineBL::validateBeforeClose);
+
+		//
 		// Create usage variances
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.optionalOfNullable(getDocBaseType()).orElse(PPOrderDocBaseType.MANUFACTURING_ORDER);
 		if (!docBaseType.isRepairOrder())
 		{
 			createVariances();
 		}
 
 		//
-		// Update BOM Lines and set QtyRequired=QtyDelivered
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
-		for (final I_PP_Order_BOMLine line : getLines())
-		{
-			ppOrderBOMLineBL.close(line);
-		}
+		// Close BOM Lines
+		getLines().forEach(ppOrderBOMLineBL::close);
 
 		//
 		// Close all the activity do not reported
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		ppOrderBL.closeAllActivities(orderId);
 
@@ -442,10 +444,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		orderBOMsRepo.markBOMLinesAsNotProcessed(orderId);
 
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-
 		setDocAction(IDocument.ACTION_Complete);
 		setProcessed(false);
+
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+
 		return true;
 	} // reActivateIt
 
@@ -480,9 +483,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateOrdered());
+		return InstantAndOrgId.ofTimestamp(getDateOrdered(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

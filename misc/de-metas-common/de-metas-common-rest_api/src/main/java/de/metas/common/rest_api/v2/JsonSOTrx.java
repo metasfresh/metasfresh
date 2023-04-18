@@ -44,16 +44,18 @@ package de.metas.common.rest_api.v2;
  * #L%
  */
 
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.annotation.Nullable;
 
+@Schema(enumAsRef = true, description = "JsonSOTrx: \n" +
+		"* `SALES` - Specify that the given entity is a sales order (SO) transaction entity\n" +
+		"* `PURCHASE` - Specify that the given entity is a purchase order (PO) transaction entity\n" +
+		"")
 public enum JsonSOTrx
 {
-	@ApiEnum("Specify that the given entity is a sales order (SO) transaction entity")
 	SALES,
 
-	@ApiEnum("Specify that the given entity is a purchase order (PO) transaction entity")
 	PURCHASE;
 
 	public static JsonSOTrx ofBoolean(@Nullable final Boolean isSOTrx)

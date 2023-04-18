@@ -69,17 +69,36 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 	@RabbitListener(queues = {
 			RabbitMQEventBusConfiguration.DefaultQueueConfiguration.QUEUE_NAME_SPEL,
-			RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.AccountingQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.ManageSchedulerQueueConfiguration.QUEUE_NAME_SPEL,
 			RabbitMQEventBusConfiguration.AsyncBatchQueueConfiguration.QUEUE_NAME_SPEL,
-			RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.QUEUE_NAME_SPEL
+			RabbitMQEventBusConfiguration.MaterialEventsQueueConfiguration.QUEUE_NAME_SPEL,
+			RabbitMQEventBusConfiguration.EffortControlQueueConfiguration.QUEUE_NAME_SPEL
 	})
-	public void onEvent(
+	public void onGenericRemoteEvent(
 			@Payload final Event event,
 			@Header(HEADER_SenderId) final String senderId,
 			@Header(HEADER_TopicName) final String topicName,
 			@Header(HEADER_TopicType) final Type topicType)
+	{
+		onRemoteEvent(event, senderId, topicName, topicType);
+	}
+
+	@RabbitListener(queues = {RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.QUEUE_NAME_SPEL})
+	public void onCacheInvalidationEvent(
+			@Payload final Event event,
+			@Header(HEADER_SenderId) final String senderId,
+			@Header(HEADER_TopicName) final String topicName,
+			@Header(HEADER_TopicType) final Type topicType)
+	{
+		onRemoteEvent(event, senderId, topicName, topicType);
+	}
+
+	private void onRemoteEvent(
+			final Event event,
+			final String senderId,
+			final String topicName,
+			final Type topicType)
 	{
 		final Topic topic = Topic.of(topicName, topicType);
 

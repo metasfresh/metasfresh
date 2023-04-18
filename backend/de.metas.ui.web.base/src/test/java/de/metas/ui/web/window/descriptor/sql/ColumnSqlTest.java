@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.window.descriptor.sql;
 
+import org.adempiere.ad.column.ColumnSql;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -47,4 +48,16 @@ class ColumnSqlTest
 
 		assertThat(columnSql1).isEqualTo(columnSql2);
 	}
+
+	@Test
+	void ofSql_toSqlString_with_JoinTableNameOrAliasIncludingDot()
+	{
+		final ColumnSql columnSql = ColumnSql.ofSql(
+				"( select child.status from s_issue child where child.iseffortissue = 'Y' and child.s_parent_issue_id=@JoinTableNameOrAliasIncludingDot@s_issue_id and @JoinTableNameOrAliasIncludingDot@iseffortissue = 'N')",
+				"S_Issue");
+
+		assertThat(columnSql.withJoinOnTableNameOrAlias("master").toSqlString())
+				.isEqualTo("( select child.status from s_issue child where child.iseffortissue = 'Y' and child.s_parent_issue_id=master.s_issue_id and master.iseffortissue = 'N')");
+	}
 }
+

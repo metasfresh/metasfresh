@@ -24,6 +24,8 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
@@ -31,6 +33,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.JobId;
 import de.metas.location.CountryId;
@@ -41,12 +44,15 @@ import de.metas.location.PostalId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.money.CurrencyId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.title.TitleId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
@@ -64,6 +70,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -111,6 +118,7 @@ final class BPartnerCompositesLoader
 
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -121,10 +129,12 @@ final class BPartnerCompositesLoader
 	@Builder
 	private BPartnerCompositesLoader(
 			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository)
+			@NonNull final UserRoleRepository userRoleRepository,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	public ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
@@ -170,6 +180,7 @@ final class BPartnerCompositesLoader
 					.contacts(ofContactRecords(id, relatedRecords, timeZone))
 					.locations(ofBPartnerLocationRecords(id, relatedRecords))
 					.bankAccounts(ofBankAccountRecords(id, relatedRecords))
+					.creditLimits(ofCreditLimitsRecords(id, relatedRecords))
 					.build();
 
 			result.put(id, bpartnerComposite);
@@ -199,10 +210,14 @@ final class BPartnerCompositesLoader
 
 		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = bpBankAccountDAO.getAllByBPartnerIds(bPartnerIds);
 
+		final ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> bpCreditLimits = bPartnerCreditLimitRepository.getAllByBPartnerIds(bPartnerIds);
+		bpCreditLimits.forEach((bpartnerId, bPartnerCreditLimitRecord) -> allTableRecordRefs.add(TableRecordReference.of(bPartnerCreditLimitRecord)));
+
 		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
 				.tableRecordReferences(allTableRecordRefs)
 				.followLocationIdChanges(true)
 				.build();
+
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
 				recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
 
@@ -212,6 +227,7 @@ final class BPartnerCompositesLoader
 				.locationId2Location(locationRecords)
 				.postalId2Postal(postalRecords)
 				.bpartnerId2BankAccounts(bpBankAccounts)
+				.bpartnerId2CreditLimits(bpCreditLimits)
 				.recordRef2LogEntries(recordRef2LogEntries)
 				.build();
 	}
@@ -321,6 +337,7 @@ final class BPartnerCompositesLoader
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
+				.paymentRulePO(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRulePO()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
 				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
@@ -343,7 +360,19 @@ final class BPartnerCompositesLoader
 				//
 				.creditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()))
 				.debtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(bpartnerRecord.getM_SectionCode_ID()))
+				.description(bpartnerRecord.getDescription())
+				.deliveryRule(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryRule()))
+				.deliveryViaRule(DeliveryViaRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()))
+				.incotermsCustomerId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Customer_ID()))
+				.incotermsVendorId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Vendor_ID()))
+				.storageWarehouse(bpartnerRecord.isStorageWarehouse())
 				//
+				.sectionGroupPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getSection_Group_Partner_ID()))
+				.prospect(bpartnerRecord.isProspect())
+				.sapBPartnerCode(bpartnerRecord.getSAP_BPartnerCode())
+				.sectionGroupPartner(bpartnerRecord.isSectionGroupPartner())
+				.sectionPartner(bpartnerRecord.isSectionPartner())
 				.build();
 	}
 
@@ -380,6 +409,13 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.visitorsAddress(bPartnerLocationRecord.isVisitorsAddress())
+				.handOverLocation(bPartnerLocationRecord.isHandOverLocation())
+				.remitTo(bPartnerLocationRecord.isRemitTo())
+				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
+				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
+				.sapPaymentMethod(bPartnerLocationRecord.getSAP_PaymentMethod())
+				.sapBPartnerCode(bPartnerLocationRecord.getSAP_BPartnerCode())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -394,7 +430,6 @@ final class BPartnerCompositesLoader
 				.billToDefault(bpartnerLocationRecord.isBillToDefault())
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
-				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
 				.build();
 	}
 
@@ -569,6 +604,28 @@ final class BPartnerCompositesLoader
 				.changeLog(changeLog)
 				.bankId(bankId)
 				.build();
+	}
+
+	@NonNull
+	private ImmutableList<BPartnerCreditLimit> ofCreditLimitsRecords(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		return relatedRecords.getCreditLimitsByBPartnerId(bpartnerId)
+				.stream()
+				.map((record) -> ofCreditLimitRecord(record, relatedRecords))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private BPartnerCreditLimit ofCreditLimitRecord(
+			@NonNull final I_C_BPartner_CreditLimit creditLimitRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final RecordChangeLog changeLog = ChangeLogUtil.createCreditLimitChangeLog(creditLimitRecord, relatedRecords);
+
+		final BPartnerCreditLimit bPartnerCreditLimit = bPartnerCreditLimitRepository.ofRecord(creditLimitRecord);
+		return bPartnerCreditLimit.withChangeLog(changeLog);
 	}
 
 	@Nullable

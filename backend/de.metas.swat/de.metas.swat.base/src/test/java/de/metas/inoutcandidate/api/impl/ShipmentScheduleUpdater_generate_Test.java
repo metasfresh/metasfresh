@@ -201,52 +201,53 @@ public class ShipmentScheduleUpdater_generate_Test
 		}
 	}
 
+	@Builder(builderMethodName = "prepareTest", buildMethodName = "setupAndInvoke")
+	private ShipmentSchedulesDuringUpdate setupTest(
+			final int christmasPack_qtyOrdered,
+			final int christmasPack_qtyOnHand,
+			final int chocolate_qtyOnHand,
+			final int socks_qtyOnHand)
+	{
+		final TestSetupSpec spec = TestSetupSpec.builder()
+				.uom(UomSpec.builder().name("Each").build())
+				.product(ProductSpec.builder().value("christmasPack").uomValue("Each").stocked(true).build())
+				.product(ProductSpec.builder().value("chocolate").uomValue("Each").stocked(true).build())
+				.product(ProductSpec.builder().value("socks").uomValue("Each").stocked(true).build())
+				//
+				.stock(StockSpec.builder().product("christmasPack").qtyStock(new BigDecimal(christmasPack_qtyOnHand)).build())
+				.stock(StockSpec.builder().product("chocolate").qtyStock(new BigDecimal(chocolate_qtyOnHand)).build())
+				.stock(StockSpec.builder().product("socks").qtyStock(new BigDecimal(socks_qtyOnHand)).build())
+				//
+				.order(OrderSpec.builder().value("order1").build())
+				.orderLine(OrderLineSpec.builder().value("ol1").product("christmasPack").order("order1")
+						.qtyOrdered(new BigDecimal(christmasPack_qtyOrdered))
+						.build())
+				.shipmentSchedule(ShipmentScheduleSpec.builder().product("christmasPack").order("order1").orderLine("ol1")
+						.qtyOrdered(new BigDecimal(christmasPack_qtyOrdered))
+						.deliveryRule(DeliveryRule.AVAILABILITY)
+						.pickFromOrder(PickFromOrderSpec.builder()
+								.mainProduct("christmasPack")
+								.mainProductUOM("Each")
+								.bomLine(PickFromOrderBOMLineSpec.builder()
+										.product("chocolate")
+										.uom("Each")
+										.qtyForOneFinishedGood(new BigDecimal("5"))
+										.build())
+								.bomLine(PickFromOrderBOMLineSpec.builder()
+										.product("socks")
+										.uom("Each")
+										.qtyForOneFinishedGood(new BigDecimal("3"))
+										.build())
+								.build())
+						.build())
+				.build();
+
+		return setupAndInvoke(spec);
+	}
+
 	@Nested
 	public class PickingBOM_ChristmasBox_5chocolates_3socks_DeliverByAvailability
 	{
-		@Builder(builderMethodName = "prepareTest", buildMethodName = "setupAndInvoke")
-		private ShipmentSchedulesDuringUpdate setupTest(
-				final int christmasPack_qtyOrdered,
-				final int christmasPack_qtyOnHand,
-				final int chocolate_qtyOnHand,
-				final int socks_qtyOnHand)
-		{
-			final TestSetupSpec spec = TestSetupSpec.builder()
-					.uom(UomSpec.builder().name("Each").build())
-					.product(ProductSpec.builder().value("christmasPack").uomValue("Each").stocked(true).build())
-					.product(ProductSpec.builder().value("chocolate").uomValue("Each").stocked(true).build())
-					.product(ProductSpec.builder().value("socks").uomValue("Each").stocked(true).build())
-					//
-					.stock(StockSpec.builder().product("christmasPack").qtyStock(new BigDecimal(christmasPack_qtyOnHand)).build())
-					.stock(StockSpec.builder().product("chocolate").qtyStock(new BigDecimal(chocolate_qtyOnHand)).build())
-					.stock(StockSpec.builder().product("socks").qtyStock(new BigDecimal(socks_qtyOnHand)).build())
-					//
-					.order(OrderSpec.builder().value("order1").build())
-					.orderLine(OrderLineSpec.builder().value("ol1").product("christmasPack").order("order1")
-							.qtyOrdered(new BigDecimal(christmasPack_qtyOrdered))
-							.build())
-					.shipmentSchedule(ShipmentScheduleSpec.builder().product("christmasPack").order("order1").orderLine("ol1")
-							.qtyOrdered(new BigDecimal(christmasPack_qtyOrdered))
-							.deliveryRule(DeliveryRule.AVAILABILITY)
-							.pickFromOrder(PickFromOrderSpec.builder()
-									.mainProduct("christmasPack")
-									.mainProductUOM("Each")
-									.bomLine(PickFromOrderBOMLineSpec.builder()
-											.product("chocolate")
-											.uom("Each")
-											.qtyForOneFinishedGood(new BigDecimal("5"))
-											.build())
-									.bomLine(PickFromOrderBOMLineSpec.builder()
-											.product("socks")
-											.uom("Each")
-											.qtyForOneFinishedGood(new BigDecimal("3"))
-											.build())
-									.build())
-							.build())
-					.build();
-
-			return setupAndInvoke(spec);
-		}
 
 		@Test
 		public void qtyOnHand_0christmasPacks_11chocolates_4socks()

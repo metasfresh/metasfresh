@@ -64,6 +64,11 @@ public class DocumentFilterList
 		return ofList(ImmutableList.of(filter));
 	}
 
+	public static DocumentFilterList ofNullable(@Nullable final DocumentFilter filter)
+	{
+		return filter != null ? of(filter) : EMPTY;
+	}
+
 	public static DocumentFilterList of(@NonNull final DocumentFilter... filters)
 	{
 		return ofList(Arrays.asList(filters));

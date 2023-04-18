@@ -57,7 +57,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -81,6 +81,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
@@ -108,7 +109,7 @@ class WorkpackageProcessorTask implements Runnable
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
-	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
+	private static final Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
@@ -135,16 +136,24 @@ class WorkpackageProcessorTask implements Runnable
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final PerformanceMonitoringService perfMonService;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.asyncWorkpackage.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+
 	public WorkpackageProcessorTask(
 			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
 			@NonNull final I_C_Queue_WorkPackage workPackage,
-			@NonNull final IWorkpackageLogsRepository logsRepository)
+			@NonNull final IWorkpackageLogsRepository logsRepository,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.logsRepository = logsRepository;
 
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
+
+		this.perfMonService = perfMonService;
 
 		workPackageProcessorOriginal = workPackageProcessor;
 		workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
@@ -165,18 +174,22 @@ class WorkpackageProcessorTask implements Runnable
 	@Override
 	public void run()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-
-		service.monitorTransaction(
-				this::run0,
-				TransactionMetadata.builder()
-						.type(Type.ASYNC_WORKPACKAGE)
-						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
-						.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
-						.build());
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive){
+			run0();
+		}
+		else
+		{
+			perfMonService.monitor(
+					this::run0,
+					Metadata.builder()
+							.type(Type.ASYNC_WORKPACKAGE)
+							.className("WorkpackageProcessorTask")
+							.functionName("run")
+							.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+							.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+							.build());
+		}
 	}
 
 	private void run0()
@@ -184,12 +197,10 @@ class WorkpackageProcessorTask implements Runnable
 		final Properties processingCtx = createProcessingCtx();
 		final WorkpackageLoggable loggable = createLoggable(workPackage);
 
-		boolean finallyReleaseElementLockIfAny = true; // task 08999: only release the lock if there is no skip request.
-
-		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
-				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable);
-				final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage);
-				final MDCCloseable queueProcessorMDC = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
+		try (final IAutoCloseable ignored = Env.switchContext(processingCtx);
+			 final IAutoCloseable ignored1 = Loggables.temporarySetLoggable(loggable);
+			 final MDCCloseable ignored2 = TableRecordMDC.putTableRecordReference(workPackage);
+			 final MDCCloseable ignored3 = MDC.putCloseable("queueProcessor.name", queueProcessor.getName()))
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 
@@ -255,12 +266,12 @@ class WorkpackageProcessorTask implements Runnable
 				loggable.addLog(msg);
 
 				final WorkpackageSkipRequestException skipRequest = WorkpackageSkipRequestException.createWithTimeoutAndThrowable(msg, retryms, e);
-				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
 				markSkipped(workPackage, skipRequest);
 			}
 			else
 			{
 				markError(workPackage, e);
+				unlockWorkpackageElements(); // task 08999: only release the lock if there is no skip request.
 			}
 		}
 		catch (final Throwable ex)
@@ -268,22 +279,24 @@ class WorkpackageProcessorTask implements Runnable
 			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(ex);
 			if (skipRequest != null)
 			{
-				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
 				markSkipped(workPackage, skipRequest);
 			}
 			else
 			{
 				markError(workPackage, AdempiereException.wrapIfNeeded(ex));
+				unlockWorkpackageElements(); // task 08999: only release the lock if there is no skip request.
 			}
 		}
 		finally
 		{
-			afterWorkpackageProcessed(finallyReleaseElementLockIfAny);
+			afterWorkpackageProcessed();
 			loggable.flush();
 		}
 	}
 
-	/** Get the workpackage's correlation-uuid-parameter */
+	/**
+	 * Get the workpackage's correlation-uuid-parameter
+	 */
 	@Nullable
 	private UUID extractCorrelationIdOrNull()
 	{
@@ -362,7 +375,11 @@ class WorkpackageProcessorTask implements Runnable
 
 		//
 		// Execute the processor
-		return invokeProcessorAndHandleException(trxName);
+		final Result result = invokeProcessorAndHandleException(trxName);
+
+		// unlock the WP elements within the processor-trx, so they are effectively unlocked when the trx is committed
+		unlockWorkpackageElements();
+		return result;
 	}
 
 	private Result invokeProcessorAndHandleException(@Nullable final String trxName)
@@ -423,10 +440,8 @@ class WorkpackageProcessorTask implements Runnable
 	 * Method invoked after workpackage is processed. The method is invoked in any case (success, skip, error).
 	 * <p>
 	 * NOTE: this method is protected to be easily to unit test (i.e. decouple queueProcessor)
-	 *
-	 * @param releaseElementLockIfAny if <code>true</code> (which is usually the case) and there is a lock on the work package elements, that lock is released in this method.
 	 */
-	protected void afterWorkpackageProcessed(final boolean releaseElementLockIfAny)
+	protected void afterWorkpackageProcessed()
 	{
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
@@ -436,9 +451,32 @@ class WorkpackageProcessorTask implements Runnable
 
 		try
 		{
+			queueProcessor.getQueue().unlock(workPackage);
+		}
+		catch (final Exception e)
+		{
+			markError(workPackage, AdempiereException.wrapIfNeeded(e));
+		}
+
+		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
+		queueProcessor.notifyWorkpackageProcessed(workPackage, workPackageProcessorOriginal);
+	}
+
+	/**
+	 * To be called either right after the workpackage was processed, **before** the respective trx is committed.
+	 * That's important because on commit we might enqueue further WPs that might then need the elements to be already unlocked.
+	 * <p>
+	 * (...or to be called from the exception-handling-code - unless it's a Skip Request Exception)
+	 * <p>
+	 * Note that we only unlock the workpackage elements. The WP itself has it's own lock, that we release in {@link #afterWorkpackageProcessed()}.
+	 */
+	private void unlockWorkpackageElements()
+	{
+		try
+		{
 			// task 08999 unlock our WP-elements, if there is a lock and if there was no skip request
 			final Optional<ILock> elementsLock = workPackageProcessorWrapped.getElementsLock();
-			if (releaseElementLockIfAny && elementsLock.isPresent())
+			if (elementsLock.isPresent())
 			{
 				elementsLock.get().close();
 			}
@@ -453,20 +491,6 @@ class WorkpackageProcessorTask implements Runnable
 		{
 			markError(workPackage, AdempiereException.wrapIfNeeded(e));
 		}
-		finally
-		{
-			try
-			{
-				queueProcessor.getQueue().unlock(workPackage);
-			}
-			catch (final Exception e)
-			{
-				markError(workPackage, AdempiereException.wrapIfNeeded(e));
-			}
-		}
-
-		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
-		queueProcessor.notifyWorkpackageProcessed(workPackage, workPackageProcessorOriginal);
 	}
 
 	/**
@@ -570,7 +594,15 @@ class WorkpackageProcessorTask implements Runnable
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId;
+		if(ex instanceof WorkpackageSkipRequestException)
+		{ // don't clutter the database with AD_Issue records for this type of exception
+			issueId = null;
+		}
+		else
+		{ // ordinary issue => create AD_Issue record
+			issueId = Services.get(IErrorManager.class).createIssue(ex);
+		}
 
 		//
 		// Allow retry processing this workpackage?
@@ -589,7 +621,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
 
 		setLastEndTime(workPackage); // update statistics
 

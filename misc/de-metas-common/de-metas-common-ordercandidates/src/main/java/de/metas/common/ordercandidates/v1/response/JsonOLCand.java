@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.ordercandidates.v1.request.JsonOrganization;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -72,7 +72,7 @@ public class JsonOLCand
 	private BigDecimal qty;
 	private int uomId;
 
-	@ApiModelProperty(value="Effective number of items - in the product's stock UOM - the order line candidate was created with.")
+	@Schema(description="Effective number of items - in the product's stock UOM - the order line candidate was created with.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private BigDecimal qtyItemCapacity;
 

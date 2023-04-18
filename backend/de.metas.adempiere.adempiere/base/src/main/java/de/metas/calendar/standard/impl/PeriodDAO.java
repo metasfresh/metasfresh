@@ -22,8 +22,10 @@ package de.metas.calendar.standard.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.calendar.standard.IPeriodDAO;
+import de.metas.document.DocBaseType;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,13 +39,16 @@ public class PeriodDAO implements IPeriodDAO
 {
 	@Override
 	@Cached(cacheName = I_C_PeriodControl.Table_Name + "#by#" + I_C_PeriodControl.COLUMNNAME_C_Period_ID, expireMinutes = 120)
-	public Map<String, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(final @CacheCtx Properties ctx, final int periodId)
+	public Map<DocBaseType, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(final @CacheCtx Properties ctx, final int periodId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PeriodControl.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_PeriodControl.COLUMN_C_Period_ID, periodId)
 				.addOnlyActiveRecordsFilter()
-				.create()
-				.map(I_C_PeriodControl.class, I_C_PeriodControl.COLUMN_DocBaseType.<String> asValueFunction());
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+					record -> DocBaseType.ofCode(record.getDocBaseType()),
+					record -> record
+				));
 	}
 }

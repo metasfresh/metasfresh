@@ -405,7 +405,8 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		//
 		// Delete
-		return DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int deletedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		return deletedCount;
 	}
 
 	/**
@@ -446,7 +447,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
 				.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
-		final int no = DB.executeUpdateEx(sql.toString(),
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Reset={}", no);
@@ -657,7 +658,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		//
 		// Execute
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited,
@@ -681,7 +682,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 	protected void markImported(final ImportRecordType importRecord)
 	{
-		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_I_IsImported, true);
+		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_I_IsImported, IsImported.Imported.getValue());
 		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_Processed, true);
 		InterfaceWrapperHelper.setValue(importRecord, ImportTableDescriptor.COLUMNNAME_Processing, false);
 		InterfaceWrapperHelper.save(importRecord);

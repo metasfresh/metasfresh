@@ -24,9 +24,12 @@ package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
@@ -84,17 +87,18 @@ public class PPOrderCandidateDAO
 	}
 
 	public void createProductionOrderAllocation(
-			@NonNull final I_PP_Order_Candidate candidateRecord,
-			@NonNull final I_PP_Order orderRecord)
+			@NonNull final PPOrderCandidateId candidateId,
+			@NonNull final I_PP_Order orderRecord,
+			@NonNull final Quantity qtyToAllocate)
 	{
 		final I_PP_OrderCandidate_PP_Order alloc = InterfaceWrapperHelper.newInstance(I_PP_OrderCandidate_PP_Order.class);
 
-		alloc.setAD_Org_ID(candidateRecord.getAD_Org_ID());
+		alloc.setAD_Org_ID(orderRecord.getAD_Org_ID());
 		alloc.setPP_Order_ID(orderRecord.getPP_Order_ID());
-		alloc.setPP_Order_Candidate_ID(candidateRecord.getPP_Order_Candidate_ID());
+		alloc.setPP_Order_Candidate_ID(candidateId.getRepoId());
 
-		alloc.setC_UOM_ID(candidateRecord.getC_UOM_ID());
-		alloc.setQtyEntered(candidateRecord.getQtyToProcess());
+		alloc.setC_UOM_ID(qtyToAllocate.getUomId().getRepoId());
+		alloc.setQtyEntered(qtyToAllocate.toBigDecimal());
 
 		saveRecord(alloc);
 	}
@@ -120,5 +124,53 @@ public class PPOrderCandidateDAO
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
 				.create()
 				.listImmutable(I_PP_Order_Candidate.class);
+	}
+
+	public void deletePPOrderCandidates(@NonNull final DeletePPOrderCandidatesQuery deletePPOrderCandidatesQuery)
+	{
+		final IQueryBuilder<I_PP_Order_Candidate> deleteQuery = queryBL.createQueryBuilder(I_PP_Order_Candidate.class);
+
+		if (deletePPOrderCandidatesQuery.isOnlySimulated())
+		{
+			deleteQuery.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsSimulated, deletePPOrderCandidatesQuery.isOnlySimulated());
+		}
+
+		if (deletePPOrderCandidatesQuery.getSalesOrderLineId() != null)
+		{
+			deleteQuery.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_OrderLine_ID, deletePPOrderCandidatesQuery.getSalesOrderLineId());
+		}
+
+		if (deleteQuery.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all PP_Order_Candidate records is not allowed!");
+		}
+
+		final boolean failIfProcessed = false;
+
+		deleteQuery
+				.create()
+				.iterateAndStream()
+				.peek(this::deleteLines)
+				.forEach(simulatedOrder -> InterfaceWrapperHelper.delete(simulatedOrder, failIfProcessed));
+	}
+
+	public void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate)
+	{
+		if (candidate.isProcessed())
+		{
+			return;
+		}
+
+		candidate.setProcessed(true);
+
+		save(candidate);
+	}
+
+	private void deleteLines(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
+	{
+		queryBL.createQueryBuilder(I_PP_OrderLine_Candidate.class)
+				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+				.create()
+				.deleteDirectly();
 	}
 }

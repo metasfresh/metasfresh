@@ -199,7 +199,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getBPExternalIdentifier().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
@@ -231,7 +231,7 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final String bPartnerExternalIdentifier = context.getMetasfreshId().getIdentifier();
+		final String bPartnerExternalIdentifier = context.getBPExternalIdentifier().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(

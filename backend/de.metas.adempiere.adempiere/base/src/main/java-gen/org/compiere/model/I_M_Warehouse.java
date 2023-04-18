@@ -52,6 +52,51 @@ public interface I_M_Warehouse
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Invoices with suppliers.
+	 * If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order's bill-partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerInvoicesWithVendors (boolean BPartnerInvoicesWithVendors);
+
+	/**
+	 * Get Invoices with suppliers.
+	 * If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order's bill-partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBPartnerInvoicesWithVendors();
+
+	ModelColumn<I_M_Warehouse, Object> COLUMN_BPartnerInvoicesWithVendors = new ModelColumn<>(I_M_Warehouse.class, "BPartnerInvoicesWithVendors", null);
+	String COLUMNNAME_BPartnerInvoicesWithVendors = "BPartnerInvoicesWithVendors";
+
+	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -96,7 +141,7 @@ public interface I_M_Warehouse
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -105,7 +150,7 @@ public interface I_M_Warehouse
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

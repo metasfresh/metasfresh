@@ -41,6 +41,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -110,6 +111,22 @@ class ResourceRepository
 		return getResourcesMap().getGroupIdsByResourceIds(resourceIds);
 	}
 
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return getResourcesMap().getResourceIdsByUserId(userId);
+	}
+	
+	@NonNull
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstIdOnlyOptional(ResourceId::ofRepoId);
+	}
+
 	private ResourcesMap getResourcesMap()
 	{
 		return cache.getOrLoad(0, this::retrieveResourcesMap);
@@ -140,6 +157,7 @@ class ResourceRepository
 				.description(record.getDescription())
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.manufacturingResourceType(ManufacturingResourceType.ofNullableCode(record.getManufacturingResourceType()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
 				.internalName(record.getInternalName())
 				.build();
@@ -214,6 +232,14 @@ class ResourceRepository
 					.map(byId::get)
 					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
+		}
+
+		public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+		{
+			return allActive.stream()
+					.filter(resource -> UserId.equals(resource.getResponsibleId(), userId))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

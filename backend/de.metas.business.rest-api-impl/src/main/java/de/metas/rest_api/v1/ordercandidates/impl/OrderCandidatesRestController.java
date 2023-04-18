@@ -20,8 +20,6 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -30,7 +28,6 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.utils.ApiAPMHelper;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
@@ -41,15 +38,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.exception.MissingResourceException;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -113,7 +108,6 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
 	private final BpartnerRestController bpartnerRestController;
-	private final PerformanceMonitoringService perfMonService;
 
 	private PermissionServiceFactory permissionServiceFactory;
 
@@ -126,7 +120,6 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
 		this.bpartnerRestController = bpartnerRestController;
-		this.perfMonService = perfMonService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -193,34 +186,12 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		perfMonService.monitorSpan(
-				() -> bulkRequest.getRequests()
+		bulkRequest.getRequests()
 						.stream()
-						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-				ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
+						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
 	}
 
 	private void createOrUpdateMasterdata(
-			@NonNull final JsonOLCandCreateRequest json,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
-				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
-		{
-			final SpanMetadata spanMetadata = SpanMetadata.builder()
-					.name("CreateOrUpdateMasterDataSingle")
-					.type(Type.REST_API_PROCESSING.getCode())
-					.label(PerformanceMonitoringService.LABEL_EXTERNAL_HEADER_ID, json.getExternalHeaderId())
-					.label(PerformanceMonitoringService.LABEL_EXTERNAL_LINE_ID, json.getExternalLineId())
-					.build();
-
-			perfMonService.monitorSpan(
-					() -> createOrUpdateMasterdata0(json, masterdataProvider),
-					spanMetadata);
-		}
-	}
-
-	private void createOrUpdateMasterdata0(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
@@ -301,20 +272,6 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("CreatOrderLineCandidatesBulk")
-				.type(Type.REST_API_PROCESSING.getCode())
-				.build();
-
-		return perfMonService.monitorSpan(
-				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
-				spanMetadata);
-	}
-
-	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(
-			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
 		final List<OLCandCreateRequest> requests = bulkRequest
 				.getRequests()
 				.stream()
@@ -356,16 +313,16 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 	public ResponseEntity<JsonAttachment> attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 
-			@ApiParam(required = true, value = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
+			@Parameter(required = true, description = "`externalheaderId` of the order line candidates to which the given file shall be attached") //
 			@PathVariable("externalHeaderId") final String externalHeaderId,
 
-			@ApiParam(value = "List with an even number of items;\n"
+			@Parameter(description = "List with an even number of items;\n"
 					+ "transformed to a map of key-value pairs and added to the new attachment as tags.\n"
 					+ "If the number of items is odd, the last item is discarded.", allowEmptyValue = true) //
 			@RequestParam("tags") //
 			@Nullable final List<String> tagKeyValuePairs,
 
-			@ApiParam(required = true, value = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
+			@Parameter(required = true, description = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
 			@RequestBody @NonNull final MultipartFile file) throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);

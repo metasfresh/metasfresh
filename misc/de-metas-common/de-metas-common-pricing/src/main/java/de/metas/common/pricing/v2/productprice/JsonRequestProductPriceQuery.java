@@ -26,8 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,22 +34,18 @@ import lombok.Value;
 import java.time.LocalDate;
 
 @Value
-@ApiModel
+@Schema
 public class JsonRequestProductPriceQuery
 {
-	@ApiModelProperty(position = 10,
-			dataType = "java.lang.String",
-			value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
 	@JsonProperty("bpartnerIdentifier")
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(position = 20,
-			dataType = "java.lang.String",
-			value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
 	@JsonProperty("productIdentifier")
 	String productIdentifier;
 
-	@ApiModelProperty(position = 30, dataType = "java.time.LocalDate")
+	@Schema
 	@JsonProperty("targetDate")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate targetDate;

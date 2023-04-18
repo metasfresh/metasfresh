@@ -15,7 +15,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,7 +47,7 @@ import java.util.Map;
  * #L%
  */
 
-@ApiModel(value = "lookup-value", description = "pair of { field : value}")
+@Schema(name = "lookup-value", description = "pair of { field : value}")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @EqualsAndHashCode
 public final class JSONLookupValue

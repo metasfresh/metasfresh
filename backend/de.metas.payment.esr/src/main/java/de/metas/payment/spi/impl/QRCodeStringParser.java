@@ -32,6 +32,7 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class QRCodeStringParser extends AbstractESRPaymentStringParser
@@ -41,7 +42,9 @@ public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 	@Override
 	public PaymentString parse(@NonNull final String qrCode)
 	{
-		final List<String> lines = SPLITTER.splitToList(qrCode);
+		// final List<String> lines = SPLITTER.splitToList(qrCode);
+		final List<String>  lines = Arrays.asList(qrCode.split("\\n"));
+
 		
 		Check.assumeEquals(lines.get(0), "SPC"); // QR Type
 		Check.assumeEquals(lines.get(1), "0200"); // Version

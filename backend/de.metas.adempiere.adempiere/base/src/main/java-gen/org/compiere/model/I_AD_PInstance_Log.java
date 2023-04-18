@@ -218,4 +218,25 @@ public interface I_AD_PInstance_Log
 
 	ModelColumn<I_AD_PInstance_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_AD_PInstance_Log.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Warnings.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWarnings (@Nullable java.lang.String Warnings);
+
+	/**
+	 * Get Warnings.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWarnings();
+
+	ModelColumn<I_AD_PInstance_Log, Object> COLUMN_Warnings = new ModelColumn<>(I_AD_PInstance_Log.class, "Warnings", null);
+	String COLUMNNAME_Warnings = "Warnings";
 }

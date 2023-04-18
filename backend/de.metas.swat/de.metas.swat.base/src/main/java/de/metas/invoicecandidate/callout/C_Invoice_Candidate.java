@@ -39,6 +39,8 @@ public class C_Invoice_Candidate
 			, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override //
 			, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override //
 			, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice //
+			, I_C_Invoice_Candidate.COLUMNNAME_C_VAT_Code_ID //
+			, I_C_Invoice_Candidate.COLUMNNAME_C_VAT_Code_Override_ID //
 	})
 	public void updatePriceAndAmt(final I_C_Invoice_Candidate ic)
 	{

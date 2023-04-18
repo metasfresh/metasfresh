@@ -22,6 +22,7 @@
 
 package de.metas.calendar.standard;
 
+import de.metas.document.DocBaseType;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_PeriodControl;
 
@@ -30,6 +31,6 @@ import java.util.Properties;
 
 public interface IPeriodDAO extends ISingletonService
 {
-	Map<String, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
+	Map<DocBaseType, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
 
 }

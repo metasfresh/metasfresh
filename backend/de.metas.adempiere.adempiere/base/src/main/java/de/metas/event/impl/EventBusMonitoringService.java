@@ -26,9 +26,6 @@ import de.metas.event.Event;
 import de.metas.event.Topic;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import lombok.NonNull;
-
-import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class EventBusMonitoringService
@@ -49,17 +46,15 @@ public class EventBusMonitoringService
 			@NonNull final Consumer<Event> enqueueEvent)
 	{
 		final Event.Builder eventToSendBuilder = event.toBuilder();
-		final PerformanceMonitoringService.SpanMetadata request = PerformanceMonitoringService.SpanMetadata.builder()
-				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT.getCode())
-				.subType(PerformanceMonitoringService.SubType.EVENT_SEND.getCode())
-				.name("Enqueue distributed-event on topic " + topic.getName())
+		final PerformanceMonitoringService.Metadata request = PerformanceMonitoringService.Metadata.builder()
+				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
+				.className("EventBus")
+				.functionName("enqueueEvent")
 				.label("de.metas.event.distributed-event.senderId", event.getSenderId())
 				.label("de.metas.event.distributed-event.topicName", topic.getName())
-				// allow perfMonService to inject properties into the event which enable distributed tracing
-				.distributedHeadersInjector((name, value) -> eventToSendBuilder.putProperty(PROP_TRACE_INFO_PREFIX + name, value))
 				.build();
 
-		perfMonService.monitorSpan(
+		perfMonService.monitor(
 				() -> enqueueEvent.accept(eventToSendBuilder.build()),
 				request);
 	}
@@ -69,28 +64,16 @@ public class EventBusMonitoringService
 			@NonNull final Topic topic,
 			@NonNull final Runnable processEvent)
 	{
-		// extract remote tracing infos from the event (if there are any) and create a (distributed) monitoring transaction.
-
-		final PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder transactionMetadata = PerformanceMonitoringService.TransactionMetadata.builder();
-		for (final Map.Entry<String, Object> entry : event.getProperties().entrySet())
-		{
-			final String key = entry.getKey();
-			if (key.startsWith(PROP_TRACE_INFO_PREFIX))
-			{
-				transactionMetadata.distributedTransactionHeader(
-						key.substring(PROP_TRACE_INFO_PREFIX.length()),
-						Objects.toString(entry.getValue()));
-			}
-		}
-		transactionMetadata
-				.name("Process remote-event; topic=" + topic.getName())
+		final PerformanceMonitoringService.Metadata metadata = PerformanceMonitoringService.Metadata.builder()
+				.className("RabbitMQEventBusRemoteEndpoint")
+				.functionName("onEvent")
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
 				.label("de.metas.event.remote-event.senderId", event.getSenderId())
 				.label("de.metas.event.remote-event.topicName", topic.getName())
-				.label("de.metas.event.remote-event.endpointImpl", this.getClass().getSimpleName());
+				.build();
 
-		perfMonService.monitorTransaction(
+		perfMonService.monitor(
 				processEvent,
-				transactionMetadata.build());
+				metadata);
 	}
 }

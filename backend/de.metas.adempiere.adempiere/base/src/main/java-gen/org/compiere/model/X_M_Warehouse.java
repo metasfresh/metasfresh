@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehouse, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 895356713L;
+	private static final long serialVersionUID = 461914646L;
 
     /** Standard Constructor */
     public X_M_Warehouse (final Properties ctx, final int M_Warehouse_ID, @Nullable final String trxName)
@@ -32,6 +32,33 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public void setBPartnerInvoicesWithVendors (final boolean BPartnerInvoicesWithVendors)
+	{
+		set_Value (COLUMNNAME_BPartnerInvoicesWithVendors, BPartnerInvoicesWithVendors);
+	}
+
+	@Override
+	public boolean isBPartnerInvoicesWithVendors() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_BPartnerInvoicesWithVendors);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package de.metas.handlingunits;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
@@ -11,11 +12,14 @@ import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapReposit
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.money.MoneyService;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -161,6 +165,12 @@ public abstract class AbstractHUTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
+		final HUUniqueAttributesRepository huUniqueAttributeRepo = new HUUniqueAttributesRepository();
+		SpringContextHolder.registerJUnitBean(new HUUniqueAttributesService(huUniqueAttributeRepo));
+
+		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(moneyService);
 
 		initialize();
 	}

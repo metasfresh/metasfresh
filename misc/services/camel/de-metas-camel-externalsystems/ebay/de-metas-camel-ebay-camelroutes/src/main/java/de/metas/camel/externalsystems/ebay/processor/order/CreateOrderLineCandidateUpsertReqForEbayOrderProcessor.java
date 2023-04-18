@@ -168,7 +168,7 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 	{
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getLineItemId())
-				.productIdentifier("val-" + orderLine.getSku())  //TODO review - val makes it use the value identifier.
+				.productIdentifier("val-" + orderLine.getSku())
 				//TODO: better currency handling.
 				.price(new BigDecimal(orderLine.getTotal().getValue()))
 				.currencyCode(orderLine.getTotal().getCurrency())

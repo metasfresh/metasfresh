@@ -10,7 +10,7 @@ Map build(
         final boolean forceSkipBackend = false,
         final boolean forceSkipCucumber = false,
         final String multithreadParam = "-T 2C") {
-    
+
     final dockerImages = [:]
     String publishedDBInitDockerImageName
 
@@ -87,7 +87,7 @@ Map build(
                         .withWorkDir('metasfresh-webui-api/target/docker');
                 final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-final DockerConf appDockerConf = reportDockerConf
+                final DockerConf appDockerConf = reportDockerConf
                         .withArtifactName('metasfresh-app')
                         .withWorkDir('metasfresh-dist/dist/target/docker/app');
                 final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // postgres DB init container
@@ -121,6 +121,7 @@ final DockerConf appDockerConf = reportDockerConf
                         cucumberBuildFile.build(mvnConf, scmVars)
                     }
                 }
+
 //                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 //                testSQLMigrationScripts(
 //                        params.MF_SQL_SEED_DUMP_URL,

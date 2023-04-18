@@ -1,17 +1,17 @@
 de.metas.contracts.pricing.trade_margin.CustomerTradeMarginRepositoryTest.getById_Test=[
   {
-    "customerTradeMarginId" : 100001,
-    "commissionProductId" : 1,
-    "pointsPrecision" : 2,
-    "name" : "name",
-    "lines" : [
+    "commissionProductId": 1,
+    "customerTradeMarginId": 100001,
+    "lines": [
       {
-        "customerTradeMarginLineId" : 100002,
-        "customerTradeMarginId" : 100001,
-        "active" : true,
-        "seqNo" : 0,
-        "marginPercent" : 10
+        "active": true,
+        "customerTradeMarginId": 100001,
+        "customerTradeMarginLineId": 100002,
+        "marginPercent": 10,
+        "seqNo": 0
       }
-    ]
+    ],
+    "name": "name",
+    "pointsPrecision": 2
   }
 ]

@@ -105,9 +105,17 @@ public class JSONMenuNode
 			final int depth,
 			final int childrenLimit,
 			final MutableInt maxLeafNodes,
-			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+												  final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (maxLeafNodes.getValue() <= 0)
+		{
+			return null;
+		}
+
+		final JSONMenuNode jsonNode = new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+
+		// Avoid empty groups, makes no sense and looks ugly to show them to user.
+		if (jsonNode.isEmptyGroup())
 		{
 			return null;
 		}
@@ -117,7 +125,7 @@ public class JSONMenuNode
 			maxLeafNodes.decrementAndGet();
 		}
 
-		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
+		return jsonNode;
 	}
 
 	public static Builder builder(final MenuNode node)
@@ -152,7 +160,7 @@ public class JSONMenuNode
 			final int depth,
 			final int childrenLimit,
 			final MutableInt maxLeafNodes,
-			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+						 final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		nodeId = node.getId();
 		parentId = node.getParentId();
@@ -171,9 +179,9 @@ public class JSONMenuNode
 		{
 			children = node.getChildren()
 					.stream()
-					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
 					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
 					.filter(Objects::nonNull)
+					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
 					.collect(ImmutableList.toImmutableList());
 		}
 	}
@@ -223,6 +231,11 @@ public class JSONMenuNode
 	//
 	// -----------------
 	//
+
+	public boolean isEmptyGroup()
+	{
+		return JSONMenuNodeType.group.equals(type) && (children == null || children.isEmpty());
+	}
 
 	public static final class Builder
 	{

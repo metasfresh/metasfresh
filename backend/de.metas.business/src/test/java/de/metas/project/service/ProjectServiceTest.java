@@ -43,13 +43,16 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.I_C_UOM;
-import org.elasticsearch.common.collect.List;
+import org.compiere.model.I_R_StatusCategory;
+import org.elasticsearch.core.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,10 +82,14 @@ public class ProjectServiceTest
 	@Test
 	void createProjectTest()
 	{
+		final I_R_StatusCategory statusCategory = newInstance(I_R_StatusCategory.class);
+		save(statusCategory);
 		// Given
 		final I_C_ProjectType projectTypeRecord = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
 		projectTypeRecord.setProjectCategory("N");
 		projectTypeRecord.setAD_Org_ID(1000000);
+		projectTypeRecord.setR_StatusCategory_ID(statusCategory.getR_StatusCategory_ID());
+		projectTypeRecord.setName("projectTypeName");
 
 		saveRecord(projectTypeRecord);
 

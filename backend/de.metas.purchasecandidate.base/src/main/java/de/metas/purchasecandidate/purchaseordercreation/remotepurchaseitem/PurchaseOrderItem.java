@@ -7,6 +7,8 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
@@ -280,5 +282,17 @@ public class PurchaseOrderItem implements PurchaseItem
 	public UomId getPriceUomId()
 	{
 		return purchaseCandidate.getPriceUomId();
+	}
+
+	@Nullable
+	public String getProductDescription()
+	{
+		return purchaseCandidate.getProductDescription();
+	}
+
+	@Nullable
+	public ActivityId getActivityId()
+	{
+		return purchaseCandidate.getActivityId();
 	}
 }

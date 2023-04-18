@@ -30,7 +30,8 @@ import lombok.Getter;
 public enum RestServiceAuthority
 {
 	WOO("WOO"),
-	GRS("GRSSignum");
+	GRS("GRSSignum"),
+	METASFRESH("Metasfresh");
 
 	private final String value;
 }

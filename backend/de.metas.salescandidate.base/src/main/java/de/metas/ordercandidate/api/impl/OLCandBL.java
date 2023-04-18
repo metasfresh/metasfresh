@@ -49,6 +49,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.process.PInstanceId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -546,6 +547,7 @@ public class OLCandBL implements IOLCandBL
 				.projectId(ProjectId.ofRepoIdOrNull(olCandRecord.getC_Project_ID()))
 				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
 				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(olCandRecord.getM_SectionCode_ID()))
 				.build();
 	}
 

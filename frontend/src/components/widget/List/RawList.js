@@ -3,7 +3,7 @@ import onClickOutsideHOC from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { isEqual, findIndex, pullAt } from 'lodash';
+import { findIndex, isEqual, pullAt } from 'lodash';
 import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
@@ -67,11 +67,17 @@ export class RawList0 extends PureComponent {
     };
 
     // NOTE: we use this approach to be able to jest.spyOn
-    this.focusDropdown = this.focusDropdown.bind(this);
+    this.requestFocus = this.requestFocus.bind(this);
   }
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleTab);
+
+    //
+    // On initial focus gained when component was created first time
+    if (this.props.isFocused) {
+      this.focus();
+    }
   }
 
   componentWillUnmount() {
@@ -135,20 +141,28 @@ export class RawList0 extends PureComponent {
     if (Object.keys(changedValues).length) {
       this.setState({ ...changedValues }, () => {
         // NOTE: don't request focus here because we will get a weird behaviour when multiple fields will open their dropdown at once
-        //this.focusDropdown();
+        //this.requestFocus();
       });
+    }
+
+    //
+    // On focus gained (via props)
+    if (this.props.isFocused) {
+      // NOTE: commented out condition: && this.props.isFocused !== prevProps.isFocused
+      // because we want to cover the case when the isFocused was set before but for some reason,
+      // the field was not focused because maybe was not created yet or the focus was somehow lost...
+      //
+      // Test case: GL Journal (SAP), batch entry, first field D/C was not focused after comple of complete entries.
+
+      this.focus();
     }
   }
 
-  /*
-   * Alternative method to open dropdown, in case of disabled opening
-   * on focus.
-   */
   handleClick = () => {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
     if (!isToggled) {
-      this.focusDropdown();
+      this.requestFocus();
       onOpenDropdown();
     } else {
       onCloseDropdown();
@@ -194,7 +208,7 @@ export class RawList0 extends PureComponent {
         }
         onCloseDropdown();
 
-        setTimeout(() => this.focusDropdown(), 0);
+        setTimeout(() => this.requestFocus(), 0);
       });
     }
   };
@@ -251,13 +265,17 @@ export class RawList0 extends PureComponent {
   handleBlur = () => {
     const { onBlur } = this.props;
 
-    this.dropdown.blur();
+    this.inputContainerElement.blur();
     onBlur();
   };
 
-  focusDropdown() {
+  requestFocus() {
     this.props.onFocus();
   }
+
+  focus = () => {
+    this.inputContainerElement?.focus?.();
+  };
 
   renderSingleSelect = () => {
     const {
@@ -317,10 +335,10 @@ export class RawList0 extends PureComponent {
       ? this.props.properties.emptyText
       : placeholder;
 
-    let width = this.dropdown ? this.dropdown.offsetWidth : 0;
+    let width = this.inputContainerElement?.offsetWidth ?? 0;
     if (wrapperElement) {
       const wrapperWidth = wrapperElement.offsetWidth;
-      const offset = this.dropdown.offsetLeft;
+      const offset = this.inputContainerElement?.offsetLeft ?? 0;
 
       width = wrapperWidth - offset;
     }
@@ -342,7 +360,7 @@ export class RawList0 extends PureComponent {
           return (
             <div ref={ref} className={this.props.className}>
               <div
-                ref={(ref) => (this.dropdown = ref)}
+                ref={(ref) => (this.inputContainerElement = ref)}
                 className={classnames('input-dropdown-container', {
                   'input-disabled': readonly,
                   'input-dropdown-container-static': rowId,
@@ -360,7 +378,7 @@ export class RawList0 extends PureComponent {
                       !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
-                //onFocus={readonly ? null : this.focusDropdown} // not needed because cancels the effect of handleClick
+                //onFocus={readonly ? null : this.requestFocus} // not needed because cancels the effect of handleClick
                 onClick={readonly ? null : this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 onKeyUp={this.handleKeyUp}
@@ -376,7 +394,6 @@ export class RawList0 extends PureComponent {
                       !validStatus.initialValue &&
                       !isToggled,
                   })}
-                  ref={(c) => (this.inputContainer = c)}
                 >
                   <div
                     className={classnames(

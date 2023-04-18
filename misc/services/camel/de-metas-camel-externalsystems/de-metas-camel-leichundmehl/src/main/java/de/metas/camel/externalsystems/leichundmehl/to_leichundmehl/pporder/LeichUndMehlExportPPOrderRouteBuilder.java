@@ -22,47 +22,55 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.LogMessageRequest;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.JsonConverter;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartner;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPPOrder;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPriceList;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.DispatchMessageRequest;
-import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.ReadPluFileProcessor;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.JSONUtil;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
-import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.attachment.JsonAttachment;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.Map;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
-import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.SendToFTPRouteBuilder.SEND_TO_FTP_ROUTE_ID;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.udp.SendToUDPRouteBuilder.SEND_TO_UDP_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 {
 	public static final String EXPORT_PPORDER_ROUTE_ID = "LeichUndMehl-exportPPOrder";
+
+	private final ProcessLogger processLogger;
+
+	public LeichUndMehlExportPPOrderRouteBuilder(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
 
 	@Override
 	public void configure() throws Exception
@@ -78,35 +86,31 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(this::buildAndAttachContext)
 
+				.process(this::prepareGetManufacturingOrderRequest)
 				.to(direct(MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID))
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseManufacturingOrder.class))
 				.process(this::processJsonResponseManufacturingOrder)
 
+				.process(this::prepareGetProductRequest)
 				.to(direct(MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID))
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonProduct.class))
 				.process(this::processJsonProduct)
 
+				.process(new ReadPluFileProcessor(processLogger))
+				.to(direct(SEND_TO_TCP_ROUTE_ID))
+				//.to(direct(SEND_TO_UDP_ROUTE_ID))
+
 				.choice()
-					.when(ExportPPOrderHelper.ppOrderHasBPartnerAssigned())
-						.process(this::attachBPRetrieveCamelRequest)
+					.when(ExportPPOrderHelper.isPluFileExportAuditEnabled())
+						.process(this::processLogMessageRequest)
+						.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
 
-						.to("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
-						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
-						.process(this::processJsonResponseComposite)
-
-						.process(this::attachJsonRequestProductPriceQuery)
-						.to(direct(MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID))
-						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseProductPriceQuery.class))
-						.process(this::processJsonResponseProductPriceQuery)
-
+						.process(this::processJsonAttachmentRequest)
+						.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
 					.otherwise()
-						.log("No BPartnerId present on PPOrder!")
+						.log("PLU-File export audit not enabled!")
 					.endChoice()
-				.end()
-
-				.process(this::buildDispatchMessageRequest)
-				.to(direct(SEND_TO_FTP_ROUTE_ID));
-
+				.end();
 		//@formatter:on
 	}
 
@@ -115,12 +119,38 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 		final Map<String, String> parameters = request.getParameters();
 
+		if (parameters.isEmpty())
+		{
+			throw new RuntimeException("Missing mandatory parameters from JsonExternalSystemRequest: " + request);
+		}
+
+		final String productBaseFolderName = parameters.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME);
+		if (Check.isBlank(productBaseFolderName))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME);
+		}
+
+		final String pluFileExportAuditEnabled = parameters.get(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED);
+
 		final ExportPPOrderRouteContext context = ExportPPOrderRouteContext.builder()
 				.jsonExternalSystemRequest(request)
-				.ftpCredentials(ExportPPOrderHelper.getFTPCredentials(parameters))
+				.connectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters))
+				.productMapping(ExportPPOrderHelper.getProductMapping(parameters))
+				.productBaseFolderName(productBaseFolderName)
+				.pluFileExportAuditEnabled(StringUtils.toBoolean(pluFileExportAuditEnabled))
+				.pluFileConfigs(ExportPPOrderHelper.getPluFileConfigs(parameters))
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, context);
+	}
+
+	private void prepareGetManufacturingOrderRequest(@NonNull final Exchange exchange)
+	{
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
+																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+																						  ExportPPOrderRouteContext.class);
+
+		final Map<String, String> parameters = context.getJsonExternalSystemRequest().getParameters();
 
 		if (Check.isBlank(parameters.get(ExternalSystemConstants.PARAM_PP_ORDER_ID)))
 		{
@@ -140,8 +170,18 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
 																						  ExportPPOrderRouteContext.class);
 		context.setJsonResponseManufacturingOrder(jsonResponseManufacturingOrder);
+	}
 
-		final String productIdentifier = String.valueOf(jsonResponseManufacturingOrder.getProductId().getValue());
+	private void prepareGetProductRequest(@NonNull final Exchange exchange)
+	{
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
+																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+																						  ExportPPOrderRouteContext.class);
+
+		final JsonResponseManufacturingOrder ppOrder = context.getManufacturingOrderNonNull();
+
+		final String productIdentifier = String.valueOf(ppOrder.getProductId().getValue());
+
 		final RetrieveProductCamelRequest request = RetrieveProductCamelRequest.builder()
 				.orgCode(context.getJsonExternalSystemRequest().getOrgCode())
 				.productIdentifier(productIdentifier)
@@ -156,95 +196,61 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-		final JsonProductInfo.JsonProductInfoBuilder jsonProductInfoBuilder = JsonConverter.initProductInfo(context.getManufacturingOrderNonNull(), jsonProduct);
-
-		context.setJsonProductBuilder(jsonProductInfoBuilder);
+		context.setJsonProduct(jsonProduct);
 	}
 
-	private void attachBPRetrieveCamelRequest(@NonNull final Exchange exchange)
+	private void processLogMessageRequest(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-		final String bPartnerIdentifier = String.valueOf(context.getBPartnerIdNonNull().getValue());
-
-		final JsonMetasfreshId externalSystemConfigId = context.getJsonExternalSystemRequest().getExternalSystemConfigId();
 		final JsonMetasfreshId adPInstanceId = context.getJsonExternalSystemRequest().getAdPInstanceId();
 
-		final BPRetrieveCamelRequest retrieveCamelRequest = BPRetrieveCamelRequest.builder()
-				.bPartnerIdentifier(bPartnerIdentifier)
-				.externalSystemConfigId(externalSystemConfigId)
-				.adPInstanceId(adPInstanceId)
+		Check.assumeNotNull(adPInstanceId, "adPInstanceId cannot be null at this stage!");
+
+		final JsonPluFileAudit jsonPluFileAudit = context.getJsonPluFileAuditNonNull();
+		final String jsonPluFileAuditMessage = JSONUtil.writeValueAsString(jsonPluFileAudit);
+
+		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
+				.logMessage(jsonPluFileAuditMessage)
+				.pInstanceId(adPInstanceId)
 				.build();
 
-		exchange.getIn().setBody(retrieveCamelRequest);
+		exchange.getIn().setBody(logMessageRequest);
 	}
 
-	private void processJsonResponseComposite(@NonNull final Exchange exchange)
-	{
-		final JsonResponseComposite jsonResponseComposite = exchange.getIn().getBody(JsonResponseComposite.class);
-
-		final JsonBPartner jsonBPartner = JsonBPartner.builder()
-				.bpartnerId(jsonResponseComposite.getBpartner().getMetasfreshId().getValue())
-				.name(jsonResponseComposite.getBpartner().getName())
-				.glnList(ExportPPOrderHelper.getBPartnerGLNList(jsonResponseComposite))
-				.build();
-
-		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
-		context.setJsonBPartner(jsonBPartner);
-	}
-
-	private void attachJsonRequestProductPriceQuery(@NonNull final Exchange exchange)
-	{
-		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
-
-		final JsonResponseManufacturingOrder responseManufacturingOrder = context.getManufacturingOrderNonNull();
-
-		final String productIdentifier = String.valueOf(responseManufacturingOrder.getProductId().getValue());
-		final String bpartnerIdentifier = String.valueOf(context.getBPartnerIdNonNull().getValue());
-
-		final JsonRequestProductPriceQuery requestProductPriceQuery = JsonRequestProductPriceQuery.builder()
-				.productIdentifier(productIdentifier)
-				.bpartnerIdentifier(bpartnerIdentifier)
-				.targetDate(responseManufacturingOrder.getDatePromised().toLocalDate())
-				.build();
-
-		exchange.getIn().setHeader(HEADER_ORG_CODE, context.getJsonExternalSystemRequest().getOrgCode());
-		exchange.getIn().setBody(requestProductPriceQuery, JsonRequestProductPriceQuery.class);
-	}
-
-	private void processJsonResponseProductPriceQuery(@NonNull final Exchange exchange)
-	{
-		final JsonResponseProductPriceQuery response = exchange.getIn().getBody(JsonResponseProductPriceQuery.class);
-
-		final ImmutableList<JsonPriceList> priceLists = response.getPriceList()
-				.stream()
-				.map(JsonConverter::mapToJsonPriceList)
-				.collect(ImmutableList.toImmutableList());
-
-		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
-																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
-																						  ExportPPOrderRouteContext.class);
-
-		context.getProductInfoBuilderNonNull().priceList(priceLists);
-	}
-
-	private void buildDispatchMessageRequest(@NonNull final Exchange exchange)
+	private void processJsonAttachmentRequest(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-		final JsonProductInfo jsonProductInfo = context.getProductInfoBuilderNonNull().build();
+		final JsonExternalSystemRequest request = context.getJsonExternalSystemRequest();
 
-		final JsonPPOrder jsonPPOrder = JsonConverter.mapToJsonPPOrder(context.getManufacturingOrderNonNull(), jsonProductInfo, context.getJsonBPartner());
+		final JsonMetasfreshId adPInstanceId = request.getAdPInstanceId();
 
-		final DispatchMessageRequest request = DispatchMessageRequest.builder()
-				.ftpPayload(jsonPPOrder)
-				.ftpCredentials(context.getFtpCredentials())
+		Check.assumeNotNull(adPInstanceId, "adPInstanceId cannot be null at this stage!");
+
+		final String fileContent = context.getUpdatedPLUFileContent();
+
+		final byte[] fileData = fileContent.getBytes();
+
+		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
+
+		final JsonAttachment attachment = JsonAttachment.builder()
+				.fileName(context.getFilename())
+				.data(base64FileData)
+				.type(JsonAttachmentSourceType.Data)
 				.build();
 
-		exchange.getIn().setBody(request, DispatchMessageRequest.class);
+		final JsonTableRecordReference jsonTableRecordReference = JsonTableRecordReference.builder()
+				.tableName(LeichMehlConstants.AD_PINSTANCE_TABLE_NAME)
+				.recordId(adPInstanceId)
+				.build();
+
+		final JsonAttachmentRequest jsonAttachmentRequest = JsonAttachmentRequest.builder()
+				.attachment(attachment)
+				.orgCode(request.getOrgCode())
+				.reference(jsonTableRecordReference)
+				.build();
+
+		exchange.getIn().setBody(jsonAttachmentRequest);
 	}
 }

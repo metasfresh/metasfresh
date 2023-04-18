@@ -1,9 +1,13 @@
 package de.metas.acct.gldistribution.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.gldistribution.IGLDistributionDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocTypeId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -14,13 +18,10 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 
-import de.metas.acct.api.AccountDimension;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.gldistribution.IGLDistributionDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 /*
  * #%L
@@ -55,8 +56,8 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				.addInArrayOrAllFilter(I_GL_Distribution.COLUMN_Account_ID, null, elementValueId) // for given element value or without an element value
 				//
 				.orderBy()
-				.addColumn(I_GL_Distribution.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last) // first, return those for our AD_Client_ID
-				.addColumn(I_GL_Distribution.COLUMN_GL_Distribution_ID) // just to have a predictable order
+				.addColumn(I_GL_Distribution.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last) // first, return those for our AD_Client_ID
+				.addColumn(I_GL_Distribution.COLUMNNAME_GL_Distribution_ID) // just to have a predictable order
 				.endOrderBy()
 				//
 				.create()
@@ -64,7 +65,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 	}
 
 	@Override
-	public List<I_GL_Distribution> retrieve(final Properties ctx, final AccountDimension dimension, final String PostingType, final int C_DocType_ID)
+	public List<I_GL_Distribution> retrieve(final Properties ctx, final AccountDimension dimension, final String PostingType, final DocTypeId C_DocType_ID)
 	{
 		Check.assumeNotNull(dimension, "dimension not null");
 
@@ -82,12 +83,14 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				continue;
 			}
 			// Only Posting Type
-			if (glDistribution.getPostingType() != null && !Check.equals(glDistribution.getPostingType(), PostingType))
+			if (glDistribution.getPostingType() != null && !Objects.equals(glDistribution.getPostingType(), PostingType))
 			{
 				continue;
 			}
+
 			// Only DocType
-			if (glDistribution.getC_DocType_ID() > 0 && glDistribution.getC_DocType_ID() != C_DocType_ID)
+			final DocTypeId glDistributionDocTypeId = DocTypeId.ofRepoIdOrNull(glDistribution.getC_DocType_ID());
+			if (glDistributionDocTypeId != null && !DocTypeId.equals(glDistributionDocTypeId, C_DocType_ID))
 			{
 				continue;
 			}
@@ -118,6 +121,14 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				continue;
 			}
 			if (!glDistribution.isAnyActivity() && glDistribution.getC_Activity_ID() != dimension.getC_Activity_ID())
+			{
+				continue;
+			}
+			if (!glDistribution.isAnyOrder() && glDistribution.getC_Order_ID() != dimension.getSalesOrderId())
+			{
+				continue;
+			}
+			if (!glDistribution.isAnySectionCode() && glDistribution.getM_SectionCode_ID() != dimension.getM_SectionCode_ID())
 			{
 				continue;
 			}

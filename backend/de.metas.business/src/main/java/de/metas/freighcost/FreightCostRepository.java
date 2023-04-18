@@ -248,7 +248,7 @@ public class FreightCostRepository
 					.filter(FreightCost::isDefaultFreightCost)
 					.sorted(Comparator.comparing(FreightCost::getId)) // just to have a predictible order
 					.collect(ImmutableList.toImmutableList());
-			if (defaults == null)
+			if (defaults.isEmpty())
 			{
 				return Optional.empty();
 			}

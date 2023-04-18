@@ -95,7 +95,8 @@ public class ErrorProcessor
 
 		if (pInstanceId == null)
 		{
-			throw new RuntimeException("No PInstanceId available!");
+			exchange.getIn().setBody(null);
+			return;
 		}
 
 		exchange.getIn().setBody(JsonError.ofSingleItem(getErrorItem(exchange)));

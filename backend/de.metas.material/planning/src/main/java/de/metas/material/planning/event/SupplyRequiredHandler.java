@@ -144,6 +144,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.warehouseId(materialDescr.getWarehouseId())
 				.plantId(plantId)
 				.productId(ProductId.ofRepoId(materialDescr.getProductId()))
+				.includeWithNullProductId(false)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
 

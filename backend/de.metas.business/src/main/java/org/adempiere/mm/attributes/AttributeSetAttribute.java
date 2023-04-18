@@ -39,4 +39,5 @@ public class AttributeSetAttribute
 	@NonNull OptionalBoolean mandatoryOnReceipt;
 	@NonNull OptionalBoolean mandatoryOnPicking;
 	@NonNull OptionalBoolean mandatoryOnShipment;
+	@NonNull OptionalBoolean mandatoryOnManufacturing;
 }

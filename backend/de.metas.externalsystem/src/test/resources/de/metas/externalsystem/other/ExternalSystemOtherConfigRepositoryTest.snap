@@ -1,26 +1,26 @@
 de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.getById=[
   {
-    "id" : {
-      "externalSystemParentConfigId" : 1
+    "autoSendDefaultShippingAddress": false,
+    "id": {
+      "externalSystemParentConfigId": 1
     },
-    "value" : {
-      "externalSystemParentConfigId" : 1
-    },
-    "parameters" : [
+    "parameters": [
       {
-        "id" : 100001,
-        "name" : "name1",
-        "value" : "value1"
+        "id": 100001,
+        "name": "name1",
+        "value": "value1"
       },
       {
-        "id" : 100002,
-        "name" : "name2",
-        "value" : "value2"
+        "id": 100002,
+        "name": "name2",
+        "value": "value2"
       }
     ],
-    "syncBPartnerEnabled" : false,
-    "autoSendDefaultShippingAddress" : false,
-    "syncBudgetProjectsEnabled" : false,
-    "syncWOProjectsEnabled" : false
+    "syncBPartnerEnabled": false,
+    "syncBudgetProjectsEnabled": false,
+    "syncWOProjectsEnabled": false,
+    "value": {
+      "externalSystemParentConfigId": 1
+    }
   }
 ]

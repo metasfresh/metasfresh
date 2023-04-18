@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
@@ -10,7 +11,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.standard.FacetFilterViewCacheMap;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
@@ -27,12 +30,15 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.ui.web.window.model.sql.SqlValueConverters;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
@@ -40,11 +46,13 @@ import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -54,6 +62,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -270,6 +279,9 @@ public final class DefaultView implements IEditableView
 		return selectionsRef.isQueryLimitHit();
 	}
 
+	@Override
+	public EmptyReason getEmptyReason() {return selectionsRef.getEmptyReason();}
+
 	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
 		return selectionsRef.getDefaultSelectionBeforeFacetsFiltering();
@@ -350,7 +362,7 @@ public final class DefaultView implements IEditableView
 			final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
-		checkChangedRows();
+		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
@@ -367,6 +379,7 @@ public final class DefaultView implements IEditableView
 				.orderBys(orderedSelection.getOrderBys())
 				.rows(rows)
 				.columnInfos(extractViewResultColumns(rows))
+				.emptyReason(orderedSelection.getEmptyReason())
 				.build();
 	}
 
@@ -422,7 +435,7 @@ public final class DefaultView implements IEditableView
 			@NonNull final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
-		checkChangedRows();
+		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
@@ -447,7 +460,7 @@ public final class DefaultView implements IEditableView
 
 	private IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
-		checkChangedRows();
+		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
 	}
@@ -470,28 +483,79 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		assertNotClosed();
+
+		final Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId)).toEvaluatee();
 
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx)
+				.findEntities(ctxEffective)
 				.getValues();
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		assertNotClosed();
+
+		final Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId)).toEvaluatee();
 
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx, query);
+				.findEntities(ctxEffective, query);
+	}
+
+	private Map<String, Object> normalizeFilterParameterValues(
+			@Nullable final Map<String, Object> parameterValues,
+			@NonNull final String filterId)
+	{
+		if (parameterValues == null || parameterValues.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final DocumentFilterDescriptor filterDescriptor = getFilterDescriptors().getByFilterId(filterId);
+
+		final String tableName = getViewDataRepository().getTableName();
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		if (poInfo == null)
+		{
+			// shall not happen
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<String, Object> result = ImmutableMap.builder();
+		for (final String parameterName : parameterValues.keySet())
+		{
+			if (!filterDescriptor.hasParameter(parameterName))
+			{
+				continue;
+			}
+			if (!poInfo.hasColumnName(parameterName))
+			{
+				// shall not happen in case of DefaultView(s)
+				continue;
+			}
+
+			final DocumentFilterParamDescriptor parameterDescriptor = filterDescriptor.getParameterByName(parameterName);
+			final DocumentFieldWidgetType widgetType = parameterDescriptor.getWidgetType();
+			final Class<?> poValueClass = poInfo.getColumnClass(parameterName);
+			final Object value = parameterValues.get(parameterName);
+			final Object valueNorm = SqlValueConverters.convertToPOValue(value, parameterName, widgetType, poValueClass);
+
+			if (valueNorm != null)
+			{
+				result.put(parameterName, valueNorm);
+			}
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -501,7 +565,13 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds)
+	{
+		return streamByIds(rowIds, QueryLimit.ONE_THOUSAND);
+	}
+
+	@Override
+	public Stream<? extends IViewRow> streamByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final QueryLimit suggestedLimit)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -510,14 +580,14 @@ public final class DefaultView implements IEditableView
 		else if (rowIds.isAll())
 		{
 			assertNotClosed();
-			checkChangedRows();
+			checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
 
 			return IteratorUtils.<IViewRow>newPagedIterator()
 					.firstRow(0)
-					.maxRows(1000) // MAX rows to fetch
+					.maxRows(suggestedLimit.toIntOrZero()) // MAX rows to fetch
 					.pageSize(100) // fetch 100items/chunk
 					.pageFetcher((firstRow, pageSize) -> Page.ofRowsOrNull(viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageSize)))
 					.build()
@@ -525,10 +595,11 @@ public final class DefaultView implements IEditableView
 		}
 		else
 		{
-			// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
+			// NOTE: we get/retrieve one by one because we assume the "selected documents" were recently retrieved,
 			// and the records recently retrieved have a big chance to be cached.
 			return rowIds.stream()
 					.distinct()
+					.limit(suggestedLimit.isLimited() ? suggestedLimit.toInt() : Long.MAX_VALUE)
 					.map(rowId -> {
 						try
 						{
@@ -574,21 +645,43 @@ public final class DefaultView implements IEditableView
 
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
+		boolean hasViewAdditions = false;
 		if (watchedByFrontend)
 		{
-			rowIds = selectionsRef.retainExistingRowIds(rowIds);
+			// Process changed rows because if not, "retainExistingRowIds" will consider only the changed rows. The added or removed rowIds will be "discarded".
+			// And for the particular case when we have only new rows to be added the rowIds will get empty a websocket event will be sent to frontend.
+			if (refreshViewOnChangeEvents)
+			{
+				final AddRemoveChangedRowIdsCollector changesCollector = AddRemoveChangedRowIdsCollector.newRecording();
+				checkChangedRows(changesCollector);
+
+				if (changesCollector.hasAddedRows())
+				{
+					hasViewAdditions = true;
+				}
+
+				rowIds = changesCollector.getChangedOrRemovedRowIds();
+			}
+			else
+			{
+				rowIds = selectionsRef.retainExistingRowIds(rowIds);
+			}
 		}
 
 		// Collect event
-		if (rowIds.isEmpty())
+		if (!hasViewAdditions && rowIds.isEmpty())
 		{
 			// do nothing
 		}
-		else if (rowIds.size() >= 20)
+		// IMPORTANT: atm in case many rows were changed, avoid sending them to frontend.
+		// Better notify the frontend that the whole view changed,
+		// so the frontend would fetch the whole page instead of querying 1k of changed rows.
+		//
+		// Also, in case the view has additions we have to ask for page reload,
+		// because frontend does not react to rowIds which are not in its list.
+		// To optimize, it would be better to tell frontend that it was a row addition.
+		else if (hasViewAdditions || rowIds.size() >= 20)
 		{
-			// IMPORTANT: atm in case many rows were changed, avoid sending them to frontend.
-			// Better notify the frontend that the whole view changed,
-			// so the frontend would fetch the whole page instead of querying 1k of changed rows.
 			ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
 		}
 		else
@@ -628,9 +721,9 @@ public final class DefaultView implements IEditableView
 		}
 	}
 
-	private void checkChangedRows()
+	private void checkChangedRows(@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
-		changedRowIdsToCheck.process(selectionsRef::updateChangedRows);
+		changedRowIdsToCheck.process(rowIds -> selectionsRef.updateChangedRows(rowIds, changesCollector));
 	}
 
 	@Override
@@ -638,7 +731,8 @@ public final class DefaultView implements IEditableView
 	{
 		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
-		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+		final DocumentPath documentPath = getRowDocumentPath(rowId);
+		final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator = DocumentFieldLogicExpressionResultRevaluator.using(ctx.getUserRolePermissions());
 
 		Services.get(ITrxManager.class)
 				.runInThreadInheritedTrx(
@@ -646,7 +740,7 @@ public final class DefaultView implements IEditableView
 								documentPath,
 								NullDocumentChangesCollector.instance,
 								document -> {
-									patchDocument(document, fieldChangeRequests);
+									patchDocument(document, fieldChangeRequests, readonlyRevaluator);
 									return null;
 								}));
 
@@ -656,13 +750,20 @@ public final class DefaultView implements IEditableView
 		documentsCollection.invalidateRootDocument(documentPath);
 	}
 
+	@NonNull
+	private DocumentPath getRowDocumentPath(final DocumentId rowId)
+	{
+		return Check.assumeNotNull(getById(rowId).getDocumentPath(), "No documentPath for {}", rowId);
+	}
+
 	private void patchDocument(
 			@NonNull final Document document,
-			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
+			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests,
+			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator)
 	{
 		//
 		// Process changes and the save the document
-		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE);
+		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE, readonlyRevaluator);
 		document.saveIfValidAndHasChanges();
 
 		//
@@ -684,9 +785,8 @@ public final class DefaultView implements IEditableView
 	@Override
 	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
 	{
-		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
-		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+		final DocumentPath documentPath = getRowDocumentPath(ctx.getRowId());
 
 		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query));
 	}
@@ -694,9 +794,8 @@ public final class DefaultView implements IEditableView
 	@Override
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
-		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
-		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+		final DocumentPath documentPath = getRowDocumentPath(ctx.getRowId());
 
 		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName));
 	}
@@ -746,6 +845,7 @@ public final class DefaultView implements IEditableView
 	// Builder
 	//
 	//
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private ViewId viewId;
@@ -951,7 +1051,7 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 			return this;

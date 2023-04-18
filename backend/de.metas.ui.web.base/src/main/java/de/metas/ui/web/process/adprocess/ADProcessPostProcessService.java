@@ -370,7 +370,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.NEW_TAB)
 						.build();
 			}
 
@@ -412,6 +412,16 @@ public class ADProcessPostProcessService
 		{
 			return DisplayQRCodeAction.builder()
 					.code(processExecutionResult.getDisplayQRCode().getCode())
+					.build();
+		}
+		//
+		// New Record action
+		else if (processExecutionResult.getWebuiNewRecord() != null)
+		{
+			return ProcessInstanceResult.NewRecordAction.builder()
+					.windowId(processExecutionResult.getWebuiNewRecord().getWindowId())
+					.fieldValues(processExecutionResult.getWebuiNewRecord().getFieldValues())
+					.targetTab(processExecutionResult.getWebuiNewRecord().getTargetTab())
 					.build();
 		}
 		//

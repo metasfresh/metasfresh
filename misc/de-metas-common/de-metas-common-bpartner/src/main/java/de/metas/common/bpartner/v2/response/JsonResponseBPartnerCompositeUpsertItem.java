@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -37,21 +37,25 @@ import java.util.List;
 @Value
 public class JsonResponseBPartnerCompositeUpsertItem
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseUpsertItem responseBPartnerItem;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseLocationItems;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseContactItems;
 
-	@ApiModelProperty(position = 40)
+	@Schema
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseBankAccountItems;
+
+	@Schema
+	@JsonInclude(Include.NON_EMPTY)
+	List<JsonResponseUpsertItem> responseCreditLimitItems;
 
 	@Builder
 	@JsonCreator
@@ -59,13 +63,14 @@ public class JsonResponseBPartnerCompositeUpsertItem
 			@JsonProperty("responseBPartnerItem") @Nullable final JsonResponseUpsertItem responseBPartnerItem,
 			@JsonProperty("responseLocationItems") @Singular final List<JsonResponseUpsertItem> responseLocationItems,
 			@JsonProperty("responseContactItems") @Singular final List<JsonResponseUpsertItem> responseContactItems,
-			@JsonProperty("responseBankAccountItems") @Singular final List<JsonResponseUpsertItem> responseBankAccountItems)
+			@JsonProperty("responseBankAccountItems") @Singular final List<JsonResponseUpsertItem> responseBankAccountItems,
+			@JsonProperty("responseCreditLimitItems") @Singular final List<JsonResponseUpsertItem> responseCreditLimitItems)
 	{
 		this.responseBPartnerItem = responseBPartnerItem;
 		this.responseLocationItems = responseLocationItems;
 		this.responseContactItems = responseContactItems;
 		this.responseBankAccountItems = responseBankAccountItems;
+		this.responseCreditLimitItems = responseCreditLimitItems;
 	}
-
 
 }

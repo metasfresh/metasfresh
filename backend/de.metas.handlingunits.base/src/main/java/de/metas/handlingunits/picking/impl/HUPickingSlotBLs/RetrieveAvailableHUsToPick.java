@@ -28,9 +28,7 @@ import org.compiere.model.I_M_Locator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 /*
@@ -101,7 +99,7 @@ public class RetrieveAvailableHUsToPick
 		//
 		// Create storage queries from shipment schedules
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final Set<IStorageQuery> storageQueries = new HashSet<>();
+		final ArrayList<IStorageQuery> storageQueries = new ArrayList<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
 			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes, isExcludeAllReserved);

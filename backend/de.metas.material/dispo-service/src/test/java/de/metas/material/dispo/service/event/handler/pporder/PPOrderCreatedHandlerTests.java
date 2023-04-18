@@ -120,7 +120,7 @@ public class PPOrderCreatedHandlerTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -243,6 +243,19 @@ public class PPOrderCreatedHandlerTests
 		}
 
 		return supplyDemandGroupId;
+	}
+
+	@Test
+	public void handle_CreatedEvent_without_groupId()
+	{
+		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, (MaterialDispoGroupId)null);
+		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
+		ppOrderCreatedHandler.handleEvent(ppOrderCreatedEvent);
+
+		// the system did not map the ppOrderCreatedEvent to the existing candidates because it did not have their groupId
+		// without the groupId we can't assume that a give event maps to any existing candidate
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2);
 	}
 
 	private PPOrderCreatedEvent createPPOrderCreatedEvent(final int ppOrderId, final MaterialDispoGroupId groupId)

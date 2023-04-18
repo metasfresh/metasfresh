@@ -64,9 +64,9 @@ public class QuerySelectionHelper
 		final String trxName = query.getTrxName();
 
 		final Instant now = retrieveDatabaseCurrentTime();
-		final int rowsCount = DB.executeUpdateEx(
+		final int rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
-				params == null ? null : params.toArray(),
+				params.toArray(),
 				trxName);
 
 		logger.trace("createUUIDSelection: sql={}, params={}, trxName={}, rowsCount={}", sql, params, trxName, rowsCount);
@@ -110,7 +110,7 @@ public class QuerySelectionHelper
 		final String orderBy = query.getOrderBy();
 
 		final StringBuilder sqlRowNumber = new StringBuilder("row_number() OVER (");
-		if (!Check.isEmpty(orderBy, true))
+		if (Check.isNotBlank(orderBy))
 		{
 			sqlRowNumber.append("ORDER BY ").append(orderBy);
 		}
@@ -209,7 +209,7 @@ public class QuerySelectionHelper
 		final String selectionWhereClause = "s.ZZ_UUID=?";
 		final String selectionOrderBy = "s." + SELECTION_LINE_ALIAS;
 
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<>(
+		return new TypedSqlQuery<>(
 				ctx.getCtx(),
 				clazz,
 				selectionWhereClause,
@@ -217,7 +217,5 @@ public class QuerySelectionHelper
 						.setParameters(querySelectionUUID)
 						.setSqlFrom(selectionSqlFrom)
 						.setOrderBy(selectionOrderBy);
-
-		return querySelection;
 	}
 }

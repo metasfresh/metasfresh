@@ -35,7 +35,6 @@ import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
@@ -57,6 +56,9 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.quality.attribute.QualityAttributeService;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -68,7 +70,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -94,11 +95,23 @@ public class ProductRestService
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final SectionCodeService sectionCodeService;
+	private final ProductAllergenRestService productAllergenRestService;
+	private final QualityAttributeService qualityAttributeService;
 
-	public ProductRestService(final ProductRepository productRepository, final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	public ProductRestService(
+
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final ProductAllergenRestService productAllergenRestService,
+			@NonNull final QualityAttributeService qualityAttributeService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.sectionCodeService = sectionCodeService;
+		this.productAllergenRestService = productAllergenRestService;
+		this.qualityAttributeService = qualityAttributeService;
 	}
 
 	@NonNull
@@ -199,17 +212,33 @@ public class ProductRestService
 			final CreateProductRequest createProductRequest = getCreateProductRequest(jsonRequestProduct, org);
 			productId = productRepository.createProduct(createProductRequest).getId();
 
-
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens() != null)
+		{
+			productAllergenRestService.upsertProductAllergens(org,
+															  productId,
+															  jsonRequestProductUpsertItem.getRequestProduct().getProductAllergens());
+		}
+
+		if (jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes() != null)
+		{
+			qualityAttributeService.upsertProductQualityAttributes(
+					org,
+					productId,
+					jsonRequestProductUpsertItem.getRequestProduct().getQualityAttributes());
 		}
 
 		handleProductExternalReference(org,
 									   jsonRequestProductUpsertItem.getProductIdentifier(),
 									   JsonMetasfreshId.of(productId.getRepoId()),
 									   jsonRequestProductUpsertItem.getExternalVersion(),
-									   jsonRequestProductUpsertItem.getExternalReferenceUrl());
+									   jsonRequestProductUpsertItem.getExternalReferenceUrl(),
+									   jsonRequestProductUpsertItem.getExternalSystemConfigId(),
+									   jsonRequestProductUpsertItem.getIsReadOnlyInMetasfresh());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -223,7 +252,9 @@ public class ProductRestService
 			@NonNull final String identifier,
 			@NonNull final JsonMetasfreshId metasfreshId,
 			@Nullable final String externalVersion,
-			@Nullable final String externalReferenceUrl)
+			@Nullable final String externalReferenceUrl,
+			@Nullable final JsonMetasfreshId externalSystemConfigId,
+			@Nullable final Boolean isReadOnlyInMetasfresh)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
 
@@ -245,6 +276,8 @@ public class ProductRestService
 				.metasfreshId(metasfreshId)
 				.version(externalVersion)
 				.externalReferenceUrl(externalReferenceUrl)
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyMetasfresh(isReadOnlyInMetasfresh)
 				.build();
 
 		final JsonRequestExternalReferenceUpsert externalReferenceCreateRequest = JsonRequestExternalReferenceUpsert.builder()
@@ -363,6 +396,13 @@ public class ProductRestService
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
 				final BPartnerProduct bPartnerProduct = syncBPartnerProductWithJson(jsonRequestBPartnerProductUpsert, existingBPartnerProduct, bPartnerId);
+
+				if (!Boolean.TRUE.equals(existingBPartnerProduct.getCurrentVendor())
+						&& Boolean.TRUE.equals(bPartnerProduct.getCurrentVendor()))
+				{
+					productRepository.resetCurrentVendorFor(productId);
+				}
+
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
@@ -377,6 +417,12 @@ public class ProductRestService
 		else
 		{
 			final CreateBPartnerProductRequest createBPartnerProductRequest = getCreateBPartnerProductRequest(jsonRequestBPartnerProductUpsert, productId, bPartnerId);
+
+			if (Boolean.TRUE.equals(createBPartnerProductRequest.getCurrentVendor()))
+			{
+				productRepository.resetCurrentVendorFor(productId);
+			}
+
 			productRepository.createBPartnerProduct(createBPartnerProductRequest);
 		}
 	}
@@ -780,9 +826,75 @@ public class ProductRestService
 			builder.stocked(existingProduct.isStocked());
 		}
 
+		if (jsonRequestProductUpsertItem.isSectionCodeSet())
+		{
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
+					.orElse(null);
+
+			builder.sectionCodeId(sectionCodeId);
+		}
+		else
+		{
+			builder.sectionCodeId(existingProduct.getSectionCodeId());
+		}
+
+		// purchased
+		if (jsonRequestProductUpsertItem.isPurchasedSet())
+		{
+			if (jsonRequestProductUpsertItem.getPurchased() == null)
+			{
+				logger.debug("Ignoring boolean property \"purchased\" : null ");
+			}
+			else
+			{
+				builder.purchased(jsonRequestProductUpsertItem.getPurchased());
+			}
+		}
+		else
+		{
+			builder.purchased(existingProduct.isPurchased());
+		}
+
+		// SAPProductHierarchy
+		if (jsonRequestProductUpsertItem.isSapProductHierarchySet())
+		{
+			builder.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy());
+		}
+		else
+		{
+			builder.sapProductHierarchy(existingProduct.getSapProductHierarchy());
+		}
+
+		if (jsonRequestProductUpsertItem.isGuaranteeMonthsSet())
+		{
+			builder.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths());
+		}
+		else
+		{
+			builder.guaranteeMonths(existingProduct.getGuaranteeMonths());
+		}
+
+		if (jsonRequestProductUpsertItem.isWarehouseTemperatureSet())
+		{
+			builder.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature());
+		}
+		else
+		{
+			builder.warehouseTemperature(existingProduct.getWarehouseTemperature());
+		}
+
+		if (jsonRequestProductUpsertItem.isCodeSet())
+		{
+			builder.productNo(jsonRequestProductUpsertItem.getCode());
+		}
+		else
+		{
+			builder.productNo(existingProduct.getProductNo());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
-				.productNo(existingProduct.getProductNo())
 				.commodityNumberId(existingProduct.getCommodityNumberId())
 				.manufacturerId(existingProduct.getManufacturerId())
 				.packageSize(existingProduct.getPackageSize())
@@ -795,15 +907,21 @@ public class ProductRestService
 	private CreateProductRequest getCreateProductRequest(@NonNull final JsonRequestProduct jsonRequestProductUpsertItem, final I_AD_Org org)
 	{
 		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(jsonRequestProductUpsertItem.getUomCode()));
-		final String productType;
-
-		productType = getType(jsonRequestProductUpsertItem);
+		final String productType = getType(jsonRequestProductUpsertItem);
+		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
 				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
+		final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
+				.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
+				.orElse(null);
+
+		final boolean purchased = Optional.ofNullable(jsonRequestProductUpsertItem.getPurchased())
+				.orElse(false);
+
 		return CreateProductRequest.builder()
-				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
+				.orgId(orgId)
 				.productName(jsonRequestProductUpsertItem.getName())
 				.productType(productType)
 				.productCategoryId(productCategoryId)
@@ -816,6 +934,11 @@ public class ProductRestService
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
+				.sectionCodeId(sectionCodeId)
+				.purchased(purchased)
+				.sapProductHierarchy(jsonRequestProductUpsertItem.getSapProductHierarchy())
+				.guaranteeMonths(jsonRequestProductUpsertItem.getGuaranteeMonths())
+				.warehouseTemperature(jsonRequestProductUpsertItem.getWarehouseTemperature())
 				.build();
 	}
 
@@ -847,7 +970,7 @@ public class ProductRestService
 	}
 
 	@NonNull
-	private String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
+	private static String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
 	{
 		final String productType;
 		switch (jsonRequestProductUpsertItem.getType())
@@ -857,6 +980,21 @@ public class ProductRestService
 				break;
 			case ITEM:
 				productType = X_M_Product.PRODUCTTYPE_Item;
+				break;
+			case RESOURCE:
+				productType = X_M_Product.PRODUCTTYPE_Resource;
+				break;
+			case ONLINE:
+				productType = X_M_Product.PRODUCTTYPE_Online;
+				break;
+			case FREIGHT_COST:
+				productType = X_M_Product.PRODUCTTYPE_FreightCost;
+				break;
+			case EXPENSE_TYPE:
+				productType = X_M_Product.PRODUCTTYPE_ExpenseType;
+				break;
+			case NAHRUNG:
+				productType = X_M_Product.PRODUCTTYPE_Nahrung;
 				break;
 			default:
 				throw Check.fail("Unexpected type={}; jsonRequestProductUpsertItem={}", jsonRequestProductUpsertItem.getType(), jsonRequestProductUpsertItem);

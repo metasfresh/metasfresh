@@ -9,7 +9,6 @@ import org.compiere.util.Ini;
 class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 {
 	private final IQueueProcessorsExecutor executor;
-	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	/**
 	 * Used to delayed invoke {@link #initNow()}.
@@ -81,7 +80,8 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 		// Remove all queue processors. It shall be none, but just to make sure
 		executor.shutdown();
 
-		queueProcessorDescriptorRepository.getAllQueueProcessors()
+		QueueProcessorDescriptorRepository.getInstance()
+				.getAllQueueProcessors()
 				.forEach(executor::addQueueProcessor);
 	}
 

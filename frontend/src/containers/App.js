@@ -3,7 +3,7 @@ import counterpart from 'counterpart';
 import React from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
-import '../assets/css/styles.css';
+import '../assets/css/styles.scss';
 import {
   initCurrentActiveLocale,
   setCurrentActiveLocale,

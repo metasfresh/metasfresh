@@ -22,10 +22,15 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -33,15 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
 
 @Interceptor(I_M_ShipmentSchedule.class)
 @Component

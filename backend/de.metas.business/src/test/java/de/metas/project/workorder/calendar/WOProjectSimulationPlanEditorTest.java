@@ -1,5 +1,7 @@
 package de.metas.project.workorder.calendar;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
@@ -15,44 +17,27 @@ import de.metas.project.workorder.resource.WOProjectResources;
 import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectSteps;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.workflow.WFDurationUnit;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-
+@ExtendWith(SnapshotExtension.class)
 class WOProjectSimulationPlanEditorTest
 {
 	public static final Instant refInstant = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
+	private Expect expect;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
-
-	private static Instant instant(int day)
+	private static Instant instant(final int day)
 	{
 		return refInstant.plus(day - 1, ChronoUnit.DAYS);
 	}
 
-	private static CalendarDateRange allDay(int startDay, int endDay)
+	private static CalendarDateRange allDay(final int startDay, final int endDay)
 	{
 		return CalendarDateRange.builder()
 				.startDate(instant(startDay))
@@ -146,7 +131,7 @@ class WOProjectSimulationPlanEditorTest
 
 		final WOProjectSimulationPlan newSimulationPlan = planEditor.toNewSimulationPlan();
 		System.out.println(newSimulationPlan);
-		expect(newSimulationPlan).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(newSimulationPlan);
 
 	}
 }

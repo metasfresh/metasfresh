@@ -67,12 +67,16 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 
 		for (final I_C_Order orderRecord : orderRecordsToHandle)
 		{
-			// update the old orders' documentno
+			// update the old orders' documentNo
 			final String documentNo = setVoidedOrderNewDocumenTNo(request.getVoidedOrderDocumentNoPrefix(), orderRecord, 1);
 
 			final I_C_Order copiedOrderRecord = newInstance(I_C_Order.class);
 			InterfaceWrapperHelper.copyValues(orderRecord, copiedOrderRecord);
 			copiedOrderRecord.setDocumentNo(documentNo);
+			copiedOrderRecord.setDatePromised(orderRecord.getDatePromised());
+			copiedOrderRecord.setDateOrdered(orderRecord.getDateOrdered());
+			copiedOrderRecord.setPreparationDate(orderRecord.getPreparationDate());
+			copiedOrderRecord.setDateAcct(orderRecord.getDateAcct());
 			saveRecord(copiedOrderRecord);
 
 			// copy-with-details, set orderRecord's previous DocumentNo
@@ -90,7 +94,7 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 	private String setVoidedOrderNewDocumenTNo(
 			@NonNull final String voidedOrderDocumentNoPrefix,
 			@NonNull final I_C_Order orderRecord,
-			int attemptCount)
+			final int attemptCount)
 	{
 		final String prefixToUse;
 		if (attemptCount <= 1)

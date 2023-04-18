@@ -1,6 +1,7 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -17,6 +18,8 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -43,6 +46,8 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
@@ -552,6 +557,7 @@ public class HUTestHelper
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
 	{
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(newHandlingUnitsModelInterceptor());
 	}
@@ -563,13 +569,16 @@ public class HUTestHelper
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
 				huReservationService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
+		final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
-				new PickingBOMService());
+				new PickingBOMService(),
+				huUniqueAttributesService);
 	}
 
 	/**

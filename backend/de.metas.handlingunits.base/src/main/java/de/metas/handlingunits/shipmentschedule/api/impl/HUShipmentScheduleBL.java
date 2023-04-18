@@ -5,6 +5,7 @@ import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -38,8 +39,8 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -68,7 +69,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
@@ -180,7 +180,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			final boolean anonymousHuPickedOnTheFly)
 	{
 		// Retrieve VHU, TU and LU
-		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
 		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
 
 		// Create ShipmentSchedule Qty Picked record
@@ -360,7 +359,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Document Type
 		{
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+					.docBaseType(DocBaseType.MaterialDelivery)
 					.adClientId(shipmentSchedule.getAD_Client_ID())
 					.adOrgId(shipmentSchedule.getAD_Org_ID())
 					.build();

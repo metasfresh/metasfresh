@@ -33,7 +33,7 @@
     </parent>
 
     <properties>
-        <java.version>14</java.version>
+        <java.version>17</java.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 

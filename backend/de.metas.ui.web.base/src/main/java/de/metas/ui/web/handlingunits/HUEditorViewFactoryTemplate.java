@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.global_qrcodes.GlobalQRCode;
@@ -37,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -73,7 +75,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -83,12 +84,14 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -108,12 +111,18 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private static final Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private HUReservationService huReservationService;
 	@Autowired
 	private WebuiDocumentReferencesService webuiDocumentReferencesService;
+	@Autowired
+	private ADReferenceService adReferenceService;
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
@@ -273,7 +282,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	@Nullable
-	protected String getAdditionalSqlWhereClause() {return null;}
+	protected String getAdditionalSqlWhereClause()
+	{
+		return null;
+	}
 
 	protected final DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
@@ -313,8 +325,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
 				.setFilters(all)
 				//
@@ -331,7 +343,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
-	protected boolean isMaterialReceipt() {return false;}
+	protected AttributeSourceDocument getAttributeSourceDocument()
+	{
+		return null;
+	}
 
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
@@ -354,11 +369,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.windowId(windowId)
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
-							.readonly(attributesAlwaysReadonly)
-							.isMaterialReceipt(isMaterialReceipt())
-							.build())
+												.readonly(attributesAlwaysReadonly)
+												.serialNoFromSequence(false)
+												.attributeSourceDocument(getAttributeSourceDocument())
+												.build())
 					.sqlViewBinding(sqlViewBinding)
-					.huReservationService(huReservationService);
+					.huReservationService(huReservationService)
+					.adReferenceService(adReferenceService);
 
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 
@@ -510,9 +527,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
-							.setFieldName(PARAM_Barcode)
-							.setDisplayName(barcodeCaption)
-							.setWidgetType(DocumentFieldWidgetType.Text)
+							.fieldName(PARAM_Barcode)
+							.displayName(barcodeCaption)
+							.widgetType(DocumentFieldWidgetType.Text)
 							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}

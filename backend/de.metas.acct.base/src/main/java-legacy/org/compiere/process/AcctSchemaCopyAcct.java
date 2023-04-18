@@ -16,20 +16,6 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.MAccount;
-import org.compiere.model.POInfo;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -39,11 +25,24 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.order.OrderId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_GL;
+import org.compiere.model.MAccount;
+import org.compiere.model.POInfo;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Copy Accounts from one Acct Schema to another
@@ -124,17 +123,17 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		return "@OK@";
-	}	// doIt
+	}    // doIt
 
 	private I_C_AcctSchema_GL retrieveAcctSchemaGLOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemasRepo.retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
-	}	// get
+	}    // get
 
 	private I_C_AcctSchema_Default retrieveAcctSchemaDefaultOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemasRepo.retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
-	}	// get
+	}    // get
 
 	private void copyGL(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
@@ -150,7 +149,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		InterfaceWrapperHelper.save(target);
-	}	// copyGL
+	}    // copyGL
 
 	private void copyDefault(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
@@ -166,7 +165,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		InterfaceWrapperHelper.save(target);
-	}	// copyDefault
+	}    // copyDefault
 
 	/**
 	 * @return target account
@@ -195,6 +194,8 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int User2_ID = 0;
 		int UserElement1_ID = 0;
 		int UserElement2_ID = 0;
+		OrderId C_OrderSO_ID = null;
+		int M_SectionCode_ID = 0;
 		//
 		// Active Elements
 		for (final AcctSchemaElement ase : targetElements)
@@ -225,6 +226,16 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			{
 				C_Activity_ID = sourceAccount.getC_Activity_ID();
 			}
+
+			else if (elementType.equals(AcctSchemaElementType.SalesOrder))
+			{
+				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_OrderSO_ID());
+			}
+			else if (elementType.equals(AcctSchemaElementType.SectionCode))
+			{
+				M_SectionCode_ID = sourceAccount.getM_SectionCode_ID();
+			}
+
 			else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 			{
 				C_LocFrom_ID = sourceAccount.getC_LocFrom_ID();
@@ -273,15 +284,17 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
-				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
+				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
+				OrderId.toRepoId(C_OrderSO_ID),
+				M_SectionCode_ID);
 
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
-	}	// createAccount
+	}    // createAccount
 
 	public List<AccountInfo> getAccountInfos(final Object acctAwareModel)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(acctAwareModel);
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
 
 		final List<AccountInfo> list = new ArrayList<>();
 		for (int columnIndex = 0; columnIndex < poInfo.getColumnCount(); columnIndex++)
@@ -318,4 +331,4 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		@With
 		AccountId accountId;
 	}
-}	// AcctSchemaCopyAcct
+}    // AcctSchemaCopyAcct

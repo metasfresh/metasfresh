@@ -10,7 +10,6 @@ import de.metas.dataentry.data.DataEntryRecordFieldListValue;
 import de.metas.dataentry.data.DataEntryRecordFieldNumber;
 import de.metas.dataentry.data.DataEntryRecordFieldString;
 import de.metas.dataentry.data.DataEntryRecordFieldYesNo;
-import de.metas.dataentry.data.json.JSONDataEntryRecord.JSONDataEntryRecordBuilder;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,7 @@ public class JSONDataEntryRecordMapper
 
 	public String serialize(@NonNull final List<DataEntryRecordField<?>> fields)
 	{
-		final JSONDataEntryRecordBuilder record = JSONDataEntryRecord.builder();
+		final JSONDataEntryRecord.JSONDataEntryRecordBuilder record = JSONDataEntryRecord.builder();
 		for (final DataEntryRecordField<?> field : fields)
 		{
 			record.createdUpdatedInfo(field.getDataEntryFieldId().getRepoId(), field.getCreatedUpdatedInfo());

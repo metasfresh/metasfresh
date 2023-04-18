@@ -24,20 +24,28 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.bpartner.process.SetCreditStatusEnum;
 import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.impl.BPartnerStatsService;
+import de.metas.bpartner.service.impl.CalculateCreditStatusRequest;
+import de.metas.bpartner.service.impl.CreditStatus;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.CODE;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 
@@ -45,8 +53,9 @@ public class C_BPartner_Stats_StepDef
 {
 	private final C_BPartner_StepDefData bPartnerTable;
 
-	private final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+	private final BPartnerStatsService bPartnerStatsService = SpringContextHolder.instance.getBean(BPartnerStatsService.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_BPartner_Stats_StepDef(@NonNull final C_BPartner_StepDefData bPartnerTable)
 	{
@@ -63,6 +72,39 @@ public class C_BPartner_Stats_StepDef
 		}
 	}
 
+	@And("validate C_BPartner_Stats")
+	public void validate_C_BPartner_Stats_for_BP(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String creditStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus);
+			final BigDecimal creditUsed = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed);
+
+			final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+			assertThat(bPartner).isNotNull();
+
+			final I_C_BPartner_Stats bPartnerStats = queryBL.createQueryBuilder(I_C_BPartner_Stats.class)
+					.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+					.create()
+					.firstOnlyNotNull(I_C_BPartner_Stats.class);
+
+			final SoftAssertions softly = new SoftAssertions();
+
+			if (Check.isNotBlank(creditStatus))
+			{
+				softly.assertThat(bPartnerStats.getSOCreditStatus()).isEqualTo(creditStatus);
+			}
+
+			if (creditUsed != null)
+			{
+				softly.assertThat(bPartnerStats.getSO_CreditUsed()).isEqualTo(creditUsed);
+			}
+
+			softly.assertAll();
+		}
+	}
+
 	private void upsertCBPartnerStats(@NonNull final Map<String, String> tableRow)
 	{
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -72,26 +114,26 @@ public class C_BPartner_Stats_StepDef
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 
-		final String creditStatus = getCreditStatus(creditStatusCode, stats);
+		final CreditStatus creditStatus = getCreditStatus(creditStatusCode, stats);
 
 		assertThat(creditStatus).isNotNull();
 		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
 	}
 
 	@NonNull
-	private String getCreditStatus(@NonNull final String creditStatusCode, @NonNull final BPartnerStats stats)
+	private CreditStatus getCreditStatus(@NonNull final String creditStatusCode, @NonNull final BPartnerStats stats)
 	{
 		if (SetCreditStatusEnum.Calculate.getCode().equals(creditStatusCode))
 		{
-			final IBPartnerStatsBL.CalculateSOCreditStatusRequest request = IBPartnerStatsBL.CalculateSOCreditStatusRequest.builder()
+			final CalculateCreditStatusRequest request = CalculateCreditStatusRequest.builder()
 					.stat(stats)
 					.forceCheckCreditStatus(true)
 					.date(SystemTime.asDayTimestamp())
 					.build();
 
-			return bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+			return bPartnerStatsService.calculateProjectedSOCreditStatus(request);
 		}
 
-		return creditStatusCode;
+		return CreditStatus.ofCode(creditStatusCode);
 	}
 }

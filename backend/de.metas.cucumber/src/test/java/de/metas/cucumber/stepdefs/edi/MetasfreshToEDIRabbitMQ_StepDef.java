@@ -68,15 +68,18 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 
 	private final EXP_Processor_StepDefData expProcessorTable;
 	private final EDI_cctop_invoic_v_StepDefData invoicTable;
+	private final EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
 	private final DocumentBuilderFactory documentBuilderFactory;
 
 	public MetasfreshToEDIRabbitMQ_StepDef(
 			@NonNull final EXP_Processor_StepDefData expProcessorTable,
-			@NonNull final EDI_cctop_invoic_v_StepDefData invoicTable)
+			@NonNull final EDI_cctop_invoic_v_StepDefData invoicTable,
+			@NonNull final EDI_Exp_Desadv_StepDefData ediExpDesadvTable)
 	{
 		this.expProcessorTable = expProcessorTable;
 		this.invoicTable = invoicTable;
+		this.ediExpDesadvTable = ediExpDesadvTable;
 		this.documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
@@ -114,6 +117,32 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		final String invoicIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_cctop_invoic_v.COLUMNNAME_EDI_cctop_invoic_v_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		invoicTable.put(invoicIdentifier, export);
+	}
+
+	@Then("RabbitMQ receives a EDI_Exp_Desadv")
+	public void rabbitMQ_receives_edi_exp_desadv(@NonNull final DataTable dataTable) throws IOException, ParserConfigurationException, InterruptedException, TimeoutException, SAXException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String processorIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EXP_ProcessorParameter.COLUMNNAME_EXP_Processor_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final Integer expProcessorId = expProcessorTable.getOptional(processorIdentifier)
+				.map(I_EXP_Processor::getEXP_Processor_ID)
+				.orElseGet(() -> Integer.parseInt(processorIdentifier));
+
+		final String routingKeyParameterValue = DataTableUtil.extractStringForColumnName(tableRow, I_EXP_ProcessorParameter.Table_Name + "." + I_EXP_ProcessorParameter.COLUMNNAME_Value);
+
+		final I_EXP_ProcessorParameter expProcessorParameter = queryBL.createQueryBuilder(I_EXP_ProcessorParameter.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EXP_ProcessorParameter.COLUMNNAME_EXP_Processor_ID, expProcessorId)
+				.addEqualsFilter(I_EXP_ProcessorParameter.COLUMNNAME_Value, routingKeyParameterValue)
+				.create()
+				.firstOnlyNotNull(I_EXP_ProcessorParameter.class);
+
+		final Document export = pollDocumentFromQueue(expProcessorParameter.getParameterValue());
+
+		final String ediExpDesadvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "EDI_Exp_Desadv_ID" + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		ediExpDesadvTable.put(ediExpDesadvIdentifier, export);
 	}
 
 	@NonNull

@@ -11,6 +11,11 @@
             "name": "firstName lastName",
             "companyName": "company",
             "customer": true,
+            "priceListId": 121,
+            "group":"test_group",
+            "groupSet":true,
+            "vatId": "vatId12",
+            "vatIdSet": true,
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"

@@ -72,17 +72,19 @@ public class All_ReferenceListAwareEnums_Test
 	public static class ReferenceListAwareEnumArgumentsProvider implements ArgumentsProvider
 	{
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context)
+		public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
 		{
 			return provideClasses().map(Arguments::of);
 		}
 
 		private Stream<Class<? extends ReferenceListAwareEnum>> provideClasses()
 		{
-			Stopwatch stopwatch = Stopwatch.createStarted();
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.setScanners(new SubTypesScanner()));
 
 			final Set<Class<? extends ReferenceListAwareEnum>> classes = reflections.getSubTypesOf(ReferenceListAwareEnum.class);

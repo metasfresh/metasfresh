@@ -1,13 +1,13 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
 import lombok.NonNull;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -15,10 +15,7 @@ import org.xmlunit.validation.Validator;
 import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -42,25 +39,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+@ExtendWith(SnapshotExtension.class)
 class Invoice440ToCrossVersionModelToolTest
 {
 	private Invoice440ResponseConversionService invoice440ResponseConversionService;
+	private Expect expect;
 
 	@BeforeEach void init()
 	{
 		invoice440ResponseConversionService = new Invoice440ResponseConversionService();
-	}
-
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -68,7 +55,7 @@ class Invoice440ToCrossVersionModelToolTest
 	{
 		final XmlResponse result = toCrossVersionResponseWithXmlFile("/Cancelation_KV_12345.xml");
 		assertThat(result.getPayload().getInvoice().getRequestId()).isEqualTo("KV_12345"); // sortof smoke-test
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@SuppressWarnings({ "SameParameterValue", "UnnecessaryLocalVariable" }) private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)

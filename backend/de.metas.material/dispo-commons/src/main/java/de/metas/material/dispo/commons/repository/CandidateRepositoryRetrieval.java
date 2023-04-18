@@ -40,6 +40,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -176,7 +177,7 @@ public class CandidateRepositoryRetrieval
 			builder.additionalDemandDetail(demandDetailOrNull);
 		}
 
-		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
+		builder.transactionDetails(getTransactionDetails(candidateRecordOrNull));
 
 		final Dimension candidateDimension = dimensionService.getFromRecord(candidateRecordOrNull);
 		builder.dimension(candidateDimension);
@@ -310,12 +311,11 @@ public class CandidateRepositoryRetrieval
 		return DemandDetailRepoHelper.forDemandDetailRecord(demandDetailRecord);
 	}
 
-	private static List<TransactionDetail> createTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	@NonNull
+	private static List<TransactionDetail> createTransactionDetails(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords)
 	{
-		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = //
-				RepositoryCommons.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
-						.list();
-
 		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
 		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
 		{
@@ -374,12 +374,13 @@ public class CandidateRepositoryRetrieval
 	 * Only use this method in testing
 	 */
 	@VisibleForTesting
-	public List<Candidate> retrieveAllNotStockOrderedByDateAndSeqNo()
+	public List<Candidate> retrieveAllNotStockOrderedByDateAndSeqNoFor(@NonNull final ProductId productId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
-		
+				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
+
 		return retrieveForQueryBuilder(queryBuilderWithoutOrdering);
 	}
 
@@ -413,6 +414,16 @@ public class CandidateRepositoryRetrieval
 												.build())
 				.build();
 		return retrieveOrderedByDateAndSeqNo(query);
+	}
+
+	@NonNull
+	private List<TransactionDetail> getTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = RepositoryCommons
+				.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
+				.list();
+
+		return createTransactionDetails(candidateRecord, transactionDetailRecords);
 	}
 
 	private static boolean isSimulated(@NonNull final I_MD_Candidate candidateRecord)

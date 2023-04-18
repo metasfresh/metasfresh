@@ -14,14 +14,13 @@ package io.swagger.client;
 
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
-
-import java.io.IOException;
-
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.ForwardingSink;
 import okio.Okio;
 import okio.Sink;
+
+import java.io.IOException;
 
 public class ProgressRequestBody extends RequestBody {
 

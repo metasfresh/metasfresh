@@ -76,7 +76,12 @@ public class RecordWindowFinder
 
 	public static RecordWindowFinder newInstance(final String tableName, @NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
-		return new RecordWindowFinder(tableName, customizedWindowInfoMapRepository);
+		return new RecordWindowFinder(tableName, null, customizedWindowInfoMapRepository);
+	}
+
+	public static RecordWindowFinder newInstance(final String tableName, final SOTrx soTrx)
+	{
+		return new RecordWindowFinder(tableName, soTrx, null);
 	}
 
 	public static Optional<AdWindowId> findAdWindowId(final TableRecordReference record)
@@ -152,11 +157,12 @@ public class RecordWindowFinder
 		customizedWindowInfoMapRepository = getCustomizedWindowInfoMapRepository();
 	}
 
-	private RecordWindowFinder(final @NonNull String tableName, @NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+	private RecordWindowFinder(final @NonNull String tableName, final @Nullable SOTrx soTrx, @NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		_tableName = tableName;
 		_recordId = -1;
+		_recordSOTrx_Effective = soTrx;
 		_query_Provided = null;
 		alreadyKnownWindowId = null;
 

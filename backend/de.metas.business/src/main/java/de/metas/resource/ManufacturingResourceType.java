@@ -70,4 +70,5 @@ public enum ManufacturingResourceType implements ReferenceListAwareEnum
 		return type != null && type.isPlant();
 	}
 
+	public static String toCode(@Nullable ManufacturingResourceType type) {return type != null ? type.getCode() : null;}
 }

@@ -61,7 +61,7 @@ public class CPaymentImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateInvoices(@NonNull final ImportRecordsSelection selection)
@@ -74,7 +74,7 @@ public class CPaymentImportTableSqlUpdater
 				.append("WHERE C_Invoice_ID IS NULL AND InvoiceDocumentNo IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateIsReceipt(@NonNull final ImportRecordsSelection selection)
@@ -83,7 +83,7 @@ public class CPaymentImportTableSqlUpdater
 				.append("SET IsReceipt = (CASE WHEN TransactionCode='H' THEN 'N' ELSE 'Y' END) ")
 				.append("WHERE I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 
@@ -97,7 +97,7 @@ public class CPaymentImportTableSqlUpdater
 				.append("WHERE C_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No BPartner = {}", no);
@@ -108,7 +108,7 @@ public class CPaymentImportTableSqlUpdater
 				.append("WHERE C_Invoice_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No Invoice = {}", no);

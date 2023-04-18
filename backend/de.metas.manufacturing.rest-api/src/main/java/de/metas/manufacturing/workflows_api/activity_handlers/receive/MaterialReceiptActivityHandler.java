@@ -4,26 +4,26 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToExistingLU;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToNewLU;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToNewLUList;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonAllergen;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonHazardSymbol;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonFinishedGoodsReceiveLine;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTargetConverters;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTargetsList;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.allergen.ProductAllergensService;
+import de.metas.product.hazard_symbol.ProductHazardSymbolService;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -53,13 +53,19 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerBL bpartnerBL;
 	private final HUQRCodesService huQRCodeService;
+	private final ProductHazardSymbolService productHazardSymbolService;
+	private final ProductAllergensService productAllergensService;
 
 	public MaterialReceiptActivityHandler(
 			final @NonNull IBPartnerBL bpartnerBL,
-			final @NonNull HUQRCodesService huQRCodeService)
+			final @NonNull HUQRCodesService huQRCodeService,
+			final @NonNull ProductHazardSymbolService productHazardSymbolService,
+			final @NonNull ProductAllergensService productAllergensService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.huQRCodeService = huQRCodeService;
+		this.productHazardSymbolService = productHazardSymbolService;
+		this.productAllergensService = productAllergensService;
 	}
 
 	@Override
@@ -75,8 +81,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.map(line -> toJson(line, job.getCustomerId(), jsonOpts))
 				.collect(ImmutableList.toImmutableList());
 
-		return UIComponent.builder()
-				.type(COMPONENT_TYPE)
+		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.build())
@@ -88,52 +93,50 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@Nullable final BPartnerId customerId,
 			@NonNull final JsonOpts jsonOpts)
 	{
-		final JsonAggregateToNewLUList availablePackingMaterials = getAvailablePackingMaterials(line.getProductId(), customerId);
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		return JsonFinishedGoodsReceiveLine.builder()
 				.id(line.getId().toJson())
+				.coproduct(line.getCoProductBOMLineId() != null)
 				.productName(line.getProductName().translate(adLanguage))
 				.uom(line.getQtyToReceive().getUOMSymbol())
+				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), adLanguage))
+				.allergens(getJsonAllergens(line.getProductId(), adLanguage))
 				.qtyToReceive(line.getQtyToReceive().toBigDecimal())
 				.qtyReceived(line.getQtyReceived().toBigDecimal())
-				.currentReceivingHU(
-						line.getCurrentReceivingHU() != null
-								? toJsonAggregateToExistingLU(line.getCurrentReceivingHU(), huQRCodeService)
-								: null)
-				.availableReceivingTargets(availablePackingMaterials)
+				.currentReceivingHU(JsonHUQRCodeTargetConverters.fromNullable(line.getReceivingTarget(), huQRCodeService))
+				.availableReceivingTargets(getNewLUTargets(line.getProductId(), customerId))
 				.build();
 	}
 
-	public static JsonAggregateToExistingLU toJsonAggregateToExistingLU(
-			final CurrentReceivingHU currentReceivingHU,
-			@NonNull final HUQRCodesService huQRCodeService)
+	private ImmutableList<JsonHazardSymbol> getJsonHazardSymbols(final @NonNull ProductId productId, final String adLanguage)
 	{
-		return JsonAggregateToExistingLU.builder()
-				.huQRCode(toJsonRenderedHUQRCode(currentReceivingHU.getAggregateToLUId(), huQRCodeService))
-				.tuPIItemProductId(currentReceivingHU.getTuPIItemProductId())
-				.build();
+		return productHazardSymbolService.getHazardSymbolsByProductId(productId)
+				.stream()
+				.map(hazardSymbol -> JsonHazardSymbol.of(hazardSymbol, adLanguage))
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JsonRenderedHUQRCode toJsonRenderedHUQRCode(
-			@NonNull final HuId huId,
-			@NonNull final HUQRCodesService huQRCodeService)
+	private ImmutableList<JsonAllergen> getJsonAllergens(final @NonNull ProductId productId, final String adLanguage)
 	{
-		return huQRCodeService.getQRCodeByHuId(huId).toRenderedJson();
+		return productAllergensService.getAllergensByProductId(productId)
+				.stream()
+				.map(allergen -> JsonAllergen.of(allergen, adLanguage))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private JsonAggregateToNewLUList getAvailablePackingMaterials(@NonNull final ProductId productId, final @Nullable BPartnerId customerId)
+	private JsonNewLUTargetsList getNewLUTargets(@NonNull final ProductId productId, final @Nullable BPartnerId customerId)
 	{
 		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(Env.getCtx(), productId, customerId, false);
 		if (tuPIItemProducts.isEmpty())
 		{
-			return JsonAggregateToNewLUList.emptyBecause("No CU/TU associations found for "
+			return JsonNewLUTargetsList.emptyBecause("No CU/TU associations found for "
 					+ productBL.getProductName(productId)
 					+ " and " + (customerId != null ? bpartnerBL.getBPartnerName(customerId) : "any customer"));
 		}
 
-		final ArrayList<JsonAggregateToNewLU> availablePackingMaterials = new ArrayList<>();
+		final ArrayList<JsonNewLUTarget> targets = new ArrayList<>();
 		final ArrayList<String> debugMessages = new ArrayList<>();
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : tuPIItemProducts)
 		{
@@ -149,10 +152,9 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			{
 				for (final I_M_HU_PI_Item luPackingInstructionsItem : luPackingInstructionsItems)
 				{
-					final I_M_HU_PI luPackingInstructions = handlingUnitsBL.getPI(luPackingInstructionsItem);
-					availablePackingMaterials.add(
-							JsonAggregateToNewLU.builder()
-									.luCaption(luPackingInstructions.getName())
+					targets.add(
+							JsonNewLUTarget.builder()
+									.luCaption(handlingUnitsBL.getPI(luPackingInstructionsItem).getName())
 									.tuCaption(tuPIItemProduct.getName())
 									.luPIItemId(HuPackingInstructionsItemId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()))
 									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
@@ -165,13 +167,13 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			}
 		}
 
-		if (availablePackingMaterials.isEmpty())
+		if (targets.isEmpty())
 		{
-			return JsonAggregateToNewLUList.emptyBecause("None of the TUs found are assigned to an LU", debugMessages);
+			return JsonNewLUTargetsList.emptyBecause("None of the TUs found are assigned to an LU", debugMessages);
 		}
 		else
 		{
-			return JsonAggregateToNewLUList.ofList(availablePackingMaterials, debugMessages);
+			return JsonNewLUTargetsList.ofList(targets, debugMessages);
 		}
 	}
 

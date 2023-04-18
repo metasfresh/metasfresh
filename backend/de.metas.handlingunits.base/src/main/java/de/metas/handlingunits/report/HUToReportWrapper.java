@@ -1,19 +1,18 @@
 package de.metas.handlingunits.report;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.util.List;
 
 /*
  * #%L
@@ -40,7 +39,7 @@ import lombok.ToString;
 @ToString(exclude = { "hu", "_includedHUs" })
 public class HUToReportWrapper implements HUToReport
 {
-	public static final HUToReportWrapper of(final I_M_HU hu)
+	public static HUToReportWrapper of(final I_M_HU hu)
 	{
 		return new HUToReportWrapper(hu);
 	}
@@ -48,7 +47,7 @@ public class HUToReportWrapper implements HUToReport
 	private final I_M_HU hu;
 	private final HuId huId;
 	private final BPartnerId bpartnerId;
-	private final String huUnitType;
+	private final HuUnitType huUnitType;
 
 	private List<HUToReport> _includedHUs; // lazy
 
@@ -60,21 +59,21 @@ public class HUToReportWrapper implements HUToReport
 		this.huUnitType = extractHUType(hu);
 	}
 
-	private static final String extractHUType(final I_M_HU hu)
+	private static HuUnitType extractHUType(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		if (handlingUnitsBL.isLoadingUnit(hu))
 		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
+			return HuUnitType.LU;
 		}
 		else if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
 		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
+			return HuUnitType.TU;
 		}
 		else if (handlingUnitsBL.isVirtual(hu))
 		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
+			return HuUnitType.VHU;
 		}
 		else
 		{
@@ -95,7 +94,7 @@ public class HUToReportWrapper implements HUToReport
 	}
 
 	@Override
-	public String getHUUnitType()
+	public HuUnitType getHUUnitType()
 	{
 		return huUnitType;
 	}

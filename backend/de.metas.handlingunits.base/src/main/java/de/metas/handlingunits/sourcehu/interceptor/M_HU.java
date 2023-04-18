@@ -1,5 +1,6 @@
 package de.metas.handlingunits.sourcehu.interceptor;
 
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -11,12 +12,17 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.ModelValidator;
 
 @Interceptor(I_M_HU.class)
 public class M_HU
 {
+	private static final AdMessageKey MSG_MOVING_NOT_ALLOWED = AdMessageKey.of("MovingNotAllowed");
+
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	public static final M_HU INSTANCE = new M_HU();
 
@@ -35,6 +41,25 @@ public class M_HU
 		if (sourceHU)
 		{
 			throw new SourceHuMayNotBeRemovedException(hu);
+		}
+	}
+
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID //
+	)
+	public void preventMovingUnclearedHu(@NonNull final I_M_HU hu)
+	{
+		final I_M_Locator locatorRecord = warehouseDAO.getLocatorByRepoId(hu.getM_Locator_ID());
+
+		if (locatorRecord.isOnlyClearedHUs() 
+				&& !ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus()))
+		{
+			throw new AdempiereException(MSG_MOVING_NOT_ALLOWED)
+					.markAsUserValidationError()
+					.appendParametersToMessage()
+					.setParameter("LocatorId", hu.getM_Locator_ID())
+					.setParameter("HuId", hu.getM_HU_ID());
 		}
 	}
 

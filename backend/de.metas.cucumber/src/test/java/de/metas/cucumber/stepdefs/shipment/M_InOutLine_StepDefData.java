@@ -25,9 +25,6 @@ package de.metas.cucumber.stepdefs.shipment;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_M_InOutLine;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
 public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
 {
 	public M_InOutLine_StepDefData()

@@ -22,41 +22,29 @@
 
 package de.metas.externalsystem.other;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(SnapshotExtension.class)
 public class ExternalSystemOtherConfigRepositoryTest
 {
 	private ExternalSystemOtherConfigRepository externalSystemOtherConfigRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		externalSystemOtherConfigRepo = new ExternalSystemOtherConfigRepository();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -77,7 +65,7 @@ public class ExternalSystemOtherConfigRepositoryTest
 
 		//then
 		assertThat(otherConfig).isNotNull();
-		expect(otherConfig).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(otherConfig);
 	}
 
 	public static void createExternalConfigParameterRecord(

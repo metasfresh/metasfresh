@@ -338,8 +338,8 @@ public class DataExportAudit_StepDef
 	@And("all the export audit data is reset")
 	public void reset_data_export_audit()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE Data_Export_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE Data_Export_Audit_Log cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE Data_Export_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE Data_Export_Audit_Log cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("add external system config and pinstance headers")

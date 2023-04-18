@@ -1,47 +1,5 @@
 package de.metas.invoicecandidate;
 
-import static de.metas.util.Check.assumeNotNull;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-// import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
@@ -58,6 +16,25 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.util.Check.assumeNotNull;
 
 /**
  * {@link I_C_Invoice_Candidate} builder to be used ONLY for testing.
@@ -117,6 +94,7 @@ public class C_Invoice_Candidate_Builder
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 		POJOWrapper.setInstanceName(ic, instanceName);
 
+		ic.setIsInEffect(true);
 		ic.setAD_Org_ID(orgId.getRepoId());
 
 		//
@@ -243,6 +221,7 @@ public class C_Invoice_Candidate_Builder
 
 			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 			ic.setC_Order_ID(orderLine.getC_Order_ID());
+			ic.setC_OrderSO_ID(orderLine.getC_OrderSO_ID());
 			ic.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 			ic.setRecord_ID(orderLine.getC_OrderLine_ID());
 			ic.setPriceActual(priceActual);
@@ -334,9 +313,6 @@ public class C_Invoice_Candidate_Builder
 	 * If not set,
 	 * then either {@link AbstractICTestSupport#pricingSystem_PO} or {@link AbstractICTestSupport#pricingSystem_SO} are used,
 	 * depending on {@link #isSOTrx}.
-	 *
-	 * @param M_PricingSystem_ID
-	 * @return
 	 */
 	public C_Invoice_Candidate_Builder setM_PricingSystem_ID(final int M_PricingSystem_ID)
 	{
@@ -400,8 +376,6 @@ public class C_Invoice_Candidate_Builder
 	}
 
 	/**
-	 * @param instanceName
-	 * @return
 	 * @see POJOWrapper#setInstanceName(Object, String)
 	 */
 	public C_Invoice_Candidate_Builder setInstanceName(final String instanceName)

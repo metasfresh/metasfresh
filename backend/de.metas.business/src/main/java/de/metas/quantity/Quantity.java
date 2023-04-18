@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -40,8 +41,8 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author tsa
  */
-@JsonDeserialize(using = Quantitys.QuantityDeserializer.class)
-@JsonSerialize(using = Quantitys.QuantitySerializer.class)
+@JsonDeserialize(using = QuantityDeserializer.class)
+@JsonSerialize(using = QuantitySerializer.class)
 public final class Quantity implements Comparable<Quantity>
 {
 	/**
@@ -426,6 +427,11 @@ public final class Quantity implements Comparable<Quantity>
 			return this;
 		}
 		return new Quantity(QTY_INFINITE, uom, QTY_INFINITE, sourceUom);
+	}
+
+	public Quantity abs()
+	{
+		return signum() >= 0 ? this : negate();
 	}
 
 	public Quantity negate()
@@ -816,5 +822,16 @@ public final class Quantity implements Comparable<Quantity>
 	public int intValueExact()
 	{
 		return toBigDecimal().intValueExact();
+	}
+
+	public boolean isWeightable()
+	{
+		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
+	}
+
+	public Percent percentageOf(@NonNull Quantity whole)
+	{
+		assertSameUOM(this, whole);
+		return Percent.of(toBigDecimal(), whole.toBigDecimal());
 	}
 }

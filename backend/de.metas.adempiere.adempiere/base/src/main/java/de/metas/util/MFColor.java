@@ -1,28 +1,22 @@
 package de.metas.util;
 
-import java.awt.Color;
-import java.awt.SystemColor;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Nullable;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 @Value
-public final class MFColor implements Serializable
+public class MFColor implements Serializable
 {
 	private static final long serialVersionUID = 155277595960307777L;
 
@@ -37,46 +31,55 @@ public final class MFColor implements Serializable
 				}
 			});
 
-	private final MFColorType type;
+	MFColorType type;
 
-	private Color flatColor;
+	Color flatColor;
 
-	private final Color textureTaintColor;
-	/** Texture Graph URL */
-	private final URL textureURL;
+	Color textureTaintColor;
+	/**
+	 * Texture Graph URL
+	 */
+	URL textureURL;
 
 	public static final float DEFAULT_TextureCompositeAlpha = 0.7f;
-	/** Texture Alpha */
-	private final float textureCompositeAlpha;
+	/**
+	 * Texture Alpha
+	 */
+	float textureCompositeAlpha;
 
-	private final Color lineBackColor;
+	Color lineBackColor;
 
 	private static final Color DEFAULT_LineColor = new Color(245, 245, 245); // gray-white
-	private final Color lineColor;
+	Color lineColor;
 
 	private static final float DEFAULT_LineWidth = 1.0f;
-	/** Line Width */
-	private final float lineWidth;
+	/**
+	 * Line Width
+	 */
+	float lineWidth;
 
 	private static final int DEFAULT_LineDistance = 5;
-	/** Line Distance */
-	private final int lineDistance;
+	/**
+	 * Line Distance
+	 */
+	int lineDistance;
 
-	private final Color gradientUpperColor;
+	Color gradientUpperColor;
 
 	private static final Color DEFAULT_GradientLowerColor = new Color(245, 245, 245); // gray-white
-	private final Color gradientLowerColor;
+	Color gradientLowerColor;
 
 	public static final int DEFAULT_GradientStartPoint = SwingConstants.NORTH_WEST;
-	/** Gradient Starting point */
-	private final int gradientStartPoint;
+	/**
+	 * Gradient Starting point
+	 */
+	int gradientStartPoint;
 
 	private static final int DEFAULT_GradientRepeatDistance = 100;
-	/** Gradient repeat distance in points */
-	private final int gradientRepeatDistance;
-
-	/** Can be null if the color is not persisted in metasfresh */
-	private final ColorId id;
+	/**
+	 * Gradient repeat distance in points
+	 */
+	int gradientRepeatDistance;
 
 	public static MFColor defaultOfType(@NonNull final MFColorType type)
 	{
@@ -94,12 +97,6 @@ public final class MFColor implements Serializable
 			default:
 				throw new AdempiereException("Unsupported type: " + type);
 		}
-	}
-
-	public static MFColor ofFlatColorHexString(final @NonNull String hexString)
-	{
-		final Color flatColor = Color.decode(hexString);
-		return ofFlatColor(flatColor);
 	}
 
 	public static MFColor ofFlatColor(final @NonNull Color flatColor)
@@ -125,9 +122,9 @@ public final class MFColor implements Serializable
 	/**
 	 * Set Background to Gradient colors
 	 *
-	 * @param upperColor upper Color
-	 * @param lowerColor lower Color
-	 * @param startPoint Starting point - e.g. SOUTH_WEST see SwingConstants, default NORTH_WEST
+	 * @param upperColor     upper Color
+	 * @param lowerColor     lower Color
+	 * @param startPoint     Starting point - e.g. SOUTH_WEST see SwingConstants, default NORTH_WEST
 	 * @param repeatDistance X/Y Distance to repeat gradient in points - 0 no repeats
 	 */
 	public static MFColor ofGradientColor(@NonNull final Color upperColor, @NonNull final Color lowerColor, final int startPoint, final int repeatDistance)
@@ -144,8 +141,8 @@ public final class MFColor implements Serializable
 	/**
 	 * Set Background to Texture
 	 *
-	 * @param textureURL URL to a *.gif or *.jpg graphic file
-	 * @param taintColor Color to taint the texture (use white for not tainting it)
+	 * @param textureURL     URL to a *.gif or *.jpg graphic file
+	 * @param taintColor     Color to taint the texture (use white for not tainting it)
 	 * @param compositeAlpha Tainting value from 0 (no - FullGraph) to 1 (full - NoGraph)
 	 */
 	public static MFColor ofTextureColor(@NonNull final URL textureURL, @NonNull final Color taintColor, final float compositeAlpha)
@@ -161,9 +158,9 @@ public final class MFColor implements Serializable
 	/**
 	 * Set Background to Lines
 	 *
-	 * @param lineColor line color
-	 * @param backColor background color
-	 * @param lineWidth Stroke width in point
+	 * @param lineColor    line color
+	 * @param backColor    background color
+	 * @param lineWidth    Stroke width in point
 	 * @param lineDistance Distance between lines in points
 	 */
 	public static MFColor ofLinesColor(@NonNull final Color lineColor, @NonNull final Color backColor, final float lineWidth, final int lineDistance)
@@ -179,7 +176,6 @@ public final class MFColor implements Serializable
 
 	@Builder(toBuilder = true, builderMethodName = "_builder")
 	private MFColor(
-			@Nullable final ColorId id,
 			@NonNull final MFColorType type,
 			//
 			final Color flatColor,
@@ -198,7 +194,6 @@ public final class MFColor implements Serializable
 			final Integer gradientStartPoint,
 			final Integer gradientRepeatDistance)
 	{
-		this.id = id;
 		this.type = type;
 
 		if (type == MFColorType.FLAT)
@@ -221,9 +216,9 @@ public final class MFColor implements Serializable
 		{
 			Check.assumeNotNull(gradientUpperColor, "Parameter gradientUpperColor is not null");
 			this.gradientUpperColor = gradientUpperColor;
-			this.gradientLowerColor = CoalesceUtil.coalesce(gradientLowerColor, DEFAULT_GradientLowerColor); // lower color
-			this.gradientStartPoint = CoalesceUtil.coalesce(gradientStartPoint, DEFAULT_GradientStartPoint);
-			this.gradientRepeatDistance = CoalesceUtil.coalesce(gradientRepeatDistance, DEFAULT_GradientRepeatDistance);
+			this.gradientLowerColor = CoalesceUtil.coalesceNotNull(gradientLowerColor, DEFAULT_GradientLowerColor); // lower color
+			this.gradientStartPoint = CoalesceUtil.coalesceNotNull(gradientStartPoint, DEFAULT_GradientStartPoint);
+			this.gradientRepeatDistance = CoalesceUtil.coalesceNotNull(gradientRepeatDistance, DEFAULT_GradientRepeatDistance);
 			this.flatColor = null;
 			this.textureTaintColor = null;
 			this.textureURL = null;
@@ -237,9 +232,9 @@ public final class MFColor implements Serializable
 		{
 			Check.assumeNotNull(lineBackColor, "Parameter lineBackColor is not null");
 			this.lineBackColor = lineBackColor;
-			this.lineColor = CoalesceUtil.coalesce(lineColor, DEFAULT_LineColor); // line color
-			this.lineWidth = CoalesceUtil.coalesce(lineWidth, DEFAULT_LineWidth);
-			this.lineDistance = CoalesceUtil.coalesce(lineDistance, DEFAULT_LineDistance);
+			this.lineColor = CoalesceUtil.coalesceNotNull(lineColor, DEFAULT_LineColor); // line color
+			this.lineWidth = CoalesceUtil.coalesceNotNull(lineWidth, DEFAULT_LineWidth);
+			this.lineDistance = CoalesceUtil.coalesceNotNull(lineDistance, DEFAULT_LineDistance);
 			this.flatColor = null;
 			this.gradientUpperColor = null;
 			this.gradientLowerColor = null;
@@ -254,7 +249,7 @@ public final class MFColor implements Serializable
 			Check.assumeNotNull(textureTaintColor, "Parameter textureTaintColor is not null");
 			this.textureTaintColor = textureTaintColor;
 			this.textureURL = textureURL;
-			this.textureCompositeAlpha = CoalesceUtil.coalesce(textureCompositeAlpha, DEFAULT_TextureCompositeAlpha);
+			this.textureCompositeAlpha = CoalesceUtil.coalesceNotNull(textureCompositeAlpha, DEFAULT_TextureCompositeAlpha);
 			this.flatColor = null;
 			this.gradientUpperColor = null;
 			this.gradientLowerColor = null;
@@ -312,12 +307,11 @@ public final class MFColor implements Serializable
 		{
 			color = SystemColor.control;
 		}
-		final StringBuilder sb = new StringBuilder("[r=").append(color.getRed())
-				.append(",g=").append(color.getGreen())
-				.append(",b=").append(color.getBlue())
-				.append(",a=").append(color.getAlpha())
-				.append("]");
-		return sb.toString();
+		return "[r=" + color.getRed()
+				+ ",g=" + color.getGreen()
+				+ ",b=" + color.getBlue()
+				+ ",a=" + color.getAlpha()
+				+ "]";
 	}
 
 	public boolean isFlat()

@@ -61,10 +61,10 @@ public class ApiAuditFilter_StepDef
 	@And("all the API audit data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
 	}
 
 	@When("invoke replay audit")
@@ -86,9 +86,17 @@ public class ApiAuditFilter_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
-
-			final JsonErrorItem jsonErrorItem = objectMapper.readValue(testContext.getApiResponse().getContent(), JsonErrorItem.class);
-
+			final JsonErrorItem jsonErrorItem;
+			final String responseContent = testContext.getApiResponse().getContent();
+			try
+			{
+				jsonErrorItem = objectMapper.readValue(responseContent, JsonErrorItem.class);
+			}
+			catch (final RuntimeException rte)
+			{
+				fail("Error parsing string into class " + JsonErrorItem.class + "; string=" + responseContent);
+				throw rte;
+			}
 			assertThat(jsonErrorItem.getMessage()).isEqualTo(message);
 		}
 	}

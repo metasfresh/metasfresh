@@ -63,7 +63,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
@@ -88,7 +88,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-@Api
+@Tag(name = "CalendarRestController")
 @RestController
 @RequestMapping(WebConfig.ENDPOINT_ROOT + "/calendars")
 public class CalendarRestController
@@ -107,17 +107,18 @@ public class CalendarRestController
 	public CalendarRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final MultiCalendarService calendarService,
-			@NonNull final SimulationPlanService simulationService)
+			@NonNull final SimulationPlanService simulationService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.userSession = userSession;
 		this.calendarService = calendarService;
 		this.simulationService = simulationService;
 
-		this.bpartnerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
-		this.resourceLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource.Table_Name);
-		this.resourceGroupLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource_Group.Table_Name);
-		this.projectLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
-		this.projectResponsibleLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name);
+		this.bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.resourceLookup = lookupDataSourceFactory.searchInTableLookup(I_S_Resource.Table_Name);
+		this.resourceGroupLookup = lookupDataSourceFactory.searchInTableLookup(I_S_Resource_Group.Table_Name);
+		this.projectLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.projectResponsibleLookup = lookupDataSourceFactory.searchInTableLookup(I_AD_User.Table_Name);
 	}
 
 	@GetMapping("/available")

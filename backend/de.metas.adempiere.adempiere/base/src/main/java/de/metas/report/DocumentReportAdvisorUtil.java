@@ -101,6 +101,7 @@ public class DocumentReportAdvisorUtil
 				: ExplainedOptional.emptyBecause("No report process defined by " + printFormat);
 	}
 
+	@NonNull
 	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
 	{
 		return docTypeDAO.getById(docTypeId);

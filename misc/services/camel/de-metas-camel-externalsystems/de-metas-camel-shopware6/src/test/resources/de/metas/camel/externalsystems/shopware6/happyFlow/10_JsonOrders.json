@@ -12,6 +12,9 @@
         "lastName": "lastName",
         "customerNumber": "customerNumber",
         "email": "orderCustomerEmail@example.com",
+        "vatIds": [
+          "vatId12"
+        ],
         "customFields": {
           "externalReference": "customerId",
           "customUserId": "userId1",
@@ -42,7 +45,6 @@
           "externalReference": "customerId",
           "customSalesRepId": "mockSalesRepIdentifier"
         }
-
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",

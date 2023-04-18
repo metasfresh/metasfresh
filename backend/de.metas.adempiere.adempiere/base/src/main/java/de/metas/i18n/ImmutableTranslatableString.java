@@ -47,8 +47,26 @@ public final class ImmutableTranslatableString implements ITranslatableString
 			@Nullable @Singular final Map<String, String> trls,
 			@Nullable final String defaultValue)
 	{
-		this.trlMap = trls == null ? ImmutableMap.of() : ImmutableMap.copyOf(trls);
+		this.trlMap = normalizeTrlsMap(trls);
 		this.defaultValue = defaultValue == null ? "" : defaultValue;
+	}
+
+	private static ImmutableMap<String, String> normalizeTrlsMap(@Nullable final Map<String, String> trls)
+	{
+		if (trls == null || trls.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+		else if (trls.containsValue(null))
+		{
+			ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+			trls.forEach((adLanguage, trl) -> builder.put(adLanguage, trl != null ? trl : ""));
+			return builder.build();
+		}
+		else
+		{
+			return ImmutableMap.copyOf(trls);
+		}
 	}
 
 	@Override

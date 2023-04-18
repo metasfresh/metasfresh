@@ -29,8 +29,8 @@ import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidate
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
@@ -60,12 +60,12 @@ public class ReceiptCandidatesRestController
 		this.receiptCandidateAPIService = receiptCandidateAPIService;
 	}
 
-	@ApiOperation("Returns the currently open receipt candidates to be exported e.g. to an external warehouse management system.\n" 
+	@Operation(summary = "Returns the currently open receipt candidates to be exported e.g. to an external warehouse management system.\n"
 			+ "Sidenote: when a purchase order was created, after a configurable time interval (e.g. 10 minutes); one can get the material receipts candidates that were created in metasfresh." 
 			+ "These are the items that metasfresh is now waiting to be delivered.")
 	@GetMapping("receiptCandidates")
 	public ResponseEntity<JsonResponseReceiptCandidates> getReceiptCandidates(
-			@ApiParam("Max number of items to be returned in one request.") //
+			@Parameter(description = "Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{
@@ -76,7 +76,7 @@ public class ReceiptCandidatesRestController
 		return ResponseEntity.ok(result);
 	}
 
-	@ApiOperation("Used by the external caller to indicate which receipt candidates were successfully exported to the external system.")
+	@Operation(summary = "Used by the external caller to indicate which receipt candidates were successfully exported to the external system.")
 	@PostMapping("receiptCandidatesResult")
 	public ResponseEntity<String> postReceiptCandidatesStatus(@RequestBody @NonNull final JsonRequestCandidateResults status)
 	{

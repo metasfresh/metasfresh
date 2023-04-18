@@ -22,19 +22,23 @@
 
 package de.metas.calendar.standard.impl;
 
-import de.metas.util.Check;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.Query;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
 public class CalendarDAO extends AbstractCalendarDAO
 {
+
+	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public List<I_C_Period> retrievePeriods(
@@ -54,13 +58,10 @@ public class CalendarDAO extends AbstractCalendarDAO
 	protected List<I_C_Period> retrievePeriods(
 			final Properties ctx,
 			final int calendarId,
-			final Timestamp begin,
-			final Timestamp end,
+			final @NonNull LocalDateAndOrgId begin,
+			final @NonNull LocalDateAndOrgId end,
 			final String trxName)
 	{
-		Check.assume(begin != null, "Param 'begin' is not null");
-		Check.assume(end != null, "Param 'end' is not null");
-
 		final String wc =
 				I_C_Period.COLUMNNAME_C_Year_ID + " IN ("
 						+ " select " + I_C_Year.COLUMNNAME_C_Year_ID + " from " + I_C_Year.Table_Name + " where " + I_C_Year.COLUMNNAME_C_Calendar_ID + "=?"
@@ -69,7 +70,7 @@ public class CalendarDAO extends AbstractCalendarDAO
 						+ I_C_Period.COLUMNNAME_StartDate + "<=?";
 
 		return new Query(ctx, I_C_Period.Table_Name, wc, trxName)
-				.setParameters(calendarId, begin, end)
+				.setParameters(calendarId, begin.toTimestamp(orgDAO::getTimeZone), end.toTimestamp(orgDAO::getTimeZone))
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				// .setApplyAccessFilter(true) isn't required here and case cause problems when running from ad_scheduler

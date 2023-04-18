@@ -1,9 +1,7 @@
 package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -121,7 +119,7 @@ final class OrderLinePriceCalculator
 		{
 			return;
 		}
-
+		
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext();
@@ -129,6 +127,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.appendParametersToMessage()
 					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}

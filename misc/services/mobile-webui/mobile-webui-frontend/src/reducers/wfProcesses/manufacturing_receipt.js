@@ -26,7 +26,9 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-  if (target.huQRCode) {
+  if (!target) {
+    draftActivityLine.aggregateToLU = null;
+  } else if (target.huQRCode) {
     const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
     draftActivityLine.aggregateToLU = {
       existingLU: {
@@ -149,7 +151,7 @@ registerHandler({
   computeActivityStatus,
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
-    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     return draftActivityDataStored;
   },
 });

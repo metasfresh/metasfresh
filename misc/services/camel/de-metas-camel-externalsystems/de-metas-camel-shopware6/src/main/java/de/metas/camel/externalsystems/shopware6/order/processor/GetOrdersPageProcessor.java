@@ -24,7 +24,7 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
@@ -45,7 +45,7 @@ public class GetOrdersPageProcessor implements Processor
 
 		final PageAndLimit pageAndLimitValues = PageAndLimit.of(routeContext.getOrdersResponsePageIndex(), routeContext.getPageLimit());
 
-		final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(routeContext.getExternalSystemRequest(), pageAndLimitValues);
+		final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(routeContext.getExternalSystemRequest(), pageAndLimitValues);
 
 		final GetOrdersResponse ordersToProcess = routeContext.getShopwareClient().getOrders(shopware6QueryRequest, salesRepJSONPath);
 

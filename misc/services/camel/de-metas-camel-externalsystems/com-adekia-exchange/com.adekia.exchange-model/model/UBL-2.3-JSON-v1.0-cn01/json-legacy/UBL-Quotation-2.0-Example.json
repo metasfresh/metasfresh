@@ -1,0 +1,237 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:Quotation-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "Quotation":[{
+ "UBLVersionID":[{"_":"2.0"}],
+ "CustomizationID":[{"_":"urn:oasis:names:specification:ubl:schema:xsd:Quotation-2-draft"}],
+ "ProfileID":[{"_":"bpid:urn:oasis:names:draft:bpss:ubl-2-sbs-request-for-quotation-draft"}],
+ "ID":[{"_":"QIY7655"}],
+ "CopyIndicator":[{"_":false}],
+ "UUID":[{"_":"4D07786B-DA6D-439F-82D1-6FFFC7F4E3B1"}],
+ "IssueDate":[{"_":"2005-06-20"}],
+ "Note":[{"_":"sample"}],
+ "ValidityPeriod":[{
+  "StartDate":[{"_":"2005-06-20"}],
+  "EndDate":[{"_":"2005-07-20"}]
+ }],
+ "RequestForQuotationDocumentReference":[{
+  "ID":[{"_":"G867B"}],
+  "UUID":[{"_":"8D076867-AE6D-439F-8281-5AAFC7F4E3B1"}],
+  "IssueDate":[{"_":"2005-06-19"}]
+ }],
+ "SellerSupplierParty":[{
+  "CustomerAssignedAccountID":[{"_":"CO001"}],
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"Consortial"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Busy Street"}],
+    "BuildingName":[{"_":"Thereabouts"}],
+    "BuildingNumber":[{"_":"56A"}],
+    "CityName":[{"_":"Farthing"}],
+    "PostalZone":[{"_":"AA99 1BB"}],
+    "CountrySubentity":[{"_":"Heremouthshire"}],
+    "AddressLine":[{
+     "Line":[{"_":"The Roundabout"}]
+    }],
+    "Country":[{
+     "IdentificationCode":[{"_":"GB"}]
+    }]
+   }],
+   "PartyTaxScheme":[{
+    "RegistrationName":[{"_":"Farthing Purchasing Consortium"}],
+    "CompanyID":[{"_":"175 269 2355"}],
+    "ExemptionReason":[{"_":"N/A"}],
+    "TaxScheme":[{
+     "ID":[{"_":"VAT"}],
+     "TaxTypeCode":[{"_":"VAT"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"Mrs Bouquet"}],
+    "Telephone":[{"_":"0158 1233714"}],
+    "Telefax":[{"_":"0158 1233856"}],
+    "ElectronicMail":[{"_":"bouquet@fpconsortial.co.uk"}]
+   }]
+  }]
+ }],
+ "OriginatorCustomerParty":[{
+  "Party":[{
+   "PartyName":[{
+    "Name":[{"_":"The Terminus"}]
+   }],
+   "PostalAddress":[{
+    "StreetName":[{"_":"Avon Way"}],
+    "BuildingName":[{"_":"Thereabouts"}],
+    "BuildingNumber":[{"_":"56A"}],
+    "CityName":[{"_":"Bridgtow"}],
+    "PostalZone":[{"_":"ZZ99 1ZZ"}],
+    "CountrySubentity":[{"_":"Avon"}],
+    "AddressLine":[{
+     "Line":[{"_":"3rd Floor, Room 5"}]
+    }],
+    "Country":[{
+     "IdentificationCode":[{"_":"GB"}]
+    }]
+   }],
+   "PartyTaxScheme":[{
+    "RegistrationName":[{"_":"Bridgtow District Council"}],
+    "CompanyID":[{"_":"12356478"}],
+    "ExemptionReason":[{"_":"Local Authority"}],
+    "TaxScheme":[{
+     "ID":[{"_":"UK VAT"}],
+     "TaxTypeCode":[{"_":"VAT"}]
+    }]
+   }],
+   "Contact":[{
+    "Name":[{"_":"S Massiah"}],
+    "Telephone":[{"_":"0127 98876545"}],
+    "Telefax":[{"_":"0127 98876546"}],
+    "ElectronicMail":[{"_":"smassiah@the-email.co.uk"}]
+   }]
+  }]
+ }],
+ "Delivery":[{
+  "DeliveryAddress":[{
+   "StreetName":[{"_":"Avon Way"}],
+   "BuildingName":[{"_":"Thereabouts"}],
+   "BuildingNumber":[{"_":"56A"}],
+   "CityName":[{"_":"Bridgtow"}],
+   "PostalZone":[{"_":"ZZ99 1ZZ"}],
+   "CountrySubentity":[{"_":"Avon"}],
+   "AddressLine":[{
+    "Line":[{"_":"3rd Floor, Room 5"}]
+   }],
+   "Country":[{
+    "IdentificationCode":[{"_":"GB"}]
+   }]
+  }],
+  "RequestedDeliveryPeriod":[{
+   "StartDate":[{"_":"2005-06-29"}],
+   "StartTime":[{"_":"09:30:47.0Z"}],
+   "EndDate":[{"_":"2005-06-29"}],
+   "EndTime":[{"_":"09:30:47.0Z"}]
+  }]
+ }],
+ "DeliveryTerms":[{
+  "SpecialTerms":[{"_":"1% deduction for late delivery as per contract"}]
+ }],
+ "PaymentMeans":[{
+  "PaymentMeansCode":[{"_":"20"}],
+  "PayeeFinancialAccount":[{
+   "ID":[{"_":"12345678"}],
+   "Name":[{"_":"Farthing Purchasing Consortium"}],
+   "AccountTypeCode":[{"_":"Current"}],
+   "CurrencyCode":[{"_":"GBP"}],
+   "FinancialInstitutionBranch":[{
+    "ID":[{"_":"10-26-58"}],
+    "Name":[{"_":"Open Bank Ltd, Bridgstow Branch "}],
+    "FinancialInstitution":[{
+     "ID":[{"_":"10-26-58"}],
+     "Name":[{"_":"Open Bank Ltd"}],
+     "Address":[{
+      "StreetName":[{"_":"City Road"}],
+      "BuildingName":[{"_":"Banking House"}],
+      "BuildingNumber":[{"_":"12"}],
+      "CityName":[{"_":"London"}],
+      "PostalZone":[{"_":"AQ1 6TH"}],
+      "CountrySubentity":[{"_":"London\n"}],
+      "AddressLine":[{
+       "Line":[{"_":"5th Floor"}]
+      }],
+      "Country":[{
+       "IdentificationCode":[{"_":"GB"}]
+      }]
+     }]
+    }],
+    "Address":[{
+     "StreetName":[{"_":"Busy Street"}],
+     "BuildingName":[{"_":"The Mall"}],
+     "BuildingNumber":[{"_":"152"}],
+     "CityName":[{"_":"Farthing"}],
+     "PostalZone":[{"_":"AA99 1BB"}],
+     "CountrySubentity":[{"_":"Heremouthshire"}],
+     "AddressLine":[{
+      "Line":[{"_":"West Wing"}]
+     }],
+     "Country":[{
+      "IdentificationCode":[{"_":"GB"}]
+     }]
+    }]
+   }],
+   "Country":[{
+    "IdentificationCode":[{"_":"GB"}]
+   }]
+  }]
+ }],
+ "TransactionConditions":[{
+  "Description":[{"_":"order response required; payment is by BACS or by cheque"}]
+ }],
+ "AllowanceCharge":[{
+  "ChargeIndicator":[{"_":false}],
+  "AllowanceChargeReasonCode":[{"_":"17"}],
+  "MultiplierFactorNumeric":[{"_":0.10}],
+  "Amount":[{"_":10.00,
+   "currencyID":"GBP"}]
+ }],
+ "DestinationCountry":[{
+  "IdentificationCode":[{"_":"GB"}],
+  "Name":[{"_":"Great Britain"}]
+ }],
+ "TaxTotal":[{
+  "TaxAmount":[{"_":17.50,
+   "currencyID":"GBP"}],
+  "TaxEvidenceIndicator":[{"_":false}],
+  "TaxSubtotal":[{
+   "TaxableAmount":[{"_":100.00,
+    "currencyID":"GBP"}],
+   "TaxAmount":[{"_":17.50,
+    "currencyID":"GBP"}],
+   "TaxCategory":[{
+    "ID":[{"_":"A"}],
+    "TaxScheme":[{
+     "ID":[{"_":"UK VAT"}],
+     "TaxTypeCode":[{"_":"VAT"}]
+    }]
+   }]
+  }]
+ }],
+ "QuotedMonetaryTotal":[{
+  "LineExtensionAmount":[{"_":100.00,
+   "currencyID":"GBP"}],
+  "TaxExclusiveAmount":[{"_":90.00,
+   "currencyID":"GBP"}],
+  "PayableAmount":[{"_":107.50,
+   "currencyID":"GBP"}]
+ }],
+ "QuotationLine":[{
+  "ID":[{"_":"1"}],
+  "Note":[{"_":"sample"}],
+  "LineItem":[{
+   "ID":[{"_":"1"}],
+   "Quantity":[{"_":100,
+    "unitCode":"KGM"}],
+   "LineExtensionAmount":[{"_":100.00,
+    "currencyID":"GBP"}],
+   "TotalTaxAmount":[{"_":17.50,
+    "currencyID":"GBP"}],
+   "Price":[{
+    "PriceAmount":[{"_":100.00,
+     "currencyID":"GBP"}],
+    "BaseQuantity":[{"_":1,
+     "unitCode":"KGM"}]
+   }],
+   "Item":[{
+    "Description":[{"_":"Acme beeswax"}],
+    "Name":[{"_":"beeswax"}],
+    "BuyersItemIdentification":[{
+     "ID":[{"_":"6578489"}]
+    }],
+    "SellersItemIdentification":[{
+     "ID":[{"_":"17589683"}]
+    }]
+   }]
+  }]
+ }]
+}]}

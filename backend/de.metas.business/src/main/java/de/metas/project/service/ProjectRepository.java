@@ -36,7 +36,9 @@ import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.status.RStatusId;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -137,7 +139,10 @@ public class ProjectRepository
 	{
 		setProjectDefaultValues(projectRecord);
 
-		projectRecord.setName(projectData.getName());
+		if (Check.isNotBlank(projectData.getName()))
+		{
+			projectRecord.setName(projectData.getName());
+		}
 		projectRecord.setValue(projectData.getValue());
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(projectData.getOrgId()));
@@ -155,6 +160,8 @@ public class ProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(projectData.getDateFinish()));
 		projectRecord.setIsActive(projectData.isActive());
 		projectRecord.setProjectCategory(projectData.getProjectCategory() != null ? projectData.getProjectCategory().getCode() : null);
+		projectRecord.setR_StatusCategory_ID(RequestStatusCategoryId.toRepoId(projectData.getRequestStatusCategoryId()));
+
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(projectData.getProjectTypeId()));
 
 		saveRecord(projectRecord);
@@ -190,6 +197,7 @@ public class ProjectRepository
 				.projectParentId(ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID()))
 				.projectTypeId(ProjectTypeId.ofRepoIdOrNull((projectRecord.getC_ProjectType_ID())))
 				.projectCategory(ProjectCategory.ofNullableCode(projectRecord.getProjectCategory()))
+				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(projectRecord.getR_StatusCategory_ID()))
 				.projectStatusId(RStatusId.ofRepoIdOrNull(projectRecord.getR_Project_Status_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
 				.salesRepId(UserId.ofIntegerOrNull(projectRecord.getSalesRep_ID()))

@@ -53,16 +53,17 @@ final class ShipmentCandidateRowsRepository
 
 	@Builder
 	private ShipmentCandidateRowsRepository(
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.shipmentScheduleBL = shipmentScheduleBL;
 
-		salesOrdersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_Order.Table_Name);
-		customersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
-		warehousesLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
-		productsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
-		asiLookup = LookupDataSourceFactory.instance.productAttributes();
-		catchUOMsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
+		salesOrdersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Order.Table_Name);
+		customersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		warehousesLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Warehouse.Table_Name);
+		productsLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
+		asiLookup = lookupDataSourceFactory.productAttributes();
+		catchUOMsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_UOM.Table_Name);
 	}
 
 	public ShipmentCandidateRows getByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)

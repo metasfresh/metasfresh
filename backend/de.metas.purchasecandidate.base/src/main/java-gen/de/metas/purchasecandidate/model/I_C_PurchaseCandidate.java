@@ -894,6 +894,29 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
+
+	/**
+	 * Get Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductDescription();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_PurchaseCandidate.class, "ProductDescription", null);
+	String COLUMNNAME_ProductDescription = "ProductDescription";
+
+	/**
 	 * Set Purchase net.
 	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *

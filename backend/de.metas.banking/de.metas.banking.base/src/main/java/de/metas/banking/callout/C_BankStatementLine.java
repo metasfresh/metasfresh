@@ -22,41 +22,28 @@
 
 package de.metas.banking.callout;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.util.TimeUtil;
-
-import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyRate;
-import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_C_BankStatementLine;
+
+import java.math.BigDecimal;
 
 @Callout(I_C_BankStatementLine.class)
 public class C_BankStatementLine
 {
 	private final IBankStatementBL bankStatementBL;
-	private final ICurrencyBL currencyConversionBL;
 
 	private final BankStatementLineAmountsCallout bankStatementLineAmountsCallout = new BankStatementLineAmountsCallout();
 	private final CashJournalLineAmountsCallout cashJournalLineAmountsCallout = new CashJournalLineAmountsCallout();
 
 	public C_BankStatementLine(
-			@NonNull final IBankStatementBL bankStatementBL,
-			@NonNull final ICurrencyBL currencyConversionBL)
+			@NonNull final IBankStatementBL bankStatementBL)
 	{
 		this.bankStatementBL = bankStatementBL;
-		this.currencyConversionBL = currencyConversionBL;
 	}
 
 	private AmountsCallout getAmountsCallout(@NonNull final I_C_BankStatementLine bsl)
@@ -94,49 +81,6 @@ public class C_BankStatementLine
 	public void onInterestAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
 		getAmountsCallout(bsl).onInterestAmtChanged(bsl);
-	}
-
-	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID)
-	public void onLink_BankStatement_IDChangedResetAmounts(final @NonNull I_C_BankStatementLine bsl)
-	{
-		final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bsl.getLink_BankStatementLine_ID());
-		if (linkedBankStatementLineId == null)
-		{
-			bsl.setCurrencyRate(null);
-			return;
-		}
-
-		final I_C_BankStatementLine bslFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
-
-		final BigDecimal trxAmtFrom = bslFrom.getTrxAmt();
-		final CurrencyId trxAmtFromCurrencyId = CurrencyId.ofRepoId(bslFrom.getC_Currency_ID());
-
-		final CurrencyId trxAmtCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
-
-		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(bsl.getValutaDate()),
-				ConversionTypeMethod.Spot,
-				ClientId.ofRepoId(bsl.getAD_Client_ID()),
-				OrgId.ofRepoId(bsl.getAD_Org_ID()));
-
-		final CurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(currencyConversionCtx, trxAmtFromCurrencyId, trxAmtCurrencyId);
-		final BigDecimal trxAmt = currencyRate
-				.convertAmount(trxAmtFrom)
-				.negate();
-
-		// bsl.setStmtAmt(trxAmt); // never touch the statement amount after the line was created
-		bsl.setTrxAmt(trxAmt);
-		bsl.setCurrencyRate(currencyRate.getConversionRate());
-		bsl.setChargeAmt(BigDecimal.ZERO);
-	}
-
-	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_C_BP_BankAccountTo_ID)
-	public void onC_BP_BankAccountTo_IDChanged(final @NonNull I_C_BankStatementLine bsl)
-	{
-		if (bsl.getC_BP_BankAccountTo_ID() <= 0)
-		{
-			bsl.setLink_BankStatementLine_ID(0);
-		}
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)

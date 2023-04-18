@@ -61,7 +61,8 @@ Map build(final MvnConf mvnConf,
         env.PATH = "${nodeHome}/bin:${env.PATH}"
 
         sh 'yarn install'
-        sh 'yarn lint --quiet'
+
+        sh 'yarn lint --quiet' 
 
         if (params.MF_MF_SKIP_UNIT_TESTS) {
             echo "params.MF_MF_SKIP_UNIT_TESTS=${params.MF_MF_SKIP_UNIT_TESTS}, so we skip the jest unit tests."

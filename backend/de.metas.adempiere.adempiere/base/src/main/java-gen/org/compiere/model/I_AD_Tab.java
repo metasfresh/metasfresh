@@ -138,7 +138,7 @@ public interface I_AD_Tab
 	String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
-	 * Set Bild.
+	 * Set Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -148,7 +148,7 @@ public interface I_AD_Tab
 	void setAD_Image_ID (int AD_Image_ID);
 
 	/**
-	 * Get Bild.
+	 * Get Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -655,6 +655,27 @@ public interface I_AD_Tab
 	String COLUMNNAME_IsAdvancedTab = "IsAdvancedTab";
 
 	/**
+	 * Set Autodetect Default Date Filter .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutodetectDefaultDateFilter (boolean IsAutodetectDefaultDateFilter);
+
+	/**
+	 * Get Autodetect Default Date Filter .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutodetectDefaultDateFilter();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IsAutodetectDefaultDateFilter = new ModelColumn<>(I_AD_Tab.class, "IsAutodetectDefaultDateFilter", null);
+	String COLUMNNAME_IsAutodetectDefaultDateFilter = "IsAutodetectDefaultDateFilter";
+
+	/**
 	 * Set Check Parents Changed.
 	 * Before saving a record in this tab shall we check if the parent tabs were changed?
 	 *
@@ -745,6 +766,29 @@ public interface I_AD_Tab
 
 	ModelColumn<I_AD_Tab, Object> COLUMN_IsInsertRecord = new ModelColumn<>(I_AD_Tab.class, "IsInsertRecord", null);
 	String COLUMNNAME_IsInsertRecord = "IsInsertRecord";
+
+	/**
+	 * Set Allow querying when not filtered.
+	 * Allow view querying even if user didn't apply any filter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsQueryIfNoFilters (boolean IsQueryIfNoFilters);
+
+	/**
+	 * Get Allow querying when not filtered.
+	 * Allow view querying even if user didn't apply any filter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQueryIfNoFilters();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IsQueryIfNoFilters = new ModelColumn<>(I_AD_Tab.class, "IsQueryIfNoFilters", null);
+	String COLUMNNAME_IsQueryIfNoFilters = "IsQueryIfNoFilters";
 
 	/**
 	 * Set Query data on load.

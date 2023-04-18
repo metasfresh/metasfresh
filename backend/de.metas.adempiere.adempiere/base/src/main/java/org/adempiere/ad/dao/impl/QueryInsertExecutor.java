@@ -10,30 +10,31 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import com.google.common.base.MoreObjects;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryInsertExecutor;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.POInfo;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryInsertExecutor;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.util.Check;
 
 class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExecutor<ToModelType, FromModelType>
 {
@@ -43,6 +44,8 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	private final AbstractTypedQuery<FromModelType> fromQuery;
 	private final Class<FromModelType> fromModelClass;
 
+	private final String fromTableName;
+
 	// Mapping
 	private final Map<String, IQueryInsertFromColumn> toColumn2fromColumn = new HashMap<>();
 	private final Map<String, IQueryInsertFromColumn> toColumn2fromColumnRO = Collections.unmodifiableMap(toColumn2fromColumn);
@@ -50,17 +53,14 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	// Options
 	private boolean createSelectionOfInsertedRows = false;
 
-	QueryInsertExecutor(final Class<ToModelType> toModelClass, final AbstractTypedQuery<FromModelType> fromQuery)
+	QueryInsertExecutor(@NonNull final Class<ToModelType> toModelClass, @NonNull final AbstractTypedQuery<FromModelType> fromQuery)
 	{
-		super();
-
-		Check.assumeNotNull(toModelClass, "toModelClass not null");
 		this.toModelClass = toModelClass;
 		this.toTableName = InterfaceWrapperHelper.getTableName(toModelClass);
 
-		Check.assumeNotNull(fromQuery, "fromQuery not null");
 		this.fromQuery = fromQuery;
 		this.fromModelClass = fromQuery.getModelClass();
+		this.fromTableName = InterfaceWrapperHelper.getTableName(fromModelClass);
 	}
 
 	@Override
@@ -81,14 +81,14 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	{
 		return fromQuery.executeInsert(this);
 	}
-	
+
 	@Override
 	public QueryInsertExecutor<ToModelType, FromModelType> mapCommonColumns()
 	{
-		final Set<String> fromColumnNames = InterfaceWrapperHelper.getModelColumnNames(fromModelClass);
-		final Set<String> toColumnNames = new HashSet<>(InterfaceWrapperHelper.getModelColumnNames(toModelClass));
+		final Set<String> fromColumnNames = InterfaceWrapperHelper.getModelPhysicalColumnNames(fromModelClass);
+		final Set<String> toColumnNames = new HashSet<>(InterfaceWrapperHelper.getModelPhysicalColumnNames(toModelClass));
+		final Set<String> toColumnsWithoutAPhysicalFromColumn = new HashSet<>(toColumnNames);
 		toColumnNames.retainAll(fromColumnNames);
-
 		for (final String toColumnName : toColumnNames)
 		{
 			final String fromColumnName = toColumnName;
@@ -96,7 +96,38 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 			mapColumn(toColumnName, from);
 		}
 
+		if (toColumnsWithoutAPhysicalFromColumn.removeAll(fromColumnNames))
+		{
+			mapVirtualColumnsInSourceTable(toColumnsWithoutAPhysicalFromColumn);
+		}
+
 		return this;
+	}
+
+	/**
+	 * Attempt to map physical columns in the {@code toTableName} that do not map to physical columns in the {@code fromTableName}.
+	 * Reasons include:
+	 * <ul>
+	 *    <li>column does not exist in the {@code fromTableName} => nothing to copy</li>
+	 *    <li>column in {@code fromTableName} is virtual => try to retrieve value from {@code AD_Column.ColumnSQL}</li>
+	 * <ul/>
+	 */
+	private void mapVirtualColumnsInSourceTable(final Set<String> toColumnsWithoutAPhysicalFromColumn)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return;
+		}
+		final POInfo fromTablePOInfo = POInfo.getPOInfo(fromTableName);
+		Check.assumeNotNull(fromTablePOInfo, "cannot find POInfo for table name: {}", fromTableName);
+		toColumnsWithoutAPhysicalFromColumn.stream()
+				.filter(fromTablePOInfo::isVirtualColumn)
+				.forEach(fromColumnName -> {
+					final String toColumnName = fromColumnName;
+					final String columnSql = fromTablePOInfo.getColumnSql(fromColumnName);
+					Check.assumeNotEmpty(columnSql, "columnSQL unexpectedly null for {}.{}", fromTableName, fromColumnName);
+					mapColumnToSql(toColumnName, columnSql);
+				});
 	}
 
 	@Override
@@ -144,7 +175,7 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 		this.createSelectionOfInsertedRows = true;
 		return this;
 	}
-	
+
 	/* package */ boolean isCreateSelectionOfInsertedRows()
 	{
 		return createSelectionOfInsertedRows;
@@ -156,7 +187,6 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	}
 
 	/**
-	 *
 	 * @return "To ColumnName" to "From Column" map
 	 */
 	/* package */ Map<String, IQueryInsertFromColumn> getColumnMapping()

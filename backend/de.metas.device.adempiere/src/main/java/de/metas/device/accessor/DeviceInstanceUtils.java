@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceResponse;
+import de.metas.device.api.hook.BeforeAcquireValueHook;
 import de.metas.device.api.request.DeviceRequestConfigureDevice;
 import de.metas.device.api.request.DeviceRequestGetConfigParams;
 import de.metas.device.api.request.IDeviceConfigParam;
@@ -33,6 +34,7 @@ import de.metas.device.api.request.IDeviceResponseGetConfigParams;
 import de.metas.device.config.DeviceConfig;
 import de.metas.device.config.DeviceConfigException;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.util.Util;
@@ -117,5 +119,23 @@ class DeviceInstanceUtils
 			}
 		}
 		return result;
+	}
+
+	@NonNull
+	public static ImmutableList<BeforeAcquireValueHook> instantiateHooks(@NonNull final DeviceConfig deviceConfig)
+	{
+		return deviceConfig.getBeforeHooksClassname()
+				.stream()
+				.map(classname -> {
+					try
+					{
+						return Util.getInstance(BeforeAcquireValueHook.class, classname);
+					}
+					catch (final Exception e)
+					{
+						throw DeviceConfigException.permanentFailure("Failed instantiating BeforeAcquireValueHook: " + classname, e);
+					}
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 }

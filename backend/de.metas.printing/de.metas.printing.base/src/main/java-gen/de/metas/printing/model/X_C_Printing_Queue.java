@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.printing.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Printing_Queue
  *  @author metasfresh (generated) 
@@ -49,19 +49,19 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_Archive_ID (final int AD_Archive_ID)
 	{
-		if (AD_Archive_ID < 1) 
+		if (AD_Archive_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Archive_ID, AD_Archive_ID);
 	}
 
 	@Override
-	public int getAD_Archive_ID() 
+	public int getAD_Archive_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Archive_ID);
 	}
 
-	/** 
+	/**
 	 * AD_Language AD_Reference_ID=106
 	 * Reference name: AD_Language
 	 */
@@ -73,7 +73,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public java.lang.String getAD_Language() 
+	public java.lang.String getAD_Language()
 	{
 		return get_ValueAsString(COLUMNNAME_AD_Language);
 	}
@@ -93,14 +93,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_PrinterHW_ID (final int AD_PrinterHW_ID)
 	{
-		if (AD_PrinterHW_ID < 1) 
+		if (AD_PrinterHW_ID < 1)
 			set_Value (COLUMNNAME_AD_PrinterHW_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_PrinterHW_ID, AD_PrinterHW_ID);
 	}
 
 	@Override
-	public int getAD_PrinterHW_ID() 
+	public int getAD_PrinterHW_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_PrinterHW_ID);
 	}
@@ -120,14 +120,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_PrinterHW_MediaTray_ID (final int AD_PrinterHW_MediaTray_ID)
 	{
-		if (AD_PrinterHW_MediaTray_ID < 1) 
+		if (AD_PrinterHW_MediaTray_ID < 1)
 			set_Value (COLUMNNAME_AD_PrinterHW_MediaTray_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_PrinterHW_MediaTray_ID, AD_PrinterHW_MediaTray_ID);
 	}
 
 	@Override
-	public int getAD_PrinterHW_MediaTray_ID() 
+	public int getAD_PrinterHW_MediaTray_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_PrinterHW_MediaTray_ID);
 	}
@@ -147,14 +147,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_Process_ID (final int AD_Process_ID)
 	{
-		if (AD_Process_ID < 1) 
+		if (AD_Process_ID < 1)
 			set_Value (COLUMNNAME_AD_Process_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
 	@Override
-	public int getAD_Process_ID() 
+	public int getAD_Process_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
@@ -174,14 +174,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_Role_ID (final int AD_Role_ID)
 	{
-		if (AD_Role_ID < 0) 
+		if (AD_Role_ID < 0)
 			set_Value (COLUMNNAME_AD_Role_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Role_ID, AD_Role_ID);
 	}
 
 	@Override
-	public int getAD_Role_ID() 
+	public int getAD_Role_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Role_ID);
 	}
@@ -189,14 +189,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{
-		if (AD_Table_ID < 1) 
+		if (AD_Table_ID < 1)
 			set_Value (COLUMNNAME_AD_Table_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
 	@Override
-	public int getAD_Table_ID() 
+	public int getAD_Table_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
@@ -204,14 +204,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setAD_User_ID (final int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 0)
 			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
 	@Override
-	public int getAD_User_ID() 
+	public int getAD_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
@@ -219,14 +219,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
-		if (Bill_BPartner_ID < 1) 
+		if (Bill_BPartner_ID < 1)
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
 	@Override
-	public int getBill_BPartner_ID() 
+	public int getBill_BPartner_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
 	}
@@ -234,14 +234,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setBill_Location_ID (final int Bill_Location_ID)
 	{
-		if (Bill_Location_ID < 1) 
+		if (Bill_Location_ID < 1)
 			set_Value (COLUMNNAME_Bill_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_Location_ID, Bill_Location_ID);
 	}
 
 	@Override
-	public int getBill_Location_ID() 
+	public int getBill_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_Location_ID);
 	}
@@ -264,14 +264,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		if (C_Async_Batch_ID < 1) 
+		if (C_Async_Batch_ID < 1)
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
-	public int getC_Async_Batch_ID() 
+	public int getC_Async_Batch_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
@@ -279,14 +279,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
-	public int getC_BPartner_ID() 
+	public int getC_BPartner_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
@@ -294,14 +294,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1) 
+		if (C_BPartner_Location_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Location_ID() 
+	public int getC_BPartner_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
@@ -309,14 +309,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_Value (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID() 
+	public int getC_DocType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
@@ -328,7 +328,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public int getCopies() 
+	public int getCopies()
 	{
 		return get_ValueAsInt(COLUMNNAME_Copies);
 	}
@@ -336,14 +336,14 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	@Override
 	public void setC_Printing_Queue_ID (final int C_Printing_Queue_ID)
 	{
-		if (C_Printing_Queue_ID < 1) 
+		if (C_Printing_Queue_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, C_Printing_Queue_ID);
 	}
 
 	@Override
-	public int getC_Printing_Queue_ID() 
+	public int getC_Printing_Queue_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Printing_Queue_ID);
 	}
@@ -355,7 +355,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public java.sql.Timestamp getDeliveryDate() 
+	public java.sql.Timestamp getDeliveryDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
 	}
@@ -366,7 +366,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		throw new IllegalArgumentException ("IsDifferentInvoicingPartner is virtual column");	}
 
 	@Override
-	public boolean isDifferentInvoicingPartner() 
+	public boolean isDifferentInvoicingPartner()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDifferentInvoicingPartner);
 	}
@@ -377,7 +377,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		throw new IllegalArgumentException ("IsForeignCustomer is virtual column");	}
 
 	@Override
-	public boolean isForeignCustomer() 
+	public boolean isForeignCustomer()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsForeignCustomer);
 	}
@@ -389,12 +389,12 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public boolean isPrintoutForOtherUser() 
+	public boolean isPrintoutForOtherUser()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPrintoutForOtherUser);
 	}
 
-	/** 
+	/**
 	 * ItemName AD_Reference_ID=540735
 	 * Reference name: ItemName
 	 */
@@ -420,7 +420,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public java.lang.String getItemName() 
+	public java.lang.String getItemName()
 	{
 		return get_ValueAsString(COLUMNNAME_ItemName);
 	}
@@ -432,7 +432,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public java.lang.String getPrintingQueueAggregationKey() 
+	public java.lang.String getPrintingQueueAggregationKey()
 	{
 		return get_ValueAsString(COLUMNNAME_PrintingQueueAggregationKey);
 	}
@@ -444,7 +444,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}

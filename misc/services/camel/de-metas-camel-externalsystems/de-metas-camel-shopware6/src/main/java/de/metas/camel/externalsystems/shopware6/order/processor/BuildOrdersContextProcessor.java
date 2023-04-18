@@ -22,22 +22,23 @@
 
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
+import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteHelper;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.externalsystem.JsonProductLookup;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
@@ -53,7 +54,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -133,7 +133,7 @@ public class BuildOrdersContextProcessor implements Processor
 		return ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
 				.externalSystemRequest(request)
-				.shopware6ConfigMappings(getSalesOrderMappingRules(request).orElse(null))
+				.shopware6ConfigMappings(GetOrdersRouteHelper.getSalesOrderMappingRules(request).orElse(null))
 				.shopwareClient(shopwareClient)
 				.pInstanceId(request.getAdPInstanceId())
 				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
@@ -147,28 +147,10 @@ public class BuildOrdersContextProcessor implements Processor
 				.shopwareIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID))
 				.ordersResponsePageIndex(1)
 				.pageLimit(pageLimit)
+				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
+				.ordersResponsePageIndex(1)
+				.pageLimit(pageLimit)
 				.build();
-	}
-
-	@NonNull
-	private static Optional<JsonExternalSystemShopware6ConfigMappings> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
-	{
-		final String shopware6Mappings = request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
-
-		if (Check.isBlank(shopware6Mappings))
-		{
-			return Optional.empty();
-		}
-
-		final ObjectMapper mapper = new ObjectMapper();
-		try
-		{
-			return Optional.of(mapper.readValue(shopware6Mappings, JsonExternalSystemShopware6ConfigMappings.class));
-		}
-		catch (final JsonProcessingException e)
-		{
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Nullable
