@@ -108,6 +108,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list();
 	}
 
+	@Override
 	public List<InvoiceId> retrieveInvoicesForOrderLineIds(@NonNull final List<OrderLineId> orderLineIds)
 	{
 		final List<I_C_InvoiceLine> invoiceLines = queryBL

@@ -33,6 +33,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
@@ -41,6 +42,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 
@@ -65,6 +67,8 @@ public interface IInvoiceDAO extends ISingletonService
 	Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(List<OrderId> orderIds);
 
 	List<I_C_Invoice> getInvoicesForOrderIds(List<OrderId> orderIds);
+
+	List<InvoiceId> retrieveInvoicesForOrderLineIds(@NonNull final List<OrderLineId> orderLineIds);
 
 	/**
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}
