@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -333,7 +334,7 @@ public class WOProjectSimulationPlanEditor
 
 		if (beforeSteps.isEmpty())
 		{
-			return getDefaultCalendarDateRange();
+			return getDefaultCalendarDateRange(stepId);
 		}
 
 		final WOProjectStep beforeStep = beforeSteps.get(0);
@@ -341,7 +342,7 @@ public class WOProjectSimulationPlanEditor
 
 		if (beforeStepSimulated == null)
 		{
-			return getDefaultCalendarDateRange();
+			return getDefaultCalendarDateRange(stepId);
 		}
 
 		final List<WOProjectStep> afterSteps = getStepsAfterInOrder(stepId);
@@ -373,17 +374,18 @@ public class WOProjectSimulationPlanEditor
 	}
 
 	@NonNull
-	private CalendarDateRange getDefaultCalendarDateRange()
+	private CalendarDateRange getDefaultCalendarDateRange(@NonNull final WOProjectStepId stepId)
 	{
-		return getProject().getCalendarDateRange()
-				.orElseGet(() -> {
-					final Instant defaultStartDate = SystemTime.asInstant();
+		return Optional.ofNullable(getStepById(stepId).getDateRange())
+				.orElseGet(() -> getProject().getCalendarDateRange()
+						.orElseGet(() -> {
+							final Instant defaultStartDate = SystemTime.asInstant();
 
-					return CalendarDateRange.builder()
-							.startDate(defaultStartDate)
-							.endDate(defaultStartDate.plus(DEFAULT_DURATION))
-							.allDay(false)
-							.build();
-				});
+							return CalendarDateRange.builder()
+									.startDate(defaultStartDate)
+									.endDate(defaultStartDate.plus(DEFAULT_DURATION))
+									.allDay(false)
+									.build();
+						}));
 	}
 }
