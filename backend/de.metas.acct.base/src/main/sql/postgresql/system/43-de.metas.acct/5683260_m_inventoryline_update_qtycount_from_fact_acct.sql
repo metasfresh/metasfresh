@@ -2,6 +2,14 @@ DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_
     p_M_Inventory_ID      numeric,
     p_ProductAssetAccount varchar,
     p_RecreateLines       char(1),
+    p_DryRun              char(1)
+)
+;
+
+DROP FUNCTION IF EXISTS de_metas_acct.m_inventoryline_update_qtycount_from_fact_acct(
+    p_M_Inventory_ID      numeric,
+    p_ProductAssetAccount varchar,
+    p_RecreateLines       char(1),
     p_DryRun              char(1),
     p_DateAcctFrom        date,
     p_DateAcctTo          date
