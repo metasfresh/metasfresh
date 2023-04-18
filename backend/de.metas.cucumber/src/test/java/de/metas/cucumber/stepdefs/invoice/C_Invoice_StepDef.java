@@ -152,7 +152,7 @@ public class C_Invoice_StepDef
 		invoicingParams.setIgnoreInvoiceSchedule(false);
 		invoicingParams.setSupplementMissingPaymentTermIds(true);
 
-		final IInvoiceCandidateEnqueueResult iInvoiceCandidateEnqueueResult = invoiceCandBL.enqueueForInvoicing()
+		invoiceCandBL.enqueueForInvoicing()
 				.setContext(Env.getCtx())
 				.setFailIfNothingEnqueued(true)
 				.setInvoicingParams(invoicingParams)
