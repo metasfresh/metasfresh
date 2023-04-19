@@ -115,7 +115,7 @@ public class C_Order_StepDef
 				order.setC_PaymentTerm_ID(paymentTermId);
 			}
 
-			if(salesRepID > 0)
+			if (salesRepID > 0)
 			{
 				order.setSalesRep_ID(salesRepID);
 			}
