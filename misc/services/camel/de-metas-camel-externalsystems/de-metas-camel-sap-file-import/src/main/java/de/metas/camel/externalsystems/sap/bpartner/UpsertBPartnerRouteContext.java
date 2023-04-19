@@ -22,7 +22,9 @@
 
 package de.metas.camel.externalsystems.sap.bpartner;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
+import de.metas.common.externalsystem.JsonExternalSAPBPartnerImportSettings;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Data;
@@ -40,11 +42,14 @@ public class UpsertBPartnerRouteContext
 	@NonNull
 	final JsonMetasfreshId externalSystemConfigId;
 
+	@NonNull
+	final ImmutableList<JsonExternalSAPBPartnerImportSettings> bPartnerImportSettings;
+
 	@Nullable
 	UpsertBPartnerRequestBuilder syncBPartnerRequestBuilder;
 
 	public void initUpsertBPartnerRequestBuilder(@NonNull final BPartnerRow bPartnerRow) throws Exception
 	{
-		this.syncBPartnerRequestBuilder = UpsertBPartnerRequestBuilder.of(bPartnerRow, orgCode, externalSystemConfigId);
+		this.syncBPartnerRequestBuilder = UpsertBPartnerRequestBuilder.of(bPartnerRow, orgCode, externalSystemConfigId, bPartnerImportSettings);
 	}
 }
