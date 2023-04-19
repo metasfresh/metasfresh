@@ -328,6 +328,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metas
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
+<<<<<<< HEAD
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
@@ -343,6 +344,26 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "syncBPartnerToRabbitMQ": true,
       "syncExternalReferencesToRabbitMQ": false,
       "value": "testRabbitMQValue"
+=======
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "isAutoSendWhenCreatedByUserGroup" : false,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
+      "syncBPartnerToRabbitMQ" : true
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
     },
     "id": 100001,
     "name": "name",
@@ -355,6 +376,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
   {
+<<<<<<< HEAD
     "authToken": "authToken",
     "autoSendSubjectWhenCreatedByUserGroup": false,
     "id": 100002,
@@ -367,12 +389,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "syncBPartnerToRabbitMQ": true,
     "syncExternalReferencesToRabbitMQ": false,
     "value": "testRabbitMQValue"
+=======
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testRabbitMQValue",
+    "routingKey" : "routingKey",
+    "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
+    "isSyncBPartnerToRabbitMQ" : true,
+    "isAutoSendWhenCreatedByUserGroup" : false,
+    "isSyncExternalReferencesToRabbitMQ" : false,
+    "syncExternalReferencesToRabbitMQ" : false,
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndValue=[
   {
+<<<<<<< HEAD
     "active": true,
     "auditFileFolder": "auditFileFolder",
     "childConfig": {
@@ -389,6 +426,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "syncExternalReferencesToRabbitMQ": false,
       "userGroupId": 1,
       "value": "testRabbitMQValue"
+=======
+    "id" : 100001,
+    "type" : "RabbitMQ",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "isAutoSendWhenCreatedByUserGroup" : true,
+      "userGroupId" : 1,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
+      "syncBPartnerToRabbitMQ" : true
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
     },
     "id": 100001,
     "name": "name",
@@ -444,6 +502,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
           "processId": 2
         }
       ],
+<<<<<<< HEAD
       "id": 100002,
       "parentId": 100001,
       "postAcctDocumentsPath": "Post_Acct_Documents_Path",
@@ -451,6 +510,16 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "signedPermissions": "SignedPermissions",
       "signedVersion": "signedVersion",
       "value": "testSAPValue"
+=======
+      "bPartnerImportSettings" : [
+        {
+          "seqNo" : 10,
+          "partnerCodePattern" : "PartnerCode-Pattern",
+          "isSingleBPartner" : true,
+          "singleBPartner" : true
+        }
+      ]
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
     },
     "id": 100001,
     "name": "name",
@@ -503,6 +572,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         "processId": 2
       }
     ],
+<<<<<<< HEAD
     "id": 100002,
     "parentId": 100001,
     "postAcctDocumentsPath": "Post_Acct_Documents_Path",
@@ -510,6 +580,16 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
     "signedPermissions": "SignedPermissions",
     "signedVersion": "signedVersion",
     "value": "testSAPValue"
+=======
+    "bPartnerImportSettings" : [
+      {
+        "seqNo" : 10,
+        "partnerCodePattern" : "PartnerCode-Pattern",
+        "isSingleBPartner" : true,
+        "singleBPartner" : true
+      }
+    ]
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
   }
 ]
 
@@ -559,6 +639,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
           "processId": 2
         }
       ],
+<<<<<<< HEAD
       "id": 100002,
       "parentId": 100001,
       "postAcctDocumentsPath": "Post_Acct_Documents_Path",
@@ -566,6 +647,16 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "signedPermissions": "SignedPermissions",
       "signedVersion": "signedVersion",
       "value": "testSAPValue"
+=======
+      "bPartnerImportSettings" : [
+        {
+          "seqNo" : 10,
+          "partnerCodePattern" : "PartnerCode-Pattern",
+          "isSingleBPartner" : true,
+          "singleBPartner" : true
+        }
+      ]
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
     },
     "id": 100001,
     "name": "name",
@@ -826,6 +917,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
+<<<<<<< HEAD
       "active": true,
       "auditFileFolder": "auditFileFolder",
       "childConfig": {
@@ -841,6 +933,26 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "syncBPartnerToRabbitMQ": false,
         "syncExternalReferencesToRabbitMQ": false,
         "value": "notImportant"
+=======
+      "id" : 100001,
+      "type" : "RabbitMQ",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "notImportant",
+        "routingKey" : "routingKey",
+        "remoteUrl" : "remoteURL",
+        "authToken" : "authToken",
+        "isSyncBPartnerToRabbitMQ" : false,
+        "isAutoSendWhenCreatedByUserGroup" : false,
+        "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncExternalReferencesToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
+        "syncBPartnerToRabbitMQ" : false
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
       },
       "id": 100001,
       "name": "name",
@@ -898,6 +1010,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
             "processId": 2
           }
         ],
+<<<<<<< HEAD
         "id": 100002,
         "parentId": 100001,
         "postAcctDocumentsPath": "Post_Acct_Documents_Path",
@@ -905,6 +1018,16 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "signedPermissions": "SignedPermissions",
         "signedVersion": "signedVersion",
         "value": "notImportant"
+=======
+        "bPartnerImportSettings" : [
+          {
+            "seqNo" : 10,
+            "partnerCodePattern" : "PartnerCode-Pattern",
+            "isSingleBPartner" : true,
+            "singleBPartner" : true
+          }
+        ]
+>>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
       },
       "id": 100001,
       "name": "name",
