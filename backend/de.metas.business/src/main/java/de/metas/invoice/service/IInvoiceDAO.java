@@ -68,7 +68,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_Invoice> getInvoicesForOrderIds(List<OrderId> orderIds);
 
-	List<InvoiceId> retrieveInvoicesForOrderLineIds(@NonNull final List<OrderLineId> orderLineIds);
+	List<InvoiceId> retrieveAllInvoicesForOrderLineIds(@NonNull Collection<OrderLineId> orderLineIds);
 
 	/**
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}

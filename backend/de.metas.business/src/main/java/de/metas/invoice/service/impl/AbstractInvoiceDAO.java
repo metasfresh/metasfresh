@@ -1,5 +1,6 @@
 package de.metas.invoice.service.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -109,19 +110,17 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<InvoiceId> retrieveInvoicesForOrderLineIds(@NonNull final List<OrderLineId> orderLineIds)
+	public List<InvoiceId> retrieveAllInvoicesForOrderLineIds(@NonNull final Collection<OrderLineId> orderLineIds)
 	{
-		final List<I_C_InvoiceLine> invoiceLines = queryBL
+		return queryBL
 				.createQueryBuilder(I_C_InvoiceLine.class)
-				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
 				.create()
-				.list();
-
-		return invoiceLines.stream()
+				.stream()
 				.map(il -> InvoiceId.ofRepoId(il.getC_Invoice_ID()))
 				.distinct()
-				.collect(Collectors.toList());
-
+				.collect(ImmutableList.toImmutableList());
 	}
 
 
