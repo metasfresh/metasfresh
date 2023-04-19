@@ -50,20 +50,6 @@ INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Re
 -- Reference: SAP_GLJournal_Reversal
 -- Table: SAP_GLJournal
 -- Key: SAP_GLJournal.SAP_GLJournal_ID
--- 2023-04-18T16:37:40.426Z
-UPDATE AD_Ref_Table SET WhereClause='SAP_GLJournal.Reversal_ID = @SAP_GLJournal_ID/-1@',Updated=TO_TIMESTAMP('2023-04-18 17:37:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
-;
-
--- Reference: SAP_GLJournal_Reversal
--- Table: SAP_GLJournal
--- Key: SAP_GLJournal.SAP_GLJournal_ID
--- 2023-04-18T16:38:14.520Z
-UPDATE AD_Ref_Table SET WhereClause='SAP_GLJournal.Reversal_ID=@SAP_GLJournal_ID/-1@',Updated=TO_TIMESTAMP('2023-04-18 17:38:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
-;
-
--- Reference: SAP_GLJournal_Reversal
--- Table: SAP_GLJournal
--- Key: SAP_GLJournal.SAP_GLJournal_ID
 -- 2023-04-18T16:43:35.588Z
 UPDATE AD_Ref_Table SET WhereClause='SAP_GLJournal.Reversal_ID =@SAP_GLJournal_ID/-1@',Updated=TO_TIMESTAMP('2023-04-18 17:43:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
 ;
