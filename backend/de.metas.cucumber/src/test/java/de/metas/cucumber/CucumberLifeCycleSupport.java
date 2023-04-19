@@ -73,7 +73,7 @@ public class CucumberLifeCycleSupport
 			System.setProperty(SYSCONFIG_DEBOUNCER_DELAY_MILLIS, "100");
 			System.setProperty(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, "true");
 			System.setProperty(SYS_Config_AUTO_SHIP_AND_INVOICE, "false");
-	
+
 			// This is a workaround;
 			// Apparently, backend/metasfresh-dist/serverRoot/src/main/resources/c3p0.properties is not found in the classpass when we run this on github.
 			// See https://www.mchange.com/projects/c3p0/#c3p0_properties for where in the classpath it needs to be

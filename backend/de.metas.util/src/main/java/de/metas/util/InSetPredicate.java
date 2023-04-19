@@ -55,7 +55,7 @@ public final class InSetPredicate<T> implements Predicate<T>
 	{
 		return onlyValues.isEmpty()
 				? none()
-				: new InSetPredicate<>(Mode.ONLY, toUnmodifiableSet(onlyValues));
+				: new InSetPredicate<>(Mode.ONLY, toUnmodifiableSet(new HashSet<>(onlyValues)));
 	}
 
 	@SafeVarargs

@@ -49,7 +49,6 @@ import de.metas.util.async.DebouncerSysConfig;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -57,7 +56,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-@Service
 public abstract class ExportHUToExternalSystemService extends ExportToExternalSystemService
 {
 	private static final Logger logger = LogManager.getLogger(ExportHUToExternalSystemService.class);

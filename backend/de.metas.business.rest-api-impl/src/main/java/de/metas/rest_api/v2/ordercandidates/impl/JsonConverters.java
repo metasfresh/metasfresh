@@ -16,6 +16,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -37,6 +38,7 @@ import de.metas.product.IProductBL;
 import de.metas.quantity.Quantitys;
 import de.metas.project.ProjectId;
 import de.metas.rest_api.utils.CurrencyService;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -174,8 +176,9 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
-		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
 				.orElse(null);
 
 		final String subType = Optional.ofNullable(request.getInvoiceDocType())
@@ -187,6 +190,8 @@ public class JsonConverters
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
+
+		final SectionCodeId sectionCodeId = masterdataProvider.getSectionCodeId(orgId, request.getSectionCode());
 
 		return OLCandCreateRequest.builder()
 				//
@@ -256,6 +261,7 @@ public class JsonConverters
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
+				.sectionCodeId(sectionCodeId)
 				;
 	}
 
@@ -384,6 +390,7 @@ public class JsonConverters
 
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
+				.sectionCodeId(JsonMetasfreshId.ofOrNull(SectionCodeId.toRepoId(olCand.getSectionCodeId())))
 				.build();
 	}
 

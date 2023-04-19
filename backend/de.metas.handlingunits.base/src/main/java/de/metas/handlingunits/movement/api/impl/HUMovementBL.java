@@ -24,7 +24,6 @@ package de.metas.handlingunits.movement.api.impl;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimaps;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.HuId;
@@ -46,6 +45,7 @@ import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
@@ -97,8 +97,8 @@ public class HUMovementBL implements IHUMovementBL
 		final OrgId orgId = OrgId.ofRepoId(movementLine.getAD_Org_ID());
 		final ProductId productId = ProductId.ofRepoId(movementLine.getM_Product_ID());
 
-		final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-		final ActivityId productActivityId = productAcctDAO.retrieveActivityForAcct(clientId, orgId, productId);
+		final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
+		final ActivityId productActivityId = productActivityProvider.getActivityForAcct(clientId, orgId, productId);
 
 		movementLine.setC_ActivityFrom_ID(ActivityId.toRepoId(productActivityId));
 		movementLine.setC_Activity_ID(ActivityId.toRepoId(productActivityId));
@@ -123,13 +123,13 @@ public class HUMovementBL implements IHUMovementBL
 						))
 				.orElseThrow(() -> new AdempiereException("Missing AD_SysConfig record with Name = " + SYSCONFIG_DirectMove_Warehouse_ID + " for AD_Client_ID=" + adClientId + " and AD_Org_ID=" + adOrgId));
 
-		return warehouseBL.getDefaultLocatorId(directMoveWarehouseId);
+		return warehouseBL.getOrCreateDefaultLocatorId(directMoveWarehouseId);
 	}
 
 	@Override
 	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
 	{
-		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		return moveHUsToLocator(hus, locatorToId);
 	}
 

@@ -25,36 +25,29 @@ package de.metas.invoicecandidate.async.spi.impl;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
-import de.metas.async.api.IWorkpackageParamDAO;
-import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.invoicecandidate.InvoiceCandidateLockingUtil;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
-import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
-import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -68,10 +61,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
-	private InvoicingParams _invoicingParams = null; // lazy loaded
 
 	/**
 	 * @param result result to be used when processing
@@ -99,8 +91,8 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			// Validate all invoice candidates
-			updateInvalid(localCtx, candidatesOfPackage, localTrxName);
+			// At this line, we used to update invalid ICs, but that's not needed anymore,
+			// because we made sure that this is done by the respective invoice-candidate-processor.
 
 			// Generate invoices from them
 			final UserNotificationsInvoiceGenerateResult createInvoiceResults = new UserNotificationsInvoiceGenerateResult(getInvoiceGenerateResult())
@@ -147,87 +139,8 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 
-	private IInvoicingParams getInvoicingParams()
+	private InvoicingParams getInvoicingParams()
 	{
-		if (_invoicingParams == null)
-		{
-			_invoicingParams = new InvoicingParams(getParameters());
-		}
-		return _invoicingParams;
-	}
-
-	private void updateInvalid(
-			@NonNull final Properties localCtx,
-			@NonNull final List<I_C_Invoice_Candidate> candidates,
-			@Nullable final String localTrxName)
-	{
-		// If there are no invoice candidates, there nothing we can do
-		if (candidates.isEmpty())
-		{
-			return;
-		}
-
-		// Invoice candidates changes tracker: tracks if sensitive informations (i.e. amount)
-		// from invoice candidates were changed after validation.
-		// If that's the case, an exception shall be thrown.
-		final InvoiceCandidatesChangesChecker icChangesChecker = new InvoiceCandidatesChangesChecker()
-				.setBeforeChanges(candidates);
-
-		// Validate all invoice candidates
-		final ILock elementsLock = getOrReCreateElementsLock(candidates);
-		invoiceCandBL.updateInvalid()
-				.setContext(localCtx, localTrxName)
-				.setLockedBy(elementsLock)
-				.setTaggedWithAnyTag()
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(candidates))
-				.update();
-
-		// Make sure the invoice candidate is fresh before we actually use it (task 06162, also see javadoc of updateInvalid method)
-		InterfaceWrapperHelper.refreshAll(candidates);
-
-		//
-		// If any of the enqueued invoice candidates are flagged "ToRecompute" we cannot generate the invoice now,
-		// but we will postpone the workpackage processing
-		for (final I_C_Invoice_Candidate ic : candidates)
-		{
-			if (invoiceCandDAO.isToRecompute(ic))
-			{
-				// at least one candidate is currently not valid. Retry later.
-				throw WorkpackageSkipRequestException.create("Candidate " + ic + " is currently not valid (maybe others too). Retry later");
-			}
-		}
-
-		//
-		// Make sure no sensitive informations were changed
-		icChangesChecker.assertNoChanges(candidates);
-	}
-
-	private ILock getOrReCreateElementsLock(@NonNull final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
-	{
-		final Optional<ILock> elementsLock = getElementsLock();
-		if (elementsLock.isPresent())
-		{
-			return elementsLock.get();
-		}
-
-		// this happens if processing this workpackage failed once in the past.
-		// because in that case, the framework unlocked all workpackage elements
-		Loggables.addLog("The lock specified in the package parameter is gone! Trying to obtain a new lock");
-
-		final String uniqueLockOwnerSuffix = I_C_Queue_WorkPackage.Table_Name + "_" + getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID();
-
-		final ILock lock = InvoiceCandidateLockingUtil.lockInvoiceCandidates(invoiceCandidateRecords, uniqueLockOwnerSuffix);
-
-		// update the parameter; it is used to release the lock we just obtained when the workpackage was processed
-		final IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
-		workpackageParamDAO.setParameterValue(
-				getC_Queue_WorkPackage(),
-				PARAMETERNAME_ElementsLockOwner,
-				lock.getOwner().getOwnerName());
-		final IParams parameters = workpackageParamDAO.retrieveWorkpackageParams(getC_Queue_WorkPackage());
-		setParameters(parameters);
-
-		Loggables.addLog("Obtained new lock with ownerName={} and updated our package parameter", lock.getOwner().getOwnerName());
-		return lock;
+		return InvoicingParams.ofParams(getParameters());
 	}
 }

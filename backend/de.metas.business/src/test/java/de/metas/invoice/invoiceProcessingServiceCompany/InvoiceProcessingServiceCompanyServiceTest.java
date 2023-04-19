@@ -22,6 +22,7 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -417,6 +418,31 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		}
 	}
 
+	@Builder(builderMethodName = "bpartnerAndLocation", builderClassName = "$BPartnerAndLocationBuilder")
+	private BPartnerLocationId createBPartnerAndLocation(
+			@NonNull final PricingSystemId purchasePricingSystemId,
+			@NonNull final CountryId countryId)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
+		bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		saveRecord(bpartner);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setC_Country_ID(countryId.getRepoId());
+		saveRecord(location);
+
+		final I_C_BPartner_Location bpartnerLocation = newInstance(I_C_BPartner_Location.class);
+		bpartnerLocation.setC_BPartner_ID(bpartnerId.getRepoId());
+		bpartnerLocation.setIsBillToDefault(true);
+		bpartnerLocation.setIsBillTo(true);
+		bpartnerLocation.setC_Location_ID(location.getC_Location_ID());
+		saveRecord(bpartnerLocation);
+
+		return BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocation.getC_BPartner_Location_ID());
+	}
+
 	@Nested
 	public class generateServiceInvoice
 	{
@@ -451,6 +477,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							.ctx(Env.getCtx())
 							.name("invoice processing fee vendor invoice")
 							.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+							.glCategoryId(GLCategoryId.ofRepoId(123))
 							.build());
 
 			final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
@@ -498,31 +525,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			product.setIsStocked(false);
 			saveRecord(product);
 			return ProductId.ofRepoId(product.getM_Product_ID());
-		}
-
-		@Builder(builderMethodName = "bpartnerAndLocation", builderClassName = "$BPartnerAndLocationBuilder")
-		private BPartnerLocationId createBPartnerAndLocation(
-				@NonNull final PricingSystemId purchasePricingSystemId,
-				@NonNull final CountryId countryId)
-		{
-			final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-			bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
-			bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
-			saveRecord(bpartner);
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-
-			final I_C_Location location = newInstance(I_C_Location.class);
-			location.setC_Country_ID(countryId.getRepoId());
-			saveRecord(location);
-
-			final I_C_BPartner_Location bpartnerLocation = newInstance(I_C_BPartner_Location.class);
-			bpartnerLocation.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpartnerLocation.setIsBillToDefault(true);
-			bpartnerLocation.setIsBillTo(true);
-			bpartnerLocation.setC_Location_ID(location.getC_Location_ID());
-			saveRecord(bpartnerLocation);
-
-			return BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocation.getC_BPartner_Location_ID());
 		}
 
 		private PricingSystemId createPricingSystem()

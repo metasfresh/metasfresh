@@ -6,6 +6,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -42,7 +44,7 @@ public class PackagingCodeId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final PackagingCodeId packagingCodeId)
+	public static int toRepoId(@Nullable final PackagingCodeId packagingCodeId)
 	{
 		return packagingCodeId != null ? packagingCodeId.getRepoId() : -1;
 	}

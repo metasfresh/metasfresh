@@ -1,6 +1,7 @@
 package de.metas.monitoring.adapter;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -28,8 +29,10 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 {
 	public static final NoopPerformanceMonitoringService INSTANCE = new NoopPerformanceMonitoringService();
 
+	private NoopPerformanceMonitoringService() {}
+
 	@Override
-	public <V> V monitorSpan(Callable<V> callable, SpanMetadata request)
+	public <V> V monitor(Callable<V> callable, Metadata request)
 	{
 		try
 		{
@@ -42,16 +45,7 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 	}
 
 	@Override
-	public <V> V monitorTransaction(Callable<V> callable, TransactionMetadata request)
+	public void recordElapsedTime(final long duration, final TimeUnit unit, final Metadata metadata)
 	{
-		try
-		{
-			return callable.call();
-		}
-		catch (Exception e)
-		{
-			throw PerformanceMonitoringServiceUtil.asRTE(e);
-		}
 	}
-
 }

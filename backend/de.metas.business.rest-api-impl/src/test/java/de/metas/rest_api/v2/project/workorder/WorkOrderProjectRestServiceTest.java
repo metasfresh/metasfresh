@@ -74,8 +74,10 @@ import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.I_C_Project_WO_Step;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_R_StatusCategory;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.model.X_C_ProjectType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +93,7 @@ import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob;
 import static org.mockito.ArgumentMatchers.any;
@@ -104,6 +106,8 @@ class WorkOrderProjectRestServiceTest
 	private WorkOrderProjectRestService workOrderProjectRestService;
 
 	private I_C_ProjectType projectType;
+
+	private I_R_StatusCategory requestStatusCategory;
 	private String orgValue;
 	private I_S_Resource resource;
 	private PriceListVersionId priceListVersionId;
@@ -118,15 +122,19 @@ class WorkOrderProjectRestServiceTest
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
 
-		projectType = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
-		projectType.setProjectCategory(PROJECTCATEGORY_WorkOrderJob);
+		requestStatusCategory = newInstance(I_R_StatusCategory.class);
+		save(requestStatusCategory);
+
+		projectType = newInstance(I_C_ProjectType.class);
+		projectType.setProjectCategory(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob);
+		projectType.setR_StatusCategory_ID(requestStatusCategory.getR_StatusCategory_ID());
 		projectType.setName("projectTypeName");
-		InterfaceWrapperHelper.save(projectType);
+		save(projectType);
 
-		final I_S_ResourceType resourceType = InterfaceWrapperHelper.newInstance(I_S_ResourceType.class);
-		InterfaceWrapperHelper.save(resourceType);
+		final I_S_ResourceType resourceType = newInstance(I_S_ResourceType.class);
+		save(resourceType);
 
-		resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
+		resource = newInstance(I_S_Resource.class);
 		resource.setS_ResourceType_ID(resourceType.getS_ResourceType_ID());
 		resource.setInternalName("internalName");
 		resource.setValue("resourceValue");
@@ -142,6 +150,7 @@ class WorkOrderProjectRestServiceTest
 
 		final ProjectService mockProjectService = Mockito.mock(ProjectService.class);
 		Mockito.when(mockProjectService.getNextProjectValue(any())).thenReturn(nextValue);
+		Mockito.when(mockProjectService.getProjectTypeById(ProjectTypeId.ofRepoId(projectType.getC_ProjectType_ID()))).thenReturn(ProjectTypeRepository.toProjectType(projectType));
 
 		final WOProjectStepRepository workOrderProjectStepRepository = new WOProjectStepRepository();
 		final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository = new WorkOrderProjectObjectUnderTestRepository();
@@ -902,14 +911,14 @@ class WorkOrderProjectRestServiceTest
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setM_PriceList_ID(priceListId.getRepoId());
 		priceList.setC_Currency_ID(currencyId.getRepoId());
-		saveRecord(priceList);
+		save(priceList);
 
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
 
 		priceListVersion.setM_PriceList_ID(priceListId.getRepoId());
 		priceListVersion.setValidFrom(Timestamp.from(Instant.now()));
 
-		saveRecord(priceListVersion);
+		save(priceListVersion);
 
 		return priceListVersion;
 	}

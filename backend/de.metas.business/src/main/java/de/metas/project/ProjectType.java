@@ -51,6 +51,9 @@ public class ProjectType
 	@Nullable
 	DocSequenceId docSequenceId;
 
+	@NonNull
+	RequestStatusCategoryId requestStatusCategoryId;
+
 	public boolean isReservation()
 	{
 		return name.equals(RESERVATION_PROJECT_TYPE);

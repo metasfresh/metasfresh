@@ -250,4 +250,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
+
+	@NonNull
+	Optional<String> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 }

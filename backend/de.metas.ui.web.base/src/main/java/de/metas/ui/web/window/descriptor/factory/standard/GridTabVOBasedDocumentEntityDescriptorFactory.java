@@ -1,13 +1,17 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -26,10 +30,11 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
+import de.metas.ui.web.window.descriptor.WidgetTypeStandardNumberPrecision;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
@@ -38,9 +43,12 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -48,11 +56,11 @@ import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -72,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -102,12 +111,18 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
-	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
+	private final IColumnBL adColumnBL = Services.get(IColumnBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final ImmutableMap<Integer, String> _adFieldId2columnName;
+	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
+
+	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
+
+	private static final String SYSCONFIG_QUANTITY_DEFAULT_PRECISION = "webui.frontend.widget.Quantity.defaultPrecision";
 
 	//
 	// State
@@ -115,20 +130,27 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
 
+	private WidgetTypeStandardNumberPrecision _standardNumberPrecision;
+
 	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final GridTabVO gridTabVO,
+			final ImmutableList<IDocumentDecorator> documentDecorators,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
 			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
+		this.documentDecorators = documentDecorators;
+
 		final boolean rootEntity = parentTabVO == null;
 
 		_specialFieldsCollector = rootEntity ? new SpecialDocumentFieldsCollector() : null;
 
 		_adFieldId2columnName = gridTabVO.getFields()
 				.stream()
-				.filter(gridFieldVO -> gridFieldVO.getAD_Field_ID() > 0)
+				.filter(gridFieldVO -> gridFieldVO.getAD_Field_ID() != null)
 				.filter(gridFieldVO -> gridFieldVO.getDisplayType() != DocumentFieldWidgetType.BinaryData.getDisplayType()) // exclude BinaryData columns
 				.collect(ImmutableMap.toImmutableMap(GridFieldVO::getAD_Field_ID, GridFieldVO::getColumnName));
 
@@ -200,7 +222,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		//
 		// Entity Data binding
-		if (!Check.isEmpty(gridTabVO.getOrderByClause(), true))
+		if (!Check.isBlank(gridTabVO.getOrderByClause()))
 		{
 			logger.warn("Ignoring SQL order by for {}. See https://github.com/metasfresh/metasfresh/issues/412.", gridTabVO);
 		}
@@ -225,6 +247,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Entity descriptor
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
+				.setDocumentDecorators(documentDecorators)
 				.setDocumentType(gridTabVO.getAdWindowId())
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())
@@ -246,10 +269,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setAD_Tab_ID(gridTabVO.getAdTabId().getRepoId()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
+				.setViewPageLength(dataBinding.getPOInfo().getWebuiViewPageLength())
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
-				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents());
+				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters());
 
 		// Fields descriptor
 		gridTabVO
@@ -285,7 +310,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		}
 	}
 
-	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final int adFieldId)
+	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final AdFieldId adFieldId)
 	{
 		final String fieldName = _adFieldId2columnName.get(adFieldId);
 		return documentField(fieldName);
@@ -293,7 +318,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	public DocumentFieldDescriptor.Builder documentFieldByAD_UI_ElementField(@NonNull final I_AD_UI_ElementField elementFieldRecord)
 	{
-		final Builder builder = documentFieldByAD_Field_ID(elementFieldRecord.getAD_Field_ID());
+		final Builder builder = documentFieldByAD_Field_ID(AdFieldId.ofRepoId(elementFieldRecord.getAD_Field_ID()));
 		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
@@ -362,18 +387,25 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			}
 			else
 			{
-				final int displayType = gridFieldVO.getDisplayType();
+				final ReferenceId displayType = ReferenceId.ofRepoId(gridFieldVO.getDisplayType());
 				widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
 				final String ctxTableName = tableDAO.retrieveTableName(gridFieldVO.getAD_Table_ID());
+
+				final GridFieldDefaultFilterDescriptor defaultFilterDescriptor = gridFieldVO.getDefaultFilterDescriptor();
+				final AdValRuleId filterValRuleId = CoalesceUtil.coalesceSuppliers(
+						() -> defaultFilterDescriptor != null ? defaultFilterDescriptor.getAdValRuleId() : null,
+						gridFieldVO::getAD_Val_Rule_ID);
+
 				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
-						SqlLookupDescriptor.builder()
+						lookupDataSourceFactory.getLookupDescriptorProviders().sql()
 								.setCtxTableName(ctxTableName)
 								.setCtxColumnName(sqlColumnName)
 								.setWidgetType(widgetType)
 								.setDisplayType(displayType)
 								.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-								.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
-								.buildProvider());
+								.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentField, gridFieldVO.getAD_Val_Rule_ID())
+								.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentFilter, filterValRuleId)
+								.build());
 			}
 
 			lookupDescriptor = lookupDescriptorProvider.provide();
@@ -388,7 +420,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 					gridFieldVO.isUseDocSequence(),
 					DocSequenceId.ofRepoIdOrNull(gridFieldVO.getAD_Sequence_ID()));
 
-			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn);
+			final OptionalBoolean tabAllowsCreateNew = entityDescriptorBuilder.getAllowCreateNewLogic().toOptionalBoolean();
+			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn, tabAllowsCreateNew);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 		}
 
@@ -436,6 +469,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
 				.setWidgetType(widgetType)
+				.setMinPrecision(getStandardNumberPrecision().getMinPrecision(widgetType))
 				.setValueClass(valueClass)
 				.setSqlValueClass(entityBindings.getPOInfo().getColumnClass(sqlColumnName))
 				.setLookupDescriptor(lookupDescriptor.orElse(null))
@@ -472,7 +506,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
-				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType, fieldBinding.getValueClass(), lookupDescriptorProvider))
+				.setDefaultFilterInfo(createDefaultFilterDescriptor(
+						gridFieldVO.getDefaultFilterDescriptor(),
+						sqlColumnName,
+						widgetType,
+						fieldBinding.getValueClass(),
+						lookupDescriptorProvider.provideForFilter().orElse(null)))
 				//
 				.setDataBinding(fieldBinding);
 
@@ -492,10 +531,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Nullable
 	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
 	{
-		if(gridFieldVO.isVirtualColumn())
+		if (gridFieldVO.isVirtualColumn())
 		{
-			final String sql = gridFieldVO.getColumnSQL(false);
-			return ColumnSql.ofSql(sql, contextTableName);
+			return gridFieldVO.getColumnSql(contextTableName);
 		}
 		else
 		{
@@ -551,6 +589,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
 		//
 		// return FullTextSearchLookupDescriptorProvider.builder()
+		//		.lookupDataSourceFactory(lookupDataSourceFactory)
 		// 		.elasticsearchClient(elasticsearchClient)
 		// 		.modelTableName(modelIndexer.getModelTableName())
 		// 		.esIndexName(modelIndexer.getIndexName())
@@ -559,7 +598,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// 		.build();
 	}
 
-	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)
+	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn, final OptionalBoolean tabAllowsCreateNew)
 	{
 		if (keyColumn)
 		{
@@ -576,7 +615,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// e.g. BPartner (pharma) window -> Product tab
 		else if (!gridFieldVO.isUpdateable()
 				&& gridFieldVO.isParentLink() && !isParentLinkColumn
-				&& gridFieldVO.isMandatory())
+				&& gridFieldVO.isMandatory()
+				&& tabAllowsCreateNew.isTrue())
 		{
 			return ConstantLogicExpression.FALSE;
 		}
@@ -609,23 +649,23 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			@NonNull final Class<?> valueClass,
-			@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
+			@Nullable final LookupDescriptor lookupDescriptor)
 	{
 		if (gridFieldDefaultFilterInfo == null)
 		{
 			return null;
 		}
 
-		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType, valueClass, lookupDescriptorProvider);
+		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType, valueClass, lookupDescriptor);
 
 		return DocumentFieldDefaultFilterDescriptor.builder()
-				//
 				.defaultFilter(gridFieldDefaultFilterInfo.isDefaultFilter())
 				.defaultFilterSeqNo(gridFieldDefaultFilterInfo.getDefaultFilterSeqNo())
 				.operator(DocumentFieldDefaultFilterDescriptor.FilterOperator.ofNullableStringOrEquals(gridFieldDefaultFilterInfo.getOperator()))
 				.showFilterIncrementButtons(gridFieldDefaultFilterInfo.isShowFilterIncrementButtons())
 				.autoFilterInitialValue(autoFilterInitialValue)
 				.showFilterInline(gridFieldDefaultFilterInfo.isShowFilterInline())
+				.adValRuleId(gridFieldDefaultFilterInfo.getAdValRuleId())
 				//
 				.facetFilter(gridFieldDefaultFilterInfo.isFacetFilter())
 				.facetFilterSeqNo(gridFieldDefaultFilterInfo.getFacetFilterSeqNo())
@@ -640,7 +680,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			@NonNull final Class<?> valueClass,
-			@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
+			@Nullable final LookupDescriptor lookupDescriptor)
 	{
 		final String autoFilterInitialValueStr = gridFieldDefaultFilterInfo.getDefaultValue();
 
@@ -660,28 +700,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		}
 		else
 		{
-			final LookupDataSource lookupDataSource = widgetType.isLookup()
-					? createFilterLookupDataSourceOrNull(lookupDescriptorProvider)
+			final LookupDataSource lookupDataSource = widgetType.isLookup() && lookupDescriptor != null
+					? lookupDataSourceFactory.getLookupDataSource(lookupDescriptor)
 					: null;
 			return DataTypes.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
 		}
-	}
-
-	@Nullable
-	private LookupDataSource createFilterLookupDataSourceOrNull(@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
-	{
-		if (lookupDescriptorProvider == null)
-		{
-			return null;
-		}
-
-		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForFilter().orElse(null);
-		if (lookupDescriptor == null)
-		{
-			return null;
-		}
-
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
 
 	@Nullable
@@ -706,7 +729,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Generic ZoomInto button
 		if (tableName != null)
 		{
-			if (adColumnBL.isRecordIdColumnName(fieldName))
+			if (IColumnBL.isRecordIdColumnName(fieldName))
 			{
 				final String zoomIntoTableIdFieldName = adColumnBL.getTableIdColumnName(tableName, fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)
@@ -752,7 +775,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setKey(fieldBinding.isKeyColumn())
 				.setWidgetType(fieldBinding.getWidgetType())
 				.setValueClass(fieldBinding.getValueClass())
-				.setLookupDescriptorProvider(lookupDescriptor)
+				.setLookupDescriptorProvider(LookupDescriptorProviders.singleton(lookupDescriptor))
 				.setReadonlyLogic(false)
 				.setDisplayLogic(extractLabelDisplayLogic(labelsUIElement))
 				.setVirtualField(fieldBinding.isVirtualColumn())
@@ -769,7 +792,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Nullable
-	private ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
+	private static ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
 	{
 		if (labelsUIElement.getAD_Name_ID() <= 0)
 		{
@@ -793,7 +816,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.orElse(ConstantLogicExpression.TRUE);
 	}
 
-	private static LabelsLookup createLabelsLookup(
+	private LabelsLookup createLabelsLookup(
 			@NonNull final I_AD_UI_Element labelsUIElement,
 			@NonNull final String tableName)
 	{
@@ -826,23 +849,29 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
 
-		final int referenceIDToUse = labelsSelectorField.getAD_Reference_ID() > 0
-				? labelsSelectorField.getAD_Reference_ID()
-				: labelsValueColumn.getAD_Reference_ID();
+		final ReferenceId referenceIDToUse = ReferenceId.ofRepoId(
+				labelsSelectorField.getAD_Reference_ID() > 0
+						? labelsSelectorField.getAD_Reference_ID()
+						: labelsValueColumn.getAD_Reference_ID()
+		);
 
-		final int referenceValueIDToUse = labelsSelectorField.getAD_Reference_Value_ID() > 0
-				? labelsSelectorField.getAD_Reference_Value_ID()
-				: labelsValueColumn.getAD_Reference_Value_ID();
+		final ReferenceId referenceValueIDToUse = ReferenceId.ofRepoIdOrNull(
+				labelsSelectorField.getAD_Reference_Value_ID() > 0
+						? labelsSelectorField.getAD_Reference_Value_ID()
+						: labelsValueColumn.getAD_Reference_Value_ID()
+		);
 
-		final int valRuleIDToUse = labelsSelectorField.getAD_Val_Rule_ID() > 0
-				? labelsSelectorField.getAD_Val_Rule_ID()
-				: labelsValueColumn.getAD_Val_Rule_ID();
+		final AdValRuleId valRuleIDToUse = AdValRuleId.ofRepoIdOrNull(
+				labelsSelectorField.getAD_Val_Rule_ID() > 0
+						? labelsSelectorField.getAD_Val_Rule_ID()
+						: labelsValueColumn.getAD_Val_Rule_ID()
+		);
 
-		final SqlLookupDescriptor.Builder labelsValuesLookupDescriptorBuilder = SqlLookupDescriptor.builder()
+		final SqlLookupDescriptorProviderBuilder labelsValuesLookupDescriptorBuilder = lookupDataSourceFactory.getLookupDescriptorProviders().sql()
 				.setCtxTableName(labelsTableName)
 				.setCtxColumnName(labelsValueColumnName)
 				.setDisplayType(referenceIDToUse)
-				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse))
+				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse.getRepoId()))
 				.setAD_Reference_Value_ID(referenceValueIDToUse)
 				.setAD_Val_Rule_ID(valRuleIDToUse);
 
@@ -858,9 +887,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.fieldName(extractLabelsFieldName(labelsUIElement))
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
-				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
+				.labelsValuesUseNumericKey(labelsValuesLookupDescriptor.isNumericKey())
+				.labelsValuesLookupDataSource(lookupDataSourceFactory.getLookupDataSource(labelsValuesLookupDescriptor))
 				.labelsLinkColumnName(labelsLinkColumnName)
-				.labelsValueReferenceId(ReferenceId.ofRepoIdOrNull(referenceValueIDToUse))
+				.labelsValueReferenceId(referenceValueIDToUse)
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
@@ -886,6 +916,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.build();
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public final DocumentFieldDescriptor.Builder addInternalVirtualField(
 			final String fieldName //
 			, final DocumentFieldWidgetType widgetType //
@@ -1031,4 +1062,25 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
 	}
+
+	private WidgetTypeStandardNumberPrecision getStandardNumberPrecision()
+	{
+		WidgetTypeStandardNumberPrecision standardNumberPrecision = this._standardNumberPrecision;
+		if (standardNumberPrecision == null)
+		{
+			standardNumberPrecision = this._standardNumberPrecision = WidgetTypeStandardNumberPrecision.builder()
+					.quantityPrecision(getPrecisionFromSysConfigs(SYSCONFIG_QUANTITY_DEFAULT_PRECISION))
+					.build()
+					.fallbackTo(WidgetTypeStandardNumberPrecision.DEFAULT);
+		}
+		return standardNumberPrecision;
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private OptionalInt getPrecisionFromSysConfigs(@NonNull final String sysconfigName)
+	{
+		final int precision = sysConfigBL.getIntValue(sysconfigName, -1);
+		return precision > 0 ? OptionalInt.of(precision) : OptionalInt.empty();
+	}
+
 }

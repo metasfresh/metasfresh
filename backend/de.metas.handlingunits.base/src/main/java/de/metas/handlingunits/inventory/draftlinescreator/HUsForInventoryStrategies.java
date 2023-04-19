@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy.LeastRecentTransactionStrategyBuilder;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy.LocatorAndProductStrategyBuilder;
+import de.metas.handlingunits.inventory.draftlinescreator.ShortageAndOverageStrategy.ShortageAndOverageStrategyBuilder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -35,6 +36,11 @@ public class HUsForInventoryStrategies
 	public static LocatorAndProductStrategyBuilder locatorAndProduct()
 	{
 		return LocatorAndProductStrategy.builder();
+	}
+
+	public static ShortageAndOverageStrategyBuilder shortageAndOverage()
+	{
+		return ShortageAndOverageStrategy.builder();
 	}
 
 	public static LeastRecentTransactionStrategyBuilder leastRecentTransaction()

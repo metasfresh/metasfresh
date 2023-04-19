@@ -10,8 +10,8 @@ import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manu
 import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
 
 import PickQuantityButton from './PickQuantityButton';
-import Button from '../../../../components/buttons/Button';
 import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
+import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 
 const MaterialReceiptLineScreen = () => {
   const {
@@ -21,6 +21,7 @@ const MaterialReceiptLineScreen = () => {
 
   const {
     activityCaption,
+    userInstructions,
     lineProps: { aggregateToLU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
 
@@ -30,6 +31,7 @@ const MaterialReceiptLineScreen = () => {
       pushHeaderEntry({
         location: url,
         caption: activityCaption,
+        userInstructions,
         values: [
           {
             caption: trl('activities.mfg.ProductName'),
@@ -74,11 +76,19 @@ const MaterialReceiptLineScreen = () => {
 
   let allowReceivingQty = false;
   let btnReceiveTargetCaption = trl('activities.mfg.receipts.btnReceiveTarget');
+  let btnReceiveTargetCaption2 = '';
   if (aggregateToLU) {
-    btnReceiveTargetCaption = aggregateToLU.newLU
-      ? aggregateToLU.newLU.caption
-      : toQRCodeDisplayable(aggregateToLU.existingLU.huQRCode);
-    allowReceivingQty = true;
+    if (aggregateToLU.newLU) {
+      btnReceiveTargetCaption = aggregateToLU.newLU.luCaption;
+      btnReceiveTargetCaption2 = aggregateToLU.newLU.tuCaption;
+      allowReceivingQty = true;
+    } else if (aggregateToLU.existingLU) {
+      btnReceiveTargetCaption = toQRCodeDisplayable(aggregateToLU.existingLU.huQRCode);
+      allowReceivingQty = true;
+    } else {
+      console.warn('Unhandled aggregateToLU', aggregateToLU);
+      allowReceivingQty = false;
+    }
   } else if (currentReceivingHU) {
     btnReceiveTargetCaption = toQRCodeDisplayable(currentReceivingHU.huQRCode);
     allowReceivingQty = true;
@@ -86,7 +96,9 @@ const MaterialReceiptLineScreen = () => {
 
   return (
     <div className="section pt-2">
-      <Button caption={btnReceiveTargetCaption} onClick={handleClick} />
+      <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick}>
+        <div className="row is-full is-size-7">{btnReceiveTargetCaption2}</div>
+      </ButtonWithIndicator>
       <PickQuantityButton
         qtyTarget={qtyToReceive - qtyReceived}
         isDisabled={!allowReceivingQty}
@@ -104,6 +116,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     activityCaption: activity.caption,
+    userInstructions: activity.userInstructions,
     lineProps,
   };
 };

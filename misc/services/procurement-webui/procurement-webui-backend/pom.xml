@@ -42,9 +42,9 @@
     <version>10.0.0</version>
 
     <properties>
-        <java.version>14</java.version>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>14</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <spring-boot.version>2.4.1</spring-boot.version>
         <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
@@ -69,7 +69,7 @@
                 <artifactId>lombok</artifactId>
                 <!-- some projects fail when building with java-17 and lombok-1.18.18 -->
                 <!-- <version>1.18.18</version> -->
-                <version>1.18.22</version>
+                <version>1.18.24</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -142,14 +142,9 @@
 
         <!-- Swagger -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox-swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox-swagger.version}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-swagger.version}</version>
         </dependency>
     </dependencies>
     
@@ -204,17 +199,21 @@
                         </tags>
                         <auth>
                             <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!--suppress UnresolvedMavenProperty -->
                             <username>${env.DOCKER_PUSH_REGISTRY_USERNAME}</username>
+                            <!--suppress UnresolvedMavenProperty -->
                             <password>${env.DOCKER_PUSH_REGISTRY_PASSWORD}</password>
                         </auth>
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <image>eclipse-temurin:17.0.5_8-jdk</image>
                         <auth>
                             <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
                             <!-- we authenticate on pulls to avoid the rate limit -->
+                            <!--suppress UnresolvedMavenProperty -->
                             <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <!--suppress UnresolvedMavenProperty -->
                             <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
                         </auth>
                     </from>

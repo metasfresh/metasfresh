@@ -105,7 +105,7 @@ public class QuerySelectionToDeleteHelper
 
 			if (counter >= 1000)
 			{
-				DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+				DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 				sql = new StringBuilder();
 				sql.append(sqlInsertInto);
 				counter = 0;
@@ -113,7 +113,7 @@ public class QuerySelectionToDeleteHelper
 		}
 		if (counter > 0)
 		{
-			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
+			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_None);
 		}
 
 		logger.debug("{} query selections are now scheduled to be deleted", counter);
@@ -165,9 +165,9 @@ public class QuerySelectionToDeleteHelper
 					+ " WHERE"
 					+ " UUID IN (SELECT distinct UUID FROM T_Query_Selection_ToDelete WHERE Executor_UUID IS NULL LIMIT ?)";
 
-			final int querySelectionToDeleteCount = DB.executeUpdateEx(sql,
-					new Object[] { executorId, maxQuerySelectionToDeleteToProcess },
-					ITrx.TRXNAME_ThreadInherited);
+			final int querySelectionToDeleteCount = DB.executeUpdateAndThrowExceptionOnFail(sql,
+																							new Object[] { executorId, maxQuerySelectionToDeleteToProcess },
+																							ITrx.TRXNAME_ThreadInherited);
 			logger.debug("Tagged {} selectionIds to be deleted", querySelectionToDeleteCount);
 			if (querySelectionToDeleteCount <= 0)
 			{

@@ -52,7 +52,7 @@ public class OrderQueryHelperTests
 
 		final String shopware6QueryRequestAsJSON = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(shopware6QueryRequest);
 
-		assertThat(shopware6QueryRequestAsJSON).isEqualTo("{\"filter\":[{\"type\":\"multi\",\"operator\":\"and\",\"queries\":[{\"field\":\"orderNumber\",\"type\":\"equals\",\"value\":\"testOrderNo\"}]}],\"limit\":null,\"page\":null}");
+		assertThat(shopware6QueryRequestAsJSON).isEqualTo("{\"filter\":[{\"type\":\"multi\",\"operator\":\"and\",\"queries\":[{\"field\":\"orderNumber\",\"type\":\"equals\",\"value\":\"testOrderNo\"}]}],\"limit\":1,\"page\":1}");
 	}
 
 	//search by order id
@@ -66,7 +66,7 @@ public class OrderQueryHelperTests
 
 		final String shopware6QueryRequestAsJSON = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(shopware6QueryRequest);
 
-		assertThat(shopware6QueryRequestAsJSON).isEqualTo("{\"filter\":[{\"type\":\"multi\",\"operator\":\"and\",\"queries\":[{\"field\":\"id\",\"type\":\"equals\",\"value\":\"testOrderId\"}]}],\"limit\":null,\"page\":null}");
+		assertThat(shopware6QueryRequestAsJSON).isEqualTo("{\"filter\":[{\"type\":\"multi\",\"operator\":\"and\",\"queries\":[{\"field\":\"id\",\"type\":\"equals\",\"value\":\"testOrderId\"}]}],\"limit\":1,\"page\":1}");
 	}
 
 	//search by updated

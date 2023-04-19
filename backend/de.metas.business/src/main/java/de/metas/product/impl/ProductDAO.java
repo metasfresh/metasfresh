@@ -33,6 +33,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -40,10 +42,15 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.resource.ResourceGroupId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -52,6 +59,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -66,6 +74,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
@@ -92,10 +102,11 @@ public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	final static int ONE_YEAR_DAYS = 365;
-	final static int TWO_YEAR_DAYS = 730;
-	final static int THREE_YEAR_DAYS = 1095;
-	final static int FIVE_YEAR_DAYS = 1825;
+	private static final int ONE_YEAR_DAYS = 365;
+	private static final int TWO_YEAR_DAYS = 730;
+	private static final int THREE_YEAR_DAYS = 1095;
+	private static final int FIVE_YEAR_DAYS = 1825;
+	private static final BigDecimal MONTH_IN_DAYS_APROX = new BigDecimal("30.42");
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -363,6 +374,15 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		return getByIds(productIds)
+				.stream()
+				.map(product -> ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -552,7 +572,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProduct(@NonNull final UpdateProductRequest request)
 	{
-		final I_M_Product product = getByIdInTrx(request.getProductId());
+		final I_M_Product product = load(request.getProductId(), I_M_Product.class); // in-trx
 
 		if (request.getIsBOM() != null)
 		{
@@ -569,45 +589,58 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public int getProductGuaranteeDaysMinFallbackProductCategory(final @NonNull ProductId productId)
 	{
+		//
+		// M_Product.GuaranteeDaysMin
 		final I_M_Product productRecord = getById(productId);
-		if (productRecord.getGuaranteeDaysMin() > 0)
+		final int productGuaranteeDaysMin = productRecord.getGuaranteeDaysMin();
+		if (productGuaranteeDaysMin > 0)
 		{
-			return productRecord.getGuaranteeDaysMin();
+			return productGuaranteeDaysMin;
 		}
-		else if (Check.isNotBlank(productRecord.getGuaranteeMonths()))
+
+		//
+		// M_Product.GuaranteeMonths
+		final int productGuaranteeMonthsInDays = getGuaranteeMonthsInDays(productRecord);
+		if (productGuaranteeMonthsInDays > 0)
 		{
-			return getGuaranteeMonthsInDays(productId);
+			return productGuaranteeMonthsInDays;
 		}
-		else
-		{
-			final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
-			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
-			return productCategoryRecord.getGuaranteeDaysMin();
-		}
+
+		//
+		// M_Product_Category.GuaranteeDaysMin
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+		final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
+		return productCategoryRecord.getGuaranteeDaysMin();
 	}
 
-	@Override
-	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
+	private static int getGuaranteeMonthsInDays(@NonNull final I_M_Product product)
 	{
-		final I_M_Product product = getById(productId);
-		final String guaranteeMonths = product != null ? StringUtils.trimBlankToNull(product.getGuaranteeMonths()) : null;
-		if (guaranteeMonths == null)
+		final String guaranteeMonthsStr = StringUtils.trimBlankToNull(product.getGuaranteeMonths());
+		if (guaranteeMonthsStr == null)
 		{
 			return 0;
 		}
 
-		switch (guaranteeMonths)
+		if (X_M_Product.GUARANTEEMONTHS_12.equals(guaranteeMonthsStr))
 		{
-			case X_M_Product.GUARANTEEMONTHS_12:
-				return ONE_YEAR_DAYS;
-			case X_M_Product.GUARANTEEMONTHS_24:
-				return TWO_YEAR_DAYS;
-			case X_M_Product.GUARANTEEMONTHS_36:
-				return THREE_YEAR_DAYS;
-			case X_M_Product.GUARANTEEMONTHS_60:
-				return FIVE_YEAR_DAYS;
-			default:
-				return 0;
+			return ONE_YEAR_DAYS;
+		}
+		else if (X_M_Product.GUARANTEEMONTHS_24.equals(guaranteeMonthsStr))
+		{
+			return TWO_YEAR_DAYS;
+		}
+		else if (X_M_Product.GUARANTEEMONTHS_36.equals(guaranteeMonthsStr))
+		{
+			return THREE_YEAR_DAYS;
+		}
+		else if (X_M_Product.GUARANTEEMONTHS_60.equals(guaranteeMonthsStr))
+		{
+			return FIVE_YEAR_DAYS;
+		}
+		else
+		{
+			int guaranteeMonths = NumberUtils.asInt(guaranteeMonthsStr, 0);
+			return MONTH_IN_DAYS_APROX.multiply(BigDecimal.valueOf(guaranteeMonths)).setScale(0, RoundingMode.DOWN).intValueExact();
 		}
 	}
 
@@ -686,5 +719,54 @@ public class ProductDAO implements IProductDAO
 				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
 				.create()
 				.firstId(ProductCategoryId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+				.orderBy(I_M_Product.COLUMNNAME_Value)
+				.create()
+				.listIds(ProductId::ofRepoId);
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return extractIssuingToleranceSpec(product);
+	}
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
+	{
+		if (!product.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.create(product.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
 	}
 }

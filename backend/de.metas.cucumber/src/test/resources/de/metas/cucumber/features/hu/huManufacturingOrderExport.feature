@@ -21,9 +21,9 @@ Feature: Handling unit export from manufacturing order
       | locatorHauptlager       | warehouseStd              | Hauptlager |
 
     And metasfresh contains M_Products:
-      | Identifier              | Name                 |
-      | manufacturingProduct_HU | manufacturingProduct |
-      | componentProduct_HU     | componentProduct     |
+      | Identifier              | Name                 | HUClearanceStatus |
+      | manufacturingProduct_HU | manufacturingProduct | L                 |
+      | componentProduct_HU     | componentProduct     |                   |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -67,7 +67,7 @@ Feature: Handling unit export from manufacturing order
       | PP_Order_ID.Identifier |
       | ppOrder_manufacturing  |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.HUStatus |
       | ppOrderTU          | A            |
 
@@ -81,7 +81,7 @@ Feature: Handling unit export from manufacturing order
       | storagePPOrderTU           | ppOrderTU          | manufacturingProduct_HU | 10  |
       | storagePPOrderCU           | ppOrderCU          | manufacturingProduct_HU | 10  |
 
-    And after not more than 30s, PP_Cost_Collector are found:
+    And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
       | ppOrder_CostCollector           | ppOrder_manufacturing  | manufacturingProduct_HU | 10          | CO        |
 
@@ -94,9 +94,9 @@ Feature: Handling unit export from manufacturing order
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate "retrieve hu" response:
-      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceStatus.caption | OPT.ClearanceNote           |
-      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                       | Gesperrt                    | Erwartet Freigabe durch GRS |
-      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                       | Gesperrt                    | Erwartet Freigabe durch GRS |
+      | M_HU_ID.Identifier | jsonHUType | includedHUs | products.productName | products.productValue | products.qty | products.uom | warehouseValue.Identifier | locatorValue.Identifier | numberOfAggregatedHUs | huStatus | OPT.ClearanceStatus.key | OPT.ClearanceNote |
+      | ppOrderTU          | TU         | ppOrderCU   | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
+      | ppOrderCU          | CU         |             | manufacturingProduct | manufacturingProduct  | 10           | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        | Locked                  | Hergestellt       |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

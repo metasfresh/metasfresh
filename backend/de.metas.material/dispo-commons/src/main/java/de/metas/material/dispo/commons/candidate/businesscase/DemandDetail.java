@@ -117,6 +117,17 @@ public class DemandDetail implements BusinessCaseDetail
 				.qty(qty).build();
 	}
 
+	@NonNull
+	public static DemandDetail forShipmentLineId(
+			final int inOutLineId,
+			@NonNull final BigDecimal qty)
+	{
+		return DemandDetail.builder()
+				.inOutLineId(inOutLineId)
+				.qty(qty)
+				.build();
+	}
+
 	public static DemandDetail forForecastLineId(
 			final int forecastLineId,
 			final int forecastId,
@@ -139,6 +150,8 @@ public class DemandDetail implements BusinessCaseDetail
 	int orderLineId;
 
 	int subscriptionProgressId;
+
+	int inOutLineId;
 
 	BigDecimal qty;
 

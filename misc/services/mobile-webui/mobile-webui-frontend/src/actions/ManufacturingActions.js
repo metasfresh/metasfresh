@@ -27,6 +27,7 @@ export const updateManufacturingIssue = ({
   activityId,
   lineId,
   stepId,
+  huWeightGrossBeforeIssue,
   qtyIssued,
   qtyRejected,
   qtyRejectedReasonCode,
@@ -48,6 +49,7 @@ export const updateManufacturingIssue = ({
         issueTo: {
           issueStepId: id,
           huQRCode: toQRCodeString(huQRCode),
+          huWeightGrossBeforeIssue,
           qtyIssued,
           qtyRejected,
           qtyRejectedReasonCode,
@@ -88,10 +90,7 @@ export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId,
     }) //
       .then((response) => {
         dispatch({ type: UPDATE_MANUFACTURING_RECEIPT_QTY, payload: { wfProcessId, activityId, lineId, qtyReceived } });
-
-        if (response.existingLU) {
-          dispatch(updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
-        }
+        dispatch(updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
       });
   };
 };

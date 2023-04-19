@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
-	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
@@ -53,7 +53,7 @@ public class InfrastructureSupport
 	 * <p>
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
 	 * To always run your cucumber-tests on an "unpolluted" DB,
-	 * you can use (with git bash) the three shell scripts from {@code backend/de.metas.cucumber/dev-support}.
+	 * you can use (with git bash) the three shell scripts from {@code misc/dev-support/docker/infrastructure/scripts}.
 	 */
 	public static final String ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL = "CUCUMBER_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL";
 
@@ -130,8 +130,9 @@ public class InfrastructureSupport
 
 		if (!runAgainstProvidedDatabase)
 		{
-			// choose the docker tag such that no later scripts from other branches are already in this image 
-			final String fullImageName = "metasfresh/metasfresh-db:5.176.1_23146_master";
+			// this image is from release-branch 2021-09-15. it is failrly old, 
+			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
+			final String fullImageName = "metasfresh/metasfresh-db:5.174.2_461_release";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated

@@ -11,6 +11,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
@@ -110,6 +112,7 @@ public class PMMContractBuilder
 	private final transient IPMMContractsBL pmmContractsBL = Services.get(IPMMContractsBL.class);
 	private final transient ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final transient IPeriodBL periodBL = Services.get(IPeriodBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	//
@@ -276,8 +279,10 @@ public class PMMContractBuilder
 		final I_C_Calendar calendar = term.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract();
 
 		final Properties ctx = getContext().getCtx();
-		final List<I_C_Period> periods = calendarDAO.retrievePeriods(ctx, calendar, term.getStartDate(), term.getEndDate(), ITrx.TRXNAME_None);
-		return periods;
+		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+		final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(term.getStartDate(), orgId, orgDAO::getTimeZone);
+		final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(term.getEndDate(), orgId, orgDAO::getTimeZone);
+		return  calendarDAO.retrievePeriods(ctx, calendar, startDate, endDate, ITrx.TRXNAME_None);
 	}
 
 	private I_C_Flatrate_DataEntry createFlatrateDataEntry(final I_C_Flatrate_Term term, final I_C_Period period)

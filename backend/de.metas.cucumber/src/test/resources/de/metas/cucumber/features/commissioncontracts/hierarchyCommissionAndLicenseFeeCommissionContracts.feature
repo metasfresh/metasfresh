@@ -6,22 +6,23 @@ Feature: Hierarchy commission and license fee commission combined
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And metasfresh has date and time 2021-12-10T08:00:00+01:00[Europe/Berlin]
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
-      | Identifier          | Name                | ProductType | OPT.X12DE355 | Value |
-      | commission_product  | commission_product  | S           | PTS          |       |
-      | transaction_product | transaction_product |             | PCE          |       |
+      | Identifier          | Name                           | ProductType | OPT.X12DE355 | Value |
+      | commission_product  | commission_product_16112022_1  | S           | PTS          |       |
+      | transaction_product | transaction_product_16112022_1 |             | PCE          |       |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                    | Value                   | OPT.IsActive |
-      | ps_1       | salesRep_pricing_system | salesRep_pricing_system | true         |
+      | Identifier | Name                               | Value                              | OPT.IsActive |
+      | ps_1       | salesRep_pricing_system_16112022_1 | salesRep_pricing_system_16112022_1 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              | true         |
-      | pl_po      | ps_1                          | DE                        | EUR                 | price_list_po | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_1 | true  | false         | 2              | true         |
+      | pl_po      | ps_1                          | DE                        | EUR                 | price_list_po_16112022_1 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
-      | plv_so     | pl_so                     | salesOrder-PLV_72    | 2021-04-01 |
-      | plv_po     | pl_po                     | purchaseOrder-PLV_72 | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                            | ValidFrom  |
+      | plv_so     | pl_so                     | salesOrder-PLV_72_16112022_1    | 2021-04-01 |
+      | plv_po     | pl_po                     | purchaseOrder-PLV_72_16112022_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_2       | plv_so                            | commission_product      | 1.0      | PTS               | Normal                        |
@@ -36,6 +37,7 @@ Feature: Hierarchy commission and license fee commission combined
 
   @from:cucumber
   @topic:commissionContracts
+  @Id:S0150_170
   Scenario: Hierarchy commission and license fee commission combined having two sales rep in hierarchy
     And metasfresh contains C_HierarchyCommissionSettings:
       | C_HierarchyCommissionSettings_ID.Identifier | Name        | Commission_Product_ID.Identifier | IsSubtractLowerLevelCommissionFromBase |
@@ -57,9 +59,9 @@ Feature: Hierarchy commission and license fee commission combined
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier           | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | hierarchyContract_1  | hierarchyConditions_1               | salesRep_1                  | 2021-11-01 | 2022-11-01 | commission_product          |
-      | hierarchyContract_2  | hierarchyConditions_1               | super_salesRep              | 2021-11-01 | 2022-11-01 | commission_product          |
-      | licenseFeeContract_1 | licenseFeeConditions_1              | salesRep_1                  | 2021-11-01 | 2022-11-01 | commission_product          |
+      | hierarchyContract_1  | hierarchyConditions_1               | salesRep_1                  | 2021-10-31 | 2022-10-30 | commission_product          |
+      | hierarchyContract_2  | hierarchyConditions_1               | super_salesRep              | 2021-10-31 | 2022-10-30 | commission_product          |
+      | licenseFeeContract_1 | licenseFeeConditions_1              | salesRep_1                  | 2021-10-31 | 2022-10-30 | commission_product          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -76,7 +78,7 @@ Feature: Hierarchy commission and license fee commission combined
     "dateOrdered": "2021-11-20",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-transaction_product",
+    "productIdentifier": "val-transaction_product_16112022_1",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,
@@ -99,8 +101,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | shipment_1            | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus |
-      | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
+      | invoice_1               | customer_1               | customer_location_1               | po_ref_mock     | 1000002     | true      | CO        | Shopware                               |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceLine1_1              | invoice_1               | transaction_product     | 1           | true      |
@@ -111,8 +113,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | customer_1                  | transaction_product     | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
-      | so_invoice_candidate              | customer_1                      | transaction_product         | 0                   | true        | 10                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName |
+      | so_invoice_candidate              | customer_1                      | transaction_product         | 0                   | true        | 10                 | Shopware                               |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_1                  | transaction_product           | 0                     | 0                      | 10                  |
@@ -155,7 +157,7 @@ Feature: Hierarchy commission and license fee commission combined
       | hierarchy_settlement_1            |
       | hierarchy_settlement_2            |
       | license_fee_settlement            |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | hierarchy_settlement_1            |
       | invoiceSettled_2        | hierarchy_settlement_2            |
@@ -218,6 +220,7 @@ Feature: Hierarchy commission and license fee commission combined
 
   @from:cucumber
   @topic:commissionContracts
+  @Id:S0150_180
   Scenario: Hierarchy commission and license fee commission combined having the salesRep as direct customer
     And metasfresh contains C_HierarchyCommissionSettings:
       | C_HierarchyCommissionSettings_ID.Identifier | Name                        | Commission_Product_ID.Identifier | IsCreateShareForOwnRevenue |
@@ -236,8 +239,8 @@ Feature: Hierarchy commission and license fee commission combined
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | 2021-11-01 | 2022-11-01 | commission_product          |
-      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | 2021-11-01 | 2022-11-01 | commission_product          |
+      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | 2021-10-31 | 2022-10-30 | commission_product          |
+      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | 2021-10-31 | 2022-10-30 | commission_product          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -254,7 +257,7 @@ Feature: Hierarchy commission and license fee commission combined
     "dateOrdered": "2021-11-20",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-transaction_product",
+    "productIdentifier": "val-transaction_product_16112022_1",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,
@@ -283,8 +286,8 @@ Feature: Hierarchy commission and license fee commission combined
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | customer_salesRep_1         | transaction_product     | 10                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced |
-      | so_invoice_candidate              | customer_salesRep_1             | transaction_product         | 0                   | true        | 10                 |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName |
+      | so_invoice_candidate              | customer_salesRep_1             | transaction_product         | 0                   | true        | 10                 | Shopware                               |
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |
       | commissionInstance_1                | order_1               | customer_salesRep_1         | transaction_product           | 0                     | 0                      | 10                  |
@@ -309,7 +312,7 @@ Feature: Hierarchy commission and license fee commission combined
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_so                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_so       | settlement_so                     |
     And recompute invoice candidates if required

@@ -12,6 +12,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -38,11 +39,8 @@ import java.util.Optional;
 /**
  * Document field view.
  *
- * @implNote
- * 			This interface it's just a view of a {@link Document}'s field. Please don't setters or any other method which can chance document field's state.
- *
  * @author metas-dev <dev@metasfresh.com>
- *
+ * @implNote This interface it's just a view of a {@link Document}'s field. Please don't setters or any other method which can chance document field's state.
  */
 public interface IDocumentFieldView
 {
@@ -51,6 +49,7 @@ public interface IDocumentFieldView
 	DocumentPath getDocumentPath();
 	default String getFieldName() { return getDescriptor().getFieldName(); }
 	default DocumentFieldWidgetType getWidgetType() { return getDescriptor().getWidgetType(); }
+	default OptionalInt getMinPrecision() { return getDescriptor().getMinPrecision(); }
 	default boolean isKey() { return getDescriptor().isKey(); }
 	default boolean isCalculated() { return getDescriptor().isCalculated(); }
 	default boolean isReadonlyVirtualField() { return getDescriptor().isReadonlyVirtualField(); }
@@ -61,14 +60,12 @@ public interface IDocumentFieldView
 
 	//@formatter:off
 	LogicExpressionResult getReadonly();
-	default boolean isReadonly() { return getReadonly().booleanValue(); }
 	default boolean isAlwaysUpdateable() { return getDescriptor().isAlwaysUpdateable(); }
 	//
 	LogicExpressionResult getMandatory();
-	default boolean isMandatory() { return getMandatory().booleanValue(); }
+	default boolean isMandatory() { return getMandatory().isTrue(); }
 	//
 	LogicExpressionResult getDisplayed();
-	default boolean isDisplayed() { return getDisplayed().booleanValue(); }
 	//
 	boolean isLookupValuesStale();
 	/** @return true if this field is public and will be published to API clients */
@@ -96,9 +93,13 @@ public interface IDocumentFieldView
 	Object getOldValue();
 	//@formatter:on
 
-	/** @return field's valid state; never return null */
+	/**
+	 * @return field's valid state; never return null
+	 */
 	DocumentValidStatus getValidStatus();
-	
-	/** @return optional WindowId to be used when zooming into */
+
+	/**
+	 * @return optional WindowId to be used when zooming into
+	 */
 	Optional<WindowId> getZoomIntoWindowId();
 }

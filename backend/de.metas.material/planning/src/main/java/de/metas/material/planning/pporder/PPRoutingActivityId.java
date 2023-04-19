@@ -1,19 +1,14 @@
 package de.metas.material.planning.pporder;
 
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,10 +40,30 @@ import lombok.Value;
 @Value
 public class PPRoutingActivityId implements RepoIdAware
 {
-	@JsonCreator
-	public static PPRoutingActivityId ofAD_WF_Node_ID(final PPRoutingId routingId, final int repoId)
+	public static PPRoutingActivityId ofRepoId(final PPRoutingId routingId, final int repoId)
 	{
 		return new PPRoutingActivityId(routingId, repoId);
+	}
+
+	public static PPRoutingActivityId ofRepoId(final int AD_Workflow_ID, final int AD_WF_Node_ID)
+	{
+		return new PPRoutingActivityId(PPRoutingId.ofRepoId(AD_Workflow_ID), AD_WF_Node_ID);
+	}
+
+	@Nullable
+	public static PPRoutingActivityId ofRepoIdOrNull(final int AD_Workflow_ID, final int AD_WF_Node_ID)
+	{
+		if (AD_WF_Node_ID <= 0)
+		{
+			return null;
+		}
+		final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(AD_Workflow_ID);
+		if (routingId == null)
+		{
+			return null;
+		}
+
+		return new PPRoutingActivityId(routingId, AD_WF_Node_ID);
 	}
 
 	public static int toRepoId(final PPRoutingActivityId id)
@@ -69,14 +84,5 @@ public class PPRoutingActivityId implements RepoIdAware
 	public int toJson()
 	{
 		return getRepoId();
-	}
-
-	public static PPRoutingId extractSingleRoutingId(final Collection<PPRoutingActivityId> activityIds)
-	{
-		Check.assumeNotEmpty(activityIds, "activityIds is not empty");
-		return activityIds.stream()
-				.map(PPRoutingActivityId::getRoutingId)
-				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Activities are from multiple routings: " + activityIds)));
 	}
 }

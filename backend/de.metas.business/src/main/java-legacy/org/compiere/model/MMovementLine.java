@@ -236,7 +236,7 @@ public class MMovementLine extends X_M_MovementLine
 			if (Services.get(IProductBL.class).getProductType(productId).isItem())
 			{
 				final WarehouseId warehouseId = WarehouseId.ofRepoId(oLine.getDD_Order().getM_Warehouse_ID());
-				LocatorId locator_inTransit = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+				LocatorId locator_inTransit = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 				if (locator_inTransit == null)
 				{
 					throw new AdempiereException("Do not exist Locator for the  Warehouse in transit");

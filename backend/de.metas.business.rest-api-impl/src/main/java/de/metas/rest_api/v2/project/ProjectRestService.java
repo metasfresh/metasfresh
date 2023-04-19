@@ -44,9 +44,10 @@ import de.metas.project.Project;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.status.RStatusId;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.project.service.ProjectService;
-import de.metas.project.status.RStatusId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -135,6 +136,7 @@ public class ProjectRestService
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
 				.projectTypeId(JsonMetasfreshId.ofOrNull(ProjectTypeId.toRepoId(projectData.getProjectTypeId())))
 				.projectCategory(projectCategory)
+				.requestStatusCategoryId(JsonMetasfreshId.of(RequestStatusCategoryId.toRepoId(projectData.getRequestStatusCategoryId())))
 				.projectStatusId(JsonMetasfreshId.ofOrNull(RStatusId.toRepoId(projectData.getProjectStatusId())))
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
 				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))

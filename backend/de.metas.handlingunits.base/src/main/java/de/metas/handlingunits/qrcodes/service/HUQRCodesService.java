@@ -5,20 +5,28 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class HUQRCodesService
 {
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull private final GlobalQRCodeService globalQRCodeService;
@@ -36,18 +44,43 @@ public class HUQRCodesService
 	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
 	{
 		return HUQRCodeGenerateCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.productBL(productBL)
+				.attributeDAO(attributeDAO)
 				.request(request)
 				.build()
 				.execute();
 	}
 
-	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest request)
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final Set<HuId> huIds)
+	{
+		return generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds));
+	}
+
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final HUQRCodeGenerateForExistingHUsRequest request)
 	{
 		return HUQRCodeGenerateForExistingHUsCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.productBL(productBL)
+				.attributeDAO(attributeDAO)
 				.huQRCodesRepository(huQRCodesRepository)
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId)
+	{
+		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
+		return createPdfForHUIds(huIds);
+	}
+
+	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds)
+	{
+		// Make sure all HUs have QR Codes assigned
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds)).toList();
+
+		return createPDF(qrCodes);
 	}
 
 	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes)
@@ -58,15 +91,11 @@ public class HUQRCodesService
 						.collect(ImmutableList.toImmutableList()));
 	}
 
-	public void print(@NonNull final List<HUQRCode> qrCodes)
-	{
-		print(createPDF(qrCodes));
-	}
+	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId) {globalQRCodeService.print(createPdfForSelectionOfHUIds(selectionId));}
 
-	public void print(@NonNull final QRCodePDFResource pdf)
-	{
-		globalQRCodeService.print(pdf);
-	}
+	public void print(@NonNull final List<HUQRCode> qrCodes) {globalQRCodeService.print(createPDF(qrCodes));}
+
+	public void print(@NonNull final QRCodePDFResource pdf) {globalQRCodeService.print(pdf);}
 
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
@@ -106,13 +135,9 @@ public class HUQRCodesService
 		}
 	}
 
-	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	public Optional<HUQRCode> getSingleQRCodeByHuIdOrEmpty(@NonNull final HuId huId)
 	{
-		return generateForExistingHUs(
-				HUQRCodeGenerateForExistingHUsRequest.builder()
-						.huIds(ImmutableSet.of(huId))
-						.build())
-				.toList();
+		return huQRCodesRepository.getSingleQRCodeByHuIdOrEmpty(huId);
 	}
 
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)

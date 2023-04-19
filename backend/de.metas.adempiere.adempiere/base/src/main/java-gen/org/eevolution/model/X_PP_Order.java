@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1808118019L;
+	private static final long serialVersionUID = -161525088L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -589,6 +589,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -830,6 +832,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
@@ -1424,5 +1441,17 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Yield);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo()
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

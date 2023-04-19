@@ -224,8 +224,8 @@ public class DDOrderLowLevelService
 	}
 
 	private void processDraftDDOrders(final IQueryBuilder<I_DD_OrderLine> ddOrderLinesQuery,
-									  final int currentPlantId,
-									  final IProcessor<I_DD_Order> ddOrderProcessor)
+			final int currentPlantId,
+			final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
 		logger.debug("PP_Plant_ID: {}", currentPlantId);
 		logger.debug("Processor: {}", ddOrderProcessor);
@@ -347,5 +347,10 @@ public class DDOrderLowLevelService
 
 		final UomId stockingUomId = productBL.getStockUOMId(productId);
 		ddOrderLine.setC_UOM_ID(stockingUomId.getRepoId());
+	}
+
+	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
+	{
+		ddOrderLowLevelDAO.deleteOrders(deleteOrdersQuery);
 	}
 }

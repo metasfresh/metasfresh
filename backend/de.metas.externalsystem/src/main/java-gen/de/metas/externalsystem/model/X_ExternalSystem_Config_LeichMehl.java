@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO implements I_ExternalSystem_Config_LeichMehl, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1328676085L;
+	private static final long serialVersionUID = -2067529988L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_LeichMehl (final Properties ctx, final int ExternalSystem_Config_LeichMehl_ID, @Nullable final String trxName)
@@ -89,62 +89,50 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setFTP_Directory (final java.lang.String FTP_Directory)
+	public void setIsPluFileExportAuditEnabled (final boolean IsPluFileExportAuditEnabled)
 	{
-		set_Value (COLUMNNAME_FTP_Directory, FTP_Directory);
+		set_Value (COLUMNNAME_IsPluFileExportAuditEnabled, IsPluFileExportAuditEnabled);
 	}
 
 	@Override
-	public java.lang.String getFTP_Directory() 
+	public boolean isPluFileExportAuditEnabled() 
 	{
-		return get_ValueAsString(COLUMNNAME_FTP_Directory);
+		return get_ValueAsBoolean(COLUMNNAME_IsPluFileExportAuditEnabled);
 	}
 
 	@Override
-	public void setFTP_Hostname (final java.lang.String FTP_Hostname)
+	public void setProduct_BaseFolderName (final java.lang.String Product_BaseFolderName)
 	{
-		set_Value (COLUMNNAME_FTP_Hostname, FTP_Hostname);
+		set_Value (COLUMNNAME_Product_BaseFolderName, Product_BaseFolderName);
 	}
 
 	@Override
-	public java.lang.String getFTP_Hostname() 
+	public java.lang.String getProduct_BaseFolderName() 
 	{
-		return get_ValueAsString(COLUMNNAME_FTP_Hostname);
+		return get_ValueAsString(COLUMNNAME_Product_BaseFolderName);
 	}
 
 	@Override
-	public void setFTP_Password (final java.lang.String FTP_Password)
+	public void setTCP_Host (final @Nullable java.lang.String TCP_Host)
 	{
-		set_Value (COLUMNNAME_FTP_Password, FTP_Password);
+		set_Value (COLUMNNAME_TCP_Host, TCP_Host);
 	}
 
 	@Override
-	public java.lang.String getFTP_Password() 
+	public java.lang.String getTCP_Host() 
 	{
-		return get_ValueAsString(COLUMNNAME_FTP_Password);
+		return get_ValueAsString(COLUMNNAME_TCP_Host);
 	}
 
 	@Override
-	public void setFTP_Port (final int FTP_Port)
+	public void setTCP_PortNumber (final int TCP_PortNumber)
 	{
-		set_Value (COLUMNNAME_FTP_Port, FTP_Port);
+		set_Value (COLUMNNAME_TCP_PortNumber, TCP_PortNumber);
 	}
 
 	@Override
-	public int getFTP_Port() 
+	public int getTCP_PortNumber() 
 	{
-		return get_ValueAsInt(COLUMNNAME_FTP_Port);
-	}
-
-	@Override
-	public void setFTP_Username (final java.lang.String FTP_Username)
-	{
-		set_Value (COLUMNNAME_FTP_Username, FTP_Username);
-	}
-
-	@Override
-	public java.lang.String getFTP_Username() 
-	{
-		return get_ValueAsString(COLUMNNAME_FTP_Username);
+		return get_ValueAsInt(COLUMNNAME_TCP_PortNumber);
 	}
 }

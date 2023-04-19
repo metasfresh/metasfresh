@@ -126,7 +126,7 @@ public class PaySelectionService
 						.appendParametersToMessage()
 						.setParameter("bankAccountId", bankAccountId));
 
-		if(bpBankAccount.getBankId() != null)
+		if (bpBankAccount.getBankId() != null)
 		{
 			final Bank bank = bankRepository.getById(bpBankAccount.getBankId());
 			if (bank.getLocationId() != null)
@@ -134,6 +134,7 @@ public class PaySelectionService
 				final CountryId countryId = locationDAO.getCountryIdByLocationId(bank.getLocationId());
 				revolutPaymentExportBuilder.recipientBankCountryId(countryId);
 			}
+			revolutPaymentExportBuilder.SwiftCode(bank.getSwiftCode());
 		}
 		final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(bpBankAccount.getCurrencyId());
 		final Amount amount = Amount.of(line.getPayAmt(), currencyCode);
@@ -148,7 +149,6 @@ public class PaySelectionService
 				.accountNo(bpBankAccount.getAccountNo())
 				.routingNo(bpBankAccount.getRoutingNo())
 				.IBAN(bpBankAccount.getIBAN())
-				.SwiftCode(bpBankAccount.getSwiftCode())
 				.build();
 	}
 

@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice
  *  @author metasfresh (generated) 
@@ -29,6 +28,27 @@ public interface I_C_Invoice
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Invoice.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
 	 * Set Organisation.
@@ -313,7 +333,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Cash Journal Line.
-	 * Kassenbuch Zeile
+	 * Cash Journal Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -323,7 +343,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Cash Journal Line.
-	 * Kassenbuch Zeile
+	 * Cash Journal Line
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -339,8 +359,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_CashLine_ID = "C_CashLine_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -349,8 +368,7 @@ public interface I_C_Invoice
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -361,8 +379,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Kursart.
-	 * Currency Conversion Rate Type
+	 * Set Conversiontype.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -371,8 +388,7 @@ public interface I_C_Invoice
 	void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
-	 * Get Kursart.
-	 * Currency Conversion Rate Type
+	 * Get Conversiontype.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -427,7 +443,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -437,7 +453,7 @@ public interface I_C_Invoice
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -449,7 +465,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
 	/**
-	 * Set Mahnstufe.
+	 * Set Dunning Level.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -458,7 +474,7 @@ public interface I_C_Invoice
 	void setC_DunningLevel_ID (int C_DunningLevel_ID);
 
 	/**
-	 * Get Mahnstufe.
+	 * Get Dunning Level.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -474,7 +490,33 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
-	 * Set Gebühr.
+	 * Set Foreign Exchange Contract.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ForeignExchangeContract_ID (int C_ForeignExchangeContract_ID);
+
+	/**
+	 * Get Foreign Exchange Contract.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ForeignExchangeContract_ID();
+
+	@Nullable org.compiere.model.I_C_ForeignExchangeContract getC_ForeignExchangeContract();
+
+	void setC_ForeignExchangeContract(@Nullable org.compiere.model.I_C_ForeignExchangeContract C_ForeignExchangeContract);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ForeignExchangeContract> COLUMN_C_ForeignExchangeContract_ID = new ModelColumn<>(I_C_Invoice.class, "C_ForeignExchangeContract_ID", org.compiere.model.I_C_ForeignExchangeContract.class);
+	String COLUMNNAME_C_ForeignExchangeContract_ID = "C_ForeignExchangeContract_ID";
+
+	/**
+	 * Set Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -483,7 +525,8 @@ public interface I_C_Invoice
 	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
 
 	/**
-	 * Get Gebühr.
+	 * Get Charge amount.
+	 * Charge Amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -543,8 +586,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Copy From.
-	 * Copy From Record
+	 * Set Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -553,8 +596,8 @@ public interface I_C_Invoice
 	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
 	/**
-	 * Get Copy From.
-	 * Copy From Record
+	 * Get Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -615,6 +658,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
+	 * Set Payment Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentInstruction_ID (int C_PaymentInstruction_ID);
+
+	/**
+	 * Get Payment Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentInstruction_ID();
+
+	@Nullable org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction();
+
+	void setC_PaymentInstruction(@Nullable org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_PaymentInstruction> COLUMN_C_PaymentInstruction_ID = new ModelColumn<>(I_C_Invoice.class, "C_PaymentInstruction_ID", org.compiere.model.I_C_PaymentInstruction.class);
+	String COLUMNNAME_C_PaymentInstruction_ID = "C_PaymentInstruction_ID";
+
+	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -659,7 +727,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Nachbelastung.
+	 * Set Adjustment Charge.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -668,7 +736,7 @@ public interface I_C_Invoice
 	void setCreateAdjustmentCharge (@Nullable java.lang.String CreateAdjustmentCharge);
 
 	/**
-	 * Get Nachbelastung.
+	 * Get Adjustment Charge.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -680,7 +748,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreateAdjustmentCharge = "CreateAdjustmentCharge";
 
 	/**
-	 * Set Erzeuge Gutschrift.
+	 * Set Create Credit Memo.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -689,7 +757,7 @@ public interface I_C_Invoice
 	void setCreateCreditMemo (@Nullable java.lang.String CreateCreditMemo);
 
 	/**
-	 * Get Erzeuge Gutschrift.
+	 * Get Create Credit Memo.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -747,8 +815,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreateDta = "CreateDta";
 
 	/**
-	 * Set Position(en) kopieren von.
-	 * Process which will generate a new document lines based on an existing document
+	 * Set Create From ....
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -757,8 +824,7 @@ public interface I_C_Invoice
 	void setCreateFrom (@Nullable java.lang.String CreateFrom);
 
 	/**
-	 * Get Position(en) kopieren von.
-	 * Process which will generate a new document lines based on an existing document
+	 * Get Create From ....
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -770,7 +836,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreateFrom = "CreateFrom";
 
 	/**
-	 * Set Gutschrift Grund.
+	 * Set Credit Reason.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -779,7 +845,7 @@ public interface I_C_Invoice
 	void setCreditMemoReason (@Nullable java.lang.String CreditMemoReason);
 
 	/**
-	 * Get Gutschrift Grund.
+	 * Get Credit Reason.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -904,7 +970,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set DescriptionBottom.
+	 * Set End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -913,7 +979,7 @@ public interface I_C_Invoice
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
-	 * Get DescriptionBottom.
+	 * Get End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -926,7 +992,6 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -936,7 +1001,6 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1019,6 +1083,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+	 * Set Due Date.
+	 * Date when the payment is due
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+
+	/**
+	 * Get Due Date.
+	 * Date when the payment is due
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDueDate();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_DueDate = new ModelColumn<>(I_C_Invoice.class, "DueDate", null);
+	String COLUMNNAME_DueDate = "DueDate";
+
+	/**
 	 * Set Dunning Grace Date.
 	 *
 	 * <br>Type: Date
@@ -1061,7 +1148,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set External ID.
+	 * Set SAP PayT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1070,7 +1157,7 @@ public interface I_C_Invoice
 	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
-	 * Get External ID.
+	 * Get SAP PayT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1082,8 +1169,89 @@ public interface I_C_Invoice
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set Generate To.
-	 * Generate To
+	 * Set FEC Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_CurrencyRate (@Nullable BigDecimal FEC_CurrencyRate);
+
+	/**
+	 * Get FEC Rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getFEC_CurrencyRate();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_FEC_CurrencyRate = new ModelColumn<>(I_C_Invoice.class, "FEC_CurrencyRate", null);
+	String COLUMNNAME_FEC_CurrencyRate = "FEC_CurrencyRate";
+
+	/**
+	 * Set FEC Currency From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_From_Currency_ID (int FEC_From_Currency_ID);
+
+	/**
+	 * Get FEC Currency From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_From_Currency_ID();
+
+	String COLUMNNAME_FEC_From_Currency_ID = "FEC_From_Currency_ID";
+
+	/**
+	 * Set Order Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_Order_Currency_ID (int FEC_Order_Currency_ID);
+
+	/**
+	 * Get Order Currency.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_Order_Currency_ID();
+
+	String COLUMNNAME_FEC_Order_Currency_ID = "FEC_Order_Currency_ID";
+
+	/**
+	 * Set FEC Currency To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFEC_To_Currency_ID (int FEC_To_Currency_ID);
+
+	/**
+	 * Get FEC Currency To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFEC_To_Currency_ID();
+
+	String COLUMNNAME_FEC_To_Currency_ID = "FEC_To_Currency_ID";
+
+	/**
+	 * Set Generate Invoice from Receipt.
+	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1092,8 +1260,8 @@ public interface I_C_Invoice
 	void setGenerateTo (@Nullable java.lang.String GenerateTo);
 
 	/**
-	 * Get Generate To.
-	 * Generate To
+	 * Get Generate Invoice from Receipt.
+	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1128,31 +1296,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
-	 * Set Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncoterm (@Nullable java.lang.String Incoterm);
-
-	/**
-	 * Get Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIncoterm();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_Incoterm = new ModelColumn<>(I_C_Invoice.class, "Incoterm", null);
-	String COLUMNNAME_Incoterm = "Incoterm";
-
-	/**
-	 * Set IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Set Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1161,8 +1306,8 @@ public interface I_C_Invoice
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
+	 * Get Incoterm Location.
+	 * Location to be specified for commercial clause
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1174,7 +1319,30 @@ public interface I_C_Invoice
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
-	 * Set Inkasso-Status.
+	 * Set Additional Text for Invoice.
+	 * If several invoice candidates are aggregated, add text to only one of them.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceAdditionalText (@Nullable java.lang.String InvoiceAdditionalText);
+
+	/**
+	 * Get Additional Text for Invoice.
+	 * If several invoice candidates are aggregated, add text to only one of them.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceAdditionalText();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceAdditionalText = new ModelColumn<>(I_C_Invoice.class, "InvoiceAdditionalText", null);
+	String COLUMNNAME_InvoiceAdditionalText = "InvoiceAdditionalText";
+
+	/**
+	 * Set Collection Status.
 	 * Invoice Collection Status
 	 *
 	 * <br>Type: List
@@ -1184,7 +1352,7 @@ public interface I_C_Invoice
 	void setInvoiceCollectionType (@Nullable java.lang.String InvoiceCollectionType);
 
 	/**
-	 * Get Inkasso-Status.
+	 * Get Collection Status.
 	 * Invoice Collection Status
 	 *
 	 * <br>Type: List
@@ -1264,7 +1432,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Rabatte drucken.
+	 * Set Discount Printed.
 	 * Print Discount on Invoice and Order
 	 *
 	 * <br>Type: YesNo
@@ -1274,7 +1442,7 @@ public interface I_C_Invoice
 	void setIsDiscountPrinted (boolean IsDiscountPrinted);
 
 	/**
-	 * Get Rabatte drucken.
+	 * Get Discount Printed.
 	 * Print Discount on Invoice and Order
 	 *
 	 * <br>Type: YesNo
@@ -1285,6 +1453,50 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsDiscountPrinted = new ModelColumn<>(I_C_Invoice.class, "IsDiscountPrinted", null);
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
+
+	/**
+	 * Set FEC.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFEC (boolean IsFEC);
+
+	/**
+	 * Get FEC.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFEC();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsFEC = new ModelColumn<>(I_C_Invoice.class, "IsFEC", null);
+	String COLUMNNAME_IsFEC = "IsFEC";
+
+	/**
+	 * Set IsFixedInvoice.
+	 * Invoices with this set to Y will not have the docActions RE, RC and VO available
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFixedInvoice (boolean IsFixedInvoice);
+
+	/**
+	 * Get IsFixedInvoice.
+	 * Invoices with this set to Y will not have the docActions RE, RC and VO available
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFixedInvoice();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsFixedInvoice = new ModelColumn<>(I_C_Invoice.class, "IsFixedInvoice", null);
+	String COLUMNNAME_IsFixedInvoice = "IsFixedInvoice";
 
 	/**
 	 * Set In Dispute.
@@ -1308,7 +1520,30 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsInDispute = "IsInDispute";
 
 	/**
-	 * Set Gezahlt.
+	 * Set Do not show Country of Origin.
+	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNotShowOriginCountry (boolean IsNotShowOriginCountry);
+
+	/**
+	 * Get Do not show Country of Origin.
+	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNotShowOriginCountry();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsNotShowOriginCountry = new ModelColumn<>(I_C_Invoice.class, "IsNotShowOriginCountry", null);
+	String COLUMNNAME_IsNotShowOriginCountry = "IsNotShowOriginCountry";
+
+	/**
+	 * Set Paid.
 	 * The document is paid
 	 *
 	 * <br>Type: YesNo
@@ -1318,7 +1553,7 @@ public interface I_C_Invoice
 	void setIsPaid (boolean IsPaid);
 
 	/**
-	 * Get Gezahlt.
+	 * Get Paid.
 	 * The document is paid
 	 *
 	 * <br>Type: YesNo
@@ -1354,7 +1589,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsPayScheduleValid = "IsPayScheduleValid";
 
 	/**
-	 * Set andrucken.
+	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1364,7 +1599,7 @@ public interface I_C_Invoice
 	void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get andrucken.
+	 * Get Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1375,6 +1610,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsPrinted = new ModelColumn<>(I_C_Invoice.class, "IsPrinted", null);
 	String COLUMNNAME_IsPrinted = "IsPrinted";
+
+	/**
+	 * Set Print local currency VAT.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintLocalCurrencyInfo (@Nullable java.lang.String IsPrintLocalCurrencyInfo);
+
+	/**
+	 * Get Print local currency VAT.
+	 * Determines if local currency VAT informations should be printed on sales invoices. Can be configured in tab tax reporting in window document type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPrintLocalCurrencyInfo();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPrintLocalCurrencyInfo = new ModelColumn<>(I_C_Invoice.class, "IsPrintLocalCurrencyInfo", null);
+	String COLUMNNAME_IsPrintLocalCurrencyInfo = "IsPrintLocalCurrencyInfo";
 
 	/**
 	 * Set Sales partner required.
@@ -1400,7 +1658,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsSalesPartnerRequired = "IsSalesPartnerRequired";
 
 	/**
-	 * Set Selbstbedienung.
+	 * Set Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -1410,7 +1668,7 @@ public interface I_C_Invoice
 	void setIsSelfService (boolean IsSelfService);
 
 	/**
-	 * Get Selbstbedienung.
+	 * Get Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
 	 * <br>Type: YesNo
@@ -1535,7 +1793,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
-	 * Set Warenrücksendung - Freigabe (RMA).
+	 * Set RMA.
 	 * Return Material Authorization
 	 *
 	 * <br>Type: TableDir
@@ -1545,7 +1803,7 @@ public interface I_C_Invoice
 	void setM_RMA_ID (int M_RMA_ID);
 
 	/**
-	 * Get Warenrücksendung - Freigabe (RMA).
+	 * Get RMA.
 	 * Return Material Authorization
 	 *
 	 * <br>Type: TableDir
@@ -1560,6 +1818,31 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, org.compiere.model.I_M_RMA> COLUMN_M_RMA_ID = new ModelColumn<>(I_C_Invoice.class, "M_RMA_ID", org.compiere.model.I_M_RMA.class);
 	String COLUMNNAME_M_RMA_ID = "M_RMA_ID";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_Invoice.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Warehouse.
@@ -1767,6 +2050,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
+	 * Set Debtor invoice count.
+	 * Number of associated debtor invoices
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setSales_Invoice_Count (int Sales_Invoice_Count);
+
+	/**
+	 * Get Debtor invoice count.
+	 * Number of associated debtor invoices
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getSales_Invoice_Count();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_Sales_Invoice_Count = new ModelColumn<>(I_C_Invoice.class, "Sales_Invoice_Count", null);
+	String COLUMNNAME_Sales_Invoice_Count = "Sales_Invoice_Count";
+
+	/**
 	 * Set Sales partner code.
 	 *
 	 * <br>Type: String
@@ -1810,7 +2118,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Set E-Mail senden.
+	 * Set Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -1820,7 +2128,7 @@ public interface I_C_Invoice
 	void setSendEMail (boolean SendEMail);
 
 	/**
-	 * Get E-Mail senden.
+	 * Get Send EMail.
 	 * Enable sending Document EMail
 	 *
 	 * <br>Type: YesNo
@@ -1833,7 +2141,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
-	 * Set Summe Zeilen.
+	 * Set Total Lines.
 	 * Total of all document lines
 	 *
 	 * <br>Type: Amount
@@ -1843,7 +2151,7 @@ public interface I_C_Invoice
 	void setTotalLines (BigDecimal TotalLines);
 
 	/**
-	 * Get Summe Zeilen.
+	 * Get Total Lines.
 	 * Total of all document lines
 	 *
 	 * <br>Type: Amount
@@ -1900,11 +2208,6 @@ public interface I_C_Invoice
 	 */
 	int getUser1_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser1();
-
-	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Invoice.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -1925,16 +2228,157 @@ public interface I_C_Invoice
 	 */
 	int getUser2_ID();
 
-	@Nullable org.compiere.model.I_C_ElementValue getUser2();
-
-	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Invoice.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
-	 * Set UserFlag.
-	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_C_Invoice.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_C_Invoice.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_C_Invoice.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_C_Invoice.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_C_Invoice.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_C_Invoice.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set User 1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1943,8 +2387,7 @@ public interface I_C_Invoice
 	void setUserFlag (@Nullable java.lang.String UserFlag);
 
 	/**
-	 * Get UserFlag.
-	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 * Get User 1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

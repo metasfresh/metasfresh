@@ -65,6 +65,7 @@ public class JXlsExporter
 	static
 	{
 		XlsCommentAreaBuilder.addCommandMapping(HideColumnIfCommand.NAME, HideColumnIfCommand.class);
+		XlsCommentAreaBuilder.addCommandMapping(LockSheetCommand.NAME, LockSheetCommand.class);
 	}
 
 	private static final String PROPERTY_Data = "data";

@@ -46,6 +46,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -72,6 +73,17 @@ public class EbayApiTest
 	}
 
 	//@Test
+
+	/**
+	 * To run this test you need access to the ebay api.
+	 * 1. Create ebay developer account
+	 * 2. Put your credentials into ebay-test-creds.yaml
+	 *    -> This are the credentials for developer access to create an app.
+	 * 3. Put your ebay crentials into application.properties
+	 *    -> This are credentials of an account who sells and wants to grant access to metasfresh.
+	 * 3. Execute test -> it will open a browser, auth and fetch orders.
+	 * @throws Exception
+	 */
 	public void testLoadOrders() throws Exception
 	{
 
@@ -144,7 +156,7 @@ public class EbayApiTest
 		Thread.sleep(4000);
 
 		//enter username
-		WebElement userId = (new WebDriverWait(driver, 10))
+		WebElement userId = (new WebDriverWait(driver, Duration.ofSeconds(10)))
 				.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='text']"))));
 		userId.sendKeys(prop.getProperty("ebay.app.userid"));
 		
@@ -152,7 +164,7 @@ public class EbayApiTest
 		Thread.sleep(4000);
 		
 		//enter password
-		WebElement password = (new WebDriverWait(driver, 10))
+		WebElement password = (new WebDriverWait(driver, Duration.ofSeconds(10)))
 				.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='password']"))));
 				
 		password.sendKeys(prop.getProperty("ebay.app.userpass"));
@@ -168,7 +180,7 @@ public class EbayApiTest
 		}
 		else
 		{
-			WebElement agreeBtn = (new WebDriverWait(driver, 10))
+			WebElement agreeBtn = (new WebDriverWait(driver, Duration.ofSeconds(10)))
 					.until(ExpectedConditions.visibilityOf(driver.findElement(By.id("submit"))));
 
 			agreeBtn.submit();

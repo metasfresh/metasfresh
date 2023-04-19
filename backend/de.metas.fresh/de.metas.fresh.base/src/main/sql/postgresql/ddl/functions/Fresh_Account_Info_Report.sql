@@ -27,6 +27,34 @@ DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
                                                              numeric)
 ;
 
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
+                                                             numeric,
+                                                             date,
+                                                             date,
+                                                             numeric,
+                                                             numeric,
+                                                             numeric,
+                                                             character varying,
+                                                             character varying,
+                                                             character varying,
+                                                             numeric)
+;
+
+
+DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
+    IN account_start_id      numeric, --$1
+    IN account_end_id        numeric, --$2
+    IN C_Period_Start_ID     numeric, --$3
+    IN C_Period_End_ID       numeric, --$4
+    IN StartDate             date, --$5
+    IN EndDate               date, --$6
+    IN c_activity_id         numeric, --$7
+    IN displayvoiddocuments  character varying, --$8
+    IN showcurrencyexchange  character varying, --$9
+    IN showonlyemptyactivity character varying, --$10
+    IN ad_org_id             numeric) --$11
+;
+
 CREATE OR REPLACE FUNCTION report.fresh_account_info_report_sub(
     IN account_start_id      numeric, --$1
     IN account_end_id        numeric, --$2
@@ -47,6 +75,8 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report_sub(
                 description            text,
                 account2_id            text,
                 a_value                text,
+                amtsourcedr            numeric,
+                amtsourcecr            numeric,
                 amtacctdr              numeric,
                 amtacctcr              numeric,
                 amtacctdrend           numeric,
@@ -63,7 +93,9 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report_sub(
                 conversionmultiplyrate numeric,
                 eurosaldo              numeric,
                 containseur            boolean,
-                ad_org_id              numeric
+                ad_org_id              numeric,
+                vat_code               text,
+                tax_rate_name          text
             )
 AS
 $$
@@ -98,6 +130,8 @@ SELECT fa.DateAcct::Date,
         END)                                                                                                                                       AS Account2_ID, -- this selects the name and value of one or no element value, that is matching with the current fact_acct (see when you press verbucht on your docu there is more than 1 line). Later shall be changed in some way so it can selece more, but currently we cannot associate more
 
        a.value                                                                                                                                     AS A_Value,
+       fa.amtsourcedr,
+       fa.amtsourcecr,
        fa.AmtAcctDr,
        fa.AmtAcctCr,
        SUM(fa.AmtAcctDr) OVER (PARTITION BY param_acct_value)                                                                                      AS AmtAcctDrEnd,
@@ -119,7 +153,9 @@ SELECT fa.DateAcct::Date,
        ConversionMultiplyRate,
        CASE WHEN $9 = 'Y' AND ConversionMultiplyRate IS NOT NULL THEN ConversionMultiplyRate * (CarryBalance + SUM(Balance) OVER ()) ELSE NULL END AS EuroSaldo,
        containsEUR,
-       fa.ad_org_id
+       fa.ad_org_id,
+       fa.vat_code,
+       fa.tax_rate_name
 FROM (SELECT fa.Account_ID,
              fa.C_Activity_ID,
              fa.description,
@@ -127,6 +163,8 @@ FROM (SELECT fa.Account_ID,
              Fact_Acct_ID,
              AD_Table_ID,
              Line_ID,
+             amtsourcedr,
+             amtsourcecr,
              AmtAcctDr,
              AmtAcctCr,
              fa.C_BPartner_ID,
@@ -160,7 +198,9 @@ FROM (SELECT fa.Account_ID,
                          )
              END
                                                 AS containsEUR,
-             fa.ad_org_id
+             fa.ad_org_id,
+             fa.vatcode                                                                       AS vat_code,
+             (SELECT t.name FROM c_tax t WHERE fa.c_tax_id = t.c_tax_id AND t.isactive = 'Y') AS tax_rate_name
       FROM (SELECT ev.C_ElementValue_ID, ev.value, ev.name, ev.ad_client_id
             FROM C_ElementValue ev
                      JOIN C_ElementValue ev_from ON ev_from.C_ElementValue_ID = $1 AND ev_from.isActive = 'Y'
@@ -245,6 +285,20 @@ DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
                                                          numeric)
 ;
 
+DROP FUNCTION IF EXISTS  report.fresh_account_info_report(
+    IN account_from_id       numeric,
+    IN account_to_id         numeric,
+    IN C_Period_Start_ID     numeric,
+    IN C_Period_End_ID       numeric,
+    IN StartDate             date,
+    IN EndDate               date,
+    IN c_activity_id         numeric,
+    IN displayvoiddocuments  character varying,
+    IN showcurrencyexchange  character varying,
+    IN showonlyemptyactivity character varying,
+    IN ad_org_id             numeric)
+;
+
 CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
     IN account_from_id       numeric,
     IN account_to_id         numeric,
@@ -265,6 +319,8 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
                 description          text,
                 account2_id          text,
                 a_value              text,
+                amtsourcedr          numeric,
+                amtsourcecr          numeric,
                 amtacctdr            numeric,
                 amtacctcr            numeric,
                 saldo                numeric,
@@ -279,7 +335,9 @@ CREATE OR REPLACE FUNCTION report.fresh_account_info_report(
                 docstatus            text,
                 eurosaldo            numeric,
                 containseur          boolean,
-                ad_org_id            numeric
+                ad_org_id            numeric,
+                vat_code             text,
+                tax_rate_name        text
             )
 AS
 $$
@@ -289,6 +347,8 @@ SELECT DateAcct,
        Description,
        Account2_ID,
        a_Value,
+       amtsourcedr,
+       amtsourcecr,
        AmtAcctDr,
        AmtAcctCr,
        Saldo,
@@ -303,7 +363,9 @@ SELECT DateAcct,
        DocStatus,
        NULL::numeric,
        NULL::boolean,
-       ad_org_id
+       ad_org_id,
+       vat_code,
+       tax_rate_name
 FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 WHERE Fact_Acct_ID IS NOT NULL
 UNION ALL
@@ -313,6 +375,8 @@ SELECT DISTINCT NULL::date,
                 'Anfangssaldo',
                 NULL::text,
                 NULL::text,
+                NULL::numeric,
+                NULL::numeric,
                 NULL::numeric,
                 NULL::numeric,
                 CarrySaldo,
@@ -327,7 +391,9 @@ SELECT DISTINCT NULL::date,
                 NULL::text,
                 NULL::numeric,
                 NULL::boolean,
-                ad_org_id
+                ad_org_id,
+                NULL::text,
+                NULL::text
 FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 UNION ALL
 SELECT DISTINCT NULL::date,
@@ -336,6 +402,8 @@ SELECT DISTINCT NULL::date,
                 'Summe',
                 NULL::text,
                 NULL::text,
+                NULL::numeric,
+                NULL::numeric,
                 AmtAcctDrEnd,
                 AmtAcctCrEnd,
                 CarrySaldo,
@@ -350,7 +418,9 @@ SELECT DISTINCT NULL::date,
                 NULL::text,
                 NULL::numeric,
                 NULL::boolean,
-                ad_org_id
+                ad_org_id,
+                NULL::text,
+                NULL::text
 FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 UNION ALL
 (SELECT DISTINCT NULL::date,
@@ -359,6 +429,8 @@ UNION ALL
                  'Summe in EUR',
                  NULL::text,
                  NULL::text,
+                 NULL::numeric,
+                 NULL::numeric,
                  NULL::numeric,
                  NULL::numeric,
                  NULL::numeric,
@@ -373,7 +445,9 @@ UNION ALL
                  NULL::text,
                  EuroSaldo,
                  containsEUR,
-                 ad_org_id
+                 ad_org_id,
+                 NULL::text,
+                 NULL::text
  FROM report.fresh_Account_Info_Report_Sub($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
  WHERE containsEUR = 'Y')
 ORDER BY Param_Acct_Value, UnionOrder, DateAcct,

@@ -9,17 +9,24 @@ import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.IncotermsId;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
@@ -71,6 +78,7 @@ public class BPartner
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
 	public static final String GREETING_ID = "greetingId";
@@ -83,6 +91,18 @@ public class BPartner
 	public static final String CAMPAIGN_ID = "campaignId";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String SECTION_CODE_ID = "sectionCodeId";
+	public static final String DESCRIPTION = "description";
+	public static final String DELIVERY_RULE = "deliveryRule";
+	public static final String DELIVERY_VIA_RULE = "deliveryViaRule";
+	public static final String STORAGE_WAREHOUSE = "storageWarehouse";
+	public static final String INCOTERMS_CUSTOMER_ID = "incotermsCustomerId";
+	public static final String INCOTERMS_VENDOR_ID = "incotermsVendorId";
+	public static final String SECTION_GROUP_PARTNER_ID = "sectionGroupPartnerId";
+	public static final String PROSPECT = "isProspect";
+	public static final String SAP_BPARTNER_CODE = "sapBPartnerCode";
+	public static final String SECTION_GROUP_PARTNER = "sectionGroupPartner";
+	public static final String SECTION_PARTNER = "sectionPartner";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -132,6 +152,7 @@ public class BPartner
 	private String salesPartnerCode;
 	private SalesRep salesRep;
 	private PaymentRule paymentRule;
+	private PaymentRule paymentRulePO;
 	private String internalName;
 
 	private InvoiceRule customerInvoiceRule;
@@ -158,10 +179,10 @@ public class BPartner
 	 */
 	private boolean identifiedByExternalReference;
 
-	private final PaymentTermId customerPaymentTermId;
-	private final PricingSystemId customerPricingSystemId;
+	private PaymentTermId customerPaymentTermId;
+	private PricingSystemId customerPricingSystemId;
 
-	private final PaymentTermId vendorPaymentTermId;
+	private PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
 
 	private final boolean excludeFromPromotions;
@@ -170,6 +191,38 @@ public class BPartner
 
 	private final Integer creditorId;
 	private final Integer debtorId;
+
+	@Nullable
+	private SectionCodeId sectionCodeId;
+
+	@Nullable
+	private String description;
+
+	@Nullable
+	private DeliveryRule deliveryRule;
+
+	@Nullable
+	private DeliveryViaRule deliveryViaRule;
+
+	private boolean storageWarehouse;
+
+	@Nullable
+	private IncotermsId incotermsCustomerId;
+
+	@Nullable
+	private IncotermsId incotermsVendorId;
+
+	@Nullable
+	private BPartnerId sectionGroupPartnerId;
+
+	private boolean prospect;
+
+	@Nullable
+	private String sapBPartnerCode;
+
+	private boolean sectionGroupPartner;
+
+	private boolean sectionPartner;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -201,6 +254,7 @@ public class BPartner
 			@Nullable final String salesPartnerCode,
 			@Nullable final SalesRep salesRep,
 			@Nullable final PaymentRule paymentRule,
+			@Nullable final PaymentRule paymentRulePO,
 			@Nullable final String internalName,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
@@ -219,7 +273,19 @@ public class BPartner
 			@Nullable final String firstName,
 			@Nullable final String lastName,
 			@Nullable final Integer creditorId,
-			@Nullable final Integer debtorId)
+			@Nullable final Integer debtorId,
+			@Nullable final SectionCodeId sectionCodeId,
+			@Nullable final String description,
+			@Nullable final DeliveryRule deliveryRule,
+			@Nullable final DeliveryViaRule deliveryViaRule,
+			@Nullable final Boolean storageWarehouse,
+			@Nullable final IncotermsId incotermsCustomerId,
+			@Nullable final IncotermsId incotermsVendorId,
+			@Nullable final BPartnerId sectionGroupPartnerId,
+			@Nullable final Boolean prospect,
+			@Nullable final String sapBPartnerCode,
+			@Nullable final Boolean sectionGroupPartner,
+			@Nullable final Boolean sectionPartner)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -246,6 +312,7 @@ public class BPartner
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
 		this.paymentRule = paymentRule;
+		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;
 		this.vatId = vatId;
 
@@ -270,6 +337,18 @@ public class BPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+		this.sectionCodeId = sectionCodeId;
+		this.description = description;
+		this.deliveryRule = deliveryRule;
+		this.deliveryViaRule = deliveryViaRule;
+		this.storageWarehouse = coalesce(storageWarehouse, false);
+		this.incotermsCustomerId = incotermsCustomerId;
+		this.incotermsVendorId = incotermsVendorId;
+		this.sectionGroupPartnerId = sectionGroupPartnerId;
+		this.prospect = coalesce(prospect, false);
+		this.sapBPartnerCode = sapBPartnerCode;
+		this.sectionGroupPartner = coalesce(sectionGroupPartner, false);
+		this.sectionPartner = coalesce(sectionPartner, false);
 	}
 
 	/**
@@ -298,5 +377,37 @@ public class BPartner
 			result.add(TranslatableStrings.constant("bpartner.groupId"));
 		}
 		return result.build();
+	}
+
+	@Nullable
+	public <T> T mapPaymentRule(@NonNull final Function<PaymentRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, paymentRule);
+	}
+
+	@Nullable
+	public <T> T mapPaymentRulePO(@NonNull final Function<PaymentRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, paymentRulePO);
+	}
+
+	@Nullable
+	public <T> T mapDeliveryRule(@NonNull final Function<DeliveryRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, deliveryRule);
+	}
+
+	@Nullable
+	public <T> T mapDeliveryViaRule(@NonNull final Function<DeliveryViaRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, deliveryViaRule);
+	}
+
+	@Nullable
+	private <In, Out> Out mapValue(@NonNull final Function<In, Out> mappingFunction, @Nullable final In inputValue)
+	{
+		return Optional.ofNullable(inputValue)
+				.map(mappingFunction)
+				.orElse(null);
 	}
 }

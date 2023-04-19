@@ -35,6 +35,7 @@ import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_
 import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor;
 import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
@@ -239,28 +240,28 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 									  .process(successfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_BPARTNER_UPSERT);
+				advice -> {
+					advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+							.after()
+							.to(MOCK_BPARTNER_UPSERT);
 
-								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(upsertBPartnerProcessor);
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(upsertBPartnerProcessor);
 
-								  advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_OL_CAND_CREATE);
+					advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
+							.after()
+							.to(MOCK_OL_CAND_CREATE);
 
-								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .process(olCandProcessor);
+					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.process(olCandProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_CREATE_PAYMENT)
-										  .process(createPaymentProcessor);
-							  });
+					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_CREATE_PAYMENT)
+							.process(createPaymentProcessor);
+				});
 
 		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
@@ -269,10 +270,10 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 									  .process(processOLCandProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
-									  .process(runtimeParamsProcessor));
+				advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+						.skipSendToOriginalEndpoint()
+						.to(MOCK_UPSERT_RUNTIME_PARAMETERS)
+						.process(runtimeParamsProcessor));
 	}
 
 	public static class MockBuildOrdersContextProcessor implements Processor
@@ -295,12 +296,13 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 			final SalutationInfoProvider salutationInfoProvider = SalutationInfoProvider.builder()
 					.salutationId2DisplayName(ImmutableMap.of(MOCK_SALUTATION_ID, MOCK_SALUTATION_DISPLAY_NAME,
-															  MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
+							MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
 					.build();
 
 			final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()
 					.productLookup(JsonProductLookup.ProductId)
 					.build();
+			final MultiQueryRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(1, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE));
 
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper, externalSystemRequest);

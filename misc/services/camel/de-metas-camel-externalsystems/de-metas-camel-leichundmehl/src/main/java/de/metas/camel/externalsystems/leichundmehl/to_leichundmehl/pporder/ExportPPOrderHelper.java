@@ -22,97 +22,96 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.FTPCredentials;
-import de.metas.common.bpartner.v2.response.JsonResponseComposite;
-import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Predicate;
 
 import java.util.Map;
-import java.util.Objects;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FTP_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FTP_HOST;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FTP_PASSWORD;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FTP_PORT;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FTP_USERNAME;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 
 @UtilityClass
 public class ExportPPOrderHelper
 {
 	@NonNull
-	public FTPCredentials getFTPCredentials(@NonNull final Map<String, String> params)
+	public ConnectionDetails getTcpConnectionDetails(@NonNull final Map<String, String> params)
 	{
-		if (Check.isBlank(params.get(ExternalSystemConstants.PARAM_FTP_HOST)))
+		final String tcpPortNumber = params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER);
+		if (Check.isBlank(tcpPortNumber))
 		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_FTP_HOST);
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_TCP_PORT_NUMBER);
 		}
 
-		if (Check.isBlank(params.get(PARAM_FTP_PORT)))
+		final String tcpHost = params.get(ExternalSystemConstants.PARAM_TCP_HOST);
+		if (Check.isBlank(tcpHost))
 		{
-			throw new RuntimeException("Missing mandatory param: " + PARAM_FTP_PORT);
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_TCP_HOST);
 		}
 
-		if (Check.isBlank(params.get(ExternalSystemConstants.PARAM_FTP_USERNAME)))
-		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_FTP_USERNAME);
-		}
-
-		if (Check.isBlank(params.get(ExternalSystemConstants.PARAM_FTP_PASSWORD)))
-		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_FTP_PASSWORD);
-		}
-
-		if (Check.isBlank(params.get(PARAM_FTP_DIRECTORY)))
-		{
-			throw new RuntimeException("Missing mandatory param: " + PARAM_FTP_DIRECTORY);
-		}
-
-		if (Check.isBlank(params.get(ExternalSystemConstants.PARAM_PP_ORDER_ID)))
-		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PP_ORDER_ID);
-		}
-
-		return FTPCredentials.builder()
-				.ftpHost(params.get(PARAM_FTP_HOST))
-				.ftpPort(params.get(PARAM_FTP_PORT))
-				.ftpUsername(params.get(PARAM_FTP_USERNAME))
-				.ftpPassword(params.get(PARAM_FTP_PASSWORD))
-				.ftpDirectory(params.get(PARAM_FTP_DIRECTORY))
-				.ftpFilename(computeFileName(params.get(PARAM_PP_ORDER_ID)))
+		return ConnectionDetails.builder()
+				.tcpPort(Integer.parseInt(tcpPortNumber))
+				.tcpHost(tcpHost)
 				.build();
 	}
 
 	@NonNull
-	public String computeFileName(@NonNull final String pporderId)
+	public JsonExternalSystemLeichMehlConfigProductMapping getProductMapping(@NonNull final Map<String, String> params)
 	{
-		return "ManufacturingOrder_" + pporderId + ".json";
+		final String productMapping = params.get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+		if (Check.isBlank(productMapping))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+		}
+
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		try
+		{
+			return mapper.readValue(productMapping, JsonExternalSystemLeichMehlConfigProductMapping.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	@NonNull
-	public Predicate ppOrderHasBPartnerAssigned()
+	public JsonExternalSystemLeichMehlPluFileConfigs getPluFileConfigs(@NonNull final Map<String, String> params)
+	{
+		final String pluFileConfigs = params.get(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		if (Check.isBlank(pluFileConfigs))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		}
+
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		try
+		{
+			return mapper.readValue(pluFileConfigs, JsonExternalSystemLeichMehlPluFileConfigs.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	@NonNull
+	public Predicate isPluFileExportAuditEnabled()
 	{
 		return exchange -> {
 			final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-			return (context.getBPartnerId() != null && context.getBPartnerId().getValue() != 0);
+			return (context.isPluFileExportAuditEnabled());
 		};
-	}
-
-	@NonNull
-	public ImmutableList<String> getBPartnerGLNList(@NonNull final JsonResponseComposite jsonResponseComposite)
-	{
-		return jsonResponseComposite.getLocations()
-				.stream()
-				.map(JsonResponseLocation::getGln)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
 	}
 }

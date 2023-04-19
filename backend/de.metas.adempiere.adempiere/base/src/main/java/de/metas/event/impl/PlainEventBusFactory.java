@@ -11,11 +11,9 @@ import de.metas.event.log.EventLogsRepository;
 import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.compiere.Adempiere;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 /*
@@ -75,7 +73,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	private EventBus createEventBus(final Topic topic)
 	{
 		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
-		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(Optional.empty(), new SimpleMeterRegistry()));
+		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(new SimpleMeterRegistry()));
 
 		final ExecutorService executor = null;
 		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new PlainEventEnqueuer(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));

@@ -1,11 +1,10 @@
 package de.metas.process;
 
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;

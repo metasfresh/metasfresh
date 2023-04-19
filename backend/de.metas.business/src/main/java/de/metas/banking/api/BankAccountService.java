@@ -1,9 +1,7 @@
 package de.metas.banking.api;
 
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
-import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.currency.CurrencyCode;
@@ -12,6 +10,8 @@ import de.metas.impexp.config.DataImportConfigId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -40,16 +40,13 @@ public class BankAccountService
 {
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final BankRepository bankRepo;
-	private final BankAccountAcctRepository bankAccountAcctRepo;
 	private final CurrencyRepository currencyRepo;
 
 	public BankAccountService(
 			@NonNull final BankRepository bankRepo,
-			@NonNull final BankAccountAcctRepository bankAccountAcctRepo,
 			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.bankRepo = bankRepo;
-		this.bankAccountAcctRepo = bankAccountAcctRepo;
 		this.currencyRepo = currencyRepo;
 	}
 
@@ -57,7 +54,6 @@ public class BankAccountService
 	{
 		return new BankAccountService(
 				new BankRepository(),
-				new BankAccountAcctRepository(),
 				new CurrencyRepository());
 	}
 
@@ -70,13 +66,6 @@ public class BankAccountService
 	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
 		return bankAccountDAO.getById(bankAccountId);
-	}
-
-	public BankAccountAcct getBankAccountAcct(
-			@NonNull final BankAccountId bankAccountId,
-			@NonNull final AcctSchemaId acctSchemaId)
-	{
-		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
 	}
 
 	public String createBankAccountName(@NonNull final BankAccountId bankAccountId)
@@ -99,5 +88,24 @@ public class BankAccountService
 		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
 
 		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
+	}
+
+	@NonNull
+	public Optional<BankId> getBankIdBySwiftCode(@NonNull final String swiftCode)
+	{
+		return bankRepo.getBankIdBySwiftCode(swiftCode);
+	}
+
+	@NonNull
+	public Optional<BankAccountId> getBankAccountId(
+			@NonNull final BankId bankId,
+			@NonNull final String accountNo)
+	{
+		return bankAccountDAO.getBankAccountId(bankId, accountNo);
+	}
+
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
 }

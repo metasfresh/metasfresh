@@ -9,11 +9,13 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.Delegate;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
@@ -184,4 +186,13 @@ public class ProcessInstanceResult
 		@NonNull ProcessExecutionResult.CalendarToOpen delegate;
 	}
 
+
+	@lombok.Value
+	@lombok.Builder
+	public static class NewRecordAction implements ResultAction
+	{
+		@NonNull String windowId;
+		@NonNull @Singular Map<String, String> fieldValues;
+		@NonNull @Builder.Default ProcessExecutionResult.WebuiNewRecord.TargetTab targetTab = ProcessExecutionResult.WebuiNewRecord.TargetTab.SAME_TAB;
+	}
 }

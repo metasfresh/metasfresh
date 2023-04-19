@@ -1,49 +1,13 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process;
 
-import java.util.List;
-import java.util.Optional;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Invoice_Rejection_Detail;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
-/*
- * #%L
- * metasfresh-pharma
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -58,6 +22,18 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice_Rejection_Detail;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 // package visibility
 @Service
@@ -91,7 +67,10 @@ class ImportInvoiceResponseService
 
 	// package visibility
 	// i believe these 2 methods should be merged into 1 since all that's different is a single TRL.
-	void sendNotificationDefaultUserDoesNotExist(@NonNull final ImportedInvoiceResponse responseWithTags, final InvoiceRejectionDetailId invoiceRejectionDetailId, final UserId userId)
+	void sendNotificationDefaultUserDoesNotExist(
+			@NonNull final ImportedInvoiceResponse responseWithTags,
+			@NonNull final InvoiceRejectionDetailId invoiceRejectionDetailId,
+			@NonNull final UserId userId)
 	{
 		final Recipient recipient = Recipient.user(userId);
 

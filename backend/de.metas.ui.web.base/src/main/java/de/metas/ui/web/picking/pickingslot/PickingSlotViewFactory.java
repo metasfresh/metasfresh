@@ -15,12 +15,14 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToComputedHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToExistingHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Source_HU_Delete;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToComputedHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToExistingHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_RemoveHUFromPickingSlot;
@@ -214,9 +216,11 @@ public class PickingSlotViewFactory implements IViewFactory
 
 				// fine-picking related processes
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToNewHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToComputedHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToExistingHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ReturnQtyToSourceHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToNewHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToComputedHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToExistingHU.class),
 
 				// note that WEBUI_Picking_M_Source_HU_Create is called from the HU-editor

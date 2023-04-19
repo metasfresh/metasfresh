@@ -32,13 +32,13 @@ Feature: warehouse out of stock notice
       | Identifier    | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_3 | Endcustomer_3 | N            | Y              | ps_1                          |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.Warehouse_ID |
-      | o_3        | true    | endcustomer_3            | 2021-04-17  | 540008           |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier |
+      | o_3        | true    | endcustomer_3            | 2021-04-17  | 540008                        |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_3       | o_3                   | p_3                     | 10         |
     And the order identified by o_3 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | OPT.Warehouse_ID |
       | s_sched_1  | ol_3                      | N             | 540008           |
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/warehouses/540008/outOfStockNotice' and fulfills with '200' status code

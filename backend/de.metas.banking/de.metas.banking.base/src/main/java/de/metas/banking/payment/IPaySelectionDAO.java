@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import de.metas.banking.PaySelectionLineId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
@@ -33,6 +34,8 @@ public interface IPaySelectionDAO extends ISingletonService
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_PaySelection paySelection);
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(PaySelectionId paySelectionId);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLinesByIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds);
 
 	int retrievePaySelectionLinesCount(I_C_PaySelection paySelection);
 

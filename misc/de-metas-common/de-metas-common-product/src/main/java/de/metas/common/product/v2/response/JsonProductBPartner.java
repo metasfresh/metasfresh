@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,10 +39,7 @@ import lombok.Value;
 @JsonDeserialize(builder = JsonProductBPartner.JsonProductBPartnerBuilder.class)
 public class JsonProductBPartner
 {
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to `C_BPartner_ID`.")
+	@Schema(description = "This translates to `C_BPartner_ID`.")
 	@NonNull
 	@JsonProperty("bPartnerId")
 	JsonMetasfreshId bpartnerId;

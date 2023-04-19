@@ -27,10 +27,10 @@ import de.metas.common.rest_api.v2.bom.JsonBOMCreateRequest;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.compiere.util.Env;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
 @RequestMapping(value = {
@@ -56,16 +57,16 @@ public class ProductBOMRestController
 		this.bomRestService = bomRestService;
 	}
 
-	@ApiOperation("Create a new bill of material version.")
+	@Operation(summary = "Create a new bill of material version.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created bill of material"),
-			@ApiResponse(code = 401, message = "You are not authorized to perform this action"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created bill of material"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to perform this action"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
 	})
 	@PutMapping("{orgCode}")
 	public ResponseEntity<?> createBOMs(
-			@ApiParam(required = true, value = "Organisation within to create the bom formula.")
+			@Parameter(required = true, description = "Organisation within to create the bom formula.")
 			@PathVariable("orgCode") @Nullable final String orgCode,
 			@RequestBody @NonNull final JsonBOMCreateRequest request)
 	{
@@ -74,6 +75,33 @@ public class ProductBOMRestController
 			final JsonBOMCreateResponse bomId = bomRestService.createBOMs(orgCode, request);
 
 			return ResponseEntity.ok().body(bomId);
+		}
+		catch (final Exception ex)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
+
+			return ResponseEntity.unprocessableEntity().body(error);
+		}
+	}
+
+	@Operation(summary = "Verifies the default bill of material version for given product identifier.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully verified bill of material"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to perform this action"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request entity could not be processed")
+	})
+	@PutMapping("{orgCode}/verify/{productIdentifier}")
+	public ResponseEntity<?> verifyDefaultBOM(
+			@PathVariable("orgCode") @NonNull final String orgCode,
+			@Parameter(required = true, description = PRODUCT_IDENTIFIER_DOC)
+			@PathVariable("productIdentifier") @NonNull final String productIdentifier)
+	{
+		try
+		{
+			bomRestService.verifyDefaultBOM(productIdentifier, orgCode);
+
+			return ResponseEntity.ok().build();
 		}
 		catch (final Exception ex)
 		{

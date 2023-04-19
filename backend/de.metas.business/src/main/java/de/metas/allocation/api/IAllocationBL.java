@@ -1,14 +1,13 @@
 package de.metas.allocation.api;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.money.Money;
+import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.util.ISingletonService;
 
 import javax.annotation.Nullable;
 import java.time.Instant;

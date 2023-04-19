@@ -179,6 +179,8 @@ public class AllAvailableSingletonServicesTest
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.setScanners(new SubTypesScanner()));
 			System.out.println("Created reflections instance in " + stopwatch);
 

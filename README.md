@@ -51,10 +51,10 @@ Come visit us in our [Community Forum](https://forum.metasfresh.org/) for questi
 <!-- GITTER LEGACY: Join one of the gitter rooms [metasfresh](https://gitter.im/metasfresh/metasfresh), [metasfresh-webui-frontend](https://gitter.im/metasfresh/metasfresh-webui-frontend), [metasfresh-documentation](https://gitter.im/metasfresh/metasfresh-documentation) or visit us in our [forum](https://forum.metasfresh.org/). -->
 
 ## Contributing
-Do you want to help improving documentation, contribute some code or participate in functional requirements. That's great, you're welcome! Please read our [Code of Coduct](https://github.com/metasfresh/metasfresh/blob/master/CODE_OF_CONDUCT.md) and [Contibutor Guidelines](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md) first.
+Do you want to help improving documentation, contribute some code or participate in functional requirements. That's great, you're welcome! Please read our [Code of Conduct](https://github.com/metasfresh/metasfresh/blob/master/CODE_OF_CONDUCT.md) and [Contributor Guidelines](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md) first.
 
 ### "Monorepo"
-To check out only certain parts of this repository, we recomment to get git version 2.25.0 or later and use the [git-sparse-checkout](https://www.git-scm.com/docs/git-sparse-checkout) feature.
+To check out only certain parts of this repository, we recommend getting git version 2.25.0 or later and use the [git-sparse-checkout](https://www.git-scm.com/docs/git-sparse-checkout) feature.
 Examples:
 * to get started, do `git sparse-checkout init --clone`
   * this will leave you with just the files in the repo's root folder, such as the file you are reading

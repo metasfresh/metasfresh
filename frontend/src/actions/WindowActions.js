@@ -46,7 +46,11 @@ import {
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
+import {
+  getInvalidDataItem,
+  getScope,
+  parseToDisplay,
+} from '../utils/documentListHelper';
 
 import {
   formatParentUrl,
@@ -535,6 +539,7 @@ export function createWindow({
   isAdvanced,
   disconnected,
   title,
+  urlSearchParams,
 }) {
   let disconnectedData = null;
   let documentId = docId || 'NEW';
@@ -594,8 +599,10 @@ export function createWindow({
       }
 
       if (documentId === 'NEW' && !isModal) {
-        // redirect immedietely
-        return history.replace(`/window/${windowType}/${docId}`);
+        // redirect immediately, but preserve URL search params if any
+        return history.replace(
+          `/window/${windowType}/${docId}${urlSearchParams ?? ''}`
+        );
       }
 
       let elem = 0;
@@ -811,6 +818,30 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
   };
 }
 
+export const patchWindow = ({
+  windowId,
+  documentId = 'NEW',
+  tabId = null,
+  rowId = null,
+  fieldName,
+  value,
+}) => {
+  return patch(
+    'window', // entity
+    windowId,
+    documentId,
+    tabId,
+    rowId,
+    fieldName,
+    value,
+    false, //isModal
+    false, // isAdvanced
+    null, // viewId
+    false, // isEdit
+    false // disconnected
+  );
+};
+
 /*
  * Wrapper for patch request of widget elements
  * when responses should merge store
@@ -855,7 +886,11 @@ export function patch(
         response.data.documents instanceof Array
           ? response.data.documents
           : response.data;
-      const dataItem = data[0];
+
+      const invalidDataItem = getInvalidDataItem(data);
+
+      const dataItem = invalidDataItem === null ? data[0] : invalidDataItem;
+
       const includedTabsInfo =
         dataItem && dataItem.includedTabsInfo
           ? dataItem.includedTabsInfo

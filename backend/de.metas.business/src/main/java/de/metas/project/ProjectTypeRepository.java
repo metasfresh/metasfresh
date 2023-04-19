@@ -68,7 +68,7 @@ public class ProjectTypeRepository
 	}
 
 	@Nullable
-	private static ProjectType toProjectType(@Nullable final I_C_ProjectType record)
+	public static ProjectType toProjectType(@Nullable final I_C_ProjectType record)
 	{
 		if(record == null)
 		{
@@ -77,6 +77,7 @@ public class ProjectTypeRepository
 		return ProjectType.builder()
 				.id(ProjectTypeId.ofRepoId(record.getC_ProjectType_ID()))
 				.projectCategory(ProjectCategory.ofCode(record.getProjectCategory()))
+				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(record.getR_StatusCategory_ID()))
 				.docSequenceId(DocSequenceId.ofRepoIdOrNull(record.getAD_Sequence_ProjectValue_ID()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.name(record.getName())

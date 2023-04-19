@@ -200,7 +200,8 @@ public class BudgetProjectRepository
 		projectRecord.setValue(request.getValue());
 		projectRecord.setExternalId(ExternalId.toValue(request.getExternalId()));
 		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_Budget);
-		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(request.getProjectTypeId()));
+		projectRecord.setC_ProjectType_ID(request.getProjectType().getId().getRepoId());
+		projectRecord.setR_StatusCategory_ID(request.getProjectType().getRequestStatusCategoryId().getRepoId());
 		projectRecord.setIsActive(request.isActive());
 		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(request.getCurrencyId()));
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));

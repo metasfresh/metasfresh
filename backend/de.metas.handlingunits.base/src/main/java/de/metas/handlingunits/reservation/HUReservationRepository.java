@@ -8,7 +8,10 @@ import de.metas.cache.CCache;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
@@ -21,7 +24,10 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -62,6 +68,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class HUReservationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private static final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final CCache<HuId, Optional<HUReservationEntry>> entriesByVhuId = CCache.<HuId, Optional<HUReservationEntry>>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -213,6 +220,20 @@ public class HUReservationRepository
 		record.setC_Project_ID(ProjectId.toRepoId(documentRef.getProjectId()));
 		record.setM_Picking_Job_Step_ID(PickingJobStepId.toRepoId(documentRef.getPickingJobStepId()));
 		record.setDD_OrderLine_ID(DDOrderLineId.toRepoId(documentRef.getDdOrderLineId()));
+
+		setOrgID(record, documentRef);
+	}
+
+	private static void setOrgID(@NonNull final I_M_HU_Reservation record, @NonNull final HUReservationDocRef documentRef)
+	{
+		final PickingJobStepId pickingJobStepId = documentRef.getPickingJobStepId();
+		if (pickingJobStepId != null)
+		{
+			final TableRecordReference recordReference = pickingJobStepId.toTableRecordReference();
+			final I_M_Picking_Job_Step stepRecord = recordReference.getModel(I_M_Picking_Job_Step.class);
+			record.setAD_Org_ID(stepRecord.getAD_Org_ID());
+		}
+
 	}
 
 	private I_M_HU_Reservation retrieveOrCreateRecordByVhuId(@NonNull final HuId vhuId)

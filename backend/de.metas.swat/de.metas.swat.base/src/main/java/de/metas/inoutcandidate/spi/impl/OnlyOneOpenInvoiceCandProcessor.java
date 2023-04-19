@@ -85,9 +85,9 @@ public class OnlyOneOpenInvoiceCandProcessor implements IShipmentSchedulesAfterF
 			final BPartnerStats stats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(lineCandidate.getBillBPartnerId());
 
 			final String creditStatus = I_C_BPartner.SO_CREDITSTATUS_ONE_OPEN_INVOICE;
-			if (creditStatus.equals(stats.getSOCreditStatus()))
+			if (creditStatus.equals(stats.getSoCreditStatus()))
 			{
-				final BigDecimal soCreditUsed = stats.getSOCreditUsed();
+				final BigDecimal soCreditUsed = stats.getSoCreditUsed();
 
 				if (soCreditUsed.signum() > 0)
 				{

@@ -24,15 +24,18 @@ package de.metas.common.rest_api.v2.attachment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Builder
-@JsonDeserialize(builder =  JsonAttachmentRequest.JsonAttachmentRequestBuilder.class)
+@JsonDeserialize(builder = JsonAttachmentRequest.JsonAttachmentRequestBuilder.class)
 public class JsonAttachmentRequest
 {
 	@NonNull
@@ -46,4 +49,27 @@ public class JsonAttachmentRequest
 	@NonNull
 	@JsonProperty("attachment")
 	JsonAttachment attachment;
+
+	@NonNull
+	@JsonProperty("references")
+	List<JsonTableRecordReference> references;
+
+	@Builder
+	public JsonAttachmentRequest(
+			@NonNull @JsonProperty("orgCode") final String orgCode,
+			@NonNull @JsonProperty("attachment") final JsonAttachment attachment,
+			@Nullable @JsonProperty("targets") final List<JsonExternalReferenceTarget> targets,
+			@Nullable @JsonProperty("references") @Singular final List<JsonTableRecordReference> references)
+	{
+		if (targets == null && references == null)
+		{
+			throw new RuntimeException("targets and references cannot be null at the same time. At least one must be provided!");
+		}
+
+		this.orgCode = orgCode;
+		this.attachment = attachment;
+
+		this.targets = CoalesceUtil.coalesce(targets, ImmutableList.of());
+		this.references = CoalesceUtil.coalesce(references, ImmutableList.of());
+	}
 }

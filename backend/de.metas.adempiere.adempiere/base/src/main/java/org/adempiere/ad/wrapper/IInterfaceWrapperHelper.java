@@ -9,6 +9,7 @@ import org.compiere.util.Evaluatee;
 import javax.annotation.Nullable;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -129,6 +130,19 @@ public interface IInterfaceWrapperHelper
 	<T> T getDynAttribute(@NonNull final Object model, final String attributeName);
 
 	Object setDynAttribute(final Object model, final String attributeName, final Object value);
+
+	@Nullable
+	default <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		T value = getDynAttribute(model, attributeName);
+		if(value == null)
+		{
+			value = supplier.get();
+			setDynAttribute(model, attributeName, value);
+		}
+		return value;
+	}
+
 
 	<T extends PO> T getPO(final Object model, final boolean strict);
 

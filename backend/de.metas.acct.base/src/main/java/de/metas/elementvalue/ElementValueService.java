@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.acct.interceptor.C_ElementValue;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;

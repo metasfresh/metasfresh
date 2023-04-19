@@ -148,7 +148,7 @@ final class CreatePPOrderCostsCommand
 			final PPOrderCosts orderCosts,
 			final CostingMethod costingMethod)
 	{
-		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(costingMethod);
+		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByCostingMethod(ClientId.METASFRESH, costingMethod);
 		if (costElementIds.isEmpty())
 		{
 			return;
@@ -279,7 +279,7 @@ final class CreatePPOrderCostsCommand
 
 	private Stream<PPOrderCost> createPPOrderCostsAndStream(final PPOrderCostCandidate candidate)
 	{
-		final Set<CostElementId> costElementIds = costElementsRepo.getActiveCostElementIds();
+		final Set<CostElementId> costElementIds = costElementsRepo.getIdsByClientId(candidate.getCostSegment().getClientId());
 		if (costElementIds.isEmpty())
 		{
 			// shall not happen!

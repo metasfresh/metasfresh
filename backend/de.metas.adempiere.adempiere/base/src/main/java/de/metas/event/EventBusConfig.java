@@ -131,7 +131,7 @@ public final class EventBusConfig
 
 	public static boolean isMonitorIncomingEvents()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
+		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.monitoring.eventBus.enable", false);
 	}
 
 }

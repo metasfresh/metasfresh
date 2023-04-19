@@ -64,11 +64,9 @@ import java.util.stream.Stream;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
- * @author Teo Sarca, http://www.arhipac.ro
+ * @author Teo Sarca, <a href="http://www.arhipac.ro">...</a>
  * @author Cristi Pup, http://www.arhipac.ro
- * <li>BF [ 2854937 ] CRP calculate wrong DateFinishSchedule
- * https://sourceforge.net/tracker/?func=detail&atid=934929&aid=2854937&group_id=176962
- * @version 1.0, October 14th 2005
+ *         <li>BF [ 2854937 ] CRP calculate wrong DateFinishSchedule
  */
 public class CRPReasoner
 {
@@ -107,7 +105,7 @@ public class CRPReasoner
 	{
 		return resourceService.getResourceTypeByResourceId(resource.getResourceId()).isAvailable();
 	}
-
+	
 	/**
 	 * Get Next/Previous Available Date
 	 */

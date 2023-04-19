@@ -43,13 +43,12 @@ import java.util.Properties;
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	@Override
 	public IWorkPackageQueue getQueueForPackageProcessing(@NonNull final QueueProcessorDescriptor processor)
 	{
 		final QueueProcessorId queueProcessorId = processor.getQueueProcessorId();
-		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = queueProcessorDescriptorRepository.getPackageProcessorIdsForProcessor(queueProcessorId);
+		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = QueueProcessorDescriptorRepository.getInstance().getPackageProcessorIdsForProcessor(queueProcessorId);
 
 		final String priorityFrom = processor.getPriority();
 
@@ -84,7 +83,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 
 		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessor.getC_Queue_PackageProcessor_ID());
 
-		final QueueProcessorId queueProcessorId = queueProcessorDescriptorRepository.getQueueProcessorForPackageProcessor(packageProcessorId);
+		final QueueProcessorId queueProcessorId = QueueProcessorDescriptorRepository.getInstance().getQueueProcessorForPackageProcessor(packageProcessorId);
 
 		return WorkPackageQueue.createForEnqueuing(
 				ctx,

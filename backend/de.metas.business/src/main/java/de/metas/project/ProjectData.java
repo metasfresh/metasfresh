@@ -81,6 +81,9 @@ public class ProjectData
 	@Nullable
 	ProjectCategory projectCategory;
 
+	@NonNull
+	RequestStatusCategoryId requestStatusCategoryId;
+
 	@Nullable
 	RStatusId projectStatusId;
 

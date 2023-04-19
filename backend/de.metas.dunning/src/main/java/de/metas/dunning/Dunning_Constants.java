@@ -23,23 +23,14 @@ package de.metas.dunning;
  */
 
 /**
- *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class Dunning_Constants
 {
-	private Dunning_Constants()
-	{
-
-	}
-
-	public static final String ENTITY_TYPE = "de.metas.dunning";
+	private Dunning_Constants() {}
 
 	/**
 	 * Internal Name for dunning docs async batch
 	 */
 	public static final String C_Async_Batch_InternalName_DunningDoc = "DunningDoc";
-
-	public static final String DocBaseType_Dunnig = "DUN";
 }

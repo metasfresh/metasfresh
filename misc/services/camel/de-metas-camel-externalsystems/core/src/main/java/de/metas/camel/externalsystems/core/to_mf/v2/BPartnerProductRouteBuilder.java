@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.v2.BPProductCamelRequest;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -65,7 +64,6 @@ public class BPartnerProductRouteBuilder extends RouteBuilder
 					exchange.getIn().setHeader(HEADER_BPARTNER_IDENTIFIER, ((BPProductCamelRequest)lookupRequest).getBPartnerIdentifier());
 				})
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{metasfresh.upsert-bpartner-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}/${header." + HEADER_BPARTNER_IDENTIFIER + "}/products")
 

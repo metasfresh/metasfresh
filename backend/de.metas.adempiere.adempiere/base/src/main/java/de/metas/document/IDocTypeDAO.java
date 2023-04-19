@@ -22,30 +22,40 @@ package de.metas.document;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.compiere.model.I_C_DocType;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.GLCategoryId;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.compiere.model.I_C_DocType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IDocTypeDAO extends ISingletonService
 {
+	@NonNull
 	I_C_DocType getById(int docTypeId);
 
-	I_C_DocType getById(DocTypeId docTypeId);
+	@NonNull
+	I_C_DocType getById(@NonNull DocTypeId docTypeId);
+
+	@NonNull
+	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
 	/**
 	 * @return C_DocType_ID or <code>null</code> if not found
 	 */
 	DocTypeId getDocTypeIdOrNull(final DocTypeQuery query);
+
+	@NonNull
+	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
 
 	DocTypeId getDocTypeId(DocTypeQuery query) throws DocTypeNotFoundException;
 
@@ -60,7 +70,6 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve all the doc types of a certain base type as a list
 	 *
-	 * @param query
 	 * @return a list of docTypes never <code>null</code>. Those with <code>IsDefault</code> and with <code>AD_Org_ID > 0</code> will be first in the list.
 	 */
 	List<I_C_DocType> retrieveDocTypesByBaseType(DocTypeQuery query);
@@ -68,34 +77,32 @@ public interface IDocTypeDAO extends ISingletonService
 	/**
 	 * Retrieve the Counter_DocBaseType that fits the given DocBaseType.
 	 */
-	Optional<String> getDocBaseTypeCounter(String docBaseType);
+	Optional<DocBaseType> getDocBaseTypeCounter(DocBaseType docBaseType);
 
 	DocTypeId createDocType(DocTypeCreateRequest request);
 
+	void save(@NonNull I_C_DocType dt);
+
 	@Value
 	@Builder
-	public static final class DocTypeCreateRequest
+	class DocTypeCreateRequest
 	{
-		@NonNull
-		final Properties ctx;
-		@Default
-		final int adOrgId = -1;
-		final String entityType;
-		@NonNull
-		final String name;
-		final String printName;
-		@NonNull
-		final String docBaseType;
-		final String docSubType;
-		final Boolean isSOTrx;
-		final int docTypeShipmentId;
-		final int docTypeInvoiceId;
-		final int glCategoryId;
+		@NonNull Properties ctx;
+		@Default int adOrgId = -1;
+		String entityType;
+		@NonNull String name;
+		String printName;
+		@NonNull DocBaseType docBaseType;
+		String docSubType;
+		Boolean isSOTrx;
+		int docTypeShipmentId;
+		int docTypeInvoiceId;
+		@NonNull GLCategoryId glCategoryId;
 
-		final int docNoSequenceId;
-		final int newDocNoSequenceStartNo;
+		int docNoSequenceId;
+		int newDocNoSequenceStartNo;
 
-		final int documentCopies;
+		int documentCopies;
 	}
 
 	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);

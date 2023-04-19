@@ -167,7 +167,7 @@ public class BudgetProjectJsonConverter
 
 		final CreateBudgetProjectRequest.CreateBudgetProjectRequestBuilder builder = CreateBudgetProjectRequest.builder()
 				.orgId(orgId)
-				.projectTypeId(projectTypeId)
+				.projectType(projectService.getProjectTypeById(projectTypeId))
 				.value(projectValue)
 				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())))
 				.name(projectName)
@@ -185,20 +185,20 @@ public class BudgetProjectJsonConverter
 		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
 		{
 			final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
-			if(projectIdentifier.isExternalId())
+			if (projectIdentifier.isExternalId())
 			{
 				builder.externalId(projectIdentifier.asExternalId());
 			}
 		}
-		if(Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
+		if (Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
 		{
 			final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
-			if(projectIdentifier.isValue())
+			if (projectIdentifier.isValue())
 			{
 				builder.value(projectIdentifier.asValue());
 			}
 		}
-		
+
 		return builder.build();
 	}
 
@@ -326,6 +326,6 @@ public class BudgetProjectJsonConverter
 					.setParameter("projectParentIdentifier", identifierString.getRawIdentifierString());
 		}
 		return CollectionUtils.singleElement(projectList).getProjectId();
-				
+
 	}
 }

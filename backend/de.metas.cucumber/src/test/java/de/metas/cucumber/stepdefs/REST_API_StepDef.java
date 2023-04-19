@@ -75,6 +75,7 @@ public class REST_API_StepDef
 				.statusCode(Integer.parseInt(statusCode))
 				.authToken(userAuthToken)
 				.payload(payload)
+				.additionalHeaders(testContext.getHttpHeaders())
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -133,6 +134,7 @@ public class REST_API_StepDef
 				.authToken(userAuthToken)
 				.payload(payload)
 				.statusCode(Integer.parseInt(statusCode))
+				.additionalHeaders(testContext.getHttpHeaders())
 				.build();
 
 		apiResponse = RESTUtil.performHTTPRequest(request);
@@ -270,14 +272,14 @@ public class REST_API_StepDef
 	@When("add HTTP header")
 	public void add_http_header(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
-
-		final String key = DataTableUtil.extractStringForColumnName(tableRow, "Key");
-		final String value = DataTableUtil.extractStringForColumnName(tableRow, "Value");
-
 		final Map<String, String> additionalHeaders = new HashMap<>();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String key = DataTableUtil.extractStringForColumnName(row, "Key");
+			final String value = DataTableUtil.extractStringForColumnName(row, "Value");
 
-		additionalHeaders.put(key, value);
+			additionalHeaders.put(key, value);
+		}
 
 		testContext.setHttpHeaders(additionalHeaders);
 	}

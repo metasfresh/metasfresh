@@ -64,7 +64,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
-	private static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.stepcom}}";
+	public static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.stepcom}}";
 
 	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.stepcom.remote";
 

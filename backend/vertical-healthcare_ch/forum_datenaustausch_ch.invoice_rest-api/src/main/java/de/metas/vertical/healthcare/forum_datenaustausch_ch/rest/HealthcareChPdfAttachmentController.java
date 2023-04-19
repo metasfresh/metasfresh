@@ -5,9 +5,9 @@ import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
@@ -54,7 +54,7 @@ import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/forum-datenaustausch.ch",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/forum-datenaustausch.ch" })
 @Conditional(RestApiStartupCondition.class)
-@Api(tags = { "forum-datenaustausch.ch XML endpoint" })
+@Tag(name = "forum-datenaustausch.ch XML endpoint")
 public class HealthcareChPdfAttachmentController
 {
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
@@ -66,13 +66,13 @@ public class HealthcareChPdfAttachmentController
 	}
 
 	@PostMapping("/attachedPdfFiles/{externalReference}")
-	@ApiOperation(value = "Attach a PDF document to order line candidates with the given externalOrderId. The attachment is tagged with\n"
+	@Operation(summary = "Attach a PDF document to order line candidates with the given externalOrderId. The attachment is tagged with\n"
 			+ TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF + "=true, so the PDF will eventually be appended to the invoice's PDF\n"
 			+ ATTACHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE + "=externalReference, so the base64-encoded PDF will eventually included in the invoice's forum-datenaustausch.ch-XML")
 	// TODO only allow PDF
 	public ResponseEntity<JsonAttachment> attachPdfFile(
 
-			@ApiParam(required = true, value = "Reference string that was returned by the invoice-rest-controller") //
+			@Parameter(required = true, description = "Reference string that was returned by the invoice-rest-controller") //
 			@PathVariable("externalReference") final String externalReference,
 
 			@RequestParam("file") @NonNull final MultipartFile file)

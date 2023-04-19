@@ -22,13 +22,12 @@ SELECT SUM(il.qtyEntered)                                                       
        il.priceactual,
        il.pricelist,
        ol.invoicableqtybasedon,
-       pp.UPC                                                                                                                        AS UPC_CU,
-       -- Deprecated: superseded by buyer_ean_cu
-       pp.EAN_CU,
-       p.value,
-       pp.productno                                                                                                                  AS CustomerProductNo,
-       SUBSTR(p.name, 1, 35)                                                                                                         AS name,
-       SUBSTR(p.name, 36, 70)                                                                                                        AS name2,
+       REGEXP_REPLACE(pp.UPC, '\s+$', '')                                        AS UPC_CU,
+       REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
+       REGEXP_REPLACE(p.value, '\s+$', '')                                       AS Value,
+       REGEXP_REPLACE(pp.productno, '\s+$', '')                                  AS CustomerProductNo,
+       SUBSTR(p.name, 1, 35)                                                     AS name,
+       SUBSTR(p.name, 36, 70)                                                    AS name2,
        t.rate,
        CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
            WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
@@ -50,22 +49,22 @@ SELECT SUM(il.qtyEntered)                                                       
            WHEN 'Leergut' THEN 'P'
                           ELSE ''
        END                                                                                                                           AS leergut,
-       COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''), p.name)::character varying AS productdescription,
+       COALESCE(NULLIF(pp.productdescription, ''), NULLIF(pp.description, ''), NULLIF(p.description, ''),
+                p.name)::character varying                                       AS productdescription,
        COALESCE(ol.line, il.line)                                                                                                    AS orderline,
        COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40)                                                     AS orderporeference,
        il.c_orderline_id,
-       SUM(il.taxamtinfo)                                                                                                            AS taxamtinfo,
-       -- Deprecated: superseded by buyer_gtin_tu
-       pip.GTIN,
-       pip.EAN_TU,
-       pip.UPC                                                                                                                       AS UPC_TU,
-       il.QtyEnteredInBPartnerUOM                                                                                                    AS qtyEnteredInBPartnerUOM,
-       il.C_UOM_BPartner_ID                                                                                                          AS C_UOM_BPartner_ID,
-       ol.externalseqno                                                                                                              AS externalSeqNo,
-       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                                                                        AS Buyer_GTIN_TU,
-       REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text)                                                                         AS Buyer_GTIN_CU,
-       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                                                                       AS Buyer_EAN_CU,
-       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                                                                          AS Supplier_GTIN_CU
+       SUM(il.taxamtinfo)                                                        AS taxamtinfo,
+       REGEXP_REPLACE(pip.GTIN, '\s+$', '')                                      AS GTIN, -- Deprecated: superseded by buyer_gtin_tu
+       REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')                                    AS EAN_TU,
+       REGEXP_REPLACE(pip.UPC, '\s+$', '')                                       AS UPC_TU,
+       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
+       REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text)                     AS Buyer_GTIN_CU,
+       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                   AS Buyer_EAN_CU,
+       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
+       il.QtyEnteredInBPartnerUOM                                                as qtyEnteredInBPartnerUOM,
+       il.C_UOM_BPartner_ID                                                      as C_UOM_BPartner_ID,
+       ol.externalseqno                                                          as externalSeqNo
 FROM c_invoiceline il
          LEFT JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id AND ol.isactive = 'Y'
          LEFT JOIN M_HU_PI_Item_Product pip ON ol.M_HU_PI_Item_Product_ID = pip.M_HU_PI_Item_Product_ID
@@ -123,11 +122,9 @@ GROUP BY il.c_invoice_id,
          (COALESCE(NULLIF(o.poreference, ''), i.poreference)),
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,
-         pip.UPC, pip.GTIN, pip.EAN_TU,
-         pp.GTIN, p.GTIN,
+         pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
          il.QtyEnteredInBPartnerUOM, il.C_UOM_BPartner_ID, ol.externalseqno
-ORDER BY COALESCE(ol.line, il.line)
-;
+ORDER BY COALESCE(ol.line, il.line);
 
 COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.

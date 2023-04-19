@@ -140,6 +140,27 @@ public interface I_M_Picking_Config_V2
 	String COLUMNNAME_IsPickingReviewRequired = "IsPickingReviewRequired";
 
 	/**
+	 * Set Reserve HUs On Picking Job Start.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReserveHUsOnPickingJobStart (boolean IsReserveHUsOnPickingJobStart);
+
+	/**
+	 * Get Reserve HUs On Picking Job Start.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReserveHUsOnPickingJobStart();
+
+	ModelColumn<I_M_Picking_Config_V2, Object> COLUMN_IsReserveHUsOnPickingJobStart = new ModelColumn<>(I_M_Picking_Config_V2.class, "IsReserveHUsOnPickingJobStart", null);
+	String COLUMNNAME_IsReserveHUsOnPickingJobStart = "IsReserveHUsOnPickingJobStart";
+
+	/**
 	 * Set Picking configuration (V2).
 	 *
 	 * <br>Type: ID
