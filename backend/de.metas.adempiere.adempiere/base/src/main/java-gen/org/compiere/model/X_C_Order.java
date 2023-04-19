@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1272209807L;
+	private static final long serialVersionUID = 1192039455L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -617,6 +617,33 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Payment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentInstruction getC_PaymentInstruction()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class);
+	}
+
+	@Override
+	public void setC_PaymentInstruction(final org.compiere.model.I_C_PaymentInstruction C_PaymentInstruction)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentInstruction_ID, org.compiere.model.I_C_PaymentInstruction.class, C_PaymentInstruction);
+	}
+
+	@Override
+	public void setC_PaymentInstruction_ID (final int C_PaymentInstruction_ID)
+	{
+		if (C_PaymentInstruction_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentInstruction_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentInstruction_ID, C_PaymentInstruction_ID);
+	}
+
+	@Override
+	public int getC_PaymentInstruction_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentInstruction_ID);
 	}
 
 	@Override
@@ -1244,7 +1271,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
-	/** 
+	@Override
+	public void setInvoiceAdditionalText (final @Nullable java.lang.String InvoiceAdditionalText)
+	{
+		set_Value (COLUMNNAME_InvoiceAdditionalText, InvoiceAdditionalText);
+	}
+
+	@Override
+	public java.lang.String getInvoiceAdditionalText() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
+	}
+
+	@Override
+	public void setIsNotShowOriginCountry (final boolean IsNotShowOriginCountry)
+	{
+		set_Value (COLUMNNAME_IsNotShowOriginCountry, IsNotShowOriginCountry);
+	}
+
+	@Override
+	public boolean isNotShowOriginCountry()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
+	}
+	/**
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1365,6 +1415,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isInvoiced() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiced);
+	}
+
+	@Override
+	public void setIsOnConsignment (final boolean IsOnConsignment)
+	{
+		set_Value (COLUMNNAME_IsOnConsignment, IsOnConsignment);
+	}
+
+	@Override
+	public boolean isOnConsignment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOnConsignment);
 	}
 
 	@Override
@@ -1596,6 +1658,33 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1) 
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@Override

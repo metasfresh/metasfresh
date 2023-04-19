@@ -28,6 +28,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -43,7 +44,6 @@ import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
@@ -229,12 +229,13 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * IMPORTANT: as of now we suppose this to be the only way of creating ilas! Please don't create them yourself somewhere in the code.
 	 *
-	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
+
+	void handleVoidingForInvoice(@NonNull org.compiere.model.I_C_Invoice invoice);
 
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
@@ -357,6 +358,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
+	void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
 	/**
 	 * Iterate the candidates to close and close them one by one.
 	 */
@@ -424,4 +429,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
 	 */
 	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
+
+	void computeIsInEffect(DocStatus status, I_C_Invoice_Candidate invoiceCandidate);
 }

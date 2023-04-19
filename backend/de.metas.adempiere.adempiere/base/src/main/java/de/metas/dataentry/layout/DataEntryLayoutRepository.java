@@ -1,24 +1,6 @@
 package de.metas.dataentry.layout;
 
-import static de.metas.util.Check.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Tab;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
@@ -26,7 +8,6 @@ import de.metas.dataentry.DataEntrySectionId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.FieldType;
-import de.metas.dataentry.layout.DataEntryLine.DataEntryLineBuilder;
 import de.metas.dataentry.layout.DataEntrySection.DataEntrySectionBuilder;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_Field;
@@ -41,6 +22,22 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Tab;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.util.Check.fail;
 
 /*
  * #%L
@@ -250,7 +247,7 @@ public class DataEntryLayoutRepository
 	{
 		final ImmutableList<I_DataEntry_Field> fieldRecords = retrieveFieldRecords(lineRecord);
 
-		final DataEntryLineBuilder line = DataEntryLine.builder()
+		final DataEntryLine.DataEntryLineBuilder line = DataEntryLine.builder()
 				.seqNo(lineRecord.getSeqNo());
 
 		for (final I_DataEntry_Field fieldRecord : fieldRecords)

@@ -1,19 +1,11 @@
 package de.metas.handlingunits.model.validator;
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHU;
@@ -21,22 +13,33 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Interceptor(I_M_HU.class)
+@Component
 public class M_HU
 {
-	public static final M_HU INSTANCE = new M_HU();
-
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	private M_HU()
+	private final HUUniqueAttributesService huUniqueAttributesService;
+
+
+	public M_HU(@NonNull final HUUniqueAttributesService huUniqueAttributesService)
 	{
+		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 
 	/**
 	 * Checks if HU is valid.
-	 *
-	 * @param hu
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_HU hu)
@@ -50,7 +53,7 @@ public class M_HU
 			if (!handlingUnitsBL.isTopLevel(hu))
 			{
 				throw new HUException("Loading units shall always be top level"
-						+ "\n@M_HU_ID@: " + hu.getValue() + " (ID=" + hu.getM_HU_ID() + ")");
+											  + "\n@M_HU_ID@: " + hu.getValue() + " (ID=" + hu.getM_HU_ID() + ")");
 			}
 		}
 
@@ -61,8 +64,8 @@ public class M_HU
 			if (trxName == null || trxName.startsWith("POSave"))
 			{
 				final HUException ex = new HUException("Changing HUs out of transaction is not allowed"
-						+ "\n HU: " + hu
-						+ "\n trxName: " + trxName);
+															   + "\n HU: " + hu
+															   + "\n trxName: " + trxName);
 				if (Services.get(IDeveloperModeBL.class).isEnabled())
 				{
 					throw ex;
@@ -83,6 +86,22 @@ public class M_HU
 		huStatusBL.assertStatusChangeIsAllowed(hu, oldHu.getHUStatus(), hu.getHUStatus());
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_HUStatus)
+	public void handleHUUniqueAttributes(@NonNull final I_M_HU hu)
+	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
+		{
+			huUniqueAttributesService.validateHU(huId);
+			huUniqueAttributesService.createOrUpdateHUUniqueAttribute(huId);
+		}
+		else
+		{
+			huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(huId);
+		}
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID)
 	public void validateLocatorChange(@NonNull final I_M_HU hu)
 	{
@@ -92,10 +111,8 @@ public class M_HU
 
 	/**
 	 * Updates the status, locator BP and BPL for child handling units.
-	 *
+	 * <p>
 	 * Note that this method only updates the direct children, but that will cause it to be called again and so on.
-	 *
-	 * @param hu
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
 			I_M_HU.COLUMNNAME_HUStatus,

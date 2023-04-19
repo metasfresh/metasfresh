@@ -34,7 +34,7 @@ import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -55,102 +55,92 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.SHIPPER_IDENTIFIER
 public class JsonOLCandCreateRequest
 {
 	// note that "position" is currently not supported; see https://github.com/springfox/springfox/issues/3391#issuecomment-700009836
-	@ApiModelProperty(position = 10)
+	@Schema
 	String orgCode;
 
-	@ApiModelProperty(position = 20, required = true, //
-			value = "This translates to 'C_OLCand.externalLineId'.\n"
+	@Schema(required = true,
+			description = "This translates to 'C_OLCand.externalLineId'.\n"
 					+ "'externalLineId' and 'dataSource' together need to be unique.")
 	String externalLineId;
 
-	@ApiModelProperty(position = 30, required = true, //
-			value = "This translates to 'C_OLCand.externalHeaderId'.\n"
+	@Schema(required = true,
+			description = "This translates to 'C_OLCand.externalHeaderId'.\n"
 					+ " 'externalHeaderId'  and 'dataSource' together denote the unique group of olCands that were added in one bulk.")
 	String externalHeaderId;
 
-	@ApiModelProperty(position = 40, required = true, //
-			value = "Identifier of the `AD_InputDataSource` record that tells where this OLCand came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
+	@Schema(required = true,
+			description = "Identifier of the `AD_InputDataSource` record that tells where this OLCand came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataSource;
 
-	@ApiModelProperty(position = 50, required = true, //
-			value = "Identifier of the `AD_InputDataSource` record that tells what shall be happen with this OLCand.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
+	@Schema(required = true,
+			description = "Identifier of the `AD_InputDataSource` record that tells what shall be happen with this OLCand.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataDest;
 
-	@ApiModelProperty(position = 60, //
-			value = " This translates to `C_OLCand.C_BPartner_ID`, `C_OLCand.C_BPartner_Location_ID` and `C_OLCand.AD_User_ID`.\n"
+	@Schema(description = " This translates to `C_OLCand.C_BPartner_ID`, `C_OLCand.C_BPartner_Location_ID` and `C_OLCand.AD_User_ID`.\n"
 					+ "It's the business partner that places/placed the order which this candidate is about.\n"
 					+ "\n"
 					+ "Note that the given partner's *location* can also be left empty, if the partner can be found in metasfresh and has an address there.\n"
 					+ "If there are multiple addresses, the default shipTo address is preferred.")
 	JsonRequestBPartnerLocationAndContact bpartner;
 
-	@ApiModelProperty(position = 70, // //
-			value = " This translates to `C_OLCand.Bill_BPartner_ID`.\n"
+	@Schema(description = " This translates to `C_OLCand.Bill_BPartner_ID`.\n"
 					+ "It's the business partner that shall receive the invoice.\n"
 					+ "Optional; if empty, then `bpartner` will receive the invoice.")
 	@JsonInclude(Include.NON_NULL)
 	JsonRequestBPartnerLocationAndContact billBPartner;
 
-	@ApiModelProperty(position = 80, //
-			value = " This translates to `C_OLCand.Dropship_BPartner_ID`.\n"
+	@Schema(description = " This translates to `C_OLCand.Dropship_BPartner_ID`.\n"
 					+ "It's the business partner that shall receive the shipment.\n"
 					+ "Optional; if empty, then `bpartner` will receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
 	JsonRequestBPartnerLocationAndContact dropShipBPartner;
 
-	@ApiModelProperty(position = 90, //
-			value = " This translates to `C_OLCand.HandOver_BPartner_ID`.\n"
+	@Schema(description = " This translates to `C_OLCand.HandOver_BPartner_ID`.\n"
 					+ "It's an intermediate partner that shall receive the shipment and forward it to the eventual recipient.\n"
 					+ "Optional; if empty, then `dropShipBPartner` or `bpartner` will directly receive the shipment.")
 	@JsonInclude(Include.NON_NULL)
 	JsonRequestBPartnerLocationAndContact handOverBPartner;
 
-	@ApiModelProperty(position = 100, //
-			value = "This translates to `C_OLCand.DateOrdered`.")
+	@Schema(description = "This translates to `C_OLCand.DateOrdered`.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate dateOrdered;
 
-	@ApiModelProperty(position = 110, //
-			value = "This translates to `C_OLCand.datePromised`.\n"
+	@Schema(description = "This translates to `C_OLCand.datePromised`.\n"
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
 					+ "Note: may be empty, if `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateRequired;
 
-	@ApiModelProperty(position = 120, //
-			value = "This translates to `C_OLCand.dateCandidate`.\n")
+	@Schema(description = "This translates to `C_OLCand.dateCandidate`.\n")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateCandidate;
 
-	@ApiModelProperty(position = 130)
+	@Schema
 	int flatrateConditionsId;
 
-	@ApiModelProperty(position = 140, required = true, value = PRODUCT_IDENTIFIER_DOC)
+	@Schema(required = true, description = PRODUCT_IDENTIFIER_DOC)
 	String productIdentifier;
 
-	@ApiModelProperty(position = 150)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	String productDescription;
 
-	@ApiModelProperty(position = 160, required = true)
+	@Schema(required = true)
 	BigDecimal qty;
 
-	@ApiModelProperty(position = 170, //
-			value = "This translates to `C_UOM.X12DE355`.\n"
+	@Schema(description = "This translates to `C_UOM.X12DE355`.\n"
 					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_OLCand.C_UOM_ID`.\n"
 					+ "If not provided here, then the respective product's UOM is used instead.\n"
 					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
 	@JsonInclude(Include.NON_NULL)
 	String uomCode;
 
-	@ApiModelProperty(position = 180, //
-			value = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`.")
+	@Schema(description = "This translates to `C_OLCand.M_HU_PI_Item_Product_ID`.")
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId packingMaterialId;
 
-	@ApiModelProperty(position = 190, //
-			value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
+	@Schema(description = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
 			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
 			+ "Also note that:\n"
 			+ "- you should avoid white-spaces in the value string"
@@ -159,36 +149,30 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String pricingSystemCode;
 
-	@ApiModelProperty(position = 200, //
-			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.\n"
+	@Schema(description = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.\n"
 					+ "If the price has too many digits, it is rounded according to the price list's price precision.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal price;
 
-	@ApiModelProperty(position = 210, //
-			value = "If a (manual) `price` is provided, then also a currencyCode needs be given.")
+	@Schema(description = "If a (manual) `price` is provided, then also a currencyCode needs be given.")
 	@JsonInclude(Include.NON_NULL)
 	String currencyCode; // shall come from pricingSystem/priceList
 
-	@ApiModelProperty(position = 220, //
-			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) discount.")
+	@Schema(description = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) discount.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal discount;
 
-	@ApiModelProperty(position = 230, required = true, //
-			value = "External reference (document number) on a remote system. Not necessarily unique, but but the external user will want to filter records using it")
+	@Schema(required = true,
+			description = "External reference (document number) on a remote system. Not necessarily unique, but but the external user will want to filter records using it")
 	String poReference;
 
-	@ApiModelProperty(position = 240,  //
-			value = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
+	@Schema(description = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
 	String warehouseCode;
 
-	@ApiModelProperty(position = 250,  //
-			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
+	@Schema(description = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	String warehouseDestCode;
 
-	@ApiModelProperty(position = 260,  //
-			value = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
+	@Schema(description = "Can be set if the invoice's document type is already known from the external system and shall be forwarded to the invoice candidate.\\n\""
 					+ "This works only if not an order line but an invoice candidate is directly created for the respective order line candidate.\n"
 					+ "Therefore, please make sure to have `dataDestInternalName='DEST.de.metas.invoicecandidate'`.\n"
 					+ "Otherwise, this property will be ignored\n"
@@ -198,102 +182,103 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonDocTypeInfo invoiceDocType;
 
-	@ApiModelProperty(position = 270, //
-			value = "Can be set if the invoice's document date is already known from the external system. ")
+	@Schema(description = "Can be set if the invoice's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate presetDateInvoiced;
 
-	@ApiModelProperty(position = 280, //
-			value = "Can be set if the shipment's document date is already known from the external system. ")
+	@Schema(description = "Can be set if the shipment's document date is already known from the external system. ")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	LocalDate presetDateShipped;
 
-	@ApiModelProperty(position = 290, value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
+	@Schema(description = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
 	JsonOrderDocType orderDocType;
 
-	@ApiModelProperty(position = 300, value = "Specifies the payment rule that will propagate to the created order")
+	@Schema(description = "Specifies the payment rule that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
 
-	@ApiModelProperty(position = 310, value = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
+	@Schema(description = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
 	@JsonInclude(Include.NON_NULL)
 	JsonSalesPartner salesPartner;
 
-	@ApiModelProperty(position = 320, value = "Specifies the value for the shipper that will propagate to the created order. \n " + SHIPPER_IDENTIFIER_DOC)
+	@Schema(description = "Specifies the value for the shipper that will propagate to the created order. \n " + SHIPPER_IDENTIFIER_DOC)
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
 
-	@ApiModelProperty(position = 330, value = "Specifies the value or the externalId of the payment term that will propagate to the created order")
+	@Schema(description = "Specifies the value or the externalId of the payment term that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String paymentTerm;
 
-	@ApiModelProperty(position = 340)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	Integer line;
 
-	@ApiModelProperty(position = 350)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	String description;
 
-	@ApiModelProperty(position = 360)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	JsonOrderLineGroup orderLineGroup;
 
-	@ApiModelProperty(position = 370, value = "Translates to C_OLCand.isManualPrice ")
+	@Schema(description = "Translates to C_OLCand.isManualPrice ")
 	@JsonInclude(Include.NON_NULL)
 	Boolean isManualPrice;
 
-	@ApiModelProperty(position = 380, value = "Translates to C_OLCand.isImportedWithIssues")
+	@Schema(description = "Translates to C_OLCand.isImportedWithIssues")
 	@JsonInclude(Include.NON_NULL)
 	Boolean isImportedWithIssues;
 
-	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryViaRule")
+	@Schema(description = "Translates to C_OLCand.DeliveryViaRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryViaRule;
 
-	@ApiModelProperty(position = 400, value = "Translates to C_OLCand.DeliveryViaRule")
+	@Schema(description = "Translates to C_OLCand.DeliveryViaRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryRule;
 
-	@ApiModelProperty(position = 410, value = "Translates to C_OLCand.importWarningMessage")
+	@Schema(description = "Translates to C_OLCand.importWarningMessage")
 	@JsonInclude(Include.NON_NULL)
 	String importWarningMessage;
 
-	@ApiModelProperty(position = 420, value = "Translates to C_OLCand.qtyShipped")
+	@Schema(description = "Translates to C_OLCand.qtyShipped")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyShipped;
 
-	@ApiModelProperty(position = 430, //
-			value = "Translates to C_OLCand.qtyItemCapacity")
+	@Schema(description = "Translates to C_OLCand.C_Project_ID")
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId projectId;
+
+	@Schema(description = "Translates to C_OLCand.qtyItemCapacity")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
-	@ApiModelProperty(position = 440, //
-			value = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
+	@Schema(description = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
-	@ApiModelProperty(position = 450, //
-			value = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
+	@Schema(description = "Translates to `C_OLCand.BPartnerName`. If omitted, it will fallback to `C_BPartner_Location.BPartnerName` of the referenced shipping location, i.e. `bpartner.bPartnerLocationIdentifier`")
 	@JsonInclude(Include.NON_NULL)
 	String bpartnerName;
 
-	@ApiModelProperty(position = 460, //
-			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
+	@Schema(description = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Email` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String email;
 
-	@ApiModelProperty(position = 470, //
-			value = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Phone` of the referenced shipping location`")
+	@Schema(description = "Translates to `C_OLCand.Email`. If omitted, metasfresh will fallback to `C_BPartner_Location.Phone` of the referenced shipping location`")
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@ApiModelProperty(position = 480)
+	@Schema
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
+
+	@Schema(description = "Translates to `M_SectionCode.Value`. The looked up sectionCode's ID is then set to `C_OLCand.M_SectionCode_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	String sectionCode;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -342,10 +327,12 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
 			@JsonProperty("qtyItemCapacity") final @Nullable BigDecimal qtyItemCapacity,
+			@JsonProperty("projectId") final @Nullable JsonMetasfreshId projectId,
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
-			@JsonProperty("phone") final @Nullable String phone)
+			@JsonProperty("phone") final @Nullable String phone,
+			@JsonProperty("sectionCode") final @Nullable String sectionCode)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -396,7 +383,9 @@ public class JsonOLCandCreateRequest
 		this.importWarningMessage = importWarningMessage;
 		this.qtyShipped = qtyShipped;
 		this.qtyItemCapacity = qtyItemCapacity;
+		this.projectId = projectId;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
+		this.sectionCode = sectionCode;
 	}
 
 	/**

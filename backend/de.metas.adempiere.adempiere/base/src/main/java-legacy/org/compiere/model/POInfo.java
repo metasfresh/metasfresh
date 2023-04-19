@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.cache.CCache;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
@@ -19,13 +20,14 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -83,9 +85,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	}
 
 	@Nullable
-	public static POInfo getPOInfo(final String tableName)
+	public static POInfo getPOInfo(@NonNull final String tableName)
 	{
 		return getPOInfoMap().getByTableNameOrNull(tableName);
+	}
+
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
+	{
+		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
+		if (poInfo == null)
+		{
+			throw new AdempiereException("No POInfo found for " + tableName);
+		}
+		return poInfo;
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
@@ -132,6 +145,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 			.additionalTableNameToResetFor(I_AD_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Element.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Ref_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Val_Rule.Table_Name)
 			.build();
 
@@ -142,7 +156,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final boolean m_isView;
 	private final ImmutableList<POInfoColumn> m_columns;
 	private final ImmutableMap<String, Integer> columnName2columnIndex;
-	private final ImmutableMap<Integer, Integer> adColumnId2columnIndex;
+	private final ImmutableMap<AdColumnId, Integer> adColumnId2columnIndex;
 	private final ImmutableList<String> m_keyColumnNames;
 	/**
 	 * Single Primary Key.
@@ -158,6 +172,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final boolean m_IsChangeLog;
 
 	private final boolean m_HasStaleableColumns;
+	@Getter private final int webuiViewPageLength;
 
 	private final String sqlWhereClauseByKeys;
 	private final String sqlSelectByKeys;
@@ -176,8 +191,13 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final StringBuilder sql = new StringBuilder();
-		sql.append("SELECT t.TableName, c.ColumnName,c.AD_Reference_ID,"        // 1..3
-				+ "c.IsMandatory,c.IsUpdateable,c.DefaultValue, "                // 4..6
+		sql.append("SELECT "
+				+ "t.TableName, " // 1
+				+ "c.ColumnName, " // 2
+				+ "c.AD_Reference_ID, "        // 3
+				+ "c.IsMandatory, " // 4
+				+ "c.IsUpdateable, " // 5
+				+ "c.DefaultValue, " // 6
 				+ "e.Name, "                                                    // 7
 				+ "e.Description, "                                                // 8
 				+ "c.AD_Column_ID, "                                            // 9
@@ -198,12 +218,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ",c." + I_AD_Column.COLUMNNAME_IsStaleable                    // 28 // metas: 01537
 				+ ",c." + I_AD_Column.COLUMNNAME_IsSelectionColumn                // 29 // metas
 				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
-				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn			  // 31
+				+ ",c." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn              // 31
+				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
+				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
+				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
+ 				+ ",c." + I_AD_Column.COLUMNNAME_AD_Sequence_ID
 		);
 		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
 				+ " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
-				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) ");
+				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) "
+				+ " LEFT OUTER JOIN AD_Ref_Table rt ON (rt.AD_Reference_ID=c.AD_Reference_Value_ID)"
+				+ " LEFT OUTER JOIN AD_Table rt_table on (rt_table.AD_Table_ID=rt.AD_Table_ID)"
+				+ " LEFT OUTER JOIN AD_Column rt_keyColumn on (rt_keyColumn.AD_Column_ID=rt.AD_Key)"
+		);
 		sql.append(" WHERE t.IsActive='Y' AND c.IsActive='Y'");
 		sql.append(" ORDER BY t.TableName, c.ColumnName");
 
@@ -288,6 +316,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		this.m_IsChangeLog = header.isChangeLog();
 		this.m_columns = ImmutableList.copyOf(columns);
 		this.m_HasStaleableColumns = hasStaleableColumns;
+		this.webuiViewPageLength = header.getWebuiViewPageLength();
 
 		//
 		// Iterate columns and build pre-calculated values and indexes
@@ -295,13 +324,13 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		// because role's addAccessSQL parsers are using POInfo for checking column availability,
 		// and ofc in SQL queries could be with ANY case...
 		final ImmutableSortedMap.Builder<String, Integer> columnName2columnIndexBuilder = ImmutableSortedMap.orderedBy(String.CASE_INSENSITIVE_ORDER);
-		final ImmutableMap.Builder<Integer, Integer> adColumnId2columnIndexBuilder = ImmutableMap.builder();
+		final ImmutableMap.Builder<AdColumnId, Integer> adColumnId2columnIndexBuilder = ImmutableMap.builder();
 		final List<String> translatedColumnNames = new ArrayList<>();
 		for (int columnIndex = 0, columnsCount = m_columns.size(); columnIndex < columnsCount; columnIndex++)
 		{
 			final POInfoColumn columnInfo = m_columns.get(columnIndex);
 			final String columnName = columnInfo.getColumnName();
-			final int adColumnId = columnInfo.getAD_Column_ID();
+			final AdColumnId adColumnId = columnInfo.getAD_Column_ID();
 
 			columnName2columnIndexBuilder.put(columnName, columnIndex);
 			adColumnId2columnIndexBuilder.put(adColumnId, columnIndex);
@@ -356,13 +385,27 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		//
+		// Correct IsLazyLoading,
+		// i.e. Always load effective Key columns (Key or Parent)
+		for (final POInfoColumn column : m_columns)
+		{
+			if (column.IsLazyLoading && m_keyColumnNames.contains(column.getColumnName()))
+			{
+				column.IsLazyLoading = false;
+				logger.info("Column {}.{} was marked as IsLazyLoading but effectively it is an key column, we we set IsLazyLoading=false.", this.m_TableName, column.getColumnName());
+			}
+		}
+
+		//
 		// Setup some pre-built SQLs which are frequently used
 		sqlSelectColumns = buildSqlSelectColumns();
 		sqlSelect = buildSqlSelect();
 		sqlWhereClauseByKeys = buildSqlWhereClauseByKeys();
 		sqlSelectByKeys = buildSqlSelectByKeys();
 
-		trlInfo = POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames);
+		trlInfo = !translatedColumnNames.isEmpty()
+				? POTrlRepository.instance.createPOTrlInfo(m_TableName, m_keyColumnName, translatedColumnNames)
+				: POTrlInfo.NOT_TRANSLATED;
 	}
 
 	private static POInfoHeader retrievePOInfoHeader(@NonNull final ResultSet rs) throws SQLException
@@ -373,6 +416,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.accessLevel(TableAccessLevel.forAccessLevel(rs.getString(I_AD_Table.COLUMNNAME_AccessLevel)))
 				.isView(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsView)))
 				.isChangeLog(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsChangeLog)))
+				.webuiViewPageLength(Math.max(rs.getInt(I_AD_Table.COLUMNNAME_WEBUI_View_PageLength), 0))
 				.build();
 	}
 
@@ -386,10 +430,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final String DefaultLogic = rs.getString(6);
 		final String Name = rs.getString(7);
 		final String Description = rs.getString(8);
-		final int AD_Column_ID = rs.getInt(9);
+		final AdColumnId AD_Column_ID = AdColumnId.ofRepoId(rs.getInt(9));
 		final boolean isKeyColumn = StringUtils.toBoolean(rs.getString(10));
 		final boolean isParentColumn = StringUtils.toBoolean(rs.getString(11));
-		final int AD_Reference_Value_ID = rs.getInt(12);
+		final ReferenceId AD_Reference_Value_ID = ReferenceId.ofRepoIdOrNull(rs.getInt(12));
+		final TableName AD_Reference_Value_TableName = TableName.ofNullableString(rs.getString("AD_Reference_Value_TableName"));
+		final int AD_Reference_Value_KeyColumn_DisplayType = rs.getInt("AD_Reference_Value_KeyColumn_DisplayType");
 		// String ValidationCode = rs.getString(13);
 		final int FieldLength = rs.getInt(14);
 		final String ValueMin = rs.getString(15);
@@ -401,14 +447,16 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean IsAllowLogging = StringUtils.toBoolean(rs.getString(21));
 		final boolean IsLazyLoading = StringUtils.toBoolean(rs.getString(23)); // metas
 		final boolean IsCalculated = StringUtils.toBoolean(rs.getString(24)); // metas
-		final int AD_Val_Rule_ID = rs.getInt(25); // metas
+		final AdValRuleId AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt(25)); // metas
 		final boolean isUseDocumentSequence = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsUseDocSequence)); // metas: 05133
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
 		final boolean isRestAPICustomColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRestAPICustomColumn));
+		final int adSequenceID = rs.getInt(I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 
 		final POInfoColumn col = new POInfoColumn(
-				AD_Column_ID, m_TableName, ColumnName, ColumnSQL, AD_Reference_ID,
+				AD_Column_ID,
+				m_TableName, ColumnName, ColumnSQL, AD_Reference_ID,
 				IsMandatory,
 				IsUpdateable,
 				DefaultLogic,
@@ -417,6 +465,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				isKeyColumn,
 				isParentColumn,
 				AD_Reference_Value_ID,
+				AD_Reference_Value_TableName,
+				AD_Reference_Value_KeyColumn_DisplayType,
 				AD_Val_Rule_ID,
 				FieldLength,
 				ValueMin,
@@ -424,7 +474,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				IsTranslated,
 				IsEncrypted,
 				IsAllowLogging,
-				isRestAPICustomColumn);
+				isRestAPICustomColumn,
+				adSequenceID);
 		col.IsLazyLoading = IsLazyLoading; // metas
 		col.IsCalculated = IsCalculated; // metas
 		col.IsUseDocumentSequence = isUseDocumentSequence; // metas: _05133
@@ -585,25 +636,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return -1;
 	}   // getColumnIndex
 
-	public int getColumnIndex(@NonNull final AdColumnId adColumnId)
-	{
-		return getColumnIndex(adColumnId.getRepoId());
-	}
-
 	/**
-	 * Get Column Index
-	 *
-	 * @param AD_Column_ID column
 	 * @return index of column with ColumnName or -1 if not found
 	 */
-	public int getColumnIndex(final int AD_Column_ID)
+	public int getColumnIndex(@NonNull final AdColumnId adColumnId)
 	{
-		if (AD_Column_ID <= 0)
-		{
-			return -1;
-		}
-
-		final Integer columnIndex = adColumnId2columnIndex.get(AD_Column_ID);
+		final Integer columnIndex = adColumnId2columnIndex.get(adColumnId);
 		if (columnIndex != null)
 		{
 			return columnIndex;
@@ -612,10 +650,10 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		//
 		// Fallback: for some reason column index was not found
 		// => iterate columns and try to get it
-		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", AD_Column_ID, this);
+		logger.warn("ColumnIndex was not found for AD_Column_ID={} on '{}'. Searching one by one.", adColumnId, this);
 		for (int i = 0; i < m_columns.size(); i++)
 		{
-			if (AD_Column_ID == m_columns.get(i).AD_Column_ID)
+			if (AdColumnId.equals(adColumnId, m_columns.get(i).AD_Column_ID))
 			{
 				return i;
 			}
@@ -626,12 +664,13 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	/**
 	 * @return AD_Column_ID if found, -1 if not found
 	 */
-	public int getAD_Column_ID(final String columnName)
+	@Nullable
+	public AdColumnId getAD_Column_ID(final String columnName)
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		if (columnIndex < 0)
 		{
-			return -1;
+			return null;
 		}
 
 		return m_columns.get(columnIndex).getAD_Column_ID();
@@ -797,7 +836,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		{
 			return DisplayType.String;
 		}
-		return m_columns.get(index).DisplayType;
+		return m_columns.get(index).getDisplayType();
 	}   // getColumnDisplayType
 
 	@Override
@@ -858,11 +897,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 * @param index index
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
-	public int getColumnReferenceValueId(final int index)
+	@Nullable
+	public ReferenceId getColumnReferenceValueId(final int index)
 	{
 		if (index < 0 || index >= m_columns.size())
 		{
-			return -1;
+			return null;
 		}
 		return m_columns.get(index).AD_Reference_Value_ID;
 	}
@@ -872,25 +912,11 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	 *
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
-	public int getColumnReferenceValueId(final String columnName)
+	@Nullable
+	public ReferenceId getColumnReferenceValueId(final String columnName)
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		return getColumnReferenceValueId(columnIndex);
-	}
-
-	public int getColumnValRuleId(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return getColumnValRuleId(columnIndex);
-	}
-
-	private int getColumnValRuleId(final int columnIndex)
-	{
-		if (columnIndex < 0 || columnIndex >= m_columns.size())
-		{
-			return -1;
-		}
-		return m_columns.get(columnIndex).getAD_Val_Rule_ID();
 	}
 
 	public boolean isColumnUpdateable(final int index)
@@ -909,39 +935,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return isColumnUpdateable(columnIndex);
 	}   // isUpdateable
 
-	/**
-	 * Set all columns updateable
-	 *
-	 * @param updateable updateable
-	 * @deprecated This method will be deleted in future because our {@link POInfo} has to be immutable.
-	 */
-	@Deprecated
-	public void setUpdateable(final boolean updateable)
-	{
-		for (final POInfoColumn m_column : m_columns)
-		{
-			m_column.IsUpdateable = updateable;
-		}
-	}    // setUpdateable
-
 	@Nullable
 	public String getReferencedTableNameOrNull(final String columnName)
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		final POInfoColumn poInfoColumn = m_columns.get(columnIndex);
 		return poInfoColumn.getReferencedTableNameOrNull();
-	}
-
-	@Nullable
-	public Lookup getColumnLookup(final Properties ctx, final int columnIndex)
-	{
-		return m_columns.get(columnIndex).getLookup(ctx, Env.WINDOW_None);
-	}
-
-	@Nullable
-	public Lookup getColumnLookup(final Properties ctx, final int windowNo, final int columnIndex)
-	{
-		return m_columns.get(columnIndex).getLookup(ctx, windowNo);
 	}
 
 	public boolean isKey(final int index)
@@ -1355,7 +1354,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final int columnIndex = getColumnIndex(columnName);
 		return isRestAPICustomColumn(columnIndex);
 	}
-
 	@NonNull
 	public Stream<POInfoColumn> streamColumns(@NonNull final Predicate<POInfoColumn> poInfoColumnPredicate)
 	{
@@ -1372,6 +1370,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		@NonNull TableAccessLevel accessLevel;
 		boolean isView;
 		boolean isChangeLog;
+		int webuiViewPageLength;
 	}
 
 	private static class POInfoMap

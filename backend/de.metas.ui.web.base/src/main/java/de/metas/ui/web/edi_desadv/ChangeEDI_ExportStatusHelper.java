@@ -23,6 +23,7 @@
 package de.metas.ui.web.edi_desadv;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
@@ -40,7 +41,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -52,7 +52,7 @@ import java.util.List;
 public class ChangeEDI_ExportStatusHelper
 {
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceDAO = ADReferenceService.get();
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
 

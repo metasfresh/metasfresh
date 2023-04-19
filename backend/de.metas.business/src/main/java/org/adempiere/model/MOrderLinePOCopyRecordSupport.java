@@ -1,18 +1,23 @@
 package org.adempiere.model;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.order.OrderFreightCostsService;
+import de.metas.order.OrderLineId;
+import de.metas.util.Check;
 import de.metas.util.collections.CompositePredicate;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -22,14 +27,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
+	private static final String DYNATTR_ClonedOrderLinesInfo = "ClonedOrderLinesInfo";
 
-	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final OrderLineDimensionFactory orderLineDimensionFactory = SpringContextHolder.instance.getBean(OrderLineDimensionFactory.class);
 
 	/**
 	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
 	 */
 	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<I_C_OrderLine>()
-			.addPredicate(orderLine -> isNotFreightCost(orderLine));
+			.addPredicate(MOrderLinePOCopyRecordSupport::isNotFreightCost);
 
 	private static boolean isNotFreightCost(final @NonNull I_C_OrderLine orderLine)
 	{
@@ -75,7 +81,6 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	{
 		final I_C_OrderLine toOrderLine = InterfaceWrapperHelper.create(to, I_C_OrderLine.class);
 		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
-
 		onOrderLineCopied(toOrderLine, fromOrderLine);
 	}
 
@@ -83,9 +88,33 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	{
 		toOrderLine.setC_Order_CompensationGroup_ID(getOrCloneOrderCompensationGroup(fromOrderLine.getC_Order_CompensationGroup_ID()));
 
-		final Dimension dimension = dimensionService.getFromRecord(fromOrderLine);
-		dimensionService.updateRecord(toOrderLine, dimension);
+		orderLineDimensionFactory.updateRecord(toOrderLine, orderLineDimensionFactory.getFromRecord(fromOrderLine));
 	}
+
+	@Override
+	protected void onRecordAndChildrenCopied(final PO to, final PO from)
+	{
+		final I_C_OrderLine toOrderLine = InterfaceWrapperHelper.create(to, I_C_OrderLine.class);
+		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
+		onRecordAndChildrenCopied(toOrderLine, fromOrderLine);
+	}
+
+	private void onRecordAndChildrenCopied(final I_C_OrderLine toOrderLine, final I_C_OrderLine fromOrderLine)
+	{
+		InterfaceWrapperHelper
+				.computeDynAttributeIfAbsent(getTargetOrder(), DYNATTR_ClonedOrderLinesInfo, ClonedOrderLinesInfo::new)
+				.addOriginalToClonedOrderLineMapping(
+						OrderLineId.ofRepoId(fromOrderLine.getC_OrderLine_ID()),
+						OrderLineId.ofRepoId(toOrderLine.getC_OrderLine_ID()));
+	}
+
+	@Nullable
+	public static ClonedOrderLinesInfo getClonedOrderLinesInfo(final org.compiere.model.I_C_Order targetOrder)
+	{
+		return InterfaceWrapperHelper.getDynAttribute(targetOrder, DYNATTR_ClonedOrderLinesInfo);
+	}
+
+	private I_C_Order getTargetOrder() {return Check.assumeNotNull(getParentModel(I_C_Order.class), "target order is not null");}
 
 	private int getOrCloneOrderCompensationGroup(final int orderCompensationGroupId)
 	{
@@ -94,7 +123,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 			return -1;
 		}
 
-		final I_C_Order toOrder = getParentModel(I_C_Order.class);
+		final I_C_Order toOrder = getTargetOrder();
 		Map<Integer, Integer> orderCompensationGroupIdsMap = InterfaceWrapperHelper.getDynAttribute(toOrder, DYNATTR_OrderCompensationGroupIdsMap);
 		if (orderCompensationGroupIdsMap == null)
 		{
@@ -116,5 +145,35 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		orderCompensationGroupNew.setPP_Product_BOM_ID(-1); // don't copy the Quotation BOM; another one has to be created
 		InterfaceWrapperHelper.save(orderCompensationGroupNew);
 		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
+	}
+
+	@Override
+	public List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po, final List<CopyRecordSupportTableInfo> suggestedChildren)
+	{
+		return ImmutableList.of();
+	}
+
+	//
+	//
+	//
+
+	static class ClonedOrderLinesInfo
+	{
+		private final HashMap<OrderLineId, OrderLineId> original2targetOrderLineIds = new HashMap<>();
+
+		public void addOriginalToClonedOrderLineMapping(@NonNull final OrderLineId originalOrderLineId, @NonNull final OrderLineId targetOrderLineId)
+		{
+			original2targetOrderLineIds.put(originalOrderLineId, targetOrderLineId);
+		}
+
+		public OrderLineId getTargetOrderLineId(@NonNull final OrderLineId originalOrderLineId)
+		{
+			final OrderLineId targetOrderLineId = original2targetOrderLineIds.get(originalOrderLineId);
+			if (targetOrderLineId == null)
+			{
+				throw new AdempiereException("No target order line found for " + originalOrderLineId);
+			}
+			return targetOrderLineId;
+		}
 	}
 }

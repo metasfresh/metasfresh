@@ -144,7 +144,7 @@ public class DocumentReportService
 		else
 		{
 			final org.compiere.model.I_AD_Archive lastArchiveRecord = archiveBL
-					.getLastArchive(requestEffective.getDocumentRef())
+					.getLastArchiveRecord(requestEffective.getDocumentRef())
 					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
 
 			final ArchiveResult lastArchive = ArchiveResult.builder()

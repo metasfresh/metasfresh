@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
-import de.pentabyte.springfox.ApiEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Value;
@@ -76,12 +76,16 @@ public class SyncAdvise
 		}
 	}
 
+	@Schema(enumAsRef = true, description = "IfExists: \n" +
+			"* `UPDATE_MERGE` - Insert/update data that is specified in this request entity, but leave *other* pre-existing data untouched\n" +
+			"* `UPDATE_REMOVE` - Insert/update data that is specified in this request entity, *and* unset or remove * other* pre-existing data\n" +
+			"* `DONT_UPDATE`\n" +
+			"")
+
 	public enum IfExists
 	{
-		@ApiEnum("Insert/update data that is specified in this request entity, but leave *other* pre-existing data untouched")
 		UPDATE_MERGE(true/* updateMerge */, false/* updateRemove */),
 
-		@ApiEnum("Insert/update data that is specified in this request entity, *and* unset or remove * other* pre-existing data")
 		UPDATE_REMOVE(false/* updateMerge */, true/* updateRemove */),
 
 		DONT_UPDATE(false/* updateMerge */, false/* updateRemove */);

@@ -1,11 +1,33 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.invalidation.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.ShipmentSchedulesUpdateSchedulerRequest;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
@@ -51,28 +73,6 @@ import java.util.UUID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleInvalidateRepository
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleInvalidateRepository.class);
@@ -80,6 +80,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	private static final String M_SHIPMENT_SCHEDULE_RECOMPUTE = "M_ShipmentSchedule_Recompute";
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 
 	/**
 	 * Invalidate by M_Product_ID
@@ -120,7 +121,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	{
 		final String chunkUUID = UUID.randomUUID().toString();
 		final String description = truncInvalidateDescription("" + productId);
-		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_BY_PRODUCT, new Object[] { description, chunkUUID, productId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} entries for productId={} ", count, productId);
 
 		if (count > 0)
@@ -136,7 +137,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final int clientId = Env.getAD_Client_ID(ctx);
 		final String chunkUUID = UUID.randomUUID().toString();
 
-		final int count = DB.executeUpdateEx(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(SQL_RECOMPUTE_ALL, new Object[] { chunkUUID, clientId }, trxName);
 		logger.debug("Invalidated {} entries for AD_Client_ID={}", count, clientId);
 
 		if (count > 0)
@@ -199,7 +200,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		sqlParams.addAll(headerAggregationKeysParams);
 		sqlParams.add(false); // Processed=false
 
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} shipment schedules for headerAggregationKeys={}", count, headerAggregationKeys);
 		//
 		if (count > 0)
@@ -234,7 +235,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				+ "   AND NOT EXISTS (select 1 from " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " e where e.AD_PInstance_ID is NULL and e.M_ShipmentSchedule_ID=" + I_M_ShipmentSchedule.Table_Name + "."
 				+ I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ")";
 
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} shipment schedules for M_ShipmentSchedule_IDs={}", count, shipmentScheduleIds);
 
 		if (count > 0)
@@ -255,7 +256,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				+ "\n WHERE " + I_M_ShipmentSchedule.COLUMNNAME_Processed + "='N'"
 				+ "\n AND EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID = ? AND s.T_Selection_ID = M_ShipmentSchedule_ID)";
 
-		final int count = DB.executeUpdateEx(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { description, chunkUUID, pinstanceId }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Invalidated {} M_ShipmentSchedules for AD_PInstance_ID={}", count, pinstanceId);
 		//
 		if (count > 0)
@@ -333,7 +334,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Execute
 		final String trxName = ITrx.TRXNAME_None;
-		final int count = DB.executeUpdateEx(sql, sqlParams.toArray(), trxName);
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), trxName);
 		logger.debug("Invalidated {} shipment schedules for segments={}", count, storageSegments);
 
 		//
@@ -556,7 +557,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
 		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
-				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
+				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() + " " +
 				" FROM (" +
 				"	SELECT s.M_ShipmentSchedule_ID " +
 				"	FROM M_ShipmentSchedule s " +
@@ -567,7 +568,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
 				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
 				;
-		final int countTagged = DB.executeUpdateEx(sqlUpdate, ITrx.TRXNAME_None);
+		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
 
@@ -578,7 +579,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		final Object[] param = { pinstanceId };
 		final Mutable<HashSet<Integer>> shipmentScheduleIds = new Mutable<>(new HashSet<>());
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				param,
 				ITrx.TRXNAME_None,
@@ -599,10 +600,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private void invalidateShipmentScheduleCache(@NonNull final Set<Integer> shipmentScheduleIds)
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	@Override
@@ -611,7 +610,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final Object[] sqlParams = new Object[] { pinstanceId };
 		final String sql = "UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " SET AD_PInstance_ID=NULL WHERE AD_PInstance_ID=?";
 
-		final int result = DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_None);
+		final int result = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_None);
 		logger.debug("Updated {} {} entries for AD_Pinstance_ID={} and released the marker.", result, M_SHIPMENT_SCHEDULE_RECOMPUTE, pinstanceId);
 	}
 
@@ -650,10 +649,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	private void invalidateCacheForAllShipmentSchedules()
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-
 		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	/**

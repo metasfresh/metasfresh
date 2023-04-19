@@ -43,6 +43,7 @@ import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTerm;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.uom.IUOMDAO;
@@ -201,7 +202,7 @@ public class InvokeShopwareService
 		final PaymentTermId paymentTermId = externalSystemShopware6ConfigMapping.getPaymentTermId();
 		if (paymentTermId != null)
 		{
-			final I_C_PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
+			final PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
 			builder.paymentTermValue(paymentTerm.getValue());
 
 		}

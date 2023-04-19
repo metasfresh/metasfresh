@@ -34,6 +34,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -50,6 +51,8 @@ public interface IOrderLineBL extends ISingletonService
 	String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
+
+	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -150,8 +153,7 @@ public interface IOrderLineBL extends ISingletonService
 	/**
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
 	 * Do <b>not</b> save the order line.
-	 *
-	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29">task</a>
 	 */
 	void updateQtyReserved(I_C_OrderLine ol);
 
@@ -178,12 +180,6 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	Quantity convertQtyEnteredToStockUOM(org.compiere.model.I_C_OrderLine orderLine);
 
-	/**
-	 * Is Tax Included in Amount. Calls {@link IOrderBL#isTaxIncluded(org.compiere.model.I_C_Order, org.compiere.model.I_C_Tax)} for the given <code>orderLine</code>'s <code>C_Tax</code> and
-	 * <code>C_Order</code>.
-	 *
-	 * @return true if tax calculated
-	 */
 	boolean isTaxIncluded(org.compiere.model.I_C_OrderLine orderLine);
 
 	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_OrderLine orderLine);
@@ -226,4 +222,6 @@ public interface IOrderLineBL extends ISingletonService
 	CurrencyPrecision extractPricePrecision(org.compiere.model.I_C_OrderLine olRecord);
 
 	void setBPLocation(I_C_OrderLine orderLine);
+
+	void updateIsOnConsignmentNoSave(@NonNull I_C_OrderLine orderLine);
 }

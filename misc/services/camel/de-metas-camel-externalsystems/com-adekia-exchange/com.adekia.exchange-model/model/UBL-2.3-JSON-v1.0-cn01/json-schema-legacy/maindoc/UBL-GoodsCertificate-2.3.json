@@ -1,0 +1,357 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "json-schema-legacy/maindoc/UBL-GoodsCertificate-2.3.json",
+  "description": "\n  Library:           OASIS Universal Business Language (UBL) 2.3 OS\n                     http://docs.oasis-open.org/ubl/os-UBL-2.3/\n  Release Date:      15 June 2021\n  Module:            json-schema-legacy/maindoc/UBL-GoodsCertificate-2.3.json\n  Generated on:      2021-12-15 21:56z\n  Copyright (c) OASIS Open 2021. All Rights Reserved.\n\n\n  OASIS takes no position regarding the validity or scope of any \n  intellectual property or other rights that might be claimed to pertain \n  to the implementation or use of the technology described in this \n  document or the extent to which any license under such rights \n  might or might not be available; neither does it represent that it has \n  made any effort to identify any such rights. Information on OASIS's \n  procedures with respect to rights in OASIS specifications can be \n  found at the OASIS website. Copies of claims of rights made \n  available for publication and any assurances of licenses to be made \n  available, or the result of an attempt made to obtain a general \n  license or permission for the use of such proprietary rights by \n  implementors or users of this specification, can be obtained from \n  the OASIS Executive Director.\n\n  OASIS invites any interested party to bring to its attention any \n  copyrights, patents or patent applications, or other proprietary \n  rights which may cover technology that may be required to \n  implement this specification. Please address the information to the \n  OASIS Executive Director.\n  \n  This document and translations of it may be copied and furnished to \n  others, and derivative works that comment on or otherwise explain \n  it or assist in its implementation may be prepared, copied, \n  published and distributed, in whole or in part, without restriction of \n  any kind, provided that the above copyright notice and this \n  paragraph are included on all such copies and derivative works. \n  However, this document itself may not be modified in any way, \n  such as by removing the copyright notice or references to OASIS, \n  except as needed for the purpose of developing OASIS \n  specifications, in which case the procedures for copyrights defined \n  in the OASIS Intellectual Property Rights document must be \n  followed, or as required to translate it into languages other than \n  English. \n\n  The limited permissions granted above are perpetual and will not be \n  revoked by OASIS or its successors or assigns. \n\n  This document and the information contained herein is provided on \n  an \"AS IS\" basis and OASIS DISCLAIMS ALL WARRANTIES, \n  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY \n  WARRANTY THAT THE USE OF THE INFORMATION HEREIN \n  WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED \n  WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A \n  PARTICULAR PURPOSE.    \n",
+  "required": [
+    "GoodsCertificate"
+    ],
+  "properties": {
+    "_D": {
+      "description": "Document ABIE XML namespace string",
+      "type": "string"
+      },
+    "_A": {
+      "description": "Library ABIE XML namespace string (for ASBIEs)",
+      "type": "string"
+      },
+    "_B": {
+      "description": "BBIE XML namespace string",
+      "type": "string"
+      },
+    "_E": {
+      "description": "Extension scaffolding XML namespace string",
+      "type": "string"
+      },
+    "GoodsCertificate": {
+      "description": "A document that describes a certificate of goods for importation and exportation",
+      "items": {
+        "$ref": "#/definitions/GoodsCertificate"
+        },
+      "maxItems": 1,
+      "minItems": 1,
+      "type": "array"
+      }
+    },
+  "additionalProperties": false,
+  "type": "object",
+  "definitions": {
+    "GoodsCertificate": {
+      "title": "Goods Certificate. Details",
+      "description": "A document that describes a certificate of goods for importation and exportation",
+      "required": [
+        "ID",
+        "IssuerParty",
+        "Shipment"
+        ],
+      "properties": {
+
+        "UBLExtensions": {
+          "title": "UBLExtensions",
+          "description": "An optional set of extensions to the committee model",
+          "items": { 
+            "$ref": "../common/UBL-CommonExtensionComponents-2.3.json#/definitions/UBLExtensions" },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+
+        "UBLVersionID": {
+          "title": "Goods Certificate. UBL Version Identifier. Identifier",
+          "description": "Identifies the earliest version of the UBL 2 schema for this document type that defines all of the elements that might be encountered in the current instance.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UBLVersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "CustomizationID": {
+          "title": "Goods Certificate. Customization Identifier. Identifier",
+          "description": "Identifies a user-defined customization of UBL for a specific use.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/CustomizationID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProfileID": {
+          "title": "Goods Certificate. Profile Identifier. Identifier",
+          "description": "Identifies a user-defined profile of the customization of UBL being used.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ProfileExecutionID": {
+          "title": "Goods Certificate. Profile Execution Identifier. Identifier",
+          "description": "Identifies an instance of executing a profile, to associate all transactions in a collaboration.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ProfileExecutionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ID": {
+          "title": "Goods Certificate. Identifier",
+          "description": "An identifier for this document, assigned by the sender.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/ID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "UUID": {
+          "title": "Goods Certificate. UUID. Identifier",
+          "description": "A universally unique identifier for an instance of this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/UUID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssueDate": {
+          "title": "Goods Certificate. Issue Date. Date",
+          "description": "The date, assigned by the sender, on which this document was issued.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueDate"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssueTime": {
+          "title": "Goods Certificate. Issue Time. Time",
+          "description": "The time, assigned by the sender, at which this document was issued.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/IssueTime"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "TypeCode": {
+          "title": "Goods Certificate. Type Code. Code",
+          "description": "A code specifying the type of goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/TypeCode"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "Description": {
+          "title": "Goods Certificate. Description. Text",
+          "description": "Textual description of this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Description"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Note": {
+          "title": "Goods Certificate. Note. Text",
+          "description": "Free-form text pertinent to this document, conveying information that is not contained explicitly in other structures.",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/Note"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "VersionID": {
+          "title": "Goods Certificate. Version. Identifier",
+          "description": "Identifies the current version of this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonBasicComponents-2.3.json#/definitions/VersionID"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ValidityPeriod": {
+          "title": "Goods Certificate. Validity_ Period. Period",
+          "description": "The period of time for which this goods certificate is considered valid",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ValidityPeriod"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ApplicableTerritoryAddress": {
+          "title": "Goods Certificate. Applicable Territory_ Address. Address",
+          "description": "A geographic area where this goods certificate is valid",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ApplicableTerritoryAddress"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ExporterParty": {
+          "title": "Goods Certificate. Exporter_ Party. Party",
+          "description": "The party who exports the goods or has similar right of disposal over them at the time of export",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ExporterParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ImporterParty": {
+          "title": "Goods Certificate. Importer_ Party. Party",
+          "description": "The party who imports the goods, or on whose behalf the goods are being import",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ImporterParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "WarehouseParty": {
+          "title": "Goods Certificate. Warehouse_ Party. Party",
+          "description": "The party who is responsible for storing the goods",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/WarehouseParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ConsignorParty": {
+          "title": "Goods Certificate. Consignor_ Party. Party",
+          "description": "The party, usually the seller, who is responsible for the consignment",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ConsignorParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ConsigneeParty": {
+          "title": "Goods Certificate. Consignee_ Party. Party",
+          "description": "The party, usually the buyer, who will receive the goods",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ConsigneeParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "FreightForwarderParty": {
+          "title": "Goods Certificate. Freight Forwarder_ Party. Party",
+          "description": "The freight forwarder or the forwarding agent responsible for the transportation of the goods",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/FreightForwarderParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "IssuerParty": {
+          "title": "Goods Certificate. Issuer_ Party. Party",
+          "description": "The party issuing this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/IssuerParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "LegalAuthorityParty": {
+          "title": "Goods Certificate. Legal Authority_ Party. Party",
+          "description": "The legal authority, when different from the issuer, who sanctions this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/LegalAuthorityParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "ApplicantParty": {
+          "title": "Goods Certificate. Applicant_ Party. Party",
+          "description": "The party applying for this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/ApplicantParty"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "Shipment": {
+          "title": "Goods Certificate. Shipment",
+          "description": "The shipment for which this goods certificate is issued",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Shipment"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "Attestation": {
+          "title": "Goods Certificate. Attestation",
+          "description": "Any attestations made for the goods related to this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Attestation"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "GoodsProcessing": {
+          "title": "Goods Certificate. Goods Processing",
+          "description": "Any processing that the goods have been undergoing",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/GoodsProcessing"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "OriginalDocumentReference": {
+          "title": "Goods Certificate. Original_ Document Reference. Document Reference",
+          "description": "A reference to the original version of the goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/OriginalDocumentReference"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "PreviousDocumentReference": {
+          "title": "Goods Certificate. Previous_ Document Reference. Document Reference",
+          "description": "A reference to the previous version of the goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/PreviousDocumentReference"
+            },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+          },
+        "AdditionalDocumentReference": {
+          "title": "Goods Certificate. Additional_ Document Reference. Document Reference",
+          "description": "A reference to an additional document associated with this goods certificate",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/AdditionalDocumentReference"
+            },
+          "minItems": 1,
+          "type": "array"
+          },
+        "Signature": {
+          "title": "Goods Certificate. Signature",
+          "description": "A signature applied to this document.",
+          "items": {
+            "$ref": "../common/UBL-CommonAggregateComponents-2.3.json#/definitions/Signature"
+            },
+          "minItems": 1,
+          "type": "array"
+          }
+        },
+      "additionalProperties": false,
+      "type": "object"
+      }
+    }
+  }

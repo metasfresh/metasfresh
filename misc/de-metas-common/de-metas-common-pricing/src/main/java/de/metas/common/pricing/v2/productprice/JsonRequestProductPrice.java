@@ -23,7 +23,7 @@
 package de.metas.common.pricing.v2.productprice;
 
 import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,47 +38,47 @@ import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRODUCT_I
 @EqualsAndHashCode
 public class JsonRequestProductPrice
 {
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	private String orgCode;
 
-	@ApiModelProperty(required = true, value = PRODUCT_IDENTIFIER)
+	@Schema(required = true, description = PRODUCT_IDENTIFIER)
 	private String productIdentifier;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	private TaxCategory taxCategory;
 
-	@ApiModelProperty(required = true)
+	@Schema(required = true)
 	private BigDecimal priceStd;
 
 	private BigDecimal priceLimit;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean priceLimitSet;
 
 	private BigDecimal priceList;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean priceListSet;
 
 	private Integer seqNo;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean seqNoSet;
 
 	private Boolean active;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean activeSet;
 
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean syncAdviseSet;
 
-	@ApiModelProperty
+	@Schema
 	private String uomCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean uomCodeSet;
 
 	public void setOrgCode(final String orgCode)

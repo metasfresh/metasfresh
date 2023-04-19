@@ -13,11 +13,11 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.ImmutablePair;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -121,6 +121,10 @@ public interface IAsyncBatchBL extends ISingletonService
 	Optional<String> getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch);
 
 	boolean isAsyncBatchTypeInternalName(@NonNull I_C_Async_Batch asyncBatch, @NonNull String expectedInternalName);
+
+	boolean isAsyncBatchForAutomaticallyInvoicePDFPrinting(@NonNull I_C_Async_Batch asyncBatch);
+
+	boolean isAsyncBatchForAutomaticallyDunningPDFPrinting(@NonNull I_C_Async_Batch asyncBatch);
 
 	Optional<AsyncBatchType> getAsyncBatchType(@NonNull I_C_Async_Batch asyncBatch);
 

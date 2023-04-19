@@ -29,12 +29,12 @@ properties([
                 booleanParam(defaultValue: true,
                         description: 'If true, and the backend is build, then don\'t run the cucumber tests.<br/>Note that the cucumber tests are run by the github Actions (docker-based) builds',
                         name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
-                
+
                 booleanParam(defaultValue: false,
                         description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
 
-                booleanParam(defaultValue: false,
+                booleanParam(defaultValue: true,
                         description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
 
@@ -116,7 +116,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
     withEnv(["MF_VERSION=${mfVersion}"]) {
                 // disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
-                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+                withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
 
                     nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
                     stage('Build parent-pom & commons') { // for display purposes
@@ -137,9 +137,9 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                             }
                     dir('backend') {
                                 def backendBuildFile = load('buildfile.groovy')
-                                backendBuildFile.build(mvnConf, 
-                                        scmVars, 
-                                        params.MF_FORCE_FULL_BUILD, 
+                                backendBuildFile.build(mvnConf,
+                                        scmVars,
+                                        params.MF_FORCE_FULL_BUILD,
                                         params.MF_FORCE_SKIP_BACKEND_BUILD,
                                         params.MF_FORCE_SKIP_CUCUMBER_BUILD)
                             }
@@ -149,7 +149,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                             miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_MOBILE_WEBUI_BUILD, params.MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD)
                         }
 
-                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+                withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
                             dir('e2e') {
                                         def e2eBuildFile = load('buildfile.groovy')
                                         e2eBuildFile.build(scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_CYPRESS_BUILD)

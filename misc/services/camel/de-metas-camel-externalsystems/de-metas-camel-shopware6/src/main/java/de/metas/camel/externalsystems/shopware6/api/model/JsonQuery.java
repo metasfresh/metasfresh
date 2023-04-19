@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -51,13 +51,13 @@ public class JsonQuery
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	QueryType queryType;
 
-	@ApiModelProperty("Depending on the query-type, you can have either a `value` or `parameters`.")
+	@Schema(description = "Depending on the query-type, you can have either a `value` or `parameters`.")
 	@Nullable
 	@JsonProperty("parameters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	Map<String, String> parameters;
 
-	@ApiModelProperty("Depending on the query-type, you can have either a `value` or `parameters`.")
+	@Schema(description = "Depending on the query-type, you can have either a `value` or `parameters`.")
 	@Nullable
 	@JsonProperty("value")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

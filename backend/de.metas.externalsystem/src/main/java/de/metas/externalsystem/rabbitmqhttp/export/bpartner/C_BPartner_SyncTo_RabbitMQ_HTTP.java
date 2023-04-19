@@ -25,11 +25,13 @@ package de.metas.externalsystem.rabbitmqhttp.export.bpartner;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
 import de.metas.externalsystem.export.bpartner.C_BPartner_SyncTo_ExternalSystem;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.rabbitmqhttp.ExportBPartnerToRabbitMQService;
+import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPreconditionsContext;
@@ -75,6 +77,14 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends C_BPartner_SyncTo_ExternalS
 	protected ExportToExternalSystemService getExportToBPartnerExternalSystem()
 	{
 		return exportBPartnerToRabbitMQService;
+	}
+
+	@Override
+	protected boolean isExportAllowed(@NonNull final IExternalSystemChildConfig childConfig)
+	{
+		final ExternalSystemRabbitMQConfig rabbitMQConfig = ExternalSystemRabbitMQConfig.cast(childConfig);
+
+		return rabbitMQConfig.isSyncBPartnerToRabbitMQ();
 	}
 
 	protected Optional<ProcessPreconditionsResolution> applyCustomPreconditionsIfAny(final @NonNull IProcessPreconditionsContext context)

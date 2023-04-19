@@ -549,8 +549,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -607,8 +607,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_170
@@ -635,8 +635,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -692,8 +692,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_200
@@ -720,8 +720,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -778,8 +778,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_210
@@ -806,8 +806,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | CatchWeight              |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
       | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
@@ -853,7 +853,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_1               | invoice_candidate_1               |
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyToInvoiceInUOM_Calc | OPT.QtyOrdered | OPT.QtyEntered | OPT.QtyToInvoiceBeforeDiscount | OPT.QtyDelivered | OPT.QtyDeliveredInUOM | OPT.QtyInvoiced | OPT.QtyInvoicedInUOM | OPT.NetAmtToInvoice | OPT.Processed |
-      | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 147            | 37.500         | 0                              | 147              | 35.000                | 147             | 35.000               | 0                   | true          |
+      | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 147              | 35.000                | 147             | 35.000               | 0                   | true          |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus |
       | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
@@ -865,8 +865,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | N                        |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
-      | 540024                       | 1.00     | KGM               | Nominal                  |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 | OPT.InvoicableQtyBasedOn |
+      | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
   @Id:S0156.2_180
@@ -961,8 +961,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 3                          | 100            | 100            | 0                              | 100              | 100                   | 97              | 97                   | 0                   | true          |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 1000002     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 97          | true      | 1                | 1               | 97             | 0            |
@@ -1060,8 +1060,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0                          | 150            | 150            | 0                              | 150              | 150                   | 152             | 152                  | 0                   | true          |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus | OPT.C_DocType_ID.Name |
-      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 30 Tage netto | true      | CO        | Eingangsrechnung      |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus | OPT.C_DocType_ID.Name |
+      | invoice_1               | endvendor_1              | l_1                               | po_ref_mock | 1000002     | true      | CO        | Eingangsrechnung      |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 152         | true      | 1                | 1               | 152            | 0            |

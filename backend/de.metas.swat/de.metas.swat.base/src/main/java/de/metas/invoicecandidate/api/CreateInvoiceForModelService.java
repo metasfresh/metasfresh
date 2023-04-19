@@ -29,8 +29,8 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -98,7 +98,7 @@ public class CreateInvoiceForModelService
 			final Collection<Object> modelsWithBatchId = batchIdWithUpdatedModel.get(asyncBatchId);
 
 			final Supplier<IEnqueueResult> action = () -> {
-				
+
 				int counter = 0;
 				for (final Object modelWithBatchId : modelsWithBatchId)
 				{
@@ -115,14 +115,13 @@ public class CreateInvoiceForModelService
 	}
 
 	@NonNull
-	private IInvoicingParams createDefaultIInvoicingParams()
+	private InvoicingParams createDefaultIInvoicingParams()
 	{
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-		invoicingParams.setDateInvoiced(LocalDate.now());
-
-		return invoicingParams;
+		return InvoicingParams.builder()
+				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
+				.dateInvoiced(LocalDate.now())
+				.build();
 	}
 
 }

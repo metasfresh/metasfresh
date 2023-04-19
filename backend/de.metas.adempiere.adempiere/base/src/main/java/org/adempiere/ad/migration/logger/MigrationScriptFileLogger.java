@@ -201,7 +201,7 @@ public class MigrationScriptFileLogger
 
 	/**
 	 * Appends given SQL statement.
-	 *
+	 * <p>
 	 * If this method is called within a database transaction then the SQL statement will not be written to file directly,
 	 * but it will be collected and written when the transaction is committed.
 	 */
@@ -232,7 +232,7 @@ public class MigrationScriptFileLogger
 
 	/**
 	 * Close underling file.
-	 *
+	 * <p>
 	 * Next time, {@link #appendSqlStatement(Sql)} will be called, a new file will be created, so it's safe to call this method as many times as needed.
 	 */
 	public synchronized void close()

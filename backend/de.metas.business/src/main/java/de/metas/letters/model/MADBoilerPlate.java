@@ -11,7 +11,9 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -24,8 +26,9 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
@@ -73,6 +76,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getPO;
@@ -268,7 +272,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Project_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_A_Asset.Table_ID)
+		else if (parent_table_id == getTableId(I_A_Asset.class))
 		{
 			rq.setA_Asset_ID(parent_record_id);
 		}
@@ -338,7 +342,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public static MADBoilerPlate getByName(final Properties ctx, final String name, final String trxName)
 	{
-		return getByNameQuery(ctx, name, trxName).firstOnly();
+		return getByNameQuery(ctx, name, trxName).firstOnly(MADBoilerPlate.class);
 	}
 
 	public static KeyNamePair[] getDependsOn(final Properties ctx, final int AD_BoilerPlate_ID, final String trxName)
@@ -376,15 +380,15 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			final Properties ctx = Env.getCtx();
 
-			lookup = MLookupFactory.get(ctx,
+			lookup = MLookupFactory.newInstance().get(ctx,
 					windowNo,
 					0, // Column_ID
 					DisplayType.TableDir,
 					null, // tablename
 					I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID,
-					0, // AD_Reference_Value_ID,
+					null, // AD_Reference_Value_ID,
 					false, // IsParent,
-					IValidationRule.AD_Val_Rule_ID_Null); // ValidationCode
+					(AdValRuleId)null); // ValidationCode
 		}
 		catch (final Exception e)
 		{
@@ -427,6 +431,22 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.endOrderBy()
 				.create()
 				.list(MADBoilerPlate.class);
+	}
+
+	public static Stream<MADBoilerPlate> streamAllReadable(@NonNull final IUserRolePermissions permissions)
+	{
+		return getAll(Env.getCtx())
+				.stream()
+				.filter(template -> isReadable(template, permissions));
+	}
+
+	private static boolean isReadable(@NonNull final MADBoilerPlate template, @NonNull final IUserRolePermissions permissions)
+	{
+		final ClientId clientId = ClientId.ofRepoId(template.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(template.getAD_Org_ID());
+		final int adTableId = template.get_Table_ID();
+		final int recordId = template.getAD_BoilerPlate_ID();
+		return permissions.checkCanView(clientId, orgId, adTableId, recordId).isTrue();
 	}
 
 	private void checkCycles(int AD_BoilerPlate_ID, Collection<KeyNamePair> trace)
@@ -718,10 +738,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public void rebuildReferences()
 	{
-		DB.executeUpdateEx("DELETE FROM " + I_AD_BoilerPlate_Ref.Table_Name
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM " + I_AD_BoilerPlate_Ref.Table_Name
 						+ " WHERE " + I_AD_BoilerPlate_Ref.COLUMNNAME_AD_BoilerPlate_ID + "=?",
-				new Object[] { getAD_BoilerPlate_ID() },
-				get_TrxName());
+												new Object[] { getAD_BoilerPlate_ID() },
+												get_TrxName());
 		for (final String refName : parseNeededReferences())
 		{
 			final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
@@ -912,6 +932,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return result.toString();
 	}
 
+	/**
+	 * Create record into T_BoilerPlate_Spool table
+	 */
 	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final PInstanceId pinstanceId, final String text, final String trxName)
 	{
 		final String sql = "INSERT INTO " + I_T_BoilerPlate_Spool.Table_Name + "("
@@ -921,9 +944,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_SeqNo
 				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_MsgText
 				+ ") VALUES (?,?,?,?,?)";
-		DB.executeUpdateEx(sql,
-				new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
-				trxName);
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												new Object[] { AD_Client_ID, 0, pinstanceId, 10, text },
+												trxName);
 	}
 
 	@ToString

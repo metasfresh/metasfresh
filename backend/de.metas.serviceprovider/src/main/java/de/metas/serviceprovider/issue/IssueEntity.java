@@ -24,9 +24,11 @@ package de.metas.serviceprovider.issue;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.serviceprovider.effortcontrol.EffortTarget;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.timebooking.Effort;
@@ -38,12 +40,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Data
@@ -64,6 +68,9 @@ public class IssueEntity
 
 	@NonNull
 	private OrgId orgId;
+
+	@NonNull
+	private ClientId clientId;
 
 	@Nullable
 	private MilestoneId milestoneId;
@@ -96,6 +103,9 @@ public class IssueEntity
 
 	@Nullable
 	private Quantity invoicableChildEffort;
+
+	@Nullable
+	private BigDecimal invoiceableHours;
 
 	@NonNull
 	private String name;
@@ -137,6 +147,17 @@ public class IssueEntity
 	@Nullable
 	private Instant processedTimestamp;
 
+	@Nullable
+	private Instant externallyUpdatedAt;
+
+	@Nullable
+	private ActivityId costCenterActivityId;
+
+	@Nullable
+	private String invoicingErrorMsg;
+
+	boolean isInvoicingError;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if (this.estimatedEffort == null || this.estimatedEffort.signum() == 0)
@@ -170,5 +191,31 @@ public class IssueEntity
 				.filter(Objects::nonNull)
 				.max(Instant::compareTo)
 				.orElse(null);
+	}
+
+	@NonNull
+	public Optional<EffortTarget> getEffortTarget()
+	{
+		if (costCenterActivityId == null || projectId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(EffortTarget.builder()
+								   .costCenterId(costCenterActivityId)
+								   .orgId(orgId)
+								   .projectId(projectId)
+								   .build());
+	}
+
+	@NonNull
+	public Status getStatusOrNew()
+	{
+		return Optional.ofNullable(status).orElse(Status.NEW);
+	}
+
+	public boolean isInvoiced()
+	{
+		return Status.INVOICED.equals(status);
 	}
 }

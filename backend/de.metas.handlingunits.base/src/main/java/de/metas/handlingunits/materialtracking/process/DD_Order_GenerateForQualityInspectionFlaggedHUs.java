@@ -92,7 +92,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		final OrgId orgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
 

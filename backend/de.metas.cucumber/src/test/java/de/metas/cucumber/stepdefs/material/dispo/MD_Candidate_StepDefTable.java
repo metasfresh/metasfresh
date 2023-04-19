@@ -36,6 +36,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -87,6 +88,9 @@ public class MD_Candidate_StepDefTable
 		String attributeSetInstanceId;
 
 		boolean simulated;
+		
+		@Nullable 
+		WarehouseId warehouseId;
 
 		public CandidatesQuery createQuery()
 		{

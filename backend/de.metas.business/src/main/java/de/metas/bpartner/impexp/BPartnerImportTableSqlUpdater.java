@@ -110,7 +110,7 @@ public class BPartnerImportTableSqlUpdater
 	private final void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		stopwatch.stop();
 
 		logger.info("{}: Updated {} records in {}", description, no, stopwatch);

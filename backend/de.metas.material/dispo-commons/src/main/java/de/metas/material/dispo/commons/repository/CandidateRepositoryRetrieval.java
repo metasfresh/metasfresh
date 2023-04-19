@@ -379,7 +379,7 @@ public class CandidateRepositoryRetrieval
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
-				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productId);
 
 		return retrieveForQueryBuilder(queryBuilderWithoutOrdering);
 	}

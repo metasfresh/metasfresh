@@ -1,31 +1,32 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_GL_Distribution;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.acct.gldistribution.GLDistributionBuilder;
 import de.metas.acct.gldistribution.GLDistributionResult;
 import de.metas.acct.gldistribution.GLDistributionResultLine;
-import de.metas.acct.gldistribution.IGLDistributionDAO;
 import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
+import de.metas.acct.gldistribution.IGLDistributionDAO;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.acct.api.IFactAcctBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_GL_Distribution;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -51,21 +52,19 @@ import lombok.NonNull;
 
 /**
  * Helper class to apply {@link I_GL_Distribution}s on a given list of {@link FactLine}s.
- * 
  * It is used internally by {@link Fact}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */class FactGLDistributor
 {
-	public static final FactGLDistributor newInstance()
+	public static FactGLDistributor newInstance()
 	{
 		return new FactGLDistributor();
 	}
 
 	// Services
-	private static final transient Logger logger = LogManager.getLogger(FactGLDistributor.class);
+	private static final Logger logger = LogManager.getLogger(FactGLDistributor.class);
 	private final transient IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 
@@ -155,16 +154,13 @@ import lombok.NonNull;
 		return ImmutablePair.of(amountSign, amount);
 	}
 
-	/**
-	 * @param baseLine
-	 * @return {@link I_GL_Distribution} or null
-	 */
+	@Nullable
 	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final AccountDimension baseLineDimension)
 	{
 		final Properties ctx = baseLine.getCtx();
 		final String postingType = baseLine.getPostingType();
 		final Doc<?> doc = baseLine.getDoc();
-		final int docTypeId = doc.getC_DocType_ID();
+		final DocTypeId docTypeId = doc.getC_DocType_ID();
 
 		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(ctx, baseLineDimension, postingType, docTypeId);
 		if (distributions.isEmpty())
@@ -179,12 +175,15 @@ import lombok.NonNull;
 					+ "\nC_DocType_ID: " + docTypeId
 					+ "\nGL_Distribution(s): " + distributions);
 			logger.warn("More then one GL_Distribution found. Using the first one.", ex);
+			return distributions.get(0);
 		}
-		final I_GL_Distribution distribution = distributions.get(0);
-		return distribution;
+		else
+		{
+			return distributions.get(0);
+		}
 	}
 
-	private final List<FactLine> createFactLines(final FactLine baseLine, final GLDistributionResult glDistribution)
+	private List<FactLine> createFactLines(final FactLine baseLine, final GLDistributionResult glDistribution)
 	{
 		final List<GLDistributionResultLine> glDistributionLines = glDistribution.getResultLines();
 		if (glDistributionLines.isEmpty())
@@ -206,7 +205,7 @@ import lombok.NonNull;
 		return factLines;
 	}
 
-	private final FactLine createFactLine(final FactLine baseLine, final GLDistributionResultLine glDistributionLine)
+	private FactLine createFactLine(final FactLine baseLine, final GLDistributionResultLine glDistributionLine)
 	{
 		final BigDecimal amount = glDistributionLine.getAmount();
 		if (amount.signum() == 0)
@@ -220,7 +219,7 @@ import lombok.NonNull;
 		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
 		final MAccount account = MAccount.get(Env.getCtx(), accountDimension);
 
-		final FactLine factLine = new FactLine(baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
+		final FactLine factLine = new FactLine(baseLine.getServices(), baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
 
 		//
 		// Set Info & Account
@@ -255,26 +254,26 @@ import lombok.NonNull;
 			@NonNull final GLDistributionResultLine glDistributionLine,
 			@NonNull final FactLine factLine)
 	{
-		final BigDecimal amount = glDistributionLine.getAmount();
+		final Money amount = Money.of(glDistributionLine.getAmount(), glDistributionLine.getCurrencyId());
 
 		switch (glDistributionLine.getAmountSign())
 		{
 			case CREDIT:
-				factLine.setAmtSource(glDistributionLine.getCurrencyId(), null, amount);
+				factLine.setAmtSource(null, amount);
 				break;
 
 			case DEBIT:
-				factLine.setAmtSource(glDistributionLine.getCurrencyId(), amount, null);
+				factLine.setAmtSource(amount, null);
 				break;
 
 			case DETECT:
 				if (amount.signum() < 0)
 				{
-					factLine.setAmtSource(glDistributionLine.getCurrencyId(), null, amount.negate());
+					factLine.setAmtSource(null, amount.negate());
 				}
 				else
 				{
-					factLine.setAmtSource(glDistributionLine.getCurrencyId(), amount, null);
+					factLine.setAmtSource(amount, null);
 				}
 				break;
 		}

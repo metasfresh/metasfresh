@@ -1,8 +1,8 @@
 import Moment from 'moment';
 
 import { DATE_FIELD_TYPES, DATE_FORMAT } from '../constants/Constants';
-import { deepUnfreeze } from '../utils';
-import { fieldValueToString } from '../utils/tableHelpers';
+import { deepUnfreeze } from './index';
+import { fieldValueToString } from './tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
 function formatFilterParameter(filterParameter, filterData) {
@@ -38,7 +38,7 @@ function formatFilterParameter(filterParameter, filterData) {
 export function formatFilters({ filtersData, filtersActive = [] }) {
   // for inline filters (if they were modified) in the response data we're getting a filter with
   // empty parameters
-  const filters = filtersActive.map((filter) => {
+  return filtersActive.map((filter) => {
     const filterData = getParentFilterFromFilterData({
       filterId: filter.filterId,
       filterData: filtersData,
@@ -52,8 +52,6 @@ export function formatFilters({ filtersData, filtersActive = [] }) {
 
     return filter;
   });
-
-  return filters;
 }
 
 /**
@@ -84,8 +82,6 @@ export function getParentFilterFromFilterData({ filterId, filterData }) {
 /**
  * @method populateFiltersCaptions
  * @summary updates the filtersCaptions object for the corresponding filter branch id in the store
- * @param {string} id - filter id used as identifier for the filters branch
- * @param {object} data - object containing the captions
  */
 export function populateFiltersCaptions(filters) {
   const filtersCaptions = {};
@@ -220,8 +216,8 @@ export function setNewFiltersActive({ storeActiveFilters, filterToAdd }) {
 /**
  * @method foundAmongActiveFilters
  * @summary checks that the filterToAdd is found among the active filters from the store -> storeActiveFilters
- * @param {array} - storeActiveFilters is representing the active filters as they are found in the redux store
- * @param {object} - filterToAdd - is the filter we are planing to add to the redux store within the active filters array
+ * @param {array} storeActiveFilters is representing the active filters as they are found in the redux store
+ * @param {object} filterToAdd - is the filter we are planing to add to the redux store within the active filters array
  * @returns {boolean} indicating the presence of the filterToAdd among the active filters
  */
 function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
@@ -237,10 +233,10 @@ function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
  * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
  */
 export function filtersActiveContains({ filtersActive, key }) {
-  if (!filtersActive || filtersActive.lenght === 0) return false;
+  if (!filtersActive || filtersActive.length === 0) return false;
   const isPresent = filtersActive.filter((item) => item.filterId === key);
 
-  return isPresent.length ? true : false;
+  return !!isPresent.length;
 }
 
 /**
@@ -341,35 +337,58 @@ export function normalizeFilterValue(params) {
 }
 
 const prepareParameterForBackend = (param) => {
-  const { parameterName, defaultValue, defaultValueTo, widgetType } = param;
-  let { value, valueTo } = param;
-
-  if (widgetType === 'Date' && value) {
-    value = Moment(value).format(DATE_FORMAT);
-  }
-  if (widgetType === 'Date' && valueTo) {
-    valueTo = Moment(valueTo).format(DATE_FORMAT);
-  }
-
-  // filters should always send value to the server - even if it's a defaultValue, not edited
-  // by user
-  value = value === null && defaultValue ? defaultValue : value;
-  valueTo = valueTo === null && defaultValueTo ? defaultValueTo : valueTo;
+  const {
+    parameterName,
+    widgetType,
+    value,
+    defaultValue,
+    valueTo,
+    defaultValueTo,
+  } = param;
 
   return {
     parameterName,
-    value:
-      value &&
-      value.values &&
-      Array.isArray(value.values) &&
-      value.values.length === 0
-        ? [] // case when facets gets cleared
-        : value,
-    valueTo,
+    value: prepareParameterValueForBackend({
+      value,
+      widgetType,
+      defaultValue,
+    }),
+    valueTo: prepareParameterValueForBackend({
+      value: valueTo,
+      widgetType,
+      defaultValue: defaultValueTo,
+    }),
   };
 };
 
-export function prepareFilterForBackend({ filterId, parameters }) {
+export const prepareParameterValueForBackend = ({
+  value,
+  widgetType,
+  defaultValue,
+}) => {
+  let valuePrepared = value;
+
+  if (widgetType === 'Date' && valuePrepared) {
+    valuePrepared = Moment(valuePrepared).format(DATE_FORMAT);
+  }
+
+  // filters should always send value to the server - even if it's a defaultValue, not edited by user
+  valuePrepared =
+    valuePrepared === null && defaultValue ? defaultValue : valuePrepared;
+
+  // case when facets gets cleared:
+  valuePrepared =
+    valuePrepared &&
+    valuePrepared.values &&
+    Array.isArray(valuePrepared.values) &&
+    valuePrepared.values.length === 0
+      ? []
+      : valuePrepared;
+
+  return valuePrepared;
+};
+
+export const prepareFilterForBackend = ({ filterId, parameters }) => {
   if (parameters && parameters.length) {
     parameters.map((param, index) => {
       param = prepareParameterForBackend(param);
@@ -381,4 +400,4 @@ export function prepareFilterForBackend({ filterId, parameters }) {
     filterId,
     parameters,
   };
-}
+};

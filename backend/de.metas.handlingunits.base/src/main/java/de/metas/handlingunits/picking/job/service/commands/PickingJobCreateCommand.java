@@ -18,7 +18,6 @@ import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingS
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
-import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
@@ -63,11 +62,14 @@ public class PickingJobCreateCommand
 
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 
+	//
+	// State
+	private PickingConfigV2 _pickingConfig; // lazy
+
 	@Builder
 	private PickingJobCreateCommand(
 			@NonNull final PickingJobRepository pickingJobRepository,
 			@NonNull final PickingJobLockService pickingJobLockService,
-			@NonNull final PickingJobSlotService pickingJobSlotService,
 			@NonNull final PickingCandidateService pickingCandidateService,
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
@@ -113,11 +115,16 @@ public class PickingJobCreateCommand
 							.deliveryBPLocationId(headerKey.getDeliveryBPLocationId())
 							.deliveryRenderedAddress(headerKey.getDeliveryRenderedAddress())
 							.pickerId(request.getPickerId())
+							.isPickingReviewRequired(getPickingConfig().isPickingReviewRequired())
 							.lines(createLinesRequest(items))
 							.build(),
 					loadingSupportServices);
 
-			pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			final PickingConfigV2 pickingConfig = getPickingConfig();
+			if (pickingConfig.isReserveHUsOnJobStart())
+			{
+				pickingJobHUReservationService.reservePickFromHUs(pickingJob);
+			}
 
 			return pickingJob;
 		}
@@ -134,6 +141,16 @@ public class PickingJobCreateCommand
 
 			throw AdempiereException.wrapIfNeeded(createJobException);
 		}
+	}
+
+	private PickingConfigV2 getPickingConfig()
+	{
+		PickingConfigV2 pickingConfig = this._pickingConfig;
+		if (pickingConfig == null)
+		{
+			pickingConfig = this._pickingConfig = pickingConfigRepo.getPickingConfig();
+		}
+		return pickingConfig;
 	}
 
 	private ImmutableList<Packageable> getItemsToPick()
@@ -215,12 +232,12 @@ public class PickingJobCreateCommand
 	{
 		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
 
-		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
+		final PickingConfigV2 pickingConfig = getPickingConfig();
 
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-																			.packageables(itemsForProduct)
-																			.considerAttributes(pickingConfig.isConsiderAttributes())
-																			.build());
+				.packageables(itemsForProduct)
+				.considerAttributes(pickingConfig.isConsiderAttributes())
+				.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
@@ -235,12 +252,12 @@ public class PickingJobCreateCommand
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
 				.steps(lines.stream()
-							   .map(this::createStepRequest)
-							   .collect(ImmutableList.toImmutableList()))
+						.map(this::createStepRequest)
+						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
-											  .stream()
-											  .map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
-											  .collect(ImmutableSet.toImmutableSet()))
+						.stream()
+						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
+						.collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
 
@@ -334,12 +351,12 @@ public class PickingJobCreateCommand
 
 		final I_M_HU extractedCU = HUTransformService.newInstance()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-										 .sourceHU(pickFromHU)
-										 .productId(productId)
-										 .qtyCU(qtyToPick)
-										 //.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-										 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-										 .build());
+						.sourceHU(pickFromHU)
+						.productId(productId)
+						.qtyCU(qtyToPick)
+						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
+						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
 	}

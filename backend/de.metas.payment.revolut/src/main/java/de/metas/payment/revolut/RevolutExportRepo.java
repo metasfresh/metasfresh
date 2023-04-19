@@ -87,12 +87,12 @@ public class RevolutExportRepo
 		record.setAccountNo(request.getAccountNo());
 		record.setRoutingNo(request.getRoutingNo());
 		record.setIBAN(request.getIBAN());
-		record.setSwiftCode(record.getSwiftCode());
+		record.setSwiftCode(request.getSwiftCode());
 		record.setPaymentReference(request.getPaymentReference());
 
 		record.setRecipientCountryId(NumberUtils.asInt(request.getRecipientCountryId(), -1));
 		record.setAddressLine1(request.getAddressLine1());
-		record.setAddressLine2(record.getAddressLine2());
+		record.setAddressLine2(request.getAddressLine2());
 		record.setPostalCode(request.getPostalCode());
 		record.setCity(request.getCity());
 		record.setRegionName(request.getRegionName());

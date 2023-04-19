@@ -29,7 +29,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
-import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
@@ -64,7 +64,7 @@ public class PPOrderCandidateAdvisedEventCreator
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
+			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
 		{
@@ -112,11 +112,11 @@ public class PPOrderCandidateAdvisedEventCreator
 	private Quantity extractMaxQuantityPerOrder(@NonNull final I_PP_Product_Planning productPlanning)
 	{
 		final Quantity maxQtyPerOrder;
-		if (productPlanning.getMaxManufacturedQtyPerOrder().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID() > 0)
+		if (productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID() > 0)
 		{
 			maxQtyPerOrder = Quantitys.create(
-					productPlanning.getMaxManufacturedQtyPerOrder(),
-					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID()));
+					productPlanning.getMaxManufacturedQtyPerOrderDispo(),
+					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID()));
 		}
 		else
 		{
@@ -127,7 +127,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@Nullable
 	private Quantity convertQtyToRequestUOM(
-			@NonNull final IMutableMRPContext mrpContext,
+			@NonNull final IMaterialPlanningContext mrpContext,
 			@NonNull final MaterialRequest completeRequest,
 			@Nullable final Quantity maxQtyPerOrder)
 	{

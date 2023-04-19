@@ -490,7 +490,13 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		}
 		else
 		{
+			final I_C_DocType pourchaseDoctype = newInstance(I_C_DocType.class, helper.getContextProvider());
+			pourchaseDoctype.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
+			pourchaseDoctype.setAD_Org_ID(0);
+			save(pourchaseDoctype);
+
 			order = newInstance(I_C_Order.class, helper.getContextProvider());
+			order.setC_DocType_ID(pourchaseDoctype.getC_DocType_ID());
 			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			order.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 			order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());

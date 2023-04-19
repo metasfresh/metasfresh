@@ -1,0 +1,19 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "SAP",
+  "externalSystemChildConfigValue": "sapValue",
+  "command": "stopProductSyncLocalFile",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "fileFolder",
+  "parameters": {
+    "LocalFileRootLocation": "doesntmatter",
+    "LocalFile_Product_Target_Directory" : "doesntmatter",
+    "LocalFileProcessedDirectory": "doesntmatter",
+    "LocalFileErroredDirectory": "doesntmatter",
+    "LocalFilePollingFrequencyInMs": "1000",
+    "LocalFileProductFileNamePattern": "doesntmatter",
+    "CheckDescriptionForMaterialType": "doesntmatter"
+  }
+}

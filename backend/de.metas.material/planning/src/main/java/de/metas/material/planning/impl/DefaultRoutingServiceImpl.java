@@ -23,7 +23,6 @@ package de.metas.material.planning.impl;
  */
 
 import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
@@ -32,6 +31,7 @@ import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceType;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;

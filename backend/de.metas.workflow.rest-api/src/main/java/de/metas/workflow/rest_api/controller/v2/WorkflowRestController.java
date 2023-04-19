@@ -22,13 +22,17 @@
 
 package de.metas.workflow.rest_api.controller.v2;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
-import de.metas.util.StringUtils;
+import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
+import de.metas.workflow.rest_api.controller.v2.json.JsonSettings;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
@@ -40,6 +44,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -52,13 +57,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.Comparator;
+import java.util.Map;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/userWorkflows")
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class WorkflowRestController
 {
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
+
+	private static final String SYSCONFIG_SETTINGS_PREFIX = "mobileui.frontend.";
 
 	public WorkflowRestController(
 			@NonNull final WorkflowRestAPIService workflowRestAPIService)
@@ -73,28 +83,36 @@ public class WorkflowRestController
 				.build();
 	}
 
+	@PostMapping("/logout")
+	public void logout()
+	{
+		final UserId loggedUserId = Env.getLoggedUserId();
+		workflowRestAPIService.logout(loggedUserId);
+	}
+
 	@GetMapping("/apps")
 	public JsonMobileApplicationsList getMobileApplications()
 	{
-		return JsonMobileApplicationsList.of(
-				workflowRestAPIService.getMobileApplicationInfos(),
-				newJsonOpts());
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final JsonOpts jsonOpts = newJsonOpts();
+		return JsonMobileApplicationsList.builder()
+				.applications(
+						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId)
+								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
+								.sorted(Comparator.comparing(JsonMobileApplication::getCaption))
+								.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 
 	@GetMapping("/launchers")
 	public JsonWorkflowLaunchersList getLaunchers(
-			@RequestParam(value = "applicationId", required = false) final String applicationIdStr)
+			@RequestParam("applicationId") final String applicationIdStr,
+			@RequestParam(value = "filterByQRCode", required = false) final String filterByQRCodeStr)
 	{
 		final UserId loggedUserId = Env.getLoggedUserId();
-
-		final MobileApplicationId applicationId = StringUtils.trimBlankToOptional(applicationIdStr)
-				.map(MobileApplicationId::ofString)
-				.orElse(null);
-
-		final WorkflowLaunchersList launchers = applicationId != null
-				? workflowRestAPIService.getLaunchers(applicationId, loggedUserId, Duration.ZERO)
-				: workflowRestAPIService.getLaunchersFromAllApplications(loggedUserId, Duration.ZERO);
-		
+		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
+		final GlobalQRCode filterByQRCode = GlobalQRCode.ofNullableString(filterByQRCodeStr);
+		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(applicationId, loggedUserId, filterByQRCode, Duration.ZERO);
 		return JsonWorkflowLaunchersList.of(launchers, newJsonOpts());
 	}
 
@@ -107,6 +125,16 @@ public class WorkflowRestController
 		final UserId loggedUserId = Env.getLoggedUserId();
 		wfProcess.assertHasAccess(loggedUserId);
 
+		return toJson(wfProcess);
+	}
+
+	@PostMapping("/wfProcess/{wfProcessId}/continue")
+	public JsonWFProcess continueWFProcess(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final WFProcess wfProcess = workflowRestAPIService.continueWFProcess(wfProcessId, loggedUserId);
+		wfProcess.assertHasAccess(loggedUserId);
 		return toJson(wfProcess);
 	}
 
@@ -183,5 +211,12 @@ public class WorkflowRestController
 		final WFProcess wfProcess = workflowRestAPIService.setUserConfirmation(invokerId, wfProcessId, wfActivityId);
 
 		return toJson(wfProcess);
+	}
+
+	@GetMapping("/settings")
+	public JsonSettings getSettings()
+	{
+		final Map<String, String> map = sysConfigBL.getValuesForPrefix(SYSCONFIG_SETTINGS_PREFIX, true, Env.getClientAndOrgId());
+		return JsonSettings.ofMap(map);
 	}
 }

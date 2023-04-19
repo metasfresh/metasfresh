@@ -1,79 +1,79 @@
 package de.metas.document.archive.process;
 
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere.RunMode;
-import org.compiere.util.Ini;
-
-import de.metas.adempiere.form.IClientUI;
 import de.metas.document.archive.model.IArchiveAware;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.archive.AdArchive;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.core.io.ByteArrayResource;
 
 public class ExportArchivePDF extends JavaProcess implements IProcessPrecondition
 {
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final Object model = context.getSelectedModel(Object.class);
-		final IArchiveAware archiveAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IArchiveAware.class);
-		if(archiveAware == null)
+		if (InterfaceWrapperHelper.isInstanceOf(model, I_AD_Archive.class))
 		{
-			log.debug("No AD_Archive field found for {}", context);
-			return ProcessPreconditionsResolution.reject("no archive found");
+			return ProcessPreconditionsResolution.accept();
 		}
-
-		final int archiveId = archiveAware.getAD_Archive_ID();
-		if (archiveId <= 0)
+		else
 		{
-			log.debug("No AD_Archive_ID found for {}", archiveAware);
-			return ProcessPreconditionsResolution.reject("no archive found");
+			final IArchiveAware archiveAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IArchiveAware.class);
+			if (archiveAware == null)
+			{
+				log.debug("No AD_Archive field found for {}", context);
+				return ProcessPreconditionsResolution.rejectWithInternalReason("no archive found");
+			}
+
+			final int archiveId = archiveAware.getAD_Archive_ID();
+			if (archiveId <= 0)
+			{
+				log.debug("No AD_Archive_ID found for {}", archiveAware);
+				return ProcessPreconditionsResolution.rejectWithInternalReason("no archive found");
+			}
+
+			return ProcessPreconditionsResolution.accept();
 		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
-	protected void prepare()
-	{
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final IArchiveAware archiveAware = getRecord(IArchiveAware.class);
-		final I_AD_Archive archive = archiveAware.getAD_Archive();
-		Check.assumeNotNull(archive, "Parameter archive is not null");
+		final AdArchive archive = getArchive();
 
-		final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-		final byte[] data = archiveBL.getBinaryData(archive);
-		final String contentType = archiveBL.getContentType(archive);
-		final String filename = String.valueOf(archive.getRecord_ID());
+		final ByteArrayResource data = archive.getArchiveDataAsResource();
+		final String contentType = archive.getContentType();
+		final String filename = String.valueOf(archive.getId().getRepoId());
 
-		openPdfFile(data, contentType, filename);
-		
-		return "OK";
+		getResult().setReportData(data, filename, contentType);
+
+		return MSG_OK;
 	}
-	
-	private void openPdfFile(@NonNull final byte[] data, @NonNull final String contentType, @NonNull final String filename)
+
+	@NonNull
+	private AdArchive getArchive()
 	{
-		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isSwingClient();
-		
-		if (backEndOrSwing)
+		final ArchiveId archiveId;
+		if (I_AD_Archive.Table_Name.equals(getTableName()))
 		{
-			Services.get(IClientUI.class).download(data, contentType, filename);	
+			archiveId = ArchiveId.ofRepoId(getRecord_ID());
 		}
 		else
 		{
-			getResult().setReportData(new ByteArrayResource(data), filename, contentType);
+			final IArchiveAware archiveAware = getRecord(IArchiveAware.class);
+			archiveId = ArchiveId.ofRepoId(archiveAware.getAD_Archive_ID());
 		}
+
+		return archiveBL.getById(archiveId);
 	}
 }

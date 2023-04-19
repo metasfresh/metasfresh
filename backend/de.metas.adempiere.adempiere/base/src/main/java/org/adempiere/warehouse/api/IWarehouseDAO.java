@@ -12,11 +12,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -89,6 +89,10 @@ public interface IWarehouseDAO extends ISingletonService
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
 
+	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
+
+	List<I_M_Locator> getLocatorByIds(Collection<LocatorId> locatorIds);
+
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
 	@Nullable
@@ -123,6 +127,8 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
 
 	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
+
+	Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull OrgId orgId);
 
 	List<I_M_Warehouse> getAllWarehouses();
 

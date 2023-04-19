@@ -58,4 +58,9 @@ public class StepDefConstants
 
 	public static final BPartnerId METASFRESH_AG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_AG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_AG_BPARTNER_ID, 2202690);
+
+	public static final String ORG_CODE = "orgCode";
+	public static final String CURRENCY_CODE = "currencyCode";
+	public static final String EXTENDED_PROPS = "ExtendedProps";
 }
+

@@ -24,7 +24,6 @@ package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
@@ -45,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -103,6 +103,7 @@ public abstract class ReceiptScheduleTestBase
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
+
 		//
 		// Mimic ModelValidator behaviour
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
@@ -114,7 +115,7 @@ public abstract class ReceiptScheduleTestBase
 
 	// 07629 just adding to fix existing tests; TODO extend the tests
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
-	private IProductAcctDAO productAcctDAO; // 07629
+	private IProductActivityProvider productActivityProvider; // 07629
 
 	protected Properties ctx;
 	/**
@@ -198,15 +199,14 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(priceUOM);
 
 		// 07629 just adding to fix existing tests; TODO extend the tests
-		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		productActivityProvider = Mockito.spy(IProductActivityProvider.class);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -215,7 +215,7 @@ public abstract class ReceiptScheduleTestBase
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
-		Mockito.when(productAcctDAO.retrieveActivityForAcct(
+		Mockito.when(productActivityProvider.getActivityForAcct(
 				ArgumentMatchers.any(),
 				ArgumentMatchers.eq(orgId),
 				ArgumentMatchers.any()))
@@ -335,12 +335,13 @@ public abstract class ReceiptScheduleTestBase
 	protected I_C_Order createOrder(@Nullable final I_M_Warehouse warehouse)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
-		order.setC_Order_ID(0);
+		order.setC_Order_ID(100);
+		order.setC_DocType_ID(receiptDocType.getC_DocType_ID());
 		order.setAD_Org_ID(warehouse == null ? 0 : warehouse.getAD_Org_ID()); // 07629
-		order.setAD_User_ID(0);
-		order.setBill_BPartner_ID(0);
-		order.setBill_Location_ID(0);
-		order.setBill_User_ID(0);
+		order.setAD_User_ID(100);
+		order.setBill_BPartner_ID(100);
+		order.setBill_Location_ID(100);
+		order.setBill_User_ID(100);
 		order.setC_BPartner_ID(bpartner1.getBpartnerId().getRepoId()); // needed to avoid an NPE in InOutGeneratedEventBus
 		order.setC_BPartner_Location_ID(bpartner1.getRepoId());
 
@@ -368,7 +369,7 @@ public abstract class ReceiptScheduleTestBase
 		orderLine.setM_Product_ID(product.getM_Product_ID());
 		// orderLine.setC_UOM_ID(productUOM != null ? productUOM.getC_UOM_ID() : -1);
 		// 07090: when setting a priceActual, we also need to specify a PriceUOM
-		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+		orderLine.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 
 		//
 		// Quantities

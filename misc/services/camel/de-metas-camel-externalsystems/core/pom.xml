@@ -15,11 +15,11 @@
     <artifactId>de-metas-camel-externalsystems-core</artifactId>
     <version>10.0.0</version>
     <properties>
-        <java.version>14</java.version>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <java.version>17</java.version>
+        <spring-boot.version>2.7.7</spring-boot.version>
         <camel.version>3.7.3</camel.version>
         <smooks.version>1.7.1</smooks.version>
-        <jackson.version>2.12.1</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -83,6 +83,12 @@
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-ebay-camelroutes</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-rabbitmq</artifactId>
             <version>10.0.0</version>
         </dependency>
@@ -92,10 +98,37 @@
             <artifactId>de-metas-camel-woocommerce</artifactId>
             <version>10.0.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-leichundmehl</artifactId>
+            <version>10.0.0</version>
+        </dependency>
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-grssignum</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-sap-file-import</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-sap</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-metasfresh</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.adekia.exchange</groupId>
+            <artifactId>exchange-routes</artifactId>
             <version>10.0.0</version>
         </dependency>
         <dependency>
@@ -151,12 +184,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-
+        
         <!-- Camel -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
@@ -219,7 +247,19 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
-            <version>1.7.0</version>
+            <version>1.9.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.9.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -229,13 +269,6 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -317,17 +350,21 @@
                         </tags>
                         <auth>
                             <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!--suppress UnresolvedMavenProperty -->
                             <username>${env.DOCKER_PUSH_REGISTRY_USERNAME}</username>
+                            <!--suppress UnresolvedMavenProperty -->
                             <password>${env.DOCKER_PUSH_REGISTRY_PASSWORD}</password>
                         </auth>
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <image>eclipse-temurin:17.0.5_8-jdk</image>
                         <auth>
                             <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
                             <!-- we authenticate on pulls to avoid the rate limit -->
+                            <!--suppress UnresolvedMavenProperty -->
                             <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <!--suppress UnresolvedMavenProperty -->
                             <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
                         </auth>
                     </from>

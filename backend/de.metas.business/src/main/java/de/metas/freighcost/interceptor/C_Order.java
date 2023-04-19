@@ -1,11 +1,16 @@
 package de.metas.freighcost.interceptor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
@@ -85,6 +90,18 @@ public class C_Order
 		{
 			// reinsert the freight amount value in the field
 			order.setFreightAmt(deletedFreightAmt);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_M_SectionCode_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_SectionCode_ID)
+	public void updateSectionCode(@NonNull final I_C_Order order)
+	{
+		for (final I_C_OrderLine orderLine : ordersRepo.retrieveOrderLines(order))
+		{
+			orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
+			ordersRepo.save(orderLine);
 		}
 	}
 }

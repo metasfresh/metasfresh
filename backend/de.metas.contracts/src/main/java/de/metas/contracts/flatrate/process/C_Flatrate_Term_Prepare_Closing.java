@@ -10,18 +10,39 @@ package de.metas.contracts.flatrate.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Msg;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.Query;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -30,26 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.uom.IUOMDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.Query;
-import org.compiere.util.TimeUtil;
-
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_DataEntry;
-import de.metas.i18n.Msg;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 {
@@ -61,7 +62,8 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 	private I_C_Period p_periodTo;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -73,19 +75,19 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
-		final Timestamp dateFrom;
+		final LocalDateAndOrgId startDate;
 		final List<I_C_Flatrate_DataEntry> existingCorrEntries =
 				flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, UomId.ofRepoIdOrNull(flatrateTerm.getC_UOM_ID()));
 		if (existingCorrEntries.isEmpty())
 		{
-			dateFrom = flatrateTerm.getStartDate();
+			startDate = LocalDateAndOrgId.ofTimestamp(flatrateTerm.getStartDate(), OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()), orgDAO::getTimeZone);
 		}
 		else
 		{
 			// note: assuming that existingCorrEntries are ordered by their periods
 			final Timestamp endDate =
 					existingCorrEntries.get(existingCorrEntries.size() - 1).getC_Period().getEndDate();
-			dateFrom = TimeUtil.addDays(endDate, 1);
+			startDate = LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(endDate, 1), OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()), orgDAO::getTimeZone);
 		}
 		final Map<Integer, I_C_Flatrate_DataEntry> uomId2NewCorrectionEntries = new HashMap<>();
 
@@ -107,7 +109,8 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 			// We sum up qtyReported from the invoicing data entries lying within 'p_period'.
 			// At the same time we make sure that all those entries have been completed.
 			// The result is used as the correction entry's qtyPlanned value.
-			final QtyReportedAndQtyActual qtyReportedAndQtyActual = retreiveQtyReportedOrNull(flatrateTerm, dateFrom, p_periodTo.getEndDate(), uom);
+			final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(p_periodTo.getEndDate(), OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()), orgDAO::getTimeZone);
+			final QtyReportedAndQtyActual qtyReportedAndQtyActual = retreiveQtyReportedOrNull(flatrateTerm, startDate, endDate, uom);
 			if (qtyReportedAndQtyActual == null)
 			{
 				allEntriesCompleted = false;
@@ -131,7 +134,7 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 					final I_C_Flatrate_DataEntry newCorrectionEntry = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_DataEntry.class, trxName);
 					newCorrectionEntry.setAD_Org_ID(flatrateTerm.getAD_Org_ID());
 					Check.assume(newCorrectionEntry.getAD_Client_ID() == flatrateTerm.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
-					
+
 					newCorrectionEntry.setType(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased);
 
 					newCorrectionEntry.setC_UOM_ID(uom.getC_UOM_ID());
@@ -172,7 +175,7 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 
 	private QtyReportedAndQtyActual retreiveQtyReportedOrNull(
 			final I_C_Flatrate_Term flatrateTerm,
-			final Timestamp startDate, final Timestamp endDate,
+			final LocalDateAndOrgId startDate, final LocalDateAndOrgId endDate,
 			final I_C_UOM uom)
 	{
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

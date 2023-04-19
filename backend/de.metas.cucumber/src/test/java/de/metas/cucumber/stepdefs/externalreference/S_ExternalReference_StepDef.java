@@ -32,10 +32,14 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -44,10 +48,12 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
+import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -57,12 +63,14 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
@@ -72,6 +80,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_S_ExternalReference_ID;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartner;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
@@ -79,6 +88,9 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Produc
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 public class S_ExternalReference_StepDef
@@ -89,6 +101,10 @@ public class S_ExternalReference_StepDef
 	private final S_ExternalReference_StepDefData externalRefTable;
 	private final M_Shipper_StepDefData shipperTable;
 	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpLocationTable;
+	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -98,19 +114,28 @@ public class S_ExternalReference_StepDef
 	private final TestContext testContext;
 
 	public S_ExternalReference_StepDef(
+			@NonNull final ExternalSystems externalSystems,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpLocationTable,
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
+			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final TestContext testContext)
 	{
+		this.externalSystems = externalSystems;
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
 		this.productTable = productTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpLocationTable = bpLocationTable;
+		this.externalSystemConfigTable = externalSystemConfigTable;
+		this.orgTable = orgTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
-		this.externalSystems = SpringContextHolder.instance.getBean(ExternalSystems.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
 
@@ -125,15 +150,35 @@ public class S_ExternalReference_StepDef
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final Boolean isReadOnlyInMetasfresh = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, false);
+
+			final IQueryBuilder<I_S_ExternalReference> externalReferenceQueryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
-					.create()
-					.anyMatch();
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, isReadOnlyInMetasfresh);
 
-			assertThat(externalRefExists).isTrue();
+			final Integer externalSystemParentConfigId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID);
+			if (externalSystemParentConfigId != null)
+			{
+				externalReferenceQueryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, externalSystemParentConfigId);
+			}
+
+			final I_S_ExternalReference externalReferenceRecord = externalReferenceQueryBuilder
+					.create()
+					.firstOnlyOrNull(I_S_ExternalReference.class);
+
+			assertThat(externalReferenceRecord).isNotNull();
+
+			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.AD_Org_ID.Identifier");
+
+			if (Check.isNotBlank(orgCodeIdentifier))
+			{
+				final int orgId = orgTable.get(orgCodeIdentifier).getAD_Org_ID();
+
+				assertThat(externalReferenceRecord.getAD_Org_ID()).isEqualTo(orgId);
+			}
 		}
 	}
 
@@ -186,6 +231,49 @@ public class S_ExternalReference_StepDef
 				assertThat(shipper).isNotNull();
 
 				externalReferenceRecord.setRecord_ID(shipper.getM_Shipper_ID());
+			}
+			else if (type.getCode().equals(BPartnerExternalReferenceType.BPARTNER.getCode()))
+			{
+				final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				final I_C_BPartner bPartnerRecord = bpartnerTable.get(bPartnerIdentifier);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bPartnerRecord.getC_BPartner_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bPartnerRecord.getC_BPartner_ID());
+			}
+			else if (type.getCode().equals(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode()))
+			{
+				final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerLocationIdentifier).isNotNull();
+
+				final I_C_BPartner_Location bpartnerLocationRecord = bpLocationTable.get(bPartnerLocationIdentifier);
+				assertThat(bpartnerLocationRecord).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+			}
+			else if (ProductExternalReferenceType.PRODUCT.getCode().equals(type.getCode()))
+			{
+				final String externalSystemConfigIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(externalSystemConfigIdentifier))
+				{
+					final int externalSystemConfigId = externalSystemConfigTable.getOptional(externalSystemConfigIdentifier)
+							.map(I_ExternalSystem_Config::getExternalSystem_Config_ID)
+							.orElseGet((() -> Integer.parseInt(externalSystemConfigIdentifier)));
+
+					externalReferenceRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+				}
+				
+				final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(productIdentifier).isNotNull();
+
+				final int productId = productTable.getOptional(productIdentifier)
+						.map(I_M_Product::getM_Product_ID)
+						.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+				externalReferenceRecord.setRecord_ID(productId);
 			}
 			else
 			{
@@ -250,7 +338,6 @@ public class S_ExternalReference_StepDef
 			externalRefTable.putOrReplace(externalReferenceIdentifier, externalReferenceRecord);
 		}
 	}
-
 
 	@And("metasfresh contains S_ExternalReferences:")
 	public void metasfresh_contains_s_external_reference(@NonNull final DataTable dataTable)
@@ -340,6 +427,21 @@ public class S_ExternalReference_StepDef
 		{
 			final I_M_Product product = productTable.get(recordIdentifier);
 			recordId = product.getM_Product_ID();
+		}
+		else if (externalReferenceType.equals(ExternalUserReferenceType.USER_ID))
+		{
+			final I_AD_User user = userTable.get(recordIdentifier);
+			recordId = user.getAD_User_ID();
+		}
+		else if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
+		{
+			final I_C_BPartner bpartner = bpartnerTable.get(recordIdentifier);
+			recordId = bpartner.getC_BPartner_ID();
+		}
+		else if (externalReferenceType.equals(BPLocationExternalReferenceType.BPARTNER_LOCATION))
+		{
+			final I_C_BPartner_Location bpLocation = bpLocationTable.get(recordIdentifier);
+			recordId = bpLocation.getC_BPartner_Location_ID();
 		}
 		else
 		{

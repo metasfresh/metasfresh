@@ -25,7 +25,7 @@ Feature: invoice rules
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_1 | Endcustomer2 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
@@ -84,7 +84,7 @@ Feature: invoice rules
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_2       | plv_2                             | p_2                     | 10.0     | KGM               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name          | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_2 | p_Endcustomer | N            | Y              | ps_2                          | P               |
     And metasfresh contains C_BPartner_Locations:

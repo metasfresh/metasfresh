@@ -22,8 +22,11 @@
 
 package de.metas.cucumber.stepdefs.invoice;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
@@ -36,7 +39,12 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
@@ -47,6 +55,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -54,15 +63,18 @@ import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
+import de.metas.rest_api.v2.invoice.JsonCreateInvoiceResponse;
+import de.metas.rest_api.v2.invoice.JsonCreateInvoiceResponseResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -71,11 +83,12 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
@@ -85,53 +98,72 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Currency_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DueDate;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
-import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
 
 public class C_Invoice_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(C_Invoice_StepDef.class);
+
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
-
+	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
+	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -141,6 +173,11 @@ public class C_Invoice_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final AD_User_StepDefData userTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_Activity_StepDefData activityTable;
+	private final C_DocType_StepDefData docTypeTable;
+	private final TestContext testContext;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -150,16 +187,26 @@ public class C_Invoice_StepDef
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Activity_StepDefData activityTable,
+			@NonNull final C_DocType_StepDefData docTypeTable,
+			@NonNull final TestContext testContext)
 	{
 		this.invoiceTable = invoiceTable;
-		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceLineTable = invoiceLineTable;
 		this.orderTable = orderTable;
 		this.bpartnerTable = bpartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.orderLineTable = orderLineTable;
 		this.userTable = userTable;
+		this.sectionCodeTable = sectionCodeTable;
+		this.projectTable = projectTable;
+		this.activityTable = activityTable;
+		this.invoiceCandTable = invoiceCandTable;
+		this.docTypeTable = docTypeTable;
+		this.testContext = testContext;
 	}
 
 	@And("validate created invoices")
@@ -176,7 +223,7 @@ public class C_Invoice_StepDef
 		}
 	}
 
-	@And("^the invoice identified by (.*) is (completed|reversed)$")
+	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
 	public void invoice_action(@NonNull final String invoiceIdentifier, @NonNull final String action)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
@@ -190,6 +237,9 @@ public class C_Invoice_StepDef
 			case completed:
 				invoice.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case voided:
+				documentBL.processEx(invoice, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Invoice action")
@@ -254,52 +304,22 @@ public class C_Invoice_StepDef
 	{
 		final Map<String, String> row = table.asMaps().get(0);
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
 		//make sure the given invoice candidate is ready for processing
-		final Supplier<Boolean> noInvoiceCandidateRecompute = () ->
-		{
-			final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-
-			return invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId() != null;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, noInvoiceCandidateRecompute);
-
-		final IInvoiceCandDAO.InvoiceableInvoiceCandIdResult invoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(targetOrderId);
-		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateReadyToBeProcessed(targetOrderId), () -> logCurrentContext(targetOrderId));
 
 		//enqueue invoice candidate
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
+		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID())));
 
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
+		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+		assertThat(invoices.size()).isEqualTo(1);
 
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		final Supplier<Boolean> invoiceCreated = () ->
-		{
-			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-			if (invoices.isEmpty())
-			{
-				return false;
-			}
-			assertThat(invoices.size())
-					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
-					.isEqualTo(1);
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			invoiceTable.put(invoiceIdentifier, invoices.get(0));
-			return true;
-		};
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceTable.put(invoiceIdentifier, invoices.get(0));
 	}
 
 	@And("metasfresh contains C_Invoice:")
@@ -356,46 +376,88 @@ public class C_Invoice_StepDef
 		}
 	}
 
+	@And("process invoice create response")
+	public void process_invoice_create_response(@NonNull final DataTable table) throws JsonProcessingException
+	{
+		final JsonCreateInvoiceResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceResponse.class);
+
+		final JsonCreateInvoiceResponseResult result = jsonCreateInvoiceResponse.getResult();
+		assertThat(result).isNotNull();
+		assertThat(jsonCreateInvoiceResponse.getErrors()).isNull();
+
+		final List<I_C_Invoice> invoiceRecords = invoiceDAO.getByDocumentNo(result.getDocumentNo(), Env.getOrgId(), I_C_Invoice.class);
+		assertThat(invoiceRecords.size()).isEqualTo(1);
+
+		final Map<String, String> row = table.asMaps().get(0);
+
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		invoiceTable.put(invoiceIdentifier, invoiceRecords.get(0));
+	}
+
+	@Then("validate invoice api response error message")
+	public void validate_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
+
+			final SoftAssertions softly = new SoftAssertions();
+
+			final JsonCreateInvoiceResponse jsonCreateInvoiceResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonCreateInvoiceResponse.class);
+			softly.assertThat(jsonCreateInvoiceResponse.getResult()).isNull();
+
+			softly.assertThat(jsonCreateInvoiceResponse.getErrors()).isNotNull();
+			softly.assertThat(jsonCreateInvoiceResponse.getErrors().size()).isEqualTo(1);
+
+			softly.assertThat(jsonCreateInvoiceResponse.getErrors().get(0).getMessage()).contains(message);
+
+			softly.assertAll();
+		}
+	}
+
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
 	{
 		InterfaceWrapperHelper.refresh(invoice);
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
-		assertThat(invoice.getC_BPartner_ID()).isEqualTo(bPartnerId);
+		softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
 
 		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer bPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
+		final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
-
-		assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bPartnerLocationId);
+		softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
 
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_POReference);
 		if (Check.isNotBlank(poReference))
 		{
-			assertThat(invoice.getPOReference()).isEqualTo(poReference);
+			softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference);
 		}
 
-		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
+		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
-		assertThat(invoice.isProcessed()).isEqualTo(processed);
-		assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
+		softly.assertThat(invoice.isProcessed()).as("Processed").isEqualTo(processed);
+		softly.assertThat(invoice.getDocStatus()).as("DocStatus").isEqualTo(docStatus);
 
-		final PaymentTermQuery query = PaymentTermQuery.builder()
-				.orgId(StepDefConstants.ORG_ID)
-				.value(paymentTerm)
-				.build();
+		if (Check.isNotBlank(paymentTerm))
+		{
+			final PaymentTermQuery query = PaymentTermQuery.builder()
+					.orgId(StepDefConstants.ORG_ID)
+					.value(paymentTerm)
+					.build();
+			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+					.orElse(null);
 
-		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
-				.orElse(null);
-
-		assertThat(paymentTermId).isNotNull();
-		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
+			softly.assertThat(paymentTermId).as("C_PaymentTerm_ID").isNotNull();
+			softly.assertThat(invoice.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(paymentTermId.getRepoId());
+		}
 
 		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
 		if (Check.isNotBlank(docSubType))
@@ -406,13 +468,13 @@ public class C_Invoice_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_DocType.class);
 
-			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+			softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
 		}
 
 		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
 		if (Check.isNotBlank(bpartnerAddress))
 		{
-			assertThat(invoice.getBPartnerAddress()).isEqualTo(bpartnerAddress);
+			softly.assertThat(invoice.getBPartnerAddress()).as("BPartnerAddress").isEqualTo(bpartnerAddress);
 		}
 
 		final String expectedDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name);
@@ -421,23 +483,20 @@ public class C_Invoice_StepDef
 		{
 			final I_C_DocType actualInvoiceDocType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
 
-			assertThat(actualInvoiceDocType.getName()).isEqualTo(expectedDocTypeName);
+			softly.assertThat(actualInvoiceDocType.getName()).as("C_DocType_ID").isEqualTo(expectedDocTypeName);
 		}
 
 		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_PaymentRule);
 		if (Check.isNotBlank(paymentRule))
 		{
-			assertThat(invoice.getPaymentRule()).isEqualTo(paymentRule);
+			softly.assertThat(invoice.getPaymentRule()).as("PaymentRule").isEqualTo(paymentRule);
 		}
-
-		assertThat(paymentTermId).isNotNull();
-		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 
 		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
 		if (Check.isNotBlank(internalName))
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			assertThat(invoice.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+			softly.assertThat(invoice.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID").isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
 		final String adUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -447,6 +506,83 @@ public class C_Invoice_StepDef
 			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
 		}
 
+		final BigDecimal grandTotal = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_GrandTotal);
+		if (grandTotal != null)
+		{
+			softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal);
+		}
+
+		final BigDecimal totalLines = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TotalLines);
+		if (totalLines != null)
+		{
+			softly.assertThat(invoice.getTotalLines()).as("TotalLines").isEqualByComparingTo(totalLines);
+		}
+
+		final String currencyCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Currency_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(currencyCode))
+		{
+			final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
+
+			softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID").isEqualTo(currencyId.getRepoId());
+		}
+
+		final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateInvoiced);
+		if (dateInvoiced != null)
+		{
+			final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateInvoiced(), zoneId)).isEqualTo(dateInvoiced);
+		}
+
+		final LocalDate dateAcct = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateAcct);
+		if (dateAcct != null)
+		{
+			final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateAcct(), zoneId)).isEqualTo(dateAcct);
+		}
+
+		final LocalDate dateOrdered = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateOrdered);
+		if (dateOrdered != null)
+		{
+			final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
+		}
+
+		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
+		if (Check.isNotBlank(externalId))
+		{
+			softly.assertThat(invoice.getExternalId()).as("ExternalId").isEqualTo(externalId);
+		}
+
+		final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(docTypeIdentifier))
+		{
+			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+			softly.assertThat(docTypeRecord).isNotNull();
+
+			softly.assertThat(invoice.getC_DocType_ID()).as(COLUMNNAME_C_DocType_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
+		}
+
+		final String docTypeTargetIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocTypeTarget_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(docTypeTargetIdentifier))
+		{
+			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeTargetIdentifier);
+			softly.assertThat(docTypeRecord).isNotNull();
+
+			softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
+		}
+
+		final Boolean isSOTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
+		if (isSOTrx != null)
+		{
+			softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx);
+		}
+
 		{// payment related
 			final Boolean invoiceIsPaid = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPaid, null);
 
@@ -454,19 +590,41 @@ public class C_Invoice_StepDef
 
 			if (invoiceIsPaid != null)
 			{
-				assertThat(invoice.isPaid()).isEqualTo(invoiceIsPaid);
+				softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(invoiceIsPaid);
 			}
 
 			if (invoiceOpenAmt != null)
 			{
 				final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
 						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-															.evaluationDate(ZonedDateTime.now())
-															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-															.build()).get(0);
-				assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).isEqualTo(invoiceOpenAmt);
+								.evaluationDate(ZonedDateTime.now())
+								.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+								.build()).get(0);
+				softly.assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).as("OpenAmountConverted").isEqualByComparingTo(invoiceOpenAmt);
 			}
 		}
+
+		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(sectionCodeIdentifier))
+		{
+			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+			softly.assertThat(invoice.getM_SectionCode_ID()).as("M_SectionCode_ID").isEqualTo(sectionCode.getM_SectionCode_ID());
+		}
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+		}
+
+		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(costCenterIdentifier))
+		{
+			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
+			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
+		}
+		softly.assertAll();
 	}
 
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)
@@ -561,6 +719,51 @@ public class C_Invoice_StepDef
 		return true;
 	}
 
+	@Nullable
+	private I_C_Invoice_Candidate getFirstInvoiceCandidateByOrderId(@NonNull final OrderId targetOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, targetOrderId)
+				.orderBy(COLUMNNAME_C_Invoice_Candidate_ID)
+				.create()
+				.first(I_C_Invoice_Candidate.class);
+	}
+
+	private boolean isInvoiceCandidateReadyToBeProcessed(@NonNull final OrderId targetOrderId)
+	{
+		final I_C_Invoice_Candidate invoiceableInvoiceCand = getFirstInvoiceCandidateByOrderId(targetOrderId);
+
+		if (invoiceableInvoiceCand == null)
+		{
+			return false;
+		}
+
+		return invoiceableInvoiceCand.getQtyToInvoice().signum() > 0 || invoiceableInvoiceCand.getQtyToInvoice_Override().signum() > 0;
+	}
+
+	private void logCurrentContext(@NonNull final OrderId targetOrderId)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for invoice candidate with:").append("\n")
+				.append(COLUMNNAME_C_Order_ID).append(" : ").append(targetOrderId).append("\n")
+				.append(COLUMNNAME_QtyToInvoice).append(" > 0").append("\n")
+				.append("OR ").append(COLUMNNAME_QtyToInvoice_Override).append(" > 0");
+
+		message.append("C_Invoice_Candidate record:").append("\n");
+
+		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
+
+		message.append(COLUMNNAME_C_Invoice_Candidate_ID).append(" : ").append(invoiceCandidateRecord.getC_Invoice_Candidate_ID()).append(" ; ")
+				.append(COLUMNNAME_C_Order_ID).append(" : ").append(invoiceCandidateRecord.getC_Order_ID()).append(" ; ")
+				.append(COLUMNNAME_QtyToInvoice).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice()).append(" ; ")
+				.append(COLUMNNAME_QtyToInvoice_Override).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice_Override()).append(" ; ")
+				.append("\n");
+
+		logger.error("*** Error while looking for first invoice-able invoice candidate record, see current context: \n" + message);
+	}
+
 	private void create_C_Invoice(@NonNull final Map<String, String> row)
 	{
 		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -601,10 +804,69 @@ public class C_Invoice_StepDef
 		invoice.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
+		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocumentNo);
+		if (Check.isNotBlank(documentNo))
+		{
+			invoice.setDocumentNo(documentNo);
+		}
+
+		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_ExternalId);
+		if (Check.isNotBlank(externalId))
+		{
+			invoice.setExternalId(externalId);
+		}
+
 		invoiceDAO.save(invoice);
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
+	@And("update C_Invoice:")
+	public void update_C_Invoice(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			updateInvoice(row);
+		}
+	}
+
+	private void updateInvoice(@NonNull final Map<String, String> row)
+	{
+		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
+
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+		if (dateInvoiced != null)
+		{
+			invoice.setDateInvoiced(dateInvoiced);
+		}
+
+		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
+		if (Check.isNotBlank(paymentTerm))
+		{
+			final PaymentTermQuery query = PaymentTermQuery.builder()
+					.orgId(StepDefConstants.ORG_ID)
+					.value(paymentTerm)
+					.build();
+
+			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+					.orElse(null);
+
+			assertThat(paymentTermId).isNotNull();
+
+			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		}
+
+		final Timestamp dueDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DueDate);
+		if (dueDate != null)
+		{
+			invoice.setDueDate(dueDate);
+		}
+
+		InterfaceWrapperHelper.save(invoice);
+
+		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
 }

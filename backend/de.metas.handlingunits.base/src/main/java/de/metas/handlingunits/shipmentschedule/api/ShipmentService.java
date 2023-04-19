@@ -25,13 +25,30 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
+import de.metas.handlingunits.picking.job.service.PickingJobLockService;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -39,6 +56,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
@@ -46,12 +64,13 @@ import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.picking.api.PickingConfigRepository;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -103,7 +122,36 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository())));
+			final PickingConfigRepositoryV2 pickingConfigRepo = new PickingConfigRepositoryV2();
+			final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+			final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+			final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
+			final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
+			final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+			final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
+			final PickingJobService pickingJobService = new PickingJobService(
+					pickingJobRepository,
+					new PickingJobLockService(new SqlShipmentScheduleLockRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())),
+					pickingJobSlotService,
+					new PickingCandidateService(
+							new PickingConfigRepository(),
+							pickingCandidateRepository,
+							new HuId2SourceHUsService(new HUTraceRepository()),
+							huReservationService,
+							bpartnerBL,
+							ADReferenceService.newMocked()
+					),
+					new PickingJobHUReservationService(huReservationService),
+					pickingConfigRepo,
+					new DefaultPickingJobLoaderSupportingServicesFactory(
+							pickingJobSlotService,
+							bpartnerBL,
+							new HUQRCodesService(
+									huQRCodesRepository,
+									new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+					)
+			);
+			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()), pickingJobService));
 		}
 		else
 		{
@@ -214,7 +262,7 @@ public class ShipmentService implements IShipmentService
 	{
 		return retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds)
 				.stream()
-				.map(inOutDAO::getLineById)
+				.map(inOutDAO::getLineByIdInTrx)
 				.collect(ImmutableList.toImmutableList());
 	}
 

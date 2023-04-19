@@ -69,7 +69,6 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -305,6 +304,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update qtyOrdered. we need to be up to date for that factor
 		invoiceCandidateHandlerBL.setOrderedData(icRecord);
 
+		//update isInEffect flag
+		invoiceCandidateHandlerBL.setIsInEffect(icRecord);
+
 		// i.e. QtyOrdered's signum. Used at different places throughout this method
 		final BigDecimal factor;
 		if (icRecord.getQtyOrdered().signum() < 0)
@@ -395,6 +397,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
+
+		// in unit tests there might be no handler; don't bother in those cases
+		if (icRecord.getC_ILCandHandler_ID() > 0)
+		{
+			invoiceCandidateHandlerBL.postUpdate(icRecord);
+		}
 	}
 
 	/**
@@ -417,7 +425,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 			{
 				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
-				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineById(inOutLineId);
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineByIdInTrx(inOutLineId);
 
 				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 			}
@@ -441,7 +449,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			Loggables.withLogger(logger, Level.DEBUG)
 					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
 												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
-			
+
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}

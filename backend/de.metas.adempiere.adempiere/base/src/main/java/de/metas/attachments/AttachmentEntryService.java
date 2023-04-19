@@ -7,12 +7,14 @@ import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderServic
 import de.metas.attachments.listener.TableAttachmentListenerRepository;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.attachments.migration.AttachmentMigrationService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,8 @@ public class AttachmentEntryService
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
+
+	private static final AdMessageKey MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF = AdMessageKey.of("de.metas.attachments.ExpectedOneAttachmentForRecordRef");
 
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
@@ -142,7 +146,7 @@ public class AttachmentEntryService
 	}
 
 	/**
-	 * @param referencedRecords may be a single model object, a a single {@link TableRecordReference} or a collection of both.
+	 * @param referencedRecords may be a single model object, a single {@link TableRecordReference} or a collection of both.
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
@@ -394,6 +398,23 @@ public class AttachmentEntryService
 			final byte[] data)
 	{
 		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
+	}
+
+	@NonNull
+	public Optional<AttachmentEntry> getUniqueByReferenceRecord(@NonNull final TableRecordReference recordReference)
+	{
+		final List<AttachmentEntry> attachmentEntries = getByReferencedRecord(recordReference);
+
+		if (attachmentEntries.size() > 1)
+		{
+			throw new AdempiereException(MSG_EXPECTED_ONE_ATTACHMENT_FOR_RECORD_REF,
+										 recordReference.getTableName(),
+										 recordReference.getRecord_ID());
+		}
+
+		return Optional.of(attachmentEntries)
+				.filter(entries -> entries.size() == 1)
+				.map(entries -> entries.get(0));
 	}
 
 	@NonNull

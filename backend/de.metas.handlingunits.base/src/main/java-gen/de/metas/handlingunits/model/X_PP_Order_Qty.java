@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_Qty, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1616741663L;
+	private static final long serialVersionUID = -655188531L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (final Properties ctx, final int PP_Order_Qty_ID, @Nullable final String trxName)
@@ -93,6 +93,18 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
+	public void setMovementDate (final java.sql.Timestamp MovementDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getMovementDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
+	}
+
+	@Override
 	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class);
@@ -135,15 +147,30 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
-	public void setMovementDate (final java.sql.Timestamp MovementDate)
+	public de.metas.handlingunits.model.I_M_HU getNew_LU()
 	{
-		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
+		return get_ValueAsPO(COLUMNNAME_New_LU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
 
 	@Override
-	public java.sql.Timestamp getMovementDate() 
+	public void setNew_LU(final de.metas.handlingunits.model.I_M_HU New_LU)
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
+		set_ValueFromPO(COLUMNNAME_New_LU_ID, de.metas.handlingunits.model.I_M_HU.class, New_LU);
+	}
+
+	@Override
+	public void setNew_LU_ID (final int New_LU_ID)
+	{
+		if (New_LU_ID < 1) 
+			set_Value (COLUMNNAME_New_LU_ID, null);
+		else 
+			set_Value (COLUMNNAME_New_LU_ID, New_LU_ID);
+	}
+
+	@Override
+	public int getNew_LU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_New_LU_ID);
 	}
 
 	@Override

@@ -71,9 +71,9 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -107,7 +107,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-@ApiResponses(value = { @ApiResponse(code = 401, message = "Unauthorized") })
+@ApiResponses(value = { @ApiResponse(responseCode = "401", description = "Unauthorized") })
 @RestController
 @RequestMapping(value = DebugRestController.ENDPOINT)
 public class DebugRestController
@@ -139,12 +139,15 @@ public class DebugRestController
 	@Lazy
 	private ObjectMapper sharedJsonObjectMapper;
 
+	@Autowired
+	private LookupDataSourceFactory lookupDataSourceFactory;
+
 	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.of(userSession);
 	}
 
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "cache reset done") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "cache reset done") })
 	@RequestMapping(value = "/cacheReset", method = RequestMethod.GET)
 	public JSONCacheResetResult cacheReset(
 			@RequestParam(name = "forgetNotSavedDocuments", defaultValue = "false", required = false) final boolean forgetNotSavedDocuments)
@@ -267,7 +270,7 @@ public class DebugRestController
 	{
 		userSession.assertLoggedIn();
 
-		return LookupDataSourceFactory.instance.getCacheStats()
+		return lookupDataSourceFactory.getCacheStats()
 				.stream()
 				.map(CCache.CCacheStats::toString)
 				.collect(GuavaCollectors.toImmutableList());
@@ -445,7 +448,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("http.cache.maxAge")
-	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final int httpCacheMaxAge)
+	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @Parameter(description = "Cache-control's max age in seconds") final int httpCacheMaxAge)
 	{
 		userSession.assertLoggedIn();
 
@@ -455,7 +458,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("http.use.AcceptLanguage")
-	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
+	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @Parameter(description = "Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
 	{
 		userSession.assertLoggedIn();
 
@@ -479,7 +482,7 @@ public class DebugRestController
 		final String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
 				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
-		final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_None);
+		final int countDeleted = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
 
 		//
 		// Clear view's cache

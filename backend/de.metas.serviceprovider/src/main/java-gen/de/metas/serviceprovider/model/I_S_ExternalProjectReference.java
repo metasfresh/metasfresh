@@ -1,7 +1,8 @@
 package de.metas.serviceprovider.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for S_ExternalProjectReference
  *  @author metasfresh (generated) 
@@ -230,6 +231,52 @@ public interface I_S_ExternalProjectReference
 	String COLUMNNAME_ProjectType = "ProjectType";
 
 	/**
+	 * Set External project reference Effort ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_ExternalProjectReference_Effort_ID (int S_ExternalProjectReference_Effort_ID);
+
+	/**
+	 * Get External project reference Effort ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_ExternalProjectReference_Effort_ID();
+
+	@Nullable de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference_Effort();
+
+	void setS_ExternalProjectReference_Effort(@Nullable de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference_Effort);
+
+	ModelColumn<I_S_ExternalProjectReference, de.metas.serviceprovider.model.I_S_ExternalProjectReference> COLUMN_S_ExternalProjectReference_Effort_ID = new ModelColumn<>(I_S_ExternalProjectReference.class, "S_ExternalProjectReference_Effort_ID", de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
+	String COLUMNNAME_S_ExternalProjectReference_Effort_ID = "S_ExternalProjectReference_Effort_ID";
+
+	/**
+	 * Set External project reference ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
+
+	/**
+	 * Get External project reference ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_ExternalProjectReference_ID();
+
+	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_S_ExternalProjectReference_ID = new ModelColumn<>(I_S_ExternalProjectReference.class, "S_ExternalProjectReference_ID", null);
+	String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
+
+	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
  lowest number comes first
@@ -253,27 +300,6 @@ public interface I_S_ExternalProjectReference
 
 	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_SeqNo = new ModelColumn<>(I_S_ExternalProjectReference.class, "SeqNo", null);
 	String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
-	 * Set External project reference ID.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
-
-	/**
-	 * Get External project reference ID.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getS_ExternalProjectReference_ID();
-
-	ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_S_ExternalProjectReference_ID = new ModelColumn<>(I_S_ExternalProjectReference.class, "S_ExternalProjectReference_ID", null);
-	String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
 
 	/**
 	 * Get Updated.

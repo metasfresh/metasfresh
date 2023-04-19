@@ -28,11 +28,12 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -43,6 +44,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
@@ -81,6 +83,7 @@ public class M_ReceiptSchedule_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
@@ -136,13 +139,13 @@ public class M_ReceiptSchedule_StepDef
 			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
-			Assertions.assertThat(bPartnerLocationID).isNotNull();
+			assertThat(bPartnerLocationID).isNotNull();
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer productID = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			Assertions.assertThat(productID).isNotNull();
+			assertThat(productID).isNotNull();
 
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 
@@ -156,6 +159,15 @@ public class M_ReceiptSchedule_StepDef
 			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
 			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
 			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
+
+			final BigDecimal qtyMoved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyMoved);
+			if (qtyMoved != null)
+			{
+				assertThat(receiptSchedule.getQtyMoved()).isEqualTo(qtyMoved);
+			}
+
+			final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
+			assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
 			final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedTU);
 			if (qtyOrderedTU != null)
@@ -180,6 +192,26 @@ public class M_ReceiptSchedule_StepDef
 
 		final List<I_M_ReceiptSchedule> purchaseOrderReceiptSchedules = producer.createOrUpdateReceiptSchedules(purchaseOrderLine, Collections.emptyList());
 		assertThat(purchaseOrderReceiptSchedules).isNull();
+	}
+
+	@And("^the M_ReceiptSchedule identified by (.*) is (closed|reactivated)$")
+	public void M_ReceiptSchedule_action(@NonNull final String receiptScheduleIdentifier, @NonNull final String action)
+	{
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case closed:
+				receiptScheduleBL.close(receiptSchedule);
+				break;
+			case reactivated:
+				receiptScheduleBL.reopen(receiptSchedule);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_ReceiptSchedule action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
 	}
 
 	@And("^trigger (EMPTIES RECEIVE|EMPTIES RETURN) process:$")
@@ -239,7 +271,7 @@ public class M_ReceiptSchedule_StepDef
 	private void createInOutEmpties(@NonNull final String movementType, @NonNull final Map<String, String> row)
 	{
 		final String receiptScheduleIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if(Check.isNotBlank(receiptScheduleIdentifier))
+		if (Check.isNotBlank(receiptScheduleIdentifier))
 		{
 			createDraftEmptiesForReceiptSchedule(movementType, row);
 			return;
