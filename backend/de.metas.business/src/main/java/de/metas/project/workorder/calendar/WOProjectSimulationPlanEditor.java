@@ -39,6 +39,7 @@ import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 public class WOProjectSimulationPlanEditor
 {
 	private static final AdMessageKey ERROR_MSG_STEP_CANNOT_BE_SHIFTED = AdMessageKey.of("de.metas.project.workorder.calendar.WoStepCannotBeShifted");
+	private static final AdMessageKey ERROR_MSG_STEP_NO_AVAILABLE_DURATION = AdMessageKey.of("de.metas.project.workorder.calendar.NoAvailableDuration");
 
 	@NonNull private final WOProject _originalProject;
 	@NonNull private final WOProjectSteps _originalSteps;
@@ -367,11 +368,7 @@ public class WOProjectSimulationPlanEditor
 		{
 			final WOProjectStep step = getStepById(stepId);
 
-			throw new AdempiereException("Fail to import step {0}. There is no time left to be allocated for it. Step duration {1}, available duration between steps {2}.")
-					.appendParametersToMessage()
-					.setParameter("seqNo", step.getSeqNo())
-					.setParameter("stepDuration", computedDuration)
-					.setParameter("availableDuration", availableDuration)
+			throw new AdempiereException(ERROR_MSG_STEP_NO_AVAILABLE_DURATION, step.getSeqNo(), computedDuration, availableDuration)
 					.markAsUserValidationError();
 		}
 
