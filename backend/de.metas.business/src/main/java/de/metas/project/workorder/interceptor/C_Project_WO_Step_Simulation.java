@@ -57,6 +57,6 @@ public class C_Project_WO_Step_Simulation
 
 		final SimulationPlanId selectedSimulationPlanId = SimulationPlanId.ofRepoId(record.getC_SimulationPlan_ID());
 
-		woProjectSimulationService.deleteStepFromSimulation(stepSimulation, selectedSimulationPlanId);
+		woProjectSimulationService.deleteResourceForStepSimulation(stepSimulation, selectedSimulationPlanId);
 	}
 }

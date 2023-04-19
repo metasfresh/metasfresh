@@ -41,10 +41,8 @@ public class C_Project_WO_Resource_Simulation
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteWoResourceSimulationConflicts(@NonNull final I_C_Project_WO_Resource_Simulation record)
 	{
-		queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class)
-				.addOnlyActiveRecordsFilter()
+		queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class, record)
 				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, record.getC_SimulationPlan_ID())
-				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_ID, record.getC_Project_ID())
 				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource_ID, record.getC_Project_WO_Resource_ID())
 				.create()
 				.delete();

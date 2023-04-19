@@ -90,21 +90,6 @@ public final class WOProjectSimulationPlan
 	}
 
 	@NonNull
-	public WOProjectSimulationPlan removeStepSimulation(@NonNull final Set<WOProjectStepId> woProjectStepIdSet)
-	{
-		final ImmutableSet<WOProjectStepId> newStepIds = CollectionUtils.difference(this.stepsById.keySet(), woProjectStepIdSet);
-
-		final Map<WOProjectStepId, WOProjectStepSimulation> filteredStepsById = newStepIds.stream()
-				.map(stepId -> getStepsById().get(stepId))
-				.filter(Objects::nonNull)
-				.collect(Collectors.toMap(WOProjectStepSimulation::getStepId, Function.identity()));
-
-		return toBuilder()
-				.stepsById(filteredStepsById)
-				.build();
-	}
-
-	@NonNull
 	public WOProjectSimulationPlan removeResourceSimulation(@NonNull final Set<WOProjectResourceId> woProjectResourceIds)
 	{
 		final ImmutableSet<WOProjectResourceId> filteredResourcesIds = CollectionUtils.difference(this.projectResourcesById.keySet(), woProjectResourceIds);

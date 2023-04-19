@@ -105,7 +105,7 @@ public class WOProjectSimulationService
 		woProjectConflictService.checkSimulationConflicts(simulationPlan, resourceIds);
 	}
 
-	public void deleteStepFromSimulation(@NonNull final WOProjectStepSimulation stepSimulation, @NonNull final SimulationPlanId simulationPlanId)
+	public void deleteResourceForStepSimulation(@NonNull final WOProjectStepSimulation stepSimulation, @NonNull final SimulationPlanId simulationPlanId)
 	{
 		final Set<WOProjectResourceId> resourceIds = woProjectService.getResourcesByProjectId(stepSimulation.getProjectId())
 				.stream()
@@ -115,8 +115,7 @@ public class WOProjectSimulationService
 
 		final WOProjectSimulationPlan woProjectSimulationPlan = woProjectSimulationRepository.getById(simulationPlanId);
 
-		final WOProjectSimulationPlan updatedWoProjectSimulationPlan = woProjectSimulationPlan.removeStepSimulation(ImmutableSet.of(stepSimulation.getStepId()))
-				.removeResourceSimulation(resourceIds);
+		final WOProjectSimulationPlan updatedWoProjectSimulationPlan = woProjectSimulationPlan.removeResourceSimulation(resourceIds);
 
 		woProjectSimulationRepository.savePlan(updatedWoProjectSimulationPlan);
 	}
