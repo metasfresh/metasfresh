@@ -24,7 +24,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: SAP_GLJournal
 -- Key: SAP_GLJournal.SAP_GLJournal_ID
 -- 2023-04-18T15:37:03.471Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,585351,0,541728,542275,541693,TO_TIMESTAMP('2023-04-18 16:37:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N',TO_TIMESTAMP('2023-04-18 16:37:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy) VALUES (0,585351,0,541728,542275,NULL,TO_TIMESTAMP('2023-04-18 16:37:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N',TO_TIMESTAMP('2023-04-18 16:37:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- Name: SAP_GLJournal_Reversal
@@ -40,7 +40,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 -- Table: SAP_GLJournal
 -- Key: SAP_GLJournal.SAP_GLJournal_ID
 -- 2023-04-18T15:45:43.923Z
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,585351,0,541729,542275,541693,TO_TIMESTAMP('2023-04-18 16:45:43','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N',TO_TIMESTAMP('2023-04-18 16:45:43','YYYY-MM-DD HH24:MI:SS'),100,'SAP_GLJournal.Reversal_ID =@SAP_GLJournal_ID/-1@')
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,ShowInactiveValues,Updated,UpdatedBy,WhereClause) VALUES (0,585351,0,541729,542275,NULL,TO_TIMESTAMP('2023-04-18 16:45:43','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N',TO_TIMESTAMP('2023-04-18 16:45:43','YYYY-MM-DD HH24:MI:SS'),100,'SAP_GLJournal.Reversal_ID =@SAP_GLJournal_ID/-1@')
 ;
 
 -- 2023-04-18T16:29:03.087Z
