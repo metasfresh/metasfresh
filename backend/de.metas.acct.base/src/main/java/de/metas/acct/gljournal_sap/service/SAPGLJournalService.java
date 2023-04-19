@@ -87,7 +87,7 @@ public class SAPGLJournalService
 		final SAPGLJournal journalToBeCopied = glJournalRepository.getById(copyRequest.getSourceJournalId());
 		final SAPGLJournalCreateRequest createRequest = SAPGLJournalCreateRequest.of(journalToBeCopied,
 																					 copyRequest.getDateDoc(),
-																					 copyRequest.getNegateAmounts());
+																					 copyRequest.getReversePostingSign());
 
 		return glJournalRepository.create(createRequest, currencyConverter);
 	}

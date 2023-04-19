@@ -28,6 +28,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.document.DocTypeId;
 import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
@@ -35,7 +36,7 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
@@ -59,11 +60,13 @@ public class SAPGLJournalCreateRequest
 
 	@NonNull ImmutableList<SAPGLJournalLineCreateRequest> lines;
 
+	@Nullable SAPGLJournalId reversalId;
+
 	@NonNull
 	public static SAPGLJournalCreateRequest of(
 			@NonNull final SAPGLJournal journal,
 			@NonNull final Instant dateDoc,
-			final boolean negateAmounts)
+			final boolean reversePostingSign)
 	{
 		return SAPGLJournalCreateRequest.builder()
 				.docTypeId(journal.getDocTypeId())
@@ -71,8 +74,9 @@ public class SAPGLJournalCreateRequest
 				.dateDoc(dateDoc)
 				.acctSchemaId(journal.getAcctSchemaId())
 				.postingType(journal.getPostingType())
-				.totalAcctDR(journal.getTotalAcctDR().negateIf(negateAmounts))
-				.totalAcctCR(journal.getTotalAcctCR().negateIf(negateAmounts))
+				.reversalId(reversePostingSign ? journal.getId() : null)
+				.totalAcctDR(reversePostingSign ? journal.getTotalAcctCR() : journal.getTotalAcctDR())
+				.totalAcctCR(reversePostingSign ? journal.getTotalAcctDR() : journal.getTotalAcctCR())
 				.orgId(journal.getOrgId())
 				.dimension(journal.getDimension())
 				.description(journal.getDescription())
@@ -80,7 +84,7 @@ public class SAPGLJournalCreateRequest
 				//
 				.lines(journal.getLines()
 							   .stream()
-							   .map(line -> SAPGLJournalLineCreateRequest.of(line, negateAmounts))
+							   .map(line -> SAPGLJournalLineCreateRequest.of(line, reversePostingSign))
 							   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}

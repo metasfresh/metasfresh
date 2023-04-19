@@ -27,12 +27,12 @@ public class SAPGLJournalLineCreateRequest
 	@NonNull
 	public static SAPGLJournalLineCreateRequest of(
 			@NonNull final SAPGLJournalLine line,
-			@NonNull final Boolean negateAmounts)
+			@NonNull final Boolean reversePostingSign)
 	{
 		return SAPGLJournalLineCreateRequest.builder()
-				.postingSign(line.getPostingSign())
+				.postingSign(reversePostingSign ? line.getPostingSign().reverse() : line.getPostingSign())
 				.account(line.getAccount())
-				.amount(line.getAmount().negateIf(negateAmounts).toBigDecimal())
+				.amount(line.getAmount().toBigDecimal())
 				.dimension(line.getDimension())
 				.description(line.getDescription())
 				.taxId(line.getTaxId())

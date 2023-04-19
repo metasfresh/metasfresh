@@ -50,8 +50,8 @@ public class SAP_GLJournal_CopyDocument extends JavaProcess implements IProcessP
 	@Param(mandatory = true, parameterName = "DateDoc")
 	private Instant dateDoc;
 
-	@Param(mandatory = true, parameterName = "NegateAmounts")
-	private boolean negateAmounts;
+	@Param(mandatory = true, parameterName = "ReversePostingSign")
+	private boolean reversePostingSign;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -77,7 +77,7 @@ public class SAP_GLJournal_CopyDocument extends JavaProcess implements IProcessP
 		final SAPGLJournal createdJournal = glJournalService.copy(SAPGLJournalCopyRequest.builder()
 																			  .sourceJournalId(SAPGLJournalId.ofRepoId(getRecord_ID()))
 																			  .dateDoc(dateDoc)
-																			  .negateAmounts(negateAmounts)
+																			  .reversePostingSign(reversePostingSign)
 																			  .build());
 
 		getResult().setRecordToOpen(TableRecordReference.of(I_SAP_GLJournal.Table_Name, createdJournal.getId()),
