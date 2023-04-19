@@ -22,29 +22,29 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.ConfigurationException;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.IMBeanAwareService;
-import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import java.util.Properties;
 
 class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBeanAwareService
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final WorkpackageProcessorBlackList blacklist = new WorkpackageProcessorBlackList();
+
+	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	public WorkpackageProcessorFactory()
 	{
@@ -58,30 +58,33 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 		blacklist.assertNotBlacklisted(packageProcessorId);
 
 		//
-		// Load Package Processor Defintion
-		final I_C_Queue_PackageProcessor packageProcessorDef = Services.get(IQueueDAO.class).retrievePackageProcessorDefById(ctx, packageProcessorId);
-		if (packageProcessorDef == null)
+		// Load Package Processor Definition
+		final QueuePackageProcessor queuePackageProcessor;
+		try
 		{
-			final ConfigurationException exception = new ConfigurationException("No package processor definition found for ID=" + packageProcessorId);
-			blacklist.addToBlacklist(packageProcessorId, null, exception);
-			throw exception;
+			queuePackageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(QueuePackageProcessorId.ofRepoId(packageProcessorId));
+		}
+		catch (final ConfigurationException e)
+		{
+			blacklist.addToBlacklist(packageProcessorId, null, e);
+			throw e;
 		}
 
-		return getWorkpackageProcessor(packageProcessorDef);
+		return getWorkpackageProcessor(queuePackageProcessor);
 	}
 
 	@Override
-	public IWorkpackageProcessor getWorkpackageProcessor(final I_C_Queue_PackageProcessor packageProcessorDef)
+	public IWorkpackageProcessor getWorkpackageProcessor(@NonNull final QueuePackageProcessor packageProcessorDef)
 	{
 		final boolean checkBlacklist = true;
 		return getWorkpackageProcessor(packageProcessorDef, checkBlacklist);
 	}
 
-	protected IWorkpackageProcessor getWorkpackageProcessor(final I_C_Queue_PackageProcessor packageProcessorDef, boolean checkBlacklist)
+	protected IWorkpackageProcessor getWorkpackageProcessor(@NonNull final QueuePackageProcessor packageProcessorDef, final boolean checkBlacklist)
 	{
 		Check.assumeNotNull(packageProcessorDef, "packageProcessorDef not null");
 
-		final int packageProcessorId = packageProcessorDef.getC_Queue_PackageProcessor_ID();
+		final int packageProcessorId = packageProcessorDef.getQueuePackageProcessorId().getRepoId();
 		if (checkBlacklist)
 		{
 			blacklist.assertNotBlacklisted(packageProcessorId);
@@ -109,13 +112,13 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	}
 
 	@Override
-	public void validateWorkpackageProcessor(final I_C_Queue_PackageProcessor packageProcessorDef)
+	public void validateWorkpackageProcessor(@NonNull final QueuePackageProcessor packageProcessorDef)
 	{
 		final IWorkpackageProcessor packageProcessor = getWorkpackageProcessor(packageProcessorDef, false); // checkBlacklist=false
 		Check.assumeNotNull(packageProcessor, "No " + IWorkpackageProcessor.class + " could be loaded for {}", packageProcessorDef);
 
 		// If everything is ok, make sure to remove it from list
-		blacklist.removeFromBlacklist(packageProcessorDef.getC_Queue_PackageProcessor_ID());
+		blacklist.removeFromBlacklist(packageProcessorDef.getQueuePackageProcessorId().getRepoId());
 	}
 
 	protected IWorkpackageProcessor getWorkpackageProcessorInstance(final String classname)
@@ -148,7 +151,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	}
 
 	@Override
-	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull IWorkpackageProcessor workpackageProcessor)
+	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull final IWorkpackageProcessor workpackageProcessor)
 	{
 		// NOTE: keep in sync with getWorkpackageProcessorStatistics(I_C_Queue_PackageProcessor workpackage). Both methods shall build the name in the same way
 		final String workpackageProcessorName = workpackageProcessor.getClass().getName();
@@ -157,7 +160,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 	}
 
 	@Override
-	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull final I_C_Queue_PackageProcessor workpackageProcessorDef)
+	public IMutableQueueProcessorStatistics getWorkpackageProcessorStatistics(@NonNull final QueuePackageProcessor workpackageProcessorDef)
 	{
 		// NOTE: keep in sync with getWorkpackageProcessorStatistics(IWorkpackageProcessor workpackageProcessor). Both methods shall build the name in the same way
 		final String workpackageProcessorName = workpackageProcessorDef.getClassname();

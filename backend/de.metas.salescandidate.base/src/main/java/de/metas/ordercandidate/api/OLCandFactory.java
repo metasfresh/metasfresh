@@ -3,6 +3,7 @@ package de.metas.ordercandidate.api;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderLineGroup;
@@ -57,7 +58,7 @@ final class OLCandFactory
 				.build();
 
 		final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(record);
-		
+
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(record)
@@ -77,6 +78,7 @@ final class OLCandFactory
 				.bpartnerName(record.getBPartnerName())
 				.email(record.getEMail())
 				.phone(record.getPhone())
+				.adIssueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
 				.build();
 	}
 }

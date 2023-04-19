@@ -1,23 +1,24 @@
 package de.metas.ordercandidate.api;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_OrderLine;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.NullOLCandListener;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -42,13 +43,16 @@ import lombok.ToString;
  */
 
 @Component
-public class OLCandRegistry
+public class OLCandSPIRegistry
 {
+
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+
 	private final IOLCandListener listeners;
 	private final IOLCandGroupingProvider groupingValuesProviders;
 	private final IOLCandValidator validators;
 
-	public OLCandRegistry(
+	public OLCandSPIRegistry(
 			final Optional<List<IOLCandListener>> optionalListeners,
 			final Optional<List<IOLCandGroupingProvider>> optionalGroupingValuesProviders,
 			final Optional<List<IOLCandValidator>> optionalValidators)
@@ -70,7 +74,7 @@ public class OLCandRegistry
 				.sorted(Comparator.comparing(IOLCandValidator::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
 		this.validators = !validators.isEmpty()
-				? new CompositeOLCandValidator(validators)
+				? new CompositeOLCandValidator(validators, errorManager)
 				: NullOLCandValidator.instance;
 	}
 
@@ -157,10 +161,12 @@ public class OLCandRegistry
 	private static final class CompositeOLCandValidator implements IOLCandValidator
 	{
 		private final ImmutableList<IOLCandValidator> validators;
+		private final IErrorManager errorManager;
 
-		private CompositeOLCandValidator(@NonNull final List<IOLCandValidator> validators)
+		private CompositeOLCandValidator(@NonNull final List<IOLCandValidator> validators, @NonNull final IErrorManager errorManager)
 		{
 			this.validators = ImmutableList.copyOf(validators);
+			this.errorManager = errorManager;
 		}
 
 		/** @return {@code 0}. Actually, it doesn't matte for this validator. */
@@ -171,7 +177,8 @@ public class OLCandRegistry
 		}
 
 		/**
-		 * Change {@link I_C_OLCand#COLUMN_IsError IsError} and {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg} accordingly, but <b>do not</b> save.
+		 * Change {@link I_C_OLCand#COLUMN_IsError IsError}, {@link I_C_OLCand#COLUMN_ErrorMsg ErrorMsg},
+		 * {@link I_C_OLCand#COLUMNNAME_AD_Issue_ID ADIssueID} accordingly, but <b>do not</b> save.
 		 */
 		@Override
 		public void validate(@NonNull final I_C_OLCand olCand)
@@ -190,6 +197,10 @@ public class OLCandRegistry
 							.setParameter("OLCandValidator", olCandValdiator.getClass().getSimpleName());
 					olCand.setIsError(true);
 					olCand.setErrorMsg(me.getLocalizedMessage());
+
+					final AdIssueId issueId = errorManager.createIssue(e);
+					olCand.setAD_Issue_ID(issueId.getRepoId());
+
 					break;
 				}
 			}

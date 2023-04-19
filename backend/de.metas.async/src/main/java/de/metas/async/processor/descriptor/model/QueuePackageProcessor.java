@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.salescandidate.base
+ * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,25 @@
  * #L%
  */
 
-package de.metas.ordercandidate.api;
+package de.metas.async.processor.descriptor.model;
 
+import de.metas.async.processor.QueuePackageProcessorId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-public class OLCandValidationResult
+@Builder
+public class QueuePackageProcessor
 {
 	@NonNull
-	OLCandId olCandId;
+	QueuePackageProcessorId queuePackageProcessorId;
 
-	boolean isOk;
+	@NonNull
+	String classname;
 
-	public static OLCandValidationResult ok(@NonNull final OLCandId olCandId)
-	{
-		return new OLCandValidationResult(olCandId, true);
-	}
-
-	public static OLCandValidationResult error(@NonNull final OLCandId olCandId)
-	{
-		return new OLCandValidationResult(olCandId, false);
-	}
+	@Nullable
+	String internalName;
 }

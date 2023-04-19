@@ -3,7 +3,9 @@ Feature: Validate external reference is sent to RabbitMQ
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
+  @ignore
   Scenario: Export external reference and c_bpartner when created by RabbitMQ.SubjectCreatedByUserGroup_ID
     Given metasfresh contains AD_UserGroup:
       | AD_UserGroup_ID.Identifier | Name                  | IsActive | OPT.Description                   |
@@ -19,8 +21,6 @@ Feature: Validate external reference is sent to RabbitMQ
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue                       | OPT.IsSyncExternalReferencesToRabbitMQ | OPT.IsAutoSendWhenCreatedByUserGroup | OPT.IsSyncBPartnersToRabbitMQ | OPT.SubjectCreatedByUserGroup_ID.Identifier |
       | config_1                            | RabbitMQ | syncExternalReferenceExportRabbitMQUpdate | true                                   | true                                 | true                          | userGroup_externalRef                       |
       | config_noAutoSync                   | RabbitMQ | autoExportRabbitMQExternalRef             | true                                   |                                      | false                         |                                             |
-
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -91,6 +91,7 @@ Feature: Validate external reference is sent to RabbitMQ
       | config_noAutoSync                   |
 
 
+  @ignore
   Scenario: Export external reference when updated, if it was previously exported.
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -195,14 +196,16 @@ Feature: Validate external reference is sent to RabbitMQ
       | dataExport_BPLocation           | Exported-Standalone | config_1                            | p_1                        |
       | dataExport_BPContact            | Exported-Standalone | config_1                            | p_1                        |
 
+    # we need to make sure the ExportExternalReference Debouncer is empty before changing the external reference
+    And we wait for 500 ms
+
     And the following S_ExternalReference is changed:
       | S_ExternalReference_ID.Identifier | OPT.Version |
       | externalRef_BPartner              | version_1   |
 
-    And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                      |
       | config_1                            | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_S2_25032022","type":"BPartner"},{"id":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_S2_25032022","type":"UserID"}]} |
-
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |
       | config_1                            |

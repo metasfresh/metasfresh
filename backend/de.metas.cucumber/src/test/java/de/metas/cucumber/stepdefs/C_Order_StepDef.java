@@ -477,8 +477,10 @@ public class C_Order_StepDef
 	public void validate_created_order(
 			@NonNull final DataTable table)
 	{
-		final Map<String, String> row = table.asMaps().get(0);
-		validateOrder(row);
+		for (final Map<String, String> row : table.asMaps())
+		{
+			validateOrder(row);
+		}
 	}
 
 	@And("update order")
@@ -530,10 +532,9 @@ public class C_Order_StepDef
 		}
 	}
 
-	private void validateOrder(
-			@NonNull final Map<String, String> row)
+	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
@@ -648,7 +649,7 @@ public class C_Order_StepDef
 		}
 
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_POReference);
-		if(Check.isNotBlank(poReference))
+		if (Check.isNotBlank(poReference))
 		{
 			assertThat(order.getPOReference()).isEqualTo(poReference);
 		}

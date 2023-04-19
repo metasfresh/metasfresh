@@ -31,10 +31,12 @@ import lombok.Value;
 @Value
 public class OlCandEnqueueResult implements IEnqueueResult
 {
+	ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds;
 	int workpackageEnqueuedCount;
 
 	public OlCandEnqueueResult(@NonNull final ImmutableList<QueueWorkPackageId> enqueuedWorkPackageIds)
 	{
+		this.enqueuedWorkPackageIds = enqueuedWorkPackageIds;
 		this.workpackageEnqueuedCount = enqueuedWorkPackageIds.size();
 	}
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-ordercandidates
+ * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,31 @@
  * #L%
  */
 
-package de.metas.common.ordercandidates.v2.response;
+package de.metas.ordercandidate.api.source;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.async.AsyncBatchId;
+import de.metas.ordercandidate.api.OLCandAggregation;
+import de.metas.ordercandidate.api.OLCandOrderDefaults;
+import de.metas.process.PInstanceId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Map;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOLCandClearingResponse.JsonOLCandClearingResponseBuilder.class)
-public class JsonOLCandClearingResponse
+public class GetEligibleOLCandRequest
 {
-	@JsonProperty("successfullyCleared")
-	boolean successfullyCleared;
+	@NonNull
+	PInstanceId selection;
 
-	@JsonProperty("olCandIdToValidationStatus")
-	Map<Integer, Boolean> olCandIdToValidationStatus;
+	@NonNull
+	OLCandAggregation aggregationInfo;
+
+	@NonNull
+	OLCandOrderDefaults orderDefaults;
+
+	@Nullable
+	AsyncBatchId asyncBatchId;
 }

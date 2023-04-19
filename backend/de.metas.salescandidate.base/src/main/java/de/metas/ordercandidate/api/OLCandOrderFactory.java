@@ -14,6 +14,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -62,6 +64,7 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -69,6 +72,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
@@ -99,6 +103,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -140,7 +145,11 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -343,8 +352,12 @@ class OLCandOrderFactory
 				final I_AD_Note note = createOrderCompleteErrorNote(errorMsg);
 				for (final OLCand candidate : candidates)
 				{
-					candidate.setError(errorMsg, note.getAD_Note_ID());
+					final AdIssueId adIssueId = errorManager.createIssue(ex);
+					candidate.setError(errorMsg, note.getAD_Note_ID(), adIssueId);
+
 					save(candidate.unbox());
+
+					olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
 		}
@@ -360,6 +373,8 @@ class OLCandOrderFactory
 		{
 			candidate.setGroupingError(ex.getLocalizedMessage());
 			save(candidate.unbox());
+
+			olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 		}
 	}
 
@@ -408,9 +423,9 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(orderLineIds)
-				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
-				.build());
+															.orderLineIds(orderLineIds)
+															.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
+															.build());
 	}
 
 	@NonNull
@@ -448,14 +463,19 @@ class OLCandOrderFactory
 
 	public void addOLCand(@NonNull final OLCand candidate)
 	{
+		validateCandidateOutOfTrx(candidate.unbox());
+
 		try
 		{
 			addOLCand0(candidate);
+
 			olcandBL.markAsProcessed(candidate);
 		}
 		catch (final Exception ex)
 		{
-			olcandBL.markAsError(userInChargeId, candidate, ex);
+			trxManager.runInNewTrx(() -> olcandBL.markAsError(userInChargeId, candidate, ex));
+
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
@@ -622,6 +642,32 @@ class OLCandOrderFactory
 		save(note);
 
 		return note;
+	}
+
+	private void validateCandidateOutOfTrx(@NonNull final I_C_OLCand candidate)
+	{
+		olCandValidatorService.setValidationProcessInProgress(true);
+
+		try
+		{
+			final I_C_OLCand validatedOlCand = trxManager.callInNewTrx(() -> {
+				final I_C_OLCand cand = olCandValidatorService.validate(candidate);
+
+				saveRecord(cand);
+				return cand;
+			});
+
+			if (validatedOlCand.isError())
+			{
+				throw new AdempiereException("Fail to validate candidate.")
+						.appendParametersToMessage()
+						.setParameter("C_OLCand_ID", candidate.getC_OLCand_ID());
+			}
+		}
+		finally
+		{
+			olCandValidatorService.setValidationProcessInProgress(false);
+		}
 	}
 
 	@Nullable

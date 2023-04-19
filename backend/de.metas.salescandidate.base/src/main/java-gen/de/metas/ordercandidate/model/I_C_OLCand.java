@@ -75,6 +75,26 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
+	 * Set Issues.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Issue_ID();
+
+	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
 	 * Set Statusmeldung.
 	 * System-Nachricht
 	 *
@@ -1584,6 +1604,27 @@ public interface I_C_OLCand
 	int getHandOver_User_ID();
 
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
+
+	/**
+	 * Set Header  merge characteristic.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
+
+	/**
+	 * Get Header  merge characteristic.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHeaderAggregationKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_HeaderAggregationKey = new ModelColumn<>(I_C_OLCand.class, "HeaderAggregationKey", null);
+	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
 	 * Set Import warning message.
