@@ -55,12 +55,6 @@ public interface IInvoiceCandidateEnqueuer
 	void prepareSelection(@NonNull PInstanceId pInstanceId);
 
 	/**
-	 * Prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular
-	 * {@link de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor}.
-	 */
-	void prepareSelection(@NonNull PInstanceId pInstanceId);
-
-	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
      */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
