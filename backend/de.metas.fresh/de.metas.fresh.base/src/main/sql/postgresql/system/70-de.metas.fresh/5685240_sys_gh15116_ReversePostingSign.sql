@@ -47,9 +47,58 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsTableRecordIdTarget,Name,Updated,UpdatedBy) VALUES (0,0,541700,541729,540383,TO_TIMESTAMP('2023-04-18 17:29:01','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','SAP_GLJournal -> SAP_GLJournal_Reversal',TO_TIMESTAMP('2023-04-18 17:29:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- Reference: SAP_GLJournal_Source
+-- Table: SAP_GLJournal
+-- Key: SAP_GLJournal.SAP_GLJournal_ID
+-- 2023-04-19T14:40:45.722Z
+UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2023-04-19 15:40:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541728
+;
+
 -- Reference: SAP_GLJournal_Reversal
 -- Table: SAP_GLJournal
 -- Key: SAP_GLJournal.SAP_GLJournal_ID
--- 2023-04-18T16:43:35.588Z
-UPDATE AD_Ref_Table SET WhereClause='SAP_GLJournal.Reversal_ID =@SAP_GLJournal_ID/-1@',Updated=TO_TIMESTAMP('2023-04-18 17:43:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
+-- 2023-04-19T14:41:35.359Z
+UPDATE AD_Ref_Table SET WhereClause='SAP_GLJournal.Reversal_ID =@SAP_GLJournal_ID/-1@',Updated=TO_TIMESTAMP('2023-04-19 15:41:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
 ;
+
+-- Reference: SAP_GLJournal_Reversal
+-- Table: SAP_GLJournal
+-- Key: SAP_GLJournal.SAP_GLJournal_ID
+-- 2023-04-19T14:41:44.794Z
+UPDATE AD_Ref_Table SET AD_Window_ID=NULL,Updated=TO_TIMESTAMP('2023-04-19 15:41:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
+;
+
+-- Table: SAP_GLJournal
+-- 2023-04-19T14:43:02.113Z
+UPDATE AD_Table SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2023-04-19 15:43:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542275
+;
+
+-- Column: SAP_GLJournal.SAP_GLJournal_ID
+-- 2023-04-19T14:45:42.689Z
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N', IsGenericZoomKeyColumn='Y', IsGenericZoomOrigin='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2023-04-19 15:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585351
+;
+
+-- Column: SAP_GLJournal.Reversal_ID
+-- 2023-04-19T14:46:14.368Z
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N', IsGenericZoomOrigin='Y',Updated=TO_TIMESTAMP('2023-04-19 15:46:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585361
+;
+
+-- Window: GL Journal (SAP) (original), InternalName=sapGLJournal
+-- 2023-04-19T14:48:53.060Z
+UPDATE AD_Window SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2023-04-19 15:48:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=541656
+;
+
+-- Reference: SAP_GLJournal_Reversal
+-- Table: SAP_GLJournal
+-- Key: SAP_GLJournal.SAP_GLJournal_ID
+-- 2023-04-19T14:51:18.454Z
+UPDATE AD_Ref_Table SET AD_Window_ID=541656,Updated=TO_TIMESTAMP('2023-04-19 15:51:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541729
+;
+
+-- Reference: SAP_GLJournal_Source
+-- Table: SAP_GLJournal
+-- Key: SAP_GLJournal.SAP_GLJournal_ID
+-- 2023-04-19T14:51:40.434Z
+UPDATE AD_Ref_Table SET AD_Window_ID=541656,Updated=TO_TIMESTAMP('2023-04-19 15:51:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541728
+;
+
