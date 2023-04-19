@@ -410,7 +410,7 @@ public class SAPGLJournalLoaderAndSaver
 		headerRecord.setDateAcct(TimeUtil.asTimestamp(createRequest.getDateDoc()));
 		headerRecord.setDateDoc(TimeUtil.asTimestamp(createRequest.getDateDoc()));
 		headerRecord.setGL_Category_ID(createRequest.getGlCategoryId().getRepoId());
-
+		headerRecord.setReversal_ID(SAPGLJournalId.toRepoId(createRequest.getReversalId()));
 		saveRecord(headerRecord);
 
 		final SAPGLJournal createdJournal = fromRecord(headerRecord, ImmutableList.of());
