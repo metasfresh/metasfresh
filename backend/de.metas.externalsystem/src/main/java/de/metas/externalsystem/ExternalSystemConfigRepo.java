@@ -65,11 +65,8 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-<<<<<<< HEAD
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
-=======
 import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
->>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -91,8 +88,8 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
-import de.metas.product.ProductCategoryId;
 import de.metas.process.AdProcessId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;

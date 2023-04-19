@@ -33,12 +33,9 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_Acct_Export;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
-<<<<<<< HEAD
+import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-=======
-import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
->>>>>>> 4aa4f967aa2 ([IEUIF003] SAP business partner interface: MC and storage partners (#15105))
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
