@@ -142,8 +142,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "autoSendSubjectWhenCreatedByUserGroup" : false,
       "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
       "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
@@ -163,8 +163,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
-    "autoSendSubjectWhenCreatedByUserGroup" : false,
     "syncExternalReferencesToRabbitMQ" : false,
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
     "syncBPartnerToRabbitMQ" : true
   }
 ]
@@ -188,8 +188,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "autoSendSubjectWhenCreatedByUserGroup" : true,
       "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
       "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
@@ -262,6 +262,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
           "processId" : 2,
           "docTypeId" : 1
         }
+      ],
+      "bPartnerImportSettings" : [
+        {
+          "seqNo" : 10,
+          "partnerCodePattern" : "PartnerCode-Pattern",
+          "isSingleBPartner" : true,
+          "singleBPartner" : true
+        }
       ]
     },
     "writeAudit" : true,
@@ -327,6 +335,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       {
         "processId" : 2,
         "docTypeId" : 1
+      }
+    ],
+    "bPartnerImportSettings" : [
+      {
+        "seqNo" : 10,
+        "partnerCodePattern" : "PartnerCode-Pattern",
+        "isSingleBPartner" : true,
+        "singleBPartner" : true
       }
     ]
   }
@@ -396,6 +412,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         {
           "processId" : 2,
           "docTypeId" : 1
+        }
+      ],
+      "bPartnerImportSettings" : [
+        {
+          "seqNo" : 10,
+          "partnerCodePattern" : "PartnerCode-Pattern",
+          "isSingleBPartner" : true,
+          "singleBPartner" : true
         }
       ]
     },
@@ -625,8 +649,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false,
         "syncExternalReferencesToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
         "syncBPartnerToRabbitMQ" : false
       },
       "writeAudit" : true,
@@ -700,6 +724,14 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           {
             "processId" : 2,
             "docTypeId" : 1
+          }
+        ],
+        "bPartnerImportSettings" : [
+          {
+            "seqNo" : 10,
+            "partnerCodePattern" : "PartnerCode-Pattern",
+            "isSingleBPartner" : true,
+            "singleBPartner" : true
           }
         ]
       },

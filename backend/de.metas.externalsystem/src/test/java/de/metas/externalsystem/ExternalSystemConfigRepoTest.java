@@ -701,7 +701,6 @@ class ExternalSystemConfigRepoTest
 		assertThat(shopware6Config.getValue()).isEqualTo(value);
 	}
 
-
 	@Test
 	void externalSystem_Config_getActiveByType_RabbitMQ()
 	{
