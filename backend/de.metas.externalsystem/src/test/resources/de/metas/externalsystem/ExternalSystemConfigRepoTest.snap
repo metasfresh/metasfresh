@@ -143,8 +143,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : false
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -164,8 +164,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
     "syncExternalReferencesToRabbitMQ" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendSubjectWhenCreatedByUserGroup" : false
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true
   }
 ]
 
@@ -189,8 +189,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -267,8 +267,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         {
           "seqNo" : 10,
           "partnerCodePattern" : "PartnerCode-Pattern",
-          "isSingleBPartner" : false,
-          "singleBPartner" : false
+          "isSingleBPartner" : true,
+          "singleBPartner" : true
         }
       ]
     },
@@ -341,8 +341,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       {
         "seqNo" : 10,
         "partnerCodePattern" : "PartnerCode-Pattern",
-        "isSingleBPartner" : false,
-        "singleBPartner" : false
+        "isSingleBPartner" : true,
+        "singleBPartner" : true
       }
     ]
   }
@@ -418,8 +418,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         {
           "seqNo" : 10,
           "partnerCodePattern" : "PartnerCode-Pattern",
-          "isSingleBPartner" : false,
-          "singleBPartner" : false
+          "isSingleBPartner" : true,
+          "singleBPartner" : true
         }
       ]
     },
@@ -650,8 +650,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
         "syncExternalReferencesToRabbitMQ" : false,
-        "syncBPartnerToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
+        "syncBPartnerToRabbitMQ" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -730,8 +730,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           {
             "seqNo" : 10,
             "partnerCodePattern" : "PartnerCode-Pattern",
-            "isSingleBPartner" : false,
-            "singleBPartner" : false
+            "isSingleBPartner" : true,
+            "singleBPartner" : true
           }
         ]
       },

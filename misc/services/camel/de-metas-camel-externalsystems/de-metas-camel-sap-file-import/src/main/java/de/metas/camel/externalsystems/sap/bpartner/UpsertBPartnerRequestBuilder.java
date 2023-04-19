@@ -386,7 +386,7 @@ public class UpsertBPartnerRequestBuilder
 	{
 		return Pattern.compile(settings.getPartnerCodePattern())
 				.matcher(partnerCode.getRawPartnerCode())
-				.matches();
+				.find();
 	}
 
 	@NonNull

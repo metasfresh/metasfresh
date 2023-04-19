@@ -225,7 +225,7 @@ public class ExternalSystemTestUtil
 		final I_SAP_BPartnerImportSettings importSettings = newInstance(I_SAP_BPartnerImportSettings.class);
 
 		importSettings.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
-		importSettings.setisSingleBPartner(true);
+		importSettings.setIsSingleBPartner(true);
 		importSettings.setPartnerCodePattern("PartnerCode-Pattern");
 		importSettings.setSeqNo(10);
 

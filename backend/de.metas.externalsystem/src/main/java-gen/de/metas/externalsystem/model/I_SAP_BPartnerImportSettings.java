@@ -152,17 +152,17 @@ public interface I_SAP_BPartnerImportSettings
 
 	/**
 	 * Set Single Business Partner.
-	 * If true, the business partners having the partner code falling under the regex pattern, will not be aggregated based on the code and no section group business partner is created
+	 * If ticked, business partners with a partner code according to the regex pattern will not be aggregated based on their code and no section group business partner will be created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setisSingleBPartner (boolean isSingleBPartner);
+	void setIsSingleBPartner (boolean IsSingleBPartner);
 
 	/**
 	 * Get Single Business Partner.
-	 * If true, the business partners having the partner code falling under the regex pattern, will not be aggregated based on the code and no section group business partner is created
+	 * If ticked, business partners with a partner code according to the regex pattern will not be aggregated based on their code and no section group business partner will be created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -170,8 +170,8 @@ public interface I_SAP_BPartnerImportSettings
 	 */
 	boolean isSingleBPartner();
 
-	ModelColumn<I_SAP_BPartnerImportSettings, Object> COLUMN_isSingleBPartner = new ModelColumn<>(I_SAP_BPartnerImportSettings.class, "isSingleBPartner", null);
-	String COLUMNNAME_isSingleBPartner = "isSingleBPartner";
+	ModelColumn<I_SAP_BPartnerImportSettings, Object> COLUMN_IsSingleBPartner = new ModelColumn<>(I_SAP_BPartnerImportSettings.class, "IsSingleBPartner", null);
+	String COLUMNNAME_IsSingleBPartner = "IsSingleBPartner";
 
 	/**
 	 * Set Partner Code Pattern.
