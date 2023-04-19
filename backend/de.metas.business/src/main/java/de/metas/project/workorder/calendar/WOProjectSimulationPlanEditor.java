@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -330,46 +331,53 @@ public class WOProjectSimulationPlanEditor
 	@NonNull
 	public CalendarDateRange computeCalendarDateRange(@NonNull final WOProjectStepId stepId)
 	{
-		final List<WOProjectStep> beforeSteps = getStepsBeforeFromLastToFirst(stepId);
+		final CalendarDateRange beforeStepSimulatedDateRange = getStepsBeforeFromLastToFirst(stepId)
+				.stream()
+				.map(WOProjectStep::getWoProjectStepId)
+				.map(simulationStepsById::get)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.map(WOProjectStepSimulation::getDateRange)
+				.orElse(null);
 
-		if (beforeSteps.isEmpty())
+		if (beforeStepSimulatedDateRange == null)
 		{
 			return getDefaultCalendarDateRange(stepId);
 		}
 
-		final WOProjectStep beforeStep = beforeSteps.get(0);
-		final WOProjectStepSimulation beforeStepSimulated = simulationStepsById.get(beforeStep.getWoProjectStepId());
+		final CalendarDateRange afterStepSimulatedDateRange = getStepsAfterInOrder(stepId)
+				.stream()
+				.map(WOProjectStep::getWoProjectStepId)
+				.map(simulationStepsById::get)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.map(WOProjectStepSimulation::getDateRange)
+				.orElse(null);
 
-		if (beforeStepSimulated == null)
+		final Duration computedDuration = getResourceDuration(stepId);
+
+		if (afterStepSimulatedDateRange == null)
 		{
-			return getDefaultCalendarDateRange(stepId);
+			return beforeStepSimulatedDateRange.plus(computedDuration);
 		}
 
-		final List<WOProjectStep> afterSteps = getStepsAfterInOrder(stepId);
+		final Duration availableDuration = Duration.between(beforeStepSimulatedDateRange.getEndDate(), afterStepSimulatedDateRange.getStartDate());
 
-		if (afterSteps.isEmpty())
+		if (availableDuration.isZero() || computedDuration.compareTo(availableDuration) > 0)
 		{
-			return beforeStepSimulated.getDateRange().plus(DEFAULT_DURATION);
-		}
+			final WOProjectStep step = getStepById(stepId);
 
-		final WOProjectStep afterStep = afterSteps.get(0);
-		final WOProjectStepSimulation afterStepSimulated = simulationStepsById.get(afterStep.getWoProjectStepId());
-
-		if (afterStepSimulated == null)
-		{
-			return beforeStepSimulated.getDateRange().plus(DEFAULT_DURATION);
-		}
-
-		final Duration durationBetweenSteps = Duration.between(beforeStepSimulated.getDateRange().getEndDate(), afterStepSimulated.getDateRange().getStartDate());
-
-		if (durationBetweenSteps.isZero())
-		{
-			throw new AdempiereException("Resource cannot be simulated, as there's no time left to schedule between steps on simulation");
+			throw new AdempiereException("Fail to import step {0}. There is no time left to be allocated for it. Step duration {1}, available duration between steps {2}.")
+					.appendParametersToMessage()
+					.setParameter("seqNo", step.getSeqNo())
+					.setParameter("stepDuration", computedDuration)
+					.setParameter("availableDuration", availableDuration)
+					.markAsUserValidationError();
 		}
 
 		return CalendarDateRange.builder()
-				.startDate(beforeStepSimulated.getDateRange().getEndDate())
-				.endDate(beforeStepSimulated.getDateRange().getEndDate().plus(durationBetweenSteps))
+				.startDate(beforeStepSimulatedDateRange.getEndDate())
+				.endDate(beforeStepSimulatedDateRange.getEndDate().plus(availableDuration))
 				.build();
 	}
 
@@ -383,9 +391,25 @@ public class WOProjectSimulationPlanEditor
 
 							return CalendarDateRange.builder()
 									.startDate(defaultStartDate)
-									.endDate(defaultStartDate.plus(DEFAULT_DURATION))
+									.endDate(defaultStartDate.plus(getResourceDuration(stepId)))
 									.allDay(false)
 									.build();
 						}));
+	}
+
+	@NonNull
+	private Duration getResourceDuration(@NonNull final WOProjectStepId stepId)
+	{
+		final ImmutableList<WOProjectResource> projectResources = getProjectResourcesByStepId(stepId);
+		final Duration resourcesDuration = projectResources.stream()
+				.map(WOProjectResource::getDuration)
+				.reduce(Duration.ZERO, Duration::plus);
+
+		if (resourcesDuration.isZero())
+		{
+			return DEFAULT_DURATION;
+		}
+
+		return resourcesDuration;
 	}
 }

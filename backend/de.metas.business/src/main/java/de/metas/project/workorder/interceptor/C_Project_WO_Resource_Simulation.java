@@ -24,6 +24,7 @@ package de.metas.project.workorder.interceptor;
 
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -41,9 +42,14 @@ public class C_Project_WO_Resource_Simulation
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteWoResourceSimulationConflicts(@NonNull final I_C_Project_WO_Resource_Simulation record)
 	{
+		final ICompositeQueryFilter<I_C_Project_WO_Resource_Conflict> queryFilter = queryBL.createCompositeQueryFilter(I_C_Project_WO_Resource_Conflict.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource_ID, record.getC_Project_WO_Resource_ID())
+				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource2_ID, record.getC_Project_WO_Resource_ID());
+
 		queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class, record)
 				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, record.getC_SimulationPlan_ID())
-				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource_ID, record.getC_Project_WO_Resource_ID())
+				.filter(queryFilter)
 				.create()
 				.delete();
 	}

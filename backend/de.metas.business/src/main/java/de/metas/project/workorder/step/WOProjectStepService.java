@@ -23,6 +23,7 @@
 package de.metas.project.workorder.step;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.i18n.AdMessageKey;
@@ -32,9 +33,13 @@ import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectRepository;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
@@ -46,6 +51,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,26 +63,26 @@ public class WOProjectStepService
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	@NonNull
-	private final WOProjectSimulationRepository woProjectSimulationRepository;
-	@NonNull
-	private final WOProjectRepository woProjectRepository;
-	@NonNull
-	private final WOProjectStepRepository woProjectStepRepository;
+	@NonNull private final WOProjectSimulationRepository woProjectSimulationRepository;
+	@NonNull private final WOProjectRepository woProjectRepository;
+	@NonNull private final WOProjectStepRepository woProjectStepRepository;
+	@NonNull private final WOProjectService woProjectService;
 
 	public WOProjectStepService(
 			@NonNull final WOProjectSimulationRepository woProjectSimulationRepository,
 			@NonNull final WOProjectRepository woProjectRepository,
-			@NonNull final WOProjectStepRepository woProjectStepRepository)
+			@NonNull final WOProjectStepRepository woProjectStepRepository,
+			@NonNull final WOProjectService woProjectService)
 	{
 		this.woProjectSimulationRepository = woProjectSimulationRepository;
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectStepRepository = woProjectStepRepository;
+		this.woProjectService = woProjectService;
 	}
 
 	public void validateWOStep(@NonNull final WOProjectStep step)
 	{
-		final ImmutableList.Builder<SimulationPlanId> existingSimulationPlanIdsBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<SimulationStepResult> resultCollector = ImmutableList.builder();
 
 		final Collection<WOProjectSimulationPlan> simulationPlans = woProjectSimulationRepository.getSimulationPlansByStepIds(step.getWoProjectStepId());
 
@@ -87,23 +93,32 @@ public class WOProjectStepService
 
 			if (CalendarDateRange.equals(simulationDateRange, step.getDateRange()))
 			{
+				resultCollector.add(SimulationStepResult.of(simulationPlan, true));
 				return;
 			}
 
-			existingSimulationPlanIdsBuilder.add(simulationPlan.getSimulationPlanId());
+			resultCollector.add(SimulationStepResult.of(simulationPlan, false));
 		});
 
-		final ImmutableList<SimulationPlanId> existingSimulationPlanIds = existingSimulationPlanIdsBuilder.build();
+		final ImmutableList<SimulationStepResult> result = resultCollector.build();
 
-		if (existingSimulationPlanIds.isEmpty())
-		{
-			return;
-		}
+		result.stream()
+				.filter(SimulationStepResult::isOk)
+				.map(SimulationStepResult::getSimulationPlan)
+				.forEach(simulationPlan -> updateSimulationPlanForStep(simulationPlan, step));
 
-		final String errorSimulationIds = existingSimulationPlanIds.stream()
+		final String errorSimulationIds = result.stream()
+				.filter(stepResult -> !stepResult.isOk())
+				.map(SimulationStepResult::getSimulationPlan)
+				.map(WOProjectSimulationPlan::getSimulationPlanId)
 				.map(SimulationPlanId::getRepoId)
 				.map(Object::toString)
 				.collect(Collectors.joining(","));
+
+		if (Check.isBlank(errorSimulationIds))
+		{
+			return;
+		}
 
 		throw new AdempiereException(ERROR_MSG_STEP_CANNOT_BE_LOCKED_SIMULATION_FOUND, errorSimulationIds)
 				.markAsUserValidationError();
@@ -158,5 +173,32 @@ public class WOProjectStepService
 
 		return Optional.ofNullable(woStepDueDateConfiguration)
 				.map(Period::parse);
+	}
+
+	private void updateSimulationPlanForStep(@NonNull final WOProjectSimulationPlan simulationPlan, @NonNull final WOProjectStep step)
+	{
+		Optional.ofNullable(simulationPlan.getProjectStepByIdOrNull(step.getWoProjectStepId()))
+				.ifPresent(simulationStep -> {
+					final Set<WOProjectResourceId> resourceIds = woProjectService.getResourcesByProjectId(step.getProjectId())
+							.stream()
+							.filter(woProjectResource -> woProjectResource.getWoProjectStepId().equals(step.getWoProjectStepId()))
+							.map(WOProjectResource::getWoProjectResourceId)
+							.collect(ImmutableSet.toImmutableSet());
+
+					final WOProjectSimulationPlan woProjectSimulationPlan = woProjectSimulationRepository.getById(simulationPlan.getSimulationPlanId());
+
+					final WOProjectSimulationPlan updatedWoProjectSimulationPlan = woProjectSimulationPlan.removeStepSimulation(ImmutableSet.of(step.getWoProjectStepId()))
+							.removeResourceSimulation(resourceIds);
+
+					woProjectSimulationRepository.savePlan(updatedWoProjectSimulationPlan);
+				});
+	}
+
+	@Value(staticConstructor = "of")
+	private static class SimulationStepResult
+	{
+		@NonNull WOProjectSimulationPlan simulationPlan;
+
+		boolean ok;
 	}
 }
