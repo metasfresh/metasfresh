@@ -84,6 +84,7 @@ public class ExportAcctDetailsRouteBuilder extends RouteBuilder
 
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonNode.class))
 				.process(new PrepareSAPRequestProcessor(processLogger))
+				.process(this::reportRequestToMetasfresh)
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
@@ -165,6 +166,14 @@ public class ExportAcctDetailsRouteBuilder extends RouteBuilder
 				.collect(Collectors.joining("\n"));
 
 		processLogger.logMessage("SAP response = \n\n" + deserializedString,
+								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
+	}
+
+	private void reportRequestToMetasfresh(@NonNull final Exchange exchange)
+	{
+		final String request = exchange.getIn().getBody(String.class);
+
+		processLogger.logMessage("SAP request = \n\n" + request,
 								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
 	}
 }
