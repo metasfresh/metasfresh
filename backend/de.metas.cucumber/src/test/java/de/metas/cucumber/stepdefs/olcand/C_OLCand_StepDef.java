@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.callout.C_BPartner_Location;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
@@ -37,30 +36,33 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDef;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -72,7 +74,6 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -98,7 +99,7 @@ public class C_OLCand_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_AD_Issue> issueTable;
+	private final AD_Issue_StepDefData issueTable;
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -115,7 +116,7 @@ public class C_OLCand_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_AD_Issue> issueTable,
+			@NonNull final AD_Issue_StepDefData issueTable,
 			@NonNull final TestContext testContext)
 	{
 		this.orderTable = orderTable;
@@ -172,7 +173,7 @@ public class C_OLCand_StepDef
 		final Map<String, String> row = dataTable.asMaps().get(0);
 		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		final List<String> identifiers = splitIdentifiers(olCandIdentifiers);
+		final List<String> identifiers = StepDefUtil.splitIdentifiers(olCandIdentifiers);
 		assertThat(jsonOLCands.size()).isEqualTo(identifiers.size());
 
 		for (int index = 0; index < identifiers.size(); index++)
@@ -315,7 +316,7 @@ public class C_OLCand_StepDef
 
 		if (orders.size() > 1)
 		{
-			final List<String> identifiers = splitIdentifiers(orderIdentifier);
+			final List<String> identifiers = StepDefUtil.splitIdentifiers(orderIdentifier);
 
 			for (int index = 0; index < identifiers.size(); index++)
 			{

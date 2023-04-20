@@ -44,6 +44,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
@@ -70,6 +71,7 @@ public class InvoiceService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final AsyncBatchService asyncBatchService;
 
@@ -86,7 +88,7 @@ public class InvoiceService
 			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines list is empty; -> nothing to do");
 			return ImmutableSet.of();
 		}
-		
+
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
@@ -110,7 +112,7 @@ public class InvoiceService
 
 	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
+		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = trxManager.callInNewTrx(() -> getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds));
 
 		for (final Map.Entry<AsyncBatchId, List<InvoiceCandidateId>> entry : asyncBatchId2InvoiceCandIds.entrySet())
 		{

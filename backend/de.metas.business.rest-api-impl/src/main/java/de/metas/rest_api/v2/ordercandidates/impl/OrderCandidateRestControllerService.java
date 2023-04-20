@@ -68,11 +68,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessOLCands;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -88,7 +86,6 @@ public class OrderCandidateRestControllerService
 	private final OLCandRepository olCandRepo;
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
-	private final OLCandValidatorService olCandValidatorService;
 	private final JsonInvoiceService jsonInvoiceService;
 	private final JsonShipmentService jsonShipmentService;
 	private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer;
@@ -99,7 +96,6 @@ public class OrderCandidateRestControllerService
 			@NonNull final OLCandRepository olCandRepo,
 			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
-			@NonNull final OLCandValidatorService olCandValidatorService,
 			@NonNull final JsonShipmentService jsonShipmentService,
 			@NonNull final JsonInvoiceService jsonInvoiceService,
 			@NonNull final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer,
@@ -109,7 +105,6 @@ public class OrderCandidateRestControllerService
 		this.olCandRepo = olCandRepo;
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
-		this.olCandValidatorService = olCandValidatorService;
 		this.jsonShipmentService = jsonShipmentService;
 		this.jsonInvoiceService = jsonInvoiceService;
 		this.processOLCandsWorkpackageEnqueuer = processOLCandsWorkpackageEnqueuer;
@@ -213,69 +208,27 @@ public class OrderCandidateRestControllerService
 		return olCand;
 	}
 
-	public void createAlbertaOrderRecords(
-			@Nullable final String orgCode,
-			@NonNull final OLCand olCand,
-			@NonNull final JsonAlbertaOrderInfo jsonAlbertaOrderInfo,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		final AlbertaOrderCompositeInfo albertaOrderCompositeInfo = AlbertaOrderCompositeInfo.builder()
-				.orgId(OrgId.ofRepoId(olCand.getAD_Org_ID()))
-				.olCandId(OLCandId.ofRepoId(olCand.getId()))
-				.rootId(jsonAlbertaOrderInfo.getRootId())
-				.creationDate(jsonAlbertaOrderInfo.getCreationDate())
-				.startDate(jsonAlbertaOrderInfo.getStartDate())
-				.endDate(jsonAlbertaOrderInfo.getEndDate())
-				.dayOfDelivery(jsonAlbertaOrderInfo.getDayOfDelivery())
-				.nextDelivery(jsonAlbertaOrderInfo.getNextDelivery())
-				.doctorBPartnerId(resolveExternalBPartnerIdentifier(orgCode, jsonAlbertaOrderInfo.getDoctorBPartnerIdentifier(), masterdataProvider))
-				.pharmacyBPartnerId(resolveExternalBPartnerIdentifier(orgCode, jsonAlbertaOrderInfo.getPharmacyBPartnerIdentifier(), masterdataProvider))
-				.isInitialCare(jsonAlbertaOrderInfo.getIsInitialCare())
-				.isSeriesOrder(jsonAlbertaOrderInfo.getIsSeriesOrder())
-				.isArchived(jsonAlbertaOrderInfo.getIsArchived())
-				.annotation(jsonAlbertaOrderInfo.getAnnotation())
-				.updated(jsonAlbertaOrderInfo.getUpdated())
-				.salesLineId(jsonAlbertaOrderInfo.getSalesLineId())
-				.unit(jsonAlbertaOrderInfo.getUnit())
-				.isPrivateSale(jsonAlbertaOrderInfo.getIsPrivateSale())
-				.isRentalEquipment(jsonAlbertaOrderInfo.getIsRentalEquipment())
-				.durationAmount(jsonAlbertaOrderInfo.getDurationAmount())
-				.timePeriod(jsonAlbertaOrderInfo.getTimePeriod())
-				.therapy(jsonAlbertaOrderInfo.getTherapy())
-				.therapyTypes(jsonAlbertaOrderInfo.getTherapyTypes())
-				.build();
-
-		albertaOrderService.saveAlbertaOrderCompositeInfo(albertaOrderCompositeInfo);
-	}
-
 	@NonNull
 	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
 	{
 		final Set<OLCandId> olCandIds = getOLCands(IdentifierString.of(request.getInputDataSourceName()), request.getExternalHeaderId());
 
-		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(olCandIds);
+		processValidOlCands(request, olCandIds);
 
-		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(validOlCandIds);
-
-		if (orderIds.isEmpty())
-		{
-			return responseBuilder.build();
-		}
+		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 
 		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
 				.orderResponse(buildGenerateOrdersResponse(orderIds));
 
 		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
 		{
-			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponseFromOLCands(validOlCandIds));
+			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponseFromOLCands(olCandIds));
 		}
 
 		if (CoalesceUtil.coalesceNotNull(request.getInvoice(), false))
 		{
 			responseBuilder.invoiceInfoResponse(jsonInvoiceService.buildInvoiceInfoResponseFromOrderIds(orderIds));
 		}
-
-		asyncBatchId2OLCandIds.keySet().forEach(asyncBatchBL::updateProcessedFromMilestones);
 
 		if (Boolean.TRUE.equals(request.getCloseOrder()))
 		{

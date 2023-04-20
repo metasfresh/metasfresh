@@ -28,7 +28,6 @@ import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
@@ -53,7 +52,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class AD_Issue_StepDef
 {
-	private final StepDefData<I_AD_Issue> issueTable;
+	private final AD_Issue_StepDefData issueTable;
 
 	private PInstanceId pInstanceId;
 	private final TestContext testContext;
@@ -61,7 +60,7 @@ public class AD_Issue_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public AD_Issue_StepDef(
-			@NonNull final StepDefData<I_AD_Issue> issueTable,
+			@NonNull final AD_Issue_StepDefData issueTable,
 			@NonNull final TestContext testContext)
 	{
 		this.issueTable = issueTable;

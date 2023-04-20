@@ -69,8 +69,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product      | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00     | KRT               |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00         | KRT                   |
 
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType |
@@ -349,8 +349,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product_PO   | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00     | KRT               |
+      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00         | KRT                   |
 
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.POReference |

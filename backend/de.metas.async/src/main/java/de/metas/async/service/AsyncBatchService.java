@@ -139,6 +139,25 @@ public class AsyncBatchService
 	}
 
 	@NonNull
+	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		asyncBatchObserver.observeOn(asyncBatchId);
+
+		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
+
+		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
+		else
+		{
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
+
+		return result;
+	}
+
+	@NonNull
 	private List<I_C_Queue_WorkPackage> getWorkPackagesFromCurrentRun(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
 	{
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());

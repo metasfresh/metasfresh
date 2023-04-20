@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.async
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,17 +20,15 @@
  * #L%
  */
 
-package de.metas.async.api;
+package de.metas.cucumber.stepdefs.issue;
 
-import de.metas.async.QueueWorkPackageId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_AD_Issue;
 
-import java.util.List;
-
-@FunctionalInterface
-public interface IEnqueueResult
+public class AD_Issue_StepDefData extends StepDefData<I_AD_Issue>
 {
-	int getWorkpackageEnqueuedCount();
-
-	List<QueueWorkPackageId> getEnqueuedWorkPackageIds();
-
+	public AD_Issue_StepDefData()
+	{
+		super(I_AD_Issue.class);
+	}
 }

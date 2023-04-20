@@ -534,7 +534,7 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + ".Identifier");
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
