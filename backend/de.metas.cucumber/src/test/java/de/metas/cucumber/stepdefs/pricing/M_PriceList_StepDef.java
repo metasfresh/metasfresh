@@ -101,8 +101,6 @@ public class M_PriceList_StepDef
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final M_Product_StepDefData productTable,

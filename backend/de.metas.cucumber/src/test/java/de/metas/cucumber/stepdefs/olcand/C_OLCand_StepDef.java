@@ -32,7 +32,6 @@ import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;

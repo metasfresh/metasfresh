@@ -31,6 +31,4 @@ public interface IEnqueueResult
 {
 	int getWorkpackageEnqueuedCount();
 
-	List<QueueWorkPackageId> getEnqueuedWorkPackageIds();
-
 }

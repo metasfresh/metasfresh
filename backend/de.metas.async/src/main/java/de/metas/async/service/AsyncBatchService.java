@@ -145,7 +145,7 @@ public class AsyncBatchService
 
 		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
 
-		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		if (result.getWorkpackageEnqueuedCount() == 0)
 		{
 			asyncBatchObserver.removeObserver(asyncBatchId);
 		}
