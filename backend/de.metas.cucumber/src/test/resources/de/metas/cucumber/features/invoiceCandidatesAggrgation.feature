@@ -200,7 +200,7 @@ Feature: invoice generation and invoice candidates aggregation
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_2                            | s_2                   |
-    Then enqueue candidates for invoicing and after not more than 30s, the invoice is found
+    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | o_1                   | invoice_1               |
       | o_2                   | invoice_1               |
