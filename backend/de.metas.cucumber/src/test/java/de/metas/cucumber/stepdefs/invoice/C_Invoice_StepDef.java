@@ -105,7 +105,7 @@ public class C_Invoice_StepDef
 		}
 	}
 
-	@Then("^enqueue candidates for invoicing and after not more than (.*)s, the invoice is found$")
+	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
 	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
 		final Collection<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
