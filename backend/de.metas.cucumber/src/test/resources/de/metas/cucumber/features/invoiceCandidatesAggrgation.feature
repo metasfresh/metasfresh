@@ -1,5 +1,4 @@
 @from:cucumber
-@ordersWithMultipleSalesRep
 Feature: invoice generation and invoice candidates aggregation
 
   Background:
@@ -76,7 +75,7 @@ Feature: invoice generation and invoice candidates aggregation
 
 
   @from:cucumber
-  Scenario: sales orders with multiple salesRep_ID (one salesRep_ID and the other is NULL ), one invoice with SalesRep_ID = 100
+  Scenario: sales orders with multiple salesRep_ID (one salesRep_ID and the other is NULL ), one invoice with no SalesRep_ID
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name                 |
@@ -137,7 +136,7 @@ Feature: invoice generation and invoice candidates aggregation
       | o_2                   | invoice_1               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 100             |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 0               |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | p_1                     | 10          | true      |
