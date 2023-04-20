@@ -36,12 +36,13 @@ import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import java.time.Instant;
 
-public class SAP_GLJournal_CopyDocument extends JavaProcess implements IProcessPrecondition
+public class SAP_GLJournal_ReverseDocument extends JavaProcess implements IProcessPrecondition
 {
 	private final static AdMessageKey DOCUMENT_MUST_BE_COMPLETED_MSG = AdMessageKey.of("gljournal_sap.Document_has_to_be_Completed");
 
@@ -49,9 +50,6 @@ public class SAP_GLJournal_CopyDocument extends JavaProcess implements IProcessP
 
 	@Param(mandatory = true, parameterName = "DateDoc")
 	private Instant dateDoc;
-
-	@Param(mandatory = true, parameterName = "ReversePostingSign")
-	private boolean reversePostingSign;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -74,11 +72,14 @@ public class SAP_GLJournal_CopyDocument extends JavaProcess implements IProcessP
 	@Override
 	protected String doIt()
 	{
-		final SAPGLJournal createdJournal = glJournalService.copy(SAPGLJournalCopyRequest.builder()
+		final SAPGLJournal createdJournal = glJournalService.reverse(SAPGLJournalCopyRequest.builder()
 																			  .sourceJournalId(SAPGLJournalId.ofRepoId(getRecord_ID()))
 																			  .dateDoc(dateDoc)
-																			  .reversePostingSign(reversePostingSign)
 																			  .build());
+
+		final I_SAP_GLJournal sourceRecord = InterfaceWrapperHelper.load(SAPGLJournalId.ofRepoId(getRecord_ID()), I_SAP_GLJournal.class);
+		sourceRecord.setDocStatus(DocStatus.Reversed.getCode());
+		InterfaceWrapperHelper.save(sourceRecord);
 
 		getResult().setRecordToOpen(TableRecordReference.of(I_SAP_GLJournal.Table_Name, createdJournal.getId()),
 									getProcessInfo().getAD_Window_ID(),

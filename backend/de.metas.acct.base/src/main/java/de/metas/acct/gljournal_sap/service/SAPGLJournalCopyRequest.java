@@ -36,6 +36,4 @@ public class SAPGLJournalCopyRequest
 	@NonNull SAPGLJournalId sourceJournalId;
 
 	@NonNull Instant dateDoc;
-
-	@NonNull Boolean reversePostingSign;
 }
