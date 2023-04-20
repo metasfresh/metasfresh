@@ -271,7 +271,15 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		if (SalesRep_User_ID != salesRep_ID)
+		if (salesRep_ID <= 0)
+		{
+			SalesRep_User_ID = -1;
+		}
+		else if(SalesRep_User_ID <= 0)
+		{
+			SalesRep_User_ID = -1;
+		}
+		else if (SalesRep_User_ID != salesRep_ID )
 		{
 			SalesRep_User_ID = -1;
 		}
