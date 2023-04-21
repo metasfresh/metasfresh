@@ -41,6 +41,8 @@ import java.util.Set;
 @ToString
 public class InvoiceHeaderImplBuilder
 {
+	private static int SalesRep_User_ID_UNSET_VALUE = Integer.MIN_VALUE;
+
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
 	private boolean isTakeDocTypeFromPool = false;
@@ -72,7 +74,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID;
+	private int SalesRep_User_ID = SalesRep_User_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -407,7 +409,14 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
+		if (SalesRep_User_ID == SalesRep_User_ID_UNSET_VALUE)
+		{
+			SalesRep_User_ID = salesRep_ID;
+		}
+		else if (salesRep_ID != SalesRep_User_ID)
+		{
+			SalesRep_User_ID = -1;
+		}
 	}
 
 	public int getC_Currency_ID()
