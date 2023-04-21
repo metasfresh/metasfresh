@@ -24,16 +24,24 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
+<<<<<<< HEAD
 import de.metas.util.Check;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+=======
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+<<<<<<< HEAD
 import java.util.List;
+=======
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -46,16 +54,53 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class StepDefUtil
 {
 	/**
+<<<<<<< HEAD
 	 * Waits for the given {@code worker} to supply {@code true}.
+=======
+	 * Waits for the given {@code worker} to supply an optional that is present.
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
 	 *
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
+<<<<<<< HEAD
 	public void tryAndWait(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
 			@NonNull final Supplier<Boolean> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
+=======
+	public <T> T tryAndWaitForItem(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final ItemProvider<T> worker,
+			@Nullable final Supplier<String> logContext) throws InterruptedException
+	{
+		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
+
+		ItemProvider.ProviderResult<T> lastWorkerResult = null;
+		while (deadLineMillis > System.currentTimeMillis())
+		{
+			Thread.sleep(checkingIntervalMs);
+
+			lastWorkerResult = worker.execute();
+			if (lastWorkerResult.isResultFound())
+			{
+				return lastWorkerResult.getResult();
+			}
+		}
+
+		final String context = Optional.ofNullable(logContext).map(Supplier::get).orElse("Context not provided!");
+
+		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout. "
+								+ "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog())
+								+ "\n Context: " + context);
+		return null;
+
+	}
+	
+	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 	{
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
@@ -75,6 +120,7 @@ public class StepDefUtil
 		assertThat(conditionIsMet).as("Condition was not met within the %s second timeout", maxWaitSeconds).isTrue();
 	}
 
+<<<<<<< HEAD
 	public int extractId(@NonNull final String idOrIdentifier, @NonNull final StepDefData<?> stepDefDataTable)
 	{
 		try
@@ -288,6 +334,8 @@ public class StepDefUtil
 		return deadLineMillis;
 	}
 
+=======
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 	@NonNull
 	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
 	{
@@ -296,6 +344,7 @@ public class StepDefUtil
 				.collect(ImmutableList.toImmutableList());
 	}
 
+<<<<<<< HEAD
 	@NonNull
 	public List<String> splitIdentifiers(@NonNull final String identifiers)
 	{
@@ -319,3 +368,11 @@ public class StepDefUtil
 		return Arrays.asList(s.split(":"));
 	}
 }
+=======
+	private long computeDeadLineMillis(final long maxWaitSeconds)
+	{
+		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
+		return maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
+	}
+}
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))

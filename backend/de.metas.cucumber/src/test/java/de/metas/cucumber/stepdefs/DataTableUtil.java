@@ -167,12 +167,15 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+<<<<<<< HEAD
 	@Nullable
 	public String nullToken2Null(@NonNull final String value)
 	{
 		return NULL_STRING.equals(value) ? null : value;
 	}
 
+=======
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
@@ -436,6 +439,7 @@ public class DataTableUtil
 	}
 
 	@Nullable
+<<<<<<< HEAD
 	public Double extractDoubleOrNullForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
@@ -452,4 +456,11 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
+=======
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
+	}
+
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 }

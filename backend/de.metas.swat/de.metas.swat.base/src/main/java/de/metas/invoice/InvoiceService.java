@@ -36,7 +36,10 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+<<<<<<< HEAD
 import de.metas.invoicecandidate.process.params.InvoicingParams;
+=======
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
@@ -46,7 +49,10 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+<<<<<<< HEAD
 import org.compiere.util.Trx;
+=======
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +93,11 @@ public class InvoiceService
 			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines list is empty; -> nothing to do");
 			return ImmutableSet.of();
 		}
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
@@ -95,6 +105,7 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 
 		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+<<<<<<< HEAD
 	}
 
 	@NonNull
@@ -108,6 +119,8 @@ public class InvoiceService
 				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
 				.map(InvoiceId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+=======
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 	}
 
 	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
@@ -127,6 +140,19 @@ public class InvoiceService
 				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		processInvoiceCandidates(invoiceCandidateIds);
+
+		return invoiceCandidateIds.stream()
+				.map(invoiceCandDAO::retrieveIlForIc)
+				.flatMap(List::stream)
+				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

@@ -172,6 +172,7 @@ public class C_Order_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
+<<<<<<< HEAD
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
 
@@ -186,6 +187,9 @@ public class C_Order_StepDef
 			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+=======
+			final int salesRepID = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_SalesRep_ID);
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setC_BPartner_ID(bPartnerId);
@@ -200,6 +204,7 @@ public class C_Order_StepDef
 				order.setC_PaymentTerm_ID(paymentTermId);
 			}
 
+<<<<<<< HEAD
 			final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bpLocationIdentifier))
 			{
@@ -336,6 +341,11 @@ public class C_Order_StepDef
 				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
 				order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
+=======
+			if (salesRepID > 0)
+			{
+				order.setSalesRep_ID(salesRepID);
+>>>>>>> 32c7be7ceab (If the invoice candidates have different Sales Represent, the resulting invoice will have none. (#15101))
 			}
 
 			saveRecord(order);
