@@ -53,7 +53,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -107,9 +106,9 @@ public class C_Invoice_StepDef
 	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
 	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
-		final Map<String, String> row = table.asMaps().get(0);
+		final Map<String, String> singleRow = table.asMaps().get(0);
 
-		final String orderIdentifierCandidate = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String orderIdentifierCandidate = DataTableUtil.extractStringForColumnName(singleRow, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final ImmutableList<OrderId> orderIds = StepDefUtil.extractIdentifiers(orderIdentifierCandidate)
 				.stream()
 				.map(orderTable::get)
@@ -131,12 +130,9 @@ public class C_Invoice_StepDef
 
 		final ImmutableSet<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds.build());
 
-		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds)
-				.stream()
-				.sorted(Comparator.comparingInt(I_C_Invoice::getC_Invoice_ID))
-				.collect(ImmutableList.toImmutableList());
-
-		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(table.asMaps().get(0), I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
+		
+		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(singleRow, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdentifierCandidate);
 		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
 
@@ -171,7 +167,7 @@ public class C_Invoice_StepDef
 		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
-		final int expectedSalesRep_ID = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
+		final String expectedSalesRep_ID = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
 
 		final Integer expectedBPartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
@@ -187,9 +183,13 @@ public class C_Invoice_StepDef
 		assertThat(invoice.isProcessed()).isEqualTo(processed);
 		assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
 
-		if (expectedSalesRep_ID != -1)
+		if (expectedSalesRep_ID != null)
 		{
-			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_ID);
+			final int expectedSalesRep_RepoId = Optional.ofNullable(DataTableUtil.nullToken2Null(expectedSalesRep_ID))
+					.map(Integer::parseInt)
+					.orElse(0);
+			
+			assertThat(invoice.getSalesRep_ID()).isEqualTo(expectedSalesRep_RepoId);
 		}
 
 		final PaymentTermQuery query = PaymentTermQuery.builder()

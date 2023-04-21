@@ -148,7 +148,7 @@ Feature: invoice generation and invoice candidates aggregation
       | o_1,o_2               | invoice_1               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 0               |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | p_1                     | 10          | true      |
@@ -157,7 +157,7 @@ Feature: invoice generation and invoice candidates aggregation
   @from:cucumber
   Scenario:
   - C_AggregationItem for SalesRep_ID is inactive
-  - two sales orders with two different salesRep_ID => one invoice with SalesRep_ID is null (0)
+  - two sales orders with two different salesRep_ID => one invoice with SalesRep_ID is null
     Given load C_AggregationItem
       | C_AggregationItem_ID.Identifier | OPT.C_AggregationItem_ID |
       | a_1                             | 540071                   |
@@ -222,7 +222,7 @@ Feature: invoice generation and invoice candidates aggregation
       | o_1,o_2               | invoice_1               |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm | processed | docStatus | OPT.SalesRep_ID |
-      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | 0               |
+      | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock_15100 | 1000002     | true      | CO        | null            |
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | p_1                     | 10          | true      |
@@ -302,6 +302,9 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | p_1                     | 10          | true      |
       | invoice_2               | p_2                     | 5           | true      |
+    And update C_AggregationItem
+      | C_AggregationItem_ID.Identifier | IsActive |
+      | a_1                             | false    |
 
   @from:cucumber
   Scenario:
@@ -376,3 +379,6 @@ Feature: invoice generation and invoice candidates aggregation
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoice_1               | p_1                     | 10          | true      |
       | invoice_1               | p_2                     | 5           | true      |
+    And update C_AggregationItem
+      | C_AggregationItem_ID.Identifier | IsActive |
+      | a_1                             | false    |
