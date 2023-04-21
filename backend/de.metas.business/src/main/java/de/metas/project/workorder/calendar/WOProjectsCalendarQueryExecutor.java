@@ -61,7 +61,7 @@ public final class WOProjectsCalendarQueryExecutor
 			final @NonNull SimulationPlanService simulationPlanService,
 			final @NonNull WOProjectService woProjectService,
 			final @NonNull WOProjectSimulationService woProjectSimulationService,
-			final @NonNull ToCalendarEntryConverter toCalendarEntry,
+			final @Nullable ToCalendarEntryConverter toCalendarEntry,
 			//
 			final @NonNull InSetPredicate<ProjectId> projectIds,
 			final @NonNull InSetPredicate<CalendarResourceId> calendarResourceIds,
@@ -74,7 +74,7 @@ public final class WOProjectsCalendarQueryExecutor
 		this.simulationPlanService = simulationPlanService;
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationService = woProjectSimulationService;
-		this.toCalendarEntry = toCalendarEntry;
+		this.toCalendarEntry = toCalendarEntry != null ? toCalendarEntry : new ToCalendarEntryConverter(woProjectService);
 
 		this.projectIds = projectIds;
 		this.calendarResourceIds = calendarResourceIds;
@@ -82,6 +82,11 @@ public final class WOProjectsCalendarQueryExecutor
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.skipAllocatedResources = skipAllocatedResources;
+	}
+
+	public static class WOProjectsCalendarQueryExecutorBuilder
+	{
+		public ImmutableList<CalendarEntry> execute() {return build().execute();}
 	}
 
 	@NonNull
