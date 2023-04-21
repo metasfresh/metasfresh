@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.1435888100000047"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -43,7 +43,7 @@ SELECT  COALESCE(org.name, '')
 	pt.NetDays,
 	pt.DiscountDays,
      i.DueDate::timestamp with time zone AS DueDate,
-	daysBetween(ps.PayDate, i.DueDate) as DaysDue,
+     EXTRACT(day from (TRUNC(ps.PayDate) - i.DueDate)) as DaysDue,
 	AddDays( i.DateInvoiced::timestamp with time zone, pt.DiscountDays ) AS DiscountDate,
 	Round( i.GrandTotal * pt.Discount / 100::numeric, 2 ) AS DiscountAmt,
 	InvoicePaid ( i.C_Invoice_ID, i.C_Currency_ID, 1::numeric ) AS PaidAmt,
@@ -112,7 +112,7 @@ ORDER BY
 	<field name="duedate" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="duedate"/>
 	</field>
-	<field name="daysdue" class="java.lang.Integer">
+	<field name="daysdue" class="java.lang.Double">
 		<property name="com.jaspersoft.studio.field.label" value="daysdue"/>
 	</field>
 	<field name="discountdate" class="java.sql.Date">
