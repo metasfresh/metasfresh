@@ -150,7 +150,8 @@ public class WOProjectSimulationRepository
 		return WOProjectStepId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Step_ID());
 	}
 
-	public static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)
+	@NonNull
+	private static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)
 	{
 		return WOProjectStepSimulation.builder()
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
@@ -275,19 +276,19 @@ public class WOProjectSimulationRepository
 	}
 
 	@NonNull
-	public Collection<WOProjectSimulationPlan> getSimulationPlansByStepIds(@NonNull final WOProjectStepId stepId)
+	public ImmutableList<WOProjectSimulationPlan> getSimulationPlansForStep(@NonNull final WOProjectStepId stepId)
 	{
 		final ImmutableList<SimulationPlanId> matchingSimulationIds = queryBL.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_WO_Step_ID, stepId)
-				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_Project_ID, stepId.getProjectId())
 				.create()
 				.listDistinct(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, SimulationPlanId.class);
+
 		if (matchingSimulationIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		return cacheById.getAllOrLoad(matchingSimulationIds, this::retrieveSimulationPlansByIds);
+		return ImmutableList.copyOf(cacheById.getAllOrLoad(matchingSimulationIds, this::retrieveSimulationPlansByIds));
 	}
 }

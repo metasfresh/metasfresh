@@ -69,7 +69,7 @@ class ToCalendarEntryConverter
 						.title(getCalendarWOEntryTitle(project, step, resource))
 						.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 						.dateRange(dateRange)
-						.editable(getEditable(step, simulationHeaderRef))
+						.editable(isEditable(step, simulationHeaderRef))
 						.color(woProjectService.getCalendarColor(project))
 						.url(frontendURLs.getProjectUrl(ProjectCategory.WorkOrderJob, resource.getProjectId()).orElse(null))
 
@@ -173,18 +173,6 @@ class ToCalendarEntryConverter
 				.orElse("");
 	}
 
-	private boolean getEditable(
-			@NonNull final WOProjectStep step,
-			@Nullable final SimulationPlanRef simulationHeaderRef)
-	{
-		if (step.isManuallyLocked())
-		{
-			return false;
-		}
-
-		return simulationHeaderRef != null && simulationHeaderRef.isEditable();
-	}
-
 	@NonNull
 	private static ITranslatableString getCalendarBudgetEntryTitle(
 			@NonNull final BudgetProject project,
@@ -198,5 +186,17 @@ class ToCalendarEntryConverter
 				.append(" - ")
 				.appendQty(plannedDuration.toBigDecimal(), plannedDuration.getUOMSymbol())
 				.build();
+	}
+
+	private static boolean isEditable(
+			@NonNull final WOProjectStep step,
+			@Nullable final SimulationPlanRef simulationHeaderRef)
+	{
+		if (step.isManuallyLocked())
+		{
+			return false;
+		}
+
+		return simulationHeaderRef != null && simulationHeaderRef.isEditable();
 	}
 }

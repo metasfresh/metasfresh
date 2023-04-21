@@ -525,7 +525,7 @@ public final class CollectionUtils
 		return list1;
 	}
 
-	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable Collection<T> excludes)
+	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable final Collection<T> excludes)
 	{
 		if (set.isEmpty())
 		{

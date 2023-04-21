@@ -23,9 +23,8 @@
 package de.metas.project.workorder.interceptor;
 
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
 import de.metas.project.workorder.calendar.WOProjectSimulationService;
-import de.metas.project.workorder.step.WOProjectStepSimulation;
+import de.metas.project.workorder.step.WOProjectStepId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -38,14 +37,15 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_C_Project_WO_Step_Simulation.class)
 public class C_Project_WO_Step_Simulation
 {
-	@NonNull private final WOProjectSimulationService woProjectSimulationService;
+	@NonNull
+	private final WOProjectSimulationService woProjectSimulationService;
 
 	public C_Project_WO_Step_Simulation(@NonNull final WOProjectSimulationService woProjectSimulationService)
 	{
 		this.woProjectSimulationService = woProjectSimulationService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void deleteWoStepSimulation(@NonNull final I_C_Project_WO_Step_Simulation record)
 	{
 		if (!InterfaceWrapperHelper.isUIAction(record))
@@ -53,10 +53,9 @@ public class C_Project_WO_Step_Simulation
 			return;
 		}
 
-		final WOProjectStepSimulation stepSimulation = WOProjectSimulationRepository.fromRecord(record);
-
 		final SimulationPlanId selectedSimulationPlanId = SimulationPlanId.ofRepoId(record.getC_SimulationPlan_ID());
 
-		woProjectSimulationService.deleteResourceForStepSimulation(stepSimulation, selectedSimulationPlanId);
+		woProjectSimulationService.deleteStepAndResourceFromSimulation(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()),
+																	   selectedSimulationPlanId);
 	}
 }

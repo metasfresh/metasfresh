@@ -1,5 +1,6 @@
 package de.metas.project.workorder.calendar;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
@@ -11,16 +12,14 @@ import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
-import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.project.workorder.step.WOStepResources;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class WOProjectSimulationService
@@ -61,11 +60,9 @@ public class WOProjectSimulationService
 				.currentSimulationPlan(woProjectSimulationPlan)
 				.build();
 
-		final WOProjectStepId currentStepId = woProjectResource.getWoProjectStepId();
-
 		simulationPlanEditor.changeResourceDateRangeAndShiftSteps(projectResourceId,
-																  computeCalendarDateRange(simulationPlanEditor, currentStepId),
-																  currentStepId);
+																  suggestSimulatedDateRange(simulationPlanEditor, woProjectResource.getWoProjectStepId()),
+																  woProjectResource.getWoProjectStepId());
 
 		final WOProjectSimulationPlan changedSimulation = simulationPlanEditor.toNewSimulationPlan();
 		savePlan(changedSimulation);
@@ -112,27 +109,29 @@ public class WOProjectSimulationService
 		woProjectConflictService.checkSimulationConflicts(simulationPlan, resourceIds);
 	}
 
-	public void deleteResourceForStepSimulation(@NonNull final WOProjectStepSimulation stepSimulation, @NonNull final SimulationPlanId simulationPlanId)
+	public void deleteStepAndResourceFromSimulation(@NonNull final WOProjectStepId stepId, @NonNull final SimulationPlanId simulationPlanId)
 	{
-		final Set<WOProjectResourceId> resourceIds = woProjectService.getResourcesByProjectId(stepSimulation.getProjectId())
-				.stream()
-				.filter(woProjectResource -> woProjectResource.getWoProjectStepId().equals(stepSimulation.getStepId()))
-				.map(WOProjectResource::getWoProjectResourceId)
-				.collect(ImmutableSet.toImmutableSet());
+		final WOStepResources woStepResources = woProjectService.getWOStepResources(stepId);
 
 		final WOProjectSimulationPlan woProjectSimulationPlan = woProjectSimulationRepository.getById(simulationPlanId);
 
-		final WOProjectSimulationPlan updatedWoProjectSimulationPlan = woProjectSimulationPlan.removeResourceSimulation(resourceIds);
-
-		woProjectSimulationRepository.savePlan(updatedWoProjectSimulationPlan);
+		woProjectSimulationRepository.savePlan(woProjectSimulationPlan.removeSimulationForStepAndResources(woStepResources));
 	}
 
 	@NonNull
-	public CalendarDateRange computeCalendarDateRange(@NonNull final WOProjectSimulationPlanEditor simulationPlanEditor, @NonNull final WOProjectStepId woProjectStepId)
+	public ImmutableList<WOProjectSimulationPlan> getSimulationPlansForStep(@NonNull final WOProjectStepId stepId)
+	{
+		return woProjectSimulationRepository.getSimulationPlansForStep(stepId);
+	}
+
+	@NonNull
+	private CalendarDateRange suggestSimulatedDateRange(
+			@NonNull final WOProjectSimulationPlanEditor simulationPlanEditor,
+			@NonNull final WOProjectStepId woProjectStepId)
 	{
 		try
 		{
-			return simulationPlanEditor.computeCalendarDateRange(woProjectStepId);
+			return simulationPlanEditor.suggestDateRange(woProjectStepId);
 		}
 		catch (final AdempiereException e)
 		{

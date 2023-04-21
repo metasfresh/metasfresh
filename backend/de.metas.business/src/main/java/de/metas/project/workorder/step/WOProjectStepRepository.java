@@ -210,6 +210,7 @@ public class WOProjectStepRepository
 			record.setWOFindingsReleasedDate(TimeUtil.asTimestamp(step.getWoFindingsReleasedDate()));
 			record.setWOFindingsCreatedDate(TimeUtil.asTimestamp(step.getWoFindingsCreatedDate()));
 			record.setWODueDate(TimeUtil.asTimestamp(step.getWoDueDate()));
+			record.setIsManuallyLocked(step.isManuallyLocked());
 
 			if (step.getWoStepStatus() != null)
 			{
